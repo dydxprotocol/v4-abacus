@@ -1,0 +1,637 @@
+package exchange.dydx.abacus.output.input
+
+import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.iMapOf
+import kollections.JsExport
+import kollections.iListOf
+import kollections.iMutableListOf
+import kollections.toIMap
+import kotlinx.serialization.Serializable
+
+@JsExport
+@Serializable
+data class DepositInputOptions(
+    val needsSize: Boolean?,
+    val needsAddress: Boolean?,
+    val needsFastSpeed: Boolean?,
+    val chains: IList<SelectionOption>?,
+    val assets: IList<SelectionOption>?
+) {
+    companion object {
+        internal fun create(
+            existing: DepositInputOptions?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): DepositInputOptions? {
+            DebugLogger.log("creating Deposit Input Options\n")
+
+            data?.let {
+                val needsSize = parser.asBool(data["needsSize"])
+                val needsAddress = parser.asBool(data["needsAddress"])
+                val needsFastSpeed = parser.asBool(data["needsFastSpeed"])
+
+                var chains: IMutableList<SelectionOption>? = null
+                parser.asList(data["chains"])?.let { data ->
+                    chains = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        SelectionOption.create(
+                            existing?.chains?.getOrNull(i),
+                            parser, parser.asMap(item)
+                        )?.let {
+                            chains?.add(it)
+                        }
+                    }
+                }
+
+                var assets: IMutableList<SelectionOption>? = null
+                parser.asList(data["assets"])?.let { data ->
+                    assets = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        SelectionOption.create(
+                            existing?.assets?.getOrNull(i),
+                            parser, parser.asMap(item)
+                        )?.let {
+                            assets?.add(it)
+                        }
+                    }
+                }
+
+                return if (existing?.needsSize != needsSize ||
+                    existing?.needsAddress != needsAddress ||
+                    existing?.needsFastSpeed != needsFastSpeed ||
+                    existing?.chains != chains ||
+                    existing?.assets != assets
+                ) {
+                    DepositInputOptions(
+                        needsSize,
+                        needsAddress,
+                        needsFastSpeed,
+                        chains,
+                        assets
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Deposit Options not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class WithdrawalInputOptions(
+    val needsSize: Boolean?,
+    val needsAddress: Boolean?,
+    val needsFastSpeed: Boolean?,
+    val chains: IList<SelectionOption>?,
+    val assets: IList<SelectionOption>?
+) {
+    companion object {
+        internal fun create(
+            existing: WithdrawalInputOptions?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): WithdrawalInputOptions? {
+            DebugLogger.log("creating Withdrawal Input Options\n")
+
+            data?.let {
+                val needsSize = parser.asBool(data["needsSize"])
+                val needsAddress = parser.asBool(data["needsAddress"])
+                val needsFastSpeed = parser.asBool(data["needsFastSpeed"])
+
+                var chains: IMutableList<SelectionOption>? = null
+                parser.asList(data["chains"])?.let { data ->
+                    chains = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        SelectionOption.create(
+                            existing?.chains?.getOrNull(i),
+                            parser, parser.asMap(item)
+                        )?.let {
+                            chains?.add(it)
+                        }
+                    }
+                }
+                var assets: IMutableList<SelectionOption>? = null
+                parser.asList(data["assets"])?.let { data ->
+                    assets = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        SelectionOption.create(
+                            existing?.assets?.getOrNull(i),
+                            parser, parser.asMap(item)
+                        )?.let {
+                            assets?.add(it)
+                        }
+                    }
+                }
+                return if (existing?.needsSize != needsSize ||
+                    existing?.needsAddress != needsAddress ||
+                    existing?.needsFastSpeed != needsFastSpeed ||
+                    existing?.chains != chains ||
+                    existing?.assets != assets
+                ) {
+                    WithdrawalInputOptions(
+                        needsSize,
+                        needsAddress,
+                        needsFastSpeed,
+                        chains,
+                        assets
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Withdrawal Options not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferOutInputOptions(
+    val needsSize: Boolean?,
+    val needsAddress: Boolean?,
+    val chains: IList<SelectionOption>?,
+    val assets: IList<SelectionOption>?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferOutInputOptions?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): TransferOutInputOptions? {
+            DebugLogger.log("creating TransferOut Input Options\n")
+
+            val host = "https://v4.testnet.dydx.exchange/"       // TODO: get this from the environment
+
+            val needsSize = parser.asBool(data?.get("needsSize")) ?: false
+            val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
+
+            val chains: IList<SelectionOption> = iListOf(
+                SelectionOption("dydx", "APP.GENERAL.DYDX_CHAIN", "$host/currencies/dydx.svg")
+            )
+
+            val assets: IList<SelectionOption> = iListOf(
+                SelectionOption("usdc", "USDC", "$host/currencies/usdc.svg"),
+                SelectionOption("dydx", "DYDX", "$host/currencies/dydx.svg")
+            )
+
+            return if (existing?.needsSize != needsSize ||
+                existing?.needsAddress != needsAddress ||
+                existing?.chains != chains ||
+                existing?.assets != assets
+            ) {
+                TransferOutInputOptions(
+                    needsSize,
+                    needsAddress,
+                    chains,
+                    assets
+                )
+            } else {
+                existing
+            }
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInputChainResource(
+    val chainName: String?,
+    val rpc: String?,
+    val networkName: String?,
+    val chainId: Int?,
+    val iconUrl: String?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputChainResource?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): TransferInputChainResource? {
+            DebugLogger.log("creating Transfer Input Chain Resource\n")
+
+            data?.let {
+                val chainName = parser.asString(data["chainName"])
+                val rpc = parser.asString(data["rpc"])
+                val networkName = parser.asString(data["networkName"])
+                val chainId = parser.asInt(data["chainId"])
+                val iconUrl = parser.asString(data["iconUrl"])
+
+                return if (existing?.chainName != chainName ||
+                    existing?.rpc != rpc ||
+                    existing?.networkName != networkName ||
+                    existing?.chainId != chainId ||
+                    existing?.iconUrl != iconUrl
+                ) {
+                    TransferInputChainResource(
+                        chainName,
+                        rpc,
+                        networkName,
+                        chainId,
+                        iconUrl
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Chain Resource not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInputTokenResource(
+    var name: String?,
+    var address: String?,
+    var symbol: String?,
+    var decimals: Int?,
+    var iconUrl: String?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputTokenResource?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): TransferInputTokenResource? {
+            DebugLogger.log("creating Transfer Input Token Resource\n")
+
+            data?.let {
+                val name = parser.asString(data["name"])
+                val address = parser.asString(data["address"])
+                val symbol = parser.asString(data["symbol"])
+                val decimals = parser.asInt(data["decimals"])
+                val iconUrl = parser.asString(data["iconUrl"])
+
+                return if (existing?.name != name ||
+                    existing?.address != address ||
+                    existing?.symbol != symbol ||
+                    existing?.decimals != decimals ||
+                    existing?.iconUrl != iconUrl
+                ) {
+                    TransferInputTokenResource(
+                        name,
+                        address,
+                        symbol,
+                        decimals,
+                        iconUrl
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Token Resource not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInputResources(
+    var chainResources: IMap<String, TransferInputChainResource>?,
+    var tokenResources: IMap<String, TransferInputTokenResource>?,
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputResources?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): TransferInputResources? {
+            DebugLogger.log("creating Transfer Input Resources\n")
+
+            data?.let {
+                val chainResourcesMap = parser.asMap(data["chainResources"])
+                val chainResources: IMap<String, TransferInputChainResource> = chainResourcesMap?.mapValues { entry ->
+                    TransferInputChainResource.create(
+                        null,
+                        parser,
+                        parser.asMap(entry.value)
+                    ) ?: TransferInputChainResource(null, null, null, null, null)
+                }?.toIMap() ?: iMapOf()
+
+                val tokenResourcesMap = parser.asMap(data["tokenResources"])
+                val tokenResources: IMap<String, TransferInputTokenResource> = tokenResourcesMap?.mapValues {
+                    TransferInputTokenResource.create(
+                        null,
+                        parser,
+                        parser.asMap(it.value)
+                    ) ?: TransferInputTokenResource(null, null, null, null, null)
+                }?.toIMap() ?: iMapOf()
+
+                return if (
+                    existing?.chainResources != chainResources ||
+                    existing.tokenResources != tokenResources
+                ) {
+                    TransferInputResources(
+                        chainResources,
+                        tokenResources
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Resources not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInputRequestPayload(
+    val routeType: String?,
+    val targetAddress: String?,
+    val data: String?,
+    val value: String?,
+    val gasLimit: String?,
+    val gasPrice: String?,
+    val maxFeePerGas: String?,
+    val maxPriorityFeePerGas: String?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputRequestPayload?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): TransferInputRequestPayload? {
+            DebugLogger.log("creating Transfer Input Request Payload\n")
+
+            data?.let {
+                val routeType = parser.asString(data["routeType"])
+                val targetAddress = parser.asString(data["targetAddress"])
+                val dataValue = parser.asString(data["data"])
+                val value = parser.asString(data["value"])
+                val gasLimit = parser.asString(data["gasLimit"])
+                val gasPrice = parser.asString(data["gasPrice"])
+                val maxFeePerGas = parser.asString(data["maxFeePerGas"])
+                val maxPriorityFeePerGas = parser.asString(data["maxPriorityFeePerGas"])
+
+                return if (
+                    existing?.routeType != routeType ||
+                    existing?.targetAddress != targetAddress ||
+                    existing?.data != dataValue ||
+                    existing?.value != value ||
+                    existing?.gasLimit != gasLimit ||
+                    existing?.gasPrice != gasPrice ||
+                    existing?.maxFeePerGas != maxFeePerGas ||
+                    existing?.maxPriorityFeePerGas != maxPriorityFeePerGas
+                ) {
+                    TransferInputRequestPayload(
+                        routeType,
+                        targetAddress,
+                        dataValue,
+                        value,
+                        gasLimit,
+                        gasPrice,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Request Payload not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInputSummary(
+    val usdcSize: Double?,
+    val fee: Double?,
+    val filled: Boolean,
+    val slippage: Double?,
+    val exchangeRate: Double?,
+    val bridgeFee: Double?,
+    val gasFee: Double?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputSummary?,
+            parser: ParserProtocol, data: IMap<*, *>?
+        ): TransferInputSummary? {
+            DebugLogger.log("creating Transfer Input Summary\n")
+
+            data?.let {
+                val usdcSize = parser.asDouble(data["usdcSize"])
+                val fee = parser.asDouble(data["fee"])
+                val filled = parser.asBool(data["filled"]) ?: false
+                val slippage = parser.asDouble(data["slippage"])
+                val exchangeRate = parser.asDouble(data["exchangeRate"])
+                val bridgeFee = parser.asDouble(data["bridgeFee"])
+                val gasFee = parser.asDouble(data["gasFee"])
+
+                return if (existing?.usdcSize != usdcSize ||
+                    existing?.fee != fee ||
+                    existing?.filled != filled ||
+                    existing.slippage != slippage ||
+                    existing.exchangeRate != exchangeRate ||
+                    existing.bridgeFee != bridgeFee ||
+                    existing.gasFee != gasFee
+                ) {
+                    TransferInputSummary(
+                        usdcSize,
+                        fee,
+                        filled,
+                        slippage,
+                        exchangeRate,
+                        bridgeFee,
+                        gasFee
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Summary not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInputSize(
+    val usdcSize: Double?,
+    var size: Double?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputSize?,
+            parser: ParserProtocol, data: IMap<*, *>?
+        ): TransferInputSize? {
+            DebugLogger.log("creating Transfer Input Size\n")
+
+            data?.let {
+                val usdcSize = parser.asDouble(data["usdcSize"])
+                val size = parser.asDouble(data["size"])
+
+                return if (
+                    existing?.usdcSize != usdcSize ||
+                    existing?.size != size
+                ) {
+                    TransferInputSize(usdcSize, size)
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Size not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+enum class TransferType(val rawValue: String) {
+    deposit("DEPOSIT"),
+    withdrawal("WITHDRAWAL"),
+    transferOut("TRANSFER_OUT");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            TransferType.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
+data class TransferInput(
+    val type: TransferType?,
+    val size: TransferInputSize?,
+    val fastSpeed: Boolean,
+    val fee: Double?,
+    val chain: String?,
+    val token: String?,
+    val address: String?,
+    val depositOptions: DepositInputOptions?,
+    val withdrawalOptions: WithdrawalInputOptions?,
+    val transferOutOptions: TransferOutInputOptions?,
+    val summary: TransferInputSummary?,
+    val resources: TransferInputResources?,
+    val requestPayload: TransferInputRequestPayload?,
+    val errors: String?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInput?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): TransferInput? {
+            DebugLogger.log("creating Transfer Input\n")
+
+            data?.let {
+                val type = parser.asString(data["type"])?.let {
+                    TransferType.invoke(it)
+                }
+
+                val size =
+                    TransferInputSize.create(existing?.size, parser, parser.asMap(data["size"]))
+                val fastSpeed = parser.asBool(data["fastSpeed"]) ?: false
+                val fee = parser.asDouble(data["fee"])
+                val chain = parser.asString(data["chain"])
+                val token = parser.asString(data["token"])
+                val address = parser.asString(data["address"])
+
+                var depositOptions: DepositInputOptions? = null
+                if (type == TransferType.deposit) {
+                    depositOptions = DepositInputOptions.create(
+                        existing?.depositOptions,
+                        parser,
+                        parser.asMap(data["depositOptions"])
+                    )
+                }
+
+                var withdrawalOptions: WithdrawalInputOptions? = null
+                if (type == TransferType.withdrawal) {
+                    withdrawalOptions = WithdrawalInputOptions.create(
+                        existing?.withdrawalOptions,
+                        parser,
+                        parser.asMap(data["withdrawalOptions"])
+                    )
+                }
+
+                var transferOutOptions: TransferOutInputOptions? = null
+                if (type == TransferType.transferOut) {
+                    transferOutOptions = TransferOutInputOptions.create(
+                        existing?.transferOutOptions,
+                        parser,
+                        parser.asMap(data["transferOutOptions"])
+                    )
+                }
+
+                val summary = TransferInputSummary.create(
+                    existing?.summary,
+                    parser,
+                    parser.asMap(data["summary"])
+                )
+
+                val resources = TransferInputResources.create(
+                    existing?.resources,
+                    parser,
+                    parser.asMap(data["resources"])
+                )
+
+                val route =  parser.asMap(data["route"])
+                val requestPayload = TransferInputRequestPayload.create(
+                    null,
+                    parser,
+                    parser.asMap(route?.get("requestPayload"))
+                )
+
+                val errors =  parser.asString(route?.get("errors"))
+
+                return if (existing?.type !== type ||
+                    existing?.size !== size ||
+                    existing?.fastSpeed != fastSpeed ||
+                    existing.fee != fee ||
+                    existing.chain != chain ||
+                    existing.token != token ||
+                    existing.address != address ||
+                    existing.depositOptions != depositOptions ||
+                    existing.withdrawalOptions != withdrawalOptions ||
+                    existing.transferOutOptions != transferOutOptions ||
+                    existing.summary !== summary ||
+                    existing.resources !== resources ||
+                    existing.requestPayload !== requestPayload ||
+                    existing.errors != errors
+                ) {
+                    TransferInput(
+                        type,
+                        size,
+                        fastSpeed,
+                        fee,
+                        chain,
+                        token,
+                        address,
+                        depositOptions,
+                        withdrawalOptions,
+                        transferOutOptions,
+                        summary,
+                        resources,
+                        requestPayload,
+                        errors,
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input not valid")
+            return null
+        }
+    }
+}

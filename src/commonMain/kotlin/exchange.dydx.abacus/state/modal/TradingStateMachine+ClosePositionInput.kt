@@ -1,0 +1,115 @@
+package exchange.dydx.abacus.state.modal
+
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.iMutableMapOf
+import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.reduceOnlySupported
+import exchange.dydx.abacus.utils.safeSet
+import kollections.JsExport
+import kollections.iListOf
+import kotlinx.serialization.Serializable
+
+@JsExport
+@Serializable
+enum class ClosePositionInputField(val rawValue: String) {
+    market("market"),
+    size("size.size"),
+    percent("size.percent");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            ClosePositionInputField.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+fun TradingStateMachine.closePosition(
+    data: String?,
+    type: ClosePositionInputField,
+    subaccountNumber: Int
+): StateResponse {
+    var changes: StateChanges? = null
+    var error: ParsingError? = null
+    val typeText = type.rawValue
+
+    val input = this.input?.mutable() ?: iMutableMapOf()
+    input["current"] = "closePosition"
+    val trade =
+        parser.asMap(input["closePosition"])?.mutable() ?: inititiateClosePosition(
+            null,
+            subaccountNumber
+        )
+
+    var sizeChanged = false
+    when (typeText) {
+        ClosePositionInputField.market.rawValue -> {
+            val position = if (data != null) getPosition(data) else null
+            if (position != null) {
+                trade["marketId"] = data!!
+                trade.safeSet("size", null)
+                trade["type"] = "MARKET"
+                trade["reduceOnly"] = reduceOnlySupported
+
+                val positionSize =
+                    parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
+                trade["side"] = if (positionSize > Numeric.double.ZERO) "SELL" else "BUY"
+
+                changes = StateChanges(
+                    iListOf(Changes.subaccount, Changes.input),
+                    null,
+                    iListOf(subaccountNumber)
+                )
+            } else {
+                error = cannotModify(typeText)
+            }
+        }
+        ClosePositionInputField.size.rawValue, ClosePositionInputField.percent.rawValue -> {
+            sizeChanged = (parser.asDouble(data) != parser.asDouble(trade[typeText]))
+            trade.safeSet(typeText, parser.asDouble(data))
+            changes = StateChanges(
+                iListOf(Changes.subaccount, Changes.input),
+                null,
+                iListOf(subaccountNumber)
+            )
+        }
+        else -> {}
+    }
+    if (sizeChanged) {
+        when (typeText) {
+            ClosePositionInputField.size.rawValue,
+            ClosePositionInputField.percent.rawValue -> {
+                trade.safeSet("size.input", typeText)
+            }
+            else -> {}
+        }
+    }
+    input["closePosition"] = trade
+    this.input = input
+
+    changes?.let {
+        update(it)
+    }
+    return StateResponse(state, changes, if (error != null) iListOf(error) else null)
+}
+
+
+fun TradingStateMachine.getPosition(
+    marketId: String,
+    subaccountNumber: Int = 0
+): IMap<String, Any>? {
+    val position = parser.asMap(
+        parser.value(
+            wallet,
+            "account.subaccounts.$subaccountNumber.openPositions.$marketId"
+        )
+    )
+    return if (position != null && (parser.asDouble(parser.value(position, "size.current"))
+            ?: Numeric.double.ZERO) != Numeric.double.ZERO
+    ) {
+        position
+    } else null
+}
