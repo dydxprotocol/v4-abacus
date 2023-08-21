@@ -1,0 +1,26 @@
+# Title for the gitleaks configuration file.
+title = "Gitleaks title"
+
+[extend]
+# useDefault will extend the base configuration with the default gitleaks config:
+# https://github.com/zricethezav/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+
+[allowlist]
+paths = [
+  '''gitleaks\.toml''',
+  '''payloads/specs/internal.json''',
+]
+
+regexTarget = "line"
+regexes = [
+  '''clientId''',
+  '''starkKey''',
+  '''collateralTokenAddress''',
+  '''depositERC20ApiId''',
+  '''depositApiId''',
+  '''wrappedNativeToken''',
+  '''usdcToken''',
+  '''defaultCrosschainToken''',
+  '''V8Rq7aK05H4ArYhCiCMFBl6TD7biMxIvfniypEl7''', # rotated secret
+]
