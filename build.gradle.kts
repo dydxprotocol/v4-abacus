@@ -152,8 +152,8 @@ kotlin {
         // Specify the required Pod version here. Otherwise, the Gradle project version is used.
         // version = "1.0"
         summary = "Shared front-end and mobile logic written in Kotlin"
-        homepage = "https://github.com/dydxprotocol/abacus"
-        source = "{ :git => 'git@github.com/dydxprotocol/abacus.git' }"
+        homepage = "https://github.com/dydxprotocol/v4-abacus"
+        source = "{ :git => 'git@github.com/dydxprotocol/v4-abacus.git' }"
 
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
@@ -173,7 +173,6 @@ kotlin {
             // Bitcode embedding
             //embedBitcode(BITCODE)
         }
-
         // Maps custom Xcode configuration to NativeBuildType
         //xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         //xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
@@ -201,7 +200,7 @@ publishing {
             val github_username = System.getenv("github_username")
             val github_token = System.getenv("github_token")
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/dydxprotocol/abacus")
+            url = uri("https://maven.pkg.github.com/dydxprotocol/v4-abacus")
             credentials {
                 username = github_username
                 password = github_token
