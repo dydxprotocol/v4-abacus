@@ -1,8 +1,13 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
+import exchange.dydx.abacus.output.NotificationPriority
+import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.input.OrderStatus
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
@@ -64,6 +69,8 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import kollections.JsExport
+import kollections.iListOf
+import kollections.iMutableListOf
 import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
@@ -1527,7 +1534,114 @@ open class StateManagerAdaptor(
     }
 
     internal open fun buildNotifications(): IMap<String, Notification> {
-        return iMapOf()
+        val fillsNotifcations = buildFillsNotifications()
+        return fillsNotifcations
+    }
+
+    private fun asset(marketId:String): String {
+        return marketId.split("-").first()
+    }
+
+    private fun buildFillsNotifications(): IMap<String, Notification> {
+        /*
+        We have to go through fills instead of orders, because
+        1. Order doesn't have an updatedAt timestamp
+        2. Order doesn't have an average filled price
+         */
+        val notifications = iMutableMapOf<String, Notification>()
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return  kollections.iMapOf()
+
+        val subaccountFills = stateMachine.state?.fills?.get("$subaccountNumber")
+        if (subaccountFills != null) {
+            // Cache the orders
+            val orders = iMutableMapOf<String, SubaccountOrder>()
+            for (order in subaccount.orders ?: iListOf()) {
+                orders[order.id] = order
+            }
+            // Cache the fills
+            val fills = iMutableMapOf<String, SubaccountFill>()
+            val liquidated = iMutableListOf<SubaccountFill>()
+
+            for (fill in subaccountFills) {
+                val orderId = fill.orderId
+                if (orderId != null) {
+                    val order = orders[orderId]
+                    if (order != null) {
+                        fills[orderId] = fill
+                    }
+                } else {
+                    if (fill.type == OrderType.liquidated) {
+                        liquidated.add(fill)
+                    }
+                }
+            }
+
+            // Create notifications
+            //
+            for ((orderId, fill) in fills) {
+                val order = orders[orderId]!!
+
+                val marketText = asset(order.marketId)
+                val side = order.side.rawValue
+                val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
+                val amountText = parser.asString(order.size)
+                val filledAmountText = parser.asString(order.totalFilled)
+                val priceText = parser.asString(fill.price)
+                val params = iMapOf(
+                    "MARKET" to marketText,
+                    "SIDE" to sideText,
+                    "AMOUNT" to amountText,
+                    "FILLED_AMOUNT" to filledAmountText,
+                    "PRICE" to priceText,
+                )
+                val paramsText = jsonEncoder.encode(params)
+                val image = null
+                val title = uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.TITLE")
+                val text = uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.BODY", paramsText)
+                if (title != null && text != null) {
+                    val notificationId = "order:$orderId"
+                    notifications[notificationId] = Notification(
+                        notificationId,
+                        NotificationType.INFO,
+                        NotificationPriority.NORMAL,
+                        image,
+                        title,
+                        text,
+                        fill,
+                        fill.createdAtMilliseconds,
+                    )
+                }
+            }
+
+            for (fill in liquidated) {
+                val fillId = fill.id
+                val marketText = asset(fill.marketId)
+                val side = fill.side.rawValue
+                val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
+                val params = iMapOf(
+                    "MARKET" to marketText,
+                    "SIDE" to sideText,
+                )
+                val paramsText = jsonEncoder.encode(params)
+                val image = null
+                val title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE")
+                val text = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.BODY", paramsText)
+                if (title != null && text != null) {
+                    val notificationId = "fill:$fillId"
+                    notifications[notificationId] = Notification(
+                        notificationId,
+                        NotificationType.INFO,
+                        NotificationPriority.NORMAL,
+                        image,
+                        title,
+                        text,
+                        fill,
+                        fill.createdAtMilliseconds,
+                    )
+                }
+            }
+        }
+        return notifications
     }
 
     private fun consolidateNotifications(notifications: IMap<String, Notification>) {
