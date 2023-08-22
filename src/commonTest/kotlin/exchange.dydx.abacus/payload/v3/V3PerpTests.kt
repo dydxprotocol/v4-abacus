@@ -238,15 +238,21 @@ class V3PerpTests : V3BaseTests() {
                                     },
                                     "transfers": [
                                         {
-                                            "id": "f451702f-9ad0-54ee-bb29-61f6c02c9f0c",
+                                            "id": "89586775-0646-582e-9b36-4f131715644d",
+                                            "type": "WITHDRAWAL",
                                             "asset": "USDC",
-                                            "amount": 100.0,
-                                            "confirmedAt": "2022-07-23T20:37:10.742Z",
+                                            "createdAt": "2023-08-21T21:37:53.373Z",
+                                            "updatedAtBlock": 404014,
+                                            "amount": 419.98472,
+                                            "status": "CONFIRMED",
+                                            "fromAddress": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                                            "toAddress": "dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8",
                                             "resources": {
                                                 "typeStringKey": "APP.GENERAL.TRANSFER_OUT",
                                                 "iconLocal": "Outgoing",
                                                 "indicator": "confirmed"
-                                            }
+                                            },
+                                            "transactionHash": "MOCKHASH"
                                         }
                                     ],
                                     "fundingPayments": [
@@ -364,15 +370,21 @@ class V3PerpTests : V3BaseTests() {
                                     },
                                     "transfers": [
                                         {
-                                            "id": "f451702f-9ad0-54ee-bb29-61f6c02c9f0c",
+                                            "id": "89586775-0646-582e-9b36-4f131715644d",
+                                            "type": "WITHDRAWAL",
                                             "asset": "USDC",
-                                            "amount": 100.0,
-                                            "confirmedAt": "2022-07-23T20:37:10.742Z",
+                                            "createdAt": "2023-08-21T21:37:53.373Z",
+                                            "updatedAtBlock": 404014,
+                                            "amount": 419.98472,
+                                            "status": "CONFIRMED",
+                                            "fromAddress": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                                            "toAddress": "dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8",
                                             "resources": {
                                                 "typeStringKey": "APP.GENERAL.TRANSFER_OUT",
                                                 "iconLocal": "Outgoing",
                                                 "indicator": "confirmed"
-                                            }
+                                            },
+                                            "transactionHash": "MOCKHASH"
                                         }
                                     ],
                                     "fundingPayments": [

@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.validator.transfer.DepositValidator
+import exchange.dydx.abacus.validator.transfer.TransferOutValidator
 import kollections.iListOf
 import kollections.iMutableListOf
 
@@ -17,7 +18,8 @@ internal class TransferInputValidator(
 ) :
     BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     private val transferValidators = iListOf<TransferValidatorProtocol>(
-        DepositValidator(localizer, formatter, parser)
+        DepositValidator(localizer, formatter, parser),
+        TransferOutValidator(localizer, formatter, parser),
     )
 
     override fun validate(

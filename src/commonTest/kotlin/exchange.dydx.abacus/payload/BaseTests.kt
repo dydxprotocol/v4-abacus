@@ -1832,7 +1832,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.amount"
             )
             assertEquals(
-                parser.asInt(data["createdAtBlock"]),
+                parser.asInt(data["updatedAtBlock"]),
                 obj.updatedAtBlock,
                 "$trace.updatedAtBlock"
             )
