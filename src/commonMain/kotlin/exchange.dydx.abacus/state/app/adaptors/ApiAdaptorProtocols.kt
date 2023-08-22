@@ -123,6 +123,7 @@ interface V4ApiAdaptorProtocol : ApiAdaptorProtocol {
 
     fun transferStatus(hash: String): AppStateResponse
 
+    fun parseOnChainEquityTiers(payload: String): AppStateResponse
     fun parseOnChainFeeTiers(payload: String): AppStateResponse
     fun parseOnChainUserFeeTier(payload: String): AppStateResponse
     fun parseOnChainUserStats(payload: String): AppStateResponse

@@ -1,6 +1,65 @@
 package exchange.dydx.abacus.tests.payloads
 
 internal class V4OnChainMock {
+    internal val equity_tiers = """
+        {
+            "equityTierLimitConfig": {
+                "shortTermOrderEquityTiers": [
+                    {
+                        "usdTncRequired": "0",
+                        "limit": 0
+                    },
+                    {
+                        "usdTncRequired": "20",
+                        "limit": 1
+                    },
+                    {
+                        "usdTncRequired": "100",
+                        "limit": 5
+                    },
+                    {
+                        "usdTncRequired": "1000",
+                        "limit": 10
+                    },
+                    {
+                        "usdTncRequired": "10000",
+                        "limit": 100
+                    },
+                    {
+                        "usdTncRequired": "100000",
+                        "limit": 200
+                    }
+                ],
+                "statefulOrderEquityTiers": [
+                    {
+                        "usdTncRequired": "0",
+                        "limit": 0
+                    },
+                    {
+                        "usdTncRequired": "20",
+                        "limit": 1
+                    },
+                    {
+                        "usdTncRequired": "100",
+                        "limit": 5
+                    },
+                    {
+                        "usdTncRequired": "1000",
+                        "limit": 10
+                    },
+                    {
+                        "usdTncRequired": "10000",
+                        "limit": 100
+                    },
+                    {
+                        "usdTncRequired": "100000",
+                        "limit": 200
+                    }
+                ]
+            }
+        }
+    """.trimIndent()
+
     internal val fee_tiers = """
         {
            "params":{

@@ -533,6 +533,10 @@ open class AppStateMachine(private val appPlatform: AppPlatform? = null) : AppSt
         return result((adaptor as? V4ApiAdaptorProtocol)?.transferStatus(hash))
     }
 
+    override fun parseOnChainEquityTiers(payload: String): AppStateResponse {
+        return result((adaptor as? V4ApiAdaptorProtocol)?.parseOnChainEquityTiers(payload))
+    }
+
     override fun parseOnChainFeeTiers(payload: String): AppStateResponse {
         return result((adaptor as? V4ApiAdaptorProtocol)?.parseOnChainFeeTiers(payload))
     }

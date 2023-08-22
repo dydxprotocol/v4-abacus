@@ -1123,6 +1123,22 @@ open class TradingStateMachine(
         return noChange()
     }
 
+    fun parseOnChainEquityTiers(payload: String): StateResponse {
+        var changes: StateChanges? = null
+        var error: ParsingError? = null
+        try {
+            changes = onChainEquityTiers(payload)
+        } catch (e: ParsingException) {
+            error = e.toParsingError()
+        }
+        if (changes != null) {
+            update(changes)
+        }
+
+        val errors = if (error != null) iListOf(error) else null
+        return StateResponse(state, changes, errors)
+    }
+
     fun parseOnChainFeeTiers(payload: String): StateResponse {
         var changes: StateChanges? = null
         var error: ParsingError? = null

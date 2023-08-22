@@ -131,6 +131,7 @@ enum class HistoricalPnlPeriod(val rawValue: String) {
 @JsExport
 enum class QueryType(val rawValue: String) {
     Height("getHeight"),
+    EquityTiers("getEquityTiers"),
     FeeTiers("getFeeTiers"),
     UserFeeTier("getUserFeeTier"),
     UserStats("getUserStats"),
