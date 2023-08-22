@@ -274,7 +274,7 @@ class TradeRequiredInputTests : V3BaseTests() {
 
         test(
             {
-                perp.trade("1223", TradeInputField.triggerPrice, 0)
+                perp.trade("1923", TradeInputField.triggerPrice, 0)
             },
             """
                 {
@@ -707,7 +707,7 @@ class TradeRequiredInputTests : V3BaseTests() {
 
         test(
             {
-                perp.trade("1323", TradeInputField.triggerPrice, 0)
+                perp.trade("1923", TradeInputField.triggerPrice, 0)
             },
             """
                 {
