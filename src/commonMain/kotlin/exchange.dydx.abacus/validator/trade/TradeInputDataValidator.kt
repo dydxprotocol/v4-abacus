@@ -46,16 +46,18 @@ internal class TradeInputDataValidator(
     override fun validateTrade(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         trade: IMap<String, Any>,
         change: PositionChange,
         restricted: Boolean,
     ): IList<Any>? {
-        return validateTradeInput(subaccount, market, trade)
+        return validateTradeInput(subaccount, market, configs, trade)
     }
 
     private fun validateTradeInput(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         trade: IMap<String, Any>,
     ): IList<Any>? {
         val errors = iMutableListOf<Any>()
