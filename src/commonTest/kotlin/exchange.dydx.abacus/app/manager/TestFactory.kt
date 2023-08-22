@@ -24,12 +24,16 @@ import kollections.iMutableListOf
 import kollections.iMutableMapOf
 
 class TestFileSystem : FileSystemProtocol {
+    private val mock = AbacusMockData()
     var cachedFiles = iMutableMapOf<String, String>()
 
     override fun readTextFile(
         location: FileLocation,
         path: String,
     ): String? {
+        if (path.contains("endpoints.json")) {
+            return mock.environments.environments
+        }
         when (location) {
             FileLocation.AppBundle -> {
                 when (path) {
@@ -116,6 +120,7 @@ class TestRest() : RestProtocol {
 
     var requests = iMutableListOf<String>()
 
+
     init {
         setResponse(
             "https://dydx-shared-resources.vercel.app/v4/staging/markets.json",
@@ -180,6 +185,10 @@ class TestRest() : RestProtocol {
         headers: IMap<String, String>?,
         callback: (response: String?, httpCode: Int) -> Unit,
     ) {
+        if (url.contains("endpoints.json")) {
+            callback(mock.environments.environments, 200)
+            return
+        }
         if (!url.contains("localization")) {
             requests.add(url)
         }
@@ -249,9 +258,11 @@ class TestWebSocket : WebSocketProtocol {
 
     fun simulateConnected(connected: Boolean) {
         this.connected?.invoke(connected)
-        this.received?.invoke("""
+        this.received?.invoke(
+            """
             {"type":"connected","connection_id":"c98ace50-5f67-4ed8-8096-de0c694eeb1d","message_id":0}
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun simulateReceived(message: String) {
@@ -301,6 +312,7 @@ class TestChain : DYDXChainTransactionsProtocol {
             QueryType.Height -> {
                 getHeight(callback)
             }
+
             else -> {}
         }
     }
@@ -380,13 +392,17 @@ class TestThreading : ThreadingProtocol {
     }
 }
 
-class TestLocalTimer: LocalTimerProtocol {
+class TestLocalTimer : LocalTimerProtocol {
     override fun cancel() {
     }
 }
 
 class TestTimer : TimerProtocol {
-    override fun schedule(delay: Double, repeat: Double?, block: () -> Boolean): LocalTimerProtocol {
+    override fun schedule(
+        delay: Double,
+        repeat: Double?,
+        block: () -> Boolean
+    ): LocalTimerProtocol {
         if (delay == 0.0) {
             block()
         }
@@ -397,6 +413,10 @@ class TestTimer : TimerProtocol {
 class TestState : StateNotificationProtocol {
     var state: PerpetualState? = null
     var apiState: ApiState? = null
+
+    override fun environmentsChanged() {
+    }
+
     override fun stateChanged(state: PerpetualState?, changes: StateChanges?) {
         this.state = state
     }

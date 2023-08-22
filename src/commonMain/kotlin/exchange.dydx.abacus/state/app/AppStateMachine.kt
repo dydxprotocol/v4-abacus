@@ -32,9 +32,13 @@ enum class AppVersion(val rawValue: String) {
 }
 
 @JsExport
-data class EnvironmentURIs(
+data class IndexerURIs(
     val api: String,
-    val socket: String,
+    val socket: String)
+
+@JsExport
+data class EnvironmentURIs(
+    val indexers: IList<IndexerURIs>?,
     val configs: String?,
     val validators: IList<String>?,
     val faucet: String?,

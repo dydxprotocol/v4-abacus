@@ -215,6 +215,7 @@ interface TrackingProtocol {
 
 @JsExport
 interface StateNotificationProtocol {
+    fun environmentsChanged()
     fun stateChanged(state: PerpetualState?, changes: StateChanges?)
     fun apiStateChanged(apiState: ApiState?)
     fun errorsEmitted(errors: IList<ParsingError>)
@@ -223,6 +224,7 @@ interface StateNotificationProtocol {
 
 @JsExport
 interface DataNotificationProtocol {
+    fun environmentsChanged()
     fun marketsSummaryChanged(marketsSummary: PerpetualMarketSummary?)
     fun assetChanged(asset: Asset?, assetId: String)
     fun marketChanged(market: PerpetualMarket?, marketId: String)
