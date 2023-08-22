@@ -316,7 +316,8 @@ class V4AccountTests : V4BaseTests() {
                                                 "typeStringKey": "APP.GENERAL.TRANSFER_OUT",
                                                 "iconLocal": "Outgoing",
                                                 "indicator": "confirmed"
-                                            }
+                                            },
+                                            "transactionHash": "MOCKHASH"
                                         }
                                     ]
                                 }
@@ -473,7 +474,8 @@ class V4AccountTests : V4BaseTests() {
                                                 "typeStringKey": "APP.GENERAL.TRANSFER_OUT",
                                                 "iconLocal": "Outgoing",
                                                 "indicator": "confirmed"
-                                            }
+                                            },
+                                            "transactionHash": "MOCKHASH"
                                         }
                                     ],
                                     "openPositions": {
