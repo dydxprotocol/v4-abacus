@@ -7,7 +7,6 @@ import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -108,9 +107,14 @@ internal class TradeInputDataValidator(
         /*
         USER_MAX_ORDERS
         */
-        val maxNumOrders = maxOrdersForEquityTier(trade, subaccount, configs)?.get("shortTermOrders")?: 0
+        val orderType = parser.asString(trade["type"])
+        val timeInForce = parser.asString(trade["timeInForce"])
 
-        return if (orderCount(subaccount) >= maxNumOrders) {
+        if (orderType == null || timeInForce == null) return null
+
+        return if (orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
+            >= maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
+        ) {
             iListOf(
                 error(
                     "ERROR",
@@ -125,52 +129,44 @@ internal class TradeInputDataValidator(
     }
 
     private fun maxOrdersForEquityTier(
-        trade: IMap<String, Any>,
+        isStatefulOrder: Boolean,
         subaccount: IMap<String, Any>?,
         configs: IMap<String, Any>?
-    ): IMap<String, Int> {
+    ): Int {
         /*
          USER_MAX_ORDERS according to Equity Tier
          */
-        val equity = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
-        val maxOrders = iMutableMapOf<String, Int>()
-        val
+        var maxNumOrders: Int = 0
+        val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
+        val equityTierKey: String = if (isStatefulOrder) "equityTiers.statefulOrderEquityTiers" else "equityTiers.shortTermOrderEquityTiers"
 
-        parser.asList(parser.value(configs, "equityTiers.shortTermOrderEquityTiers"))?.let { tiers ->
+        parser.asList(parser.value(configs, equityTierKey))?.let { tiers ->
             for (tier in tiers) {
                 parser.asMap(tier)?.let { item ->
                     val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
                     if ( requiredTotalNetCollateralUSD <= equity) {
-                        maxOrders.typedSafeSet("shortTermOrders", parser.asInt(item["maxOrders"])?: 0)
+                        maxNumOrders = parser.asInt(item["maxOrders"])?: 0
                     }
                 }
             }
         }
 
-        parser.asList(parser.value(configs, "equityTiers.statefulOrderEquityTiers"))?.let { tiers ->
-            for (tier in tiers) {
-                parser.asMap(tier)?.let { item ->
-                    val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
-                    if (requiredTotalNetCollateralUSD <= equity) {
-                        maxOrders.typedSafeSet("statefulOrders", parser.asInt(item["maxOrders"])?: 0)
-                    }
-                }
-            }
-        }
-
-
-        return maxOrders
+        return maxNumOrders
     }
 
     private fun orderCount(
+        shouldCountStatefulOrders: Boolean,
         subaccount: IMap<String, Any>?,
     ): Int {
         var count = 0
         parser.asMap(subaccount?.get("orders"))?.let { orders ->
-            for ((key, item) in orders) {
+            for ((_, item) in orders) {
                 parser.asMap(item)?.let { order ->
                     val status = parser.asString(order["status"])
-                    if (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") {
+                    val orderType = parser.asString(order["type"])!!
+                    val timeInForce = parser.asString(order["timeInForce"])!!
+                    val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
+                    if ((status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
                         count += 1
                     }
                 }
@@ -391,5 +387,20 @@ internal class TradeInputDataValidator(
                 )
             } else null
         } else null
+    }
+
+    private fun isStatefulOrder(orderType: String, timeInForce: String): Boolean {
+        return when (orderType) {
+            "MARKET" -> false
+
+            "LIMIT" -> {
+                when (parser.asString(timeInForce)) {
+                    "GTT" -> true
+                    else -> false
+                }
+            }
+
+            else -> true
+        }
     }
 }
