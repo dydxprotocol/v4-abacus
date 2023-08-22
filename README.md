@@ -78,7 +78,7 @@ Integration tests can be written to call Abacus from non-Kotlin code (i.e., Swif
 
 # Version Bump #
 
-Run "bump_version.sh"
+> ./bump_version.sh
 
 # How to use #
 
