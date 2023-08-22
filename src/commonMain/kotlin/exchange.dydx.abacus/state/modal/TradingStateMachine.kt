@@ -463,7 +463,6 @@ open class TradingStateMachine(
 
         val wallet = state?.wallet
         val input = state?.input
-        val notifications = state?.notifications
 
         state = update(state, changes)
 
@@ -489,7 +488,6 @@ open class TradingStateMachine(
 
                 Changes.wallet -> state?.wallet != wallet
                 Changes.input -> state?.input != input
-                Changes.notifications -> state?.notifications != notifications
             }
             if (didChange) {
                 realChanges.add(change)
@@ -774,7 +772,6 @@ open class TradingStateMachine(
         var configs = state?.configs
         var input = state?.input
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
-        var notifications = state?.notifications?.toIMutableList()
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asMap(data?.get("markets"))?.let {
@@ -1005,7 +1002,6 @@ open class TradingStateMachine(
             input,
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
             transferStatuses,
-            notifications
         )
     }
 
