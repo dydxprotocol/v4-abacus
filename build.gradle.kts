@@ -185,7 +185,8 @@ npmPublish {
     registries {
         register("npmjs") {
             uri.set(uri("https://registry.npmjs.org")) //
-            authToken.set("obfuscated")
+            val npm_token = System.getenv("npm_token")
+            authToken.set(npm_token)
         }
     }
 }

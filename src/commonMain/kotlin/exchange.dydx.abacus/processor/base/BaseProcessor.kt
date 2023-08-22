@@ -116,7 +116,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
             } else {
                 val list = parser.asList(payload)
                 if (list != null) {
-                    process(parser.asList(modified[key]), list)
+                    process(modified[key], list)
                 } else null
             }
             modified.safeSet(key, transformed)
