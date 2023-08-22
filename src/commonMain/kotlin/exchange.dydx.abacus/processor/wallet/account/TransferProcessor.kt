@@ -25,12 +25,14 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             "transactionHash" to "transactionHash"
         ),
         "datetime" to iMapOf(
-            "createdAtBlock" to "updatedAtBlock",
             "createdAt" to "createdAt",
             "confirmedAt" to "confirmedAt"
         ),
         "double" to iMapOf(
-            "amount" to "amount",
+            "size" to "amount",
+        ),
+        "int" to iMapOf(
+            "createdAtHeight" to "updatedAtBlock",
         )
     )
 
@@ -60,6 +62,17 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         payload: IMap<String, Any>
     ): IMap<String, Any> {
         val modified = transform(existing, payload, transferKeyMap).mutable()
+
+        val sender = parser.asMap(payload["sender"])
+        val recipient = parser.asMap(payload["recipient"])
+
+        sender?.let { 
+            modified.safeSet("fromAddress", parser.asString(it["address"]))
+        }
+        recipient?.let { 
+            modified.safeSet("toAddress", parser.asString(it["address"]))
+        }
+        
         // for v3
         val debitAmount = parser.asDouble(payload["debitAmount"])
         val creditAmount = parser.asDouble(payload["creditAmount"])
