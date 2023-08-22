@@ -32,11 +32,11 @@ Debugging on iOS directly from XCode is possible with a plugin (https://github.c
 
 # Android #
 
-Abacus builds and pushes the JVM target to MavenLocal repo with the followinng command:
+Abacus builds and pushes the JVM target as a Github packagewith the followinng command:
 
-> ./gradlew publishToMavenLocal
+> ./publish_android.sh
 
-The Android app (https://github.com/dydxprotocol/native-android) has the Gradle build step to pull the Abacus target from MavenLocal.
+The Android app (https://github.com/dydxprotocol/native-android) has the Gradle build step to pull the Abacus target from GithubPackage.
 
 # Web #
 
@@ -59,12 +59,12 @@ A tarball of the package should be created and you can install it to your projec
 > npm install PATH_TO_TARBALL
 
 # Publishing to NPM #
+
 Abacus publishes using a library (https://github.com/mpetuska/npm-publish) with the following steps.
-1. replace the 'obfuscated' with an npm API_KEY (todo: automate this / hide key) and bump version
-2. > ./gradlew assembleJsPackage
-3. > ./gradlew packJsPackage
-4. > ./gradlew publishJsPackageToNpmjsRegistry
-5. Check published version (https://www.npmjs.com/package/@dydxprotocol/abacus)
+1. Add a "npm_token" environment variable that contains your NPM access token
+2. Run bump_version.sh to bump the library version
+3. Run publish_js.sh to publish
+4. Check published version (https://www.npmjs.com/package/@dydxprotocol/abacus)
 
 # Unit Tests #
 
