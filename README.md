@@ -78,12 +78,7 @@ Integration tests can be written to call Abacus from non-Kotlin code (i.e., Swif
 
 # Version Bump #
 
-1. Update the version in build.gradle.kts
-2. Run sh update_version.command - Update the version in abacus.podspec
-3. in Xcode, open {project}/integraiton/iOS/abacus.ios.xcworkspace. Build and run.
-   1. The integration app doesn't have any UI to indicate the connections. Use Charles to check network traffic. It should contain the standard initial connections to 
-      1. wss://api.dydx.exchange/v3/ws, with subscriptions to "v3_markets", "v3_trades", and "v3_orderbook"
-      2. https://api.dydx.exchange/v3/config
+Run "bump_version.sh"
 
 # How to use #
 
