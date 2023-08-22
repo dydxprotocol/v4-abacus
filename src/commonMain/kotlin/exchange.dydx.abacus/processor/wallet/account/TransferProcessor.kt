@@ -25,12 +25,14 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             "transactionHash" to "transactionHash"
         ),
         "datetime" to iMapOf(
-            "createdAtHeight" to "updatedAtBlock",
             "createdAt" to "createdAt",
             "confirmedAt" to "confirmedAt"
         ),
         "double" to iMapOf(
             "size" to "amount",
+        ),
+        "int" to iMapOf(
+            "createdAtHeight" to "updatedAtBlock",
         )
     )
 

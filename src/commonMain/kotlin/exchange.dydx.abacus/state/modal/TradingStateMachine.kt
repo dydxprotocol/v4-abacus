@@ -364,6 +364,13 @@ open class TradingStateMachine(
                 changes = fills(payload, subaccountNumber)
             }
 
+            "/v4/transfers" -> {
+                val subaccountNumber =
+                    parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
+                        ?: 0
+                changes = transfers(payload, subaccountNumber)
+            }
+
             "/config/markets.json", "/v4/staging/markets.json", "/v4/prod/markets.json" -> {
                 changes = configurations(payload, subaccountNumber)
             }
