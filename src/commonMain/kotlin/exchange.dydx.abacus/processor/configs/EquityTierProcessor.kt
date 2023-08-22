@@ -9,7 +9,7 @@ import kollections.toIMap
 @Suppress("UNCHECKED_CAST")
 internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val equityTierKeyMap = iMapOf(
-        "decimal" to iMapOf(
+        "string" to iMapOf(
             "requiredTotalNetCollateralUSD" to "requiredTotalNetCollateralUSD",
         ),
         "int" to iMapOf(

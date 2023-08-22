@@ -91,7 +91,8 @@ internal class InputValidator(
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
-        input: IMap<String, Any>?
+        input: IMap<String, Any>?,
+        configs: IMap<String, Any>?
     ): IMap<String, Any>? {
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
@@ -101,6 +102,7 @@ internal class InputValidator(
                 user,
                 subaccount,
                 markets,
+                configs,
                 transaction,
                 transactionType
             ))
@@ -119,6 +121,7 @@ internal class InputValidator(
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         transaction: IMap<String, Any>,
         transactionType: String
     ): IList<Any>? {
@@ -132,6 +135,7 @@ internal class InputValidator(
                         user,
                         subaccount,
                         markets,
+                        configs,
                         transaction,
                         transactionType
                     )

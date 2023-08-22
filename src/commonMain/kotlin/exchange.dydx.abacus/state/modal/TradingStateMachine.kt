@@ -439,7 +439,8 @@ open class TradingStateMachine(
                 this.user,
                 subaccount,
                 parser.asMap(this.marketsSummary?.get("markets")),
-                this.input
+                this.input,
+                this.configs
             )
 
             when (this.input?.get("current")) {
@@ -962,7 +963,8 @@ open class TradingStateMachine(
                     this.user,
                     subaccount,
                     parser.asMap(this.marketsSummary?.get("markets")),
-                    this.input
+                    this.input,
+                    this.configs
                 )
                 this.input?.let {
                     input = Input.create(input, parser, it, version)

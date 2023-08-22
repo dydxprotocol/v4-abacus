@@ -4,12 +4,10 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.GoodTil
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.iMapOf
+import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -61,7 +59,7 @@ internal class TradeInputDataValidator(
         trade: IMap<String, Any>,
     ): IList<Any>? {
         val errors = iMutableListOf<Any>()
-        validateOrder(trade, subaccount)?.let {
+        validateOrder(trade, subaccount, configs)?.let {
             /*
             USER_MAX_ORDERS
             */
@@ -107,10 +105,14 @@ internal class TradeInputDataValidator(
     private fun validateOrder(
         trade: IMap<String, Any>,
         subaccount: IMap<String, Any>?,
-    ): IList<Any>? {
+        configs: IMap<String, Any>?,
+        ): IList<Any>? {
         /*
         USER_MAX_ORDERS
         */
+        val maxNumOrders = maxOrdersForEquityTier(subaccount, configs)?.get("shortTermOrders")?: 0
+        DebugLogger.log("Max Orders: $maxNumOrders")
+
         return if (orderCount(
                 subaccount,
                 parser.asString(trade["marketId"])
@@ -127,6 +129,41 @@ internal class TradeInputDataValidator(
                 )
             )
         } else null
+    }
+
+    private fun maxOrdersForEquityTier(
+        subaccount: IMap<String, Any>?,
+        configs: IMap<String, Any>?
+    ): IMap<String, Int> {
+        /*
+         USER_MAX_ORDERS according to Equity Tier
+         */
+        val equity = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
+        val maxOrders = iMutableMapOf<String, Int>()
+
+        parser.asList(parser.value(configs, "equityTiers.shortTermOrderEquityTiers"))?.let { tiers ->
+            for (tier in tiers) {
+                parser.asMap(tier)?.let { item ->
+                    val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
+                    if ( requiredTotalNetCollateralUSD <= equity) {
+                        maxOrders.typedSafeSet("shortTermOrders", parser.asInt(item["maxOrders"])?: 0)
+                    }
+                }
+            }
+        }
+
+        parser.asList(parser.value(configs, "equityTiers.statefulOrderEquityTiers"))?.let { tiers ->
+            for (tier in tiers) {
+                parser.asMap(tier)?.let { item ->
+                    val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
+                    if (requiredTotalNetCollateralUSD <= equity) {
+                        maxOrders.typedSafeSet("statefulOrders", parser.asInt(item["maxOrders"])?: 0)
+                    }
+                }
+            }
+        }
+
+        return maxOrders
     }
 
     private fun orderCount(
