@@ -32,11 +32,11 @@ Debugging on iOS directly from XCode is possible with a plugin (https://github.c
 
 # Android #
 
-Abacus builds and pushes the JVM target to MavenLocal repo with the followinng command:
+Abacus builds and pushes the JVM target as a Github packagewith the followinng command:
 
-> ./gradlew publishToMavenLocal
+> ./publish_android.sh
 
-The Android app (https://github.com/dydxprotocol/native-android) has the Gradle build step to pull the Abacus target from MavenLocal.
+The Android app (https://github.com/dydxprotocol/native-android) has the Gradle build step to pull the Abacus target from GithubPackage.
 
 # Web #
 
@@ -59,12 +59,12 @@ A tarball of the package should be created and you can install it to your projec
 > npm install PATH_TO_TARBALL
 
 # Publishing to NPM #
+
 Abacus publishes using a library (https://github.com/mpetuska/npm-publish) with the following steps.
-1. replace the 'obfuscated' with an npm API_KEY (todo: automate this / hide key) and bump version
-2. > ./gradlew assembleJsPackage
-3. > ./gradlew packJsPackage
-4. > ./gradlew publishJsPackageToNpmjsRegistry
-5. Check published version (https://www.npmjs.com/package/@dydxprotocol/abacus)
+1. Add a "npm_token" environment variable that contains your NPM access token
+2. Run bump_version.sh to bump the library version
+3. Run publish_js.sh to publish
+4. Check published version (https://www.npmjs.com/package/@dydxprotocol/abacus)
 
 # Unit Tests #
 
@@ -78,12 +78,7 @@ Integration tests can be written to call Abacus from non-Kotlin code (i.e., Swif
 
 # Version Bump #
 
-1. Update the version in build.gradle.kts
-2. Run sh update_version.command - Update the version in abacus.podspec
-3. in Xcode, open {project}/integraiton/iOS/abacus.ios.xcworkspace. Build and run.
-   1. The integration app doesn't have any UI to indicate the connections. Use Charles to check network traffic. It should contain the standard initial connections to 
-      1. wss://api.dydx.exchange/v3/ws, with subscriptions to "v3_markets", "v3_trades", and "v3_orderbook"
-      2. https://api.dydx.exchange/v3/config
+> ./bump_version.sh
 
 # How to use #
 
