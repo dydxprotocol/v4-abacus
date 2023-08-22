@@ -39,8 +39,6 @@ internal class TradeInputDataValidator(
     parser: ParserProtocol,
 ) :
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
-    private val kMaxOrderCount = 25
-
     override fun validateTrade(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
@@ -110,14 +108,9 @@ internal class TradeInputDataValidator(
         /*
         USER_MAX_ORDERS
         */
-        val maxNumOrders = maxOrdersForEquityTier(subaccount, configs)?.get("shortTermOrders")?: 0
-        DebugLogger.log("Max Orders: $maxNumOrders")
+        val maxNumOrders = maxOrdersForEquityTier(trade, subaccount, configs)?.get("shortTermOrders")?: 0
 
-        return if (orderCount(
-                subaccount,
-                parser.asString(trade["marketId"])
-            ) >= kMaxOrderCount
-        ) {
+        return if (orderCount(subaccount) >= maxNumOrders) {
             iListOf(
                 error(
                     "ERROR",
@@ -132,6 +125,7 @@ internal class TradeInputDataValidator(
     }
 
     private fun maxOrdersForEquityTier(
+        trade: IMap<String, Any>,
         subaccount: IMap<String, Any>?,
         configs: IMap<String, Any>?
     ): IMap<String, Int> {
@@ -140,6 +134,7 @@ internal class TradeInputDataValidator(
          */
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
         val maxOrders = iMutableMapOf<String, Int>()
+        val
 
         parser.asList(parser.value(configs, "equityTiers.shortTermOrderEquityTiers"))?.let { tiers ->
             for (tier in tiers) {
@@ -163,19 +158,19 @@ internal class TradeInputDataValidator(
             }
         }
 
+
         return maxOrders
     }
 
     private fun orderCount(
         subaccount: IMap<String, Any>?,
-        marketId: String?,
     ): Int {
         var count = 0
-        parser.asList(subaccount?.get("orders"))?.let { orders ->
-            for (item in orders) {
+        parser.asMap(subaccount?.get("orders"))?.let { orders ->
+            for ((key, item) in orders) {
                 parser.asMap(item)?.let { order ->
-                    if (parser.asString(order["status"]) == "OPEN"
-                    ) {
+                    val status = parser.asString(order["status"])
+                    if (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") {
                         count += 1
                     }
                 }
