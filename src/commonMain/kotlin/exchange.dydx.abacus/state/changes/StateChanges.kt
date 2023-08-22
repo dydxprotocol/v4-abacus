@@ -26,7 +26,8 @@ enum class Changes(val rawValue: String) {
     transfers("transfers"),
     fundingPayments("fundingPayments"),
     transferStatuses("transferStatuses"),
-    input("input");
+    input("input"),
+    notifications("notifications");
 
     companion object {
         operator fun invoke(rawValue: String) =
