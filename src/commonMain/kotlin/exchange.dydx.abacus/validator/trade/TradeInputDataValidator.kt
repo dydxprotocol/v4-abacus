@@ -243,11 +243,11 @@ internal class TradeInputDataValidator(
                         }
 
                         "TAKE_PROFIT_MARKET", "TAKE_PROFIT" -> {
-                            if (signedSize > 0.0 && triggerPrice > indexPrice) triggerPriceError(
+                            if (signedSize > Numeric.double.ZERO && triggerPrice < indexPrice) triggerPriceError(
                                 true,
                                 indexPrice,
                                 tickSize
-                            ) else if (signedSize < 0.0 && triggerPrice < indexPrice) triggerPriceError(
+                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > indexPrice) triggerPriceError(
                                 false,
                                 indexPrice,
                                 tickSize
@@ -304,7 +304,7 @@ internal class TradeInputDataValidator(
                                 ?.let { limitPrice ->
                                     parser.asDecimal(parser.value(trade, "price.triggerPrice"))
                                         ?.let { triggerPrice ->
-                                            if (size > 0.0 && limitPrice < triggerPrice) {
+                                            if (size > Numeric.double.ZERO && limitPrice < triggerPrice) {
                                                 return iListOf(
                                                     error(
                                                         "ERROR",
@@ -313,6 +313,17 @@ internal class TradeInputDataValidator(
                                                         "APP.TRADE.MODIFY_TRIGGER_PRICE",
                                                         "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                                         "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                                    )
+                                                )
+                                            } else if (size < Numeric.double.ZERO && limitPrice > triggerPrice) {
+                                                return iListOf(
+                                                    error(
+                                                        "ERROR",
+                                                        "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                        iListOf("price.triggerPrice"),
+                                                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                        "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                        "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
                                                     )
                                                 )
                                             }
