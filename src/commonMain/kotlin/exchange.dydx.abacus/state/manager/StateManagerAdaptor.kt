@@ -68,6 +68,7 @@ import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -1538,7 +1539,7 @@ open class StateManagerAdaptor(
         return fillsNotifcations
     }
 
-    private fun asset(marketId:String): String {
+    private fun asset(marketId: String): String {
         return marketId.split("-").first()
     }
 
@@ -1549,7 +1550,8 @@ open class StateManagerAdaptor(
         2. Order doesn't have an average filled price
          */
         val notifications = iMutableMapOf<String, Notification>()
-        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return  kollections.iMapOf()
+        val subaccount =
+            stateMachine.state?.subaccount(subaccountNumber) ?: return kollections.iMapOf()
 
         val subaccountFills = stateMachine.state?.fills?.get("$subaccountNumber")
         if (subaccountFills != null) {
@@ -1579,39 +1581,8 @@ open class StateManagerAdaptor(
             // Create notifications
             //
             for ((orderId, fill) in fills) {
-                val order = orders[orderId]!!
-
-                val marketText = asset(order.marketId)
-                val side = order.side.rawValue
-                val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
-                val amountText = parser.asString(order.size)
-                val filledAmountText = parser.asString(order.totalFilled)
-                val priceText = parser.asString(fill.price)
-                val params = iMapOf(
-                    "MARKET" to marketText,
-                    "SIDE" to sideText,
-                    "AMOUNT" to amountText,
-                    "FILLED_AMOUNT" to filledAmountText,
-                    "PRICE" to priceText,
-                )
-                val paramsText = jsonEncoder.encode(params)
-                val image = null
-                val title = uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.TITLE")
-                val text = uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.BODY", paramsText)
-                if (title != null && text != null) {
-                    val notificationId = "order:$orderId"
-                    notifications[notificationId] = Notification(
-                        notificationId,
-                        NotificationType.INFO,
-                        NotificationPriority.NORMAL,
-                        image,
-                        title,
-                        text,
-                        null,
-                        null,
-                        fill.createdAtMilliseconds,
-                    )
-                }
+                val order = orders[orderId] ?: continue
+                notifications.typedSafeSet(orderId, createFillNotification(fill, order))
             }
 
             for (fill in liquidated) {
@@ -1626,7 +1597,10 @@ open class StateManagerAdaptor(
                 val paramsText = jsonEncoder.encode(params)
                 val image = null
                 val title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE")
-                val text = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.BODY", paramsText)
+                val text = uiImplementations.localizer?.localize(
+                    "NOTIFICATIONS.LIQUIDATION.BODY",
+                    paramsText
+                )
                 if (title != null && text != null) {
                     val notificationId = "fill:$fillId"
                     notifications[notificationId] = Notification(
@@ -1644,6 +1618,123 @@ open class StateManagerAdaptor(
             }
         }
         return notifications
+    }
+
+    private fun createFillNotification(
+        fill: SubaccountFill,
+        order: SubaccountOrder,
+    ): Notification? {
+        val orderId = order.id
+        val marketId = fill.marketId
+        val market = stateMachine.state?.market(marketId) ?: return null
+        val assetId = market.assetId
+        val asset = stateMachine.state?.asset(assetId) ?: return null
+        val assetText = asset.symbol
+        val marketImageUrl = asset.resources?.imageUrl
+        val side = fill.side.rawValue
+        val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
+        val amountText = parser.asString(order.size)
+        val filledAmountText = parser.asString(order.totalFilled)
+        val priceText = parser.asString(fill.price)
+        val params = iMapOf(
+            "MARKET" to assetText,
+            "SIDE" to sideText,
+            "AMOUNT" to amountText,
+            "FILLED_AMOUNT" to filledAmountText,
+            "PRICE" to priceText,
+        ).filterNotNull()
+        val paramsAsJson = jsonEncoder.encode(params)
+
+        val title = orderStatusTitle(order.status) ?: return null
+        val text = orderStatusText(order.status, paramsAsJson)
+
+        val notificationId = "order:$orderId"
+        return Notification(
+            notificationId,
+            NotificationType.INFO,
+            NotificationPriority.NORMAL,
+            marketImageUrl,
+            title,
+            text,
+            "/orders/$orderId",
+            null,
+            fill.createdAtMilliseconds,
+        )
+    }
+
+    private fun orderStatusTitle(status: OrderStatus): String? {
+        return when (status) {
+            OrderStatus.filled -> {
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILLED.TITLE")
+            }
+
+            OrderStatus.partiallyFilled -> {
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_PARTIALLY_FILLED.TITLE")
+            }
+
+            OrderStatus.cancelled -> {
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_CANCEL.TITLE")
+            }
+
+            else -> null
+        }
+    }
+
+    private fun orderStatusText(status: OrderStatus, paramsAsJson: String?): String? {
+        return when (status) {
+            OrderStatus.filled -> {
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILLED.BODY", paramsAsJson)
+            }
+
+            OrderStatus.partiallyFilled -> {
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_PARTIALLY_FILLED.BODY", paramsAsJson)
+            }
+
+            OrderStatus.cancelled -> {
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_CANCEL.BODY", paramsAsJson)
+            }
+
+            else -> null
+        }
+    }
+
+    private fun createLiquidationNotification(
+        fill: SubaccountFill,
+    ): Notification? {
+        val fillId = fill.id
+        val marketId = fill.marketId
+        val market = stateMachine.state?.market(marketId) ?: return null
+        val assetId = market.assetId
+        val asset = stateMachine.state?.asset(assetId) ?: return null
+        val assetText = asset.symbol
+        val marketImageUrl = asset.resources?.imageUrl
+        val side = fill.side.rawValue
+        val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
+        val amountText = parser.asString(fill.size)
+        val priceText = parser.asString(fill.price)
+        val params = iMapOf(
+            "MARKET" to assetText,
+            "SIDE" to sideText,
+            "AMOUNT" to amountText,
+            "PRICE" to priceText,
+        ).filterNotNull()
+        val paramsAsJson = jsonEncoder.encode(params)
+
+        val title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE") ?: return null
+        val text = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.BODY", paramsAsJson)
+
+        val notificationId = "fill:$fillId"
+        return Notification(
+            notificationId,
+            NotificationType.INFO,
+            NotificationPriority.NORMAL,
+            marketImageUrl,
+            title,
+            text,
+            null,
+            null,
+            fill.createdAtMilliseconds,
+        )
     }
 
     private fun consolidateNotifications(notifications: IMap<String, Notification>) {
@@ -1672,9 +1763,9 @@ open class StateManagerAdaptor(
         val notifications = notifications.values.sortedWith { notification1, notification2 ->
             val comparison = notification1.priority.compareTo(notification2.priority)
             if (comparison == 0) {
-                notification1.updateTimeInMilliseconds.compareTo(notification2.updateTimeInMilliseconds)* -1
+                notification1.updateTimeInMilliseconds.compareTo(notification2.updateTimeInMilliseconds) * -1
             } else {
-                comparison* -1
+                comparison * -1
             }
         }.toIList()
 
