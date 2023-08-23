@@ -13,6 +13,7 @@ import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kollections.iMutableSetOf
+import kollections.toIList
 import kollections.toIMutableMap
 
 /*
@@ -338,9 +339,17 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             subaccount = receivedFills(subaccount, fillsPayload)
         }
 
-        val transfersPayload = parser.asList(content["transfers"]) as? IList<IMap<String, Any>>
-        if (transfersPayload != null) {
-            subaccount = receivedTransfers(subaccount, transfersPayload)
+        val transfersPayload = content["transfers"]
+        val transfersPayloadList = if (transfersPayload == null) {
+            null
+        } else if (transfersPayload is List<*>) {
+            parser.asList(transfersPayload)
+        } else {
+            listOf(transfersPayload).toIList() as? IList<IMap<String, Any>>
+        }
+
+        if (transfersPayloadList != null) {
+            subaccount = receivedTransfers(subaccount, transfersPayloadList)
         }
 
         val fundingPaymentsPayload =

@@ -119,7 +119,7 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             }
         }
         parser.asString(transfer["transactionHash"])?.let {
-            resources["blockExplorerUrl"] = "https://etherscan.org?transactionHas=${it}"
+            resources["blockExplorerUrl"] = "https://testnet.mintscan.io/dydx-testnet/txs/${it}"
         }
 
         transfer["resources"] = resources
