@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output
 
+import exchange.dydx.abacus.utils.IMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -31,8 +32,6 @@ enum class NotificationType(val rawValue: String) {
 @Serializable
 enum class NotificationPriority(val rawValue: Int) {
     NORMAL(0),
-    MEDIUM(3),
-    HIGH(4),
     URGENT(5);
 
     companion object {
@@ -50,7 +49,8 @@ data class Notification(
     val image: String?,
     val title: String,
     val text: String?,
-    val obj: Any?,
+    val link: String?,
+    val data: IMap<String, Any>?,
     val updateTimeInMilliseconds: Double,
 ) {
 
@@ -66,6 +66,7 @@ object NotificationSerializer : KSerializer<Notification> {
         element<String>("image", isOptional = true)
         element<String>("title")
         element<String?>("text", isOptional = true)
+        element<String?>("link", isOptional = true)
         element<Double>("updateTimeInMilliseconds")
     }
 
@@ -82,7 +83,10 @@ object NotificationSerializer : KSerializer<Notification> {
             if (value.text != null) {
                 encodeStringElement(descriptor, 5, value.text)
             }
-            encodeDoubleElement(descriptor, 6, value.updateTimeInMilliseconds)
+            if (value.link != null) {
+                encodeStringElement(descriptor, 6, value.link)
+            }
+            encodeDoubleElement(descriptor, 7, value.updateTimeInMilliseconds)
         }
     }
 
@@ -94,6 +98,7 @@ object NotificationSerializer : KSerializer<Notification> {
             var image: String? = null
             var title: String? = null
             var text: String? = null
+            var link: String? = null
             var updateTimeInMilliseconds: Double? = null
 
             loop@ while (true) {
@@ -105,8 +110,9 @@ object NotificationSerializer : KSerializer<Notification> {
                     2 -> priority = NotificationPriority.invoke(decodeIntElement(descriptor, 2))
                     3 -> image = decodeStringElement(descriptor, 3)
                     4 -> title = decodeStringElement(descriptor, 4)
-                    6 -> text = decodeStringElement(descriptor, 5)
-                    7 -> updateTimeInMilliseconds = decodeDoubleElement(descriptor, 6)
+                    5 -> text = decodeStringElement(descriptor, 5)
+                    6 -> link = decodeStringElement(descriptor, 6)
+                    7 -> updateTimeInMilliseconds = decodeDoubleElement(descriptor, 7)
 
                     else -> throw SerializationException("Unexpected index $index")
                 }
@@ -119,6 +125,7 @@ object NotificationSerializer : KSerializer<Notification> {
                 image,
                 title!!,
                 text,
+                link,
                 null,
                 updateTimeInMilliseconds!!
             )
