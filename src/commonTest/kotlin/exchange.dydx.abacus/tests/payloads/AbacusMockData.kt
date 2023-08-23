@@ -9,6 +9,7 @@ class AbacusMockData {
     internal val environments = EnvironmentsMock()
     internal val accountsChannel = AccountsChannelMock()
     internal val fillsChannel = FillsMock()
+    internal val transfersMock = TransfersMock()
     internal val user = UserMock()
     internal val marketsChannel = MarketsChannelMock()
     internal val marketsConfigurations = MarketConfigurationsMock()

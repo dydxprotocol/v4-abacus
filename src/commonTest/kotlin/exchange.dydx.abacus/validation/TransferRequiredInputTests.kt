@@ -219,7 +219,36 @@ class TransferRequiredInputTests : V3BaseTests() {
 
         test(
             {
-                perp.transfer("0x", TransferInputField.address)
+                perp.transfer("dydx1111111", TransferInputField.address)
+            },
+            """
+                {
+                    "input": {
+                        "current": "transfer",
+                        "transfer": {
+                            "type": "TRANSFER_OUT"
+                        },
+                        "errors": [ {
+                                "code": "INVALID_ADDRESS",
+                                "type": "ERROR",
+                                "fields": [
+                                    "address"
+                                ],
+                                "resources": {
+                                    "action": {
+                                        "stringKey": "APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.transfer("dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9", TransferInputField.address)
             },
             """
                 {
