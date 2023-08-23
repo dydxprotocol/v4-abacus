@@ -40,6 +40,7 @@ class V4AppStateMachineTransactionTests {
         appStateMachine.processSocketResponse(
             testWsUrl, mock.connectionMock.connectedMessage
         )
+        appStateMachine.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
         appStateMachine.processSocketResponse(
             testWsUrl, mock.marketsChannel.v4_subscribed_r1
         )

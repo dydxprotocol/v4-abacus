@@ -87,6 +87,7 @@ open class V3BaseTests : BaseTests(0) {
     override fun setup() {
         loadMarkets()
         loadMarketsConfigurations()
+        perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
         loadAccounts()
         loadUser()
     }

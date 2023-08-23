@@ -163,11 +163,13 @@ internal class TradeInputDataValidator(
             for ((_, item) in orders) {
                 parser.asMap(item)?.let { order ->
                     val status = parser.asString(order["status"])
-                    val orderType = parser.asString(order["type"])!!
-                    val timeInForce = parser.asString(order["timeInForce"])!!
-                    val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
-                    if ((status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
-                        count += 1
+                    val orderType = parser.asString(order["type"])
+                    val timeInForce = parser.asString(order["timeInForce"])
+                    if (orderType != null && timeInForce != null) {
+                        val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
+                        if ((status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
+                            count += 1
+                        }
                     }
                 }
             }
