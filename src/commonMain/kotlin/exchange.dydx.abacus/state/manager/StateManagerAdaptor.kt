@@ -1607,7 +1607,8 @@ open class StateManagerAdaptor(
                         image,
                         title,
                         text,
-                        fill,
+                        null,
+                        null,
                         fill.createdAtMilliseconds,
                     )
                 }
@@ -1635,7 +1636,8 @@ open class StateManagerAdaptor(
                         image,
                         title,
                         text,
-                        fill,
+                        null,
+                        null,
                         fill.createdAtMilliseconds,
                     )
                 }
