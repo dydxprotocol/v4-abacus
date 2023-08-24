@@ -29,6 +29,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
+import exchange.dydx.abacus.utils.isAddressValid
 import io.ktor.client.utils.EmptyContent.status
 import kollections.toIMap
 import kotlinx.datetime.Clock
@@ -756,6 +757,34 @@ class V4StateManagerAdaptor(
                     } catch (e: Exception) {
                         e.printStackTrace()
                         retrieveWithdrawalRoute(0.0)
+                    }
+                }
+            }
+        } else if (state?.input?.transfer?.type == TransferType.transferOut &&
+            state.input.transfer.address != null &&
+            state.input.transfer.errors?.count() ?: 0 == 0) {
+            if (type == TransferInputField.usdcSize ||
+                type == TransferInputField.size ||
+                type == TransferInputField.token ||
+                type == TransferInputField.address
+            ) {
+                val token = state.input.transfer.token
+                if (token == "usdc") {
+                    if ((state.input.transfer.size?.usdcSize ?: 0.0) > 0.0) {
+                        simulateWithdrawal { gasFee ->
+                            receiveTransferGas(gasFee)
+                        }
+                    } else {
+                        receiveTransferGas(null)
+                    }
+                } else if (token == "dydx") {
+                    val address = state.input.transfer.address
+                    if ((state.input.transfer.size?.size ?: 0.0) > 0.0 && address.isAddressValid()) {
+                        simulateTransferNativeToken { gasFee ->
+                            receiveTransferGas(gasFee)
+                        }
+                    } else {
+                        receiveTransferGas(null)
                     }
                 }
             }

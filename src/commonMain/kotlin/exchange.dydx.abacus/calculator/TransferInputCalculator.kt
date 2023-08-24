@@ -204,7 +204,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 summary.safeSet("usdcSize", usdcSize)
                 summary.safeSet("filled", true)
                 val fee = parser.asDouble(parser.value(transfer, "fee"))
-                summary.safeSet("fee", fee)
+                summary.safeSet("gasFee", fee)
             }
 
             else -> {}

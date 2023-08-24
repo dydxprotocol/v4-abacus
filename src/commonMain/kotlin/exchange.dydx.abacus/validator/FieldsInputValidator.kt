@@ -90,7 +90,7 @@ internal class FieldsInputValidator(
             }
 
             "transfer" -> when (field) {
-                "size.usdcSize" -> "APP.TRADE.ENTER_AMOUNT"
+               // "size.usdcSize" -> "APP.TRADE.ENTER_AMOUNT"
                 "address" -> "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
                 else -> null
             }

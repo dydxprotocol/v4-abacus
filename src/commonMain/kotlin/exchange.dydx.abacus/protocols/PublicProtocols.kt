@@ -153,7 +153,8 @@ enum class TransactionType(val rawValue: String) {
     Withdraw("withdraw"),
     SubaccountTransfer("subaccountTransfer"),
     Faucet("faucet"),
-    simulateWithdraw("simulateWithdraw");
+    simulateWithdraw("simulateWithdraw"),
+    simulateTransferNativeToken("simulateTransferNativeToken");
 
     companion object {
         operator fun invoke(rawValue: String) =

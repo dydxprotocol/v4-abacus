@@ -2,12 +2,18 @@ package exchange.dydx.abacus.state.manager
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.modal.squidRoute
 import exchange.dydx.abacus.state.modal.squidStatus
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
+import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.safeSet
+import kollections.iListOf
 import kollections.toIMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -78,6 +84,26 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(callback: (Double?) -> Uni
     }
 }
 
+internal fun V4StateManagerAdaptor.simulateTransferNativeToken(callback: (Double?) -> Unit) {
+    val payload = transferNativeTokenPayloadJson()
+
+    transaction(
+        TransactionType.simulateTransferNativeToken,
+        payload) { response ->
+        val error = parseTransactionResponse(response)
+        if (error != null) {
+            callback(null)
+            return@transaction
+        }
+
+        val result = Json.parseToJsonElement(response).jsonObject.toIMap()
+        val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+        val amount = parser.asDouble(amountMap?.get("amount"))
+        val decimals = 6
+        val usdcAmount = amount?.div(10.0.pow(decimals))
+        callback(usdcAmount)
+    }
+}
 internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
     val state = stateMachine.state
     val toChain = state?.input?.transfer?.chain
@@ -141,5 +167,16 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
                 update(stateMachine.squidStatus(response), oldState)
             }
         })
+    }
+}
+
+internal fun V4StateManagerAdaptor.receiveTransferGas(gas: Double?) {
+    val input = stateMachine.input
+    val oldFee = parser.asDouble(parser.value(input, "transfer.fee"))
+    if (oldFee != gas) {
+        val oldState = stateMachine.state
+        var modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
+        modified.safeSet("transfer.fee", gas)
+        update(StateChanges(iListOf(Changes.input)), oldState)
     }
 }
