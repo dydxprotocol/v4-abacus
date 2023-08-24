@@ -61,12 +61,15 @@ class AsyncAbacusStateManager(
             field = value
             stateNotification?.environmentsChanged()
             dataNotification?.environmentsChanged()
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                _environment = findEnvironment(environmentId)
+            }
         }
 
-    val availableEnvironments: IList<SelectionOption> = environments.map { environment ->
-        SelectionOption(environment.environment, environment.stringKey, null)
-    }
-
+    val availableEnvironments: IList<SelectionOption>
+        get() = environments.map { environment ->
+            SelectionOption(environment.environment, environment.stringKey, null)
+        }
 
     var environmentId: String? = null
         set(value) {
@@ -260,7 +263,7 @@ class AsyncAbacusStateManager(
             }
             this.environments = environments
             val defaultEnvironment = parser.asString(items["defaultEnvironment"])
-            if (defaultEnvironment != null) {
+            if (defaultEnvironment != null && this.environmentId == null) {
                 this.environmentId = defaultEnvironment
             }
             return true
