@@ -22,6 +22,7 @@
 		641959F52A96BD0600BCB69C /* JsonLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F42A96BD0600BCB69C /* JsonLoader.swift */; };
 		641959F72A96BD5F00BCB69C /* StringLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F62A96BD5F00BCB69C /* StringLoader.swift */; };
 		641959F92A96C28D00BCB69C /* config in Resources */ = {isa = PBXBuildFile; fileRef = 641959F82A96C28D00BCB69C /* config */; };
+		641959FB2A9805BB00BCB69C /* v4-native-client.js in Resources */ = {isa = PBXBuildFile; fileRef = 641959FA2A9805BB00BCB69C /* v4-native-client.js */; };
 		642EE3D028F5E16E0062CAC0 /* V3PrivateApiSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642EE3CF28F5E16E0062CAC0 /* V3PrivateApiSigner.swift */; };
 		64810BA72A28F56F003BD337 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA62A28F56F003BD337 /* File.swift */; };
 		64810BA92A28F57C003BD337 /* Directory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA82A28F57C003BD337 /* Directory.swift */; };
@@ -68,6 +69,7 @@
 		641959F42A96BD0600BCB69C /* JsonLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonLoader.swift; sourceTree = "<group>"; };
 		641959F62A96BD5F00BCB69C /* StringLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringLoader.swift; sourceTree = "<group>"; };
 		641959F82A96C28D00BCB69C /* config */ = {isa = PBXFileReference; lastKnownFileType = folder; name = config; path = "../../../../v4-localization/config"; sourceTree = "<group>"; };
+		641959FA2A9805BB00BCB69C /* v4-native-client.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "v4-native-client.js"; sourceTree = "<group>"; };
 		642EE3CF28F5E16E0062CAC0 /* V3PrivateApiSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = V3PrivateApiSigner.swift; sourceTree = "<group>"; };
 		64810BA62A28F56F003BD337 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		64810BA82A28F57C003BD337 /* Directory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Directory.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 		6482C6972A96B4AB0038671F /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				641959FA2A9805BB00BCB69C /* v4-native-client.js */,
 			);
 			path = resources;
 			sourceTree = "<group>";
@@ -351,6 +354,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				641959F92A96C28D00BCB69C /* config in Resources */,
+				641959FB2A9805BB00BCB69C /* v4-native-client.js in Resources */,
 				028B6379286F9F3400A3A2FE /* Preview Assets.xcassets in Resources */,
 				028B6376286F9F3400A3A2FE /* Assets.xcassets in Resources */,
 				02175B98286FA2E90028855F /* commonMain in Resources */,

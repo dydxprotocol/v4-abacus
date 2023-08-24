@@ -679,7 +679,7 @@ class V4AccountTests : V4BaseTests() {
                             {
                                 "tier": "1",
                                 "symbol": "≥",
-                                "volume": 0.0,
+                                "volume": 0,
                                 "totalShare": 0.0,
                                 "makerShare": 0.0
                             }

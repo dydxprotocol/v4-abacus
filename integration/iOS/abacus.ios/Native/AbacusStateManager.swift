@@ -28,6 +28,10 @@ public final class AbacusStateManager: NSObject {
 }
 
 extension AbacusStateManager: Abacus.StateNotificationProtocol {
+    public func notificationsChanged(notifications: [Abacus.Notification]) {
+        
+    }
+    
     public func environmentsChanged() {
         
     }

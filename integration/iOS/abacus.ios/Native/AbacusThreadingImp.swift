@@ -9,7 +9,7 @@ import Foundation
 
 import Abacus
 
-final public class AbacusThreadingImp: Abacus.ThreadingProtocol {
+public final class AbacusThreadingImp: Abacus.ThreadingProtocol {
     private let abacusQueue = DispatchQueue(label: "Abacus")
     private let networkQueue = DispatchQueue(label: "Network")
     public func async(type: ThreadingType, block: @escaping () -> Void) {
@@ -19,12 +19,12 @@ final public class AbacusThreadingImp: Abacus.ThreadingProtocol {
                 block()
             }
         case .abacus:
-            DispatchQueue.main.async {
+            abacusQueue.async {
                 block()
             }
 
         case .network:
-            DispatchQueue.main.async {
+            networkQueue.async {
                 block()
             }
         default:
