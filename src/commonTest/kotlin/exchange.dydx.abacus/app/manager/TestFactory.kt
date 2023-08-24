@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.app.manager
 
+import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
@@ -429,5 +430,8 @@ class TestState : StateNotificationProtocol {
     }
 
     override fun lastOrderChanged(order: SubaccountOrder?) {
+    }
+
+    override fun notificationsChanged(notifications: IList<Notification>) {
     }
 }

@@ -26,6 +26,7 @@ import kollections.iMutableMapOf
 import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
+import kollections.toIMutableList
 import kollections.toIMutableMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -1007,7 +1008,7 @@ open class TradingStateMachine(
             configs,
             input,
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
-            transferStatuses
+            transferStatuses,
         )
     }
 
