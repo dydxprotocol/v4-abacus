@@ -8,7 +8,7 @@
 
 import JavaScriptCore
 
-public final class CosmoJavascript: NSObject, SingletonProtocol {
+public final class CosmoJavascript: NSObject {
     public static var shared: CosmoJavascript = CosmoJavascript()
 
     private var v4ClientInitialized: Bool = false

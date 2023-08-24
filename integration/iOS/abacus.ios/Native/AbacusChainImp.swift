@@ -7,7 +7,6 @@
 
 import Foundation
 import Abacus
-import Utilities
 
 final public class AbacusChainImp: Abacus.DYDXChainTransactionsProtocol {
     public func connectNetwork(indexerUrl: String, indexerSocketUrl: String, validatorUrl: String, chainId: String, faucetUrl: String?, callback: @escaping (String?) -> Void) {

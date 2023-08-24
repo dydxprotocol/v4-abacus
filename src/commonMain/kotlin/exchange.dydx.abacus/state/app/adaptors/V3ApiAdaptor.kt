@@ -63,7 +63,7 @@ class V3ApiAdaptor(
                      }
                   },
                   "configs":{
-                     "host":"dydx-shared-resources.vercel.app",
+                     "host":"dydx-v4-shared-resources.vercel.app",
                      "paths":{
                         "0x_assets":"/config/prod/0x_assets.json",
                         "countries":"/config/countries.json",

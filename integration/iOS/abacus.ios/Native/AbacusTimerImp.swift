@@ -8,7 +8,6 @@
 import Foundation
 
 import Abacus
-import Utilities
 
 public final class AbacusTimerImp: Abacus.TimerProtocol {
     public func schedule(delay: Double, repeat: KotlinDouble?, block: @escaping () -> KotlinBoolean) -> LocalTimerProtocol {

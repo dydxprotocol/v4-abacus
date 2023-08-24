@@ -6,19 +6,32 @@
 //
 
 import Foundation
+import Abacus
 
 public final class AbacusStateManager: NSObject {
     public static let shared = AbacusStateManager()
 
     // async
-    private lazy var asyncStateManager = {
+    public lazy var asyncStateManager = {
         UIImplementations.reset(language: nil)
-        let stateManager = AsyncAbacusStateManager(ioImplementations: IOImplementations.shared!, uiImplementations: UIImplementations.shared!, stateNotification: self, dataNotification: nil, v3signer: nil, apiKey: nil)
+        let url = "https://dydx-v4-shared-resources.vercel.app/config/staging/dev_endpoints.json"
+        let file = "/config/staging/dev_endpoints.json"
+        let stateManager = AsyncAbacusStateManager(
+            environmentsUrl: url,
+            environmentsFile: file,
+            ioImplementations: IOImplementations.shared!,
+            uiImplementations: UIImplementations.shared!,
+            stateNotification: self,
+            dataNotification: nil)
         return stateManager
     }()
 }
 
 extension AbacusStateManager: Abacus.StateNotificationProtocol {
+    public func environmentsChanged() {
+        
+    }
+    
     public func apiStateChanged(apiState: ApiState?) {
     }
 

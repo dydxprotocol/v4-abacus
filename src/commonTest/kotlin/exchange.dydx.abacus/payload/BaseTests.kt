@@ -101,7 +101,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 ioImplementations,
                 "en",
                 "/config",
-                "https://dydx-shared-resources.vercel.app/config",
+                "https://dydx-v4-shared-resources.vercel.app/config",
             )
         }
 

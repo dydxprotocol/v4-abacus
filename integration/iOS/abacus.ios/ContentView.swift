@@ -8,7 +8,7 @@
 import Abacus
 import SwiftUI
 
-var stateManager: AsyncStateManager?
+var stateManager: AbacusStateManager?
 var state: PerpetualState?
 var foregroundToken: NotificationToken?
 var backgroundToken: NotificationToken?
@@ -24,16 +24,16 @@ struct ContentView: View {
     }
     
     init() {
-        stateManager = AsyncStateManager.shared
-        stateManager?.stateManager.readyToConnect = true
+        stateManager = AbacusStateManager.shared
+        stateManager?.asyncStateManager.readyToConnect = true
         
         timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: { timer in
-            stateManager?.stateManager.market = "BTC-USD"
+            stateManager?.asyncStateManager.market = "BTC-USD"
         })
         
         
         timer2 = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: { timer in
-            stateManager?.stateManager.accountAddress = "dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art"
+            stateManager?.asyncStateManager.accountAddress = "dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art"
         })
     }
 }

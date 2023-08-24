@@ -7,7 +7,6 @@
 
 import Foundation
 import Abacus
-import dydxFormatter
 
 final public class AbacusFormatterImp: Abacus.FormatterProtocol {
     public func percent(value: KotlinDouble?, digits: Int32) -> String? {

@@ -5,9 +5,8 @@
 //  Created by John Huang on 7/17/23.
 //
 
-import Abacus
 import Foundation
-import Utilities
+import Abacus
 
 public final class AbacusFileSystemImp: Abacus.FileSystemProtocol {
     public func readTextFile(location: FileLocation, path: String) -> String? {
@@ -18,7 +17,7 @@ public final class AbacusFileSystemImp: Abacus.FileSystemProtocol {
         do {
             return try String(contentsOfFile: rootFolder.stringByAppendingPathComponent(path: path), encoding: .utf8)
         } catch {
-            Console.shared.log("AbacusFileSystemImp: unable to read file \(path): \(error)")
+            print("AbacusFileSystemImp: unable to read file \(path): \(error)")
             return nil
         }
     }
@@ -35,7 +34,7 @@ public final class AbacusFileSystemImp: Abacus.FileSystemProtocol {
             try text.write(toFile: filePath, atomically: true, encoding: .utf8)
             return true
         } catch {
-            Console.shared.log("AbacusFileSystemImp: unable to write file \(path): \(error)")
+            print("AbacusFileSystemImp: unable to write file \(path): \(error)")
             return false
         }
     }

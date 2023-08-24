@@ -8,7 +8,6 @@
 import Foundation
 
 import Abacus
-import Utilities
 
 final public class AbacusThreadingImp: Abacus.ThreadingProtocol {
     private let abacusQueue = DispatchQueue(label: "Abacus")

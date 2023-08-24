@@ -7,7 +7,6 @@
 
 import Foundation
 import Abacus
-import Utilities
 
 final public class AbacusWebSocketImp: NSObject, Abacus.WebSocketProtocol {
     private var url: String?
@@ -40,14 +39,14 @@ final public class AbacusWebSocketImp: NSObject, Abacus.WebSocketProtocol {
 
     public func send(message: String) {
         guard let task = dataTask else {
-            Console.shared.log("AbacusWebSocketImp: WebSocket is not connected.")
+            print("AbacusWebSocketImp: WebSocket is not connected.")
             return
         }
 
         let message = URLSessionWebSocketTask.Message.string(message)
         task.send(message) { [weak self] error in
             if let error = error {
-                Console.shared.log("AbacusWebSocketImp: Error sending message: \(error)")
+                print("AbacusWebSocketImp: Error sending message: \(error)")
                 self?.disconnect()
                 self?.connect()
             }
@@ -60,7 +59,7 @@ final public class AbacusWebSocketImp: NSObject, Abacus.WebSocketProtocol {
             dataTask = urlSession.webSocketTask(with: url)
             dataTask?.maximumMessageSize = 16 * 1024 * 1024
         } else {
-            Console.shared.log("AbacusWebSocketImp: invalid url: \(String(describing: url))")
+            print("AbacusWebSocketImp: invalid url: \(String(describing: url))")
         }
     }
 
@@ -75,7 +74,7 @@ final public class AbacusWebSocketImp: NSObject, Abacus.WebSocketProtocol {
                     if let text = String(data: data, encoding: .utf8) {
                         self?.dispatch(text: text)
                     } else {
-                        Console.shared.log("AbacusWebSocketImp: unable to decode message")
+                        print("AbacusWebSocketImp: unable to decode message")
                     }
 
                 case .string(let text):
@@ -88,7 +87,7 @@ final public class AbacusWebSocketImp: NSObject, Abacus.WebSocketProtocol {
                 self?.receiveData()
 
             case .failure(let error):
-                Console.shared.log("AbacusWebSocketImp: Error receiving message: \(error)")
+                print("AbacusWebSocketImp: Error receiving message: \(error)")
                 self?.dataTask = nil
             }
         }

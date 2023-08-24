@@ -37,7 +37,7 @@ extension UIImplementations {
         let localizer = shared?.localizer ?? DynamicLocalizer(ioImplementations: IOImplementations.shared!,
                                                              systemLanguage: systemLanguage ?? "en",
                                                              path: "/config",
-                                                             endpoint: "https://dydx-shared-resources.vercel.app/config",
+                                                             endpoint: "https://dydx-v4-shared-resources.vercel.app/config",
                                                              loadLocalOnly: loadLocalOnly)
         let formatter = shared?.formatter ?? AbacusFormatterImp()
         shared = UIImplementations(localizer: localizer, formatter: formatter)

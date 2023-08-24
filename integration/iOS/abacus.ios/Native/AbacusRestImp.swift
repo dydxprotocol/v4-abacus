@@ -6,8 +6,8 @@
 //
 
 import Foundation
+import UIKit
 import Abacus
-import Utilities
 
 final public class AbacusRestImp: Abacus.RestProtocol {
 
@@ -37,7 +37,7 @@ final public class AbacusRestImp: Abacus.RestProtocol {
 
     private func processRest(url: String, headers: [String: String]?, body: String?, verb: String, callback: @escaping (String?, KotlinInt) -> Void) {
         guard let url = URL(string: url) else {
-            Console.shared.log("AbacusRestImp: invalid url \(url)")
+            print("AbacusRestImp: invalid url \(url)")
             callback(nil, 0)
             return
         }
@@ -59,9 +59,9 @@ final public class AbacusRestImp: Abacus.RestProtocol {
 
     private func run(request: URLRequest, completionHandler: @escaping (String?, KotlinInt) -> Void) {
         beginBackgroundTask()
-        Console.shared.log("AbacusRestImp Requesting \(request.url!.absoluteURL)")
+        print("AbacusRestImp Requesting \(request.url!.absoluteURL)")
         session.dataTask(with: request) {  [weak self] (raw: Data?, response: URLResponse?, _: Swift.Error?) in
-            Console.shared.log("AbacusRestImp Receiving \(request.url!.absoluteURL)")
+            print("AbacusRestImp Receiving \(request.url!.absoluteURL)")
             self?.endBackgroundTask()
             DispatchQueue.main.async {
                 if let code = (response as? HTTPURLResponse)?.statusCode {
