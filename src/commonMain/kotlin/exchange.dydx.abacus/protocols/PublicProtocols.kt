@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
+import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
@@ -220,6 +221,8 @@ interface StateNotificationProtocol {
     fun apiStateChanged(apiState: ApiState?)
     fun errorsEmitted(errors: IList<ParsingError>)
     fun lastOrderChanged(order: SubaccountOrder?)
+
+    fun notificationsChanged(notifications: IList<Notification>)
 }
 
 @JsExport
@@ -251,6 +254,8 @@ interface DataNotificationProtocol {
 
     fun errorsEmitted(errors: IList<ParsingError>)
     fun lastOrderChanged(order: SubaccountOrder?)
+
+    fun notificationsChanged(notifications: IList<Notification>)
 }
 
 @JsExport
