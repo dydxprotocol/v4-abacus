@@ -37,7 +37,7 @@ class V4ForegroundCycleTests {
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
         stateManager = AsyncAbacusStateManager(
-            "https://dydx-shared-resources.vercel.app/config/staging/dev_endpoints.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/staging/dev_endpoints.json",
             "/config/staging/dev_endpoints.json",
             ioImplementations,
             uiImplementations,
@@ -92,7 +92,7 @@ class V4ForegroundCycleTests {
         )
         assertContains(
             testRest?.requests?.toTypedArray()!!,
-            "https://dydx-shared-resources.vercel.app/v4/staging/markets.json",
+            "https://dydx-v4-shared-resources.vercel.app/v4/staging/markets.json",
             "Request to time endpoint should be present"
         )
         assertContains(

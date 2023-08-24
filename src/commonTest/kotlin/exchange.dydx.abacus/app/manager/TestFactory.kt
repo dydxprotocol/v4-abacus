@@ -124,15 +124,15 @@ class TestRest() : RestProtocol {
 
     init {
         setResponse(
-            "https://dydx-shared-resources.vercel.app/v4/staging/markets.json",
+            "https://dydx-v4-shared-resources.vercel.app/v4/staging/markets.json",
             mock.marketsConfigurations.configurations
         )
         setResponse(
-            "https://dydx-shared-resources.vercel.app/config/markets.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/markets.json",
             mock.marketsConfigurations.configurations
         )
         setResponse(
-            "https://dydx-shared-resources.vercel.app/config/localization/languages.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/localization/languages.json",
             """
                 [
                     {

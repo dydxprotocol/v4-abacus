@@ -19,7 +19,7 @@ fun TradingStateMachine.loadMarketsChanged(mock: AbacusMockData): StateResponse 
 fun TradingStateMachine.loadMarketsConfigurations(mock: AbacusMockData): StateResponse {
     return rest(
         AbUrl(
-            host = "dydx-shared-resources.vercel.app",
+            host = "dydx-v4-shared-resources.vercel.app",
             path = "/v4/staging/markets.json",
             scheme = "https://"
         ), mock.marketsConfigurations.configurations, 0, null
@@ -128,7 +128,7 @@ fun TradingStateMachine.loadSimpleAccounts(mock: AbacusMockData): StateResponse 
 fun TradingStateMachine.loadUser(mock: AbacusMockData): StateResponse {
     return rest(
         AbUrl(
-            host = "dydx-shared-resources.vercel.app",
+            host = "dydx-v4-shared-resources.vercel.app",
             path = "/v3/users",
             scheme = "https://"
         ), mock.user.call, 0, null
@@ -213,7 +213,7 @@ fun TradingStateMachine.loadCandlesSecond(mock: AbacusMockData): StateResponse {
 fun TradingStateMachine.loadFeeTiers(mock: AbacusMockData): StateResponse {
     return rest(
         AbUrl(
-            host = "dydx-shared-resources.vercel.app",
+            host = "dydx-v4-shared-resources.vercel.app",
             port = null,
             path = "/config/staging/fee_tiers.json",
             scheme = "https://",
@@ -224,7 +224,7 @@ fun TradingStateMachine.loadFeeTiers(mock: AbacusMockData): StateResponse {
 fun TradingStateMachine.loadFeeDiscounts(mock: AbacusMockData): StateResponse {
     return rest(
         AbUrl(
-            host = "dydx-shared-resources.vercel.app",
+            host = "dydx-v4-shared-resources.vercel.app",
             port = null,
             path = "/config/staging/fee_discounts.json",
             scheme = "https://",

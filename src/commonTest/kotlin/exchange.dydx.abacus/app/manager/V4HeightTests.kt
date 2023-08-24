@@ -37,7 +37,7 @@ class V4HeightTests {
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
         stateManager = AsyncAbacusStateManager(
-            "https://dydx-shared-resources.vercel.app/config/staging/dev_endpoints.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/staging/dev_endpoints.json",
             "/config/staging/dev_endpoints.json",
             ioImplementations,
             uiImplementations,
