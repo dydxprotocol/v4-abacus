@@ -385,7 +385,7 @@ class V4StateManagerAdaptor(
     }
 
     private fun connectChain(validatorUrl: String, callback: (successful: Boolean) -> Unit) {
-        val indexerUrl = environment.URIs.api
+        val indexerUrl = environment.URIs.indexers?.firstOrNull()?.api ?: return
         val websocketUrl = configs.websocketUrl() ?: return
         val chainId = environment.dydxChainId ?: return
         val faucetUrl = configs.faucetUrl()
