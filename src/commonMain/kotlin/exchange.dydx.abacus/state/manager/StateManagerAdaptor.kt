@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -64,6 +65,7 @@ import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import kollections.JsExport
 import kollections.iSetOf
+import kollections.toIList
 import kollections.toIMap
 import kollections.toISet
 import kotlinx.datetime.Instant
@@ -280,6 +282,14 @@ open class StateManagerAdaptor(
                     stateNotification?.lastOrderChanged(lastOrder)
                     dataNotification?.lastOrderChanged(lastOrder)
                 }
+            }
+        }
+
+    private var notifications: IMap<String, Notification> = kollections.iMapOf()
+        set(value) {
+            if (field !== value) {
+                field = value
+                sendNotifications()
             }
         }
 
@@ -562,6 +572,7 @@ open class StateManagerAdaptor(
                 ioImplementations.threading?.async(ThreadingType.main) {
                     updateStateChanges(stateMachine.state, realChanges, oldState)
                 }
+                updateNotifications()
             }
         }
     }
@@ -1507,6 +1518,53 @@ open class StateManagerAdaptor(
                     }
                 }
             }
+        }
+    }
+
+    private fun updateNotifications() {
+        val notifications = buildNotifications()
+        consolidateNotifications(notifications)
+    }
+
+    internal open fun buildNotifications(): IMap<String, Notification> {
+        return iMapOf()
+    }
+
+    private fun consolidateNotifications(notifications: IMap<String, Notification>) {
+        val consolidated = iMutableMapOf<String, Notification>()
+        var modified = false
+        for ((key, notification) in notifications) {
+            val existing = this.notifications[key]
+            if (existing != null) {
+                if (existing.updateTimeInMilliseconds != notification.updateTimeInMilliseconds) {
+                    consolidated[key] = notification
+                    modified = true
+                } else {
+                    consolidated[key] = existing
+                }
+            } else {
+                consolidated[key] = notification
+                modified = true
+            }
+        }
+        if (modified) {
+            this.notifications = consolidated
+        }
+    }
+
+    private fun sendNotifications() {
+        val notifications = notifications.values.sortedWith { notification1, notification2 ->
+            val comparison = notification1.priority.compareTo(notification2.priority)
+            if (comparison == 0) {
+                notification1.updateTimeInMilliseconds.compareTo(notification2.updateTimeInMilliseconds)* -1
+            } else {
+                comparison* -1
+            }
+        }.toIList()
+
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.notificationsChanged(notifications)
+            dataNotification?.notificationsChanged(notifications)
         }
     }
 }
