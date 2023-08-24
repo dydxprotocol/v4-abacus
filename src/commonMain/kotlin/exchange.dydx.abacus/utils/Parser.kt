@@ -167,7 +167,7 @@ class Parser : ParserProtocol {
 
         val decimal = data as? BigDecimal
         if (decimal != null) {
-            return decimal.intValue()
+            return decimal.doubleValue(false).toInt()
         }
 
         val string = data as? String

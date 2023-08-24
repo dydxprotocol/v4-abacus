@@ -8,12 +8,13 @@
 import Abacus
 import SwiftUI
 
-var stateManager: AsyncStateManager?
+var stateManager: AbacusStateManager?
 var state: PerpetualState?
 var foregroundToken: NotificationToken?
 var backgroundToken: NotificationToken?
 
 var timer: Timer?
+var timer1: Timer?
 var timer2: Timer?
 
 
@@ -24,16 +25,20 @@ struct ContentView: View {
     }
     
     init() {
-        stateManager = AsyncStateManager.shared
-        stateManager?.stateManager.readyToConnect = true
+        var js = CosmoJavascript.shared
+        stateManager = AbacusStateManager.shared
+        stateManager?.asyncStateManager.readyToConnect = true
         
-        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: { timer in
-            stateManager?.stateManager.market = "BTC-USD"
+            timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { timer in
+                stateManager?.asyncStateManager.environmentId = "dydxprotocol-testnet"
+            })
+            
+        timer1 = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: { timer in
+            stateManager?.asyncStateManager.market = "BTC-USD"
         })
         
-        
-        timer2 = Timer.scheduledTimer(withTimeInterval: 5, repeats: false, block: { timer in
-            stateManager?.stateManager.accountAddress = "dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art"
+        timer2 = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: { timer in
+            stateManager?.asyncStateManager.accountAddress = "dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art"
         })
     }
 }
