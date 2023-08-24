@@ -197,7 +197,8 @@ open class AppStateMachine(private val appPlatform: AppPlatform? = null) : AppSt
         return adaptor?.localizer
     }
 
-    override val availableEnvironments: IList<SelectionOption> = environments.map { environment ->
+    override val availableEnvironments: IList<SelectionOption>
+        get() = environments.map { environment ->
         SelectionOption(environment.environment, environment.string, null)
     }.toIList()
 
