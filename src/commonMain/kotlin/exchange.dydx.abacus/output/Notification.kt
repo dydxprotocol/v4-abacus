@@ -41,7 +41,7 @@ enum class NotificationPriority(val rawValue: Int) {
 }
 
 @JsExport
-@Serializable(with = NotificationSerializer::class)
+@Serializable
 data class Notification(
     val id: String,
     val type: NotificationType,
@@ -50,85 +50,7 @@ data class Notification(
     val title: String,
     val text: String?,
     val link: String?,
-    val data: IMap<String, Any>?,
+    val data: IMap<String, String>?,
     val updateTimeInMilliseconds: Double,
 ) {
-
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = Notification::class)
-object NotificationSerializer : KSerializer<Notification> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Notification") {
-        element<String>("id")
-        element<String>("type")
-        element<Int>("priority")
-        element<String>("image", isOptional = true)
-        element<String>("title")
-        element<String?>("text", isOptional = true)
-        element<String?>("link", isOptional = true)
-        element<Double>("updateTimeInMilliseconds")
-    }
-
-
-    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: Notification) {
-        encoder.encodeStructure(descriptor) {
-            encodeStringElement(descriptor, 0, value.id)
-            encodeStringElement(descriptor, 1, value.type.rawValue)
-            encodeIntElement(descriptor, 2, value.priority.rawValue)
-            if (value.image != null) {
-                encodeStringElement(descriptor, 3, value.image)
-            }
-            encodeStringElement(descriptor, 4, value.title)
-            if (value.text != null) {
-                encodeStringElement(descriptor, 5, value.text)
-            }
-            if (value.link != null) {
-                encodeStringElement(descriptor, 6, value.link)
-            }
-            encodeDoubleElement(descriptor, 7, value.updateTimeInMilliseconds)
-        }
-    }
-
-    override fun deserialize(decoder: Decoder): Notification {
-        return decoder.decodeStructure(descriptor) {
-            var type: NotificationType? = null
-            var priority: NotificationPriority? = null
-            var id: String? = null
-            var image: String? = null
-            var title: String? = null
-            var text: String? = null
-            var link: String? = null
-            var updateTimeInMilliseconds: Double? = null
-
-            loop@ while (true) {
-                when (val index = decodeElementIndex(descriptor)) {
-                    DECODE_DONE -> break@loop
-
-                    0 -> id = decodeStringElement(descriptor, 0)
-                    1 -> type = NotificationType.invoke(decodeStringElement(descriptor, 1))
-                    2 -> priority = NotificationPriority.invoke(decodeIntElement(descriptor, 2))
-                    3 -> image = decodeStringElement(descriptor, 3)
-                    4 -> title = decodeStringElement(descriptor, 4)
-                    5 -> text = decodeStringElement(descriptor, 5)
-                    6 -> link = decodeStringElement(descriptor, 6)
-                    7 -> updateTimeInMilliseconds = decodeDoubleElement(descriptor, 7)
-
-                    else -> throw SerializationException("Unexpected index $index")
-                }
-            }
-
-            Notification(
-                id!!,
-                type!!,
-                priority!!,
-                image,
-                title!!,
-                text,
-                link,
-                null,
-                updateTimeInMilliseconds!!
-            )
-        }
-    }
 }
