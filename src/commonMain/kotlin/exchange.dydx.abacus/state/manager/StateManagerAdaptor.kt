@@ -154,6 +154,15 @@ data class HumanReadableWithdrawPayload(
 )
 
 @JsExport
+@Serializable
+data class HumanReadableTransferPayload(
+    val subaccountNumber: Int,
+    val amount: Double,
+    val recipient: String,
+)
+
+
+@JsExport
 open class StateManagerAdaptor(
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
@@ -1458,6 +1467,23 @@ open class StateManagerAdaptor(
         return HumanReadableWithdrawPayload(
             subaccountNumber,
             amount
+        )
+    }
+
+    fun transferNativeTokenPayloadJson(): String {
+        return Json.encodeToString(transferNativeTokenPayload())
+    }
+    @Throws(Exception::class)
+    fun transferNativeTokenPayload(): HumanReadableTransferPayload {
+        val transfer = stateMachine.state?.input?.transfer ?: throw Exception("Transfer is null")
+        val subaccountNumber =
+            connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
+        val amount = transfer.size?.size ?: throw Exception("size is null")
+        val recipient = transfer.address ?: throw Exception("address is null")
+        return HumanReadableTransferPayload(
+            subaccountNumber,
+            amount,
+            recipient,
         )
     }
 

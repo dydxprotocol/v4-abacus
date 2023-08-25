@@ -54,7 +54,7 @@ internal class FieldsInputValidator(
     ): IMap<String, Any>? {
         return if (hasData(parser, transaction, field, type)) null else {
             val errorCode = errorCode(field)
-            val errorStringKey = errorStringKey(transactionType, field)
+            val errorStringKey = errorStringKey(transaction, transactionType, field)
             if (errorCode != null && errorStringKey != null) {
                 required(errorCode, field, errorStringKey)
             } else null
@@ -76,7 +76,7 @@ internal class FieldsInputValidator(
         }
     }
 
-    private fun errorStringKey(transactionType: String, field: String): String? {
+    private fun errorStringKey(transaction: IMap<String, Any>, transactionType: String, field: String): String? {
         return when (transactionType) {
             "trade", "closePosition" -> when (field) {
                 "size.size" -> "APP.TRADE.ENTER_AMOUNT"
@@ -89,9 +89,18 @@ internal class FieldsInputValidator(
                 else -> null
             }
 
-            "transfer" -> when (field) {
-                "size.usdcSize" -> "APP.TRADE.ENTER_AMOUNT"
-                "address" -> "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
+            "transfer" -> when (transaction["type"]) {
+                "WITHDRAWAL", "DEPOSIT" -> when (field) {
+                    "size.usdcSize" -> "APP.TRADE.ENTER_AMOUNT"
+                    "address" -> "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
+                    else -> null
+                }
+
+                "TRANSFER_OUT" -> when (field) {
+                    "address" -> "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
+                    else -> null
+                }
+
                 else -> null
             }
 

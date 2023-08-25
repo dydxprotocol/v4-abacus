@@ -6,7 +6,9 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.iMutableMapOf
+import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
@@ -75,7 +77,9 @@ fun TradingStateMachine.transfer(
                             transfer.safeSet("token", "usdc")
                         } else {
                             val chainType = squidProcessor.defaultChainId()
-                            transfer.safeSet("chain", chainType)
+                            if (chainType != null) {
+                                updateTransferToChainType(transfer, chainType)
+                            }
                             transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
                         }
                     }
@@ -99,24 +103,14 @@ fun TradingStateMachine.transfer(
                 TransferInputField.token.rawValue -> {
                     val token = parser.asString(data)
                     transfer.safeSet(typeText, token)
-                    if (transfer["type"] != "TRANSFER_OUT") {
-                        transfer.safeSet(
-                            "resources.tokenSymbol",
-                            squidProcessor.selectedTokenSymbol(token)
-                        )
-                        transfer.safeSet(
-                            "resources.tokenDecimals",
-                            squidProcessor.selectedTokenDecimals(token)
-                        )
+                    if (token != null) {
+                        updateTransferToTokenType(transfer, token)
                     }
-                    transfer.safeSet("size.size", null)
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
                         iListOf(subaccountNumber)
                     )
-                    transfer.safeSet("route", null)
-                    transfer.safeSet("requestPayload", null)
                 }
                 TransferInputField.usdcSize.rawValue,
                 TransferInputField.usdcFee.rawValue -> {
@@ -150,37 +144,14 @@ fun TradingStateMachine.transfer(
                 }
                 TransferInputField.chain.rawValue -> {
                     val chainType = parser.asString(data)
-                    chainType?.let {
-                        val tokenOptions = squidProcessor.tokenOptions(chainType)
-                        if (transfer["type"] != "TRANSFER_OUT") {
-                            transfer.safeSet(
-                                "depositOptions.assets",
-                                tokenOptions
-                            )
-                            transfer.safeSet(
-                                "withdrawalOptions.assets",
-                                tokenOptions
-                            )
-                            transfer.safeSet("chain", chainType)
-                            transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
-                            transfer.safeSet(
-                                "resources.chainResources",
-                                squidProcessor.chainResources(chainType)
-                            )
-                            transfer.safeSet(
-                                "resources.tokenResources",
-                                squidProcessor.tokenResources(chainType)
-                            )
-                        }
-                        transfer.safeSet("size.size", null)
-                        transfer.safeSet("route", null)
-                        transfer.safeSet("requestPayload", null)
-                        changes = StateChanges(
-                            iListOf(Changes.wallet, Changes.subaccount, Changes.input),
-                            null,
-                            iListOf(subaccountNumber)
-                        )
+                    if (chainType != null) {
+                        updateTransferToChainType(transfer, chainType)
                     }
+                    changes = StateChanges(
+                        iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+                        null,
+                        iListOf(subaccountNumber)
+                    )
                 }
                 else -> {}
             }
@@ -199,7 +170,52 @@ fun TradingStateMachine.transfer(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-fun TradingStateMachine.transferDataOption(typeText: String?): String? {
+private fun TradingStateMachine.updateTransferToTokenType(transfer: IMutableMap<String, Any>, token: String) {
+    if (transfer["type"] == "TRANSFER_OUT") {
+        transfer.safeSet("size.usdcSize", null)
+        transfer.safeSet("size.size", null)
+    } else {
+        transfer.safeSet(
+            "resources.tokenSymbol",
+            squidProcessor.selectedTokenSymbol(token)
+        )
+        transfer.safeSet(
+            "resources.tokenDecimals",
+            squidProcessor.selectedTokenDecimals(token)
+        )
+    }
+    transfer.safeSet("route", null)
+    transfer.safeSet("requestPayload", null)
+}
+
+private fun TradingStateMachine.updateTransferToChainType(transfer: IMutableMap<String, Any>, chainType: String) {
+    val tokenOptions = squidProcessor.tokenOptions(chainType)
+    if (transfer["type"] != "TRANSFER_OUT") {
+        transfer.safeSet(
+            "depositOptions.assets",
+            tokenOptions
+        )
+        transfer.safeSet(
+            "withdrawalOptions.assets",
+            tokenOptions
+        )
+        transfer.safeSet("chain", chainType)
+        transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
+        transfer.safeSet(
+            "resources.chainResources",
+            squidProcessor.chainResources(chainType)
+        )
+        transfer.safeSet(
+            "resources.tokenResources",
+            squidProcessor.tokenResources(chainType)
+        )
+    }
+    transfer.safeSet("size.size", null)
+    transfer.safeSet("route", null)
+    transfer.safeSet("requestPayload", null)
+}
+
+private fun TradingStateMachine.transferDataOptionUsdcSize(typeText: String?): String? {
     return when (typeText) {
         TransferInputField.usdcSize.rawValue -> "options.needsSize"
       //  TransferInputField.address.rawValue -> "options.needsAddress"
@@ -209,8 +225,22 @@ fun TradingStateMachine.transferDataOption(typeText: String?): String? {
     }
 }
 
+private fun TradingStateMachine.transferDataOptionSize(typeText: String?): String? {
+    return when (typeText) {
+        TransferInputField.size.rawValue -> "options.needsSize"
+        //  TransferInputField.address.rawValue -> "options.needsAddress"
+        TransferInputField.fastSpeed.rawValue -> "options.needsFastSpeed"
+
+        else -> null
+    }
+}
+
 fun TradingStateMachine.validTransferInput(transfer: IMap<String, Any>, typeText: String?): Boolean {
-    val option = this.transferDataOption(typeText)
+    val option = if (transfer["type"] == "TRANSFER_OUT" && transfer["token"] == "dydx") {
+        transferDataOptionSize(typeText)
+    } else {
+        transferDataOptionUsdcSize(typeText)
+    }
     return if (option != null) {
         val value = parser.value(transfer, option)
         if (parser.asList(value) != null) {
