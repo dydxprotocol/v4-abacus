@@ -38,6 +38,7 @@ internal class TradeTriggerPriceValidator(
     override fun validateTrade(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         trade: IMap<String, Any>,
         change: PositionChange,
         restricted: Boolean,

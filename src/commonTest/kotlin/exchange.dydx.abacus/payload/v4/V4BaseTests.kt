@@ -41,6 +41,7 @@ open class V4BaseTests : BaseTests(127) {
     override fun setup() {
         loadMarketsConfigurations()
         loadMarkets()
+        perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
         loadSubaccounts()
     }
 }

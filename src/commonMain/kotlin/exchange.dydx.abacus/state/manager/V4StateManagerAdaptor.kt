@@ -19,6 +19,7 @@ import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.TransferInputField
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
+import exchange.dydx.abacus.state.modal.onChainEquityTiers
 import exchange.dydx.abacus.state.modal.onChainFeeTiers
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
@@ -216,6 +217,7 @@ class V4StateManagerAdaptor(
 
     private fun didSetValidatorConnected(validatorConnected: Boolean) {
         if (validatorConnected) {
+            getEquityTiers()
             getFeeTiers()
             if (subaccount != null) {
                 getUserFeeTier()
@@ -250,6 +252,13 @@ class V4StateManagerAdaptor(
                 bestEffortConnectChain()
             }
             false
+        }
+    }
+
+    private fun getEquityTiers() {
+        getOnChain(QueryType.EquityTiers, null) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainEquityTiers(response), oldState)
         }
     }
 

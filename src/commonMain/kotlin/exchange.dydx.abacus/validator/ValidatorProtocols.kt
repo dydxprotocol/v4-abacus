@@ -27,6 +27,7 @@ interface ValidatorProtocol {
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         transaction: IMap<String, Any>,
         transactionType: String
     ): IList<Any>?
@@ -36,6 +37,7 @@ interface TradeValidatorProtocol {
     fun validateTrade(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         trade: IMap<String, Any>,
         change: PositionChange,
         restricted: Boolean

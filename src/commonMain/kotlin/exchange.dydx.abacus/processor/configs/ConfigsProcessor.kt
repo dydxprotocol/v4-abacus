@@ -2,14 +2,32 @@ package exchange.dydx.abacus.processor.configs
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.*
+import exchange.dydx.abacus.utils.mutable
 
 internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+    private val equityTiersProcessor = EquityTiersProcessor(parser)
     private val feeTiersProcessor = FeeTiersProcessor(parser)
     private val feeDiscountsProcessor = FeeDiscountsProcessor(parser)
     private val networkConfigsProcessor = NetworkConfigsProcessor(parser)
+
+    internal fun receivedOnChainEquityTiers(
+        existing: IMap<String, Any>?,
+        payload: IMap<String, Any>
+    ): IMap<String, Any>? {
+        val modified = existing?.mutable() ?: iMutableMapOf()
+        val map = parser.asMap(payload) as IMap<String, IList<Any>>?
+        modified?.safeSet("equityTiers", map)
+
+        return receivedObject(existing, "equityTiers", modified) { existing, payload ->
+            val map = parser.asMap(payload) as IMap<String, IMap<String, IList<Any>>>?
+            if (map != null) {
+                equityTiersProcessor.received(map)
+            } else {
+                null
+            }
+        }
+    }
 
     internal fun receivedFeeTiers(
         existing: IMap<String, Any>?,

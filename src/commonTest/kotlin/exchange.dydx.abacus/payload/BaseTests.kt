@@ -126,6 +126,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         perp.marketsSummary = null
         perp.wallet = null
         perp.assets = null
+        perp.configs = null
         setup()
     }
 

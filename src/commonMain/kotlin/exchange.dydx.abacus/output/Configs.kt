@@ -271,7 +271,11 @@ data class Configs(
                         feeDiscounts
                     )
                 } else {
-                    existing
+                    existing ?: Configs(
+                        null,
+                        null,
+                        null
+                    )
                 }
             }
             DebugLogger.debug("Configs not valid")

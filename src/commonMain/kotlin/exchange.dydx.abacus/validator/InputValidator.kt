@@ -24,6 +24,7 @@ internal class InputValidator(
     private val errorCodeLookup = iMapOf<String, Int>(
         "REQUIRED_WALLET" to 1000,
         "REQUIRED_ACCOUNT" to 1001,
+        "NO_EQUITY_DEPOSIT_FIRST" to 1002,
 
         "USER_MAX_ORDERS" to 1010,
         "ORDER_SIZE_BELOW_MIN_SIZE" to 1020,
@@ -39,7 +40,6 @@ internal class InputValidator(
         "LIMIT_MUST_ABOVE_TRIGGER_PRICE" to 1042,
         "LIMIT_MUST_BELOW_TRIGGER_PRICE" to 1043,
 
-        "NO_EQUITY_DEPOSIT_FIRST" to 1050,
         "INVALID_LARGE_POSITION_LEVERAGE" to 1051,
         "INVALID_NEW_POSITION_LEVERAGE" to 1052,
         "INVALID_NEW_ACCOUNT_MARGIN_USAGE" to 1053,
@@ -91,7 +91,8 @@ internal class InputValidator(
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
-        input: IMap<String, Any>?
+        input: IMap<String, Any>?,
+        configs: IMap<String, Any>?
     ): IMap<String, Any>? {
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
@@ -101,6 +102,7 @@ internal class InputValidator(
                 user,
                 subaccount,
                 markets,
+                configs,
                 transaction,
                 transactionType
             ))
@@ -119,6 +121,7 @@ internal class InputValidator(
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         transaction: IMap<String, Any>,
         transactionType: String
     ): IList<Any>? {
@@ -132,6 +135,7 @@ internal class InputValidator(
                         user,
                         subaccount,
                         markets,
+                        configs,
                         transaction,
                         transactionType
                     )

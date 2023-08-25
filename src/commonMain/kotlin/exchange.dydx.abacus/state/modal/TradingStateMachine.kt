@@ -447,7 +447,8 @@ open class TradingStateMachine(
                 this.user,
                 subaccount,
                 parser.asMap(this.marketsSummary?.get("markets")),
-                this.input
+                this.input,
+                this.configs
             )
 
             when (this.input?.get("current")) {
@@ -970,7 +971,8 @@ open class TradingStateMachine(
                     this.user,
                     subaccount,
                     parser.asMap(this.marketsSummary?.get("markets")),
-                    this.input
+                    this.input,
+                    this.configs
                 )
                 this.input?.let {
                     input = Input.create(input, parser, it, version)
@@ -1129,6 +1131,22 @@ open class TradingStateMachine(
             }
         }
         return noChange()
+    }
+
+    fun parseOnChainEquityTiers(payload: String): StateResponse {
+        var changes: StateChanges? = null
+        var error: ParsingError? = null
+        try {
+            changes = onChainEquityTiers(payload)
+        } catch (e: ParsingException) {
+            error = e.toParsingError()
+        }
+        if (changes != null) {
+            update(changes)
+        }
+
+        val errors = if (error != null) iListOf(error) else null
+        return StateResponse(state, changes, errors)
     }
 
     fun parseOnChainFeeTiers(payload: String): StateResponse {

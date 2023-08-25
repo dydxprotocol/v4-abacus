@@ -1241,6 +1241,16 @@ class V4ApiAdaptor(
         )
     }
 
+    override fun parseOnChainEquityTiers(payload: String): AppStateResponse {
+        val stateResponse = stateMachine.parseOnChainEquityTiers(payload)
+        return respond(
+            stateResponse.state,
+            stateResponse.changes,
+            stateResponse.errors,
+            null,
+        )
+    }
+
     override fun parseOnChainFeeTiers(payload: String): AppStateResponse {
         val stateResponse = stateMachine.parseOnChainFeeTiers(payload)
         return respond(

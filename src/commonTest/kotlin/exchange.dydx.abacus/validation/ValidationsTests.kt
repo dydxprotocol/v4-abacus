@@ -25,6 +25,10 @@ open class ValidationsTests : V3BaseTests() {
         test({
             loadValidationsOrderbook()
         }, null)
+
+        test({
+            perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+        }, null)
     }
 
     private fun loadValidationsMarkets(): StateResponse {

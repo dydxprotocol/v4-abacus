@@ -36,6 +36,7 @@ internal class TradeInputValidator(
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         transaction: IMap<String, Any>,
         transactionType: String,
     ): IList<Any>? {
@@ -63,6 +64,7 @@ internal class TradeInputValidator(
                     validator.validateTrade(
                         subaccount,
                         market,
+                        configs,
                         transaction,
                         change,
                         restricted

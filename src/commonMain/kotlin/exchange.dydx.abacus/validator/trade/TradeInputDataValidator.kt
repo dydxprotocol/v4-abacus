@@ -4,11 +4,8 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.GoodTil
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
@@ -41,25 +38,25 @@ internal class TradeInputDataValidator(
     parser: ParserProtocol,
 ) :
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
-    private val kMaxOrderCount = 25
-
     override fun validateTrade(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         trade: IMap<String, Any>,
         change: PositionChange,
         restricted: Boolean,
     ): IList<Any>? {
-        return validateTradeInput(subaccount, market, trade)
+        return validateTradeInput(subaccount, market, configs, trade)
     }
 
     private fun validateTradeInput(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         trade: IMap<String, Any>,
     ): IList<Any>? {
         val errors = iMutableListOf<Any>()
-        validateOrder(trade, subaccount)?.let {
+        validateOrder(trade, subaccount, configs)?.let {
             /*
             USER_MAX_ORDERS
             */
@@ -105,14 +102,18 @@ internal class TradeInputDataValidator(
     private fun validateOrder(
         trade: IMap<String, Any>,
         subaccount: IMap<String, Any>?,
-    ): IList<Any>? {
+        configs: IMap<String, Any>?,
+        ): IList<Any>? {
         /*
         USER_MAX_ORDERS
         */
-        return if (orderCount(
-                subaccount,
-                parser.asString(trade["marketId"])
-            ) >= kMaxOrderCount
+        val orderType = parser.asString(trade["type"])
+        val timeInForce = parser.asString(trade["timeInForce"])
+
+        if (orderType == null || timeInForce == null) return null
+
+        return if (orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
+            >= maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
         ) {
             iListOf(
                 error(
@@ -127,17 +128,53 @@ internal class TradeInputDataValidator(
         } else null
     }
 
-    private fun orderCount(
+    private fun maxOrdersForEquityTier(
+        isStatefulOrder: Boolean,
         subaccount: IMap<String, Any>?,
-        marketId: String?,
+        configs: IMap<String, Any>?
+    ): Int {
+        /*
+         USER_MAX_ORDERS according to Equity Tier
+         */
+        val fallbackMaxNumOrders: Int = 20
+        var maxNumOrders: Int = 0
+        val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
+        val equityTierKey: String = if (isStatefulOrder) "statefulOrderEquityTiers" else "shortTermOrderEquityTiers"
+        parser.asMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
+            parser.asList(equityTiers[equityTierKey])?.let { tiers ->
+                if (tiers.size == 0) return fallbackMaxNumOrders
+                for (tier in tiers) {
+                    parser.asMap(tier)?.let { item ->
+                        val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
+                        if ( requiredTotalNetCollateralUSD <= equity) {
+                            maxNumOrders = parser.asInt(item["maxOrders"])?: 0
+                        }
+                    }
+                }
+            }
+        } ?: run {
+            return fallbackMaxNumOrders
+        }
+
+        return maxNumOrders
+    }
+
+    private fun orderCount(
+        shouldCountStatefulOrders: Boolean,
+        subaccount: IMap<String, Any>?,
     ): Int {
         var count = 0
-        parser.asList(subaccount?.get("orders"))?.let { orders ->
-            for (item in orders) {
+        parser.asMap(subaccount?.get("orders"))?.let { orders ->
+            for ((_, item) in orders) {
                 parser.asMap(item)?.let { order ->
-                    if (parser.asString(order["status"]) == "OPEN"
-                    ) {
-                        count += 1
+                    val status = parser.asString(order["status"])
+                    val orderType = parser.asString(order["type"])
+                    val timeInForce = parser.asString(order["timeInForce"])
+                    if (orderType != null && timeInForce != null) {
+                        val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
+                        if ((status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
+                            count += 1
+                        }
                     }
                 }
             }
@@ -368,5 +405,20 @@ internal class TradeInputDataValidator(
                 )
             } else null
         } else null
+    }
+
+    private fun isStatefulOrder(orderType: String, timeInForce: String): Boolean {
+        return when (orderType) {
+            "MARKET" -> false
+
+            "LIMIT" -> {
+                when (parser.asString(timeInForce)) {
+                    "GTT" -> true
+                    else -> false
+                }
+            }
+
+            else -> true
+        }
     }
 }

@@ -27,6 +27,7 @@ internal class TransferInputValidator(
         user: IMap<String, Any>?,
         subaccount: IMap<String, Any>?,
         markets: IMap<String, Any>?,
+        configs: IMap<String, Any>?,
         transaction: IMap<String, Any>,
         transactionType: String,
     ): IList<Any>? {

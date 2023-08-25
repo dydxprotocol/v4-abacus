@@ -43,6 +43,8 @@ class V4AccountTests : V4BaseTests() {
 
         testBatchedSubaccountChanged()
 
+        testEquityTiers()
+
         testFeeTiers()
 
         testUserFeeTier()
@@ -662,6 +664,76 @@ class V4AccountTests : V4BaseTests() {
                     112,
                     fills?.size
                 )
+            }
+        )
+    }
+
+    private fun testEquityTiers() {
+        test(
+            {
+                perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+            },
+            """
+                {
+                    "configs": {
+                        "equityTiers": {
+                            "shortTermOrderEquityTiers": [
+                                {
+                                    "requiredTotalNetCollateralUSD": "0",
+                                    "maxOrders": 0
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "20",
+                                    "maxOrders": 1
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "100",
+                                    "maxOrders": 5
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "1000",
+                                    "maxOrders": 10
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "10000",
+                                    "maxOrders": 100
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "100000",
+                                    "maxOrders": 200
+                                }
+                            ],
+                            "statefulOrderEquityTiers": [
+                                {
+                                    "requiredTotalNetCollateralUSD": "0",
+                                    "maxOrders": 0
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "20",
+                                    "maxOrders": 1
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "100",
+                                    "maxOrders": 5
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "1000",
+                                    "maxOrders": 10
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "10000",
+                                    "maxOrders": 100
+                                },
+                                {
+                                    "requiredTotalNetCollateralUSD": "100000",
+                                    "maxOrders": 200
+                                }
+                            ]
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
             }
         )
     }
