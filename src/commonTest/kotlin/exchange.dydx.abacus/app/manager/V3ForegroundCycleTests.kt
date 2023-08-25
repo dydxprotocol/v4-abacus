@@ -35,7 +35,14 @@ class V3ForegroundCycleTests {
         val ioImplementations = BaseTests.testIOImplementations()
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
-        stateManager = AsyncAbacusStateManager(ioImplementations, uiImplementations, TestState(), null)
+        stateManager = AsyncAbacusStateManager(
+            "https://dydx-v4-shared-resources.vercel.app/config/staging/dev_endpoints.json",
+            "/config/staging/dev_endpoints.json",
+            ioImplementations,
+            uiImplementations,
+            TestState(),
+            null
+        )
         stateManager.environmentId = "5"
         return stateManager
     }
@@ -72,7 +79,8 @@ class V3ForegroundCycleTests {
             testWebSocket?.connectUrl,
             "WebSocket should be connected to correct url"
         )
-        assertEquals(4,
+        assertEquals(
+            4,
             testRest?.requests?.size,
             "Should have queued 4 requests"
         )
@@ -82,17 +90,17 @@ class V3ForegroundCycleTests {
             "Request to time endpoint should be present"
         )
         assertEquals(
-            "https://dydx-shared-resources.vercel.app/config/markets.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/markets.json",
             testRest?.requests?.get(1),
             "Request to time endpoint should be present"
         )
         assertEquals(
-            "https://dydx-shared-resources.vercel.app/config/fee_tiers.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/fee_tiers.json",
             testRest?.requests?.get(2),
             "Request to height endpoint should be present"
         )
         assertEquals(
-            "https://dydx-shared-resources.vercel.app/config/fee_discounts.json",
+            "https://dydx-v4-shared-resources.vercel.app/config/fee_discounts.json",
             testRest?.requests?.get(3),
             "Request to height endpoint should be present"
         )

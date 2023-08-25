@@ -31,12 +31,6 @@ internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     ): IMap<String, Any>? {
         val received = transform(existing, payload, feeTierKeyMap)
         var absoluteVolumeRequirement = parser.asDecimal(payload["absoluteVolumeRequirement"])
-        if (absoluteVolumeRequirement == null) {
-            val absoluteVolumeRequirementStruct = parser.asMap(payload["absoluteVolumeRequirement"])
-            if (absoluteVolumeRequirementStruct != null) {
-                absoluteVolumeRequirement = constructVolume(absoluteVolumeRequirementStruct)
-            }
-        }
         if (absoluteVolumeRequirement != null) {
             received["volume"] = absoluteVolumeRequirement
             received["symbol"] = "≥"

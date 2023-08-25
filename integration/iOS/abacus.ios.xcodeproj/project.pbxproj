@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		02175B98286FA2E90028855F /* commonMain in Resources */ = {isa = PBXBuildFile; fileRef = 02175B97286FA2E90028855F /* commonMain */; };
-		0228551328D1326600EBC6AF /* ThreadRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0228551228D1326600EBC6AF /* ThreadRunner.swift */; };
 		028B6372286F9F3400A3A2FE /* abacus_iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028B6371286F9F3400A3A2FE /* abacus_iosApp.swift */; };
 		028B6374286F9F3400A3A2FE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028B6373286F9F3400A3A2FE /* ContentView.swift */; };
 		028B6376286F9F3400A3A2FE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 028B6375286F9F3400A3A2FE /* Assets.xcassets */; };
@@ -16,20 +15,30 @@
 		028B6383286F9F3400A3A2FE /* abacus_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028B6382286F9F3400A3A2FE /* abacus_iosTests.swift */; };
 		151AD4A387A8850752B96C81 /* Pods_abacus_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4959DDA10FA64AB90054C1F7 /* Pods_abacus_ios.framework */; };
 		2C9D2F37A6D2D385E97F6483 /* Pods_abacus_iosTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2482E25DD30EB58D0E0D446 /* Pods_abacus_iosTests.framework */; };
+		641959EC2A96BA1100BCB69C /* dydxFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959EB2A96BA1100BCB69C /* dydxFormatter.swift */; };
+		641959EF2A96BC7300BCB69C /* String+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959EE2A96BC7300BCB69C /* String+Utils.swift */; };
+		641959F12A96BCAD00BCB69C /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F02A96BCAD00BCB69C /* Parser.swift */; };
+		641959F32A96BCED00BCB69C /* Bundle+UIBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F22A96BCED00BCB69C /* Bundle+UIBundle.swift */; };
+		641959F52A96BD0600BCB69C /* JsonLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F42A96BD0600BCB69C /* JsonLoader.swift */; };
+		641959F72A96BD5F00BCB69C /* StringLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F62A96BD5F00BCB69C /* StringLoader.swift */; };
+		641959F92A96C28D00BCB69C /* config in Resources */ = {isa = PBXBuildFile; fileRef = 641959F82A96C28D00BCB69C /* config */; };
+		641959FB2A9805BB00BCB69C /* v4-native-client.js in Resources */ = {isa = PBXBuildFile; fileRef = 641959FA2A9805BB00BCB69C /* v4-native-client.js */; };
 		642EE3D028F5E16E0062CAC0 /* V3PrivateApiSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642EE3CF28F5E16E0062CAC0 /* V3PrivateApiSigner.swift */; };
-		64810BA22A28F4C8003BD337 /* config in Resources */ = {isa = PBXBuildFile; fileRef = 64810BA12A28F4C8003BD337 /* config */; };
-		64810BA42A28F4E6003BD337 /* NativeFileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA32A28F4E6003BD337 /* NativeFileSystem.swift */; };
 		64810BA72A28F56F003BD337 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA62A28F56F003BD337 /* File.swift */; };
 		64810BA92A28F57C003BD337 /* Directory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA82A28F57C003BD337 /* Directory.swift */; };
+		6482C69B2A96B54B0038671F /* JavascriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6992A96B54B0038671F /* JavascriptRunner.swift */; };
+		6482C69C2A96B54B0038671F /* CosmoJavascript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C69A2A96B54B0038671F /* CosmoJavascript.swift */; };
+		6482C6A82A96B5740038671F /* AbacusTimerImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C69E2A96B5740038671F /* AbacusTimerImp.swift */; };
+		6482C6A92A96B5740038671F /* AbacusTrackingImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C69F2A96B5740038671F /* AbacusTrackingImp.swift */; };
+		6482C6AA2A96B5740038671F /* AbacusFileSystemImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A02A96B5740038671F /* AbacusFileSystemImp.swift */; };
+		6482C6AB2A96B5740038671F /* AbacusChainImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A12A96B5740038671F /* AbacusChainImp.swift */; };
+		6482C6AC2A96B5740038671F /* AbacusFormatterImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A22A96B5740038671F /* AbacusFormatterImp.swift */; };
+		6482C6AD2A96B5740038671F /* AbacusThreadingImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A32A96B5740038671F /* AbacusThreadingImp.swift */; };
+		6482C6AE2A96B5740038671F /* AbacusRestImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A42A96B5740038671F /* AbacusRestImp.swift */; };
+		6482C6AF2A96B5740038671F /* AbacusWebSocketImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A52A96B5740038671F /* AbacusWebSocketImp.swift */; };
+		6482C6B02A96B5740038671F /* Implementations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6A62A96B5740038671F /* Implementations.swift */; };
+		6482C6B22A96B5BD0038671F /* AbacusStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6B12A96B5BD0038671F /* AbacusStateManager.swift */; };
 		64A69CAF28C01DD5008D7ACB /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A69CAE28C01DD5008D7ACB /* Utils.swift */; };
-		64A6A00128CFEA7C008D7ACB /* AbacusStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A6A00028CFEA7C008D7ACB /* AbacusStateManager.swift */; };
-		64C9DF1D28BEAFCC00578AFA /* WebsocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C9DF1C28BEAFCC00578AFA /* WebsocketConnection.swift */; };
-		64C9DF1F28BEB4C400578AFA /* HttpCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C9DF1E28BEB4C400578AFA /* HttpCall.swift */; };
-		64C9DF2528BED69400578AFA /* ParamsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C9DF2428BED69400578AFA /* ParamsHelper.swift */; };
-		64F30D8D2A20125C006CC713 /* NativeRest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F30D8C2A20125C006CC713 /* NativeRest.swift */; };
-		64F30D8F2A201535006CC713 /* NativeThreading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F30D8E2A201535006CC713 /* NativeThreading.swift */; };
-		64F30D912A201551006CC713 /* NativeWebsocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F30D902A201551006CC713 /* NativeWebsocket.swift */; };
-		64F30DFA2A2016EE006CC713 /* AsyncStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F30DF92A2016EE006CC713 /* AsyncStateManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,7 +53,6 @@
 
 /* Begin PBXFileReference section */
 		02175B97286FA2E90028855F /* commonMain */ = {isa = PBXFileReference; lastKnownFileType = folder; path = commonMain; sourceTree = "<group>"; };
-		0228551228D1326600EBC6AF /* ThreadRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadRunner.swift; sourceTree = "<group>"; };
 		028B636E286F9F3400A3A2FE /* abacus.ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = abacus.ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		028B6371286F9F3400A3A2FE /* abacus_iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abacus_iosApp.swift; sourceTree = "<group>"; };
 		028B6373286F9F3400A3A2FE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -54,21 +62,31 @@
 		028B6382286F9F3400A3A2FE /* abacus_iosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = abacus_iosTests.swift; sourceTree = "<group>"; };
 		2053A22115DD7A10CF5D1D65 /* Pods-abacus.ios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-abacus.ios.debug.xcconfig"; path = "Target Support Files/Pods-abacus.ios/Pods-abacus.ios.debug.xcconfig"; sourceTree = "<group>"; };
 		4959DDA10FA64AB90054C1F7 /* Pods_abacus_ios.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_abacus_ios.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		641959EB2A96BA1100BCB69C /* dydxFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydxFormatter.swift; sourceTree = "<group>"; };
+		641959EE2A96BC7300BCB69C /* String+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Utils.swift"; sourceTree = "<group>"; };
+		641959F02A96BCAD00BCB69C /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		641959F22A96BCED00BCB69C /* Bundle+UIBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+UIBundle.swift"; sourceTree = "<group>"; };
+		641959F42A96BD0600BCB69C /* JsonLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonLoader.swift; sourceTree = "<group>"; };
+		641959F62A96BD5F00BCB69C /* StringLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringLoader.swift; sourceTree = "<group>"; };
+		641959F82A96C28D00BCB69C /* config */ = {isa = PBXFileReference; lastKnownFileType = folder; name = config; path = "../../../../v4-localization/config"; sourceTree = "<group>"; };
+		641959FA2A9805BB00BCB69C /* v4-native-client.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "v4-native-client.js"; sourceTree = "<group>"; };
 		642EE3CF28F5E16E0062CAC0 /* V3PrivateApiSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = V3PrivateApiSigner.swift; sourceTree = "<group>"; };
-		64810BA12A28F4C8003BD337 /* config */ = {isa = PBXFileReference; lastKnownFileType = folder; name = config; path = "../../../../veronica-v4/config"; sourceTree = "<group>"; };
-		64810BA32A28F4E6003BD337 /* NativeFileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeFileSystem.swift; sourceTree = "<group>"; };
 		64810BA62A28F56F003BD337 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		64810BA82A28F57C003BD337 /* Directory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Directory.swift; sourceTree = "<group>"; };
+		6482C6992A96B54B0038671F /* JavascriptRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavascriptRunner.swift; sourceTree = "<group>"; };
+		6482C69A2A96B54B0038671F /* CosmoJavascript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CosmoJavascript.swift; sourceTree = "<group>"; };
+		6482C69E2A96B5740038671F /* AbacusTimerImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusTimerImp.swift; sourceTree = "<group>"; };
+		6482C69F2A96B5740038671F /* AbacusTrackingImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusTrackingImp.swift; sourceTree = "<group>"; };
+		6482C6A02A96B5740038671F /* AbacusFileSystemImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusFileSystemImp.swift; sourceTree = "<group>"; };
+		6482C6A12A96B5740038671F /* AbacusChainImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusChainImp.swift; sourceTree = "<group>"; };
+		6482C6A22A96B5740038671F /* AbacusFormatterImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusFormatterImp.swift; sourceTree = "<group>"; };
+		6482C6A32A96B5740038671F /* AbacusThreadingImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusThreadingImp.swift; sourceTree = "<group>"; };
+		6482C6A42A96B5740038671F /* AbacusRestImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusRestImp.swift; sourceTree = "<group>"; };
+		6482C6A52A96B5740038671F /* AbacusWebSocketImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbacusWebSocketImp.swift; sourceTree = "<group>"; };
+		6482C6A62A96B5740038671F /* Implementations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Implementations.swift; sourceTree = "<group>"; };
+		6482C6B12A96B5BD0038671F /* AbacusStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbacusStateManager.swift; sourceTree = "<group>"; };
 		64A69CAE28C01DD5008D7ACB /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		64A69DAE28CBF2F3008D7ACB /* abacus-ios-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "abacus-ios-Info.plist"; sourceTree = SOURCE_ROOT; };
-		64A6A00028CFEA7C008D7ACB /* AbacusStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbacusStateManager.swift; sourceTree = "<group>"; };
-		64C9DF1C28BEAFCC00578AFA /* WebsocketConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsocketConnection.swift; sourceTree = "<group>"; };
-		64C9DF1E28BEB4C400578AFA /* HttpCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpCall.swift; sourceTree = "<group>"; };
-		64C9DF2428BED69400578AFA /* ParamsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParamsHelper.swift; sourceTree = "<group>"; };
-		64F30D8C2A20125C006CC713 /* NativeRest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRest.swift; sourceTree = "<group>"; };
-		64F30D8E2A201535006CC713 /* NativeThreading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeThreading.swift; sourceTree = "<group>"; };
-		64F30D902A201551006CC713 /* NativeWebsocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeWebsocket.swift; sourceTree = "<group>"; };
-		64F30DF92A2016EE006CC713 /* AsyncStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncStateManager.swift; sourceTree = "<group>"; };
 		9356B3683220735108C8313D /* Pods-abacus.ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-abacus.ios.release.xcconfig"; path = "Target Support Files/Pods-abacus.ios/Pods-abacus.ios.release.xcconfig"; sourceTree = "<group>"; };
 		A8F4CB46B095EC8CFE3A53F3 /* Pods-abacus.ios-abacus.iosUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-abacus.ios-abacus.iosUITests.release.xcconfig"; path = "Target Support Files/Pods-abacus.ios-abacus.iosUITests/Pods-abacus.ios-abacus.iosUITests.release.xcconfig"; sourceTree = "<group>"; };
 		C0DA152F0B3184B318F85DFE /* Pods-abacus.iosTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-abacus.iosTests.release.xcconfig"; path = "Target Support Files/Pods-abacus.iosTests/Pods-abacus.iosTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -131,15 +149,16 @@
 		028B6370286F9F3400A3A2FE /* abacus.ios */ = {
 			isa = PBXGroup;
 			children = (
+				641959ED2A96BC6400BCB69C /* utils */,
+				6482C6972A96B4AB0038671F /* resources */,
 				64F30D8B2A20124D006CC713 /* Native */,
 				642EE3CE28F5E1600062CAC0 /* signer */,
 				64A69DAE28CBF2F3008D7ACB /* abacus-ios-Info.plist */,
-				64C9DF1B28BEAFB500578AFA /* network */,
 				028B6371286F9F3400A3A2FE /* abacus_iosApp.swift */,
 				028B6373286F9F3400A3A2FE /* ContentView.swift */,
 				028B6375286F9F3400A3A2FE /* Assets.xcassets */,
-				64810BA12A28F4C8003BD337 /* config */,
 				028B6377286F9F3400A3A2FE /* Preview Content */,
+				641959F82A96C28D00BCB69C /* config */,
 				64A69CAE28C01DD5008D7ACB /* Utils.swift */,
 			);
 			path = abacus.ios;
@@ -161,6 +180,18 @@
 			path = abacus.iosTests;
 			sourceTree = "<group>";
 		};
+		641959ED2A96BC6400BCB69C /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				641959EE2A96BC7300BCB69C /* String+Utils.swift */,
+				641959F02A96BCAD00BCB69C /* Parser.swift */,
+				641959F22A96BCED00BCB69C /* Bundle+UIBundle.swift */,
+				641959F42A96BD0600BCB69C /* JsonLoader.swift */,
+				641959F62A96BD5F00BCB69C /* StringLoader.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
 		642EE3CE28F5E1600062CAC0 /* signer */ = {
 			isa = PBXGroup;
 			children = (
@@ -178,27 +209,39 @@
 			path = FileSystem;
 			sourceTree = "<group>";
 		};
-		64C9DF1B28BEAFB500578AFA /* network */ = {
+		6482C6972A96B4AB0038671F /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				64A6A00028CFEA7C008D7ACB /* AbacusStateManager.swift */,
-				64C9DF1E28BEB4C400578AFA /* HttpCall.swift */,
-				64C9DF2428BED69400578AFA /* ParamsHelper.swift */,
-				64C9DF1C28BEAFCC00578AFA /* WebsocketConnection.swift */,
-				0228551228D1326600EBC6AF /* ThreadRunner.swift */,
-				64F30DF92A2016EE006CC713 /* AsyncStateManager.swift */,
+				641959FA2A9805BB00BCB69C /* v4-native-client.js */,
 			);
-			path = network;
+			path = resources;
+			sourceTree = "<group>";
+		};
+		6482C6982A96B52A0038671F /* Javascript */ = {
+			isa = PBXGroup;
+			children = (
+				6482C69A2A96B54B0038671F /* CosmoJavascript.swift */,
+				6482C6992A96B54B0038671F /* JavascriptRunner.swift */,
+			);
+			path = Javascript;
 			sourceTree = "<group>";
 		};
 		64F30D8B2A20124D006CC713 /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				6482C6A12A96B5740038671F /* AbacusChainImp.swift */,
+				6482C6A02A96B5740038671F /* AbacusFileSystemImp.swift */,
+				6482C6A22A96B5740038671F /* AbacusFormatterImp.swift */,
+				6482C6A42A96B5740038671F /* AbacusRestImp.swift */,
+				6482C6A32A96B5740038671F /* AbacusThreadingImp.swift */,
+				6482C69E2A96B5740038671F /* AbacusTimerImp.swift */,
+				6482C69F2A96B5740038671F /* AbacusTrackingImp.swift */,
+				6482C6A52A96B5740038671F /* AbacusWebSocketImp.swift */,
+				6482C6A62A96B5740038671F /* Implementations.swift */,
+				6482C6982A96B52A0038671F /* Javascript */,
 				64810BA52A28F565003BD337 /* FileSystem */,
-				64F30D8C2A20125C006CC713 /* NativeRest.swift */,
-				64F30D8E2A201535006CC713 /* NativeThreading.swift */,
-				64F30D902A201551006CC713 /* NativeWebsocket.swift */,
-				64810BA32A28F4E6003BD337 /* NativeFileSystem.swift */,
+				6482C6B12A96B5BD0038671F /* AbacusStateManager.swift */,
+				641959EB2A96BA1100BCB69C /* dydxFormatter.swift */,
 			);
 			path = Native;
 			sourceTree = "<group>";
@@ -310,7 +353,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				64810BA22A28F4C8003BD337 /* config in Resources */,
+				641959F92A96C28D00BCB69C /* config in Resources */,
+				641959FB2A9805BB00BCB69C /* v4-native-client.js in Resources */,
 				028B6379286F9F3400A3A2FE /* Preview Assets.xcassets in Resources */,
 				028B6376286F9F3400A3A2FE /* Assets.xcassets in Resources */,
 				02175B98286FA2E90028855F /* commonMain in Resources */,
@@ -395,22 +439,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				64F30D8D2A20125C006CC713 /* NativeRest.swift in Sources */,
-				0228551328D1326600EBC6AF /* ThreadRunner.swift in Sources */,
-				64F30D912A201551006CC713 /* NativeWebsocket.swift in Sources */,
-				64C9DF2528BED69400578AFA /* ParamsHelper.swift in Sources */,
+				641959EF2A96BC7300BCB69C /* String+Utils.swift in Sources */,
+				6482C6AE2A96B5740038671F /* AbacusRestImp.swift in Sources */,
 				64A69CAF28C01DD5008D7ACB /* Utils.swift in Sources */,
-				64F30D8F2A201535006CC713 /* NativeThreading.swift in Sources */,
+				6482C69B2A96B54B0038671F /* JavascriptRunner.swift in Sources */,
+				6482C6AB2A96B5740038671F /* AbacusChainImp.swift in Sources */,
+				641959EC2A96BA1100BCB69C /* dydxFormatter.swift in Sources */,
+				6482C6AF2A96B5740038671F /* AbacusWebSocketImp.swift in Sources */,
+				641959F32A96BCED00BCB69C /* Bundle+UIBundle.swift in Sources */,
+				6482C6A82A96B5740038671F /* AbacusTimerImp.swift in Sources */,
 				028B6374286F9F3400A3A2FE /* ContentView.swift in Sources */,
-				64C9DF1F28BEB4C400578AFA /* HttpCall.swift in Sources */,
+				641959F52A96BD0600BCB69C /* JsonLoader.swift in Sources */,
+				641959F72A96BD5F00BCB69C /* StringLoader.swift in Sources */,
+				6482C6AC2A96B5740038671F /* AbacusFormatterImp.swift in Sources */,
+				6482C6AD2A96B5740038671F /* AbacusThreadingImp.swift in Sources */,
 				642EE3D028F5E16E0062CAC0 /* V3PrivateApiSigner.swift in Sources */,
-				64810BA42A28F4E6003BD337 /* NativeFileSystem.swift in Sources */,
 				64810BA72A28F56F003BD337 /* File.swift in Sources */,
-				64C9DF1D28BEAFCC00578AFA /* WebsocketConnection.swift in Sources */,
-				64F30DFA2A2016EE006CC713 /* AsyncStateManager.swift in Sources */,
-				64A6A00128CFEA7C008D7ACB /* AbacusStateManager.swift in Sources */,
+				6482C6B02A96B5740038671F /* Implementations.swift in Sources */,
+				6482C6B22A96B5BD0038671F /* AbacusStateManager.swift in Sources */,
+				6482C6AA2A96B5740038671F /* AbacusFileSystemImp.swift in Sources */,
+				6482C6A92A96B5740038671F /* AbacusTrackingImp.swift in Sources */,
+				6482C69C2A96B54B0038671F /* CosmoJavascript.swift in Sources */,
 				028B6372286F9F3400A3A2FE /* abacus_iosApp.swift in Sources */,
 				64810BA92A28F57C003BD337 /* Directory.swift in Sources */,
+				641959F12A96BCAD00BCB69C /* Parser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

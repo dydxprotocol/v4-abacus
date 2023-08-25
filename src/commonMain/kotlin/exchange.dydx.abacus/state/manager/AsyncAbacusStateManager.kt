@@ -7,10 +7,12 @@ import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.V3PrivateSignerProtocol
+import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.AppVersion
 import exchange.dydx.abacus.state.app.EnvironmentURIs
 import exchange.dydx.abacus.state.app.HistoricalPnlPeriod
+import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.OrderbookGrouping
 import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
@@ -21,6 +23,8 @@ import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.ClosePositionInputField
 import exchange.dydx.abacus.state.modal.TradeInputField
 import exchange.dydx.abacus.state.modal.TransferInputField
+import exchange.dydx.abacus.state.modal.feeTiers
+import exchange.dydx.abacus.state.modal.receivedFeeTiers
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
@@ -32,202 +36,40 @@ import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
 import exchange.dydx.abacus.utils.Threading
 import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
+import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlin.js.JsName
 
 @JsExport
 class AsyncAbacusStateManager(
+    val environmentsUrl: String,
+    val environmentsFile: String,
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
-    val dataNotification: DataNotificationProtocol? = null,
-    val v3signer: V3PrivateSignerProtocol? = null,
-    val apiKey: V3ApiKey? = null,
+    val dataNotification: DataNotificationProtocol? = null
 ) {
-    private val _environmentsConfigs: String =
-        """
-            [
-               {
-                  "comment":"V3 Mainnet",
-                  "environment":"1",
-                  "ethereumChainId":"1",
-                  "string":"v3 MainNet",
-                  "stringKey":"CHAIN.V3_MAINNET",
-                  "isMainNet":true,
-                  "version":"v3",
-                  "maxSubaccountNumber":0,
-                  "endpoints":{
-                     "api":"https://api.dydx.exchange",
-                     "socket":"wss://api.dydx.exchange",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V3 Staging",
-                  "environment":"5",
-                  "ethereumChainId":"5",
-                  "string":"v3 Staging",
-                  "stringKey":"CHAIN.V3_GOERLI",
-                  "isMainNet":false,
-                  "version":"v3",
-                  "maxSubaccountNumber":0,
-                  "endpoints":{
-                     "api":"https://api.stage.dydx.exchange",
-                     "socket":"wss://api.stage.dydx.exchange",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Dev",
-                  "environment":"dydxprotocol-dev",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev",
-                  "stringKey":"CHAIN.V4_DEVNET",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "api":"http://indexer.v4dev.dydx.exchange",
-                     "socket":"wss://indexer.v4dev.dydx.exchange",
-                     "faucet":"http://faucet.v4dev.dydx.exchange",
-                     "validators":[
-                        "http://validator.v4dev.dydx.exchange"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 2",
-                  "environment":"dydxprotocol-dev-2",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 2",
-                  "stringKey":"CHAIN.V4_DEVNET_2",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "api":"http://dev2-indexer-apne1-lb-public-2076363889.ap-northeast-1.elb.amazonaws.com",
-                     "socket":"ws://dev2-indexer-apne1-lb-public-2076363889.ap-northeast-1.elb.amazonaws.com",
-                     "validators":[
-                        "http://35.75.227.118"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 3",
-                  "environment":"dydxprotocol-dev-3",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 3",
-                  "stringKey":"CHAIN.V4_DEVNET_3",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 4",
-                  "environment":"dydxprotocol-dev-4",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 4",
-                  "stringKey":"CHAIN.V4_DEVNET_4",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "api":"http://indexer.v4dev4.dydx.exchange",
-                     "socket":"ws://indexer.v4dev4.dydx.exchange",
-                     "validators":[
-                        "http://validator.v4dev4.dydx.exchange"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 5",
-                  "environment":"dydxprotocol-dev-5",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 5",
-                  "stringKey":"CHAIN.V4_DEVNET_5",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "api":"http://dev5-indexer-apne1-lb-public-1721328151.ap-northeast-1.elb.amazonaws.com",
-                     "socket":"ws://dev5-indexer-apne1-lb-public-1721328151.ap-northeast-1.elb.amazonaws.com",
-                     "validators":[
-                        "http://18.223.78.50"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Staging",
-                  "environment":"dydxprotocol-staging",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Staging",
-                  "stringKey":"CHAIN.V4_STAGING",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "api":"https://indexer.v4staging.dydx.exchange",
-                     "socket":"wss://indexer.v4staging.dydx.exchange",
-                     "faucet":"https://faucet.v4staging.dydx.exchange",
-                     "validators":[
-                        "https://validator.v4staging.dydx.exchange"
-                     ],
-                     "0xsquid":"https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app",
-                     "configs":"https://dydx-shared-resources.vercel.app"
-                  }
-               },
-               {
-                  "comment":"V4 Public Testnet #2",
-                  "environment":"dydxprotocol-testnet-2",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydx-testnet-2",
-                  "string":"v4 Public Testnet #2",
-                  "stringKey":"CHAIN.V4_TESTNET2",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "api":"https://indexer.v4testnet2.dydx.exchange",
-                     "socket":"wss://indexer.v4testnet2.dydx.exchange",
-                     "validators":[
-                        "https://validator.v4testnet2.dydx.exchange"
-                     ],
-                     "0xsquid":"https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app",
-                     "configs":"https://dydx-shared-resources.vercel.app",
-                     "faucet":"https://faucet.v4testnet2.dydx.exchange"
-                  }
-               }
-            ]
-        """.trimIndent()
-    private val environments: IList<V4Environment> =
-        parseEnvironments(Json.parseToJsonElement(_environmentsConfigs).jsonArray.toIList())
+    private var v3signer: V3PrivateSignerProtocol? = null
+    private var apiKey: V3ApiKey? = null
 
+    private var environments: IList<V4Environment> = iListOf()
+        set(value) {
+            field = value
+            stateNotification?.environmentsChanged()
+            dataNotification?.environmentsChanged()
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                _environment = findEnvironment(environmentId)
+            }
+        }
 
-    val availableEnvironments: IList<SelectionOption> = environments.map { environment ->
-        SelectionOption(environment.environment, environment.stringKey, null)
-    }
-
+    val availableEnvironments: IList<SelectionOption>
+        get() = environments.map { environment ->
+            SelectionOption(environment.environment, environment.stringKey, null)
+        }
 
     var environmentId: String? = null
         set(value) {
@@ -323,17 +165,6 @@ class AsyncAbacusStateManager(
             }
         }
 
-    @JsName("fromFactory")
-    constructor(_nativeImplementations: ProtocolNativeImpFactory) : this(
-        createIOImplementions(_nativeImplementations),
-        createUIImplemention(_nativeImplementations),
-        _nativeImplementations.stateNotification,
-        _nativeImplementations.dataNotification,
-        _nativeImplementations.v3Signer,
-        _nativeImplementations.apiKey
-    ) {
-    }
-
     companion object {
         private fun createIOImplementions(_nativeImplementations: ProtocolNativeImpFactory): IOImplementations {
             return IOImplementations(
@@ -385,21 +216,60 @@ class AsyncAbacusStateManager(
         if (stateNotification === null && dataNotification === null) {
             throw Error("Either stateNotification or dataNotification need to be set")
         }
+        loadEnvironments()
+    }
+
+    private fun loadEnvironments() {
+        ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
+            if (success(httpCode) && response != null) {
+                val parser = Parser()
+                val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+                if (!parseEnvironments(json, parser)) {
+                    loadEnvironmentsFromLocalFile()
+                }
+            } else {
+                loadEnvironmentsFromLocalFile()
+            }
+        })
+    }
+
+    private fun loadEnvironmentsFromLocalFile() {
+        ioImplementations.fileSystem?.readCachedTextFile(
+            environmentsFile
+        )?.let { response ->
+            val parser = Parser()
+            val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+            parseEnvironments(json, parser)
+        }
+    }
+
+    private fun success(httpCode: Int): Boolean {
+        return httpCode in 200..299
     }
 
 
-    private fun parseEnvironments(items: IList<Any>?): IList<V4Environment> {
-        val result = iMutableListOf<V4Environment>()
+    private fun parseEnvironments(items: IMap<String, Any>?, parser: ParserProtocol): Boolean {
+        val environments = iMutableListOf<V4Environment>()
         if (items != null) {
-            val parser = Parser()
-            for (item in items) {
+            val environmentsData = parser.asList(items["environments"]) ?: return false
+            for (item in environmentsData) {
                 val environment = parseEnvironment(parser.asMap(item), parser)
                 if (environment != null) {
-                    result.add(environment)
+                    environments.add(environment)
                 }
             }
+            if (environments.isEmpty()) {
+                return false
+            }
+            this.environments = environments
+            val defaultEnvironment = parser.asString(items["defaultEnvironment"])
+            if (defaultEnvironment != null && this.environmentId == null) {
+                this.environmentId = defaultEnvironment
+            }
+            return true
+        } else {
+            return false
         }
-        return result
     }
 
     private fun parseEnvironment(item: IMap<String, Any>?, parser: ParserProtocol): V4Environment? {
@@ -438,14 +308,29 @@ class AsyncAbacusStateManager(
         if (item == null) {
             return null
         }
-        val api = parser.asString(item["api"]) ?: return null
-        val socket = parser.asString(item["socket"]) ?: return null
+        val indexers =
+            parser.asList(item["indexers"])?.map { parseIndexerURIs(parser.asMap(it), parser) }
+                ?.filterNotNull()?.toIList()
         val configs = parser.asString(item["configs"])
-        val validators = parser.asList(item["validators"])?.map { parser.asString(it) }?.filterNotNull()?.toIList()
+        val validators =
+            parser.asList(item["validators"])?.map { parser.asString(it) }?.filterNotNull()
+                ?.toIList()
         val faucet = parser.asString(item["faucet"])
         val squid = parser.asString(item["0xsquid"])
 
-        return EnvironmentURIs(api, socket, configs, validators, faucet, squid)
+        return EnvironmentURIs(indexers, configs, validators, faucet, squid)
+    }
+
+    private fun parseIndexerURIs(
+        item: IMap<String, Any>?,
+        parser: ParserProtocol,
+    ): IndexerURIs? {
+        if (item == null) {
+            return null
+        }
+        val api = parser.asString(item["api"]) ?: return null
+        val socket = parser.asString(item["socket"]) ?: return null
+        return IndexerURIs(api, socket)
     }
 
     private fun findEnvironment(environment: String?): V4Environment? {
@@ -488,6 +373,10 @@ class AsyncAbacusStateManager(
         adaptor?.readyToConnect = readyToConnect
     }
 
+    fun setv3(signer: V3PrivateSignerProtocol?, apiKey: V3ApiKey?) {
+        v3signer = signer
+        this.apiKey = apiKey
+    }
 
     fun trade(data: String?, type: TradeInputField?) {
         adaptor?.trade(data, type)

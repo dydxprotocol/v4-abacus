@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
+import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
@@ -153,7 +154,8 @@ enum class TransactionType(val rawValue: String) {
     Withdraw("withdraw"),
     SubaccountTransfer("subaccountTransfer"),
     Faucet("faucet"),
-    simulateWithdraw("simulateWithdraw");
+    simulateWithdraw("simulateWithdraw"),
+    simulateTransferNativeToken("simulateTransferNativeToken");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -216,14 +218,18 @@ interface TrackingProtocol {
 
 @JsExport
 interface StateNotificationProtocol {
+    fun environmentsChanged()
     fun stateChanged(state: PerpetualState?, changes: StateChanges?)
     fun apiStateChanged(apiState: ApiState?)
     fun errorsEmitted(errors: IList<ParsingError>)
     fun lastOrderChanged(order: SubaccountOrder?)
+
+    fun notificationsChanged(notifications: IList<Notification>)
 }
 
 @JsExport
 interface DataNotificationProtocol {
+    fun environmentsChanged()
     fun marketsSummaryChanged(marketsSummary: PerpetualMarketSummary?)
     fun assetChanged(asset: Asset?, assetId: String)
     fun marketChanged(market: PerpetualMarket?, marketId: String)
@@ -250,6 +256,8 @@ interface DataNotificationProtocol {
 
     fun errorsEmitted(errors: IList<ParsingError>)
     fun lastOrderChanged(order: SubaccountOrder?)
+
+    fun notificationsChanged(notifications: IList<Notification>)
 }
 
 @JsExport

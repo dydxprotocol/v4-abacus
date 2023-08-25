@@ -22,7 +22,7 @@ open class StateManagerConfigs(
 
 
     fun publicApiUrl(type: String): String? {
-        val api = environment.URIs.api
+        val api = environment.URIs.indexers?.firstOrNull()?.api
         val path = publicApiPath(type) ?: return null
         return "$api$path"
     }
@@ -32,7 +32,7 @@ open class StateManagerConfigs(
     }
 
     fun privateApiUrl(type: String): String? {
-        val api = environment.URIs.api
+        val api = environment.URIs.indexers?.firstOrNull()?.api
         val path = privateApiPath(type) ?: return null
         return "$api$path"
     }
@@ -72,7 +72,7 @@ open class StateManagerConfigs(
     }
 
     fun websocketUrl(): String? {
-        val socket = environment.URIs.socket
+        val socket = environment.URIs.indexers?.firstOrNull()?.socket
         val path = websocketPath() ?: return null
         return "$socket$path"
     }

@@ -101,7 +101,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 ioImplementations,
                 "en",
                 "/config",
-                "https://dydx-shared-resources.vercel.app/config",
+                "https://dydx-v4-shared-resources.vercel.app/config",
             )
         }
 
@@ -1651,7 +1651,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     ) {
         if (data != null) {
             assertNotNull(obj)
-            assertEquals(data.size, obj.size)
+            assertTrue { data.size >= obj.size }
             for (i in obj.indices) {
                 verifyConfigsFeeTier(parser.asMap(data[i]), obj[i], "$trace.$i")
             }

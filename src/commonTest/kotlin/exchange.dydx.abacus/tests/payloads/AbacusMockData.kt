@@ -6,6 +6,7 @@ import kollections.JsExport
 @JsExport
 class AbacusMockData {
     internal val socketUrl = AbUrl("api.dydx.exchange", path="/v3/ws", scheme = "wss")
+    internal val environments = EnvironmentsMock()
     internal val accountsChannel = AccountsChannelMock()
     internal val fillsChannel = FillsMock()
     internal val transfersMock = TransfersMock()

@@ -32,9 +32,13 @@ enum class AppVersion(val rawValue: String) {
 }
 
 @JsExport
-data class EnvironmentURIs(
+data class IndexerURIs(
     val api: String,
-    val socket: String,
+    val socket: String)
+
+@JsExport
+data class EnvironmentURIs(
+    val indexers: IList<IndexerURIs>?,
     val configs: String?,
     val validators: IList<String>?,
     val faucet: String?,
@@ -193,7 +197,8 @@ open class AppStateMachine(private val appPlatform: AppPlatform? = null) : AppSt
         return adaptor?.localizer
     }
 
-    override val availableEnvironments: IList<SelectionOption> = environments.map { environment ->
+    override val availableEnvironments: IList<SelectionOption>
+        get() = environments.map { environment ->
         SelectionOption(environment.environment, environment.string, null)
     }.toIList()
 

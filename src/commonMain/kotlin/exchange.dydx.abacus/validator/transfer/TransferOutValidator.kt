@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.beth32.Bech32
+import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.TransferValidatorProtocol
 import kollections.iListOf
@@ -23,7 +24,7 @@ internal class TransferOutValidator(
     ): IList<Any>? {
         val address = parser.asString(parser.value(transfer, "address"))
         val type = parser.asString(parser.value(transfer, "type"))
-        if (type == "TRANSFER_OUT" && address != null && !isAddressValid(address)) {
+        if (type == "TRANSFER_OUT" && !address.isNullOrEmpty() && !address.isAddressValid()) {
             return iListOf(
                 error(
                     "ERROR",
@@ -36,15 +37,6 @@ internal class TransferOutValidator(
             )
         } else {
             return null
-        }
-    }
-
-    private fun isAddressValid(address: String): Boolean {
-        try {
-            val (humanReadablePart, data) = Bech32.decode(address)
-            return humanReadablePart == "dydx"
-        } catch (e: Exception) {
-            return false
         }
     }
 }

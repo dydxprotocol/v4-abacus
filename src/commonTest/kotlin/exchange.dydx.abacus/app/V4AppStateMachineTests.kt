@@ -76,7 +76,7 @@ class V4AppStateMachineTests {
         )
         state = appStateMachine.processHttpResponse(
             AbUrl(
-                host = "dydx-shared-resources.vercel.app",
+                host = "dydx-v4-shared-resources.vercel.app",
                 path = "/v4/staging/markets.json",
                 scheme = "https://"
             ),

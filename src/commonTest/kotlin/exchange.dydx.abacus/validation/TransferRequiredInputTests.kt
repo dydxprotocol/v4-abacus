@@ -158,18 +158,6 @@ class TransferRequiredInputTests : V3BaseTests() {
                         },
                         "errors": [
                             {
-                                "code": "REQUIRED_SIZE",
-                                "type": "REQUIRED",
-                                "fields": [
-                                    "size.usdcSize"
-                                ],
-                                "resources": {
-                                    "action": {
-                                        "stringKey": "APP.TRADE.ENTER_AMOUNT"
-                                    }
-                                }
-                            },
-                            {
                                 "code": "REQUIRED_ADDRESS",
                                 "type": "REQUIRED",
                                 "fields": [

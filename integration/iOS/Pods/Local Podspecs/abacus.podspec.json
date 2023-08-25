@@ -1,7 +1,7 @@
 {
   "name": "abacus",
-  "version": "0.2.31",
-  "homepage": "https://github.com/dydxprotocol/abacus",
+  "version": "0.3.3",
+  "homepage": "https://github.com/dydxprotocol/v4-abacus",
   "source": {
     "http": ""
   },
