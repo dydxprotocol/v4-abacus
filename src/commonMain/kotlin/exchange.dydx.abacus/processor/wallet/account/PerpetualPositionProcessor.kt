@@ -158,10 +158,12 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
         existing: IMap<String, Any>?,
         payload: IMap<String, Any>?
     ): IMap<String, Any>? {
-        return if (payload != null && parser.asString(payload.get("status")) == "OPEN") {
+        // Keep the position even if it is closed in the internal state.
+        // Filter at output
+        return if (payload != null) {
             received(existing, payload)
         } else {
-            null
+            existing
         }
     }
 }
