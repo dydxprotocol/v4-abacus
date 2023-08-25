@@ -14,6 +14,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kollections.iListOf
 import kollections.iMutableSetOf
+import kollections.toIMap
 import kollections.toIMutableMap
 
 /*
@@ -375,10 +376,16 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             val openPerpetualPositionsData =
                 (parser.asMap(payload["openPositions"])
                     ?: parser.asMap(payload["openPerpetualPositions"]))
+
+            val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
             modified.safeSet(
-                "openPositions",
-                perpetualPositionsProcessor.received(openPerpetualPositionsData)
+                "positions",
+                positions
             )
+            modified.safeSet("openPositions", positions?.filterValues { it ->
+                val data = parser.asMap(it)
+                parser.asString(data?.get("status")) == "OPEN"
+            }?.toIMap())
 
             val assetPositionsData = parser.asMap(payload["assetPositions"])
             modified.safeSet("assetPositions", assetPositionsProcessor.received(assetPositionsData))
@@ -483,11 +490,15 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     ): IMap<String, Any> {
         return if (payload != null) {
             val modified = subaccount.mutable()
-            val transformed = perpetualPositionsProcessor.receivedChanges(
-                parser.asMap(subaccount["openPositions"]),
+            val positions = perpetualPositionsProcessor.receivedChanges(
+                parser.asMap(subaccount["positions"]),
                 payload
             )
-            modified.safeSet("openPositions", transformed)
+            modified.safeSet("positions", positions)
+            modified.safeSet("openPositions", positions?.filterValues { it ->
+                val data = parser.asMap(it)
+                parser.asString(data?.get("status")) == "OPEN"
+            }?.toIMap())
             modified
         } else {
             subaccount
