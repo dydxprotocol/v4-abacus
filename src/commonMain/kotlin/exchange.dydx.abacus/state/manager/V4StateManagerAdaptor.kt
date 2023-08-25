@@ -374,23 +374,31 @@ class V4StateManagerAdaptor(
                 "chainId" to environment.dydxChainId,
             )
             val json = jsonEncoder.encode(param)
-            ioImplementations.chain?.get(QueryType.OptimalNode, json) { result ->
-                if (result != null) {
-                    /*
+            ioImplementations.threading?.async(ThreadingType.main) {
+                ioImplementations.chain?.get(QueryType.OptimalNode, json) { result ->
+                    if (result != null) {
+                        /*
                     response = {
                         "url": "https://...",
                      */
-                    val map = Json.parseToJsonElement(result).jsonObject.toIMap()
-                    val node = parser.asString(map["url"])
-                    callback(node)
-                } else {
-                    // Not handled by client yet
-                    callback(endpointUrls.firstOrNull())
+                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
+                        val node = parser.asString(map["url"])
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(node)
+                        }
+                    } else {
+                        // Not handled by client yet
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(endpointUrls.firstOrNull())
+                        }
+                    }
                 }
             }
         } else {
             val first = parser.asString(endpointUrls?.firstOrNull())
-            callback(first)
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                callback(first)
+            }
         }
     }
 
