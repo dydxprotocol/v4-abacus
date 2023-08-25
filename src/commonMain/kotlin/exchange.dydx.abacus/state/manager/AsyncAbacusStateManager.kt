@@ -97,6 +97,13 @@ class AsyncAbacusStateManager(
         private set(value) {
             if (field !== value) {
                 field?.didSetReadyToConnect(false)
+                field?.market = market
+                field?.accountAddress = accountAddress
+                field?.sourceAddress = sourceAddress
+                field?.subaccountNumber = subaccountNumber
+                field?.orderbookGrouping = orderbookGrouping
+                field?.historicalPnlPeriod = historicalPnlPeriod
+                field?.candlesResolution = candlesResolution
                 field = value
             }
         }
