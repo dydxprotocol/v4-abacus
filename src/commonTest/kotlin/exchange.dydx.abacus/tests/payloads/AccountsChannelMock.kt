@@ -3191,4 +3191,41 @@ internal class AccountsChannelMock {
            ]
         }
     """.trimIndent()
+
+    internal val v4_position_closed = """
+        {
+           "type":"channel_batch_data",
+           "connection_id":"aaf8f307-c8d9-4273-9df6-1418e3940ac1",
+           "message_id":3,
+           "id":"dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art/0",
+           "channel":"v4_subaccounts",
+           "version":"2.2.0",
+           "contents":[
+              {
+                 "perpetualPositions":[
+                    {
+                       "address":"dydx14zzueazeh0hj67cghhf9jypslcf9sh2n5k6art",
+                       "subaccountNumber":0,
+                       "positionId":"2bc9c966-cbd6-5a04-b35c-02dc7b06d671",
+                       "market":"ETH-USD",
+                       "side":"LONG",
+                       "status":"CLOSED",
+                       "size":"0.00",
+                       "maxSize":"0.00",
+                       "netFunding":"0",
+                       "entryPrice":"1878.08",
+                       "exitPrice":null,
+                       "sumOpen":"0.05",
+                       "sumClose":"0",
+                       "realizedPnl":"0.000000",
+                       "unrealizedPnl":"0.0",
+                       "createdAt":"2023-06-30T17:27:07.619Z",
+                       "createdAtHeight":"108545",
+                       "closedAt":"2023-07-30T17:27:07.619Z"
+                    }
+                 ]
+              }
+           ]
+        }
+    """.trimIndent()
 }

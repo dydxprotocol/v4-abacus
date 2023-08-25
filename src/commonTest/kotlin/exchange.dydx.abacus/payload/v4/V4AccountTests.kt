@@ -1,15 +1,21 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
+import exchange.dydx.abacus.utils.UIImplementations
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class V4AccountTests : V4BaseTests() {
     @Test
@@ -639,6 +645,9 @@ class V4AccountTests : V4BaseTests() {
                         "account": {
                             "subaccounts": {
                                 "0": {
+                                    "equity": {
+                                        "current": -41124.1844645066
+                                    },
                                     "openPositions": {
                                         "ETH-USD": {
                                             "size": {
@@ -663,6 +672,57 @@ class V4AccountTests : V4BaseTests() {
                 assertEquals(
                     112,
                     fills?.size
+                )
+            }
+        )
+
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_position_closed, 0, 16961)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "0": {
+                                    "equity": {
+                                        "current": -41281.9808525066
+                                    },
+                                    "openPositions": {
+                                        "BTC-USD": {
+                                            "size": {
+                                                "current": -1.792239322
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+                val ioImplementations = BaseTests.testIOImplementations()
+                val localizer = BaseTests.testLocalizer(ioImplementations)
+                val uiImplementations = BaseTests.testUIImplementations(localizer)
+                val notificationsProvider = NotificationsProvider(uiImplementations, Parser(), JsonEncoder())
+                val notifications = notificationsProvider.buildNotifications(perp, 0)
+                assertEquals(
+                    4,
+                    notifications.size
+                )
+                val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
+                assertNotNull(order)
+                assertEquals(
+                    "NOTIFICATIONS.ORDER_PARTIALLY_FILLED.TITLE",
+                    order.title
+                )
+                val position = notifications["position:ETH-USD"]
+                assertNotNull(position)
+                assertEquals(
+                    "NOTIFICATIONS.POSITION_CLOSED.TITLE",
+                    position.title
                 )
             }
         )
