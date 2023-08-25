@@ -14,7 +14,6 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kollections.iListOf
 import kollections.iMutableSetOf
-import kollections.toIMap
 import kollections.toIMutableMap
 
 /*
@@ -376,16 +375,10 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             val openPerpetualPositionsData =
                 (parser.asMap(payload["openPositions"])
                     ?: parser.asMap(payload["openPerpetualPositions"]))
-
-            val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
             modified.safeSet(
-                "positions",
-                positions
+                "openPositions",
+                perpetualPositionsProcessor.received(openPerpetualPositionsData)
             )
-            modified.safeSet("openPositions", positions?.filterValues { it ->
-                val data = parser.asMap(it)
-                parser.asString(data?.get("status")) == "OPEN"
-            }?.toIMap())
 
             val assetPositionsData = parser.asMap(payload["assetPositions"])
             modified.safeSet("assetPositions", assetPositionsProcessor.received(assetPositionsData))
@@ -490,15 +483,11 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     ): IMap<String, Any> {
         return if (payload != null) {
             val modified = subaccount.mutable()
-            val positions = perpetualPositionsProcessor.receivedChanges(
-                parser.asMap(subaccount["positions"]),
+            val transformed = perpetualPositionsProcessor.receivedChanges(
+                parser.asMap(subaccount["openPositions"]),
                 payload
             )
-            modified.safeSet("positions", positions)
-            modified.safeSet("openPositions", positions?.filterValues { it ->
-                val data = parser.asMap(it)
-                parser.asString(data?.get("status")) == "OPEN"
-            }?.toIMap())
+            modified.safeSet("openPositions", transformed)
             modified
         } else {
             subaccount
