@@ -136,19 +136,24 @@ internal class TradeInputDataValidator(
         /*
          USER_MAX_ORDERS according to Equity Tier
          */
+        val fallbackMaxNumOrders: Int = 20
         var maxNumOrders: Int = 0
         val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
-        val equityTierKey: String = if (isStatefulOrder) "equityTiers.statefulOrderEquityTiers" else "equityTiers.shortTermOrderEquityTiers"
-
-        parser.asList(parser.value(configs, equityTierKey))?.let { tiers ->
-            for (tier in tiers) {
-                parser.asMap(tier)?.let { item ->
-                    val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
-                    if ( requiredTotalNetCollateralUSD <= equity) {
-                        maxNumOrders = parser.asInt(item["maxOrders"])?: 0
+        val equityTierKey: String = if (isStatefulOrder) "statefulOrderEquityTiers" else "shortTermOrderEquityTiers"
+        parser.asMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
+            parser.asList(equityTiers[equityTierKey])?.let { tiers ->
+                if (tiers.size == 0) return fallbackMaxNumOrders
+                for (tier in tiers) {
+                    parser.asMap(tier)?.let { item ->
+                        val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
+                        if ( requiredTotalNetCollateralUSD <= equity) {
+                            maxNumOrders = parser.asInt(item["maxOrders"])?: 0
+                        }
                     }
                 }
             }
+        } ?: run {
+            return fallbackMaxNumOrders
         }
 
         return maxNumOrders
