@@ -204,14 +204,23 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             modified.safeSet("cancelReason", payload["removalReason"] ?: payload["cancelReason"])
 
             updateResource(modified)
-            var type = parser.asString(modified["type"])
-            if (type == "LIMIT") {
-                val clientMetadata = parser.asInt(modified["clientMetadata"])
-                if (clientMetadata == 1) {
-                    type = "MARKET"
-                    modified.safeSet("type", type)
+            val clientMetadata = parser.asInt(modified["clientMetadata"])
+            if (clientMetadata == 1) {
+                when (parser.asString(modified["type"])) {
+                    "LIMIT" -> {
+                        modified.safeSet("type", "MARKET")
+                    }
+
+                    "STOP_LIMIT" -> {
+                        modified.safeSet("type", "STOP_MARKET")
+                    }
+
+                    "TAKE_PROFIT" -> {
+                        modified.safeSet("type", "TAKE_PROFIT_MARKET")
+                    }
                 }
             }
+
             updateResource(modified)
             val (returnValue, updated) = updateHeight(modified, height);
             return returnValue
