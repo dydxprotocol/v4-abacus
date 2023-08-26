@@ -148,7 +148,7 @@ class V3ForegroundCycleTests {
 
         setStateMachineReadyToConnect(stateManager)
         testWebSocket?.simulateConnected(true)
-        testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
+        testWebSocket?.simulateReceived(mock.marketsChannel.subscribed)
         stateManager.market = "ETH-USD"
 
         assertEquals(
@@ -172,14 +172,14 @@ class V3ForegroundCycleTests {
         )
 
         assertEquals(
-            5,
+            7,
             testRest?.requests?.size,
             "Should have queued 5 REST requests"
         )
 
         assertEquals(
             "https://api.stage.dydx.exchange/v3/historical-funding/ETH-USD",
-            testRest?.requests?.get(4),
+            testRest?.requests?.get(5),
             "Request to historical funding endpoint should be present"
         )
 
@@ -221,13 +221,13 @@ class V3ForegroundCycleTests {
         )
 
         assertEquals(
-            6,
+            9,
             testRest?.requests?.size,
             "Should have queued 7 REST requests"
         )
 
         assertEquals(
-            "https://api.stage.dydx.exchange/v3/historical-funding/BTC-USD",
+            "https://api.stage.dydx.exchange/v3/historical-funding/ETH-USD",
             testRest?.requests?.get(5),
             "Request to historical funding endpoint should be present"
         )

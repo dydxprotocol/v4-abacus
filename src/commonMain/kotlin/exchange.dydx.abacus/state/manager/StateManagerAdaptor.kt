@@ -274,7 +274,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    var candlesResolution: String = "1HOUR"
+    var candlesResolution: String = "1DAY"
         internal set(value) {
             if (field != value) {
                 val oldValue = field

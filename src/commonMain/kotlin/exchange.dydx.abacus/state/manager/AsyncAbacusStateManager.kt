@@ -164,7 +164,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var candlesResolution: String = "1d"
+    var candlesResolution: String = "1DAY"
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
