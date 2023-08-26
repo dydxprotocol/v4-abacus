@@ -178,7 +178,7 @@ class V4ForegroundCycleTests {
         )
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_candles","id":"ETH-USD/1HOUR"}
+                {"type":"subscribe","channel":"v4_candles","id":"ETH-USD/1DAY"}
             """.trimIndent(),
             testWebSocket?.messages?.get(3),
             "4th message should be v4_candles subscribe"
@@ -197,7 +197,7 @@ class V4ForegroundCycleTests {
         )
 
         assertEquals(
-            "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1HOUR",
+            "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
             testRest?.requests?.get(7),
             "Request to candles endpoint should be present"
         )
@@ -240,14 +240,14 @@ class V4ForegroundCycleTests {
         )
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_candles","id":"ETH-USD/1HOUR"}
+                {"type":"unsubscribe","channel":"v4_candles","id":"ETH-USD/1DAY"}
             """.trimIndent(),
             testWebSocket?.messages?.get(8),
             "9th message should be v4_candles unsubscribe"
         )
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_candles","id":"BTC-USD/1HOUR"}
+                {"type":"subscribe","channel":"v4_candles","id":"BTC-USD/1DAY"}
             """.trimIndent(),
             testWebSocket?.messages?.get(9),
             "10th message should be v4_candles subscribe"
@@ -266,7 +266,7 @@ class V4ForegroundCycleTests {
         )
 
         assertEquals(
-            "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1HOUR",
+            "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY",
             testRest?.requests?.get(9),
             "Request to candles endpoint should be present"
         )

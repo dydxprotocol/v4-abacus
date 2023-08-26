@@ -97,6 +97,13 @@ class AsyncAbacusStateManager(
         private set(value) {
             if (field !== value) {
                 field?.didSetReadyToConnect(false)
+                value?.market = market
+                value?.accountAddress = accountAddress
+                value?.sourceAddress = sourceAddress
+                value?.subaccountNumber = subaccountNumber
+                value?.orderbookGrouping = orderbookGrouping
+                value?.historicalPnlPeriod = historicalPnlPeriod
+                value?.candlesResolution = candlesResolution
                 field = value
             }
         }
@@ -157,7 +164,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var candlesResolution: String = "1d"
+    var candlesResolution: String = "1DAY"
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
