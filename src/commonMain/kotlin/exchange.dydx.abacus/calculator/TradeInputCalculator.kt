@@ -728,7 +728,7 @@ internal class TradeInputCalculator(
                     limitPriceField(),
                     triggerPriceField(),
                     goodUntilField(),
-                    executionField(false),
+                    executionField(true),
                 ), reduceOnlyField()
             )
 
@@ -737,7 +737,7 @@ internal class TradeInputCalculator(
                     sizeField(),
                     trailingPercentField(),
                     goodUntilField(),
-                    executionField(true),
+                    executionField(false),
                 ), reduceOnlyField()
             )
 
@@ -923,12 +923,12 @@ internal class TradeInputCalculator(
         )
     }
 
-    private fun executionField(trailingStop: Boolean): IMap<String, Any> {
+    private fun executionField(conditionalLimit: Boolean): IMap<String, Any> {
         return iMapOf(
             "field" to "execution",
             "type" to "string",
             "options" to if (fokDisabled) {
-                if (trailingStop) iListOf(
+                if (conditionalLimit) iListOf(
                     executionDefault,
                     executionPostOnly,
                     executionIOC
@@ -936,7 +936,7 @@ internal class TradeInputCalculator(
                     executionIOC
                 )
             } else {
-                if (trailingStop) iListOf(
+                if (conditionalLimit) iListOf(
                     executionDefault,
                     executionPostOnly,
                     executionFOK,

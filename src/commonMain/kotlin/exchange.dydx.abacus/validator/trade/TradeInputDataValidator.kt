@@ -103,7 +103,7 @@ internal class TradeInputDataValidator(
         trade: IMap<String, Any>,
         subaccount: IMap<String, Any>?,
         configs: IMap<String, Any>?,
-        ): IList<Any>? {
+    ): IList<Any>? {
         /*
         USER_MAX_ORDERS
         */
@@ -138,16 +138,18 @@ internal class TradeInputDataValidator(
          */
         val fallbackMaxNumOrders: Int = 20
         var maxNumOrders: Int = 0
-        val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current"))?: 0.0
-        val equityTierKey: String = if (isStatefulOrder) "statefulOrderEquityTiers" else "shortTermOrderEquityTiers"
+        val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current")) ?: 0.0
+        val equityTierKey: String =
+            if (isStatefulOrder) "statefulOrderEquityTiers" else "shortTermOrderEquityTiers"
         parser.asMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
             parser.asList(equityTiers[equityTierKey])?.let { tiers ->
                 if (tiers.size == 0) return fallbackMaxNumOrders
                 for (tier in tiers) {
                     parser.asMap(tier)?.let { item ->
-                        val requiredTotalNetCollateralUSD = parser.asDouble(item["requiredTotalNetCollateralUSD"])?: 0.0
-                        if ( requiredTotalNetCollateralUSD <= equity) {
-                            maxNumOrders = parser.asInt(item["maxOrders"])?: 0
+                        val requiredTotalNetCollateralUSD =
+                            parser.asDouble(item["requiredTotalNetCollateralUSD"]) ?: 0.0
+                        if (requiredTotalNetCollateralUSD <= equity) {
+                            maxNumOrders = parser.asInt(item["maxOrders"]) ?: 0
                         }
                     }
                 }
@@ -334,44 +336,38 @@ internal class TradeInputDataValidator(
         */
         return when (parser.asString(trade["type"])) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
-                when (parser.asString(trade["execution"])) {
-                    "IOC", "FOK" -> {
-                        parser.asDecimal(parser.value(trade, "size.size"))?.let { size ->
-                            parser.asDecimal(parser.value(trade, "price.limitPrice"))
-                                ?.let { limitPrice ->
-                                    parser.asDecimal(parser.value(trade, "price.triggerPrice"))
-                                        ?.let { triggerPrice ->
-                                            if (size > Numeric.double.ZERO && limitPrice < triggerPrice) {
-                                                return iListOf(
-                                                    error(
-                                                        "ERROR",
-                                                        "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                        iListOf("price.triggerPrice"),
-                                                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                        "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                        "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
-                                                    )
-                                                )
-                                            } else if (size < Numeric.double.ZERO && limitPrice > triggerPrice) {
-                                                return iListOf(
-                                                    error(
-                                                        "ERROR",
-                                                        "LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                        iListOf("price.triggerPrice"),
-                                                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                        "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                        "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
-                                                    )
-                                                )
-                                            }
-                                        }
+                parser.asDecimal(parser.value(trade, "size.size"))?.let { size ->
+                    parser.asDecimal(parser.value(trade, "price.limitPrice"))
+                        ?.let { limitPrice ->
+                            parser.asDecimal(parser.value(trade, "price.triggerPrice"))
+                                ?.let { triggerPrice ->
+                                    if (size > Numeric.double.ZERO && limitPrice < triggerPrice) {
+                                        return iListOf(
+                                            error(
+                                                "ERROR",
+                                                "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                iListOf("price.triggerPrice"),
+                                                "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                            )
+                                        )
+                                    } else if (size < Numeric.double.ZERO && limitPrice > triggerPrice) {
+                                        return iListOf(
+                                            error(
+                                                "ERROR",
+                                                "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                iListOf("price.triggerPrice"),
+                                                "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                            )
+                                        )
+                                    }
                                 }
                         }
-                        null
-                    }
-
-                    else -> null
                 }
+                null
             }
 
             else -> null

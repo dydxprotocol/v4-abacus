@@ -633,7 +633,7 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals(100000000.0, placeOrder?.subticks)
             assertEquals(23, placeOrder?.goodUntilBlock)
             assertEquals(false, placeOrder?.reduceOnly)
-            assertEquals("TIME_IN_FORCE_FOK", placeOrder?.timeInForce)
+            assertEquals("TIME_IN_FORCE_UNSPECIFIED", placeOrder?.timeInForce)
             assertEquals("CONDITIONAL", placeOrder?.orderFlags)
             assertEquals("CONDITION_TYPE_STOP_LOSS", placeOrder?.conditionType)
             assertEquals(10000000.0, placeOrder?.conditionalOrderTriggerSubticks)
