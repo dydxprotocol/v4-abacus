@@ -521,7 +521,7 @@ class V4ApiAdaptor(
             }
             return respond(stateMachine.state, change, null, null)
         } else if (url.host == squidApiHost() && url.path == squidApiPath("route")) {
-            var change = stateMachine.squidRoute(text)
+            var change = stateMachine.squidRoute(text, subaccountNumber)
             if (change != null) {
                 stateMachine.update(change)
             }

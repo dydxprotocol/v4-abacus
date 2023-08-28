@@ -69,13 +69,16 @@ internal class SubaccountTransformer {
     ): IMap<String, Any>? {
         val type = parser.asString(transfer["type"])
         if (type != null) {
-            parser.asMap(transfer["summary"])?.let { summary ->
+            val summary =  parser.asMap(transfer["summary"])
+            if (summary != null) {
                 val multiplier =
                     (if (type == "DEPOSIT") Numeric.decimal.POSITIVE else Numeric.decimal.NEGATIVE)
                 val usdcSize =
                     (parser.asDecimal(summary["usdcSize"]) ?: Numeric.decimal.ZERO) * multiplier
                 val fee = (parser.asDecimal(summary["fee"])
                     ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE
+                print("usdcSize: $usdcSize")
+                print("fee: $fee")
                 return iMapOf(
                     "usdcSize" to usdcSize,
                     "fee" to fee
