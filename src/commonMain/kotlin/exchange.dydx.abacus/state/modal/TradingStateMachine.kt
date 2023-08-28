@@ -739,9 +739,10 @@ open class TradingStateMachine(
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
                         iListOf(
+                            ReceiptLine.equity.rawValue,
                             ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.exchangeRate.rawValue,
+                            ReceiptLine.exchangeReceived.rawValue,
                             ReceiptLine.bridgeFee.rawValue,
                             ReceiptLine.fee.rawValue,
                             ReceiptLine.slippage.rawValue
@@ -749,7 +750,7 @@ open class TradingStateMachine(
                     }
                     "TRANSFER_OUT" -> {
                         iListOf(
-                            ReceiptLine.buyingPower.rawValue,
+                            ReceiptLine.equity.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.fee.rawValue
                         )
