@@ -57,7 +57,11 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
         val oldState = stateMachine.state
         get(url, params, null, false, callback = { response, httpCode ->
             if (success(httpCode) && response != null) {
-                update(stateMachine.squidRoute(response), oldState)
+                val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                val oldFromAmount= oldState?.input?.transfer?.size?.size
+                if (currentFromAmount == oldFromAmount) {
+                    update(stateMachine.squidRoute(response, subaccountNumber), oldState)
+                }
             }
         })
     }
@@ -143,7 +147,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
         val oldState = stateMachine.state
         get(url, params, null, false, callback = { response, httpCode ->
             if (success(httpCode) && response != null) {
-                update(stateMachine.squidRoute(response), oldState)
+                update(stateMachine.squidRoute(response, subaccountNumber), oldState)
             }
         })
     }

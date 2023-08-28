@@ -615,6 +615,7 @@ enum class ReceiptLine(val rawValue: String) {
     walletBalance("WALLET_BALANCE"),
     bridgeFee("BRIDGE_FEE"),
     exchangeRate("EXCHANGE_RATE"),
+    exchangeReceived("EXCHANGE_RECEIVED"),
     slippage("SLIPPAGE"),
     gasFee("GAS_FEES");
 

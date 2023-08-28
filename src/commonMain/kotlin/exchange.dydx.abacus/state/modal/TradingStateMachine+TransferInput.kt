@@ -127,6 +127,9 @@ fun TradingStateMachine.transfer(
                     transfer.safeSet("size.size", parser.asDecimal(data))
                     transfer.safeSet("route", null)
                     transfer.safeSet("requestPayload", null)
+                    if (transfer["type"] == "DEPOSIT") {
+                        transfer.safeSet("size.usdcSize", null)
+                    }
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
