@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -59,6 +60,7 @@ import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
@@ -76,6 +78,7 @@ import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
 import kollections.toISet
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -159,6 +162,24 @@ data class HumanReadableTransferPayload(
     val subaccountNumber: Int,
     val amount: Double,
     val recipient: String,
+)
+
+data class FaucetRecord(
+    val subaccountNumber: Int,
+    val amount: Double,
+    val timestampInMilliseconds: Double,
+)
+
+data class PlaceOrderRecord(
+    val subaccountNumber: Int,
+    val clientId: Int,
+    val timestampInMilliseconds: Double,
+)
+
+data class CancelOrderRecord(
+    val subaccountNumber: Int,
+    val clientId: Int,
+    val timestampInMilliseconds: Double,
 )
 
 
@@ -283,6 +304,30 @@ open class StateManagerAdaptor(
             }
         }
 
+    internal var faucetRecords: IMutableList<FaucetRecord> = iMutableListOf()
+        internal set(value) {
+            if (field !== value) {
+                field = value
+                didSetFaucetRecords()
+            }
+        }
+
+    internal var placeOrderRecords: IMutableList<PlaceOrderRecord> = iMutableListOf()
+        internal set(value) {
+            if (field !== value) {
+                field = value
+                didSetPlaceOrderRecords()
+            }
+        }
+
+    internal var cancelOrderRecords: IMutableList<CancelOrderRecord> = iMutableListOf()
+        internal set(value) {
+            if (field !== value) {
+                field = value
+                didSetCancelOrderRecords()
+            }
+        }
+
     internal var lastOrderClientId: Int? = null
         set(value) {
             if (field != value) {
@@ -294,6 +339,8 @@ open class StateManagerAdaptor(
                 }
             }
         }
+
+
     private var lastOrder: SubaccountOrder? = null
         set(value) {
             if (field !== value) {
@@ -592,6 +639,7 @@ open class StateManagerAdaptor(
                 ioImplementations.threading?.async(ThreadingType.main) {
                     updateStateChanges(stateMachine.state, realChanges, oldState)
                 }
+                updateTracking(changes = realChanges!!)
                 updateNotifications()
             }
         }
@@ -1559,6 +1607,15 @@ open class StateManagerAdaptor(
         }
     }
 
+    private fun updateTracking(changes: StateChanges) {
+        if (changes.changes.contains(Changes.transfers)) {
+            parseTransfersToMatchFaucetRecords()
+        }
+        if (changes.changes.contains(Changes.subaccount)) {
+            parseOrdersToMatchPlaceOrdersAndCancelOrders()
+        }
+    }
+
     private fun updateNotifications() {
         val notifications = notificationsProvider.buildNotifications(stateMachine, subaccountNumber)
         consolidateNotifications(notifications)
@@ -1600,5 +1657,57 @@ open class StateManagerAdaptor(
             stateNotification?.notificationsChanged(notifications)
             dataNotification?.notificationsChanged(notifications)
         }
+    }
+
+    private fun didSetFaucetRecords() {
+        parseTransfersToMatchFaucetRecords()
+    }
+
+    private fun parseTransfersToMatchFaucetRecords() {
+        val subaccountFaucetRecords = faucetRecords.filter { it.subaccountNumber == subaccountNumber }
+        if (subaccountFaucetRecords.isNotEmpty()) {
+            val transfers = stateMachine.state?.subaccountTransfers(subaccountNumber) ?: return
+            val earliest = subaccountFaucetRecords.first().timestampInMilliseconds
+            val firstIndexTransferAfter = transfers.indexOfFirst {
+                it.updatedAtMilliseconds < earliest
+            }
+            val transfersAfter = transfers.subList(firstIndexTransferAfter ?: 0, transfers.size)
+            // Now, try to match transfers with faucet records
+            for (transfer in transfersAfter) {
+                when (transfer.type) {
+                    TransferRecordType.TRANSFER_IN -> {
+                        val faucet = subaccountFaucetRecords.firstOrNull {
+                            it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
+                        }
+                        if (faucet != null) {
+                            val transactionTimeInterval = transfer.updatedAtMilliseconds - faucet.timestampInMilliseconds
+                            val interval = Clock.System.now().toEpochMilliseconds().toDouble() - faucet.timestampInMilliseconds
+                            val params = iMapOf("timeLapsed" to interval, "transactionTimeLapsed" to transactionTimeInterval)
+                            val paramsAsString = Json.encodeToString(params)
+
+
+                            ioImplementations.tracking?.log("FaucetTransferConfirmed", paramsAsString)
+                            faucetRecords.remove(faucet)
+                            break
+                        }
+                    }
+
+                    else -> {}
+                }
+                val transferType = transfer.type
+            }
+        }
+    }
+
+    private fun didSetPlaceOrderRecords() {
+        parseOrdersToMatchPlaceOrdersAndCancelOrders()
+    }
+
+    private fun didSetCancelOrderRecords() {
+        parseOrdersToMatchPlaceOrdersAndCancelOrders()
+    }
+
+    private fun parseOrdersToMatchPlaceOrdersAndCancelOrders() {
+
     }
 }

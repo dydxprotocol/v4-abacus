@@ -789,6 +789,16 @@ data class SubaccountTransferResources(
     }
 }
 
+@JsExport
+@Serializable
+enum class TransferRecordType(val rawValue: String) {
+    DEPOSIT("DEPOSIT"), WITHDRAW("WITHDRAWAL"), TRANSFER_IN("TRANSFER_IN"), TRANSFER_OUT("TRANSFER_OUT");
+
+    companion object {
+        operator fun invoke(rawValue: String?) =
+            TransferRecordType.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
 
 /*
 debit and credit info are set depending on the type of transfer
@@ -797,6 +807,7 @@ debit and credit info are set depending on the type of transfer
 @Serializable
 data class SubaccountTransfer(
     val id: String,
+    val type: TransferRecordType,
     val asset: String?,
     val amount: Double?,
     val updatedAtBlock: Int?,
@@ -821,6 +832,7 @@ data class SubaccountTransfer(
                     SubaccountTransferResources.create(existing?.resources, parser, it)
                 }
                 if (id != null && updatedAtMilliseconds != null && resources != null) {
+                    val type = TransferRecordType.invoke(parser.asString(data["type"])) ?: return null
                     val asset = parser.asString(data["asset"])
                     val amount = parser.asDouble(data["amount"])
                     val fromAddress = parser.asString(data["fromAddress"])
@@ -828,6 +840,7 @@ data class SubaccountTransfer(
                     val updatedAtBlock = parser.asInt(data["updatedAtBlock"])
                     val transactionHash = parser.asString(data["transactionHash"])
                     return if (existing?.id != id ||
+                        existing.type !== type ||
                         existing.asset != asset ||
                         existing.amount != amount ||
                         existing.updatedAtBlock != updatedAtBlock ||
@@ -839,6 +852,7 @@ data class SubaccountTransfer(
                     ) {
                         SubaccountTransfer(
                             id,
+                            type,
                             asset,
                             amount,
                             updatedAtBlock,

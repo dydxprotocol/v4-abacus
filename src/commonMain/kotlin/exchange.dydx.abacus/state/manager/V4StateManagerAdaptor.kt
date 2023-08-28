@@ -34,6 +34,7 @@ import exchange.dydx.abacus.utils.isAddressValid
 import io.ktor.client.utils.EmptyContent.status
 import kollections.toIMap
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -695,25 +696,35 @@ class V4StateManagerAdaptor(
 
     override fun faucet(amount: Double, callback: TransactionCallback) {
         val string = Json.encodeToString(faucetPayload(subaccountNumber, amount))
+        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
         transaction(TransactionType.Faucet, string) { response ->
-            val error = parseFaucetResponse(response)
+            val error = parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
             send(error, callback)
         }
     }
 
-    private fun parseFaucetResponse(response: String): ParsingError? {
+    private fun parseFaucetResponse(response: String, subaccountNumber: Int, amount: Double, submitTimeInMilliseconds: Double): ParsingError? {
         val result =
             Json.parseToJsonElement(response).jsonObject.toIMap()
-        val status = parser.asInt(result.get("status"))
-        if (status == 202) {
-            return null
+        val status = parser.asInt(result["status"])
+        return if (status == 202) {
+            this.ioImplementations.threading?.async(ThreadingType.main) {
+                this.faucetRecords.add(
+                    FaucetRecord(
+                        subaccountNumber,
+                        amount,
+                        submitTimeInMilliseconds,
+                    )
+                )
+            }
+            null
         } else if (status != null) {
-            return V4TransactionErrors.error(null, "API error: $status")
+            V4TransactionErrors.error(null, "API error: $status")
         } else {
             val resultError = parser.asMap(result.get("error"))
             val message = parser.asString(resultError?.get("message"))
-            return V4TransactionErrors.error(null, message ?: "Unknown error")
+            V4TransactionErrors.error(null, message ?: "Unknown error")
         }
     }
 
