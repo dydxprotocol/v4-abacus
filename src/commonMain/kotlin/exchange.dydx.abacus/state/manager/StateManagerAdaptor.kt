@@ -1659,12 +1659,22 @@ open class StateManagerAdaptor(
         }
     }
 
+    internal open fun parseFaucetResponse(
+        response: String,
+        subaccountNumber: Int,
+        amount: Double,
+        submitTimeInMilliseconds: Double
+    ): ParsingError? {
+        return null
+    }
+
     private fun didSetFaucetRecords() {
         parseTransfersToMatchFaucetRecords()
     }
 
     private fun parseTransfersToMatchFaucetRecords() {
-        val subaccountFaucetRecords = faucetRecords.filter { it.subaccountNumber == subaccountNumber }
+        val subaccountFaucetRecords =
+            faucetRecords.filter { it.subaccountNumber == subaccountNumber }
         if (subaccountFaucetRecords.isNotEmpty()) {
             val transfers = stateMachine.state?.subaccountTransfers(subaccountNumber) ?: return
             val earliest = subaccountFaucetRecords.first().timestampInMilliseconds
@@ -1680,13 +1690,21 @@ open class StateManagerAdaptor(
                             it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
                         }
                         if (faucet != null) {
-                            val transactionTimeInterval = transfer.updatedAtMilliseconds - faucet.timestampInMilliseconds
-                            val interval = Clock.System.now().toEpochMilliseconds().toDouble() - faucet.timestampInMilliseconds
-                            val params = iMapOf("timeLapsed" to interval, "transactionTimeLapsed" to transactionTimeInterval)
+                            val transactionTimeInterval =
+                                transfer.updatedAtMilliseconds - faucet.timestampInMilliseconds
+                            val interval = Clock.System.now().toEpochMilliseconds()
+                                .toDouble() - faucet.timestampInMilliseconds
+                            val params = iMapOf(
+                                "timeLapsed" to interval,
+                                "transactionTimeLapsed" to transactionTimeInterval
+                            )
                             val paramsAsString = Json.encodeToString(params)
 
 
-                            ioImplementations.tracking?.log("FaucetTransferConfirmed", paramsAsString)
+                            ioImplementations.tracking?.log(
+                                "FaucetTransferConfirmed",
+                                paramsAsString
+                            )
                             faucetRecords.remove(faucet)
                             break
                         }

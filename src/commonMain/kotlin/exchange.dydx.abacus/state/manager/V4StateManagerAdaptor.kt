@@ -704,7 +704,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun parseFaucetResponse(response: String, subaccountNumber: Int, amount: Double, submitTimeInMilliseconds: Double): ParsingError? {
+    override fun parseFaucetResponse(response: String, subaccountNumber: Int, amount: Double, submitTimeInMilliseconds: Double): ParsingError? {
         val result =
             Json.parseToJsonElement(response).jsonObject.toIMap()
         val status = parser.asInt(result["status"])
