@@ -484,4 +484,17 @@ class AsyncAbacusStateManager(
     fun orderCanceled(orderId: String) {
         adaptor?.orderCanceled(orderId)
     }
+
+    fun parseFaucetResponse(
+        response: String,
+        amount: Double,
+        submitTimeInMilliseconds: Double
+    ): ParsingError? {
+        return adaptor?.parseFaucetResponse(
+            response,
+            subaccountNumber,
+            amount,
+            submitTimeInMilliseconds
+        )
+    }
 }
