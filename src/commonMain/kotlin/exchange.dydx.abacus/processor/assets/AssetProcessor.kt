@@ -54,7 +54,7 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         payload: IMap<String, Any>
     ): IMap<String, Any> {
         val received = transform(asset, payload, assetConfigurationsKeyMap)
-        val symbol = received["symbol"]
+        val symbol = parser.asString(received["symbol"])
         if (symbol != null) {
             received["id"] = symbol
         }
@@ -63,6 +63,11 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             payload,
             assetConfigurationsResourcesKeyMap
         )
+        environment?.URIs?.marketImageUrl?.let {
+            if (symbol != null) {
+                resources["imageUrl"] = it.replace("{asset}", symbol.lowercase())
+            }
+        }
         received["resources"] = resources
 
         return received

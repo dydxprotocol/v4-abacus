@@ -13,6 +13,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.*
 import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
@@ -26,7 +27,6 @@ import kollections.iMutableMapOf
 import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
-import kollections.toIMutableList
 import kollections.toIMutableMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -39,6 +39,7 @@ import kotlin.time.Duration.Companion.days
 @JsExport
 //@Serializable
 open class TradingStateMachine(
+    private val environment: V4Environment?,
     private val localizer: LocalizerProtocol?,
     private val formatter: Formatter?,
     private val version: AppVersion,
@@ -46,7 +47,11 @@ open class TradingStateMachine(
 ) {
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser, version == AppVersion.v3)
-    internal val assetsProcessor = AssetsProcessor(parser)
+    internal val assetsProcessor = run {
+        val processor = AssetsProcessor(parser)
+        processor.environment = environment
+        processor
+    }
     internal val walletProcessor = WalletProcessor(parser)
     internal val configsProcessor = ConfigsProcessor(parser)
     internal val squidProcessor = SquidProcessor(parser)
@@ -54,6 +59,7 @@ open class TradingStateMachine(
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser)
     internal val inputValidator = InputValidator(localizer, formatter, parser)
+
 
     internal var data: IMap<String, Any>? = null
 

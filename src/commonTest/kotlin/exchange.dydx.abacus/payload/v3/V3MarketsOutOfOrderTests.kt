@@ -129,7 +129,7 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                                 "websiteLink": "https://ethereum.org/",
                                 "whitepaperLink": "https://ethereum.org/whitepaper/",
                                 "coinMarketCapsLink": "https://coinmarketcap.com/currencies/ethereum/",
-                                "imageUrl": "https://s3.amazonaws.com/dydx.exchange/currencies/eth.png",
+                                "imageUrl": "https://v4.testnet.dydx.exchange/currencies/eth.svg",
                                 "primaryDescriptionKey": "ETHEREUM_PRIMARY_DESCRIPTION",
                                 "secondaryDescriptionKey": "ETHEREUM_SECONDARY_DESCRIPTION"
                             }

@@ -1,11 +1,14 @@
 package exchange.dydx.abacus.tests.payloads
 
+import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.app.EnvironmentURIs
+import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import kollections.JsExport
 
 @JsExport
 class AbacusMockData {
-    internal val socketUrl = AbUrl("api.dydx.exchange", path="/v3/ws", scheme = "wss")
+    internal val socketUrl = AbUrl("api.dydx.exchange", path = "/v3/ws", scheme = "wss")
     internal val environments = EnvironmentsMock()
     internal val accountsChannel = AccountsChannelMock()
     internal val fillsChannel = FillsMock()
@@ -31,4 +34,28 @@ class AbacusMockData {
     internal val squidStatusMock = SquidStatusMock()
     internal val localizationMock = LocalizationMock()
     internal val v4OnChainMock = V4OnChainMock()
+    internal val v4Environment = V4Environment(
+        "test",
+        "test",
+        "test",
+        "test",
+        "test",
+        false,
+        AppVersion.v4,
+        127,
+        EnvironmentURIs(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "https://v4.testnet.dydx.exchange/currencies/{asset}.svg",
+            null,
+            null,
+            null,
+        ),
+
+
+        )
 }

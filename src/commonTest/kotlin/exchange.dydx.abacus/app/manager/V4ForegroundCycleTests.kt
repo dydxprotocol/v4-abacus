@@ -110,6 +110,11 @@ class V4ForegroundCycleTests {
             "https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app/v1/chains",
             "Request to squid chains endpoint should be present"
         )
+        assertEquals(
+            stateManager.adaptor?.stateMachine?.state?.assets?.get("BTC")?.resources?.imageUrl,
+            "https://trader-fe.vercel.app/currenties/btc.svg",
+            "Asset image url should be correct"
+        )
     }
 
     @Test

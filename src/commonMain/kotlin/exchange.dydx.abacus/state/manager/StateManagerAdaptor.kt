@@ -193,6 +193,7 @@ open class StateManagerAdaptor(
     val dataNotification: DataNotificationProtocol?,
 ) {
     var stateMachine: TradingStateMachine = PerpTradingStateMachine(
+        environment,
         uiImplementations.localizer,
         Formatter(uiImplementations.formatter),
         environment.version,
