@@ -649,7 +649,6 @@ class V4StateManagerAdaptor(
                     )
                     lastOrderClientId = clientId
                 }
-                lastOrderClientId = clientId
             }
             send(error, callback)
         }
@@ -674,7 +673,6 @@ class V4StateManagerAdaptor(
                     )
                     lastOrderClientId = clientId
                 }
-                lastOrderClientId = clientId
             }
             send(error, callback)
         }
