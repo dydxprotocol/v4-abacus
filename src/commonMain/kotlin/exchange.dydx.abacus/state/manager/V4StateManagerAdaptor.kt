@@ -50,6 +50,12 @@ class V4StateManagerAdaptor(
 ) : StateManagerAdaptor(
     ioImplementations, uiImplementations, environment, configs, stateNotification, dataNotification
 ) {
+    private var validatorUrl: String? = null
+        set(value) {
+            field = value
+            didSetValidatorUrl(value)
+        }
+
     private var validatorConnected: Boolean = false
         set(value) {
             if (field != value) {
@@ -206,13 +212,17 @@ class V4StateManagerAdaptor(
 
     private fun bestEffortConnectChain() {
         findOptimalNode { url ->
-            if (url != null) {
-                connectChain(url) { successful ->
-                    validatorConnected = successful
-                }
-            } else {
-                reconnectChain()
+            this.validatorUrl = url
+        }
+    }
+
+    private fun didSetValidatorUrl(validatorUrl: String?) {
+        if (validatorUrl != null) {
+            connectChain(validatorUrl) { successful ->
+                validatorConnected = successful
             }
+        } else {
+            reconnectChain()
         }
     }
 
@@ -621,6 +631,7 @@ class V4StateManagerAdaptor(
     }
 
     override fun commitPlaceOrder(callback: TransactionCallback) {
+        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
@@ -628,13 +639,23 @@ class V4StateManagerAdaptor(
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
-                lastOrderClientId = clientId
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    this.placeOrderRecords.add(
+                        PlaceOrderRecord(
+                            subaccountNumber,
+                            payload.clientId,
+                            submitTimeInMilliseconds,
+                        )
+                    )
+                    lastOrderClientId = clientId
+                }
             }
             send(error, callback)
         }
     }
 
     override fun commitClosePosition(callback: TransactionCallback) {
+        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = closePositionPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
@@ -642,7 +663,16 @@ class V4StateManagerAdaptor(
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
-                lastOrderClientId = clientId
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    this.placeOrderRecords.add(
+                        PlaceOrderRecord(
+                            subaccountNumber,
+                            payload.clientId,
+                            submitTimeInMilliseconds,
+                        )
+                    )
+                    lastOrderClientId = clientId
+                }
             }
             send(error, callback)
         }
@@ -699,17 +729,23 @@ class V4StateManagerAdaptor(
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
         transaction(TransactionType.Faucet, string) { response ->
-            val error = parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
+            val error =
+                parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
             send(error, callback)
         }
     }
 
-    override fun parseFaucetResponse(response: String, subaccountNumber: Int, amount: Double, submitTimeInMilliseconds: Double): ParsingError? {
+    override fun parseFaucetResponse(
+        response: String,
+        subaccountNumber: Int,
+        amount: Double,
+        submitTimeInMilliseconds: Double
+    ): ParsingError? {
         val result =
             Json.parseToJsonElement(response).jsonObject.toIMap()
         val status = parser.asInt(result["status"])
         return if (status == 202) {
-            this.ioImplementations.threading?.async(ThreadingType.main) {
+            this.ioImplementations.threading?.async(ThreadingType.abacus) {
                 this.faucetRecords.add(
                     FaucetRecord(
                         subaccountNumber,
@@ -729,10 +765,23 @@ class V4StateManagerAdaptor(
     }
 
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
-        val string = Json.encodeToString(cancelOrderPayload(orderId))
+        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
+        val payload = cancelOrderPayload(orderId)
+        val string = Json.encodeToString(payload)
 
         transaction(TransactionType.CancelOrder, string) { response ->
             val error = parseTransactionResponse(response)
+            if (error == null) {
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    this.cancelOrderRecords.add(
+                        CancelOrderRecord(
+                            subaccountNumber,
+                            payload.clientId,
+                            submitTimeInMilliseconds,
+                        )
+                    )
+                }
+            }
             send(error, callback)
         }
     }
@@ -775,7 +824,7 @@ class V4StateManagerAdaptor(
                 type == TransferInputField.chain ||
                 type == TransferInputField.token
             ) {
-                if (state.input.transfer.size?.usdcSize ?: 0.0 > 0.0) {
+                if ((state.input.transfer.size?.usdcSize ?: 0.0) > 0.0) {
                     try {
                         simulateWithdrawal { gasFee ->
                             if (gasFee != null) {
@@ -790,7 +839,8 @@ class V4StateManagerAdaptor(
             }
         } else if (state?.input?.transfer?.type == TransferType.transferOut &&
             state.input.transfer.address != null &&
-            state.input.transfer.errors?.count() ?: 0 == 0) {
+            (state.input.transfer.errors?.count() ?: 0) == 0
+        ) {
             if (type == TransferInputField.usdcSize ||
                 type == TransferInputField.size ||
                 type == TransferInputField.token ||
@@ -807,7 +857,9 @@ class V4StateManagerAdaptor(
                     }
                 } else if (token == "dydx") {
                     val address = state.input.transfer.address
-                    if ((state.input.transfer.size?.size ?: 0.0) > 0.0 && address.isAddressValid()) {
+                    if ((state.input.transfer.size?.size
+                            ?: 0.0) > 0.0 && address.isAddressValid()
+                    ) {
                         simulateTransferNativeToken { gasFee ->
                             receiveTransferGas(gasFee)
                         }
@@ -824,4 +876,15 @@ class V4StateManagerAdaptor(
 
         fetchTransferStatus(hash, fromChainId, toChainId)
     }
+
+    override fun trackingParams(interval: Double): IMap<String, Any> {
+        val validatorUrl = this.validatorUrl
+        return if (validatorUrl != null) iMapOf(
+            "roundtripMs" to interval,
+            "validatorUrl" to validatorUrl,
+        ) else iMapOf(
+            "roundtripMs" to interval,
+        )
+    }
+
 }
