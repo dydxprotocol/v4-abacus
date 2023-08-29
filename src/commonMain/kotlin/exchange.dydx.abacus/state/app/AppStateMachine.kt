@@ -43,6 +43,11 @@ data class EnvironmentURIs(
     val validators: IList<String>?,
     val faucet: String?,
     val squid: String?,
+    val statusPageUrl: String?,
+    val marketImageUrl: String?,
+    val tosUrl: String?,
+    val privacyPolicyUrl: String?,
+    val mintscanUrl: String?,
 )
 
 @JsExport
