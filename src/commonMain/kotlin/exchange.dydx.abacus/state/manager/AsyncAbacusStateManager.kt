@@ -324,8 +324,24 @@ class AsyncAbacusStateManager(
                 ?.toIList()
         val faucet = parser.asString(item["faucet"])
         val squid = parser.asString(item["0xsquid"])
+        val statusPageUrl = parser.asString(item["statusPageUrl"])
+        val marketImageUrl = parser.asString(item["marketImageUrl"])
+        val tosUrl = parser.asString(item["tosUrl"])
+        val privacyPolicyUrl = parser.asString(item["privacyPolicyUrl"])
+        val mintscanUrl = parser.asString(item["mintscanUrl"])
 
-        return EnvironmentURIs(indexers, configs, validators, faucet, squid)
+        return EnvironmentURIs(
+            indexers,
+            configs,
+            validators,
+            faucet,
+            squid,
+            statusPageUrl,
+            marketImageUrl,
+            tosUrl,
+            privacyPolicyUrl,
+            mintscanUrl
+        )
     }
 
     private fun parseIndexerURIs(
