@@ -1707,7 +1707,7 @@ open class StateManagerAdaptor(
 
     internal open fun trackingParams(interval: Double): IMap<String, Any> {
         return iMapOf(
-            "timeLapsed" to interval,
+            "roundtripMs" to interval,
         )
     }
 

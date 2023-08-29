@@ -882,10 +882,10 @@ class V4StateManagerAdaptor(
     override fun trackingParams(interval: Double): IMap<String, Any> {
         val validatorUrl = this.validatorUrl
         return if (validatorUrl != null) iMapOf(
-            "timeLapsed" to interval,
+            "roundtripMs" to interval,
             "validatorUrl" to validatorUrl,
         ) else iMapOf(
-            "timeLapsed" to interval,
+            "roundtripMs" to interval,
         )
     }
 
