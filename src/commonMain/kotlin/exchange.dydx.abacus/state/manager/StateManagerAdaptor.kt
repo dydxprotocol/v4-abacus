@@ -1690,21 +1690,9 @@ open class StateManagerAdaptor(
                             it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
                         }
                         if (faucet != null) {
-                            val transactionTimeInterval =
-                                transfer.updatedAtMilliseconds - faucet.timestampInMilliseconds
                             val interval = Clock.System.now().toEpochMilliseconds()
                                 .toDouble() - faucet.timestampInMilliseconds
-                            val params = iMapOf(
-                                "timeLapsed" to interval,
-                                "transactionTimeLapsed" to transactionTimeInterval
-                            )
-                            val paramsAsString = Json.encodeToString(params)
-
-
-                            ioImplementations.tracking?.log(
-                                "FaucetTransferConfirmed",
-                                paramsAsString
-                            )
+                            tracking("FaucetTransferConfirmed", trackingParams(interval))
                             faucetRecords.remove(faucet)
                             break
                         }
@@ -1717,6 +1705,17 @@ open class StateManagerAdaptor(
         }
     }
 
+    internal open fun trackingParams(interval: Double): IMap<String, Any> {
+        return iMapOf(
+            "roundtripMs" to interval,
+        )
+    }
+
+    private fun tracking(eventName: String, params: IMap<String, Any>?) {
+        val paramsAsString = Json.encodeToString(params)
+        ioImplementations.tracking?.log(eventName, paramsAsString)
+    }
+
     private fun didSetPlaceOrderRecords() {
         parseOrdersToMatchPlaceOrdersAndCancelOrders()
     }
@@ -1726,6 +1725,31 @@ open class StateManagerAdaptor(
     }
 
     private fun parseOrdersToMatchPlaceOrdersAndCancelOrders() {
-
+        if (placeOrderRecords.isNotEmpty() || cancelOrderRecords.isNotEmpty()) {
+            val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return
+            val orders = subaccount.orders ?: return
+            for (order in orders) {
+                val placeOrderRecord = placeOrderRecords.firstOrNull {
+                    it.clientId == order.clientId
+                }
+                if (placeOrderRecord != null) {
+                    val interval = Clock.System.now().toEpochMilliseconds()
+                        .toDouble() - placeOrderRecord.timestampInMilliseconds
+                    tracking("PlaceOrderConfirmed", trackingParams(interval))
+                    placeOrderRecords.remove(placeOrderRecord)
+                    break
+                }
+                val cancelOrderRecord = cancelOrderRecords.firstOrNull {
+                    it.clientId == order.clientId
+                }
+                if (cancelOrderRecord != null) {
+                    val interval = Clock.System.now().toEpochMilliseconds()
+                        .toDouble() - cancelOrderRecord.timestampInMilliseconds
+                    tracking("CancelOrderConfirmed", trackingParams(interval))
+                    cancelOrderRecords.remove(cancelOrderRecord)
+                    break
+                }
+            }
+        }
     }
 }
