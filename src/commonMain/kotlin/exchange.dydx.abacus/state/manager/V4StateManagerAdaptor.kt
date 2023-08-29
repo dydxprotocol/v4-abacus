@@ -32,6 +32,7 @@ import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
 import io.ktor.client.utils.EmptyContent.status
+import kollections.iMapOf
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -104,15 +105,17 @@ class V4StateManagerAdaptor(
     internal var validatorState = NetworkState()
     private var apiState: ApiState? = null
         set(value) {
+            val oldValue = field
             if (field !== value) {
                 field = value
-                stateNotification?.apiStateChanged(field)
-                dataNotification?.apiStateChanged(field)
+                didSetApiState(field, oldValue)
             }
         }
 
 
     private val MAX_NUM_BLOCK_DELAY = 10
+
+    private var lastValidatorCallTime: Instant? = null
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
@@ -293,8 +296,15 @@ class V4StateManagerAdaptor(
         query.get(type, paramsInJson) { response ->
             // Parse the response
             if (response != null) {
+                val time = if (!response.contains("error")) {
+                    Clock.System.now()
+                } else null
                 ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (time != null) {
+                        lastValidatorCallTime = time
+                    }
                     callback(response)
+                    trackApiCall()
                 }
             }
         }
@@ -598,7 +608,7 @@ class V4StateManagerAdaptor(
         return apiState
     }
 
-    override fun sparklinesParams(): IMap<String, String>? {
+    override fun sparklinesParams(): IMap<String, String> {
         return iMapOf("timePeriod" to "ONE_DAY")
     }
 
@@ -623,8 +633,15 @@ class V4StateManagerAdaptor(
         }
         transactionsImplementation.transaction(type, paramsInJson) { response ->
             if (response != null) {
+                val time = if (!response.contains("error")) {
+                    Clock.System.now()
+                } else null
                 ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (time != null) {
+                        lastValidatorCallTime = time
+                    }
                     callback(response)
+                    trackValidatorCall()
                 }
             }
         }
@@ -885,6 +902,37 @@ class V4StateManagerAdaptor(
         ) else iMapOf(
             "roundtripMs" to interval,
         )
+    }
+
+    private fun didSetApiState(apiState: ApiState?, oldValue: ApiState?) {
+        stateNotification?.apiStateChanged(apiState)
+        dataNotification?.apiStateChanged(apiState)
+        trackApiStateIfNeeded(apiState, oldValue)
+    }
+
+    override fun trackApiCall() {
+        trackApiStateIfNeeded(apiState, null)
+    }
+
+    private fun trackValidatorCall() {
+        trackApiStateIfNeeded(apiState, null)
+    }
+
+    private fun trackApiStateIfNeeded(apiState: ApiState?, oldValue: ApiState?) {
+        if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
+            val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
+            val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
+            val interval = if (indexerTime != null) (Clock.System.now().toEpochMilliseconds().toDouble() - indexerTime) else null
+            val params = mapOf(
+                "lastSuccessfulIndexerRPC" to indexerTime,
+                "lastSuccessfulFullNodeRPC" to validatorTime,
+                "elapsedTime" to interval,
+                "blockHeight" to indexerState.block,
+                "nodeHeight" to validatorState.block,
+            ).filterValues { it != null } as Map<String, Any>
+
+            tracking("NetworkStatus", params.toIMap())
+        }
     }
 
 }

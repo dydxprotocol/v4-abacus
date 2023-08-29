@@ -80,4 +80,8 @@ open class StateManagerConfigs(
     fun validatorUrls(): IList<String>? {
         return environment.URIs.validators
     }
+
+    fun isIndexer(url: String): Boolean {
+        return environment.URIs.indexers?.any { url.contains(it.api) } ?: false
+    }
 }
