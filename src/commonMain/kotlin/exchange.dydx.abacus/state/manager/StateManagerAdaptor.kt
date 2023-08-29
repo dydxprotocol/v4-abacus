@@ -189,8 +189,8 @@ open class StateManagerAdaptor(
     val uiImplementations: UIImplementations,
     val environment: V4Environment,
     open val configs: StateManagerConfigs,
-    val stateNotification: StateNotificationProtocol?,
-    val dataNotification: DataNotificationProtocol?,
+    var stateNotification: StateNotificationProtocol?,
+    var dataNotification: DataNotificationProtocol?,
 ) {
     var stateMachine: TradingStateMachine = PerpTradingStateMachine(
         environment,
@@ -653,6 +653,8 @@ open class StateManagerAdaptor(
         oldState: PerpetualState?,
     ) {
         if (changes != null) {
+            val stateNotification = this.stateNotification
+            val dataNotification = this.dataNotification
             stateNotification?.stateChanged(
                 stateMachine.state,
                 changes

@@ -96,6 +96,8 @@ class AsyncAbacusStateManager(
     var adaptor: StateManagerAdaptor? = null
         private set(value) {
             if (field !== value) {
+                field?.stateNotification = null
+                field?.dataNotification = null
                 field?.didSetReadyToConnect(false)
                 value?.market = market
                 value?.accountAddress = accountAddress
