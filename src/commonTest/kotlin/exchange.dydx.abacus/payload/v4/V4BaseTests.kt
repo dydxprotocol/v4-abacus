@@ -17,7 +17,7 @@ open class V4BaseTests : BaseTests(127) {
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
     override fun createState(): PerpTradingStateMachine {
-        return PerpTradingStateMachine(null, null, AppVersion.v4, 127)
+        return PerpTradingStateMachine(mock.v4Environment, null, null, AppVersion.v4, 127)
     }
 
     internal open fun loadMarkets(): StateResponse {

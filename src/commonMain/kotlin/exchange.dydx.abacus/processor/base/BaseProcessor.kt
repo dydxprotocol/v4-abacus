@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.base
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
@@ -19,6 +20,14 @@ internal enum class ComparisonOrder {
 }
 
 internal open class BaseProcessor(val parser: ParserProtocol) {
+    internal var environment: V4Environment? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                environmentChanged()
+            }
+        }
+
     internal var accountAddress: String? = null
         set(value) {
             if (field != value) {
@@ -222,5 +231,8 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     }
 
     internal open fun accountAddressChanged() {
+    }
+
+    internal open fun environmentChanged() {
     }
 }

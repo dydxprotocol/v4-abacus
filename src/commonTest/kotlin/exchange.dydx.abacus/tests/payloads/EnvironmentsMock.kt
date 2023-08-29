@@ -20,7 +20,8 @@ class EnvironmentsMock {
                             "socket":"wss://api.dydx.exchange"
                         }
                      ],
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -39,7 +40,8 @@ class EnvironmentsMock {
                             "socket":"wss://api.stage.dydx.exchange"
                         }
                      ],
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -64,7 +66,8 @@ class EnvironmentsMock {
                         "http://validator.v4dev.dydx.exchange"
                      ],
                      "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -88,7 +91,8 @@ class EnvironmentsMock {
                         "http://35.75.227.118"
                      ],
                      "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -103,7 +107,8 @@ class EnvironmentsMock {
                   "maxSubaccountNumber":127,
                   "endpoints":{
                      "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -127,7 +132,8 @@ class EnvironmentsMock {
                         "http://validator.v4dev4.dydx.exchange"
                      ],
                      "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -151,7 +157,8 @@ class EnvironmentsMock {
                         "http://18.223.78.50"
                      ],
                      "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -176,7 +183,8 @@ class EnvironmentsMock {
                         "https://validator.v4staging.dydx.exchange"
                      ],
                      "0xsquid":"https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app"
+                     "configs":"https://dydx-v4-shared-resources.vercel.app",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                },
                {
@@ -203,7 +211,8 @@ class EnvironmentsMock {
                      ],
                      "0xsquid":"https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app",
                      "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "faucet":"https://faucet.v4testnet2.dydx.exchange"
+                     "faucet":"https://faucet.v4testnet2.dydx.exchange",
+                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
                }
             ],

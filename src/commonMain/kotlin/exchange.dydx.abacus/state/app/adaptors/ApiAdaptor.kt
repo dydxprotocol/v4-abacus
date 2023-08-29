@@ -36,7 +36,7 @@ open class ApiAdaptor(
     internal var jsonEncoder = JsonEncoder()
 
     internal var stateMachine: TradingStateMachine =
-        PerpTradingStateMachine(null, null, version, maxSubaccountNumber)
+        PerpTradingStateMachine(null, null, null, version, maxSubaccountNumber)
 
     private var readyToConnect: Boolean = false
     private var accountAddress: String? = null

@@ -9,6 +9,11 @@ import kollections.iMutableMapOf
 @Suppress("UNCHECKED_CAST")
 internal class AssetsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val assetProcessor = AssetProcessor(parser)
+
+    override fun environmentChanged() {
+        assetProcessor.environment = environment
+    }
+
     internal fun subscribed(
         existing: IMap<String, Any>?,
         content: IMap<String, Any>

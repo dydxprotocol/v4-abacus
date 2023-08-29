@@ -113,6 +113,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     internal open fun createState(): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
+            mock.v4Environment,
             testLocalizer(ioImplementations),
             null,
             AppVersion.v3,
