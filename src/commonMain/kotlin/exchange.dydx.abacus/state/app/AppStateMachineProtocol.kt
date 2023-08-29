@@ -278,7 +278,15 @@ enum class ApiStatus(val rawValue: String) {
 
 @JsExport
 @Serializable
-data class ApiState(val status: ApiStatus?, val height: Int?, val haltedBlock: Int?, val trailingBlocks: Int?) {
+data class ApiState(
+    val status: ApiStatus?,
+    val height: Int?,
+    val haltedBlock: Int?,
+    val trailingBlocks: Int?
+) {
+    fun abnormalState(): Boolean {
+        return status == ApiStatus.INDEXER_DOWN || status == ApiStatus.INDEXER_HALTED || status == ApiStatus.VALIDATOR_DOWN || status == ApiStatus.VALIDATOR_HALTED
+    }
 }
 
 

@@ -22,10 +22,10 @@ internal fun TradingStateMachine.receivedFeeTiers(payload: IList<Any>): StateCha
 internal fun TradingStateMachine.onChainFeeTiers(payload: String): StateChanges {
     val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     val tiers = parser.asList(parser.value(json, "params.tiers"))
-    if (tiers != null) {
-        return receivedOnChainFeeTiers(tiers)
+    return if (tiers != null) {
+        receivedOnChainFeeTiers(tiers)
     } else {
-        return StateChanges(iListOf())
+        StateChanges(iListOf())
     }
 }
 

@@ -6,7 +6,10 @@ import kotlinx.serialization.json.*
 
 class JsonEncoder {
     private val parser = Parser()
-    internal fun encode(element: Any) : String {
+    internal fun encode(element: Any?) : String {
+        if (element == null) {
+            return "null"
+        }
         val list = parser.asList(element)
         if (list != null) {
             var first = true

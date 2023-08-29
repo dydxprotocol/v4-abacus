@@ -209,6 +209,7 @@ open class StateManagerAdaptor(
     private var sparklinesTimer: LocalTimerProtocol? = null
     private val sparklinesPollingDuration = 60.0
 
+    internal var lastIndexerCallTime: Instant? = null
 
     var readyToConnect: Boolean = false
         internal set(value) {
@@ -559,7 +560,7 @@ open class StateManagerAdaptor(
             try {
                 val json = Json.parseToJsonElement(message).jsonObject.toIMap()
                 socket(json)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
 
             }
         }
@@ -625,7 +626,7 @@ open class StateManagerAdaptor(
                 }
             }
             update(changes, oldState)
-        } catch (e: ParsingException) {
+        } catch (_: ParsingException) {
         }
     }
 
@@ -923,15 +924,26 @@ open class StateManagerAdaptor(
 
         ioImplementations.threading?.async(ThreadingType.network) {
             ioImplementations.rest?.get(fullUrl, modifiedHeaders) { response, httpCode ->
+                val time = if (configs.isIndexer(url) && success(httpCode)) {
+                    Clock.System.now()
+                } else null
+
                 ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (time != null) {
+                        this.lastIndexerCallTime = time
+                    }
                     try {
                         callback(response, httpCode)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
+                    trackApiCall()
                 }
             }
         }
+    }
+
+    internal open fun trackApiCall() {
     }
 
     internal open fun privateHeaders(
@@ -1024,7 +1036,7 @@ open class StateManagerAdaptor(
     private fun retrieveMarketCandles() {
         val market = market ?: return
         val url = configs.publicApiUrl("candles") ?: return
-        val candleResolution = candlesResolution ?: return
+        val candleResolution = candlesResolution
         val resolutionDuration =
             candleOptionDuration(stateMachine, market, candleResolution) ?: return
         val maxDuration = resolutionDuration * 365
@@ -1711,9 +1723,11 @@ open class StateManagerAdaptor(
         )
     }
 
-    private fun tracking(eventName: String, params: IMap<String, Any>?) {
-        val paramsAsString = Json.encodeToString(params)
-        ioImplementations.tracking?.log(eventName, paramsAsString)
+    internal fun tracking(eventName: String, params: IMap<String, Any>?) {
+        val paramsAsString = jsonEncoder.encode(params)
+        ioImplementations.threading?.async(ThreadingType.main) {
+            ioImplementations.tracking?.log(eventName, paramsAsString)
+        }
     }
 
     private fun didSetPlaceOrderRecords() {
