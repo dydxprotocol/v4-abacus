@@ -937,4 +937,15 @@ class V4StateManagerAdaptor(
         }
     }
 
+    override fun dispose() {
+        super.dispose()
+        chainTimer?.cancel()
+        chainTimer = null
+        heightTimer?.cancel()
+        heightTimer = null
+        userStatsTimer?.cancel()
+        userStatsTimer = null
+        accountBalancesTimer?.cancel()
+        accountBalancesTimer = null
+    }
 }

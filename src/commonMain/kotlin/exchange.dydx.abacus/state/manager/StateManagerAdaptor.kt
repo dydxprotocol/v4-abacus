@@ -467,6 +467,10 @@ open class StateManagerAdaptor(
             if (accountAddress != null && connectedSubaccountNumber != null) {
                 subaccountChannelSubscription(accountAddress, connectedSubaccountNumber, true)
             }
+        } else {
+            if (readyToConnect) {
+                connectSocket()
+            }
         }
     }
 
@@ -1768,5 +1772,16 @@ open class StateManagerAdaptor(
                 }
             }
         }
+    }
+
+    internal open fun dispose() {
+        stateNotification = null
+        dataNotification = null
+        readyToConnect = false
+        disconnectSocket()
+        sparklinesTimer?.cancel()
+        sparklinesTimer = null
+        subaccountsTimer?.cancel()
+        subaccountsTimer = null
     }
 }
