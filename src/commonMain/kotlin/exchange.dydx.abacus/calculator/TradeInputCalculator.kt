@@ -202,7 +202,7 @@ internal class TradeInputCalculator(
         market: IMap<String, Any>?,
         buy: Boolean?,
     ): IList<IMap<String, Any>>? {
-        parser.asMap(market?.get("orderbook"))?.let { orderbook ->
+        parser.asMap(market?.get("orderbook_consolidated"))?.let { orderbook ->
             return when (buy) {
                 true -> parser.asList(orderbook["asks"]) as? IList<IMap<String, Any>>
                 false -> parser.asList(orderbook["bids"]) as? IList<IMap<String, Any>>
@@ -252,18 +252,18 @@ internal class TradeInputCalculator(
                     "usdcSize",
                     if (filled) parser.asDouble(marketOrder?.get("usdcSize")) else null
                 )
+
+                val orderbook = parser.asMap(market?.get("orderbook_consolidated"))
+                if (marketOrder != null && orderbook != null) {
+                    val side = side(marketOrder, orderbook)
+                    if (side != null && side != parser.asString(modified["side"])) {
+                        modified.safeSet("side", side)
+                    }
+                }
             }
         }
         modified.safeSet("marketOrder", marketOrder)
         modified.safeSet("size", tradeSize)
-
-        val orderbook = parser.asMap(market?.get("orderbook"))
-        if (marketOrder != null && orderbook != null) {
-            val side = side(marketOrder, orderbook)
-            if (side != null && side != parser.asString(modified["side"])) {
-                modified.safeSet("side", side)
-            }
-        }
 
         return modified
     }
