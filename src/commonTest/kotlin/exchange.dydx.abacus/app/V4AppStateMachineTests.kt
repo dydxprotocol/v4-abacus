@@ -77,7 +77,7 @@ class V4AppStateMachineTests {
         state = appStateMachine.processHttpResponse(
             AbUrl(
                 host = "dydx-v4-shared-resources.vercel.app",
-                path = "/v4/staging/markets.json",
+                path = "/v4/markets.json",
                 scheme = "https://"
             ),
             mock.marketsConfigurations.configurations

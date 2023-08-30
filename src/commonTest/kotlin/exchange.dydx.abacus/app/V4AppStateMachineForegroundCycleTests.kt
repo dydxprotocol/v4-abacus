@@ -93,7 +93,7 @@ class V4AppStateMachineForegroundCycleTests {
         val restRequests = state.networkRequests?.restRequests!!
         assertEquals(8, restRequests.size)
         assertEquals(
-            "/v4/staging/markets.json",
+            "/v4/markets.json",
             restRequests[0].url.path,
             "Request to markets endpoint should be present"
         )

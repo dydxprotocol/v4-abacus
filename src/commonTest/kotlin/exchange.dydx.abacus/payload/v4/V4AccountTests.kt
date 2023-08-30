@@ -715,7 +715,7 @@ class V4AccountTests : V4BaseTests() {
                 val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
                 assertNotNull(order)
                 assertEquals(
-                    "NOTIFICATIONS.ORDER_PARTIALLY_FILLED.TITLE",
+                    "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
                     order.title
                 )
                 val position = notifications["position:ETH-USD"]

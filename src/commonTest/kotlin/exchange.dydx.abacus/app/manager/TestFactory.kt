@@ -124,7 +124,7 @@ class TestRest() : RestProtocol {
 
     init {
         setResponse(
-            "https://dydx-v4-shared-resources.vercel.app/v4/staging/markets.json",
+            "https://dydx-v4-shared-resources.vercel.app/v4/markets.json",
             mock.marketsConfigurations.configurations
         )
         setResponse(
