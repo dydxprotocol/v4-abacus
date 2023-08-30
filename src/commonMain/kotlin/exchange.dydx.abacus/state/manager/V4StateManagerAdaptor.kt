@@ -258,14 +258,16 @@ class V4StateManagerAdaptor(
     }
 
     private fun reconnectChain() {
-        // Create a timer, to try to connect the chain again
-        // Do not repeat. This timer is recreated in bestEffortConnectChain if needed
-        val timer = ioImplementations.timer ?: CoroutineTimer.instance
-        chainTimer = timer.schedule(chainPollingDuration, null) {
-            if (readyToConnect) {
-                bestEffortConnectChain()
+        if (readyToConnect) {
+            // Create a timer, to try to connect the chain again
+            // Do not repeat. This timer is recreated in bestEffortConnectChain if needed
+            val timer = ioImplementations.timer ?: CoroutineTimer.instance
+            chainTimer = timer.schedule(chainPollingDuration, null) {
+                if (readyToConnect) {
+                    bestEffortConnectChain()
+                }
+                false
             }
-            false
         }
     }
 

@@ -96,7 +96,10 @@ class AsyncAbacusStateManager(
     var adaptor: StateManagerAdaptor? = null
         private set(value) {
             if (field !== value) {
-                field?.didSetReadyToConnect(false)
+                field?.stateNotification = null
+                field?.dataNotification = null
+                field?.readyToConnect = false
+
                 value?.market = market
                 value?.accountAddress = accountAddress
                 value?.sourceAddress = sourceAddress
@@ -104,6 +107,7 @@ class AsyncAbacusStateManager(
                 value?.orderbookGrouping = orderbookGrouping
                 value?.historicalPnlPeriod = historicalPnlPeriod
                 value?.candlesResolution = candlesResolution
+                value?.readyToConnect = readyToConnect
                 field = value
             }
         }
@@ -393,7 +397,6 @@ class AsyncAbacusStateManager(
                 null
             }
         }
-        adaptor?.readyToConnect = readyToConnect
     }
 
     fun setv3(signer: V3PrivateSignerProtocol?, apiKey: V3ApiKey?) {
