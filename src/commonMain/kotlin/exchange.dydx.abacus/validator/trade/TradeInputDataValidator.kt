@@ -174,7 +174,9 @@ internal class TradeInputDataValidator(
                     val timeInForce = parser.asString(order["timeInForce"])
                     if (orderType != null && timeInForce != null) {
                         val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
-                        if ((status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
+                        // Short term with IOC or FOK should not be counted
+                        val isShortTermAndRequiresImmediateExecution = !isCurrentOrderStateful && (timeInForce == "IOC" || timeInForce == "FOK")
+                        if (!isShortTermAndRequiresImmediateExecution && (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
                             count += 1
                         }
                     }

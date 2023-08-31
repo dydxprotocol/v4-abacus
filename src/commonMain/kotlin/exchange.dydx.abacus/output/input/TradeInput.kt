@@ -73,28 +73,28 @@ data class TradeInputOptions(
             iListOf(
                 SelectionOption(OrderType.limit.rawValue, "APP.TRADE.LIMIT_ORDER_SHORT", null),
                 SelectionOption(OrderType.market.rawValue, "APP.TRADE.MARKET_ORDER_SHORT", null),
+                SelectionOption(OrderType.stopLimit.rawValue, "APP.TRADE.STOP_LIMIT", null),
                 SelectionOption(OrderType.stopMarket.rawValue, "APP.TRADE.STOP_MARKET", null),
+                SelectionOption(OrderType.trailingStop.rawValue, "APP.TRADE.TRAILING_STOP", null),
+                SelectionOption(OrderType.takeProfitLimit.rawValue, "APP.TRADE.TAKE_PROFIT", null),
                 SelectionOption(
                     OrderType.takeProfitMarket.rawValue,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
                     null
                 ),
-                SelectionOption(OrderType.stopLimit.rawValue, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.takeProfitLimit.rawValue, "APP.TRADE.TAKE_PROFIT", null),
-                SelectionOption(OrderType.trailingStop.rawValue, "APP.TRADE.TRAILING_STOP", null),
             )
         private val typeOptionsV4Array =
             iListOf(
                 SelectionOption(OrderType.limit.rawValue, "APP.TRADE.LIMIT_ORDER_SHORT", null),
                 SelectionOption(OrderType.market.rawValue, "APP.TRADE.MARKET_ORDER_SHORT", null),
+                SelectionOption(OrderType.stopLimit.rawValue, "APP.TRADE.STOP_LIMIT", null),
                 SelectionOption(OrderType.stopMarket.rawValue, "APP.TRADE.STOP_MARKET", null),
+                SelectionOption(OrderType.takeProfitLimit.rawValue, "APP.TRADE.TAKE_PROFIT", null),
                 SelectionOption(
                     OrderType.takeProfitMarket.rawValue,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
                     null
                 ),
-                SelectionOption(OrderType.stopLimit.rawValue, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.takeProfitLimit.rawValue, "APP.TRADE.TAKE_PROFIT", null),
             )
 
         private val sideOptionsArray =
