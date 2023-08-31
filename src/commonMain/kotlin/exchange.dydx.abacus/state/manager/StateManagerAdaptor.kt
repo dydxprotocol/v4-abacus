@@ -1640,7 +1640,8 @@ open class StateManagerAdaptor(
         for ((key, notification) in notifications) {
             val existing = this.notifications[key]
             if (existing != null) {
-                if (existing.updateTimeInMilliseconds != notification.updateTimeInMilliseconds) {
+                if (existing.updateTimeInMilliseconds != notification.updateTimeInMilliseconds ||
+                        existing.text != notification.text) {
                     consolidated[key] = notification
                     modified = true
                 } else {

@@ -10,7 +10,9 @@ import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.modal.TradingStateMachine
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.UIImplementations
@@ -60,7 +62,7 @@ class NotificationsProvider(
                 orders[order.id] = order
             }
             // Cache the fills
-            val fills = iMutableMapOf<String, SubaccountFill>()
+            val fills = iMutableMapOf<String, IMutableList<SubaccountFill>>()
             val liquidated = iMutableListOf<SubaccountFill>()
 
             for (fill in subaccountFills) {
@@ -68,7 +70,9 @@ class NotificationsProvider(
                 if (orderId != null) {
                     val order = orders[orderId]
                     if (order != null) {
-                        fills[orderId] = fill
+                        val fillsForOrder = fills[orderId] ?: iMutableListOf()
+                        fillsForOrder.add(fill)
+                        fills[orderId] = fillsForOrder
                     }
                 } else {
                     if (fill.type == OrderType.liquidated) {
@@ -79,10 +83,10 @@ class NotificationsProvider(
 
             // Create notifications
             //
-            for ((orderId, fill) in fills) {
+            for ((orderId, fillsForOrder) in fills) {
                 val order = orders[orderId] ?: continue
                 val notificationId = "order:$orderId"
-                notifications.typedSafeSet(notificationId, createFillNotification(stateMachine, fill, order))
+                notifications.typedSafeSet(notificationId, createFillNotification(stateMachine, fillsForOrder, order))
             }
 
             for (fill in liquidated) {
@@ -102,9 +106,10 @@ class NotificationsProvider(
 
     private fun createFillNotification(
         stateMachine: TradingStateMachine,
-        fill: SubaccountFill,
+        fillsForOrder: IList<SubaccountFill>,
         order: SubaccountOrder,
     ): Notification? {
+        val fill = fillsForOrder.lastOrNull() ?: return null
         val orderId = order.id
         val marketId = fill.marketId
         val asset = asset(stateMachine, marketId) ?: return null
@@ -115,6 +120,7 @@ class NotificationsProvider(
         val amountText = parser.asString(order.size)
         val filledAmountText = parser.asString(order.totalFilled)
         val priceText = parser.asString(fill.price)
+        val averagePriceText = parser.asString(averagePrice(fillsForOrder))
         val params = (iMapOf(
             "MARKET" to marketId,
             "ASSET" to assetText,
@@ -122,6 +128,7 @@ class NotificationsProvider(
             "AMOUNT" to amountText,
             "FILLED_AMOUNT" to filledAmountText,
             "PRICE" to priceText,
+            "AVERAGE_PRICE" to averagePriceText,
         ).filterValues { it != null } as Map<String, String>).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
@@ -140,6 +147,16 @@ class NotificationsProvider(
             params,
             fill.createdAtMilliseconds,
         )
+    }
+
+    private fun averagePrice(fillsForOrder: IList<SubaccountFill>): Double? {
+        var total = 0.0
+        var totalSize = 0.0
+        for (fill in fillsForOrder) {
+            total += fill.price * fill.size
+            totalSize += fill.size
+        }
+        return if (totalSize != 0.0) total / totalSize else null
     }
 
     private fun orderStatusTitle(status: OrderStatus): String? {
