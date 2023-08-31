@@ -38,6 +38,8 @@ internal class TradeInputDataValidator(
     parser: ParserProtocol,
 ) :
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+    private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS = 20
+
     override fun validateTrade(
         subaccount: IMap<String, Any>?,
         market: IMap<String, Any>?,
@@ -136,7 +138,7 @@ internal class TradeInputDataValidator(
         /*
          USER_MAX_ORDERS according to Equity Tier
          */
-        val fallbackMaxNumOrders: Int = 20
+        val fallbackMaxNumOrders = MAX_NUM_OPEN_UNTRIGGERED_ORDERS
         var maxNumOrders: Int = 0
         val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current")) ?: 0.0
         val equityTierKey: String =
@@ -175,7 +177,8 @@ internal class TradeInputDataValidator(
                     if (orderType != null && timeInForce != null) {
                         val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
                         // Short term with IOC or FOK should not be counted
-                        val isShortTermAndRequiresImmediateExecution = !isCurrentOrderStateful && (timeInForce == "IOC" || timeInForce == "FOK")
+                        val isShortTermAndRequiresImmediateExecution =
+                            !isCurrentOrderStateful && (timeInForce == "IOC" || timeInForce == "FOK")
                         if (!isShortTermAndRequiresImmediateExecution && (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
                             count += 1
                         }

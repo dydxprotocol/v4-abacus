@@ -337,7 +337,7 @@ class TradeInputTests : V3BaseTests() {
                             },
                             "summary": {
                                 "price": 1655.7,
-                                "payloadPrice": 1738.485
+                                "payloadPrice": 1672.257
                             }
                         }
                     },
@@ -1820,7 +1820,7 @@ class TradeInputTests : V3BaseTests() {
                                 "size": 1.0,
                                 "usdcSize": 2000.0,
                                 "price": 2000.0,
-                                "payloadPrice": 2100.0,
+                                "payloadPrice": 2020.0,
                                 "total": -2001.0,
                                 "filled": true
                             },

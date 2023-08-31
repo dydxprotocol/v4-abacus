@@ -40,9 +40,11 @@ internal class TradeInputCalculator(
     private val accountTransformer = AccountTransformer()
     private val fokDisabled = false
 
-    private val marketOrderSlippage = parser.asDecimal(0.05)!!
-    private val majorMarketSlippage = parser.asDecimal(0.05)!!
-    private val minorMarketSlippage = parser.asDecimal(0.1)!!
+    private val MARKET_ORDER_MAX_SLIPPAGE = 0.01                   // 0.05 for v3
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_BTC = 0.01       // 0.05 for v3
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_BTC = 0.02 // 0.05 for v3
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.02            // 0.1 for v3
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.04     // 0.1 for v3
 
     internal fun calculate(
         state: IMap<String, Any>,
@@ -1105,7 +1107,7 @@ internal class TradeInputCalculator(
         when (type) {
             "MARKET" -> {
                 parser.asMap(trade["marketOrder"])?.let { marketOrder ->
-                    val feeRate = parser.asDecimal(parser.value(user, "takerFeeRate"))
+                    val feeRate = parser.asDouble(parser.value(user, "takerFeeRate"))
                     val bestPrice = marketOrderBestPrice(marketOrder)
                     val worstPrice = marketOrderWorstPrice(marketOrder)
                     val slippage =
@@ -1114,17 +1116,22 @@ internal class TradeInputCalculator(
                             0.00001
                         ) else null
 
-                    val price = parser.asDecimal(marketOrderPrice(marketOrder))
+                    val price = marketOrderPrice(marketOrder)
                     val payloadPrice = if (price != null) {
                         when (parser.asString(trade["side"])) {
-                            "BUY" -> price * (Numeric.decimal.ONE + marketOrderSlippage)
-                            else -> price * (Numeric.decimal.ONE - marketOrderSlippage)
+                            "BUY" -> price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE)
+                            else -> price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE)
                         }
                     } else null
-                    val size = parser.asDecimal(marketOrderSize(marketOrder))
-                    val usdcSize = if (price != null && size != null) (price * size) else null
+                    val size = marketOrderSize(marketOrder)
+                    val usdcSize =
+                        if (price != null && size != null) (parser.asDecimal(price)!! * parser.asDecimal(
+                            size
+                        )!!) else null
                     val fee =
-                        if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
+                        if (usdcSize != null && feeRate != null) (usdcSize * parser.asDecimal(
+                            feeRate
+                        )!!) else null
                     val total =
                         if (usdcSize != null) (usdcSize * multiplier + (fee
                             ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE) else null
@@ -1141,12 +1148,12 @@ internal class TradeInputCalculator(
                     indexSlippage can be negative. For example, it is OK to buy below index price
                      */
 
-                    summary.safeSet("price", price?.doubleValue(false))
-                    summary.safeSet("payloadPrice", payloadPrice?.doubleValue(false))
-                    summary.safeSet("size", size?.doubleValue(false))
+                    summary.safeSet("price", price)
+                    summary.safeSet("payloadPrice", payloadPrice)
+                    summary.safeSet("size", size)
                     summary.safeSet("usdcSize", usdcSize?.doubleValue(false))
                     summary.safeSet("fee", fee?.doubleValue(false))
-                    summary.safeSet("feeRate", feeRate?.doubleValue(false))
+                    summary.safeSet("feeRate", feeRate)
                     summary.safeSet("total", total?.doubleValue(false))
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("indexSlippage", indexSlippage)
@@ -1156,7 +1163,7 @@ internal class TradeInputCalculator(
 
             "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
                 parser.asMap(trade["marketOrder"])?.let { marketOrder ->
-                    val feeRate = parser.asDecimal(parser.value(user, "takerFeeRate"))
+                    val feeRate = parser.asDouble(parser.value(user, "takerFeeRate"))
                     val bestPrice = marketOrderBestPrice(marketOrder)
                     val worstPrice = marketOrderWorstPrice(marketOrder)
                     val slippage =
@@ -1166,26 +1173,39 @@ internal class TradeInputCalculator(
                         ) else null
 
                     val triggerPrice =
-                        parser.asDecimal(parser.value(trade, "price.triggerPrice"))
+                        parser.asDouble(parser.value(trade, "price.triggerPrice"))
                     val marketOrderPrice = marketOrderPrice(marketOrder)
                     val priceslippage =
                         if (bestPrice != null && marketOrderPrice != null) (marketOrderPrice - bestPrice) else null
                     val slippagePercentage =
-                        if (priceslippage != null && bestPrice != null) parser.asDecimal(
+                        if (priceslippage != null && bestPrice != null)
                             abs(priceslippage / bestPrice)
-                        ) else null
+                        else null
                     val adjustedslippagePercentage = if (slippagePercentage != null) {
-                        when (parser.asString(trade["marketId"])) {
-                            "BTC-USD", "ETH-USD" -> parser.asDecimal(slippagePercentage + majorMarketSlippage)
-                            else -> parser.asDecimal(slippagePercentage + minorMarketSlippage)
+                        val majorMarket = when (parser.asString(trade["marketId"])) {
+                            "BTC-USD", "ETH-USD" -> true
+                            else -> false
+                        }
+                        if (majorMarket) {
+                            if (type == "STOP_MARKET") {
+                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_BTC
+                            } else {
+                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_BTC
+                            }
+                        } else {
+                            if (type == "STOP_MARKET") {
+                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                            } else {
+                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                            }
                         }
                     } else null
 
                     val price = if (triggerPrice != null && slippagePercentage != null) {
                         if (parser.asString(trade["side"]) == "BUY") {
-                            triggerPrice * (Numeric.decimal.ONE + slippagePercentage)
+                            triggerPrice * (Numeric.double.ONE + slippagePercentage)
                         } else {
-                            triggerPrice * (Numeric.decimal.ONE - slippagePercentage)
+                            triggerPrice * (Numeric.double.ONE - slippagePercentage)
                         }
                     } else {
                         null
@@ -1194,28 +1214,31 @@ internal class TradeInputCalculator(
                     val payloadPrice =
                         if (triggerPrice != null && adjustedslippagePercentage != null) {
                             if (parser.asString(trade["side"]) == "BUY") {
-                                triggerPrice * (Numeric.decimal.ONE + adjustedslippagePercentage)
+                                triggerPrice * (Numeric.double.ONE + adjustedslippagePercentage)
                             } else {
-                                triggerPrice * (Numeric.decimal.ONE - adjustedslippagePercentage)
+                                triggerPrice * (Numeric.double.ONE - adjustedslippagePercentage)
                             }
                         } else {
                             null
                         }
 
-                    val size = parser.asDecimal(marketOrderSize(marketOrder))
-                    val usdcSize = if (price != null && size != null) (price * size) else null
+                    val size = parser.asDouble(marketOrderSize(marketOrder))
+                    val usdcSize =
+                        if (price != null && size != null) parser.asDecimal(price * size) else null
                     val fee =
-                        if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
+                        if (usdcSize != null && feeRate != null) (usdcSize * parser.asDecimal(
+                            feeRate
+                        )!!) else null
                     val total =
                         if (usdcSize != null) (usdcSize * multiplier + (fee
                             ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE) else null
 
-                    summary.safeSet("price", price?.doubleValue(false))
-                    summary.safeSet("payloadPrice", payloadPrice?.doubleValue(false))
-                    summary.safeSet("size", size?.doubleValue(false))
+                    summary.safeSet("price", price)
+                    summary.safeSet("payloadPrice", payloadPrice)
+                    summary.safeSet("size", size)
                     summary.safeSet("usdcSize", usdcSize?.doubleValue(false))
                     summary.safeSet("fee", fee?.doubleValue(false))
-                    summary.safeSet("feeRate", feeRate?.doubleValue(false))
+                    summary.safeSet("feeRate", feeRate)
                     summary.safeSet("total", total?.doubleValue(false))
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
@@ -1223,22 +1246,23 @@ internal class TradeInputCalculator(
             }
 
             "LIMIT", "STOP_LIMIT", "TAKE_PROFIT" -> {
-                val feeRate = parser.asDecimal(parser.value(user, "takerFeeRate"))
-                val price = parser.asDecimal(parser.value(trade, "price.limitPrice"))
-                val size = parser.asDecimal(parser.value(trade, "size.size"))
-                val usdcSize = if (price != null && size != null) (price * size) else null
+                val feeRate = parser.asDouble(parser.value(user, "takerFeeRate"))
+                val price = parser.asDouble(parser.value(trade, "price.limitPrice"))
+                val size = parser.asDouble(parser.value(trade, "size.size"))
+                val usdcSize =
+                    if (price != null && size != null) parser.asDecimal(price * size) else null
                 val fee =
-                    if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
+                    if (usdcSize != null && feeRate != null) (usdcSize * parser.asDecimal(feeRate)!!) else null
                 val total =
                     if (usdcSize != null) (usdcSize * multiplier + (fee
                         ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE) else null
 
-                summary.safeSet("price", price?.doubleValue(false))
-                summary.safeSet("payloadPrice", price?.doubleValue(false))
-                summary.safeSet("size", size?.doubleValue(false))
+                summary.safeSet("price", price)
+                summary.safeSet("payloadPrice", price)
+                summary.safeSet("size", size)
                 summary.safeSet("usdcSize", usdcSize?.doubleValue(false))
                 summary.safeSet("fee", fee?.doubleValue(false))
-                summary.safeSet("feeRate", feeRate?.doubleValue(false))
+                summary.safeSet("feeRate", feeRate)
                 summary.safeSet("total", total?.doubleValue(false))
                 summary.safeSet("filled", true)
             }
