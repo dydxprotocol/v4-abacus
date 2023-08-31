@@ -628,8 +628,7 @@ class V4StateManagerAdaptor(
         paramsInJson: String?,
         callback: (response: String) -> Unit,
     ) {
-        val transactionsImplementation =
-            (ioImplementations.chain as? DYDXChainTransactionsProtocol)
+        val transactionsImplementation = ioImplementations.chain
         if (transactionsImplementation === null) {
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }
