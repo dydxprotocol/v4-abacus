@@ -164,7 +164,7 @@ enum class TransactionType(val rawValue: String) {
 }
 
 @JsExport
-interface DYDXChainQueriesProtocol {
+interface DYDXChainTransactionsProtocol {
     fun connectNetwork(
         indexerUrl: String,
         indexerSocketUrl: String,
@@ -175,40 +175,12 @@ interface DYDXChainQueriesProtocol {
     )
 
     fun get(type: QueryType, paramsInJson: String?, callback: ((response: String?) -> Unit))
-}
 
-@JsExport
-interface DYDXChainTransactionsProtocol : DYDXChainQueriesProtocol {
     fun transaction(
         type: TransactionType,
         paramsInJson: String?,
         callback: ((response: String?) -> Unit),
     )
-//    fun placeOrder(
-//        json: String,
-//        callback: ((response: String?) -> Unit),
-//    )
-//
-//    fun cancelOrder(
-//        json: String,
-//        callback: ((response: String?) -> Unit),
-//    )
-//
-//    fun deposit(
-//        json: String,
-//        callback: ((response: String?) -> Unit),
-//    )
-//
-//    fun withdraw(
-//        json: String,
-//        callback: ((response: String?) -> Unit),
-//    )
-//
-//    fun faucet(
-//        url: String,
-//        json: String,
-//        callback: ((response: String?) -> Unit),
-//    )
 }
 
 @JsExport

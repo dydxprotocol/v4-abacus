@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.utils
 
-import exchange.dydx.abacus.protocols.DYDXChainQueriesProtocol
+import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.FormatterProtocol
@@ -19,7 +19,7 @@ import kollections.JsExport
 open class ProtocolNativeImpFactory(
     var rest: RestProtocol? = null,
     var webSocket: WebSocketProtocol? = null,
-    var chain: DYDXChainQueriesProtocol? = null,
+    var chain: DYDXChainTransactionsProtocol? = null,
     var localizer: LocalizerProtocol? = null,
     var formatter: FormatterProtocol? = null,
     var tracking: TrackingProtocol? = null,
@@ -36,7 +36,7 @@ open class ProtocolNativeImpFactory(
 class IOImplementations(
     var rest: RestProtocol?,
     var webSocket: WebSocketProtocol?,
-    var chain: DYDXChainQueriesProtocol?,
+    var chain: DYDXChainTransactionsProtocol?,
     var tracking: TrackingProtocol?,
     var threading: ThreadingProtocol?,
     var timer: TimerProtocol?,
