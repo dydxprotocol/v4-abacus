@@ -145,11 +145,11 @@ class NotificationsProvider(
     private fun orderStatusTitle(status: OrderStatus): String? {
         return when (status) {
             OrderStatus.filled -> {
-                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILLED.TITLE")
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.TITLE")
             }
 
             OrderStatus.partiallyFilled -> {
-                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_PARTIALLY_FILLED.TITLE")
+                uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE")
             }
 
             OrderStatus.cancelled -> {
@@ -164,14 +164,14 @@ class NotificationsProvider(
         return when (status) {
             OrderStatus.filled -> {
                 uiImplementations.localizer?.localize(
-                    "NOTIFICATIONS.ORDER_FILLED.BODY",
+                    "NOTIFICATIONS.ORDER_FILL.BODY",
                     paramsAsJson
                 )
             }
 
             OrderStatus.partiallyFilled -> {
                 uiImplementations.localizer?.localize(
-                    "NOTIFICATIONS.ORDER_PARTIALLY_FILLED.BODY",
+                    "NOTIFICATIONS.ORDER_PARTIAL_FILL.BODY",
                     paramsAsJson
                 )
             }

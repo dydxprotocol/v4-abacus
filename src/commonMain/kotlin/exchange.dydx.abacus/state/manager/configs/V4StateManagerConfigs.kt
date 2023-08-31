@@ -47,7 +47,7 @@ class V4StateManagerConfigs(
                          "epoch_start":"/config/epoch_start.json",
                          "fee_discounts":"/config/fee_discounts.json",
                          "fee_tiers":"/config/fee_tiers.json",
-                         "markets":"/v4/staging/markets.json",
+                         "markets":"/v4/markets.json",
                          "network_configs":"/config/network_configs.json",
                          "version":"/config/version_ios.json",
                          "walletsV2":"/config/prod/walletsV2.json"

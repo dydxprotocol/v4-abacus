@@ -20,7 +20,7 @@ fun TradingStateMachine.loadMarketsConfigurations(mock: AbacusMockData): StateRe
     return rest(
         AbUrl(
             host = "dydx-v4-shared-resources.vercel.app",
-            path = "/v4/staging/markets.json",
+            path = "/v4/markets.json",
             scheme = "https://"
         ), mock.marketsConfigurations.configurations, 0, null
     )

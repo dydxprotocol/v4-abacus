@@ -1,14 +1,9 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
-import exchange.dydx.abacus.output.NotificationPriority
-import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
-import exchange.dydx.abacus.output.input.OrderStatus
-import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
@@ -70,9 +65,8 @@ import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.typedSafeSet
+import exchange.dydx.abacus.utils.values
 import kollections.JsExport
-import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iSetOf
 import kollections.toIList
@@ -354,7 +348,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var notifications: IMap<String, Notification> = kollections.iMapOf()
+    internal var notifications: IMap<String, Notification> = iMapOf()
         set(value) {
             if (field !== value) {
                 field = value
@@ -1663,7 +1657,7 @@ open class StateManagerAdaptor(
     }
 
     private fun sendNotifications() {
-        val notifications = notifications.values.sortedWith { notification1, notification2 ->
+        val notifications = notifications.values().sortedWith { notification1, notification2 ->
             val comparison = notification1.priority.compareTo(notification2.priority)
             if (comparison == 0) {
                 notification1.updateTimeInMilliseconds.compareTo(notification2.updateTimeInMilliseconds) * -1

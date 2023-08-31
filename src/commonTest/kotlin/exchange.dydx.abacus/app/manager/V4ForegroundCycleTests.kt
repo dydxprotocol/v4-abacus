@@ -4,6 +4,7 @@ import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
+import exchange.dydx.abacus.utils.values
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -92,7 +93,7 @@ class V4ForegroundCycleTests {
         )
         assertContains(
             testRest?.requests?.toTypedArray()!!,
-            "https://dydx-v4-shared-resources.vercel.app/v4/staging/markets.json",
+            "https://dydx-v4-shared-resources.vercel.app/v4/markets.json",
             "Request to time endpoint should be present"
         )
         assertContains(
@@ -390,6 +391,17 @@ class V4ForegroundCycleTests {
             """.trimIndent(),
             testWebSocket?.messages?.get(1)
         )
+
+        testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_channel_data_with_orders)
+
+        assertEquals(1, stateManager.adaptor?.notifications?.size)
+        val notification = stateManager.adaptor?.notifications?.values()?.first()
+        assertEquals(
+            "order:b812bea8-29d3-5841-9549-caa072f6f8a8",
+            notification?.id
+        )
+
     }
 
     @Test

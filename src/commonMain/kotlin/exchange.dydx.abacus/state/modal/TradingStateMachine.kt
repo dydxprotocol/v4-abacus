@@ -378,7 +378,7 @@ open class TradingStateMachine(
                 changes = transfers(payload, subaccountNumber)
             }
 
-            "/config/markets.json", "/v4/staging/markets.json", "/v4/prod/markets.json" -> {
+            "/config/markets.json", "/v4/markets.json" -> {
                 changes = configurations(payload, subaccountNumber)
             }
 
