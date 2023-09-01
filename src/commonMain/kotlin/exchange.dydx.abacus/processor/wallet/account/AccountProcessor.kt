@@ -543,7 +543,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: IMap<String, Any>?,
     ): IMap<String, Any>? {
         val modified = existing?.mutable() ?: iMutableMapOf()
-        return receivedFills(modified, parser.asList(payload?.get("fills")), false)
+        return receivedFills(modified, parser.asList(payload?.get("fills")), true)
     }
 
     internal fun receivedTransfers(
@@ -551,7 +551,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: IMap<String, Any>?,
     ): IMap<String, Any>? {
         val modified = existing?.mutable() ?: iMutableMapOf()
-        return receivedTransfers(modified, parser.asList(payload?.get("transfers")), false)
+        return receivedTransfers(modified, parser.asList(payload?.get("transfers")), true)
     }
 
     private fun modify(
