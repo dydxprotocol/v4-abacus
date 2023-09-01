@@ -12,7 +12,6 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
-import exchange.dydx.abacus.utils.UIImplementations
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -33,11 +32,11 @@ class V4AccountTests : V4BaseTests() {
         testSubaccountsReceived()
         time = perp.log("Accounts Received", time)
 
-        testSubaccountSubscribed()
-        time = perp.log("Accounts Subscribed", time)
-
         testSubaccountFillsReceived()
         time = perp.log("Fills Received", time)
+
+        testSubaccountSubscribed()
+        time = perp.log("Accounts Subscribed", time)
 
         testSubaccountTransfersReceived()
         time = perp.log("Transfers Received", time)
@@ -251,6 +250,48 @@ class V4AccountTests : V4BaseTests() {
                         "account": {
                             "subaccounts": {
                                 "0": {
+                                    "fills": [
+                                        {
+                                            "id": "dad7abeb-4c04-58d3-8dda-fd0bc0528deb",
+                                            "side": "BUY",
+                                            "liquidity": "TAKER",
+                                            "type": "LIMIT",
+                                            "marketId": "BTC-USD",
+                                            "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
+                                            "createdAt": "2022-12-14T18:32:21.298Z",
+                                            "price": 18275.31,
+                                            "size" : 4.41E-6,
+                                            "fee": 0.0,
+                                            "resources": {
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+                val fills =
+                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
+                assertEquals(
+                    100,
+                    fills?.size
+                )
+            }
+        )
+
+        test(
+            {
+                perp.socket(testWsUrl, mock.fillsChannel.v4_subscribed, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "0": {
                                     "equity": {
                                         "current": 122034.2009050837
                                     },
@@ -283,12 +324,6 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    100,
-                    fills?.size
-                )
             }
         )
     }
@@ -706,7 +741,8 @@ class V4AccountTests : V4BaseTests() {
                 val ioImplementations = BaseTests.testIOImplementations()
                 val localizer = BaseTests.testLocalizer(ioImplementations)
                 val uiImplementations = BaseTests.testUIImplementations(localizer)
-                val notificationsProvider = NotificationsProvider(uiImplementations, Parser(), JsonEncoder())
+                val notificationsProvider =
+                    NotificationsProvider(uiImplementations, Parser(), JsonEncoder())
                 val notifications = notificationsProvider.buildNotifications(perp, 0)
                 assertEquals(
                     4,

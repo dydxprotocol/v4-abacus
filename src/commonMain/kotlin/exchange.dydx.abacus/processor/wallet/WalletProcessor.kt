@@ -71,7 +71,10 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         payload: IList<Any>?,
     ): IMap<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedAccountBalances(parser.asMap(existing), payload as? IList<Any>)
+            v4accountProcessor.receivedAccountBalances(
+                parser.asMap(existing),
+                payload as? IList<Any>
+            )
         }
     }
 
@@ -109,7 +112,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: IMap<String, Any>?,
         payload: IMap<String, Any>?,
     ): IMap<String, Any>? {
-        return receivedObject(existing, "user", payload ) { existing, payload ->
+        return receivedObject(existing, "user", payload) { existing, payload ->
             parser.asMap(payload)?.let {
                 userProcessor.receivedOnChainUserStats(parser.asMap(existing), it)
             }
@@ -119,9 +122,14 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     internal fun receivedHistoricalPnls(
         existing: IMap<String, Any>?,
         payload: IMap<String, Any>,
+        subaccountNumber: Int,
     ): IMap<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedHistoricalPnls(parser.asMap(existing), parser.asMap(payload))
+            v3accountProcessor.receivedHistoricalPnls(
+                parser.asMap(existing),
+                parser.asMap(payload),
+                subaccountNumber
+            )
         }
     }
 

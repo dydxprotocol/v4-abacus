@@ -1,5 +1,5 @@
 PODS:
-  - abacus (0.4.3)
+  - abacus (0.4.4)
   - CryptoSwift (1.6.0)
 
 DEPENDENCIES:
@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
     :path: "~/v4-abacus"
 
 SPEC CHECKSUMS:
-  abacus: 52a28799a4561ba5ae33bffe460d667d774e435c
+  abacus: 3d131e8c684831436e9adff0987cbad6a556eb4f
   CryptoSwift: 562f8eceb40e80796fffc668b0cad9313284cfa6
 
 PODFILE CHECKSUM: 37d72c15b180e62a4c42b8fb41b4836c89aa63c9
