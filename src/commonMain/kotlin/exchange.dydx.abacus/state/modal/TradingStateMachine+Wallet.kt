@@ -143,7 +143,10 @@ internal fun TradingStateMachine.receivedTransfers(
     } else StateChanges(iListOf<Changes>())
 }
 
-internal fun TradingStateMachine.orderCanceled(orderId: String, subaccountNumber: Int): StateChanges {
+internal fun TradingStateMachine.orderCanceled(
+    orderId: String,
+    subaccountNumber: Int
+): StateChanges {
     val wallet = wallet
     if (wallet != null) {
         val (modifiedWallet, updated) = walletProcessor.orderCanceled(

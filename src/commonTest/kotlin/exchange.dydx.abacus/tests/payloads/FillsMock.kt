@@ -1306,6 +1306,65 @@ internal class FillsMock {
         	}]
         }
     """.trimIndent()
+    internal val v4_subscribed = """
+        {
+           "type":"subscribed",
+           "connection_id":"16182ba2-b18d-4892-95c8-4c0dfa596e23",
+           "message_id":10,
+           "id":"cosmos1umk0jzja3gtrhe359m4c5nhh8pd78u44ydc70e/0",
+           "channel":"v4_subaccounts",
+           "contents":{
+              "subaccount":{
+                 "address":"cosmos1jtpspgllck9z4ghkqhupum35q55xt99sg3guxn",
+                 "subaccountNumber":0,
+                 "equity":"68257.215192",
+                 "freeCollateral":"68257.215192",
+                 "openPerpetualPositions":{
+                    "ETH-USD":{
+                       "market":"ETH-USD",
+                       "status":"OPEN",
+                       "side":"SHORT",
+                       "size":"106.17985",
+                       "maxSize":"106.180627",
+                       "entryPrice":"1266.094016",
+                       "exitPrice":"1266.388746",
+                       "realizedPnl":"-102.716895",
+                       "unrealizedPnl":"134433.672665",
+                       "createdAt":"2022-12-11T17:29:39.792Z",
+                       "createdAtHeight":"45",
+                       "closedAt":null,
+                       "sumOpen":"454.689628",
+                       "sumClose":"348.51174",
+                       "netFunding":"0"
+                    },
+                    "BTC-USD":{
+                       "market":"BTC-USD",
+                       "status":"OPEN",
+                       "side":"LONG",
+                       "size":"9.974575029",
+                       "maxSize":"9.974575029",
+                       "entryPrice":"17101.489388",
+                       "exitPrice":"17106.497989",
+                       "realizedPnl":"126.640212",
+                       "unrealizedPnl":"-170580.089008",
+                       "createdAt":"2022-12-11T17:27:36.351Z",
+                       "createdAtHeight":"23",
+                       "closedAt":null,
+                       "sumOpen":"35.035107647",
+                       "sumClose":"25.284547806",
+                       "netFunding":"0"
+                    }
+                 },
+                 "quoteBalance":"68257.215192",
+                 "marginEnabled":true
+              },
+              "fills":[
+                 
+              ]
+           }
+        }
+    """.trimIndent()
+
     internal val v4_channel_data = """
         {
             "type": "channel_data",
