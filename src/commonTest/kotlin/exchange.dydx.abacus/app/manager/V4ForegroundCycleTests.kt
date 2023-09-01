@@ -103,12 +103,12 @@ class V4ForegroundCycleTests {
         )
         assertContains(
             testRest?.requests?.toTypedArray()!!,
-            "https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app/v1/tokens",
+            "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
             "Request to squid tokens endpoint should be present"
         )
         assertContains(
             testRest?.requests?.toTypedArray()!!,
-            "https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app/v1/chains",
+            "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
             "Request to squid chains endpoint should be present"
         )
         assertEquals(

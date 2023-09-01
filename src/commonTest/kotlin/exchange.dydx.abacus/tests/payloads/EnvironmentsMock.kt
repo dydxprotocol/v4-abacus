@@ -182,7 +182,7 @@ class EnvironmentsMock {
                      "validators":[
                         "https://validator.v4staging.dydx.exchange"
                      ],
-                     "0xsquid":"https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app",
+                     "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
                      "configs":"https://dydx-v4-shared-resources.vercel.app",
                      "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
                   }
@@ -209,7 +209,7 @@ class EnvironmentsMock {
                         "https://dydx-testnet.nodefleet.org",
                         "https://dydx-testnet-archive.allthatnode.com:26657"
                      ],
-                     "0xsquid":"https://squid-api-git-feat-cosmos-maintestnet-0xsquid.vercel.app",
+                     "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
                      "configs":"https://dydx-v4-shared-resources.vercel.app",
                      "faucet":"https://faucet.v4testnet2.dydx.exchange",
                      "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"

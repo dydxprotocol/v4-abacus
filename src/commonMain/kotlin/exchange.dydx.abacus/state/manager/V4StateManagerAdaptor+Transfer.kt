@@ -51,7 +51,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
             "toAddress" to accountAddress.toString(),
             "slippage" to "1",
             "enableForecall" to "false",
-            "evmFallbackAddress" to sourceAddress.toString(),
+            "fromAddress" to sourceAddress.toString(),
         )
 
         val oldState = stateMachine.state
