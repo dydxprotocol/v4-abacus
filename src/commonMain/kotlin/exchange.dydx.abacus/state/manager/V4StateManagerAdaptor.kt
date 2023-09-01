@@ -821,10 +821,12 @@ class V4StateManagerAdaptor(
     }
 
     private fun send(error: ParsingError?, callback: TransactionCallback) {
-        if (error != null) {
-            callback(false, error)
-        } else {
-            callback(true, null)
+        ioImplementations.threading?.async(ThreadingType.main) {
+            if (error != null) {
+                callback(false, error)
+            } else {
+                callback(true, null)
+            }
         }
     }
 
