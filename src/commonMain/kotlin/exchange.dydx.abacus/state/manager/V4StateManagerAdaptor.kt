@@ -845,15 +845,12 @@ class V4StateManagerAdaptor(
                 type == TransferInputField.token
             ) {
                 if ((state.input.transfer.size?.usdcSize ?: 0.0) > 0.0) {
-                    try {
-                        simulateWithdrawal { gasFee ->
-                            if (gasFee != null) {
-                                retrieveWithdrawalRoute(gasFee)
-                            }
+                    simulateWithdrawal { gasFee ->
+                        if (gasFee != null) {
+                            retrieveWithdrawalRoute(gasFee)
+                        } else {
+                            retrieveWithdrawalRoute(0.0)
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        retrieveWithdrawalRoute(0.0)
                     }
                 }
             }
