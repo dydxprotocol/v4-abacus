@@ -251,7 +251,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 return initialMarginFraction
             }
 
-            val adjustedSize = minOf(size.abs(), maxPositionSize)
+            val adjustedSize = if (maxPositionSize != Numeric.decimal.ZERO) minOf(size.abs(), maxPositionSize) else size.abs()
             if (adjustedSize <= baselinePositionSize) {
                 return initialMarginFraction
             }

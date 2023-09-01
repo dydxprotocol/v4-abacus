@@ -204,7 +204,10 @@ internal class TradePositionStateValidator(
          */
         val size = parser.asDecimal(parser.value(position, "size.postOrder")) ?: return null
         val maxSize =
-            parser.asDecimal(parser.value(market, "configs.maxPositionSize")) ?: return null
+            parser.asDecimal(parser.value(market, "configs.maxPositionSize")) ?: Numeric.decimal.ZERO
+        if (maxSize == Numeric.decimal.ZERO) {
+            return null
+        }
         val symbol = parser.asString(market?.get("assetId")) ?: return null
         return if (size > maxSize) error(
             "ERROR",

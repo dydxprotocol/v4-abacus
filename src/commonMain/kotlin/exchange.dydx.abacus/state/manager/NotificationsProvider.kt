@@ -109,7 +109,9 @@ class NotificationsProvider(
         fillsForOrder: IList<SubaccountFill>,
         order: SubaccountOrder,
     ): Notification? {
-        val fill = fillsForOrder.lastOrNull() ?: return null
+        // Fills are in reverse chronological order
+        // First in the list is the newest fill
+        val fill = fillsForOrder.firstOrNull() ?: return null
         val orderId = order.id
         val marketId = fill.marketId
         val asset = asset(stateMachine, marketId) ?: return null
@@ -143,7 +145,7 @@ class NotificationsProvider(
             marketImageUrl,
             title,
             text,
-            "/orders/$orderId",
+            "/order?id=$orderId",
             params,
             fill.createdAtMilliseconds,
         )

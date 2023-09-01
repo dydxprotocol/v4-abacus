@@ -95,7 +95,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":0,
                            "baselinePositionSize":0.0
                         },
@@ -119,7 +118,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":1,
                            "baselinePositionSize":0.0
                         },
@@ -245,7 +243,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":0,
                            "baselinePositionSize":0.0
                         },
@@ -269,7 +266,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":1,
                            "baselinePositionSize":0.0
                         },
@@ -308,7 +304,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":0,
                            "baselinePositionSize":0.0
                         },
@@ -332,7 +327,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":1,
                            "baselinePositionSize":0.0
                         },
@@ -370,7 +364,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":0,
                            "baselinePositionSize":0.0
                         },
@@ -394,7 +387,6 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalInitialMarginFraction":0.0,
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
-                           "maxPositionSize":1000.0,
                            "clobPairId":1,
                            "baselinePositionSize":0.0
                         },
