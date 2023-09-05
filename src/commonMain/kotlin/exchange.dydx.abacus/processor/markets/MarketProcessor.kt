@@ -250,6 +250,10 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val configs = transform(existing, payload, configsKeyMap)
         val configsV4 = transform(null, payload, configsV4KeyMap)
         configs.safeSet("v4", configsV4)
+        val minOrderSize = parser.asDouble(configs["minOrderSize"])
+        if (minOrderSize == null || minOrderSize == 0.0) {
+            configs.safeSet("minOrderSize", parser.asDouble(payload["stepSize"]))
+        }
         val maxPositionSize = parser.asDouble(configs["maxPositionSize"])
         configs.safeSet("maxPositionSize", maxPositionSize)
         configs["candleOptions"] = candleOptions
