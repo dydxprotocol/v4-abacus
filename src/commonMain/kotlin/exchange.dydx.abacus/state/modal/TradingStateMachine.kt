@@ -419,9 +419,11 @@ open class TradingStateMachine(
 //    }
 
     internal fun resetWallet(accountAddress: String?): StateResponse {
-        val modified = data?.mutable() ?: iMutableMapOf()
         val wallet = if (accountAddress != null) iMapOf("walletAddress" to accountAddress) else null
         this.wallet = wallet
+        if (accountAddress == null) {
+            this.account = null
+        }
         val changes = StateChanges(
             iListOf(
                 Changes.wallet,
@@ -791,11 +793,13 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.markets)) {
             parser.asMap(data?.get("markets"))?.let {
                 marketsSummary = PerpetualMarketSummary.apply(marketsSummary, parser, it, changes)
+            } ?: run {
+                marketsSummary = null
             }
         }
         if (changes.changes.contains(Changes.orderbook)) {
             val markets = changes.markets
-            if (markets != null) {
+            orderbooks = if (markets != null) {
                 val modified = orderbooks?.toIMutableMap() ?: iMutableMapOf()
                 for (marketId in markets) {
                     val data =
@@ -804,7 +808,9 @@ open class TradingStateMachine(
                     val orderbook = MarketOrderbook.create(existing, parser, data)
                     modified.typedSafeSet(marketId, orderbook)
                 }
-                orderbooks = modified
+                modified
+            } else {
+                null
             }
         }
         if (changes.changes.contains(Changes.trades)) {
@@ -823,6 +829,8 @@ open class TradingStateMachine(
                     modified.typedSafeSet(marketId, trades)
                 }
                 trades = modified
+            } else {
+                trades = null
             }
         }
         if (changes.changes.contains(Changes.historicalFundings)) {
@@ -841,6 +849,8 @@ open class TradingStateMachine(
                     modified.typedSafeSet(marketId, historicalFunding)
                 }
                 historicalFundings = modified
+            } else {
+                historicalFundings = null
             }
         }
         if (changes.changes.contains(Changes.candles)) {
@@ -854,6 +864,8 @@ open class TradingStateMachine(
                     modified.typedSafeSet(marketId, candles)
                 }
                 candles = modified
+            } else {
+                candles = null
             }
         }
         if (changes.changes.contains(Changes.assets)) {
@@ -866,16 +878,22 @@ open class TradingStateMachine(
                         }
                     }
                 }
+            } ?: run {
+                assets = null
             }
         }
         if (changes.changes.contains(Changes.configs)) {
             this.configs?.let {
                 configs = Configs.create(configs, parser, it)
+            } ?: run {
+                configs = null
             }
         }
         if (changes.changes.contains(Changes.wallet)) {
             this.wallet?.let {
                 wallet = Wallet.create(wallet, parser, it)
+            } ?: run {
+                wallet = null
             }
         }
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
