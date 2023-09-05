@@ -12,6 +12,7 @@ import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.ApiState
 import exchange.dydx.abacus.state.app.ApiStatus
+import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.NetworkState
 import exchange.dydx.abacus.state.app.NetworkStatus
 import exchange.dydx.abacus.state.app.V4Environment
@@ -74,7 +75,6 @@ class V4StateManagerAdaptor(
             }
         }
 
-    private val chainPollingDuration = 10.0
     private var chainTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
@@ -220,6 +220,7 @@ class V4StateManagerAdaptor(
     }
 
     private fun didSetValidatorUrl(validatorUrl: String?) {
+        validatorConnected = false
         if (validatorUrl != null) {
             connectChain(validatorUrl) { successful ->
                 validatorConnected = successful
@@ -262,7 +263,7 @@ class V4StateManagerAdaptor(
             // Create a timer, to try to connect the chain again
             // Do not repeat. This timer is recreated in bestEffortConnectChain if needed
             val timer = ioImplementations.timer ?: CoroutineTimer.instance
-            chainTimer = timer.schedule(chainPollingDuration, null) {
+            chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
                     bestEffortConnectChain()
                 }
@@ -430,28 +431,65 @@ class V4StateManagerAdaptor(
         val websocketUrl = configs.websocketUrl() ?: return
         val chainId = environment.dydxChainId ?: return
         val faucetUrl = configs.faucetUrl()
-        ioImplementations.chain?.connectNetwork(
-            indexerUrl,
-            websocketUrl,
-            validatorUrl,
-            chainId,
-            faucetUrl
-        ) { response ->
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                if (response != null) {
-                    val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    ioImplementations.threading?.async(ThreadingType.main) {
-                        callback(json["error"] == null)
-                    }
-                } else {
-                    ioImplementations.threading?.async(ThreadingType.main) {
-                        callback(false)
+        ioImplementations.threading?.async(ThreadingType.main) {
+            ioImplementations.chain?.connectNetwork(
+                indexerUrl,
+                websocketUrl,
+                validatorUrl,
+                chainId,
+                faucetUrl
+            ) { response ->
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (response != null) {
+                        val json = Json.parseToJsonElement(response).jsonObject.toIMap()
+                        ioImplementations.threading?.async(ThreadingType.main) {
+                            callback(json["error"] == null)
+                        }
+                    } else {
+                        ioImplementations.threading?.async(ThreadingType.main) {
+                            callback(false)
+                        }
                     }
                 }
             }
         }
     }
 
+    override fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
+        val endpointUrls = configs.indexerConfigs
+        if (endpointUrls != null && endpointUrls.size > 1) {
+            val param = iMapOf(
+                "endpointUrls" to endpointUrls.map { it.api },
+            )
+            val json = jsonEncoder.encode(param)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                ioImplementations.chain?.get(QueryType.OptimalIndexer, json) { result ->
+                    if (result != null) {
+                        /*
+                    response = {
+                        "url": "https://...",
+                     */
+                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
+                        val url = parser.asString(map["url"])
+                        val config = endpointUrls.firstOrNull { it.api == url }
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(config)
+                        }
+                    } else {
+                        // Not handled by client yet
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(endpointUrls.firstOrNull())
+                        }
+                    }
+                }
+            }
+        } else {
+            val first = endpointUrls?.firstOrNull()
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                callback(first)
+            }
+        }
+    }
 
     private fun retrieveIndexerHeight() {
         val url = configs.publicApiUrl("height")
@@ -908,6 +946,17 @@ class V4StateManagerAdaptor(
         stateNotification?.apiStateChanged(apiState)
         dataNotification?.apiStateChanged(apiState)
         trackApiStateIfNeeded(apiState, oldValue)
+        when (apiState?.status) {
+            ApiStatus.VALIDATOR_DOWN, ApiStatus.VALIDATOR_HALTED -> {
+                validatorUrl = null
+            }
+
+            ApiStatus.INDEXER_DOWN, ApiStatus.INDEXER_HALTED -> {
+                indexerConfig = null
+            }
+
+            else -> {}
+        }
     }
 
     override fun trackApiCall() {

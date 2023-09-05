@@ -178,12 +178,12 @@ data class TransferOutInputOptions(
             val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
 
             val chains: IList<SelectionOption> = iListOf(
-                SelectionOption("dydx", "APP.GENERAL.DYDX_CHAIN", "$host/currencies/dydx.svg")
+                SelectionOption("dydx", "APP.GENERAL.DYDX_CHAIN", "$host/currencies/dydx.png")
             )
 
             val assets: IList<SelectionOption> = iListOf(
-                SelectionOption("usdc", "USDC", "$host/currencies/usdc.svg"),
-                SelectionOption("dydx", "DYDX", "$host/currencies/dydx.svg")
+                SelectionOption("usdc", "USDC", "$host/currencies/usdc.png"),
+                SelectionOption("dydx", "DYDX", "$host/currencies/dydx.png")
             )
 
             return if (existing?.needsSize != needsSize ||
