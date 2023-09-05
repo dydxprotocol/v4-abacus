@@ -74,7 +74,6 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             "clobPairId" to "clobPairId",
             "atomicResolution" to "atomicResolution",
             "stepBaseQuantums" to "stepBaseQuantums",
-            "minOrderBaseQuantums" to "minOrderBaseQuantums",
             "quantumConversionExponent" to "quantumConversionExponent",
             "subticksPerTick" to "subticksPerTick"
         )

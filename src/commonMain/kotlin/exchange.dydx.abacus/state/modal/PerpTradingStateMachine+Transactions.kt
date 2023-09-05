@@ -123,8 +123,6 @@ fun PerpTradingStateMachine.placeTradeOrder(
         ?: throw IllegalStateException("Cannot get atomic resolution")
     val stepBaseQuantums = parser.asDecimal(v4Perpetual["stepBaseQuantums"])
         ?: throw IllegalStateException("Cannot get step base quantums")
-    val minOrderBaseQuantums = parser.asLong(v4Perpetual["minOrderBaseQuantums"])
-        ?: stepBaseQuantums.longValue()
     val quantumConversionExponent =
         parser.asInt(v4Perpetual["quantumConversionExponent"])
             ?: throw IllegalStateException("Cannot get quantum conversion exponent")
@@ -136,7 +134,7 @@ fun PerpTradingStateMachine.placeTradeOrder(
     val price =
         parser.asDecimal(summary["payloadPrice"]) ?: throw IllegalStateException("Cannot get payload price")
     val size = parser.asDecimal(summary["size"]) ?: throw IllegalStateException("Cannot get size")
-    val quantums = quantum(size, atomicResolution, stepBaseQuantums, minOrderBaseQuantums)
+    val quantums = quantum(size, atomicResolution, stepBaseQuantums)
     val subticks = subticks(price, atomicResolution, quantumConversionExponent, subticksPerTick)
         ?: throw IllegalStateException("Cannot get subticks")
     val goodUntilBlock = this.goodUntilBlock(trade, height)
@@ -286,12 +284,11 @@ internal fun PerpTradingStateMachine.quantum(
     size: BigDecimal,
     atomicResolution: Int,
     stepBaseQuantums: BigDecimal,
-    minOrderBaseQuantums: Long,
 ): Long {
     val rawQuantums = size * Numeric.decimal.TEN.pow(-1 * atomicResolution)
     val quantums =
         Rounder.roundDecimal(rawQuantums, stepBaseQuantums).longValue(false)
-    return max(quantums, minOrderBaseQuantums)
+    return max(quantums, stepBaseQuantums.longValue(false))
 }
 
 internal fun PerpTradingStateMachine.subticks(
@@ -508,8 +505,6 @@ fun PerpTradingStateMachine.placeTradeOrder2(
         ?: throw IllegalStateException("Cannot get atomicResolution")
     val stepBaseQuantums = parser.asDecimal(v4Perpetual["stepBaseQuantums"])
         ?: throw IllegalStateException("Cannot get stepBaseQuantums")
-    val minOrderBaseQuantums = parser.asLong(v4Perpetual["minOrderBaseQuantums"])
-        ?: stepBaseQuantums.longValue()
     val quantumConversionExponent =
         parser.asInt(v4Perpetual["quantumConversionExponent"])
             ?: throw IllegalStateException("Cannot get quantumConversionExponent")
@@ -522,7 +517,7 @@ fun PerpTradingStateMachine.placeTradeOrder2(
         ?: throw IllegalStateException("Cannot get price")
     val size = parser.asDecimal(summary["size"])
         ?: throw IllegalStateException("Cannot get size")
-    val quantums = quantum(size, atomicResolution, stepBaseQuantums, minOrderBaseQuantums)
+    val quantums = quantum(size, atomicResolution, stepBaseQuantums)
     val subticks = subticks(price, atomicResolution, quantumConversionExponent, subticksPerTick)
         ?: throw IllegalStateException("Cannot get subticks")
     val goodTilBlock = goodUntilBlock(trade, height)

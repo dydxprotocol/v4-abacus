@@ -1070,7 +1070,6 @@ internal class MarketsChannelMock {
                     "maxPositionSize":"0",
                     "stepBaseQuantums":1000000,
                     "subticksPerTick":10000,
-                    "minOrderBaseQuantums":1000000,
                     "openInterest":"3530.502834378"
                  },
                  "ETH-USD":{
@@ -1094,7 +1093,6 @@ internal class MarketsChannelMock {
                     "maxPositionSize":"0",
                     "stepBaseQuantums":1000000,
                     "subticksPerTick":10000,
-                    "minOrderBaseQuantums":1000000,
                     "openInterest":"46115.049878"
                  }
               }
@@ -1202,8 +1200,7 @@ internal class MarketsChannelMock {
                     "quantumConversionExponent":-8,
                     "tickSize":"0.01",
                     "stepSize":"0.000000001",
-                    "stepBaseQuantums":10,
-                    "minOrderBaseQuantums":10
+                    "stepBaseQuantums":10
                  },
                  "ETH-USD":{
                     "clobPairId":"1",
@@ -1229,8 +1226,7 @@ internal class MarketsChannelMock {
                     "quantumConversionExponent":-9,
                     "tickSize":"0.001",
                     "stepSize":"0.000001",
-                    "stepBaseQuantums":1000,
-                    "minOrderBaseQuantums":1000
+                    "stepBaseQuantums":1000
                  }
               }
            }
@@ -1395,8 +1391,7 @@ internal class MarketsChannelMock {
                     "quantumConversionExponent":-8,
                     "tickSize":"0.01",
                     "stepSize":"0.000000001",
-                    "stepBaseQuantums":10,
-                    "minOrderBaseQuantums":10
+                    "stepBaseQuantums":10
                  },
                  "ETH-USD":{
                     "clobPairId":"1",
@@ -1423,8 +1418,7 @@ internal class MarketsChannelMock {
                     "quantumConversionExponent":-9,
                     "tickSize":"0.001",
                     "stepSize":"0.000001",
-                    "stepBaseQuantums":1000,
-                    "minOrderBaseQuantums":1000
+                    "stepBaseQuantums":1000
                  }
               }
            }
