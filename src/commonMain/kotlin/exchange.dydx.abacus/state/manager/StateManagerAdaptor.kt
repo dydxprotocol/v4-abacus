@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
+import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -14,6 +15,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.app.HistoricalPnlPeriod
+import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.OrderbookGrouping
 import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
@@ -68,6 +70,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
 import kollections.JsExport
 import kollections.iMutableListOf
+import kollections.iMutableSetOf
 import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
@@ -193,6 +196,23 @@ open class StateManagerAdaptor(
         environment.version,
         environment.maxSubaccountNumber,
     )
+
+    internal var indexerConfig: IndexerURIs?
+        get() = configs.indexerConfig
+        set(value) {
+            if (configs.indexerConfig != value) {
+                configs.indexerConfig = value
+                didSetIndexerConfig()
+            }
+        }
+    private var indexerTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+    internal val serverPollingDuration = 10.0
 
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
@@ -358,6 +378,56 @@ open class StateManagerAdaptor(
 
     open fun didSetReadyToConnect(readyToConnect: Boolean) {
         if (readyToConnect) {
+            bestEffortConnectIndexer()
+        } else {
+            indexerConfig = null
+        }
+    }
+
+    internal open fun bestEffortConnectIndexer() {
+        findOptimalIndexer { config ->
+            this.indexerConfig = config
+        }
+    }
+
+    private fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
+        val endpointUrls = configs.indexerConfigs
+        if (endpointUrls != null && endpointUrls.size > 1) {
+            val param = iMapOf(
+                "endpointUrls" to endpointUrls.map { it.api },
+            )
+            val json = jsonEncoder.encode(param)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                ioImplementations.chain?.get(QueryType.OptimalIndexer, json) { result ->
+                    if (result != null) {
+                        /*
+                    response = {
+                        "url": "https://...",
+                     */
+                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
+                        val url = parser.asString(map["url"])
+                        val config = endpointUrls.firstOrNull { it.api == url }
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(config)
+                        }
+                    } else {
+                        // Not handled by client yet
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(endpointUrls.firstOrNull())
+                        }
+                    }
+                }
+            }
+        } else {
+            val first = endpointUrls?.firstOrNull()
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                callback(first)
+            }
+        }
+    }
+
+    internal open fun didSetIndexerConfig() {
+        if (indexerConfig != null) {
             connectSocket()
             retrieveServerTime()
             retrieveMarketConfigs()
@@ -377,6 +447,21 @@ open class StateManagerAdaptor(
         } else {
             disconnectSocket()
             sparklinesTimer = null
+            reconnectIndexer()
+        }
+    }
+
+    private fun reconnectIndexer() {
+        if (readyToConnect) {
+            // Create a timer, to try to connect the chain again
+            // Do not repeat. This timer is recreated in bestEffortConnectChain if needed
+            val timer = ioImplementations.timer ?: CoroutineTimer.instance
+            indexerTimer = timer.schedule(serverPollingDuration, null) {
+                if (readyToConnect) {
+                    bestEffortConnectIndexer()
+                }
+                false
+            }
         }
     }
 
@@ -1641,7 +1726,8 @@ open class StateManagerAdaptor(
             val existing = this.notifications[key]
             if (existing != null) {
                 if (existing.updateTimeInMilliseconds != notification.updateTimeInMilliseconds ||
-                        existing.text != notification.text) {
+                    existing.text != notification.text
+                ) {
                     consolidated[key] = notification
                     modified = true
                 } else {

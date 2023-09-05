@@ -74,7 +74,6 @@ class V4StateManagerAdaptor(
             }
         }
 
-    private val chainPollingDuration = 10.0
     private var chainTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
@@ -220,6 +219,7 @@ class V4StateManagerAdaptor(
     }
 
     private fun didSetValidatorUrl(validatorUrl: String?) {
+        validatorConnected = false
         if (validatorUrl != null) {
             connectChain(validatorUrl) { successful ->
                 validatorConnected = successful
@@ -262,7 +262,7 @@ class V4StateManagerAdaptor(
             // Create a timer, to try to connect the chain again
             // Do not repeat. This timer is recreated in bestEffortConnectChain if needed
             val timer = ioImplementations.timer ?: CoroutineTimer.instance
-            chainTimer = timer.schedule(chainPollingDuration, null) {
+            chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
                     bestEffortConnectChain()
                 }
@@ -430,22 +430,24 @@ class V4StateManagerAdaptor(
         val websocketUrl = configs.websocketUrl() ?: return
         val chainId = environment.dydxChainId ?: return
         val faucetUrl = configs.faucetUrl()
-        ioImplementations.chain?.connectNetwork(
-            indexerUrl,
-            websocketUrl,
-            validatorUrl,
-            chainId,
-            faucetUrl
-        ) { response ->
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                if (response != null) {
-                    val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    ioImplementations.threading?.async(ThreadingType.main) {
-                        callback(json["error"] == null)
-                    }
-                } else {
-                    ioImplementations.threading?.async(ThreadingType.main) {
-                        callback(false)
+        ioImplementations.threading?.async(ThreadingType.main) {
+            ioImplementations.chain?.connectNetwork(
+                indexerUrl,
+                websocketUrl,
+                validatorUrl,
+                chainId,
+                faucetUrl
+            ) { response ->
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (response != null) {
+                        val json = Json.parseToJsonElement(response).jsonObject.toIMap()
+                        ioImplementations.threading?.async(ThreadingType.main) {
+                            callback(json["error"] == null)
+                        }
+                    } else {
+                        ioImplementations.threading?.async(ThreadingType.main) {
+                            callback(false)
+                        }
                     }
                 }
             }
@@ -908,6 +910,17 @@ class V4StateManagerAdaptor(
         stateNotification?.apiStateChanged(apiState)
         dataNotification?.apiStateChanged(apiState)
         trackApiStateIfNeeded(apiState, oldValue)
+        when (apiState?.status) {
+            ApiStatus.VALIDATOR_DOWN, ApiStatus.VALIDATOR_HALTED -> {
+                validatorUrl = null
+            }
+
+            ApiStatus.INDEXER_DOWN, ApiStatus.INDEXER_HALTED -> {
+                indexerConfig = null
+            }
+
+            else -> {}
+        }
     }
 
     override fun trackApiCall() {
