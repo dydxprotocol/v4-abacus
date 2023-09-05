@@ -390,39 +390,10 @@ open class StateManagerAdaptor(
         }
     }
 
-    private fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
-        val endpointUrls = configs.indexerConfigs
-        if (endpointUrls != null && endpointUrls.size > 1) {
-            val param = iMapOf(
-                "endpointUrls" to endpointUrls.map { it.api },
-            )
-            val json = jsonEncoder.encode(param)
-            ioImplementations.threading?.async(ThreadingType.main) {
-                ioImplementations.chain?.get(QueryType.OptimalIndexer, json) { result ->
-                    if (result != null) {
-                        /*
-                    response = {
-                        "url": "https://...",
-                     */
-                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
-                        val url = parser.asString(map["url"])
-                        val config = endpointUrls.firstOrNull { it.api == url }
-                        ioImplementations.threading?.async(ThreadingType.abacus) {
-                            callback(config)
-                        }
-                    } else {
-                        // Not handled by client yet
-                        ioImplementations.threading?.async(ThreadingType.abacus) {
-                            callback(endpointUrls.firstOrNull())
-                        }
-                    }
-                }
-            }
-        } else {
-            val first = endpointUrls?.firstOrNull()
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                callback(first)
-            }
+    internal open fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
+        val first = configs.indexerConfigs?.firstOrNull()
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            callback(first)
         }
     }
 

@@ -12,6 +12,7 @@ import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.ApiState
 import exchange.dydx.abacus.state.app.ApiStatus
+import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.NetworkState
 import exchange.dydx.abacus.state.app.NetworkStatus
 import exchange.dydx.abacus.state.app.V4Environment
@@ -454,6 +455,41 @@ class V4StateManagerAdaptor(
         }
     }
 
+    override fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
+        val endpointUrls = configs.indexerConfigs
+        if (endpointUrls != null && endpointUrls.size > 1) {
+            val param = iMapOf(
+                "endpointUrls" to endpointUrls.map { it.api },
+            )
+            val json = jsonEncoder.encode(param)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                ioImplementations.chain?.get(QueryType.OptimalIndexer, json) { result ->
+                    if (result != null) {
+                        /*
+                    response = {
+                        "url": "https://...",
+                     */
+                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
+                        val url = parser.asString(map["url"])
+                        val config = endpointUrls.firstOrNull { it.api == url }
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(config)
+                        }
+                    } else {
+                        // Not handled by client yet
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            callback(endpointUrls.firstOrNull())
+                        }
+                    }
+                }
+            }
+        } else {
+            val first = endpointUrls?.firstOrNull()
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                callback(first)
+            }
+        }
+    }
 
     private fun retrieveIndexerHeight() {
         val url = configs.publicApiUrl("height")
