@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager.configs
 
+import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -8,7 +9,12 @@ import exchange.dydx.abacus.utils.Parser
 open class StateManagerConfigs(
     private val environment: V4Environment,
     private val configs: IMap<String, Any>
-    ) {
+) {
+
+    internal val indexerConfigs: IList<IndexerURIs>?
+        get() = environment.URIs.indexers
+
+    internal var indexerConfig: IndexerURIs? = null
 
     protected val parser = Parser()
 
@@ -22,8 +28,14 @@ open class StateManagerConfigs(
 
 
     fun publicApiUrl(type: String): String? {
-        val api = environment.URIs.indexers?.firstOrNull()?.api
+        val api = indexerConfig?.api
         val path = publicApiPath(type) ?: return null
+        return "$api$path"
+    }
+
+    fun heightUrl(indexerURIs: IndexerURIs): String? {
+        val api = indexerURIs.api
+        val path = publicApiPath("height") ?: return null
         return "$api$path"
     }
 
@@ -32,7 +44,7 @@ open class StateManagerConfigs(
     }
 
     fun privateApiUrl(type: String): String? {
-        val api = environment.URIs.indexers?.firstOrNull()?.api
+        val api = indexerConfig?.api
         val path = privateApiPath(type) ?: return null
         return "$api$path"
     }
@@ -72,7 +84,7 @@ open class StateManagerConfigs(
     }
 
     fun websocketUrl(): String? {
-        val socket = environment.URIs.indexers?.firstOrNull()?.socket
+        val socket = indexerConfig?.socket
         val path = websocketPath() ?: return null
         return "$socket$path"
     }
