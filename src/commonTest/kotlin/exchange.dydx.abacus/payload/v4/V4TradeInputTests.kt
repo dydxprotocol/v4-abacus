@@ -241,7 +241,7 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals("TIME_IN_FORCE_UNSPECIFIED", placeOrder?.timeInForce)
             assertEquals("LONG_TERM", placeOrder?.orderFlags)
 
-            val quatum = perp.quantum(parser.asDecimal(1.089)!!, -10, parser.asDecimal(10)!!, 10)
+            val quatum = perp.quantum(parser.asDecimal(1.089)!!, -10, parser.asDecimal(10)!!)
             assertEquals(10890000000, quatum)
         })
 

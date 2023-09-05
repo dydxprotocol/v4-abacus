@@ -153,11 +153,12 @@ class V4MarketsTests : V4BaseTests() {
                   "markets":{
                      "BTC-USD":{
                         "configs":{
+                           "stepSize":1.0E-9,
+                           "minOrderSize":1.0E-9,
                            "v4":{
                                "clobPairId":0,
                                "atomicResolution":-10,
-                               "stepBaseQuantums":10,
-                               "minOrderBaseQuantums":10
+                               "stepBaseQuantums":10
                            }
                         }
                      },
@@ -166,8 +167,7 @@ class V4MarketsTests : V4BaseTests() {
                            "v4":{
                                "clobPairId":1,
                                "atomicResolution":-9,
-                               "stepBaseQuantums":1000,
-                               "minOrderBaseQuantums":1000
+                               "stepBaseQuantums":1000
                            }
                         }
                      }

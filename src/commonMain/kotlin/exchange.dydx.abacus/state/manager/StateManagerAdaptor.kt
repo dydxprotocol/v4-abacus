@@ -437,10 +437,14 @@ open class StateManagerAdaptor(
     }
 
     internal open fun didSetAccountAddress(accountAddress: String?, oldValue: String?) {
-        stateMachine.resetWallet(accountAddress)
-        connectedSubaccountNumber = null
-        subaccountNumber = 0
-        updateConnectedSubaccountNumber()
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            stateMachine.resetWallet(accountAddress)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                connectedSubaccountNumber = null
+                subaccountNumber = 0
+                updateConnectedSubaccountNumber()
+            }
+        }
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
