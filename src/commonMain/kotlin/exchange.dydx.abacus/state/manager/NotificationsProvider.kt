@@ -145,7 +145,7 @@ class NotificationsProvider(
             marketImageUrl,
             title,
             text,
-            "/order?id=$orderId",
+            "/orders/$orderId",
             params,
             fill.createdAtMilliseconds,
         )
