@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
+import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -14,6 +15,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.app.HistoricalPnlPeriod
+import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.OrderbookGrouping
 import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
@@ -68,6 +70,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
 import kollections.JsExport
 import kollections.iMutableListOf
+import kollections.iMutableSetOf
 import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
@@ -193,6 +196,23 @@ open class StateManagerAdaptor(
         environment.version,
         environment.maxSubaccountNumber,
     )
+
+    internal var indexerConfig: IndexerURIs?
+        get() = configs.indexerConfig
+        set(value) {
+            if (configs.indexerConfig != value) {
+                configs.indexerConfig = value
+                didSetIndexerConfig()
+            }
+        }
+    private var indexerTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+    internal val serverPollingDuration = 10.0
 
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
@@ -358,6 +378,27 @@ open class StateManagerAdaptor(
 
     open fun didSetReadyToConnect(readyToConnect: Boolean) {
         if (readyToConnect) {
+            bestEffortConnectIndexer()
+        } else {
+            indexerConfig = null
+        }
+    }
+
+    internal open fun bestEffortConnectIndexer() {
+        findOptimalIndexer { config ->
+            this.indexerConfig = config
+        }
+    }
+
+    internal open fun findOptimalIndexer(callback: (config: IndexerURIs?) -> Unit) {
+        val first = configs.indexerConfigs?.firstOrNull()
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            callback(first)
+        }
+    }
+
+    internal open fun didSetIndexerConfig() {
+        if (indexerConfig != null) {
             connectSocket()
             retrieveServerTime()
             retrieveMarketConfigs()
@@ -377,14 +418,33 @@ open class StateManagerAdaptor(
         } else {
             disconnectSocket()
             sparklinesTimer = null
+            reconnectIndexer()
+        }
+    }
+
+    private fun reconnectIndexer() {
+        if (readyToConnect) {
+            // Create a timer, to try to connect the chain again
+            // Do not repeat. This timer is recreated in bestEffortConnectChain if needed
+            val timer = ioImplementations.timer ?: CoroutineTimer.instance
+            indexerTimer = timer.schedule(serverPollingDuration, null) {
+                if (readyToConnect) {
+                    bestEffortConnectIndexer()
+                }
+                false
+            }
         }
     }
 
     internal open fun didSetAccountAddress(accountAddress: String?, oldValue: String?) {
-        stateMachine.resetWallet(accountAddress)
-        connectedSubaccountNumber = null
-        subaccountNumber = 0
-        updateConnectedSubaccountNumber()
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            stateMachine.resetWallet(accountAddress)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                connectedSubaccountNumber = null
+                subaccountNumber = 0
+                updateConnectedSubaccountNumber()
+            }
+        }
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
@@ -1640,7 +1700,9 @@ open class StateManagerAdaptor(
         for ((key, notification) in notifications) {
             val existing = this.notifications[key]
             if (existing != null) {
-                if (existing.updateTimeInMilliseconds != notification.updateTimeInMilliseconds) {
+                if (existing.updateTimeInMilliseconds != notification.updateTimeInMilliseconds ||
+                    existing.text != notification.text
+                ) {
                     consolidated[key] = notification
                     modified = true
                 } else {

@@ -341,12 +341,13 @@ internal class TradeInputDataValidator(
         */
         return when (parser.asString(trade["type"])) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
-                parser.asDecimal(parser.value(trade, "size.size"))?.let { size ->
+                parser.asString(parser.value(trade, "side"))?.let { side ->
                     parser.asDecimal(parser.value(trade, "price.limitPrice"))
                         ?.let { limitPrice ->
                             parser.asDecimal(parser.value(trade, "price.triggerPrice"))
                                 ?.let { triggerPrice ->
-                                    if (size > Numeric.double.ZERO && limitPrice < triggerPrice) {
+                                    if (side == "BUY" && limitPrice < triggerPrice) {
+                                        // BUY
                                         return iListOf(
                                             error(
                                                 "ERROR",
@@ -357,7 +358,8 @@ internal class TradeInputDataValidator(
                                                 "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
                                             )
                                         )
-                                    } else if (size < Numeric.double.ZERO && limitPrice > triggerPrice) {
+                                    } else if (side == "SELL" && limitPrice > triggerPrice) {
+                                        // SELL
                                         return iListOf(
                                             error(
                                                 "ERROR",

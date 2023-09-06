@@ -241,7 +241,7 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals("TIME_IN_FORCE_UNSPECIFIED", placeOrder?.timeInForce)
             assertEquals("LONG_TERM", placeOrder?.orderFlags)
 
-            val quatum = perp.quantum(parser.asDecimal(1.089)!!, -10, parser.asDecimal(10)!!, 10)
+            val quatum = perp.quantum(parser.asDecimal(1.089)!!, -10, parser.asDecimal(10)!!)
             assertEquals(10890000000, quatum)
         })
 
@@ -613,13 +613,17 @@ open class V4TradeInputTests : V4BaseTests() {
         }, null)
 
         test({
+            perp.trade("900.0", TradeInputField.limitPrice, 0)
+        }, null)
+
+        test({
             perp.trade("1000.0", TradeInputField.triggerPrice, 0)
         }, """
             {
                 "input": {
                     "trade": {
                         "price": {
-                            "limitPrice": 10000.0,
+                            "limitPrice": 900.0,
                             "triggerPrice": 1000.0
                         }
                     }
@@ -630,7 +634,7 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals(0, placeOrder?.clobPairId)
             assertEquals("SELL", placeOrder?.side)
             assertEquals(1000000000.0, placeOrder?.quantums)
-            assertEquals(100000000.0, placeOrder?.subticks)
+            assertEquals(9000000.0, placeOrder?.subticks)
             assertEquals(23, placeOrder?.goodUntilBlock)
             assertEquals(false, placeOrder?.reduceOnly)
             assertEquals("TIME_IN_FORCE_UNSPECIFIED", placeOrder?.timeInForce)

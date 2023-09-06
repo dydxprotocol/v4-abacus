@@ -57,7 +57,6 @@ data class MarketConfigsV4(
     val clobPairId: String,
     val atomicResolution: Int,
     val stepBaseQuantums: Int,
-    val minOrderBaseQuantums: Int?,
 ) {
     companion object {
         internal fun create(
@@ -68,20 +67,17 @@ data class MarketConfigsV4(
             val clobPairId = parser.asString(data["clobPairId"])
             val atomicResolution = parser.asInt(data["atomicResolution"])
             val stepBaseQuantums = parser.asInt(data["stepBaseQuantums"])
-            val minOrderBaseQuantums = parser.asInt(data["minOrderBaseQuantums"])
 
             return if (clobPairId != null && atomicResolution != null && stepBaseQuantums != null) {
                 if (existing == null ||
                     existing.clobPairId != clobPairId ||
                     existing.atomicResolution != atomicResolution ||
-                    existing.stepBaseQuantums != stepBaseQuantums ||
-                    existing.minOrderBaseQuantums != minOrderBaseQuantums
+                    existing.stepBaseQuantums != stepBaseQuantums
                 ) {
                     MarketConfigsV4(
                         clobPairId,
                         atomicResolution,
                         stepBaseQuantums,
-                        minOrderBaseQuantums
                     )
                 } else {
                     existing
