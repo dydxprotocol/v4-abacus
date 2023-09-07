@@ -18,8 +18,8 @@ internal class TradeMarketOrderInputValidator(
     formatter: Formatter?,
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
-    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.02
-    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.005
+    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.004
+    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.001
 
     override fun validateTrade(
         subaccount: IMap<String, Any>?,
