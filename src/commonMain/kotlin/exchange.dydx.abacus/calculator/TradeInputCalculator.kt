@@ -40,11 +40,11 @@ internal class TradeInputCalculator(
     private val accountTransformer = AccountTransformer()
     private val fokDisabled = false
 
-    private val MARKET_ORDER_MAX_SLIPPAGE = 0.01                   // 0.05 for v3
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_BTC = 0.01       // 0.05 for v3
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_BTC = 0.02 // 0.05 for v3
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.02            // 0.1 for v3
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.04     // 0.1 for v3
+    private val MARKET_ORDER_MAX_SLIPPAGE = 0.01                                // 0.05 for v3
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.01           // 0.05 for v3
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.02    // 0.05 for v3
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.02                        // 0.1 for v3
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.04                 // 0.1 for v3
 
     internal fun calculate(
         state: IMap<String, Any>,
@@ -1188,9 +1188,9 @@ internal class TradeInputCalculator(
                         }
                         if (majorMarket) {
                             if (type == "STOP_MARKET") {
-                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_BTC
+                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                             } else {
-                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_BTC
+                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                             }
                         } else {
                             if (type == "STOP_MARKET") {
