@@ -391,7 +391,7 @@ internal class TradeInputDataValidator(
             field == "goodUntil"
         }
 
-        return if (fields != null) {
+        return if (fields != null && parser.asBool(parser.value(trade, "options.needsGoodUntil")) == true) {
             val goodUntil = parser.asMap(trade["goodUntil"])
             // null is handled by FieldsInputValidator
             val timeInterval = GoodTil.duration(goodUntil, parser)
