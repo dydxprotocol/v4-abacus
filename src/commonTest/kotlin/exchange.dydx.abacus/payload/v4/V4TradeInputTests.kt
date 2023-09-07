@@ -56,6 +56,7 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testOnce() {
+        testMarketTradeInputOnce()
         testLimitTradeInputOnce()
         testUpdates()
     }
@@ -275,9 +276,10 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals(placeOrder?.clobPairId, 0)
         })
 
-        test({
-            perp.trade("190", TradeInputField.goodUntilDuration, 0)
-        }, """
+        test(
+            {
+                perp.trade("190", TradeInputField.goodUntilDuration, 0)
+            }, """
             {
                 "input": {
                     "errors": [
@@ -302,7 +304,55 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
+    }
+
+    private fun testMarketTradeInputOnce() {
+        test({
+            perp.trade("MARKET", TradeInputField.type, 0)
+        }, null)
+
+        test(
+            {
+                perp.tradeInMarket("LTC-USD", 0)
+            }, """
+            {
+            }
+        """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("1", TradeInputField.size, 0)
+            }, """
+            {
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+                            "fields": [
+                                "size.size"
+                            ],
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_SIZE_FIELD"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+        )
+
     }
 
     private fun testUpdates() {
@@ -643,30 +693,37 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals(10000000.0, placeOrder?.conditionalOrderTriggerSubticks)
         })
 
-        test({
-            perp.tradeInMarket("ETH-USD", 0)
-        }, """
+        test(
+            {
+                perp.tradeInMarket("ETH-USD", 0)
+            }, """
             {
             }
-        """.trimMargin())
+        """.trimMargin()
+        )
 
-        test({
-            perp.trade("0.1", TradeInputField.size, 0)
-        }, """
+        test(
+            {
+                perp.trade("0.1", TradeInputField.size, 0)
+            }, """
             {
             }
-        """.trimMargin())
+        """.trimMargin()
+        )
 
-        test({
-            perp.trade("1000", TradeInputField.triggerPrice, 0)
-        }, """
+        test(
+            {
+                perp.trade("1000", TradeInputField.triggerPrice, 0)
+            }, """
             {
             }
-        """.trimMargin())
+        """.trimMargin()
+        )
 
-        test({
-            perp.trade("STOP_MARKET", TradeInputField.type, 0)
-        }, """
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+            }, """
             {
                 "input": {
                     "trade": {
@@ -676,11 +733,13 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
-        test({
-            perp.trade("2000.0", TradeInputField.triggerPrice, 0)
-        }, """
+        test(
+            {
+                perp.trade("2000.0", TradeInputField.triggerPrice, 0)
+            }, """
             {
                 "input": {
                     "trade": {
@@ -690,12 +749,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
 
-        test({
-            perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-        }, """
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+            }, """
             {
                 "input": {
                     "trade": {
@@ -705,7 +766,8 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
     }
 }

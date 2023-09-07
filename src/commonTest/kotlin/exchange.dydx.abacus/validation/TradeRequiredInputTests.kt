@@ -96,7 +96,12 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "trade": {
                             "type": "MARKET"
                         },
-                        "errors": null
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                            }
+                        ]
                     }
                 }
             """.trimIndent()

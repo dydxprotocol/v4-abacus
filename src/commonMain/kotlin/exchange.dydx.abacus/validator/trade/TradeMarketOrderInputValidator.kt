@@ -76,11 +76,10 @@ internal class TradeMarketOrderInputValidator(
         /*
         MARKET_ORDER_NOT_ENOUGH_LIQUIDITY
          */
-        val marketOrder = parser.asMap(trade["marketOrder"]) ?: return null
-        val filled = parser.asBool(marketOrder["filled"]) ?: false
+        val filled = parser.asBool(parser.value(trade, "marketOrder.filled")) ?: false
 
         return if (filled) null else error(
-             if (restricted) "WARNING" else "ERROR",
+            if (restricted) "WARNING" else "ERROR",
             "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
             iListOf("size.size"),
             "APP.TRADE.MODIFY_SIZE_FIELD",
@@ -117,7 +116,7 @@ internal class TradeMarketOrderInputValidator(
                     )
                 } else if (slippageValue >= MARKET_ORDER_WARNING_SLIPPAGE) {
                     return error(
-                         "WARNING",
+                        "WARNING",
                         "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
                         iListOf("size.size"),
                         null,
