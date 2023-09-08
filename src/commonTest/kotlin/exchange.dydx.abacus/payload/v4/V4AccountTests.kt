@@ -155,10 +155,10 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "realizedPnlPercent": {
-                                                "current": 7.4240911E-4
+                                                "current": 7.424091096228276E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 4.07054932706E-1
+                                                "current": 0.4070549327057244
                                             },
                                             "valueTotal": {
                                                 "current": 2.399413946951037E+5
@@ -173,7 +173,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": 1.1997069734755185E+4
                                             },
                                             "leverage": {
-                                                "current": 1.966181553332
+                                                "current": 1.9661815533313187
                                             }
                                         },
                                         "ETH-USD": {
@@ -198,10 +198,10 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "realizedPnlPercent": {
-                                                "current": -7.64071181E-4
+                                                "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -3.85380767806E-1
+                                                "current": -0.3853807678054771
                                             },
                                             "valueTotal": {
                                                 "current": -1.8616440898202E+5
@@ -216,7 +216,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": 9.308220449101E+3
                                             },
                                             "leverage": {
-                                                "current": -1.525510124222
+                                                "current": -1.5255101242217808
                                             },
                                             "liquidationPrice": {
                                             },
@@ -541,7 +541,7 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 4.07054932706E-1
+                                                "current": 0.4070549327057244
                                             },
                                             "valueTotal": {
                                                 "current": -43112.8545625066
@@ -580,10 +580,10 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "realizedPnlPercent": {
-                                                "current": -7.64071181E-4
+                                                "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -3.85380767806E-1
+                                                "current": -0.3853807678054771
                                             },
                                             "valueTotal": {
                                                 "current": -1.8616440898202E+5
