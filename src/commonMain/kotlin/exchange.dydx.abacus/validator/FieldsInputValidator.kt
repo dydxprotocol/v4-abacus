@@ -77,7 +77,11 @@ internal class FieldsInputValidator(
         }
     }
 
-    private fun errorStringKey(transaction: IMap<String, Any>, transactionType: String, field: String): String? {
+    private fun errorStringKey(
+        transaction: IMap<String, Any>,
+        transactionType: String,
+        field: String
+    ): String? {
         return when (transactionType) {
             "trade", "closePosition" -> when (field) {
                 "size.size" -> "APP.TRADE.ENTER_AMOUNT"
@@ -116,7 +120,16 @@ internal class FieldsInputValidator(
         field: String,
         type: String,
     ): Boolean {
-        val value = parser.value(transaction, field)
+        val value = when (field) {
+            "size.size" -> {
+                val inputField = parser.asString(parser.value(transaction, "size.input"))
+                if (inputField != null) {
+                    parser.value(transaction, inputField)
+                } else null
+            }
+
+            else -> parser.value(transaction, field)
+        }
         return if (value != null) {
             validData(parser, value, type)
         } else false
