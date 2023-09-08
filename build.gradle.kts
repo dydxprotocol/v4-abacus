@@ -30,7 +30,7 @@ plugins {
 }
 
 group = "exchange.dydx.abacus"
-version = "0.4.15"
+version = "0.4.16"
 
 repositories {
     google()
@@ -114,7 +114,7 @@ kotlin {
                 implementation("io.github.aakira:napier:$napierVersion")
                 implementation("co.touchlab:stately-common:1.2.0")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
-                implementation("com.ionspin.kotlin:bignum:0.3.7")
+                implementation("com.ionspin.kotlin:bignum:0.3.8")
                 implementation("tz.co.asoft:kollections-interoperable:2.0.16")
 
             }

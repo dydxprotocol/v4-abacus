@@ -66,10 +66,10 @@ class V3ClosePositionTests : V3BaseTests() {
                         },
                         "reduceOnly": false,
                         "summary": {
-                            "price": 1653.742642783858,
+                            "price": 1653.7426427838577,
                             "size": 23.392,
-                            "usdcSize": 38684.34790000001,
-                            "total": 38684.34790000001
+                            "usdcSize": 38684.3479,
+                            "total": 38684.3479
                         }
                     }
                 },
@@ -79,7 +79,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": -62697.279528,
-                                    "postOrder": -24012.93162799999
+                                    "postOrder": -24012.931628
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -116,10 +116,10 @@ class V3ClosePositionTests : V3BaseTests() {
                         },
                         "reduceOnly": false,
                         "summary": {
-                            "price": 1654.158126666667,
+                            "price": 1654.1581266666667,
                             "size": 15.0,
-                            "usdcSize": 24812.371900000006,
-                            "total": 24812.371900000006
+                            "usdcSize": 24812.371900000002,
+                            "total": 24812.371900000002
                         }
                     }
                 },
@@ -129,7 +129,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": -62697.279528,
-                                    "postOrder": -37884.90762799999
+                                    "postOrder": -37884.907628
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
