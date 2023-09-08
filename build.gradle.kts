@@ -182,6 +182,13 @@ kotlin {
 npmPublish {
     organization.set("dydxprotocol")
     readme.set(rootDir.resolve("README.md"))
+    packages {
+        named("js") {
+            packageJson {
+                license.set("BSL-1.1")
+            }
+        }
+    }
     registries {
         register("npmjs") {
             uri.set(uri("https://registry.npmjs.org")) //
