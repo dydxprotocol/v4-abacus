@@ -10,6 +10,7 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     private val feeTiersProcessor = FeeTiersProcessor(parser)
     private val feeDiscountsProcessor = FeeDiscountsProcessor(parser)
     private val networkConfigsProcessor = NetworkConfigsProcessor(parser)
+    private val rewardsParamsProcessor = RewardsParamsProcessor(parser)
 
     internal fun receivedOnChainEquityTiers(
         existing: IMap<String, Any>?,
@@ -65,6 +66,21 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
             val list = parser.asList(payload)
             if (list != null) {
                 feeDiscountsProcessor.received(list)
+            } else {
+                null
+            }
+        }
+    }
+
+    internal fun receivedRewardsParams(
+        existing: IMap<String, Any>?,
+        payload: IMap<String, Any>
+    ): IMap<String, Any>? {
+        return receivedObject(existing, "rewardsParams", payload) { existing, payload ->
+            val map = parser.asMap(payload)
+            val params = parser.asMap(map?.get("params"))
+            if (params != null) {
+                rewardsParamsProcessor.received(parser.asMap(existing), params)
             } else {
                 null
             }

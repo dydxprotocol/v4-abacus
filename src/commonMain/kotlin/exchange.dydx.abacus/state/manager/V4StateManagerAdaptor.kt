@@ -22,6 +22,7 @@ import exchange.dydx.abacus.state.modal.TransferInputField
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.onChainEquityTiers
 import exchange.dydx.abacus.state.modal.onChainFeeTiers
+import exchange.dydx.abacus.state.modal.onChainRewardsParams
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
 import exchange.dydx.abacus.state.modal.squidChains
@@ -234,6 +235,7 @@ class V4StateManagerAdaptor(
         if (validatorConnected) {
             getEquityTiers()
             getFeeTiers()
+            getRewardsParams()
             if (subaccount != null) {
                 getUserFeeTier()
                 pollUserStats()
@@ -283,6 +285,13 @@ class V4StateManagerAdaptor(
         getOnChain(QueryType.FeeTiers, null) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainFeeTiers(response), oldState)
+        }
+    }
+
+    private fun getRewardsParams() {
+        getOnChain(QueryType.RewardsParams, null) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainRewardsParams(response), oldState)
         }
     }
 

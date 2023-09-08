@@ -240,10 +240,51 @@ data class NetworkConfigs(
 
 @JsExport
 @Serializable
+data class RewardsParams(
+    val denom: String?,
+    val denomExponent: Double?,
+    val feeMultiplierPpm: Double?,
+    val marketId: Int?
+) {
+    companion object {
+        internal fun create(
+            existing: RewardsParams?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?
+        ): RewardsParams? {
+            data?.let {
+                val denom = parser.asString(data["denom"])
+                val denomExponent = parser.asDouble(data["denomExponent"])
+                val feeMultiplierPpm = parser.asDouble(data["feeMultiplierPpm"])
+                val marketId = parser.asInt(data["marketId"])
+                return if (existing?.denom != denom ||
+                    existing?.denomExponent != denomExponent ||
+                    existing?.feeMultiplierPpm != feeMultiplierPpm ||
+                    existing?.marketId != marketId
+                ) {
+                    RewardsParams(
+                        denom,
+                        denomExponent,
+                        feeMultiplierPpm,
+                        marketId
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Rewards Params not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class Configs(
     val network: NetworkConfigs?,
     val feeTiers: IList<FeeTier>?,
-    val feeDiscounts: IList<FeeDiscount>?
+    val feeDiscounts: IList<FeeDiscount>?,
+    val rewardsParams: RewardsParams?
 ) {
     companion object {
         internal fun create(
@@ -261,6 +302,12 @@ data class Configs(
                         data["feeDiscounts"]
                     )
                 )
+                val rewardsParams = RewardsParams.create(
+                    existing?.rewardsParams, parser, parser.asMap(
+                        data["rewardsParams"]
+                    )
+                )
+
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
                     existing?.feeDiscounts != feeDiscounts
@@ -268,10 +315,12 @@ data class Configs(
                     Configs(
                         network,
                         feeTiers,
-                        feeDiscounts
+                        feeDiscounts,
+                        rewardsParams
                     )
                 } else {
                     existing ?: Configs(
+                        null,
                         null,
                         null,
                         null
