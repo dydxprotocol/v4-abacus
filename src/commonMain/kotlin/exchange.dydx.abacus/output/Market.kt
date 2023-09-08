@@ -111,6 +111,7 @@ data class MarketConfigs(
     val incrementalInitialMarginFraction: Double? = null,
     val incrementalPositionSize: Double? = null,
     val maxPositionSize: Double? = null,
+    val basePositionNotional: Double? = null,
     val baselinePositionSize: Double? = null,
     val candleOptions: IList<CandleOption>? = null,
 ) {
@@ -133,6 +134,7 @@ data class MarketConfigs(
                 parser.asDouble(data["incrementalInitialMarginFraction"])
             val incrementalPositionSize = parser.asDouble(data["incrementalPositionSize"])
             val maxPositionSize = parser.asDouble(data["maxPositionSize"])
+            val basePositionNotional = parser.asDouble(data["basePositionNotional"])
             val baselinePositionSize = parser.asDouble(data["baselinePositionSize"])
             val candleOptions = CandleOption.create(
                 existing?.candleOptions,
@@ -153,6 +155,7 @@ data class MarketConfigs(
                 existing.incrementalPositionSize != incrementalPositionSize ||
                 existing.maxPositionSize != maxPositionSize ||
                 existing.baselinePositionSize != baselinePositionSize ||
+                existing.basePositionNotional != basePositionNotional ||
                 existing.candleOptions != candleOptions
             ) {
                 MarketConfigs(
@@ -172,6 +175,7 @@ data class MarketConfigs(
                     incrementalInitialMarginFraction,
                     incrementalPositionSize,
                     maxPositionSize,
+                    basePositionNotional,
                     baselinePositionSize,
                     candleOptions
                 )
