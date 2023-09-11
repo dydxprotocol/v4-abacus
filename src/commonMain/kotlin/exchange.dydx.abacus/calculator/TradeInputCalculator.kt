@@ -41,6 +41,7 @@ internal class TradeInputCalculator(
     private val fokDisabled = false
 
     private val MARKET_ORDER_MAX_SLIPPAGE = 0.01                                // 0.05 for v3
+    private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.002                 // 0.01 for v3
     private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.01           // 0.05 for v3
     private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.02    // 0.05 for v3
     private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.02                        // 0.1 for v3
@@ -325,9 +326,6 @@ internal class TradeInputCalculator(
     ): IMap<String, Any>? {
         val tradeSize = parser.asMap(trade["size"])
         if (tradeSize != null) {
-            val stepSize =
-                parser.asDouble(parser.value(market, "configs.stepSize"))
-                    ?: 0.001
             return when (input) {
                 "size.size", "size.percent" -> {
                     val orderbook = orderbook(market, isBuying)
@@ -340,6 +338,9 @@ internal class TradeInputCalculator(
                 }
 
                 "size.usdcSize" -> {
+                    val stepSize =
+                        parser.asDouble(parser.value(market, "configs.stepSize"))
+                            ?: 0.001
                     val orderbook = orderbook(market, isBuying)
                     if (orderbook != null)
                         calculateMarketOrderFromUsdcSize(
@@ -351,46 +352,64 @@ internal class TradeInputCalculator(
                 }
 
                 "size.leverage" -> {
-                    val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
-                    val oraclePrice =
-                        parser.asDouble(parser.value(market, "oraclePrice"))
-                    val feeRate =
-                        parser.asDouble(parser.value(user, "takerFeeRate"))
-                            ?: Numeric.double.ZERO
-                    val positions = parser.asMap(subaccount?.get("openPositions"))
-                    val positionSize = if (positions != null && market != null) parser.asDouble(
-                        parser.value(
-                            positions,
-                            "${market["id"]}.size.current"
-                        )
-                    ) else null
-                    val leverage = parser.asDouble(parser.value(trade, "size.leverage"))
-                    if (equity != null && equity > Numeric.double.ZERO && oraclePrice != null && leverage != null) {
-                        val existingLeverage =
-                            ((positionSize ?: Numeric.double.ZERO) * oraclePrice) / equity
-                        val calculatedIsBuying =
-                            if (leverage > existingLeverage) true else if (leverage < existingLeverage) false else null
-                        if (calculatedIsBuying != null) {
-                            val orderbook = orderbook(market, calculatedIsBuying)
-                            if (orderbook != null)
-                                calculateMarketOrderFromLeverage(
-                                    equity,
-                                    oraclePrice,
-                                    positionSize,
-                                    calculatedIsBuying,
-                                    feeRate,
-                                    leverage,
-                                    stepSize,
-                                    orderbook
-                                ) else null
-                        } else null
-                    } else null
+                    val leverage =
+                        parser.asDouble(parser.value(trade, "size.leverage")) ?: return null
+                    calculateMarketOrderFromLeverage(
+                        leverage,
+                        market,
+                        subaccount,
+                        user,
+                    )
                 }
 
                 else -> null
             }
         }
         return null
+    }
+
+    private fun calculateMarketOrderFromLeverage(
+        leverage: Double,
+        market: IMap<String, Any>?,
+        subaccount: IMap<String, Any>?,
+        user: IMap<String, Any>,
+    ): IMap<String, Any>? {
+        val stepSize =
+            parser.asDouble(parser.value(market, "configs.stepSize"))
+                ?: 0.001
+        val equity = parser.asDouble(parser.value(subaccount, "equity.current")) ?: return null
+        val oraclePrice =
+            parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
+        val feeRate =
+            parser.asDouble(parser.value(user, "takerFeeRate"))
+                ?: Numeric.double.ZERO
+        val positions = parser.asMap(subaccount?.get("openPositions"))
+        val positionSize = if (positions != null && market != null) parser.asDouble(
+            parser.value(
+                positions,
+                "${market["id"]}.size.current"
+            )
+        ) else null
+        return if (equity > Numeric.double.ZERO) {
+            val existingLeverage =
+                ((positionSize ?: Numeric.double.ZERO) * oraclePrice) / equity
+            val calculatedIsBuying =
+                if (leverage > existingLeverage) true else if (leverage < existingLeverage) false else null
+            if (calculatedIsBuying != null) {
+                val orderbook = orderbook(market, calculatedIsBuying)
+                if (orderbook != null)
+                    calculateMarketOrderFromLeverage(
+                        equity,
+                        oraclePrice,
+                        positionSize,
+                        calculatedIsBuying,
+                        feeRate,
+                        leverage,
+                        stepSize,
+                        orderbook
+                    ) else null
+            } else null
+        } else null
     }
 
     private fun calculateMarketOrderFromSize(
@@ -1010,7 +1029,7 @@ internal class TradeInputCalculator(
                 }
             }
             if (parser.asBool(options["needsLeverage"]) == true) {
-                options.safeSet("maxLeverage", maxLeverage(position, market))
+                options.safeSet("maxLeverage", maxLeverageFromPosition(position, market))
             } else {
                 options.safeSet("maxLeverage", null)
             }
@@ -1019,11 +1038,18 @@ internal class TradeInputCalculator(
         return null
     }
 
-    private fun maxLeverage(
+    private fun maxLeverageFromPosition(
         position: IMap<String, Any>?,
         market: IMap<String, Any>?,
     ): Double? {
-        return null
+        if (position != null) {
+            return parser.asDouble(parser.value(position, "maxLeverage.current"))
+        } else {
+            val initialMarginFraction =
+                parser.asDouble(parser.value(market, "configs.initialMarginFraction"))
+                    ?: return null
+            return 1.0 / initialMarginFraction
+        }
     }
 
     private fun calculatedOptions(
@@ -1117,12 +1143,22 @@ internal class TradeInputCalculator(
                         ) else null
 
                     val price = marketOrderPrice(marketOrder)
+                    val side = parser.asString(trade["side"])
+                    val priceLimit = priceLimit(subaccount, market, user, side)
                     val payloadPrice = if (price != null) {
-                        when (parser.asString(trade["side"])) {
-                            "BUY" -> price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE)
-                            else -> price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE)
+                        when (side) {
+                            "BUY" ->
+                                priceIfLessThan(price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE), priceLimit) ?:
+                                priceIfLessThan(price * (Numeric.double.ONE + MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD), priceLimit) ?:
+                                price
+
+                            else ->
+                                priceIfLargeThan(price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE), priceLimit) ?:
+                                priceIfLargeThan(price * (Numeric.double.ONE - MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD), priceLimit) ?:
+                                price
                         }
                     } else null
+
                     val size = marketOrderSize(marketOrder)
                     val usdcSize =
                         if (price != null && size != null) (parser.asDecimal(price)!! * parser.asDecimal(
@@ -1302,6 +1338,53 @@ internal class TradeInputCalculator(
             else -> {}
         }
         return summary
+    }
+
+    private fun priceLimit(
+        subaccount: IMap<String, Any>?,
+        market: IMap<String, Any>?,
+        user: IMap<String, Any>?,
+        side: String?,
+    ): Double? {
+        val maxLeverage = maxLeverage(subaccount, market)
+        return if (maxLeverage != null && user != null) {
+            val multiplier = if (side == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+            parser.asDouble(calculateMarketOrderFromLeverage(
+                maxLeverage * multiplier,
+                market,
+                subaccount,
+                user,
+            )?.get("price"))
+        } else null
+    }
+
+    private fun priceIfLessThan(price: Double, priceLimit: Double?): Double? {
+        return priceLimit?.let {
+            if (price < priceLimit) price else null
+        } ?: price
+    }
+
+    private fun priceIfLargeThan(price: Double, priceLimit: Double?): Double? {
+        return priceLimit?.let {
+            if (price > priceLimit) price else null
+        } ?: price
+    }
+
+    private fun maxLeverage(
+        subaccount: IMap<String, Any>?,
+        market: IMap<String, Any>?
+    ): Double? {
+        if (subaccount == null || market == null) {
+            return null
+        }
+        val marketId = parser.asString(market["id"]) ?: return null
+        val position = parser.asMap(
+            parser.value(
+                subaccount,
+                "openPositions.$marketId"
+            )
+        )
+        return maxLeverageFromPosition(position, market)
     }
 
     private fun slippage(price: Double?, indexPrice: Double?, side: String?): Double? {
