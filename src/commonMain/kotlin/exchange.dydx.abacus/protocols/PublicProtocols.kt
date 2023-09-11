@@ -139,7 +139,8 @@ enum class QueryType(val rawValue: String) {
     Transfers("getTransfers"),
     OptimalNode("getOptimalNode"),
     OptimalIndexer("getOptimalIndexer"),
-    GetAccountBalances("getAccountBalances");
+    GetAccountBalances("getAccountBalances"),
+    RewardsParams("getRewardsParams");
 
     companion object {
         operator fun invoke(rawValue: String) =

@@ -15,5 +15,5 @@ pluginManagement {
     }
 }
 
-rootProject.name = "abacus"
+rootProject.name = "v4-abacus"
 
