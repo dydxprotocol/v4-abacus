@@ -360,7 +360,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "iconLocal": "Outgoing",
                                                 "indicator": "confirmed"
                                             },
-                                            "transactionHash": "MOCKHASH"
+                                            "transactionHash": "MOCKHASH1"
                                         }
                                     ]
                                 }
@@ -371,6 +371,36 @@ class V4AccountTests : V4BaseTests() {
             """.trimIndent(),
             {
             }
+        )
+
+        test(
+            {
+                perp.socket(testWsUrl, mock.transfersMock.channel_data, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "0": {
+                                    "transfers": [
+                                        {
+                                            "id": "A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B",
+                                            "transactionHash": "A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B"
+                                        },
+                                        {},
+                                        {},
+                                        {},
+                                        {},
+                                        {
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
         )
     }
 
@@ -504,6 +534,10 @@ class V4AccountTests : V4BaseTests() {
                                     },
                                     "transfers": [
                                         {
+                                            "id": "A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B",
+                                            "transactionHash": "A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B"
+                                        },
+                                        {
                                             "id": "89586775-0646-582e-9b36-4f131715644d",
                                             "type": "WITHDRAWAL",
                                             "asset": "USDC",
@@ -518,7 +552,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "iconLocal": "Outgoing",
                                                 "indicator": "confirmed"
                                             },
-                                            "transactionHash": "MOCKHASH"
+                                            "transactionHash": "MOCKHASH1"
                                         }
                                     ],
                                     "openPositions": {

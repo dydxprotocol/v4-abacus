@@ -883,7 +883,7 @@ data class SubaccountTransfer(
                     (parser.asDatetime(itemData["confirmedAt"])
                         ?: parser.asDatetime(itemData["createdAt"]))?.toEpochMilliseconds()
                         ?.toDouble()
-                ParsingHelper.compare(time1, time2 ?: 0.0, true)
+                ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, itemData ->
                 SubaccountTransfer.create(null, parser, parser.asMap(itemData))
             })

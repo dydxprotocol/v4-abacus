@@ -87,6 +87,9 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         if (modified["status"] == null) {
             modified["status"] = "CONFIRMED"
         }
+        if (modified["id"] == null) {
+            modified.safeSet("id", parser.asString(payload["transactionHash"]))
+        }
         updateResource(modified)
         return modified
     }
