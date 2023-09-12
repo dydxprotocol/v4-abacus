@@ -58,7 +58,7 @@ class V4HeightTests {
         /* no height yet */
         setStateMachineReadyToConnect(stateManager)
 
-        assertNull(testState?.apiState?.status)
+        assertEquals(ApiStatus.UNKNOWN, testState?.apiState?.status)
         assertNull(testState?.apiState?.haltedBlock)
         assertNull(testState?.apiState?.trailingBlocks)
         assertNull(testState?.apiState?.height)
