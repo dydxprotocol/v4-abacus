@@ -18,7 +18,7 @@ internal class TransfersMock {
                  "createdAtHeight":"404014",
                  "symbol":"USDC",
                  "type":"WITHDRAWAL",
-                 "transactionHash": "MOCKHASH"
+                 "transactionHash": "MOCKHASH1"
               },
               {
                  "id":"34102591-fa1a-5a0b-ae0d-35192bbfb33a",
@@ -34,7 +34,7 @@ internal class TransfersMock {
                  "createdAtHeight":"404003",
                  "symbol":"USDC",
                  "type":"WITHDRAWAL",
-                 "transactionHash": "MOCKHASH"
+                 "transactionHash": "MOCKHASH2"
               },
               {
                  "id":"af5eafd4-4f39-5432-959e-be00c5ab1a64",
@@ -51,7 +51,7 @@ internal class TransfersMock {
                  "createdAtHeight":"164985",
                  "symbol":"USDC",
                  "type":"TRANSFER_IN",
-                 "transactionHash": "MOCKHASH"
+                 "transactionHash": "MOCKHASH3"
               },
               {
                  "id":"5d3e01f8-60b2-5c74-9dc0-6b7964ac751c",
@@ -68,7 +68,7 @@ internal class TransfersMock {
                  "createdAtHeight":"163501",
                  "symbol":"USDC",
                  "type":"TRANSFER_IN",
-                 "transactionHash": "MOCKHASH"
+                 "transactionHash": "MOCKHASH4"
               },
               {
                  "id":"5e297126-ee0b-588c-8a64-eb47e7370718",
@@ -85,9 +85,37 @@ internal class TransfersMock {
                  "createdAtHeight":"13627",
                  "symbol":"USDC",
                  "type":"TRANSFER_IN",
-                 "transactionHash": "MOCKHASH"
+                 "transactionHash": "MOCKHASH5"
               }
            ]
+        }
+    """.trimIndent()
+
+    val channel_data = """
+        {
+          "type": "channel_data",
+          "connection_id": "7baedc3a-0f15-4a20-8e4f-30b8af67e461",
+          "message_id": 87,
+          "id": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg/0",
+          "channel": "v4_subaccounts",
+          "version": "2.4.0",
+          "contents": {
+            "transfers": {
+              "sender": {
+                "address": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                "subaccountNumber": 0
+              },
+              "recipient": {
+                "address": "dydx1pnvf90r7uyfcrgs35fh2ksc5ld4rxw8jr2gsat"
+              },
+              "symbol": "USDC",
+              "size": "120",
+              "type": "WITHDRAWAL",
+              "createdAt": "2023-09-12T15:34:16.427Z",
+              "createdAtHeight": "371225",
+              "transactionHash": "A9758D092415E36F4E0D80D323BC4EE472644548392489309333CA55E963431B"
+            }
+          }
         }
     """.trimIndent()
 }
