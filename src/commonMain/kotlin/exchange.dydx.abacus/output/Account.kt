@@ -72,8 +72,12 @@ data class SubaccountHistoricalPNL(
                     val time2MS = time2.toEpochMilliseconds().toDouble()
                     ParsingHelper.compare(time1, time2MS ?: 0.0, true)
                 } else null
-            }, { _, itemData ->
-                SubaccountHistoricalPNL.create(null, parser, parser.asMap(itemData))
+            }, { _, obj, itemData ->
+                SubaccountHistoricalPNL.create(
+                    obj as? SubaccountHistoricalPNL,
+                    parser,
+                    parser.asMap(itemData)
+                )
             }, true, { item ->
                 val ms = (item as SubaccountHistoricalPNL).createdAtMilliseconds.toDouble()
                 val createdAt = Instant.fromEpochMilliseconds(ms.toLong())
@@ -508,7 +512,8 @@ data class SubaccountOrder(
                     val unfillableAtMilliseconds =
                         parser.asDatetime(data["unfillableAt"])?.toEpochMilliseconds()?.toDouble()
                     val goodTilBlock = parser.asInt(data["goodTilBlock"]);
-                    val goodTilBlockTime = parser.asDatetime(data["goodTilBlockTime"])?.epochSeconds?.toInt();
+                    val goodTilBlockTime =
+                        parser.asDatetime(data["goodTilBlockTime"])?.epochSeconds?.toInt();
                     val createdAtHeight = parser.asInt(data["createdAtHeight"]);
                     val expiresAtMilliseconds =
                         parser.asDatetime(data["expiresAt"] ?: data["goodTilBlockTime"])
@@ -731,8 +736,8 @@ data class SubaccountFill(
                 } else {
                     ParsingHelper.compare(id1, id2, true)
                 }
-            }, { _, itemData ->
-                SubaccountFill.create(null, parser, parser.asMap(itemData))
+            }, { _, obj, itemData ->
+                SubaccountFill.create(obj as? SubaccountFill, parser, parser.asMap(itemData))
             }, true)
         }
     }
@@ -832,7 +837,8 @@ data class SubaccountTransfer(
                     SubaccountTransferResources.create(existing?.resources, parser, it)
                 }
                 if (id != null && updatedAtMilliseconds != null && resources != null) {
-                    val type = TransferRecordType.invoke(parser.asString(data["type"])) ?: return null
+                    val type =
+                        TransferRecordType.invoke(parser.asString(data["type"])) ?: return null
                     val asset = parser.asString(data["asset"])
                     val amount = parser.asDouble(data["amount"])
                     val fromAddress = parser.asString(data["fromAddress"])
@@ -884,8 +890,12 @@ data class SubaccountTransfer(
                         ?: parser.asDatetime(itemData["createdAt"]))?.toEpochMilliseconds()
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
-            }, { _, itemData ->
-                SubaccountTransfer.create(null, parser, parser.asMap(itemData))
+            }, { _, obj, itemData ->
+                SubaccountTransfer.create(
+                    obj as? SubaccountTransfer,
+                    parser,
+                    parser.asMap(itemData)
+                )
             })
         }
     }
@@ -954,8 +964,12 @@ data class SubaccountFundingPayment(
                     parser.asDatetime(itemData["effectiveAt"])?.toEpochMilliseconds()
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, true)
-            }, { _, itemData ->
-                SubaccountFundingPayment.create(null, parser, parser.asMap(itemData))
+            }, { _, obj, itemData ->
+                SubaccountFundingPayment.create(
+                    obj as? SubaccountFundingPayment,
+                    parser,
+                    parser.asMap(itemData)
+                )
             })
         }
     }
@@ -1070,10 +1084,10 @@ data class Subaccount(
                     )
 
                 val openPositions = openPositions(
-                        existing?.openPositions,
-                        parser,
-                        parser.asMap(data["openPositions"])
-                    )
+                    existing?.openPositions,
+                    parser,
+                    parser.asMap(data["openPositions"])
+                )
                 val orders = orders(parser, existing?.orders, parser.asMap(data["orders"]))
 
                 /*
@@ -1149,9 +1163,9 @@ data class Subaccount(
                 val time1 = (obj1 as SubaccountPosition).createdAtMilliseconds
                 val time2 = (obj2 as SubaccountPosition).createdAtMilliseconds
                 ParsingHelper.compare(time1 ?: 0.0, time2 ?: 0.0, false)
-            }, { _, itemData ->
+            }, { _, obj, itemData ->
                 parser.asMap(itemData)?.let {
-                    SubaccountPosition.create(null, parser, it)
+                    SubaccountPosition.create(obj as? SubaccountPosition, parser, it)
                 }
             })
         }
@@ -1188,9 +1202,9 @@ data class Subaccount(
                         }
                     }
                 }
-            }, { _, itemData ->
+            }, { _, obj, itemData ->
                 parser.asMap(itemData)?.let {
-                    SubaccountOrder.create(null, parser, it)
+                    SubaccountOrder.create(obj as? SubaccountOrder, parser, it)
                 }
             })
             return orders
@@ -1214,8 +1228,12 @@ data class Subaccount(
                         ?: parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()
                             ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
-            }, { _, itemData ->
-                SubaccountTransfer.create(null, parser, parser.asMap(itemData))
+            }, { _, obj, itemData ->
+                SubaccountTransfer.create(
+                    obj as? SubaccountTransfer,
+                    parser,
+                    parser.asMap(itemData)
+                )
             }, true)
         }
 
@@ -1229,8 +1247,8 @@ data class Subaccount(
                 val time2 =
                     parser.asDatetime(itemData["effectiveAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
-            }, { _, itemData ->
-                SubaccountFundingPayment.create(null, parser, itemData)
+            }, { _, obj, itemData ->
+                SubaccountFundingPayment.create(obj as? SubaccountFundingPayment, parser, itemData)
             }, true)
         }
     }
@@ -1280,7 +1298,8 @@ data class Account(
         ): Account {
             DebugLogger.log("creating Account\n")
 
-            val balances: IMutableMap<String, AccountBalance> = iMutableMapOf<String, AccountBalance>()
+            val balances: IMutableMap<String, AccountBalance> =
+                iMutableMapOf<String, AccountBalance>()
             val balancesData = parser.asMap(data["balances"])
             if (balancesData != null) {
                 for ((key, value) in balancesData) {
