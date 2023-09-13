@@ -12,7 +12,7 @@ internal typealias ObjectKeyBlock = (Any) -> Any?
 internal typealias ObjectComparisonBlock = (Any, Any) -> ComparisonOrder
 internal typealias ObjectAndDataChangedBlock = (Any, IMap<*, *>) -> Boolean
 internal typealias ObjectAndDataComparisonBlock = (Any, IMap<*, *>) -> ComparisonOrder?
-internal typealias ObjectCreationBlock = (parser: ParserProtocol, existing: Any?, IMap<*, *>) -> Any?
+internal typealias ObjectCreationBlock = (parser: ParserProtocol, IMap<*, *>) -> Any?
 internal typealias IncludesObjectBlock = (Any) -> Boolean
 internal typealias IncludesDataBlock = (IMap<*, *>) -> Boolean
 
@@ -58,7 +58,7 @@ internal class ParsingHelper {
                             if (obj != null && !changed(obj, itemData)) {
                                 merged[key] = obj
                             } else {
-                                createObject(parser, obj, itemData)?.let {
+                                createObject(parser, itemData)?.let {
                                     merged[key] = it as T
                                 }
                             }
@@ -115,7 +115,7 @@ internal class ParsingHelper {
                                 }
 
                                 ComparisonOrder.descending -> {
-                                    (createObject(parser, null, itemData) as? T)?.let {
+                                    (createObject(parser, itemData) as? T)?.let {
                                         result.add(it)
                                     }
                                     cursor2 += 1
@@ -138,7 +138,7 @@ internal class ParsingHelper {
                         data.get(i).let { itemData ->
                             parser.asMap(itemData)?.let { itemData ->
                                 if (includesDataBlock == null || includesDataBlock.invoke(itemData)) {
-                                    (createObject(parser, null, itemData) as? T)?.let {
+                                    (createObject(parser, itemData) as? T)?.let {
                                         result.add(it)
                                     }
                                 }

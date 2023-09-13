@@ -232,8 +232,8 @@ data class MarketHistoricalFunding(
                     parser.asDatetime(itemData["effectiveAt"])?.toEpochMilliseconds()
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, true)
-            }, { _, obj, itemData ->
-                create(obj as? MarketHistoricalFunding, parser, parser.asMap(itemData))
+            }, { _, itemData ->
+                create(null, parser, parser.asMap(itemData))
             })
         }
     }
@@ -462,8 +462,8 @@ data class MarketCandles(
                 val time2 =
                     parser.asDatetime(itemData["startedAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, true)
-            }, { _, obj, itemData ->
-                MarketCandle.create(obj as? MarketCandle, parser, parser.asMap(itemData))
+            }, { _, itemData ->
+                MarketCandle.create(null, parser, parser.asMap(itemData))
             })
         }
     }
@@ -566,8 +566,8 @@ data class MarketTrade(
                 val time2 =
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
-            }, { _, obj, itemData ->
-                create(obj as? MarketTrade, parser, parser.asMap(itemData))
+            }, { _, itemData ->
+                create(null, parser, parser.asMap(itemData))
             })
         }
     }
@@ -665,8 +665,7 @@ data class MarketOrderbook(
                     existing?.spreadPercent != spreadPercent ||
                     existing?.grouping !== grouping ||
                     existing?.asks != asks ||
-                    existing?.bids != bids
-                ) {
+                    existing?.bids != bids) {
                     return MarketOrderbook(midPrice, spreadPercent, grouping, asks, bids)
                 } else existing
             }
@@ -850,8 +849,8 @@ data class PerpetualMarket(
                 val time2 =
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
-            }, { _, obj, itemData ->
-                MarketTrade.create(obj as? MarketTrade, parser, parser.asMap(itemData))
+            }, { _, itemData ->
+                MarketTrade.create(null, parser, parser.asMap(itemData))
             })
         }
     }

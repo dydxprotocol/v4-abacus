@@ -17,7 +17,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class V4AppStateMachineTransactionTests {
     val mock = AbacusMockData()
@@ -324,7 +323,6 @@ class V4AppStateMachineTransactionTests {
         state = appStateMachine.processSocketResponse(testWsUrl, mock.accountsChannel.v4_subaccounts_update_3)
         assertNotNull(state.lastOrder)
         assertEquals(mockedClientId, state.lastOrder?.clientId)
-        val lastOrder = state.lastOrder
 
         state = appStateMachine.processHttpResponse(url1, mock.transactionsMock.place_order_fok_failed_transaction)
         assertNotNull(state.errors)
@@ -332,13 +330,6 @@ class V4AppStateMachineTransactionTests {
         assertNotNull(error)
         assertEquals("FillOrKill order could not be fully filled", error.message)
         assertEquals("TRANSACTIONERROR.ORDER.2000_CANNOT_FULLY_FILL_FOK", error.stringKey)
-
-        state = appStateMachine.processSocketResponse(testWsUrl, mock.accountsChannel.v4_subaccounts_update_7)
-        assertNotNull(state.lastOrder)
-        assertEquals(mockedClientId, state.lastOrder?.clientId)
-        val lastOrder3 = state.lastOrder
-
-        assertTrue { lastOrder3 === lastOrder }
     }
 
 }
