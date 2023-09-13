@@ -549,12 +549,10 @@ class V4ApiAdaptor(
         if (response != null) {
             val height = parser.asInt(response["height"])
             val time = parser.asDatetime(response["time"])
-            indexerState.block = height
-            indexerState.time = time
+            indexerState.updateHeight(height, time)
             return null
         } else {
-            indexerState.block = null
-            indexerState.time = null
+            indexerState.updateHeight(null, null)
             return null
         }
     }
@@ -566,8 +564,7 @@ class V4ApiAdaptor(
             if (requestId == validatorState.requestId) {
                 val height = parser.asInt(parser.value(response, "result.block.header.height"))
                 val time = parser.asDatetime(parser.value(response, "result.block.header.time"))
-                validatorState.block = height
-                validatorState.time = time
+                validatorState.updateHeight(height, time)
                 val subaccountNumber = subaccountNumber()
                 val response = stateMachine.received(subaccountNumber, height)
                 AppStateResponse(
@@ -611,8 +608,7 @@ class V4ApiAdaptor(
                 noChange()
             }
         } else {
-            validatorState.block = null
-            validatorState.time = null
+            validatorState.updateHeight(null, null)
             noChange()
         }
     }

@@ -509,10 +509,11 @@ class V4StateManagerAdaptor(
                     val json = Json.parseToJsonElement(response).jsonObject.toIMap()
                     val height = parser.asInt(json["height"])
                     val time = parser.asDatetime(json["time"])
-                    indexerState.block = height
-                    indexerState.time = time
-                    updateApiState()
+                    indexerState.updateHeight(height, time)
+                } else {
+                    indexerState.updateHeight(null, null)
                 }
+                updateApiState()
             }
         }
     }
@@ -551,15 +552,14 @@ class V4StateManagerAdaptor(
     private fun parseHeight(response: String) {
         val json = Json.parseToJsonElement(response).jsonObject.toIMap()
         if (json["error"] != null) {
-            validatorState.status = NetworkStatus.UNKNOWN
+            validatorState.updateHeight(null, null)
         } else {
             val header = parser.asMap(parser.value(json, "header"))
             val height = parser.asInt(header?.get("height"))
             val time = parser.asDatetime(header?.get("time"))
-            validatorState.block = height
-            validatorState.time = time
-            updateApiState()
+            validatorState.updateHeight(height, time)
         }
+        updateApiState()
     }
 
     private fun updateApiState() {
