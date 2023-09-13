@@ -70,7 +70,7 @@ open class V4ClosePositionTests : V4BaseTests() {
             assertEquals(1, placeOrder?.clobPairId)
             assertEquals("SELL", placeOrder?.side)
             assertEquals(5.385788E9, placeOrder?.quantums)
-            assertEquals(1.637756E9, placeOrder?.subticks)
+            assertEquals(1.571584E9, placeOrder?.subticks)
             assertEquals(23, placeOrder?.goodUntilBlock)
             assertEquals(false, placeOrder?.reduceOnly)
             assertEquals("TIME_IN_FORCE_IOC", placeOrder?.timeInForce)

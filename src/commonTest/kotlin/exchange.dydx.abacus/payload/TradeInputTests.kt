@@ -9,6 +9,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
+
 class TradeInputTests : V3BaseTests() {
     @Test
     fun testDataFeed() {
@@ -337,7 +338,7 @@ class TradeInputTests : V3BaseTests() {
                             },
                             "summary": {
                                 "price": 1655.7,
-                                "payloadPrice": 1672.257
+                                "payloadPrice": 1738.4850000000001
                             }
                         }
                     },
@@ -1820,7 +1821,7 @@ class TradeInputTests : V3BaseTests() {
                                 "size": 1.0,
                                 "usdcSize": 2000.0,
                                 "price": 2000.0,
-                                "payloadPrice": 2020.0,
+                                "payloadPrice": 2100.0,
                                 "total": -2001.0,
                                 "filled": true
                             },

@@ -109,11 +109,11 @@ class TradeMarketOrderTests: ValidationsTests() {
                         },
                         "errors": [
                             {
-                                "code": "MARKET_ORDER_ERROR_INDEX_SLIPPAGE"
+                                "code": "MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE"
                             },
                             {
-                                "type": "ERROR",
-                                "code": "MARKET_ORDER_ERROR_ORDERBOOK_SLIPPAGE",
+                                "type": "WARNING",
+                                "code": "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
                                 "fields": [
                                     "size.size"
                                 ]

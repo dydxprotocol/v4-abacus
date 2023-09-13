@@ -40,12 +40,12 @@ internal class TradeInputCalculator(
     private val accountTransformer = AccountTransformer()
     private val fokDisabled = false
 
-    private val MARKET_ORDER_MAX_SLIPPAGE = 0.01                                // 0.05 for v3
-    private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.002                 // 0.01 for v3
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.01           // 0.05 for v3
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.02    // 0.05 for v3
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.02                        // 0.1 for v3
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.04                 // 0.1 for v3
+    private val MARKET_ORDER_MAX_SLIPPAGE = 0.05
+    private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
 
     internal fun calculate(
         state: IMap<String, Any>,
@@ -1148,14 +1148,22 @@ internal class TradeInputCalculator(
                     val payloadPrice = if (price != null) {
                         when (side) {
                             "BUY" ->
-                                priceIfLessThan(price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE), priceLimit) ?:
-                                priceIfLessThan(price * (Numeric.double.ONE + MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD), priceLimit) ?:
-                                price
+                                priceIfLessThan(
+                                    price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE),
+                                    priceLimit
+                                ) ?: priceIfLessThan(
+                                    price * (Numeric.double.ONE + MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD),
+                                    priceLimit
+                                ) ?: price
 
                             else ->
-                                priceIfLargeThan(price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE), priceLimit) ?:
-                                priceIfLargeThan(price * (Numeric.double.ONE - MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD), priceLimit) ?:
-                                price
+                                priceIfLargeThan(
+                                    price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE),
+                                    priceLimit
+                                ) ?: priceIfLargeThan(
+                                    price * (Numeric.double.ONE - MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD),
+                                    priceLimit
+                                ) ?: price
                         }
                     } else null
 
@@ -1349,12 +1357,14 @@ internal class TradeInputCalculator(
         val maxLeverage = maxLeverage(subaccount, market)
         return if (maxLeverage != null && user != null) {
             val multiplier = if (side == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
-            parser.asDouble(calculateMarketOrderFromLeverage(
-                maxLeverage * multiplier,
-                market,
-                subaccount,
-                user,
-            )?.get("price"))
+            parser.asDouble(
+                calculateMarketOrderFromLeverage(
+                    maxLeverage * multiplier,
+                    market,
+                    subaccount,
+                    user,
+                )?.get("price")
+            )
         } else null
     }
 
