@@ -150,11 +150,12 @@ class DynamicLocalizer(
     }
 
     private fun filePaths(language: String): IList<String> {
+        val languageCode = _languagesMap[language]?.path ?: language
         return iListOf(
-            "localization/$language/app.json",
-            "localization/$language/tooltips.json",
-            "localizations_native/$language/app.json",
-            "localization_notifications/$language/app.json",
+            "localization/$languageCode/app.json",
+            "localization/$languageCode/tooltips.json",
+            "localizations_native/$languageCode/app.json",
+            "localization_notifications/$languageCode/app.json",
         )
     }
 
@@ -267,9 +268,9 @@ class DynamicLocalizer(
         }
     }
 
-    private fun primaryLanguageCode(langauge: String): String {
-        val elements = langauge.split("-")
-        return elements.firstOrNull() ?: langauge
+    private fun primaryLanguageCode(language: String): String {
+        val elements = language.split("-")
+        return elements.firstOrNull() ?: language
     }
 
     override fun localize(
