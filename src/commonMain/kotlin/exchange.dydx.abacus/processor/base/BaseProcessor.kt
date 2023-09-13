@@ -188,10 +188,14 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     ): IList<Any>? {
         return if (existing != null) {
             if (incoming != null) {
-                val lastIncomingTime = parser.asDatetime(parser.asMap(incoming.lastOrNull())?.get(timeField))
-                val firstIncomingTime = parser.asDatetime(parser.asMap(incoming.firstOrNull())?.get(timeField))
-                val lastExisting = parser.asDatetime(parser.asMap(existing.lastOrNull())?.get(timeField))
-                val firstExisting = parser.asDatetime(parser.asMap(existing.firstOrNull())?.get(timeField))
+                val lastIncomingTime =
+                    parser.asDatetime(parser.asMap(incoming.lastOrNull())?.get(timeField))
+                val firstIncomingTime =
+                    parser.asDatetime(parser.asMap(incoming.firstOrNull())?.get(timeField))
+                val lastExisting =
+                    parser.asDatetime(parser.asMap(existing.lastOrNull())?.get(timeField))
+                val firstExisting =
+                    parser.asDatetime(parser.asMap(existing.firstOrNull())?.get(timeField))
                 if (lastIncomingTime != null && firstExisting != null && ascending(
                         lastIncomingTime,
                         firstExisting
@@ -217,7 +221,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                             val incomingTime = parser.asDatetime(parser.asMap(data)?.get(timeField))
                             ParsingHelper.compare(existingTime, incomingTime, ascending)
                         },
-                        { parser, itemData ->
+                        { _, _, itemData ->
                             itemData
                         })!!
                 }
