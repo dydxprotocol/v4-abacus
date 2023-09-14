@@ -68,6 +68,10 @@ class V3AppStateTests {
         }
         assertEquals(socketRequestsCount, requests.socketRequests!!.size)
 
+        appStateMachine.processHttpResponse(
+            AbUrl.fromString("https://dydx-v4-shared-resources.vercel.app/v4/markets.json"),
+            mock.marketsConfigurations.configurations
+        )
         /* Markets Connected */
         state = appStateMachine.processSocketResponse(
             AbUrl.fromString("wss://api.stage.dydx.exchange/v3/ws"),
