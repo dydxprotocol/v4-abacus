@@ -1540,7 +1540,7 @@ open class StateManagerAdaptor(
         val side = closePosition.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
         val size = summary.size ?: throw Exception("size is null")
-        val timeInForce = "IOK"
+        val timeInForce = "IOC"
         val execution = "Default"
         val reduceOnly = false  // TODO, change to true when protocol supports it
         val postOnly = false
