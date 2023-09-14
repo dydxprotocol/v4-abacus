@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.input.TransferType
-import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
+import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
@@ -989,7 +989,7 @@ class V4StateManagerAdaptor(
                 "nodeHeight" to validatorState.block,
             ).filterValues { it != null } as Map<String, Any>
 
-            tracking("NetworkStatus", params.toIMap())
+            tracking(AnalyticsEvent.NetworkStatus.rawValue, params.toIMap())
         }
     }
 

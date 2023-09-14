@@ -186,6 +186,24 @@ interface DYDXChainTransactionsProtocol {
 }
 
 @JsExport
+enum class AnalyticsEvent(val rawValue: String) {
+    // App
+    NetworkStatus("NetworkStatus"),
+
+    // Transfers
+    TransferFaucetConfirmed("TransferFaucetConfirmed"),
+
+    // Trading
+    TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
+    TradePlaceOrderConfirmed("TradePlaceOrderConfirmed");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            AnalyticsEvent.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
 interface TrackingProtocol {
     fun log(event: String, data: String?)
 }
