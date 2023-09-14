@@ -33,8 +33,8 @@ internal class AssetsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val assets = existing?.mutable() ?: iMutableMapOf<String, Any>()
         for ((_, data) in payload) {
             val marketPayload = parser.asMap(data)
-            val assetId = parser.asString(marketPayload?.get("baseAsset"))
-            if (marketPayload != null && assetId != null) {
+            val assetId = assetIdFromMarket(marketPayload)
+            if (marketPayload != null && assetId != null && assetId != "") {
                 assetProcessor.received(
                     parser.asMap(existing?.get(assetId)),
                     marketPayload
@@ -44,6 +44,11 @@ internal class AssetsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             }
         }
         return assets
+    }
+
+    private fun assetIdFromMarket(payload: IMap<String, Any>?): String? {
+        return parser.asString(payload?.get("baseAsset")) ?:
+            parser.asString(payload?.get("ticker") ?: payload?.get("market"))?.split("-")?.firstOrNull()
     }
 
     internal fun receivedConfigurations(
