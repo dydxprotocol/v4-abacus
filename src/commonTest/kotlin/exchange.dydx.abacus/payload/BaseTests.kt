@@ -1212,11 +1212,12 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         trace: String
     ) {
         val assetId = parser.asString(data?.get("assetId"))
-        val asset = if (assetId != null) assets?.get(assetId) else null
+        val asset = if (assetId != null) parser.asMap(assets?.get(assetId)) else null
+        val name = asset?.get("name")
         if (data != null &&
             data["id"] != null &&
             parser.asBool(parser.value(data, "status.canTrade")) == true &&
-            asset != null
+            asset != null && name != null
         ) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")

@@ -804,13 +804,14 @@ data class PerpetualMarket(
 //                data["orderbook"] as? IMap<String, Any>
 //            )
 
-            if (id == null) {
+            if (id == null || assetId == null) {
                 /*
                 If the market is in the config, but not from v3_markets socket, let's skip
                  */
                 return null
             }
-            if (assetId == null || assets?.get(assetId) == null) {
+            val asset = parser.asMap(assets?.get(assetId)) ?: return null
+            if (asset["name"] == null) {
                 return null
             }
             val significantChange = existing?.id != id ||
