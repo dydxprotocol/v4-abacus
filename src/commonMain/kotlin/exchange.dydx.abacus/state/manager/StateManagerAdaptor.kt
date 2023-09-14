@@ -6,7 +6,7 @@ import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
-import exchange.dydx.abacus.protocols.QueryType
+import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -1767,7 +1767,7 @@ open class StateManagerAdaptor(
                         if (faucet != null) {
                             val interval = Clock.System.now().toEpochMilliseconds()
                                 .toDouble() - faucet.timestampInMilliseconds
-                            tracking("FaucetTransferConfirmed", trackingParams(interval))
+                            tracking(AnalyticsEvent.TransferFaucetConfirmed.rawValue, trackingParams(interval))
                             faucetRecords.remove(faucet)
                             break
                         }
@@ -1812,7 +1812,7 @@ open class StateManagerAdaptor(
                 if (placeOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
-                    tracking("PlaceOrderConfirmed", trackingParams(interval))
+                    tracking(AnalyticsEvent.TradePlaceOrderConfirmed.rawValue, trackingParams(interval))
                     placeOrderRecords.remove(placeOrderRecord)
                     break
                 }
@@ -1822,7 +1822,7 @@ open class StateManagerAdaptor(
                 if (cancelOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
-                    tracking("CancelOrderConfirmed", trackingParams(interval))
+                    tracking(AnalyticsEvent.TradeCancelOrderConfirmed.rawValue, trackingParams(interval))
                     cancelOrderRecords.remove(cancelOrderRecord)
                     break
                 }
