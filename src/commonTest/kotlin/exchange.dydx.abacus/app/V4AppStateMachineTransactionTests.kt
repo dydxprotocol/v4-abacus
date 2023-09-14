@@ -331,7 +331,7 @@ class V4AppStateMachineTransactionTests {
         val error = state.errors?.firstOrNull()
         assertNotNull(error)
         assertEquals("FillOrKill order could not be fully filled", error.message)
-        assertEquals("TRANSACTIONERROR.ORDER.2000_CANNOT_FULLY_FILL_FOK", error.stringKey)
+        assertEquals("ERRORS.BROADCAST_ERROR_2000", error.stringKey)
 
         state = appStateMachine.processSocketResponse(testWsUrl, mock.accountsChannel.v4_subaccounts_update_7)
         assertNotNull(state.lastOrder)
