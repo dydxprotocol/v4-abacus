@@ -28,7 +28,7 @@ open class StateManagerConfigs(
 
 
     fun publicApiUrl(type: String): String? {
-        val api = indexerConfig?.api
+        val api = indexerConfig?.api ?: return null
         val path = publicApiPath(type) ?: return null
         return "$api$path"
     }
@@ -44,7 +44,7 @@ open class StateManagerConfigs(
     }
 
     fun privateApiUrl(type: String): String? {
-        val api = indexerConfig?.api
+        val api = indexerConfig?.api ?: return null
         val path = privateApiPath(type) ?: return null
         return "$api$path"
     }
@@ -84,7 +84,7 @@ open class StateManagerConfigs(
     }
 
     fun websocketUrl(): String? {
-        val socket = indexerConfig?.socket
+        val socket = indexerConfig?.socket ?: return null
         val path = websocketPath() ?: return null
         return "$socket$path"
     }
