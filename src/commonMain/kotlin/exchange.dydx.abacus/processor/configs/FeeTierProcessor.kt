@@ -6,6 +6,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.iMapOf
+import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import kollections.toIMap
 
 @Suppress("UNCHECKED_CAST")
@@ -33,25 +34,25 @@ internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         val absoluteVolumeRequirement = parser.asDecimal(payload["absoluteVolumeRequirement"])
         if (absoluteVolumeRequirement != null) {
             received["symbol"] = "≥"
-            received["volume"] = absoluteVolumeRequirement / 1000000
+            received["volume"] = absoluteVolumeRequirement / QUANTUM_MULTIPLIER
 
             val makerFeePpm = parser.asDecimal(payload["makerFeePpm"])
             if (makerFeePpm != null) {
-                received["maker"] = makerFeePpm / 1000000
+                received["maker"] = makerFeePpm / QUANTUM_MULTIPLIER
             }
             val takerFeePpm = parser.asDecimal(payload["takerFeePpm"])
             if (takerFeePpm != null) {
-                received["taker"] = takerFeePpm / 1000000
+                received["taker"] = takerFeePpm / QUANTUM_MULTIPLIER
             }
             val totalVolumeShareRequirementPpm =
                 parser.asDecimal(payload["totalVolumeShareRequirementPpm"])
             if (totalVolumeShareRequirementPpm != null) {
-                received["totalShare"] = totalVolumeShareRequirementPpm / 1000000
+                received["totalShare"] = totalVolumeShareRequirementPpm / QUANTUM_MULTIPLIER
             }
             val makerVolumeShareRequirementPpm =
                 parser.asDecimal(payload["makerVolumeShareRequirementPpm"])
             if (makerVolumeShareRequirementPpm != null) {
-                received["makerShare"] = makerVolumeShareRequirementPpm / 1000000
+                received["makerShare"] = makerVolumeShareRequirementPpm / QUANTUM_MULTIPLIER
             }
         }
 
