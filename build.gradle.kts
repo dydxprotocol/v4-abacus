@@ -22,9 +22,9 @@ allprojects {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.8.22"
-    kotlin("native.cocoapods") version "1.8.22"
-    kotlin("plugin.serialization") version "1.8.22"
+    kotlin("multiplatform") version "1.9.10"
+    kotlin("native.cocoapods") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.1.0"
 }
