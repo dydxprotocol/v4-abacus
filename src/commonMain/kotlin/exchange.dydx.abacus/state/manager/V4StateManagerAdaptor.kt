@@ -701,6 +701,7 @@ class V4StateManagerAdaptor(
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
+        lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
@@ -725,6 +726,7 @@ class V4StateManagerAdaptor(
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
+        lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {

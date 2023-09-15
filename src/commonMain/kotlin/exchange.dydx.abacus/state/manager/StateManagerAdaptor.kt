@@ -361,10 +361,8 @@ open class StateManagerAdaptor(
         set(value) {
             if (field !== value) {
                 field = value
-                if (value != null) {
-                    stateNotification?.lastOrderChanged(lastOrder)
-                    dataNotification?.lastOrderChanged(lastOrder)
-                }
+                stateNotification?.lastOrderChanged(lastOrder)
+                dataNotification?.lastOrderChanged(lastOrder)
             }
         }
 
