@@ -12,8 +12,6 @@ internal class MarketsChannelMock {
               "BTC-USD": {
                 "market": "BTC-USD",
                 "status": "ONLINE",
-                "baseAsset": "BTC",
-                "quoteAsset": "USD",
                 "stepSize": "0.0001",
                 "tickSize": "1",
                 "indexPrice": "24062.7350",
@@ -38,8 +36,6 @@ internal class MarketsChannelMock {
               "AVAX-USD": {
                 "market": "AVAX-USD",
                 "status": "ONLINE",
-                "baseAsset": "AVAX",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "25.0212",
@@ -64,8 +60,6 @@ internal class MarketsChannelMock {
               "SUSHI-USD": {
                 "market": "SUSHI-USD",
                 "status": "ONLINE",
-                "baseAsset": "SUSHI",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.001",
                 "indexPrice": "1.5289",
@@ -90,8 +84,6 @@ internal class MarketsChannelMock {
               "XTZ-USD": {
                 "market": "XTZ-USD",
                 "status": "ONLINE",
-                "baseAsset": "XTZ",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "1.7506",
@@ -116,8 +108,6 @@ internal class MarketsChannelMock {
               "ICP-USD": {
                 "market": "ICP-USD",
                 "status": "ONLINE",
-                "baseAsset": "ICP",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "7.5207",
@@ -142,8 +132,6 @@ internal class MarketsChannelMock {
               "NEAR-USD": {
                 "market": "NEAR-USD",
                 "status": "ONLINE",
-                "baseAsset": "NEAR",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "4.4813",
@@ -168,8 +156,6 @@ internal class MarketsChannelMock {
               "1INCH-USD": {
                 "market": "1INCH-USD",
                 "status": "ONLINE",
-                "baseAsset": "1INCH",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "0.7766",
@@ -194,8 +180,6 @@ internal class MarketsChannelMock {
               "ETH-USD": {
                 "market": "ETH-USD",
                 "status": "ONLINE",
-                "baseAsset": "ETH",
-                "quoteAsset": "USD",
                 "stepSize": "0.001",
                 "tickSize": "0.1",
                 "indexPrice": "1754.0223",
@@ -220,8 +204,6 @@ internal class MarketsChannelMock {
               "COMP-USD": {
                 "market": "COMP-USD",
                 "status": "ONLINE",
-                "baseAsset": "COMP",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.1",
                 "indexPrice": "58.5982",
@@ -246,8 +228,6 @@ internal class MarketsChannelMock {
               "CRV-USD": {
                 "market": "CRV-USD",
                 "status": "ONLINE",
-                "baseAsset": "CRV",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "1.4585",
@@ -272,8 +252,6 @@ internal class MarketsChannelMock {
               "MKR-USD": {
                 "market": "MKR-USD",
                 "status": "ONLINE",
-                "baseAsset": "MKR",
-                "quoteAsset": "USD",
                 "stepSize": "0.001",
                 "tickSize": "1",
                 "indexPrice": "1169.0000",
@@ -298,8 +276,6 @@ internal class MarketsChannelMock {
               "ETC-USD": {
                 "market": "ETC-USD",
                 "status": "ONLINE",
-                "baseAsset": "ETC",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "42.2465",
@@ -324,8 +300,6 @@ internal class MarketsChannelMock {
               "LTC-USD": {
                 "market": "LTC-USD",
                 "status": "ONLINE",
-                "baseAsset": "LTC",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.1",
                 "indexPrice": "62.0689",
@@ -350,8 +324,6 @@ internal class MarketsChannelMock {
               "ATOM-USD": {
                 "market": "ATOM-USD",
                 "status": "ONLINE",
-                "baseAsset": "ATOM",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "11.3807",
@@ -376,8 +348,6 @@ internal class MarketsChannelMock {
               "RUNE-USD": {
                 "market": "RUNE-USD",
                 "status": "ONLINE",
-                "baseAsset": "RUNE",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "2.7440",
@@ -402,8 +372,6 @@ internal class MarketsChannelMock {
               "UMA-USD": {
                 "market": "UMA-USD",
                 "status": "ONLINE",
-                "baseAsset": "UMA",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "3.0002",
@@ -428,8 +396,6 @@ internal class MarketsChannelMock {
               "AAVE-USD": {
                 "market": "AAVE-USD",
                 "status": "ONLINE",
-                "baseAsset": "AAVE",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.01",
                 "indexPrice": "98.1505",
@@ -454,8 +420,6 @@ internal class MarketsChannelMock {
               "SNX-USD": {
                 "market": "SNX-USD",
                 "status": "ONLINE",
-                "baseAsset": "SNX",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "4.0715",
@@ -480,8 +444,6 @@ internal class MarketsChannelMock {
               "LINK-USD": {
                 "market": "LINK-USD",
                 "status": "ONLINE",
-                "baseAsset": "LINK",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.001",
                 "indexPrice": "8.0990",
@@ -506,8 +468,6 @@ internal class MarketsChannelMock {
               "XMR-USD": {
                 "market": "XMR-USD",
                 "status": "ONLINE",
-                "baseAsset": "XMR",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.1",
                 "indexPrice": "162.5353",
@@ -532,8 +492,6 @@ internal class MarketsChannelMock {
               "ALGO-USD": {
                 "market": "ALGO-USD",
                 "status": "ONLINE",
-                "baseAsset": "ALGO",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "0.3412",
@@ -558,8 +516,6 @@ internal class MarketsChannelMock {
               "BCH-USD": {
                 "market": "BCH-USD",
                 "status": "ONLINE",
-                "baseAsset": "BCH",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.1",
                 "indexPrice": "155.7338",
@@ -584,8 +540,6 @@ internal class MarketsChannelMock {
               "UNI-USD": {
                 "market": "UNI-USD",
                 "status": "ONLINE",
-                "baseAsset": "UNI",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.001",
                 "indexPrice": "9.1360",
@@ -610,8 +564,6 @@ internal class MarketsChannelMock {
               "DOGE-USD": {
                 "market": "DOGE-USD",
                 "status": "ONLINE",
-                "baseAsset": "DOGE",
-                "quoteAsset": "USD",
                 "stepSize": "10",
                 "tickSize": "0.0001",
                 "indexPrice": "0.0703",
@@ -636,8 +588,6 @@ internal class MarketsChannelMock {
               "EOS-USD": {
                 "market": "EOS-USD",
                 "status": "ONLINE",
-                "baseAsset": "EOS",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "1.3238",
@@ -662,8 +612,6 @@ internal class MarketsChannelMock {
               "SOL-USD": {
                 "market": "SOL-USD",
                 "status": "ONLINE",
-                "baseAsset": "SOL",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.001",
                 "indexPrice": "42.9874",
@@ -688,8 +636,6 @@ internal class MarketsChannelMock {
               "ZRX-USD": {
                 "market": "ZRX-USD",
                 "status": "ONLINE",
-                "baseAsset": "ZRX",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "0.3379",
@@ -714,8 +660,6 @@ internal class MarketsChannelMock {
               "ADA-USD": {
                 "market": "ADA-USD",
                 "status": "ONLINE",
-                "baseAsset": "ADA",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "0.5317",
@@ -740,8 +684,6 @@ internal class MarketsChannelMock {
               "CELO-USD": {
                 "market": "CELO-USD",
                 "status": "ONLINE",
-                "baseAsset": "CELO",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "1.0062",
@@ -766,8 +708,6 @@ internal class MarketsChannelMock {
               "TRX-USD": {
                 "market": "TRX-USD",
                 "status": "ONLINE",
-                "baseAsset": "TRX",
-                "quoteAsset": "USD",
                 "stepSize": "10",
                 "tickSize": "0.0001",
                 "indexPrice": "0.0698",
@@ -792,8 +732,6 @@ internal class MarketsChannelMock {
               "FIL-USD": {
                 "market": "FIL-USD",
                 "status": "ONLINE",
-                "baseAsset": "FIL",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "6.0336",
@@ -818,8 +756,6 @@ internal class MarketsChannelMock {
               "LUNA-USD": {
                 "market": "LUNA-USD",
                 "status": "CLOSE_ONLY",
-                "baseAsset": "LUNA",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.0001",
                 "indexPrice": "0.0001",
@@ -844,8 +780,6 @@ internal class MarketsChannelMock {
               "YFI-USD": {
                 "market": "YFI-USD",
                 "status": "ONLINE",
-                "baseAsset": "YFI",
-                "quoteAsset": "USD",
                 "stepSize": "0.0001",
                 "tickSize": "1",
                 "indexPrice": "11435.2138",
@@ -870,8 +804,6 @@ internal class MarketsChannelMock {
               "ZEC-USD": {
                 "market": "ZEC-USD",
                 "status": "ONLINE",
-                "baseAsset": "ZEC",
-                "quoteAsset": "USD",
                 "stepSize": "0.01",
                 "tickSize": "0.1",
                 "indexPrice": "65.0100",
@@ -896,8 +828,6 @@ internal class MarketsChannelMock {
               "DOT-USD": {
                 "market": "DOT-USD",
                 "status": "ONLINE",
-                "baseAsset": "DOT",
-                "quoteAsset": "USD",
                 "stepSize": "0.1",
                 "tickSize": "0.01",
                 "indexPrice": "8.4068",
@@ -922,8 +852,6 @@ internal class MarketsChannelMock {
               "XLM-USD": {
                 "market": "XLM-USD",
                 "status": "ONLINE",
-                "baseAsset": "XLM",
-                "quoteAsset": "USD",
                 "stepSize": "10",
                 "tickSize": "0.0001",
                 "indexPrice": "0.1193",
@@ -948,8 +876,6 @@ internal class MarketsChannelMock {
               "MATIC-USD": {
                 "market": "MATIC-USD",
                 "status": "ONLINE",
-                "baseAsset": "MATIC",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "0.9573",
@@ -974,8 +900,6 @@ internal class MarketsChannelMock {
               "ENJ-USD": {
                 "market": "ENJ-USD",
                 "status": "ONLINE",
-                "baseAsset": "ENJ",
-                "quoteAsset": "USD",
                 "stepSize": "1",
                 "tickSize": "0.001",
                 "indexPrice": "0.6171",
@@ -1053,8 +977,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"0",
                     "ticker":"BTC-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"0",
                     "priceChange24H":"0",
@@ -1076,8 +998,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"1",
                     "ticker":"ETH-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"0",
                     "priceChange24H":"0",
@@ -1094,6 +1014,27 @@ internal class MarketsChannelMock {
                     "stepBaseQuantums":1000000,
                     "subticksPerTick":10000,
                     "openInterest":"46115.049878"
+                 },
+                 "TEST-USD":{
+                    "clobPairId":"33",
+                    "ticker":"TEST-USD",
+                    "status":"ACTIVE",
+                    "lastPrice":"0",
+                    "oraclePrice":"57.80445",
+                    "priceChange24H":"0",
+                    "volume24H":"0",
+                    "trades24H":0,
+                    "nextFundingRate":"0",
+                    "initialMarginFraction":"0.05",
+                    "maintenanceMarginFraction":"0.03",
+                    "basePositionNotional":"1000000",
+                    "openInterest":"0",
+                    "atomicResolution":-10,
+                    "quantumConversionExponent":-8,
+                    "tickSize":"100000",
+                    "stepSize":"0.0001",
+                    "stepBaseQuantums":1000000,
+                    "subticksPerTick":1000000000
                  }
               }
            }
@@ -1180,8 +1121,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"0",
                     "ticker":"BTC-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"20000",
                     "priceChange24H":"0",
@@ -1206,8 +1145,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"1",
                     "ticker":"ETH-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"1500",
                     "priceChange24H":"0",
@@ -1271,8 +1208,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"0",
                     "ticker":"BTC-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"10000",
                     "priceChange24H":"0",
@@ -1292,8 +1227,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"1",
                     "ticker":"ETH-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"1000",
                     "priceChange24H":"0",
@@ -1370,8 +1303,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"0",
                     "ticker":"BTC-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"10000",
                     "priceChange24H":"0",
@@ -1397,8 +1328,6 @@ internal class MarketsChannelMock {
                     "clobPairId":"1",
                     "ticker":"ETH-USD",
                     "status":"ACTIVE",
-                    "baseAsset":"",
-                    "quoteAsset":"",
                     "lastPrice":"0",
                     "oraclePrice":"1000",
                     "priceChange24H":"0",

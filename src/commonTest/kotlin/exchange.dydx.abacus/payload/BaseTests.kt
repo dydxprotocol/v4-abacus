@@ -209,7 +209,12 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             "historicalPnl"
         )
         verifyAssetsState(perp.assets, state?.assets, "assets")
-        verifyMarketsState(perp.marketsSummary, state?.marketsSummary, "markets")
+        verifyMarketsState(
+            perp.marketsSummary,
+            perp.assets,
+            state?.marketsSummary,
+            "markets"
+        )
         verifyMarketsHistoricalFundingsState(
             parser.asMap(perp.marketsSummary?.get("markets")),
             state?.historicalFundings,
@@ -1162,6 +1167,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
 
     private fun verifyMarketsState(
         data: IMap<String, Any>?,
+        assets: IMap<String, Any>?,
         obj: PerpetualMarketSummary?,
         trace: String,
     ) {
@@ -1176,30 +1182,42 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             obj?.openInterestUSDC,
             "$trace.openInterestUSDC"
         )
-        verifyMarkets(parser.asMap(data?.get("markets")), obj?.markets, "$trace.markets")
+        verifyMarkets(
+            parser.asMap(data?.get("markets")),
+            assets,
+            obj?.markets,
+            "$trace.markets"
+        )
     }
 
     private fun verifyMarkets(
         data: IMap<String, Any>?,
+        assets: IMap<String, Any>?,
         obj: IMap<String, PerpetualMarket>?,
         trace: String,
     ) {
         if (data != null) {
             for ((key, marketData) in data) {
-                verifyMarket(parser.asMap(marketData), obj?.get(key), "$trace.$key")
+                verifyMarket(parser.asMap(marketData), assets, obj?.get(key), "$trace.$key")
             }
         } else {
             assertNull(obj)
         }
     }
 
-    private fun verifyMarket(data: IMap<String, Any>?, obj: PerpetualMarket?, trace: String) {
-        if (data != null && data["id"] != null && parser.asBool(
-                parser.value(
-                    data,
-                    "status.canTrade"
-                )
-            ) == true
+    private fun verifyMarket(
+        data: IMap<String, Any>?,
+        assets: IMap<String, Any>?,
+        obj: PerpetualMarket?,
+        trace: String
+    ) {
+        val assetId = parser.asString(data?.get("assetId"))
+        val asset = if (assetId != null) parser.asMap(assets?.get(assetId)) else null
+        val name = asset?.get("name")
+        if (data != null &&
+            data["id"] != null &&
+            parser.asBool(parser.value(data, "status.canTrade")) == true &&
+            asset != null && name != null
         ) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")

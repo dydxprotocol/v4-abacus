@@ -763,6 +763,7 @@ data class PerpetualMarket(
             existing: PerpetualMarket?,
             parser: ParserProtocol,
             data: IMap<String, Any>,
+            assets: IMap<String, Any>?,
             resetOrderbook: Boolean,
             resetTrades: Boolean,
         ): PerpetualMarket? {
@@ -807,6 +808,10 @@ data class PerpetualMarket(
                 /*
                 If the market is in the config, but not from v3_markets socket, let's skip
                  */
+                return null
+            }
+            val asset = parser.asMap(assets?.get(assetId)) ?: return null
+            if (asset["name"] == null) {
                 return null
             }
             val significantChange = existing?.id != id ||
@@ -875,6 +880,7 @@ data class PerpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: IMap<String, Any>,
+            assets: IMap<String, Any>?
         ): PerpetualMarketSummary? {
             DebugLogger.log("creating Perpetual Market Summary\n")
 
@@ -888,6 +894,7 @@ data class PerpetualMarketSummary(
                     existing?.markets?.get(key),
                     parser,
                     marketData,
+                    assets,
                     false,
                     false
                 )
@@ -903,6 +910,7 @@ data class PerpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: IMap<String, Any>,
+            assets: IMap<String, Any>?,
             changes: StateChanges,
         ): PerpetualMarketSummary? {
             val marketsData = parser.asMap(data["markets"]) ?: return null
@@ -918,6 +926,7 @@ data class PerpetualMarketSummary(
                     existingMarket,
                     parser,
                     marketData,
+                    assets,
                     changes.changes.contains(Changes.orderbook),
                     changes.changes.contains(Changes.trades)
                 )

@@ -4,6 +4,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
+import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("UNCHECKED_CAST")
 internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
@@ -45,6 +46,11 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val symbol = received["symbol"]
         if (symbol != null) {
             received["id"] = symbol
+        } else {
+            received.safeSet(
+                "id",
+                parser.asString(payload["ticker"] ?: payload["market"])?.split("-")?.firstOrNull()
+            )
         }
         return received
     }
