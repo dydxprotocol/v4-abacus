@@ -52,6 +52,10 @@ class V4AppStateMachineForegroundCycleTests {
     private fun setStateMachineConnectedWithMarkets(): AppStateResponse {
         appStateMachine.setChainId("dydxprotocol-testnet")
         appStateMachine.setReadyToConnect(true)
+        appStateMachine.processHttpResponse(
+            AbUrl.fromString("https://dydx-v4-shared-resources.vercel.app/v4/markets.json"),
+            mock.marketsConfigurations.configurations
+        )
         appStateMachine.processSocketResponse(
             testWsUrl, mock.connectionMock.connectedMessage
         )
@@ -153,6 +157,10 @@ class V4AppStateMachineForegroundCycleTests {
     fun whenMarketsSocketIsSubscribedSummaryShouldBeValid() {
         setStateMachineReadyToConnect()
 
+        appStateMachine.processHttpResponse(
+            AbUrl.fromString("https://dydx-v4-shared-resources.vercel.app/v4/markets.json"),
+            mock.marketsConfigurations.configurations
+        )
         /* Markets Connected */
         val state = appStateMachine.processSocketResponse(
             testWsUrl, mock.marketsChannel.v4_subscribed_r1

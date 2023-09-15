@@ -792,7 +792,7 @@ open class TradingStateMachine(
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asMap(data?.get("markets"))?.let {
-                marketsSummary = PerpetualMarketSummary.apply(marketsSummary, parser, it, changes)
+                marketsSummary = PerpetualMarketSummary.apply(marketsSummary, parser, it, this.assets, changes)
             } ?: run {
                 marketsSummary = null
             }

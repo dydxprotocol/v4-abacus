@@ -12,8 +12,6 @@ internal class ValidationsMock {
               "BTC-USD": {
                 "market": "BTC-USD",
                 "status": "ONLINE",
-                "baseAsset": "BTC",
-                "quoteAsset": "USD",
                 "stepSize": "0.0001",
                 "tickSize": "1",
                 "indexPrice": "20000.0000",
@@ -38,8 +36,6 @@ internal class ValidationsMock {
               "ETH-USD": {
                 "market": "ETH-USD",
                 "status": "ONLINE",
-                "baseAsset": "ETH",
-                "quoteAsset": "USD",
                 "stepSize": "0.001",
                 "tickSize": "0.1",
                 "indexPrice": "1000.0000",
