@@ -14,6 +14,7 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.app.IndexerURIs
 import exchange.dydx.abacus.state.app.OrderbookGrouping
@@ -69,6 +70,7 @@ import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
 import kollections.JsExport
+import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iMutableSetOf
 import kollections.iSetOf
@@ -683,7 +685,19 @@ open class StateManagerAdaptor(
                 }
             }
             update(changes, oldState)
-        } catch (_: ParsingException) {
+        } catch (e: ParsingException) {
+            val error = ParsingError(
+                e.type,
+                e.message ?: "Unknown error",
+            )
+            emitError(error)
+        }
+    }
+
+    internal fun emitError(error: ParsingError) {
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.errorsEmitted(iListOf(error))
+            dataNotification?.errorsEmitted(iListOf(error))
         }
     }
 
@@ -965,7 +979,7 @@ open class StateManagerAdaptor(
 
     }
 
-    internal fun get(
+    internal open fun get(
         url: String,
         params: IMap<String, String>?,
         headers: IMap<String, String>?,
@@ -995,6 +1009,11 @@ open class StateManagerAdaptor(
                         callback(response, httpCode)
                     } catch (e: Exception) {
                         e.printStackTrace()
+                        val error = ParsingError(
+                            ParsingErrorType.Unhandled,
+                            e.message ?: "Unknown error"
+                        )
+                        emitError(error)
                     }
                     trackApiCall()
                 }
@@ -1392,7 +1411,6 @@ open class StateManagerAdaptor(
         }
     }
 
-
     fun trade(
         data: String?,
         type: TradeInputField?,
@@ -1765,7 +1783,10 @@ open class StateManagerAdaptor(
                         if (faucet != null) {
                             val interval = Clock.System.now().toEpochMilliseconds()
                                 .toDouble() - faucet.timestampInMilliseconds
-                            tracking(AnalyticsEvent.TransferFaucetConfirmed.rawValue, trackingParams(interval))
+                            tracking(
+                                AnalyticsEvent.TransferFaucetConfirmed.rawValue,
+                                trackingParams(interval)
+                            )
                             faucetRecords.remove(faucet)
                             break
                         }
@@ -1810,7 +1831,10 @@ open class StateManagerAdaptor(
                 if (placeOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
-                    tracking(AnalyticsEvent.TradePlaceOrderConfirmed.rawValue, trackingParams(interval))
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                        trackingParams(interval)
+                    )
                     placeOrderRecords.remove(placeOrderRecord)
                     break
                 }
@@ -1820,7 +1844,10 @@ open class StateManagerAdaptor(
                 if (cancelOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
-                    tracking(AnalyticsEvent.TradeCancelOrderConfirmed.rawValue, trackingParams(interval))
+                    tracking(
+                        AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
+                        trackingParams(interval)
+                    )
                     cancelOrderRecords.remove(cancelOrderRecord)
                     break
                 }

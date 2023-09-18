@@ -10,6 +10,8 @@ import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
+import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.ApiState
 import exchange.dydx.abacus.state.app.ApiStatus
 import exchange.dydx.abacus.state.app.IndexerURIs
@@ -17,6 +19,8 @@ import exchange.dydx.abacus.state.app.NetworkState
 import exchange.dydx.abacus.state.app.NetworkStatus
 import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.TransferInputField
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
@@ -27,6 +31,7 @@ import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
+import exchange.dydx.abacus.state.modal.transfer
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
@@ -34,6 +39,7 @@ import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
 import io.ktor.client.utils.EmptyContent.status
+import kollections.iListOf
 import kollections.iMapOf
 import kollections.toIMap
 import kotlinx.datetime.Clock
@@ -982,7 +988,8 @@ class V4StateManagerAdaptor(
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
             val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
             val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-            val interval = if (indexerTime != null) (Clock.System.now().toEpochMilliseconds().toDouble() - indexerTime) else null
+            val interval = if (indexerTime != null) (Clock.System.now().toEpochMilliseconds()
+                .toDouble() - indexerTime) else null
             val params = mapOf(
                 "lastSuccessfulIndexerRPC" to indexerTime,
                 "lastSuccessfulFullNodeRPC" to validatorTime,
@@ -992,6 +999,39 @@ class V4StateManagerAdaptor(
             ).filterValues { it != null } as Map<String, Any>
 
             tracking(AnalyticsEvent.NetworkStatus.rawValue, params.toIMap())
+        }
+    }
+
+    override fun get(
+        url: String,
+        params: IMap<String, String>?,
+        headers: IMap<String, String>?,
+        private: Boolean,
+        callback: (String?, Int) -> Unit
+    ) {
+        super.get(url, params, headers, private) { response, httpCode ->
+            when (httpCode) {
+                403 -> {
+                    ioImplementations.threading?.async(ThreadingType.abacus) {
+                        val error = ParsingError(
+                            ParsingErrorType.HttpError403,
+                            "API error: $httpCode",
+                            "ERRORS.HTTP_ERROR_$httpCode"
+                        )
+
+                        emitError(error)
+                        trackApiCall()
+                    }
+                }
+
+                429 -> {
+                    /* We may need better handling of 429 */
+                    callback(response, httpCode)
+                }
+
+                else -> callback(response, httpCode)
+            }
+
         }
     }
 

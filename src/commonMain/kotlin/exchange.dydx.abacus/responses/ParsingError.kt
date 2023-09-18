@@ -16,6 +16,7 @@ enum class ParsingErrorType(val rawValue: String) {
     InvalidUrl("Invalid Url"),
     Unhandled("Unhandled"),
     BackendError("Backend Error"),
+    HttpError403("Http Error 403"),
     ;
 
     companion object {
@@ -26,9 +27,18 @@ enum class ParsingErrorType(val rawValue: String) {
 
 @JsExport
 @Serializable
-data class ParsingError(val type: ParsingErrorType, val message: String, val stringKey: String? = null, val stackTrace: String? = null)
+data class ParsingError(
+    val type: ParsingErrorType,
+    val message: String,
+    val stringKey: String? = null,
+    val stackTrace: String? = null
+)
 
-class ParsingException(val type: ParsingErrorType, message: String, val throwable: Throwable? = null) : Exception(message, throwable) {
+class ParsingException(
+    val type: ParsingErrorType,
+    message: String,
+    val throwable: Throwable? = null
+) : Exception(message, throwable) {
     fun toParsingError(): ParsingError {
         val stackTrace = throwable?.stackTraceToString()
         return ParsingError(type = type, message = message ?: "null", stackTrace = stackTrace)
