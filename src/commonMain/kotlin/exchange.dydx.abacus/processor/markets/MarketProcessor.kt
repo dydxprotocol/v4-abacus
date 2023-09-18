@@ -387,17 +387,17 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         market: IMap<String, Any>,
         payload: IList<Any>,
     ): IMap<String, Any> {
-        if (payload.isNotEmpty()) {
+        return if (payload.isNotEmpty()) {
             val modified = market.toIMutableMap()
             val perpetual =
                 parser.asMap(modified["perpetual"])?.toIMutableMap() ?: iMutableMapOf()
             perpetual["line"] = payload.mapNotNull {
                 parser.asDouble(it)
-            }.toIList()
+            }.reversed().toIList()
             modified.safeSet("perpetual", perpetual)
-            return modified
+            modified
         } else {
-            return market
+            market
         }
     }
 
