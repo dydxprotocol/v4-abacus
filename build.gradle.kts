@@ -9,7 +9,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
         classpath("com.android.tools.build:gradle:$agp_version")
     }
 }
@@ -22,15 +22,15 @@ allprojects {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.8.22"
-    kotlin("native.cocoapods") version "1.8.22"
-    kotlin("plugin.serialization") version "1.8.22"
+    kotlin("multiplatform") version "1.9.10"
+    kotlin("native.cocoapods") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.1.0"
 }
 
 group = "exchange.dydx.abacus"
-version = "0.4.31"
+version = "0.4.32"
 
 repositories {
     google()
