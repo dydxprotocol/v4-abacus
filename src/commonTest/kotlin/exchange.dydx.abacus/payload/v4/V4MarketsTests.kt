@@ -202,16 +202,16 @@ class V4MarketsTests : V4BaseTests() {
                         "BTC-USD": {
                             "perpetual": {
                                 "line": [
-                                    "29373",
-                                    "29308"
+                                    "29308",
+                                    "29373"
                                 ]
                             }
                         },
                         "ETH-USD": {
                             "perpetual": {
                                 "line": [
-                                    "1902.6",
-                                    "1900.3"
+                                    "1900.3",
+                                    "1902.6"
                                 ]
                             }
                         }
