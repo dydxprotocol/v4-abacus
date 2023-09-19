@@ -7,20 +7,17 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import kollections.iMutableMapOf
 
-internal class SquidStatusProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val keyMap = iMapOf(
-        "string" to iMapOf(
-            "status" to "status",
-            "gasStatus" to "gasStatus"
-        )
-    )
+internal class SquidStatusProcessor(
+    parser: ParserProtocol,
+    private val transactionId: String?,
+    ) : BaseProcessor(parser) {
 
     override fun received(
         existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
+        payload: IMap<String, Any>,
     ): IMap<String, Any> {
-        val modified = existing?.mutable() ?: iMutableMapOf<String, Any>()
-        val hash = parser.asString(parser.value(payload, "fromChain.transactionId"))
+        val modified = existing?.mutable() ?: iMutableMapOf()
+        val hash = transactionId ?: parser.asString(parser.value(payload, "fromChain.transactionId"))
         if (hash != null) {
             modified[hash] = payload
         }

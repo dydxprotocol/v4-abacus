@@ -170,8 +170,8 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     if (url != null) {
         val oldState = stateMachine.state
         get(url, params, null, false, callback = { response, httpCode ->
-            if (success(httpCode) && response != null) {
-                update(stateMachine.squidStatus(response), oldState)
+            if (response != null) {
+                update(stateMachine.squidStatus(response, hash), oldState)
             }
         })
     }

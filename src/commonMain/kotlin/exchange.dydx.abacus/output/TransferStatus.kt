@@ -50,7 +50,7 @@ class TransferStatus(
                     routeStatusMap
                 )
             }
-            val error = parser.asString(data?.get("error"))
+            val error = parser.asString(data?.get("errors")) ?: parser.asString(data?.get("error"))
 
             return if (existing == null ||
                 existing.status != status ||
