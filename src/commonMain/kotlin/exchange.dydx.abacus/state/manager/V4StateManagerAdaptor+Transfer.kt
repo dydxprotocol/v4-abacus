@@ -123,6 +123,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
     val chainId = environment.dydxChainId
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidRoute()
+    val fromAddress = accountAddress
     if (toChain != null &&
         toToken != null &&
         toAddress != null &&
@@ -130,12 +131,14 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
         fromAmountString != null &&
         accountAddress != null &&
         chainId != null &&
-        url != null
+        url != null &&
+        fromAddress != null
     ) {
         val params: IMap<String, String> = iMapOf<String, String>(
             "fromChain" to chainId,
             "fromToken" to dydxTokenDemon,
             "fromAmount" to fromAmountString,
+            "fromAddress" to fromAddress,
             "toChain" to toChain,
             "toToken" to toToken,
             "toAddress" to toAddress,
