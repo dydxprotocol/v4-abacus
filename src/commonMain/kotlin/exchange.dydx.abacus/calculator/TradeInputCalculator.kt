@@ -2,12 +2,11 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import exchange.dydx.abacus.output.RewardsParams
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
+import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.Rounder
+import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
@@ -20,6 +19,7 @@ import kollections.toIMutableList
 import kollections.toIMutableMap
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
+import kotlin.math.pow
 
 @JsExport
 @Serializable
@@ -61,6 +61,7 @@ internal class TradeInputCalculator(
         ) else null
         val user = parser.asMap(state["user"]) ?: iMapOf()
         val markets = parser.asMap(state["markets"])
+        val rewardsParams = parser.asMap(state["rewardsParams"])
         val trade = parser.asMap(state["trade"])
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -91,9 +92,9 @@ internal class TradeInputCalculator(
                         )
                     }
                 }
-                finalize(modifiedTrade, subaccount, user, market, type)
+                finalize(modifiedTrade, subaccount, user, market, rewardsParams, type)
             } else {
-                finalize(trade, subaccount, user, market, type)
+                finalize(trade, subaccount, user, market, rewardsParams, type)
             }
             modified["trade"] = trade
             modified.safeSet(
@@ -682,6 +683,7 @@ internal class TradeInputCalculator(
         subaccount: IMap<String, Any>?,
         user: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        rewardsParams: IMap<String, Any>?,
         type: String,
     ): IMap<String, Any> {
         val marketId = parser.asString(market?.get("id"))
@@ -695,7 +697,7 @@ internal class TradeInputCalculator(
         val fields = requiredFields(trade)
         modified.safeSet("fields", fields)
         modified.safeSet("options", calculatedOptionsFromFields(fields, position, market))
-        modified.safeSet("summary", summaryForType(trade, subaccount, user, market, type))
+        modified.safeSet("summary", summaryForType(trade, subaccount, user, market, rewardsParams, type))
 
         return modified
     }
@@ -1120,11 +1122,33 @@ internal class TradeInputCalculator(
         return parser.asString(parser.asMap(options.firstOrNull())?.get("type"))
     }
 
+    private fun calculateReward(fee: Double?, rewardsParams: IMap<String, Any>?): Double? {
+        println(fee.toString());
+
+        val feeMultiplierPpm = parser.asDouble(parser.value(rewardsParams, "feeMultiplierPpm"))
+        val tokenPrice = parser.asDouble(parser.value(rewardsParams, "tokenPrice.price"))
+        val tokenPriceExponent = parser.asDouble(parser.value(rewardsParams, "tokenPrice.exponent"))
+
+        if (fee != null
+            && feeMultiplierPpm != null
+            && tokenPrice != null
+            && tokenPriceExponent != null
+            && fee > 0.0
+            ) {
+            val feeMultiplier = feeMultiplierPpm / 1000000.0
+            val reward = fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
+            println(reward);
+            return reward
+        }
+        return 0.0
+    }
+
     private fun summaryForType(
         trade: IMap<String, Any>,
         subaccount: IMap<String, Any>?,
         user: IMap<String, Any>?,
         market: IMap<String, Any>?,
+        rewardsParams: IMap<String, Any>?,
         type: String,
     ): IMap<String, Any> {
         val summary = iMutableMapOf<String, Any>()
@@ -1301,6 +1325,8 @@ internal class TradeInputCalculator(
                     if (usdcSize != null) (usdcSize * multiplier + (fee
                         ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE) else null
 
+                val reward = calculateReward(parser.asDouble(fee), rewardsParams)
+
                 summary.safeSet("price", price)
                 summary.safeSet("payloadPrice", price)
                 summary.safeSet("size", size)
@@ -1309,6 +1335,7 @@ internal class TradeInputCalculator(
                 summary.safeSet("feeRate", feeRate)
                 summary.safeSet("total", total?.doubleValue(false))
                 summary.safeSet("filled", true)
+                summary.safeSet("reward", reward)
             }
 
             "TRAILING_STOP" -> {

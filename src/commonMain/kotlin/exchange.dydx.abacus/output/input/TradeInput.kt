@@ -217,6 +217,7 @@ data class TradeInputSummary(
     val slippage: Double?,
     val fee: Double?,
     val total: Double?,
+    val reward: Double?,
     val filled: Boolean,
 ) {
     companion object {
@@ -234,6 +235,7 @@ data class TradeInputSummary(
                 val slippage = parser.asDouble(data["slippage"])
                 val fee = parser.asDouble(data["fee"])
                 val total = parser.asDouble(data["total"])
+                val reward = parser.asDouble(data["reward"])
                 val filled = parser.asBool(data["filled"]) ?: false
 
                 return if (
@@ -254,6 +256,7 @@ data class TradeInputSummary(
                         slippage,
                         fee,
                         total,
+                        reward,
                         filled
                     )
                 } else {

@@ -107,6 +107,7 @@ internal fun TradingStateMachine.initiateTrade(
     params.safeSet("account", account)
     params.safeSet("user", user)
     params.safeSet("trade", trade)
+    params.safeSet("rewardsParams", rewardsParams)
 
     val modified = calculator.calculate(params, subaccountNumber, null)
 
@@ -128,6 +129,7 @@ internal fun TradingStateMachine.inititiateClosePosition(
     params.safeSet("account", account)
     params.safeSet("user", user)
     params.safeSet("trade", trade)
+    params.safeSet("rewardsParams", rewardsParams)
 
     val modified = calculator.calculate(params, subaccountNumber, null)
 
