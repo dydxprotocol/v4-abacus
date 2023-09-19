@@ -82,14 +82,15 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     internal fun receivedStatus(
         existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
+        payload: IMap<String, Any>,
+        transactionId: String?,
     ): IMap<String, Any>? {
         var modified = iMutableMapOf<String, Any>()
         existing?.let {
             modified = it.mutable()
         }
 
-        val processor = SquidStatusProcessor(parser)
+        val processor = SquidStatusProcessor(parser, transactionId)
         return processor.received(existing, payload)
     }
 

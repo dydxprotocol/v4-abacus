@@ -527,7 +527,7 @@ class V4ApiAdaptor(
             }
             return respond(stateMachine.state, change, null, null)
         } else if (url.host == squidApiHost() && url.path == squidApiPath("status")) {
-            var change = stateMachine.squidStatus(text)
+            var change = stateMachine.squidStatus(text, null)
             if (change != null) {
                 stateMachine.update(change)
             }

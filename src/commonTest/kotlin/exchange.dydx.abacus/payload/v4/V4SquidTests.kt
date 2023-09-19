@@ -135,7 +135,7 @@ class V4SquidTests : V4BaseTests() {
     fun testSquidStatus() {
         setup()
 
-        val stateChange = perp.squidStatus(mock.squidStatusMock.payload)
+        val stateChange = perp.squidStatus(mock.squidStatusMock.payload, null)
         assertNotNull(stateChange)
         assertNotNull(perp.data?.get("transferStatuses"))
 
