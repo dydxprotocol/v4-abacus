@@ -1350,7 +1350,8 @@ internal class TradeInputCalculator(
 
             "LIMIT", "STOP_LIMIT", "TAKE_PROFIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
-                val isMaker = type == "LIMIT" && timeInForce == "GTT"
+                val execution = parser.asString(trade["execution"])
+                val isMaker = (type == "LIMIT" && timeInForce == "GTT")  || execution == "POST_ONLY"
 
                 val feeRate = parser.asDouble(parser.value(user, if (isMaker) "makerFeeRate" else "takerFeeRate"))
                 val price = parser.asDouble(parser.value(trade, "price.limitPrice"))
