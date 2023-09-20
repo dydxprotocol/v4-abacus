@@ -3,6 +3,7 @@ package exchange.dydx.abacus.output
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import io.ktor.client.utils.EmptyContent.status
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -50,7 +51,15 @@ class TransferStatus(
                     routeStatusMap
                 )
             }
-            val error = parser.asString(data?.get("errors")) ?: parser.asString(data?.get("error"))
+
+            var error = parser.asString(data?.get("errors"))
+            if (error == null) {
+                val errorData = data?.get("error")
+                val size = parser.asMap(errorData)?.size ?: 0
+                if (size > 0) {
+                    error = parser.asString(errorData)
+                }
+            }
 
             return if (existing == null ||
                 existing.status != status ||
