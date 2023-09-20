@@ -1147,6 +1147,7 @@ internal class TradeInputCalculator(
             && tokenPriceExponent != null
             && fee > 0.0
             && notional != null
+            && tokenPrice > 0.0
             ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
             return feeMultiplier * (fee - maxMakerRebate * notional) / (tokenPrice * 10.0.pow(tokenPriceExponent))
@@ -1163,6 +1164,7 @@ internal class TradeInputCalculator(
             && tokenPrice != null
             && tokenPriceExponent != null
             && fee > 0.0
+            && tokenPrice > 0.0
             ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
             return fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
