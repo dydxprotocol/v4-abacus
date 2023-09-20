@@ -1135,7 +1135,7 @@ internal class TradeInputCalculator(
             val feeMultiplier = feeMultiplierPpm / 1000000.0
             return fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
         }
-        return 0.0
+        return null
     }
 
     private fun summaryForType(
