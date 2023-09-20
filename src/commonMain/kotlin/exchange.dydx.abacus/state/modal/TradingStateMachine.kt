@@ -539,6 +539,7 @@ open class TradingStateMachine(
         params.safeSet("user", user)
         params.safeSet("trade", trade)
         params.safeSet("rewardsParams", rewardsParams)
+        params.safeSet("configs", configs)
 
         val modified = calculator.calculate(params, subaccountNumber, inputType)
         this.setMarkets(parser.asMap(modified["markets"]))
