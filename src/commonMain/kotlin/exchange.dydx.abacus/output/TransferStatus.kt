@@ -3,7 +3,6 @@ package exchange.dydx.abacus.output
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import io.ktor.client.utils.EmptyContent.status
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
