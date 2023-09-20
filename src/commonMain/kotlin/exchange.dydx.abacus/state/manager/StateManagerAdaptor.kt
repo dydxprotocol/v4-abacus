@@ -438,8 +438,12 @@ open class StateManagerAdaptor(
 
     internal open fun didSetAccountAddress(accountAddress: String?, oldValue: String?) {
         ioImplementations.threading?.async(ThreadingType.abacus) {
-            stateMachine.resetWallet(accountAddress)
+            val stateResponse = stateMachine.resetWallet(accountAddress)
             ioImplementations.threading?.async(ThreadingType.main) {
+                stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
                 connectedSubaccountNumber = null
                 subaccountNumber = 0
                 updateConnectedSubaccountNumber()
