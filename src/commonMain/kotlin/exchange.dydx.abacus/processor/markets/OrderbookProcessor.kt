@@ -26,6 +26,8 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     private var groupingTickSize: Double? = null
     private var groupingLookup: MutableMap<Int, BigDecimal>? = null
 
+    private var lastOffset: Long = 0
+
     internal fun subscribed(
         content: IMap<String, Any>
     ): IMap<String, Any> {
@@ -61,6 +63,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             }
         }
         orderbook.safeSet("bids", bids)
+        lastOffset = 0
         return orderbook
     }
 
@@ -82,7 +85,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): IMap<String, Any>? {
         if (payload != null) {
             val orderbook = existing?.mutable() ?: iMutableMapOf()
-            val offset = parser.asLong(payload["offset"])
+            val offset = parser.asLong(payload["offset"]) ?: (lastOffset + 1)
             orderbook["asks"] = receivedChanges(
                 orderbook["asks"] as? IList<IMap<String, Any>>,
                 parser.asList(payload["asks"] ?: payload["ask"]),
@@ -96,6 +99,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 offset,
                 false
             )
+            lastOffset = offset
             return orderbook
         }
         return existing
@@ -195,7 +199,10 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     @Throws(Exception::class)
-    private fun compareResults(result1: IList<IMap<String, Any>>, result2: IList<IMap<String, Any>>) {
+    private fun compareResults(
+        result1: IList<IMap<String, Any>>,
+        result2: IList<IMap<String, Any>>
+    ) {
         if (result1.size == result2.size) {
             for (i in 0 until result2.size) {
                 val item1 = result1[i]
@@ -369,7 +376,8 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
-    fun consolidate(orderbook: IMap<String, Any>?, stepSize:Double): IMap<String, Any>? {
+    fun consolidate(orderbook: IMap<String, Any>?, stepSize: Double): IMap<String, Any>? {
+        /*
         val stepSizeDecimals = stepSize.numberOfDecimals()
         val asks = parser.asList(orderbook?.get("asks"))?.mutable()
         val bids = parser.asList(orderbook?.get("bids"))?.mutable()
@@ -411,6 +419,51 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             }
             calculate(iMapOf("asks" to asks, "bids" to bids))
         } else orderbook
+        */
+
+        val asks = parser.asList(orderbook?.get("asks"))?.mutable()
+        val bids = parser.asList(orderbook?.get("bids"))?.mutable()
+        return if (asks != null && bids != null && asks.size > 0 && bids.size > 0) {
+            var ask = parser.asMap(asks.firstOrNull())
+            var bid = parser.asMap(bids.firstOrNull())
+            while (ask != null && bid != null && crossed(ask, bid)) {
+                val askOffset = parser.asLong(ask["offset"]) ?: 0L
+                val bidOffset = parser.asLong(bid["offset"]) ?: 0L
+                // Drop the order on the side with the lower offset.
+                // The offset of the other side is higher and so supercedes.
+                if (askOffset == bidOffset) {
+                    // If offsets are the same, give precedence to the larger size. In this case,
+                    // one of the sizes *should* be zero, but we simply check for the larger size.
+                    val askSize = parser.asDouble(ask["size"]) ?: Numeric.double.ZERO
+                    val bidSize = parser.asDouble(bid["size"]) ?: Numeric.double.ZERO
+                    if (askSize >= bidSize) {
+                        bids.removeFirst()
+                        bid = parser.asMap(bids.firstOrNull())
+                    } else {
+                        asks.removeFirst()
+                        ask = parser.asMap(asks.firstOrNull())
+                    }
+                } else {
+                    // Offsets are not equal. Give precedence to the larger offset.
+                    if (askOffset > bidOffset) {
+                        bids.removeFirst()
+                        bid = parser.asMap(bids.firstOrNull())
+                    } else {
+                        asks.removeFirst()
+                        ask = parser.asMap(asks.firstOrNull())
+                    }
+                }
+            }
+            calculate(iMapOf("asks" to asks, "bids" to bids))
+        } else orderbook
+    }
+
+    private fun crossed(ask: Map<String, Any>, bid: Map<String, Any>): Boolean {
+        val askPrice = parser.asDouble(ask["price"])
+        val bidPrice = parser.asDouble(bid["price"])
+        return if (askPrice != null && bidPrice != null) {
+            askPrice <= bidPrice
+        } else false
     }
 
     private fun buildGroupingLookup(tickSize: Double) {

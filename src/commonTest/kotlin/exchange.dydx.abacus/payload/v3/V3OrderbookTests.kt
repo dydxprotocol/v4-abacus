@@ -20,14 +20,14 @@ class V3OrderbookTests: V3BaseTests() {
                             "orderbook": {
                                 "asks": [
                                     {
-                                        "size": 3.231,
+                                        "size": 25.138,
                                         "price": 1655.8,
-                                        "depth": 3.231
+                                        "depth": 25.138
                                     },
                                     {
                                         "size": 11.891,
                                         "price": 1656.0,
-                                        "depth": 15.122
+                                        "depth": 37.029
                                     }
                                 ],
                                 "bids": [
