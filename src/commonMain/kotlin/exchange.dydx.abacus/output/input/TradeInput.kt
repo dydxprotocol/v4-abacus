@@ -620,7 +620,8 @@ enum class ReceiptLine(val rawValue: String) {
     exchangeRate("EXCHANGE_RATE"),
     exchangeReceived("EXCHANGE_RECEIVED"),
     slippage("SLIPPAGE"),
-    gasFee("GAS_FEES");
+    gasFee("GAS_FEES"),
+    reward("REWARD");
 
     companion object {
         operator fun invoke(rawValue: String) =

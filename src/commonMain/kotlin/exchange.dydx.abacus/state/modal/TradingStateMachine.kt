@@ -732,7 +732,8 @@ open class TradingStateMachine(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.expectedPrice.rawValue,
-                            ReceiptLine.fee.rawValue
+                            ReceiptLine.fee.rawValue,
+                            ReceiptLine.reward.rawValue
                         )
                     }
 
@@ -740,7 +741,8 @@ open class TradingStateMachine(
                         iListOf(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue
+                            ReceiptLine.fee.rawValue,
+                            ReceiptLine.reward.rawValue
                         )
                     }
                 }
@@ -751,7 +753,8 @@ open class TradingStateMachine(
                     ReceiptLine.buyingPower.rawValue,
                     ReceiptLine.marginUsage.rawValue,
                     ReceiptLine.expectedPrice.rawValue,
-                    ReceiptLine.fee.rawValue
+                    ReceiptLine.fee.rawValue,
+                    ReceiptLine.reward.rawValue
                 )
             }
 
