@@ -85,6 +85,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): IMap<String, Any>? {
         if (payload != null) {
             val orderbook = existing?.mutable() ?: iMutableMapOf()
+            // offset in v4 is always null. We just increment our own offset
             val offset = parser.asLong(payload["offset"]) ?: (lastOffset + 1)
             orderbook["asks"] = receivedChanges(
                 orderbook["asks"] as? IList<IMap<String, Any>>,
