@@ -2,7 +2,6 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import exchange.dydx.abacus.output.RewardsParams
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
@@ -1123,8 +1122,6 @@ internal class TradeInputCalculator(
     }
 
     private fun calculateReward(fee: Double?, rewardsParams: IMap<String, Any>?): Double? {
-        println(fee.toString());
-
         val feeMultiplierPpm = parser.asDouble(parser.value(rewardsParams, "feeMultiplierPpm"))
         val tokenPrice = parser.asDouble(parser.value(rewardsParams, "tokenPrice.price"))
         val tokenPriceExponent = parser.asDouble(parser.value(rewardsParams, "tokenPrice.exponent"))
@@ -1136,9 +1133,7 @@ internal class TradeInputCalculator(
             && fee > 0.0
             ) {
             val feeMultiplier = feeMultiplierPpm / 1000000.0
-            val reward = fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
-            println(reward);
-            return reward
+            return fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
         }
         return 0.0
     }
