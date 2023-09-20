@@ -11,9 +11,11 @@ import kollections.toIMap
 internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val equityTierKeyMap = iMapOf(
         "int" to iMapOf(
-            "maxOrders" to "maxOrders",
+            "maxOrders" to "maxOrders"
+            ),
+        "decimal" to iMapOf(
             "requiredTotalNetCollateralUSD" to "requiredTotalNetCollateralUSD",
-            ).toIMap()
+            ),
     )
 
     override fun received(
