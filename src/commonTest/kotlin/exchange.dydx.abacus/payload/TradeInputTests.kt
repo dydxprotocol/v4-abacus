@@ -1195,9 +1195,7 @@ class TradeInputTests : V3BaseTests() {
 
         test(
             {
-                val ret = perp.trade("1833.9", TradeInputField.limitPrice, 0)
-                println("wtf " + perp.data.toString())
-                ret
+                perp.trade("1833.9", TradeInputField.limitPrice, 0)
             },
             """
                 {
