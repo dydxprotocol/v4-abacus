@@ -289,4 +289,4 @@ fun FileSystemProtocol.readCachedTextFile(
     }
 }
 
-typealias TransactionCallback = (successful: Boolean, error: ParsingError?) -> Unit
+typealias TransactionCallback = (successful: Boolean, error: ParsingError?, data: Any?) -> Unit

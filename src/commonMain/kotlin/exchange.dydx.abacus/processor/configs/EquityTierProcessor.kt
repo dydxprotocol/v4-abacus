@@ -3,18 +3,17 @@ package exchange.dydx.abacus.processor.configs
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.iMapOf
 import kollections.toIMap
 
 @Suppress("UNCHECKED_CAST")
 internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val equityTierKeyMap = iMapOf(
-        "string" to iMapOf(
-            "requiredTotalNetCollateralUSD" to "requiredTotalNetCollateralUSD",
-        ),
         "int" to iMapOf(
-            "maxOrders" to "maxOrders"
-        ).toIMap()
+            "maxOrders" to "maxOrders",
+            "requiredTotalNetCollateralUSD" to "requiredTotalNetCollateralUSD",
+            ).toIMap()
     )
 
     override fun received(
@@ -23,9 +22,9 @@ internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parse
     ): IMap<String, Any>? {
         val received = transform(existing, payload, equityTierKeyMap)
 
-        val requiredTotalNetCollateralUSD = payload["usdTncRequired"]
+        val requiredTotalNetCollateralUSD = parser.asDecimal(payload["usdTncRequired"])
         if (requiredTotalNetCollateralUSD != null) {
-            received["requiredTotalNetCollateralUSD"] = requiredTotalNetCollateralUSD
+            received["requiredTotalNetCollateralUSD"] = requiredTotalNetCollateralUSD / QUANTUM_MULTIPLIER
         }
 
         val maxOrders = payload["limit"]
