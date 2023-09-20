@@ -10,23 +10,23 @@ internal class V4OnChainMock {
                         "limit": 0
                     },
                     {
-                        "usdTncRequired": "20",
+                        "usdTncRequired": "20000000",
                         "limit": 1
                     },
                     {
-                        "usdTncRequired": "100",
+                        "usdTncRequired": "100000000",
                         "limit": 5
                     },
                     {
-                        "usdTncRequired": "1000",
+                        "usdTncRequired": "1000000000",
                         "limit": 10
                     },
                     {
-                        "usdTncRequired": "10000",
+                        "usdTncRequired": "10000000000",
                         "limit": 100
                     },
                     {
-                        "usdTncRequired": "100000",
+                        "usdTncRequired": "100000000000",
                         "limit": 200
                     }
                 ],
@@ -36,23 +36,23 @@ internal class V4OnChainMock {
                         "limit": 0
                     },
                     {
-                        "usdTncRequired": "20",
+                        "usdTncRequired": "20000000",
                         "limit": 1
                     },
                     {
-                        "usdTncRequired": "100",
+                        "usdTncRequired": "100000000",
                         "limit": 5
                     },
                     {
-                        "usdTncRequired": "1000",
+                        "usdTncRequired": "1000000000",
                         "limit": 10
                     },
                     {
-                        "usdTncRequired": "10000",
+                        "usdTncRequired": "10000000000",
                         "limit": 100
                     },
                     {
-                        "usdTncRequired": "100000",
+                        "usdTncRequired": "100000000000",
                         "limit": 200
                     }
                 ]

@@ -114,9 +114,10 @@ internal class TradeInputDataValidator(
 
         if (orderType == null || timeInForce == null) return null
 
-        return if (orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
-            >= maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
-        ) {
+        val equityTierLimit = maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
+        val numOrders = orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
+
+        return if (numOrders >= equityTierLimit) {
             iListOf(
                 error(
                     "ERROR",
@@ -124,7 +125,13 @@ internal class TradeInputDataValidator(
                     null,
                     null,
                     "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
-                    "ERRORS.TRADE_BOX.USER_MAX_ORDERS"
+                    "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_EQUITY_TIER",
+                    iMapOf(
+                        "LIMIT" to iMapOf(
+                            "value" to equityTierLimit,
+                            "format" to "string"
+                        )
+                    )
                 )
             )
         } else null
