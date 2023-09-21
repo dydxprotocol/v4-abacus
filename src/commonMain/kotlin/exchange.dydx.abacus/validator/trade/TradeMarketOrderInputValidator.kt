@@ -145,7 +145,7 @@ internal class TradeMarketOrderInputValidator(
          */
         parser.asMap(trade["summary"])?.let { summary ->
             parser.asDouble(summary["indexSlippage"])?.let { slippage ->
-                val slippageValue = slippage.abs()
+                val slippageValue = slippage
                 if (slippageValue >= MARKET_ORDER_ERROR_SLIPPAGE) {
                     return error(
                         if (restricted) "WARNING" else "ERROR",

@@ -24,7 +24,7 @@ import kotlin.math.abs
 @JsExport
 @Serializable
 enum class TradeCalculation(val rawValue: String) {
-    trade("MAKER"), closePosition("TAKER");
+    trade("TRADE"), closePosition("CLOSE_POSITION");
 
     companion object {
         operator fun invoke(rawValue: String) =
