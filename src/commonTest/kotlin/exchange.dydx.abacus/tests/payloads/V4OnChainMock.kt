@@ -178,16 +178,16 @@ internal class V4OnChainMock {
           "delegationResponses": [
             {
               "delegation": {
-                "delegatorAddress": "dydx1jtgmsqq0g7u3lyp28vy7vd8n62hxedfvjz5prl",
-                "validatorAddress": "dydxvaloper199tqg4wdlnu4qjlxchpd7seg454937hjxg9yhy",
+                "delegatorAddress": "REDACTED",
+                "validatorAddress": "REDACTED",
                 "shares": "1001000000000000000000000"
               },
               "balance": { "denom": "dv4tnt", "amount": "1001000" }
             },
             {
               "delegation": {
-                "delegatorAddress": "dydx1jtgmsqq0g7u3lyp28vy7vd8n62hxedfvjz5prl",
-                "validatorAddress": "dydxvaloper16h7p7f4dysrgtzptxx2gtpt5d8t834g9gv38yn",
+                "delegatorAddress": "REDACTED",
+                "validatorAddress": "REDACTED",
                 "shares": "1000000000000000000000000"
               },
               "balance": { "denom": "dv4tnt", "amount": "1000000" }
