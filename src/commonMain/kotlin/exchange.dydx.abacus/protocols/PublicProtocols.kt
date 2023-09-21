@@ -140,6 +140,7 @@ enum class QueryType(val rawValue: String) {
     OptimalNode("getOptimalNode"),
     OptimalIndexer("getOptimalIndexer"),
     GetAccountBalances("getAccountBalances"),
+    GetMarketPrice("getMarketPrice"),
     RewardsParams("getRewardsParams");
 
     companion object {
@@ -289,4 +290,4 @@ fun FileSystemProtocol.readCachedTextFile(
     }
 }
 
-typealias TransactionCallback = (successful: Boolean, error: ParsingError?) -> Unit
+typealias TransactionCallback = (successful: Boolean, error: ParsingError?, data: Any?) -> Unit

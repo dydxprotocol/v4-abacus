@@ -442,21 +442,23 @@ class AsyncAbacusStateManager(
         return adaptor?.subaccountTransferPayload()
     }
 
-    fun commitPlaceOrder(callback: TransactionCallback) {
+    fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         try {
-            adaptor?.commitPlaceOrder(callback)
+            return adaptor?.commitPlaceOrder(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
-            callback(false, error)
+            callback(false, error, null)
+            return null
         }
     }
 
-    fun commitClosePosition(callback: TransactionCallback) {
+    fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         try {
-            adaptor?.commitClosePosition(callback)
+            return adaptor?.commitClosePosition(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
-            callback(false, error)
+            callback(false, error, null)
+            return null
         }
     }
 
@@ -469,7 +471,7 @@ class AsyncAbacusStateManager(
             adaptor?.commitTransfer(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
-            callback(false, error)
+            callback(false, error, null)
         }
     }
 
@@ -478,7 +480,7 @@ class AsyncAbacusStateManager(
             adaptor?.faucet(amount, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
-            callback(false, error)
+            callback(false, error, null)
         }
     }
 
@@ -487,7 +489,7 @@ class AsyncAbacusStateManager(
             adaptor?.cancelOrder(orderId, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
-            callback(false, error)
+            callback(false, error, null)
         }
     }
 

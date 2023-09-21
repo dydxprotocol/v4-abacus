@@ -27,6 +27,7 @@ import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.onChainEquityTiers
 import exchange.dydx.abacus.state.modal.onChainFeeTiers
 import exchange.dydx.abacus.state.modal.onChainRewardsParams
+import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
 import exchange.dydx.abacus.state.modal.squidChains
@@ -295,9 +296,18 @@ class V4StateManagerAdaptor(
     }
 
     private fun getRewardsParams() {
-        getOnChain(QueryType.RewardsParams, null) { response ->
+        getOnChain(QueryType.RewardsParams, null) { rewardsParams ->
             val oldState = stateMachine.state
-            update(stateMachine.onChainRewardsParams(response), oldState)
+            update(stateMachine.onChainRewardsParams(rewardsParams), oldState)
+
+            val json = Json.parseToJsonElement(rewardsParams).jsonObject.toMap()
+            val marketId = parser.asString(parser.value(json, "params.marketId"))
+            val params = iMapOf("marketId" to marketId)
+            val paramsInJson = jsonEncoder.encode(params)
+
+            getOnChain(QueryType.GetMarketPrice, paramsInJson) { marketPrice ->
+                update(stateMachine.onChainRewardTokenPrice(marketPrice), oldState)
+            }
         }
     }
 
@@ -701,7 +711,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    override fun commitPlaceOrder(callback: TransactionCallback) {
+    override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
         val clientId = payload.clientId
@@ -722,11 +732,12 @@ class V4StateManagerAdaptor(
                     lastOrderClientId = clientId
                 }
             }
-            send(error, callback)
+            send(error, callback, payload)
         }
+        return payload
     }
 
-    override fun commitClosePosition(callback: TransactionCallback) {
+    override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = closePositionPayload()
         val clientId = payload.clientId
@@ -747,8 +758,9 @@ class V4StateManagerAdaptor(
                     lastOrderClientId = clientId
                 }
             }
-            send(error, callback)
+            send(error, callback, payload)
         }
+        return payload
     }
 
     override fun commitTransfer(callback: TransactionCallback) {
@@ -771,40 +783,44 @@ class V4StateManagerAdaptor(
     }
 
     private fun commitDeposit(callback: TransactionCallback) {
-        val string = Json.encodeToString(depositPayload())
+        val payload = depositPayload()
+        val string = Json.encodeToString(payload)
 
         transaction(TransactionType.Deposit, string) { response ->
             val error = parseTransactionResponse(response)
-            send(error, callback)
+            send(error, callback, payload)
         }
     }
 
     private fun commitWithdrawal(callback: TransactionCallback) {
-        val string = Json.encodeToString(withdrawPayload())
+        val payload = withdrawPayload()
+        val string = Json.encodeToString(payload)
 
         transaction(TransactionType.Withdraw, string) { response ->
             val error = parseTransactionResponse(response)
-            send(error, callback)
+            send(error, callback, payload)
         }
     }
 
     private fun commitTransferOut(callback: TransactionCallback) {
-        val string = Json.encodeToString(subaccountTransferPayload())
+        val payload = subaccountTransferPayload()
+        val string = Json.encodeToString(payload)
 
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
-            send(error, callback)
+            send(error, callback, payload)
         }
     }
 
     override fun faucet(amount: Double, callback: TransactionCallback) {
-        val string = Json.encodeToString(faucetPayload(subaccountNumber, amount))
+        val payload = faucetPayload(subaccountNumber, amount)
+        val string = Json.encodeToString(payload)
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
         transaction(TransactionType.Faucet, string) { response ->
             val error =
                 parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
-            send(error, callback)
+            send(error, callback, payload)
         }
     }
 
@@ -855,7 +871,7 @@ class V4StateManagerAdaptor(
                     )
                 }
             }
-            send(error, callback)
+            send(error, callback, payload)
         }
     }
 
@@ -875,12 +891,12 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun send(error: ParsingError?, callback: TransactionCallback) {
+    private fun send(error: ParsingError?, callback: TransactionCallback, data: Any? = null) {
         ioImplementations.threading?.async(ThreadingType.main) {
             if (error != null) {
-                callback(false, error)
+                callback(false, error, data)
             } else {
-                callback(true, null)
+                callback(true, null, data)
             }
         }
     }

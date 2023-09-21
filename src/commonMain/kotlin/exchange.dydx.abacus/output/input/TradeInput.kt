@@ -217,6 +217,7 @@ data class TradeInputSummary(
     val slippage: Double?,
     val fee: Double?,
     val total: Double?,
+    val reward: Double?,
     val filled: Boolean,
 ) {
     companion object {
@@ -234,6 +235,7 @@ data class TradeInputSummary(
                 val slippage = parser.asDouble(data["slippage"])
                 val fee = parser.asDouble(data["fee"])
                 val total = parser.asDouble(data["total"])
+                val reward = parser.asDouble(data["reward"])
                 val filled = parser.asBool(data["filled"]) ?: false
 
                 return if (
@@ -254,6 +256,7 @@ data class TradeInputSummary(
                         slippage,
                         fee,
                         total,
+                        reward,
                         filled
                     )
                 } else {
@@ -617,7 +620,8 @@ enum class ReceiptLine(val rawValue: String) {
     exchangeRate("EXCHANGE_RATE"),
     exchangeReceived("EXCHANGE_RECEIVED"),
     slippage("SLIPPAGE"),
-    gasFee("GAS_FEES");
+    gasFee("GAS_FEES"),
+    reward("REWARD");
 
     companion object {
         operator fun invoke(rawValue: String) =
