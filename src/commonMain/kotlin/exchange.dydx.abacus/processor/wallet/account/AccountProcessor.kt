@@ -809,10 +809,44 @@ private class V4AccountBalancesProcessor(parser: ParserProtocol) : BaseProcessor
     }
 }
 
+private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+    fun received(
+        existing: IMap<String, Any>?,
+        payload: IList<Any>?,
+    ): IMap<String, Any>? {
+        return if (payload != null) {
+            val modified = iMutableMapOf<String, Any>()
+            for (itemPayload in payload) {
+                val delegation = parser.asMap(itemPayload)
+                val balance = parser.asMap(delegation?.get("balance"))
+                if (balance != null) {
+                    val denom = parser.asString(balance?.get("denom"))
+                    if (denom != null) {
+                        val key = "$denom"
+                        val current =
+                            parser.asMap(modified[key])?.mutable()
+                        if (current == null) {
+                            modified.safeSet(key, iMapOf("denom" to denom, "amount" to parser.asDouble(balance?.get("amount"))))
+                        } else {
+                            val amount = parser.asDouble(balance?.get("amount"));
+                            val existingAmount = parser.asDouble(current["amount"]);
+                            if (amount != null && existingAmount != null) {
+                                current.safeSet("amount", amount + existingAmount)
+                            }
+                        }
+                    }
+                }
+            }
+            return modified
+        } else null
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val subaccountsProcessor = V4SubaccountsProcessor(parser)
     private val balancesProcessor = V4AccountBalancesProcessor(parser)
+    private val delegationsProcessor = V4AccountDelegationsProcessor(parser)
 
     internal fun receivedAccountBalances(
         existing: IMap<String, Any>?,
@@ -822,6 +856,17 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val balances = parser.asMap(parser.value(existing, "balances"))
         val modifiedBalances = balancesProcessor.receivedBalances(balances, payload)
         modified.safeSet("balances", modifiedBalances)
+        return modified
+    }
+
+    internal fun receivedDelegations(
+        existing: IMap<String, Any>?,
+        payload: IList<Any>?,
+    ): IMap<String, Any>? {
+        val modified = existing?.mutable() ?: iMutableMapOf()
+        val delegations = parser.asMap(parser.value(existing, "stakingBalances"))
+        val modifiedDelegations = delegationsProcessor.received(delegations, payload)
+        modified.safeSet("stakingBalances", modifiedDelegations)
         return modified
     }
 

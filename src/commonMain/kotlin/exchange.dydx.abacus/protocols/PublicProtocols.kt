@@ -141,6 +141,7 @@ enum class QueryType(val rawValue: String) {
     OptimalIndexer("getOptimalIndexer"),
     GetAccountBalances("getAccountBalances"),
     GetMarketPrice("getMarketPrice"),
+    GetDelegations("getDelegations"),
     RewardsParams("getRewardsParams");
 
     companion object {

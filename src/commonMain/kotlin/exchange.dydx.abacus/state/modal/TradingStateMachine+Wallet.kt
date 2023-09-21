@@ -172,3 +172,17 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
         StateChanges(iListOf())
     }
 }
+
+internal fun TradingStateMachine.onChainDelegations(payload: String): StateChanges {
+    val json = Json.parseToJsonElement(payload)
+    return try {
+        val response = json.jsonObject.toIMap()
+        val delegations = response["delegationResponses"]?.let {
+            parser.asList(it)
+        } ?: iListOf()
+        this.wallet = walletProcessor.receivedDelegations(wallet, delegations)
+        return StateChanges(iListOf(Changes.accountBalances), null)
+    } catch (e: Exception) {
+        StateChanges(iListOf())
+    }
+}

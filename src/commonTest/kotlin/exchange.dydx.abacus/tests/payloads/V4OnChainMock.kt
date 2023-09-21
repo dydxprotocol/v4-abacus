@@ -172,4 +172,31 @@ internal class V4OnChainMock {
         {"denom":"dv4tnt","amount":"1220"}
        ]
     """.trimIndent()
+
+    internal val account_delegations = """
+       {
+          "delegationResponses": [
+            {
+              "delegation": {
+                "delegatorAddress": "REDACTED",
+                "validatorAddress": "REDACTED",
+                "shares": "1001000000000000000000000"
+              },
+              "balance": { "denom": "dv4tnt", "amount": "1001000" }
+            },
+            {
+              "delegation": {
+                "delegatorAddress": "REDACTED",
+                "validatorAddress": "REDACTED",
+                "shares": "1000000000000000000000000"
+              },
+              "balance": { "denom": "dv4tnt", "amount": "1000000" }
+            }
+          ],
+          "pagination": {
+            "nextKey": {},
+            "total": { "low": 2, "high": 0, "unsigned": true }
+          }
+        }
+    """.trimIndent()
 }
