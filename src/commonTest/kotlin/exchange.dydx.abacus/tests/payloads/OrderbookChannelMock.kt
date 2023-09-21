@@ -588,7 +588,7 @@ internal class OrderbookChannelMock {
             ],
             "bids": [
               {
-                "size": "25.138",
+                "size": "25.137",
                 "price": "1655.8"
               },
               {
