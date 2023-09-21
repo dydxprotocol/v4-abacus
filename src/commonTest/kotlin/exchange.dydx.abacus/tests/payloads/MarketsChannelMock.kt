@@ -1162,7 +1162,7 @@ internal class MarketsChannelMock {
                     "atomicResolution":-9,
                     "quantumConversionExponent":-9,
                     "tickSize":"0.001",
-                    "stepSize":"0.000001",
+                    "stepSize":"0.001",
                     "stepBaseQuantums":1000
                  }
               }

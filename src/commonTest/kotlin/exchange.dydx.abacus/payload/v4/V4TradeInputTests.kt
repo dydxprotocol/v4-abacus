@@ -353,6 +353,72 @@ open class V4TradeInputTests : V4BaseTests() {
         """.trimIndent()
         )
 
+        test(
+            {
+                perp.tradeInMarket("ETH-USD", 0)
+            }, """
+            {
+            }
+        """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("SELL", TradeInputField.side, 0)
+            }, """
+            {
+            }
+        """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade(null, TradeInputField.usdcSize, 0)
+            }, """
+            {
+            }
+        """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("1", TradeInputField.usdcSize, 0)
+            }, """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 1.0,
+                            "size": 0.0
+                        }
+                    },
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "ORDER_SIZE_BELOW_MIN_SIZE"
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade(null, TradeInputField.usdcSize, 0)
+            }, """
+            {
+                "input": {
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_SIZE"
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+        )
     }
 
     private fun testUpdates() {
