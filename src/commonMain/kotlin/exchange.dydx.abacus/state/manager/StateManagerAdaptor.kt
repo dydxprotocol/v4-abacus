@@ -1476,12 +1476,14 @@ open class StateManagerAdaptor(
 
     }
 
-    internal open fun commitPlaceOrder(callback: TransactionCallback) {
-        callback(false, V4TransactionErrors.error(null, "Not implemented"))
+    internal open fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+        return null
     }
 
-    internal open fun commitClosePosition(callback: TransactionCallback) {
-        callback(false, V4TransactionErrors.error(null, "Not implemented"))
+    internal open fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+        return null
     }
 
     fun stopWatchingLastOrder() {
@@ -1489,15 +1491,15 @@ open class StateManagerAdaptor(
     }
 
     internal open fun commitTransfer(callback: TransactionCallback) {
-        callback(false, V4TransactionErrors.error(null, "Not implemented"))
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
     internal open fun faucet(amount: Double, callback: TransactionCallback) {
-        callback(false, V4TransactionErrors.error(null, "Not implemented"))
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
     internal open fun cancelOrder(orderId: String, callback: TransactionCallback) {
-        callback(false, V4TransactionErrors.error(null, "Not implemented"))
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
     internal open fun parseTransactionResponse(response: String?): ParsingError? {
