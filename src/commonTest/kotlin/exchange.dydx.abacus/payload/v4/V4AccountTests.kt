@@ -5,6 +5,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
+import exchange.dydx.abacus.state.modal.onChainDelegations
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
@@ -955,6 +956,34 @@ class V4AccountTests : V4BaseTests() {
                                 "dv4tnt": {
                                      "denom": "dv4tnt",
                                      "amount": "1220"
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+    }
+
+    @Test
+    fun testAccountStakingBalances() {
+        test(
+            {
+                val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+                perp.update(changes)
+                println(perp.state.toString())
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "stakingBalances": {
+                                "dv4tnt": {
+                                     "denom": "dv4tnt",
+                                     "amount": "2001000"
                                 }
                             }
                         }
