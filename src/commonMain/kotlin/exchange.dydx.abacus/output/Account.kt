@@ -1288,6 +1288,7 @@ data class AccountBalance(
 @Serializable
 data class Account(
     var balances: IMap<String, AccountBalance>?,
+    var stakingBalances: IMap<String, AccountBalance>?,
     var subaccounts: IMap<String, Subaccount>?,
 ) {
     companion object {
@@ -1314,6 +1315,22 @@ data class Account(
                 }
             }
 
+            val stakingBalances: IMutableMap<String, AccountBalance> =
+                iMutableMapOf<String, AccountBalance>()
+            val stakingBalancesData = parser.asMap(data["stakingBalances"])
+            if (stakingBalancesData != null) {
+                for ((key, value) in stakingBalancesData) {
+                    val balanceData = parser.asMap(value) ?: iMapOf()
+                    AccountBalance.create(
+                        existing?.stakingBalances?.get(key),
+                        parser,
+                        balanceData
+                    )?.let { balance ->
+                        stakingBalances[key] = balance
+                    }
+                }
+            }
+
             val subaccounts: IMutableMap<String, Subaccount> =
                 iMutableMapOf<String, Subaccount>()
 
@@ -1332,7 +1349,7 @@ data class Account(
                 }
             }
 
-            return Account(balances, subaccounts)
+            return Account(balances, stakingBalances, subaccounts)
         }
     }
 }

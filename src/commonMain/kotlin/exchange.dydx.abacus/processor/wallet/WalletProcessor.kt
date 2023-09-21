@@ -78,6 +78,18 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
+    internal fun receivedDelegations(
+        existing: IMap<String, Any>?,
+        payload: IList<Any>?,
+    ): IMap<String, Any>? {
+        return receivedObject(existing, "account", payload) { existing, payload ->
+            v4accountProcessor.receivedDelegations(
+                parser.asMap(existing),
+                payload as? IList<Any>
+            )
+        }
+    }
+
     internal fun receivedUser(
         existing: IMap<String, Any>?,
         payload: IMap<String, Any>?,

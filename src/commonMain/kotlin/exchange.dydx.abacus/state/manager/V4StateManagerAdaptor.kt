@@ -24,6 +24,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.TransferInputField
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
+import exchange.dydx.abacus.state.modal.onChainDelegations
 import exchange.dydx.abacus.state.modal.onChainEquityTiers
 import exchange.dydx.abacus.state.modal.onChainFeeTiers
 import exchange.dydx.abacus.state.modal.onChainRewardsParams
@@ -365,6 +366,13 @@ class V4StateManagerAdaptor(
         getOnChain(QueryType.GetAccountBalances, "") { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainAccountBalances(response), oldState)
+        }
+
+        val params = iMapOf("address" to accountAddress)
+        val paramsInJson = jsonEncoder.encode(params)
+        getOnChain(QueryType.GetDelegations, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainDelegations(response), oldState)
         }
     }
 

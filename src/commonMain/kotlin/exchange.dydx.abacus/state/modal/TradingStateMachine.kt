@@ -929,7 +929,7 @@ open class TradingStateMachine(
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
-                    Account(account.balances, subaccounts)
+                    Account(account.balances, account.stakingBalances, subaccounts)
                 }
             }
             if (changes.changes.contains(Changes.accountBalances)) {
