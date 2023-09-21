@@ -27,6 +27,7 @@ import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.onChainEquityTiers
 import exchange.dydx.abacus.state.modal.onChainFeeTiers
 import exchange.dydx.abacus.state.modal.onChainRewardsParams
+import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
 import exchange.dydx.abacus.state.modal.squidChains
@@ -295,9 +296,18 @@ class V4StateManagerAdaptor(
     }
 
     private fun getRewardsParams() {
-        getOnChain(QueryType.RewardsParams, null) { response ->
+        getOnChain(QueryType.RewardsParams, null) { rewardsParams ->
             val oldState = stateMachine.state
-            update(stateMachine.onChainRewardsParams(response), oldState)
+            update(stateMachine.onChainRewardsParams(rewardsParams), oldState)
+
+            val json = Json.parseToJsonElement(rewardsParams).jsonObject.toMap()
+            val marketId = parser.asString(parser.value(json, "params.marketId"))
+            val params = iMapOf("marketId" to marketId)
+            val paramsInJson = jsonEncoder.encode(params)
+
+            getOnChain(QueryType.GetMarketPrice, paramsInJson) { marketPrice ->
+                update(stateMachine.onChainRewardTokenPrice(marketPrice), oldState)
+            }
         }
     }
 

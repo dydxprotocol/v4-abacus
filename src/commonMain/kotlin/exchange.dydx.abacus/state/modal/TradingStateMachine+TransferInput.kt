@@ -56,7 +56,6 @@ fun TradingStateMachine.transfer(
         params.safeSet("account", account)
         params.safeSet("user", user)
         params.safeSet("transfer", transfer)
-
         val modified = calculator.calculate(params, subaccountNumber)
 
         parser.asMap(modified["transfer"])?.mutable() ?: transfer

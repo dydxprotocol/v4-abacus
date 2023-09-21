@@ -9,6 +9,7 @@ import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
+import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.*
@@ -55,6 +56,7 @@ open class TradingStateMachine(
     internal val walletProcessor = WalletProcessor(parser)
     internal val configsProcessor = ConfigsProcessor(parser)
     internal val squidProcessor = SquidProcessor(parser)
+    internal val rewardsProcessor = RewardsProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser)
@@ -156,6 +158,16 @@ open class TradingStateMachine(
         set(value) {
             val modified = data?.mutable() ?: iMutableMapOf()
             modified.safeSet("transferStatuses", value)
+            this.data = if (modified.size != 0) modified else null
+        }
+
+    internal var rewardsParams: IMap<String, Any>?
+        get() {
+            return parser.asMap(data?.get("rewardsParams"))
+        }
+        set(value) {
+            val modified = data?.mutable() ?: iMutableMapOf()
+            modified.safeSet("rewardsParams", value)
             this.data = if (modified.size != 0) modified else null
         }
 
@@ -526,6 +538,8 @@ open class TradingStateMachine(
         params.safeSet("account", account)
         params.safeSet("user", user)
         params.safeSet("trade", trade)
+        params.safeSet("rewardsParams", rewardsParams)
+        params.safeSet("configs", configs)
 
         val modified = calculator.calculate(params, subaccountNumber, inputType)
         this.setMarkets(parser.asMap(modified["markets"]))
@@ -718,7 +732,8 @@ open class TradingStateMachine(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.expectedPrice.rawValue,
-                            ReceiptLine.fee.rawValue
+                            ReceiptLine.fee.rawValue,
+                            ReceiptLine.reward.rawValue
                         )
                     }
 
@@ -726,7 +741,8 @@ open class TradingStateMachine(
                         iListOf(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue
+                            ReceiptLine.fee.rawValue,
+                            ReceiptLine.reward.rawValue
                         )
                     }
                 }
@@ -737,7 +753,8 @@ open class TradingStateMachine(
                     ReceiptLine.buyingPower.rawValue,
                     ReceiptLine.marginUsage.rawValue,
                     ReceiptLine.expectedPrice.rawValue,
-                    ReceiptLine.fee.rawValue
+                    ReceiptLine.fee.rawValue,
+                    ReceiptLine.reward.rawValue
                 )
             }
 
