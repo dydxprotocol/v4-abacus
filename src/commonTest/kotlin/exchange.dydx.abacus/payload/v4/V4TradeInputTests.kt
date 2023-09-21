@@ -386,24 +386,33 @@ open class V4TradeInputTests : V4BaseTests() {
             }, """
             {
                 "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 1.0,
+                            "size": 0.0
+                        }
+                    },
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
-                            "fields": [
-                                "size.size"
-                            ],
-                            "resources": {
-                                "title": {
-                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
-                                },
-                                "text": {
-                                    "stringKey": "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
-                                },
-                                "action": {
-                                    "stringKey": "APP.TRADE.MODIFY_SIZE_FIELD"
-                                }
-                            }
+                            "code": "ORDER_SIZE_BELOW_MIN_SIZE"
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade(null, TradeInputField.usdcSize, 0)
+            }, """
+            {
+                "input": {
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_SIZE"
                         }
                     ]
                 }

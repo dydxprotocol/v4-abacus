@@ -69,7 +69,7 @@ open class V4ClosePositionTests : V4BaseTests() {
             val placeOrder = perp.closePositionPayload(20)
             assertEquals(1, placeOrder?.clobPairId)
             assertEquals("SELL", placeOrder?.side)
-            assertEquals(5.385788E9, placeOrder?.quantums)
+            assertEquals(5.385E9, placeOrder?.quantums)
             assertEquals(1.571584E9, placeOrder?.subticks)
             assertEquals(23, placeOrder?.goodUntilBlock)
             assertEquals(false, placeOrder?.reduceOnly)

@@ -76,9 +76,9 @@ internal class TradeMarketOrderInputValidator(
         /*
         MARKET_ORDER_NOT_ENOUGH_LIQUIDITY
          */
-        val filled = parser.asBool(parser.value(trade, "marketOrder.filled")) ?: false
+        val filled = parser.asBool(parser.value(trade, "marketOrder.filled"))
 
-        return if (filled) null else error(
+        return if (filled != false) null else error(
             if (restricted) "WARNING" else "ERROR",
             "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
             iListOf("size.size"),

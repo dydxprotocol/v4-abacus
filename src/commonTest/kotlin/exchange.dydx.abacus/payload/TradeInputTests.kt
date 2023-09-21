@@ -200,8 +200,7 @@ class TradeInputTests : V3BaseTests() {
                             "size": {
                                 "size": 0.0,
                                 "input": "size.size"
-                            },
-                            "marketOrder": null
+                            }
                         }
                     }
                 }

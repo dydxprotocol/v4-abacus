@@ -332,12 +332,10 @@ internal class TradeInputCalculator(
             return when (input) {
                 "size.size", "size.percent" -> {
                     val orderbook = orderbook(market, isBuying)
-                    if (orderbook != null)
-                        calculateMarketOrderFromSize(
-                            parser.asDouble(tradeSize["size"]),
-                            orderbook
-                        )
-                    else null
+                    calculateMarketOrderFromSize(
+                        parser.asDouble(tradeSize["size"]),
+                        orderbook
+                    )
                 }
 
                 "size.usdcSize" -> {
@@ -345,13 +343,11 @@ internal class TradeInputCalculator(
                         parser.asDouble(parser.value(market, "configs.stepSize"))
                             ?: 0.001
                     val orderbook = orderbook(market, isBuying)
-                    if (orderbook != null)
-                        calculateMarketOrderFromUsdcSize(
-                            parser.asDouble(tradeSize["usdcSize"]),
-                            orderbook,
-                            stepSize
-                        )
-                    else null
+                    calculateMarketOrderFromUsdcSize(
+                        parser.asDouble(tradeSize["usdcSize"]),
+                        orderbook,
+                        stepSize
+                    )
                 }
 
                 "size.leverage" -> {
@@ -417,45 +413,54 @@ internal class TradeInputCalculator(
 
     private fun calculateMarketOrderFromSize(
         size: Double?,
-        orderbook: IList<IMap<String, Any>>,
+        orderbook: IList<IMap<String, Any>>?,
     ): IMap<String, Any>? {
-        size?.let {
-            val desiredSize = parser.asDecimal(size)!!
-            var sizeTotal = Numeric.decimal.ZERO
-            var usdcSizeTotal = Numeric.decimal.ZERO
-            var worstPrice: BigDecimal? = null
-            var filled = false
-            val marketOrderOrderBook = iMutableListOf<IMap<String, Any>>()
-            orderbookLoop@ for (i in 0 until orderbook.size) {
-                val entry = orderbook[i]
-                val entryPrice = parser.asDecimal(entry["price"])
-                val entrySize = parser.asDecimal(entry["size"])
+        return if (size != null && size != Numeric.double.ZERO) {
+            if (orderbook != null) {
+                val desiredSize = parser.asDecimal(size)!!
+                var sizeTotal = Numeric.decimal.ZERO
+                var usdcSizeTotal = Numeric.decimal.ZERO
+                var worstPrice: BigDecimal? = null
+                var filled = false
+                val marketOrderOrderBook = iMutableListOf<IMap<String, Any>>()
+                orderbookLoop@ for (i in 0 until orderbook.size) {
+                    val entry = orderbook[i]
+                    val entryPrice = parser.asDecimal(entry["price"])
+                    val entrySize = parser.asDecimal(entry["size"])
 
-                if (entryPrice != null && entrySize != null) {
-                    filled = (sizeTotal + entrySize >= size)
+                    if (entryPrice != null && entrySize != null) {
+                        filled = (sizeTotal + entrySize >= size)
 
-                    val matchedSize = if (filled) (desiredSize - sizeTotal) else entrySize
-                    val matchedUsdcSize = matchedSize * entryPrice
+                        val matchedSize = if (filled) (desiredSize - sizeTotal) else entrySize
+                        val matchedUsdcSize = matchedSize * entryPrice
 
-                    sizeTotal = sizeTotal.plus(matchedSize)
-                    usdcSizeTotal = usdcSizeTotal.plus(matchedUsdcSize)
+                        sizeTotal = sizeTotal.plus(matchedSize)
+                        usdcSizeTotal = usdcSizeTotal.plus(matchedUsdcSize)
 
-                    worstPrice = entryPrice
-                    marketOrderOrderBook.add(matchingOrderbookEntry(entry, matchedSize))
-                    if (filled) {
-                        break@orderbookLoop
+                        worstPrice = entryPrice
+                        marketOrderOrderBook.add(matchingOrderbookEntry(entry, matchedSize))
+                        if (filled) {
+                            break@orderbookLoop
+                        }
                     }
                 }
+                marketOrder(
+                    marketOrderOrderBook,
+                    sizeTotal,
+                    usdcSizeTotal,
+                    worstPrice,
+                    filled
+                )
+            } else {
+                marketOrder(
+                    iMutableListOf<IMap<String, Any>>(),
+                    parser.asDecimal(size)!!,
+                    Numeric.decimal.ZERO,
+                    null,
+                    false
+                )
             }
-            return marketOrder(
-                marketOrderOrderBook,
-                sizeTotal,
-                usdcSizeTotal,
-                worstPrice,
-                filled
-            )
-        }
-        return null
+        } else null
     }
 
     private fun marketOrder(
@@ -465,10 +470,12 @@ internal class TradeInputCalculator(
         worstPrice: BigDecimal?,
         filled: Boolean,
     ): IMap<String, Any>? {
-        return if (size != null && size > BigDecimal.ZERO && usdcSize != null) {
+        return if (size != null && usdcSize != null) {
             val marketOrder = iMutableMapOf<String, Any>()
             marketOrder.safeSet("orderbook", orderbook)
-            marketOrder.safeSet("price", (usdcSize / size).doubleValue(false))
+            if (size != Numeric.decimal.ZERO) {
+                marketOrder.safeSet("price", (usdcSize / size).doubleValue(false))
+            }
             marketOrder.safeSet("size", size)
             marketOrder.safeSet("usdcSize", usdcSize)
             marketOrder.safeSet("worstPrice", worstPrice)
@@ -481,42 +488,42 @@ internal class TradeInputCalculator(
 
     private fun calculateMarketOrderFromUsdcSize(
         usdcSize: Double?,
-        orderbook: IList<IMap<String, Any>>,
+        orderbook: IList<IMap<String, Any>>?,
         stepSize: Double,
     ): IMap<String, Any>? {
-        usdcSize?.let {
-            val desiredUsdcSize = parser.asDecimal(usdcSize)!!
-            var sizeTotal = Numeric.decimal.ZERO
-            var usdcSizeTotal = Numeric.decimal.ZERO
-            var worstPrice: BigDecimal? = null
-            var filled = false
-            val marketOrderOrderBook = iMutableListOf<IMap<String, Any>>()
+        return if (usdcSize != null && usdcSize != Numeric.double.ZERO) {
+            if (orderbook != null) {
+                val desiredUsdcSize = parser.asDecimal(usdcSize)!!
+                var sizeTotal = Numeric.decimal.ZERO
+                var usdcSizeTotal = Numeric.decimal.ZERO
+                var worstPrice: BigDecimal? = null
+                var filled = false
+                val marketOrderOrderBook = iMutableListOf<IMap<String, Any>>()
 
-            val stepSizeDecimal = parser.asDecimal(stepSize)!!
-            orderbookLoop@ for (i in 0 until orderbook.size) {
-                val entry = orderbook[i]
-                val entryPrice = parser.asDecimal(entry["price"])
-                val entrySize = parser.asDecimal(entry["size"])
+                val stepSizeDecimal = parser.asDecimal(stepSize)!!
+                orderbookLoop@ for (i in 0 until orderbook.size) {
+                    val entry = orderbook[i]
+                    val entryPrice = parser.asDecimal(entry["price"])
+                    val entrySize = parser.asDecimal(entry["size"])
 
-                if (entryPrice != null && entryPrice > Numeric.decimal.ZERO && entrySize != null) {
-                    val entryUsdcSize = entrySize * entryPrice
-                    filled = (usdcSizeTotal + entryUsdcSize >= desiredUsdcSize)
+                    if (entryPrice != null && entryPrice > Numeric.decimal.ZERO && entrySize != null) {
+                        val entryUsdcSize = entrySize * entryPrice
+                        filled = (usdcSizeTotal + entryUsdcSize >= desiredUsdcSize)
 
-                    var matchedSize = entrySize
-                    var matchedUsdcSize = entryUsdcSize
-                    if (filled) {
-                        matchedUsdcSize = desiredUsdcSize - usdcSizeTotal
-                        matchedSize = matchedUsdcSize / entryPrice
-                        matchedSize =
-                            Rounder.roundDecimal(
-                                matchedSize,
-                                stepSizeDecimal
-                            )
-                        matchedUsdcSize = matchedSize * entryPrice
-                    }
-                    matchedSize.let {
-                        sizeTotal = sizeTotal + matchedSize
-                        usdcSizeTotal = usdcSizeTotal + matchedUsdcSize
+                        var matchedSize = entrySize
+                        var matchedUsdcSize = entryUsdcSize
+                        if (filled) {
+                            matchedUsdcSize = desiredUsdcSize - usdcSizeTotal
+                            matchedSize = matchedUsdcSize / entryPrice
+                            matchedSize =
+                                Rounder.roundDecimal(
+                                    matchedSize,
+                                    stepSizeDecimal
+                                )
+                            matchedUsdcSize = matchedSize * entryPrice
+                        }
+                        sizeTotal += matchedSize
+                        usdcSizeTotal += matchedUsdcSize
 
                         worstPrice = entryPrice
                         marketOrderOrderBook.add(
@@ -525,21 +532,28 @@ internal class TradeInputCalculator(
                                 matchedSize
                             )
                         )
-                    }
-                    if (filled) {
-                        break@orderbookLoop
+                        if (filled) {
+                            break@orderbookLoop
+                        }
                     }
                 }
+                marketOrder(
+                    marketOrderOrderBook,
+                    sizeTotal,
+                    usdcSizeTotal,
+                    worstPrice,
+                    filled
+                )
+            } else {
+                marketOrder(
+                    iMutableListOf<IMap<String, Any>>(),
+                    Numeric.decimal.ZERO,
+                    parser.asDecimal(usdcSize)!!,
+                    null,
+                    false
+                )
             }
-            return marketOrder(
-                marketOrderOrderBook,
-                sizeTotal,
-                usdcSizeTotal,
-                worstPrice,
-                filled
-            )
-        }
-        return null
+        } else null
     }
 
     private fun matchingOrderbookEntry(
@@ -700,7 +714,10 @@ internal class TradeInputCalculator(
         val fields = requiredFields(trade)
         modified.safeSet("fields", fields)
         modified.safeSet("options", calculatedOptionsFromFields(fields, position, market))
-        modified.safeSet("summary", summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type))
+        modified.safeSet(
+            "summary",
+            summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type)
+        )
 
         return modified
     }
@@ -1134,7 +1151,13 @@ internal class TradeInputCalculator(
 
         return abs(smallestNegative ?: 0.0)
     }
-    private fun calculateTakerReward(usdcSize: BigDecimal?, fee: Double?, rewardsParams: IMap<String, Any>?, feeTiers: IList<Any>?): Double? {
+
+    private fun calculateTakerReward(
+        usdcSize: BigDecimal?,
+        fee: Double?,
+        rewardsParams: IMap<String, Any>?,
+        feeTiers: IList<Any>?
+    ): Double? {
         val feeMultiplierPpm = parser.asDouble(parser.value(rewardsParams, "feeMultiplierPpm"))
         val tokenPrice = parser.asDouble(parser.value(rewardsParams, "tokenPrice.price"))
         val tokenPriceExponent = parser.asDouble(parser.value(rewardsParams, "tokenPrice.exponent"))
@@ -1148,12 +1171,15 @@ internal class TradeInputCalculator(
             && fee > 0.0
             && notional != null
             && tokenPrice > 0.0
-            ) {
+        ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
-            return feeMultiplier * (fee - maxMakerRebate * notional) / (tokenPrice * 10.0.pow(tokenPriceExponent))
+            return feeMultiplier * (fee - maxMakerRebate * notional) / (tokenPrice * 10.0.pow(
+                tokenPriceExponent
+            ))
         }
         return null
     }
+
     private fun calculateMakerReward(fee: Double?, rewardsParams: IMap<String, Any>?): Double? {
         val feeMultiplierPpm = parser.asDouble(parser.value(rewardsParams, "feeMultiplierPpm"))
         val tokenPrice = parser.asDouble(parser.value(rewardsParams, "tokenPrice.price"))
@@ -1165,7 +1191,7 @@ internal class TradeInputCalculator(
             && tokenPriceExponent != null
             && fee > 0.0
             && tokenPrice > 0.0
-            ) {
+        ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
             return fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
         }
@@ -1245,7 +1271,12 @@ internal class TradeInputCalculator(
                     /*
                     indexSlippage can be negative. For example, it is OK to buy below index price
                      */
-                    val reward = calculateTakerReward(usdcSize, parser.asDouble(fee), rewardsParams, feeTiers)
+                    val reward = calculateTakerReward(
+                        usdcSize,
+                        parser.asDouble(fee),
+                        rewardsParams,
+                        feeTiers
+                    )
 
                     summary.safeSet("price", price)
                     summary.safeSet("payloadPrice", payloadPrice)
@@ -1333,7 +1364,12 @@ internal class TradeInputCalculator(
                         if (usdcSize != null) (usdcSize * multiplier + (fee
                             ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE) else null
 
-                    val reward = calculateTakerReward(usdcSize, parser.asDouble(fee), rewardsParams, feeTiers)
+                    val reward = calculateTakerReward(
+                        usdcSize,
+                        parser.asDouble(fee),
+                        rewardsParams,
+                        feeTiers
+                    )
 
                     summary.safeSet("price", price)
                     summary.safeSet("payloadPrice", payloadPrice)
@@ -1351,9 +1387,14 @@ internal class TradeInputCalculator(
             "LIMIT", "STOP_LIMIT", "TAKE_PROFIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
                 val execution = parser.asString(trade["execution"])
-                val isMaker = (type == "LIMIT" && timeInForce == "GTT")  || execution == "POST_ONLY"
+                val isMaker = (type == "LIMIT" && timeInForce == "GTT") || execution == "POST_ONLY"
 
-                val feeRate = parser.asDouble(parser.value(user, if (isMaker) "makerFeeRate" else "takerFeeRate"))
+                val feeRate = parser.asDouble(
+                    parser.value(
+                        user,
+                        if (isMaker) "makerFeeRate" else "takerFeeRate"
+                    )
+                )
                 val price = parser.asDouble(parser.value(trade, "price.limitPrice"))
                 val size = parser.asDouble(parser.value(trade, "size.size"))
                 val usdcSize =
@@ -1366,7 +1407,12 @@ internal class TradeInputCalculator(
 
                 val reward =
                     if (isMaker) calculateMakerReward(parser.asDouble(fee), rewardsParams)
-                    else calculateTakerReward(usdcSize, parser.asDouble(fee), rewardsParams, feeTiers)
+                    else calculateTakerReward(
+                        usdcSize,
+                        parser.asDouble(fee),
+                        rewardsParams,
+                        feeTiers
+                    )
 
                 summary.safeSet("price", price)
                 summary.safeSet("payloadPrice", price)
