@@ -973,7 +973,6 @@ class V4AccountTests : V4BaseTests() {
             {
                 val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
                 perp.update(changes)
-                println(perp.state.toString())
                 return@test StateResponse(perp.state, changes)
             },
             """
