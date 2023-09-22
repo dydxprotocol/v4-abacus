@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.state.manager.configs
 
-import exchange.dydx.abacus.state.app.V4Environment
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IMap
 import kollections.toIMap
 import kotlinx.serialization.json.Json

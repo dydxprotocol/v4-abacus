@@ -1,9 +1,7 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.tests.extensions.*
 import exchange.dydx.abacus.utils.ServerTime
-import kotlinx.datetime.Clock
 import kotlin.test.*
 
 /*

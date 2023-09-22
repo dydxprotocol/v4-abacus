@@ -6,25 +6,14 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.protocols.V3PrivateSignerProtocol
 import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.state.app.AppVersion
-import exchange.dydx.abacus.state.app.EnvironmentURIs
-import exchange.dydx.abacus.state.app.HistoricalPnlPeriod
-import exchange.dydx.abacus.state.app.IndexerURIs
-import exchange.dydx.abacus.state.app.OrderbookGrouping
-import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
-import exchange.dydx.abacus.state.app.signer.V3ApiKey
-import exchange.dydx.abacus.state.manager.configs.V3StateManagerConfigs
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.ClosePositionInputField
 import exchange.dydx.abacus.state.modal.TradeInputField
 import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.state.modal.feeTiers
-import exchange.dydx.abacus.state.modal.receivedFeeTiers
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
@@ -33,6 +22,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
+import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.Threading
 import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
@@ -40,9 +30,213 @@ import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlin.js.JsName
+import kotlinx.serialization.Serializable
+import kotlinx.datetime.Instant
+
+@JsExport
+enum class AppVersion(val rawValue: String) {
+    v4("v4");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            AppVersion.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+data class IndexerURIs(
+    val api: String,
+    val socket: String)
+
+@JsExport
+data class EnvironmentURIs(
+    val indexers: IList<IndexerURIs>?,
+    val configs: String?,
+    val validators: IList<String>?,
+    val faucet: String?,
+    val squid: String?,
+    val statusPageUrl: String?,
+    val marketImageUrl: String?,
+    val tosUrl: String?,
+    val privacyPolicyUrl: String?,
+    val mintscanUrl: String?,
+)
+
+@JsExport
+open class Environment(
+    val environment: String,
+    val ethereumChainId: String,
+    val dydxChainId: String?,
+    val stringKey: String,
+    val string: String,
+    val isMainNet: Boolean,
+    val version: AppVersion,
+    val maxSubaccountNumber: Int,
+) {
+}
+
+@JsExport
+class V4Environment(
+    environment: String,
+    ethereumChainId: String,
+    dydxChainId: String?,
+    stringKey: String,
+    string: String,
+    isMainNet: Boolean,
+    version: AppVersion,
+    maxSubaccountNumber: Int,
+    val URIs: EnvironmentURIs,
+) : Environment(
+    environment,
+    ethereumChainId,
+    dydxChainId,
+    stringKey,
+    string,
+    isMainNet,
+    version,
+    maxSubaccountNumber
+)
+
+@JsExport
+@Serializable
+enum class HistoricalPnlPeriod(val rawValue: String) {
+    Period1d("1d"),
+    Period7d("7d"),
+    Period30d("30d"),
+    Period90d("90d");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            HistoricalPnlPeriod.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
+enum class CandlesPeriod(val rawValue: String) {
+    Period1m("1m"),
+    Period5m("5m"),
+    Period15m("15m"),
+    Period30m("30m"),
+    Period1h("1h"),
+    Period4h("4h"),
+    Period1d("1d");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            CandlesPeriod.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+@JsExport
+@Serializable
+enum class OrderbookGrouping(val rawValue: Int) {
+    none(1),
+    x10(10),
+    x100(100),
+    x1000(1000);
+
+    companion object {
+        operator fun invoke(rawValue: Int) =
+            OrderbookGrouping.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
+enum class NetworkStatus(val rawValue: String) {
+    UNKNOWN("UNKNOWN"),
+    UNREACHABLE("UNREACHABLE"),
+    HALTED("HALTED"),
+    NORMAL("NORMAL");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            NetworkStatus.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+internal class NetworkState() {
+    var status: NetworkStatus = NetworkStatus.UNKNOWN
+        private set
+    var block: Int? = null
+        private set
+    private var blockTime: Instant? = null
+
+    private var sameBlockCount: Int = 0
+    private var failCount: Int = 0
+
+    internal var time: Instant? = null
+
+    /*
+    requestTime and requestId are only here to keep old V4ApiAdatpor to compile. Remove after we retire V4ApiAdaptor
+     */
+    internal var requestTime: Instant? = null
+    internal var requestId: Long? = null
+
+    internal fun updateHeight(height: Int?, heightTime: Instant?) {
+        time = ServerTime.now()
+        if (height != null) {
+            failCount = 0
+            if (block != height) {
+                block = height
+                blockTime = heightTime
+                sameBlockCount = 0
+            } else {
+                sameBlockCount += 1
+            }
+        } else {
+            failCount += 1
+        }
+        updateStatus()
+    }
+
+    private fun updateStatus() {
+        val time = time
+        status = if (time != null) {
+            if (failCount >= 3)
+                NetworkStatus.UNREACHABLE
+            else if (sameBlockCount >= 6)
+                NetworkStatus.HALTED
+            else if (block != null)
+                NetworkStatus.NORMAL
+            else
+                NetworkStatus.UNKNOWN
+        } else NetworkStatus.UNKNOWN
+
+    }
+}
+
+@JsExport
+@Serializable
+enum class ApiStatus(val rawValue: String) {
+    UNKNOWN("UNKNOWN"),
+    VALIDATOR_DOWN("VALIDATOR_DOWN"),
+    VALIDATOR_HALTED("VALIDATOR_HALTED"),
+    INDEXER_DOWN("INDEXER_DOWN"),
+    INDEXER_HALTED("INDEXER_HALTED"),
+    INDEXER_TRAILING("INDEXER_TRAILING"),
+    NORMAL("NORMAL");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            ApiStatus.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
+data class ApiState(
+    val status: ApiStatus?,
+    val height: Int?,
+    val haltedBlock: Int?,
+    val trailingBlocks: Int?
+) {
+    fun abnormalState(): Boolean {
+        return status == ApiStatus.INDEXER_DOWN || status == ApiStatus.INDEXER_HALTED || status == ApiStatus.VALIDATOR_DOWN || status == ApiStatus.VALIDATOR_HALTED
+    }
+}
+
 
 @JsExport
 class AsyncAbacusStateManager(
@@ -53,9 +247,6 @@ class AsyncAbacusStateManager(
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
 ) {
-    private var v3signer: V3PrivateSignerProtocol? = null
-    private var apiKey: V3ApiKey? = null
-
     private var environments: IList<V4Environment> = iListOf()
         set(value) {
             field = value
@@ -378,28 +569,10 @@ class AsyncAbacusStateManager(
                 )
             }
 
-            AppVersion.v3 -> {
-                V3StateManagerAdaptor(
-                    ioImplementations,
-                    uiImplementations,
-                    environment,
-                    V3StateManagerConfigs(environment),
-                    stateNotification,
-                    dataNotification,
-                    v3signer,
-                    apiKey,
-                )
-            }
-
             else -> {
                 null
             }
         }
-    }
-
-    fun setv3(signer: V3PrivateSignerProtocol?, apiKey: V3ApiKey?) {
-        v3signer = signer
-        this.apiKey = apiKey
     }
 
     fun trade(data: String?, type: TradeInputField?) {

@@ -2,7 +2,7 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets

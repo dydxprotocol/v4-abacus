@@ -5,46 +5,6 @@ class EnvironmentsMock {
         {
             "environments":[
                {
-                  "comment":"V3 Mainnet",
-                  "environment":"1",
-                  "ethereumChainId":"1",
-                  "string":"v3 MainNet",
-                  "stringKey":"CHAIN.V3_MAINNET",
-                  "isMainNet":true,
-                  "version":"v3",
-                  "maxSubaccountNumber":0,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                            "api":"https://api.dydx.exchange",
-                            "socket":"wss://api.dydx.exchange"
-                        }
-                     ],
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V3 Staging",
-                  "environment":"5",
-                  "ethereumChainId":"5",
-                  "string":"v3 Staging",
-                  "stringKey":"CHAIN.V3_GOERLI",
-                  "isMainNet":false,
-                  "version":"v3",
-                  "maxSubaccountNumber":0,
-                  "endpoints":{
-                     "indexers":[
-                        {                     
-                            "api":"https://api.stage.dydx.exchange",
-                            "socket":"wss://api.stage.dydx.exchange"
-                        }
-                     ],
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
                   "comment":"V4 Dev",
                   "environment":"dydxprotocol-dev",
                   "ethereumChainId":"5",

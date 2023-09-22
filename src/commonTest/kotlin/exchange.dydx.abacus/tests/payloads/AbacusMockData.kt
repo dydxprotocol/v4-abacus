@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.tests.payloads
 
-import exchange.dydx.abacus.state.app.AppVersion
-import exchange.dydx.abacus.state.app.EnvironmentURIs
-import exchange.dydx.abacus.state.app.V4Environment
+import exchange.dydx.abacus.state.manager.AppVersion
+import exchange.dydx.abacus.state.manager.EnvironmentURIs
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import kollections.JsExport
 

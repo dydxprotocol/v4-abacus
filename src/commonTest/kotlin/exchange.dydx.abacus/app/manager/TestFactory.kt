@@ -16,7 +16,7 @@ import exchange.dydx.abacus.protocols.TimerProtocol
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.state.app.ApiState
+import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList

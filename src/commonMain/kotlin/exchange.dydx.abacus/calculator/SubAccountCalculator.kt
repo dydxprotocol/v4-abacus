@@ -2,7 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Numeric
@@ -235,34 +235,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     ): BigDecimal {
         val initialMarginFraction =
             parser.asDecimal(configs?.get("initialMarginFraction")) ?: Numeric.decimal.ZERO
-        if (version == AppVersion.v3) {
-            val size = size ?: Numeric.decimal.ZERO
-            val incrementalInitialMarginFraction =
-                parser.asDecimal(configs?.get("incrementalInitialMarginFraction"))
-                    ?: Numeric.decimal.ZERO
-            val baselinePositionSize =
-                parser.asDecimal(configs?.get("baselinePositionSize")) ?: Numeric.decimal.ZERO
-            val incrementalPositionSize =
-                parser.asDecimal(configs?.get("incrementalPositionSize")) ?: Numeric.decimal.ZERO
-            val maxPositionSize =
-                parser.asDecimal(configs?.get("maxPositionSize")) ?: Numeric.decimal.ZERO
-
-            if (parser.asBool(subaccount["isMarketMaker"]) == true || size == Numeric.decimal.ZERO) {
-                return initialMarginFraction
-            }
-
-            val adjustedSize = if (maxPositionSize != Numeric.decimal.ZERO) minOf(size.abs(), maxPositionSize) else size.abs()
-            if (adjustedSize <= baselinePositionSize) {
-                return initialMarginFraction
-            }
-
-            val positionSizeIncrements = if (incrementalPositionSize != Numeric.decimal.ZERO)
-                ((adjustedSize - baselinePositionSize) / incrementalPositionSize).longValue(false) else 0
-            return initialMarginFraction + (incrementalInitialMarginFraction * positionSizeIncrements)
-        } else {
-            val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
-            return calculateV4MarginFraction(configs, initialMarginFraction, notionalValue)
-        }
+        val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
+        return calculateV4MarginFraction(configs, initialMarginFraction, notionalValue)
     }
 
     private fun calculatedAdjustedMmf(
@@ -272,12 +246,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     ): BigDecimal {
         val maintenanceMarginFraction =
             parser.asDecimal(configs?.get("maintenanceMarginFraction")) ?: Numeric.decimal.ZERO
-        return if (version == AppVersion.v3) {
-            maintenanceMarginFraction
-        } else {
-            val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
-            calculateV4MarginFraction(configs, maintenanceMarginFraction, notionalValue)
-        }
+        val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
+        return calculateV4MarginFraction(configs, maintenanceMarginFraction, notionalValue)
     }
 
     private fun calculateV4MarginFraction(

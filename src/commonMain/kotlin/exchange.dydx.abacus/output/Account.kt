@@ -11,7 +11,6 @@ import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
 import kollections.iMapOf
-import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
