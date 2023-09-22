@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.changes.Changes
@@ -457,14 +458,31 @@ data class MarketCandles(
             existing: IList<MarketCandle>?,
             data: IList<*>?,
         ): IList<MarketCandle>? {
-            return ParsingHelper.merge(parser, existing?.toIList(), data, { obj, itemData ->
-                val time1 = (obj as MarketCandle).startedAtMilliseconds
-                val time2 =
-                    parser.asDatetime(itemData["startedAt"])?.toEpochMilliseconds()?.toDouble()
-                ParsingHelper.compare(time1, time2 ?: 0.0, true)
-            }, { _, obj, itemData ->
-                MarketCandle.create(obj as? MarketCandle, parser, parser.asMap(itemData))
-            })
+            // A little hacking here to make sure that the candles are updated
+            // merge function uses existing object if the time is the same
+            // That works for other objects except candles. The last candle may be updated
+            // and the time is the same. So we need to make sure that the last candle is updated
+            // Easiest way is to remove the last candle from the existing list and add it back
+            // by create a new one from the data
+            // better solution is to have an updatedAt in candle data
+            val existingList = existing?.mutable()
+            existingList?.removeLastOrNull()
+            return ParsingHelper.merge(
+                parser,
+                existingList,
+                data,
+                { obj, itemData ->
+                    val time1 = (obj as MarketCandle).startedAtMilliseconds
+                    val time2 =
+                        parser.asDatetime(itemData["startedAt"])?.toEpochMilliseconds()?.toDouble()
+
+                    ParsingHelper.compare(time1, time2 ?: 0.0, true)
+                },
+                { _, obj, itemData ->
+                    MarketCandle.create(obj as? MarketCandle, parser, parser.asMap(itemData))
+                },
+                true,
+            )
         }
     }
 }

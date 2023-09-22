@@ -61,6 +61,5 @@ internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         } else {
             return existing
         }
-
     }
 }

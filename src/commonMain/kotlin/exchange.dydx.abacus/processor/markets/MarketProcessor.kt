@@ -198,8 +198,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val priceChange24H = parser.asDouble(market["priceChange24H"])
         val indexPrice =
             parser.asDouble(
-                parser.value(market, "indexPrice") ?:
-                parser.value(market,"oraclePrice")
+                parser.value(market, "indexPrice") ?: parser.value(market, "oraclePrice")
             )
         val modified = market.mutable()
         modified.safeSet(
@@ -245,7 +244,10 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return status
     }
 
-    private fun configs(existing: IMap<String, Any>?, payload: IMap<String, Any>): IMap<String, Any> {
+    private fun configs(
+        existing: IMap<String, Any>?,
+        payload: IMap<String, Any>
+    ): IMap<String, Any> {
         val configs = transform(existing, payload, configsKeyMap)
         val configsV4 = transform(null, payload, configsV4KeyMap)
         configs.safeSet("v4", configsV4)
@@ -399,6 +401,46 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         } else {
             market
         }
+    }
+
+    internal fun receivedCandles(
+        market: IMap<String, Any>,
+        resolution: String,
+        payload: IMap<String, Any>,
+    ): IMap<String, Any> {
+        val modified = market.toIMutableMap()
+        val candles =
+            candlesProcessor.subscribed(parser.asMap(market["candles"]), resolution, payload)
+        modified.safeSet("candles", candles)
+        return modified
+    }
+
+    internal fun receivedCandlesChanges(
+        market: IMap<String, Any>,
+        resolution: String,
+        payload: IMap<String, Any>,
+    ): IMap<String, Any> {
+        val modified = market.toIMutableMap()
+        val candles =
+            candlesProcessor.channel_data(parser.asMap(market["candles"]), resolution, payload)
+        modified.safeSet("candles", candles)
+        return modified
+    }
+
+    internal fun receivedBatchedCandlesChanges(
+        market: IMap<String, Any>,
+        resolution: String,
+        payload: IList<Any>,
+    ): IMap<String, Any> {
+        val modified = market.toIMutableMap()
+        var candles = parser.asMap(market["candles"])
+        for (partialPayload in payload) {
+            parser.asMap(partialPayload)?.let { it ->
+                candles = candlesProcessor.channel_data(candles, resolution, it)
+            }
+        }
+        modified.safeSet("candles", candles)
+        return modified
     }
 
     private fun line(market: IMap<String, Any>): IList<Double>? {

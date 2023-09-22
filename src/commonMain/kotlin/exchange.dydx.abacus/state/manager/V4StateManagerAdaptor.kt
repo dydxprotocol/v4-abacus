@@ -149,14 +149,18 @@ class V4StateManagerAdaptor(
     @Throws(Exception::class)
     fun marketCandlesSubscription(market: String, resolution: String, subscribe: Boolean = true) {
         val channel = configs.candlesChannel() ?: throw Exception("candlesChannel is null")
-        socket(socketAction(subscribe), channel, iMapOf("id" to "$market/$resolution"))
+        socket(
+            socketAction(subscribe),
+            channel,
+            iMapOf("id" to "$market/$resolution", "batched" to "true")
+        )
     }
 
     override fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber")
+        return iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
     }
 
     override fun faucetBody(amount: Double): String? {
