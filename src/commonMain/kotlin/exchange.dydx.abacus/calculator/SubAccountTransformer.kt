@@ -59,6 +59,9 @@ internal class SubaccountTransformer {
                     }
                 }
             }
+            return iMapOf(
+                "marketId" to marketId,
+            ).toIMap()
         }
         return null
     }
@@ -69,7 +72,7 @@ internal class SubaccountTransformer {
     ): IMap<String, Any>? {
         val type = parser.asString(transfer["type"])
         if (type != null) {
-            val summary =  parser.asMap(transfer["summary"])
+            val summary = parser.asMap(transfer["summary"])
             if (summary != null) {
                 val multiplier =
                     (if (type == "DEPOSIT") Numeric.decimal.POSITIVE else Numeric.decimal.NEGATIVE)
@@ -250,8 +253,8 @@ internal class SubaccountTransformer {
 
         val modifiedPositions = applyDeltaToPositions(positions, modifiedDelta, parser, period)
         modified["openPositions"] = modifiedPositions
-        if (delta != null) {
-            val usdcSize = parser.asDecimal(modifiedDelta?.get("usdcSize")) ?: Numeric.decimal.ZERO
+        val usdcSize = parser.asDecimal(modifiedDelta?.get("usdcSize")) ?: Numeric.decimal.ZERO
+        if (delta != null && usdcSize != Numeric.decimal.ZERO) {
             val fee = (parser.asDecimal(modifiedDelta?.get("fee")) ?: Numeric.decimal.ZERO)
             val quoteBalance =
                 parser.asMap(subaccount["quoteBalance"])?.mutable() ?: iMutableMapOf()
