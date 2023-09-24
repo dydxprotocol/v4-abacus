@@ -17844,4 +17844,54 @@ internal class CandlesMock {
            }
         }
     """.trimIndent()
+
+    internal val v4_channel_batch_data = """
+        {
+           "type":"channel_batch_data",
+           "connection_id":"31eb9906-43f4-443b-a25b-94cb9c4c8576",
+           "message_id":17,
+           "id":"ETH-USD/1HOUR",
+           "channel":"v4_candles",
+           "version":"1.0.0",
+           "contents":[
+              {
+                 "startedAt":"2023-09-24T18:00:00.000Z",
+                 "ticker":"ETH-USD",
+                 "low":"1590.8",
+                 "high":"1601.6",
+                 "open":"1598",
+                 "close":"1590.8",
+                 "baseTokenVolume":"8.822",
+                 "usdVolume":"14086.1848",
+                 "trades":726,
+                 "startingOpenInterest":"1726.237"
+              }
+           ]
+        }
+    """.trimIndent()
+
+    internal val v4_channel_batch_data_2 = """
+        {
+           "type":"channel_batch_data",
+           "connection_id":"31eb9906-43f4-443b-a25b-94cb9c4c8576",
+           "message_id":21,
+           "id":"ETH-USD/1HOUR",
+           "channel":"v4_candles",
+           "version":"1.0.0",
+           "contents":[
+              {
+                 "startedAt":"2023-09-24T18:00:00.000Z",
+                 "ticker":"ETH-USD",
+                 "low":"1590.8",
+                 "high":"1601.6",
+                 "open":"1598",
+                 "close":"1592.7",
+                 "baseTokenVolume":"8.842",
+                 "usdVolume":"14118.0388",
+                 "trades":727,
+                 "startingOpenInterest":"1726.237"
+              }
+           ]
+        }
+    """.trimIndent()
 }

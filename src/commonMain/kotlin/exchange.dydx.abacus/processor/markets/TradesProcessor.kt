@@ -41,20 +41,16 @@ internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         payload: IList<Any>?,
     ): IList<Any>? {
         if (payload != null) {
-            val trades = iMutableListOf<Any>()
+            val merged = iMutableListOf<Any>()
             for (value in payload) {
                 parser.asMap(value)?.let {
                     val trade = tradeProcessor.received(null, it)
-                    trades.add(trade)
+                    merged.add(trade)
                 }
             }
-            val merged = merge(
-                parser,
-                existing,
-                trades,
-                "createdAt",
-                false
-            )
+            if (existing?.isNotEmpty() == true) {
+                merged.addAll(existing)
+            }
             return if (merged != null && merged.size > LIMIT) {
                 merged.subList(0, LIMIT).toIList()
             } else merged
