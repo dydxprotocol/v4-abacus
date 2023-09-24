@@ -79,6 +79,10 @@ open class StateManagerConfigs(
         return parser.asString(parser.value(configs, "channels.orderbook"))
     }
 
+    fun marketCandlesChannel(): String? {
+        return parser.asString(parser.value(configs, "channels.candles"))
+    }
+
     fun subaccountChannel(): String? {
         return parser.asString(parser.value(configs, "channels.subaccount"))
     }

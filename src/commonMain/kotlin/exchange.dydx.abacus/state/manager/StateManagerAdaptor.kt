@@ -33,8 +33,11 @@ import exchange.dydx.abacus.state.modal.historicalPnl
 import exchange.dydx.abacus.state.modal.orderCanceled
 import exchange.dydx.abacus.state.modal.receivedAccountsChanges
 import exchange.dydx.abacus.state.modal.receivedBatchOrderbookChanges
+import exchange.dydx.abacus.state.modal.receivedBatchedCandlesChanges
 import exchange.dydx.abacus.state.modal.receivedBatchedMarketsChanges
 import exchange.dydx.abacus.state.modal.receivedBatchedTradesChanges
+import exchange.dydx.abacus.state.modal.receivedCandles
+import exchange.dydx.abacus.state.modal.receivedCandlesChanges
 import exchange.dydx.abacus.state.modal.receivedFills
 import exchange.dydx.abacus.state.modal.receivedMarkets
 import exchange.dydx.abacus.state.modal.receivedMarketsChanges
@@ -646,6 +649,8 @@ open class StateManagerAdaptor(
                     changes = socketSubscribed(channel, id, subaccountNumber, content)
                 }
 
+                "unsubscribed" -> {}
+
                 "channel_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
                     val info = SocketInfo(type, channel, id)
@@ -882,6 +887,11 @@ open class StateManagerAdaptor(
                 stateMachine.receivedTrades(id, content)
             }
 
+            configs.marketCandlesChannel() -> {
+                val (market, resolution) = splitCandlesChannel(id)
+                stateMachine.receivedCandles(market, resolution, content)
+            }
+
             else -> {
                 throw ParsingException(
                     ParsingErrorType.UnknownChannel,
@@ -889,6 +899,25 @@ open class StateManagerAdaptor(
                 )
             }
         }
+    }
+
+    private fun splitCandlesChannel(channel: String?): Pair<String, String> {
+        if (channel == null) {
+            throw ParsingException(
+                ParsingErrorType.UnknownChannel,
+                "$channel is not known"
+            )
+        }
+        val marketAndResolution = channel.split("/")
+        if (marketAndResolution.size != 2) {
+            throw ParsingException(
+                ParsingErrorType.UnknownChannel,
+                "$channel is not known"
+            )
+        }
+        val market = marketAndResolution[0]
+        val resolution = marketAndResolution[1]
+        return Pair(market, resolution)
     }
 
     open fun socketConnectedSubaccountNumber(id: String?): Int {
@@ -922,6 +951,11 @@ open class StateManagerAdaptor(
 
             configs.marketTradesChannel() -> {
                 stateMachine.receivedTradesChanges(id, content)
+            }
+
+            configs.marketCandlesChannel() -> {
+                val (market, resolution) = splitCandlesChannel(id)
+                stateMachine.receivedCandlesChanges(market, resolution, content)
             }
 
             else -> {
@@ -959,6 +993,11 @@ open class StateManagerAdaptor(
                     content,
                     subaccountNumber ?: 0
                 )
+            }
+
+            configs.marketCandlesChannel() -> {
+                val (market, resolution) = splitCandlesChannel(id)
+                stateMachine.receivedBatchedCandlesChanges(market, resolution, content)
             }
 
             else -> {

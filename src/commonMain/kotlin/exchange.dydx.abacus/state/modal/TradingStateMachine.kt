@@ -252,11 +252,13 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel subscribed is not known"
                             )
                         }
                     }
                 }
+
+                "unsubscribed" -> {}
 
                 "channel_data" -> {
                     val content = parser.asMap(payload["contents"])
@@ -295,7 +297,7 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel channel data is not known"
                             )
                         }
                     }
@@ -339,7 +341,7 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel channel batch data is not known"
                             )
                         }
                     }
