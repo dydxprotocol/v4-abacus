@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -331,7 +332,7 @@ class AsyncAbacusStateManager(
         }
 
     var accountAddress: String? = null
-        set(value) {
+        private set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.accountAddress = field
@@ -339,7 +340,7 @@ class AsyncAbacusStateManager(
         }
 
     var sourceAddress: String? = null
-        set(value) {
+        private set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.sourceAddress = field
@@ -588,6 +589,11 @@ class AsyncAbacusStateManager(
         }
     }
 
+    fun setAddresses(source: String?, account: String?) {
+        sourceAddress = source
+        accountAddress = account
+    }
+
     fun trade(data: String?, type: TradeInputField?) {
         adaptor?.trade(data, type)
     }
@@ -701,5 +707,9 @@ class AsyncAbacusStateManager(
             amount,
             submitTimeInMilliseconds
         )
+    }
+
+    fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
+        adaptor?.screen(address, callback)
     }
 }

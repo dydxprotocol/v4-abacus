@@ -190,6 +190,10 @@ class V4StateManagerAdaptor(
         } else null
     }
 
+    override fun screenUrl(): String? {
+        return configs.privateApiUrl("screen")
+    }
+
     override fun subaccountParams(): IMap<String, String>? {
         val accountAddress = accountAddress
         val subaccountNumber = subaccountNumber
@@ -334,8 +338,18 @@ class V4StateManagerAdaptor(
         super.didSetAccountAddress(accountAddress, oldValue)
 
         if (accountAddress != null) {
-            retrieveSubaccounts()
-            pollAccountBalances()
+            if (sourceAddress != null) {
+                screenSourceAddress()
+            }
+            if (accountAddress != null) {
+                screenAccountAddress()
+            }
+            if (readyToConnect) {
+                retrieveSubaccounts()
+                if (validatorConnected) {
+                    pollAccountBalances()
+                }
+            }
         } else {
             accountBalancesTimer = null
         }

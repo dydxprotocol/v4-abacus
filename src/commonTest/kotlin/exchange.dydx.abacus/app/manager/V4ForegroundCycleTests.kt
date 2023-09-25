@@ -67,7 +67,7 @@ class V4ForegroundCycleTests {
 
     private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManager) {
         setStateMachineConnectedWithMarkets(stateManager)
-        stateManager.accountAddress = testCosmoAddress
+        stateManager.setAddresses(null, testCosmoAddress)
     }
 
     @Test
@@ -349,7 +349,7 @@ class V4ForegroundCycleTests {
         setStateMachineConnected(stateManager)
 
         val testAddress = "0xsecondaryFakeAddress"
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         assertEquals(6, testRest?.requests?.size)
         assertEquals(
@@ -371,8 +371,7 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         assertEquals(9, testRest?.requests?.size)
         assertEquals(
@@ -422,7 +421,7 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         assertEquals(10, testRest?.requests?.size)
         assertEquals(
@@ -451,11 +450,11 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
-        stateManager.accountAddress = secondAddress
+        stateManager.setAddresses(null, secondAddress)
 
         assertEquals(10, testRest?.requests?.size)
         assertEquals(
@@ -485,10 +484,10 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
-        stateManager.accountAddress = null
+        stateManager.setAddresses(null, null)
 
         assertEquals(9, testRest?.requests?.size)
         assertEquals(3, testWebSocket?.messages?.size)
