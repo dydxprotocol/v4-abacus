@@ -30,7 +30,7 @@ data class PerpetualState(
     val input: Input?,
     val availableSubaccountNumbers: IList<Int>,
     val transferStatuses: IMap<String, TransferStatus>?,
-    val restriction: RegulatoryRestriction?,
+    val restriction: UsageRestriction?,
 ) {
     fun assetIds(): IList<String>? {
         return assets?.keys?.toIList()

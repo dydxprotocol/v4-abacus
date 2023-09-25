@@ -2,7 +2,7 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.RegulatoryRestriction
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
@@ -294,7 +294,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    internal var addressRestriction: RegulatoryRestriction? = null
+    internal var addressRestriction: UsageRestriction? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -302,7 +302,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    internal open var restriction: RegulatoryRestriction = RegulatoryRestriction.noRestriction
+    internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
         set(value) {
             if (field != value) {
                 field = value
@@ -2072,27 +2072,27 @@ open class StateManagerAdaptor(
         val restrictions: Set<Restriction?> =
             iSetOf(accountAddressRestriction, sourceAddressRestriction)
         addressRestriction = if (restrictions.contains(Restriction.USER_RESTRICTED)) {
-            RegulatoryRestriction.userRestriction
+            UsageRestriction.userRestriction
         } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
-            RegulatoryRestriction.userRestrictionUnknown
+            UsageRestriction.userRestrictionUnknown
         } else {
             if (sourceAddressRestriction == null && accountAddressRestriction == null) {
                 null
             } else {
-                RegulatoryRestriction.noRestriction
+                UsageRestriction.noRestriction
             }
         }
     }
 
-    private fun didSetAddressRestriction(addressRestriction: RegulatoryRestriction?) {
+    private fun didSetAddressRestriction(addressRestriction: UsageRestriction?) {
         updateRestriction()
     }
 
     internal open fun updateRestriction() {
-        restriction = addressRestriction ?: RegulatoryRestriction.noRestriction
+        restriction = addressRestriction ?: UsageRestriction.noRestriction
     }
 
-    private fun didSetRestriction(restriction: RegulatoryRestriction?) {
+    private fun didSetRestriction(restriction: UsageRestriction?) {
         val state = stateMachine.state
         stateMachine.state = PerpetualState(
             state?.assets,
