@@ -25,12 +25,12 @@ enum class Restriction(val rawValue: String?) {
 
 @JsExport
 @Serializable
-data class RegulatoryRestriction(
+data class UsageRestriction(
     val restriction: Restriction,
     val displayError: ParsingError?
 ) {
     companion object {
-        internal val userRestriction: RegulatoryRestriction = RegulatoryRestriction(
+        internal val userRestriction: UsageRestriction = UsageRestriction(
             Restriction.USER_RESTRICTED,
             ParsingError(
                 ParsingErrorType.UserRestricted,
@@ -40,17 +40,17 @@ data class RegulatoryRestriction(
             )
         )
 
-        internal val userRestrictionUnknown: RegulatoryRestriction = RegulatoryRestriction(
+        internal val userRestrictionUnknown: UsageRestriction = UsageRestriction(
             Restriction.USER_RESTRICTION_UNKNOWN,
             null
         )
 
-        internal val noRestriction: RegulatoryRestriction = RegulatoryRestriction(
+        internal val noRestriction: UsageRestriction = UsageRestriction(
             Restriction.NO_RESTRICTION,
             null
         )
 
-        internal val http403Restriction: RegulatoryRestriction = RegulatoryRestriction(
+        internal val http403Restriction: UsageRestriction = UsageRestriction(
             Restriction.GEO_RESTRICTED,
             ParsingError(
                 ParsingErrorType.HttpError403,

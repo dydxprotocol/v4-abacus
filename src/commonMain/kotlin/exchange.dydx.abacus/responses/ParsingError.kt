@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.responses
 
 import exchange.dydx.abacus.output.FeeDiscountResources
-import exchange.dydx.abacus.output.RegulatoryRestriction
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger

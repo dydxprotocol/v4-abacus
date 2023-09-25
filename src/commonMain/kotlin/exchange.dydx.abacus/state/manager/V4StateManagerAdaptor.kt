@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
-import exchange.dydx.abacus.output.RegulatoryRestriction
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
@@ -110,7 +110,7 @@ class V4StateManagerAdaptor(
             }
         }
 
-    private var indexerRestriction: RegulatoryRestriction? = null
+    private var indexerRestriction: UsageRestriction? = null
         set(value) {
             if (field !== value) {
                 field = value
@@ -1048,9 +1048,9 @@ class V4StateManagerAdaptor(
         super.get(url, params, headers, private) { response, httpCode ->
             when (httpCode) {
                 403 -> {
-                    if (indexerRestriction != RegulatoryRestriction.http403Restriction) {
+                    if (indexerRestriction != UsageRestriction.http403Restriction) {
                         ioImplementations.threading?.async(ThreadingType.abacus) {
-                            indexerRestriction = RegulatoryRestriction.http403Restriction
+                            indexerRestriction = UsageRestriction.http403Restriction
                         }
                     }
                 }
@@ -1066,12 +1066,12 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun didSetIndexerRestriction(indexerRestriction: RegulatoryRestriction?) {
+    private fun didSetIndexerRestriction(indexerRestriction: UsageRestriction?) {
         updateRestriction()
     }
 
     override fun updateRestriction() {
-        restriction = indexerRestriction ?: addressRestriction ?: RegulatoryRestriction.noRestriction
+        restriction = indexerRestriction ?: addressRestriction ?: UsageRestriction.noRestriction
     }
 
     override fun dispose() {
