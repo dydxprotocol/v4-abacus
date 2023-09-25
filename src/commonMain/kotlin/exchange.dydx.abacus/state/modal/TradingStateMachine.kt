@@ -13,8 +13,8 @@ import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.*
-import exchange.dydx.abacus.state.app.AppVersion
-import exchange.dydx.abacus.state.app.V4Environment
+import exchange.dydx.abacus.state.manager.AppVersion
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
@@ -47,7 +47,7 @@ open class TradingStateMachine(
     private val maxSubaccountNumber: Int,
 ) {
     internal val parser: ParserProtocol = Parser()
-    internal val marketsProcessor = MarketsSummaryProcessor(parser, version == AppVersion.v3)
+    internal val marketsProcessor = MarketsSummaryProcessor(parser, version == AppVersion.v4)
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(parser)
         processor.environment = environment

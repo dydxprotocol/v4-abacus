@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.mutable

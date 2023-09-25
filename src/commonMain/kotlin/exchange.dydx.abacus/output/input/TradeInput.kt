@@ -2,7 +2,7 @@ package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.output.*
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -177,8 +177,7 @@ data class TradeInputOptions(
                     existing.timeInForceOptions != timeInForceOptionsArray ||
                     existing.executionOptions != executionOptionsArray
                 ) {
-                    val typeOptions =
-                        if (version == AppVersion.v3) typeOptionsArray else typeOptionsV4Array
+                    val typeOptions = typeOptionsV4Array
 
                     TradeInputOptions(
                         needsSize,

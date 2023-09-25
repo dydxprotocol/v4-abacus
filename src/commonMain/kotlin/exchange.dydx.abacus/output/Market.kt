@@ -2,7 +2,7 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.OrderbookGrouping
+import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.DebugLogger

@@ -14,11 +14,6 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
-import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.HistoricalPnlPeriod
-import exchange.dydx.abacus.state.app.IndexerURIs
-import exchange.dydx.abacus.state.app.OrderbookGrouping
-import exchange.dydx.abacus.state.app.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes

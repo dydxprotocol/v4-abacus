@@ -51,7 +51,7 @@ import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.output.input.TradeInputSummary
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.AppVersion
+import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
 import exchange.dydx.abacus.state.modal.TradingStateMachine
@@ -116,7 +116,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             mock.v4Environment,
             testLocalizer(ioImplementations),
             null,
-            AppVersion.v3,
+            AppVersion.v4,
             maxSubaccountNumber,
         )
     }

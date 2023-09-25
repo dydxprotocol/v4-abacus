@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.base
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.app.V4Environment
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
