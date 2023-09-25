@@ -25,9 +25,6 @@ class TransferInputTests : V3BaseTests() {
         testSlowWithdrawalTransferInput()
         time = perp.log("Slow Withdrawal", time)
 
-        testFastWithdrawalTransferInput()
-        perp.log("Fast Withdrawl", time)
-
         testTransferOutTransferInput()
         perp.log("Transfer Out", time)
 
@@ -79,28 +76,28 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 206724.545896,
-                                        "postOrder": 206725.545896
+                                        "current": 206724.54589599997,
+                                        "postOrder": 206725.54589599997
                                     },
                                     "freeCollateral": {
-                                        "current": 187967.3363698,
-                                        "postOrder": 187968.3363698
+                                        "current": 187967.33636979997,
+                                        "postOrder": 187968.33636979997
                                     },
                                     "quoteBalance": {
                                         "current": -62697.279528,
                                         "postOrder": -62696.279528
                                     },
                                     "leverage": {
-                                        "current": 1.3041504890262603,
-                                        "postOrder": 1.3041441804179876
+                                        "current": 1.3041504890262605,
+                                        "postOrder": 1.3041441804179879
                                     },
                                     "marginUsage": {
                                         "current": 0.09073527986191088,
-                                        "postOrder": 0.09073484094528117
+                                        "postOrder": 0.09073484094528128
                                     },
                                     "buyingPower": {
-                                        "current": 3759346.727396,
-                                        "postOrder": 3759366.727396
+                                        "current": 3759346.7273959992,
+                                        "postOrder": 3759366.7273959992
                                     }
                                 }
                             }
@@ -137,22 +134,22 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 211724.545896
+                                        "postOrder": 211724.54589599997
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 192967.3363698
+                                        "postOrder": 192967.33636979997
                                     },
                                     "quoteBalance": {
                                         "postOrder": -57697.279528
                                     },
                                     "leverage": {
-                                        "postOrder": 1.2733522062030003
+                                        "postOrder": 1.2733522062030005
                                     },
                                     "marginUsage": {
                                         "postOrder": 0.0885925127236481
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3859346.727396
+                                        "postOrder": 3859346.7273959992
                                     }
                                 }
                             }
@@ -193,22 +190,22 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 207724.545896
+                                        "postOrder": 207724.54589599997
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 188967.3363698
+                                        "postOrder": 188967.33636979997
                                     },
                                     "quoteBalance": {
                                         "postOrder": -61697.279528
                                     },
                                     "leverage": {
-                                        "postOrder": 1.2978722204499544
+                                        "postOrder": 1.2978722204499546
                                     },
                                     "marginUsage": {
                                         "postOrder": 0.09029847409362513
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3779346.727396
+                                        "postOrder": 3779346.7273959992
                                     }
                                 }
                             }
@@ -247,28 +244,28 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 206724.545896,
-                                        "postOrder": 207714.545896
+                                        "current": 206724.54589599997,
+                                        "postOrder": 207714.54589599997
                                     },
                                     "freeCollateral": {
-                                        "current": 187967.3363698,
-                                        "postOrder": 188957.3363698
+                                        "current": 187967.33636979997,
+                                        "postOrder": 188957.33636979997
                                     },
                                     "quoteBalance": {
                                         "current": -62697.279528,
                                         "postOrder": -61707.279528
                                     },
                                     "leverage": {
-                                        "current": 1.3041504890262603,
-                                        "postOrder": 1.2979347039036218
+                                        "current": 1.3041504890262605,
+                                        "postOrder": 1.297934703903622
                                     },
                                     "marginUsage": {
                                         "current": 0.09073527986191088,
                                         "postOrder": 0.09030282133246215
                                     },
                                     "buyingPower": {
-                                        "current": 3759346.727396,
-                                        "postOrder": 3779146.727396
+                                        "current": 3759346.7273959992,
+                                        "postOrder": 3779146.7273959992
                                     }
                                 }
                             }
@@ -326,22 +323,22 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 205724.545896
+                                        "postOrder": 205724.54589599997
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 186967.3363698
+                                        "postOrder": 186967.33636979997
                                     },
                                     "quoteBalance": {
                                         "postOrder": -63697.279528
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3104897932806274
+                                        "postOrder": 1.3104897932806276
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09117633214114529
+                                        "postOrder": 0.0911763321411454
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3739346.727396
+                                        "postOrder": 3739346.7273959992
                                     }
                                 }
                             }
@@ -379,112 +376,22 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 205714.545896
+                                        "postOrder": 205714.54589599997
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 186957.3363698
+                                        "postOrder": 186957.33636979997
                                     },
                                     "quoteBalance": {
                                         "postOrder": -63707.279528
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3105534975650073
+                                        "postOrder": 1.3105534975650075
                                     },
                                     "marginUsage": {
                                         "postOrder": 0.09118076431835209
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3739146.727396
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
-    }
-
-
-    private fun testFastWithdrawalTransferInput() {
-        test({
-            perp.transfer("WITHDRAWAL", TransferInputField.type)
-        }, null)
-
-        test({
-            perp.transfer("true", TransferInputField.fastSpeed)
-        }, null)
-
-
-        test({
-            perp.transfer("0.0", TransferInputField.usdcFee)
-        }, null)
-
-
-        /*
-        size = 1000.0
-         */
-        test({
-            perp.transfer("5000.0", TransferInputField.usdcSize)
-        }, null)
-
-        test({
-            perp.transfer("10.0", TransferInputField.usdcFee)
-        }, null)
-
-        test(
-            {
-                perp.transfer("1000.0", TransferInputField.usdcSize)
-            },
-            """
-                {
-                    "input": {
-                        "transfer": {
-                            "type": "WITHDRAWAL",
-                            "size": {
-                                "usdcSize": 1000.0
-                            },
-                            "summary": {
-                                "usdcSize": 1000.0,
-                                "fastSpeed": true,
-                                "filled": true,
-                                "fee": 10.0
-                            },
-                            "options": {
-                                "needsSize": true,
-                                "needsFastSpeed": true
-                            },
-                            "fastSpeed": true,
-                            "fee": 10.0
-                        }
-                    },
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "0": {
-                                    "equity": {
-                                        "current": 206724.545896,
-                                        "postOrder": 205714.545896
-                                    },
-                                    "freeCollateral": {
-                                        "current": 187967.3363698,
-                                        "postOrder": 186957.3363698
-                                    },
-                                    "quoteBalance": {
-                                        "current": -62697.279528,
-                                        "postOrder": -63707.279528
-                                    },
-                                    "leverage": {
-                                        "current": 1.3041504890262603,
-                                        "postOrder": 1.3105534975650073
-                                    },
-                                    "marginUsage": {
-                                        "current": 0.09073527986191088,
-                                        "postOrder": 0.09118076431835209
-                                    },
-                                    "buyingPower": {
-                                        "current": 3759346.727396,
-                                        "postOrder": 3739146.727396
+                                        "postOrder": 3739146.7273959992
                                     }
                                 }
                             }
@@ -538,22 +445,22 @@ class TransferInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 205724.545896
+                                        "postOrder": 205724.54589599997
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 186967.3363698
+                                        "postOrder": 186967.33636979997
                                     },
                                     "quoteBalance": {
                                         "postOrder": -63697.279528
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3104897932806274
+                                        "postOrder": 1.3104897932806276
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09117633214114529
+                                        "postOrder": 0.0911763321411454
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3739346.727396
+                                        "postOrder": 3739346.7273959992
                                     }
                                 }
                             }

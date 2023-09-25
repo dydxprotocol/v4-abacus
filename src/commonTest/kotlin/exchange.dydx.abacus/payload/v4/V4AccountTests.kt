@@ -100,10 +100,10 @@ class V4AccountTests : V4BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 122034.2009050837
+                                        "current": 122034.20090508368
                                     },
                                     "freeCollateral": {
-                                        "current": 100728.91072122751
+                                        "current": 100728.9107212275
                                     },
                                     "quoteBalance": {
                                         "current": 68257.215192
@@ -143,7 +143,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": 126.640212
                                             },
                                             "unrealizedPnl": {
-                                                "current": 69435.46665219103
+                                                "current": 69435.46665219101
                                             },
                                             "createdAt": "2022-12-11T17:27:36.351Z",
                                             "entryPrice": {
@@ -156,10 +156,10 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "realizedPnlPercent": {
-                                                "current": 7.424091096228276E-4
+                                                "current": 7.424091096228274E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 0.4070549327057244
+                                                "current": 0.40705493270572424
                                             },
                                             "valueTotal": {
                                                 "current": 2.399413946951037E+5
@@ -174,7 +174,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": 1.1997069734755185E+4
                                             },
                                             "leverage": {
-                                                "current": 1.9661815533313187
+                                                "current": 1.9661815533313192
                                             }
                                         },
                                         "ETH-USD": {
@@ -186,7 +186,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -102.716895
                                             },
                                             "unrealizedPnl": {
-                                                "current": -51808.1520058774
+                                                "current": -51808.15200587743
                                             },
                                             "createdAt": "2022-12-11T17:29:39.792Z",
                                             "entryPrice": {
@@ -202,27 +202,27 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -0.3853807678054771
+                                                "current": -0.38538076780547736
                                             },
                                             "valueTotal": {
-                                                "current": -1.8616440898202E+5
+                                                "current": -186164.40898202002
                                             },
                                             "notionalTotal": {
-                                                "current": 1.8616440898202E+5
+                                                "current": 186164.40898202002
                                             },
                                             "adjustedImf": {
                                                 "current": 5.0E-2
                                             },
                                             "initialRiskTotal": {
-                                                "current": 9.308220449101E+3
+                                                "current": 9308.220449101002
                                             },
                                             "leverage": {
-                                                "current": -1.5255101242217808
+                                                "current": -1.5255101242217812
                                             },
                                             "liquidationPrice": {
                                             },
                                             "buyingPower": {
-                                                "current": 2014578.2144245503
+                                                "current": 2014578.2144245498
                                             }
                                         }
                                     }
@@ -294,10 +294,10 @@ class V4AccountTests : V4BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 122034.2009050837
+                                        "current": 122034.20090508368
                                     },
                                     "freeCollateral": {
-                                        "current": 100728.91072122751
+                                        "current": 100728.9107212275
                                     },
                                     "quoteBalance": {
                                         "current": 68257.215192
@@ -417,10 +417,10 @@ class V4AccountTests : V4BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 122034.2009050837
+                                        "current": 122034.20090508368
                                     },
                                     "freeCollateral": {
-                                        "current": 100728.91072122751
+                                        "current": 100728.9107212275
                                     },
                                     "quoteBalance": {
                                         "current": 68257.215192
@@ -510,10 +510,10 @@ class V4AccountTests : V4BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": -161020.0483525266
+                                        "current": -161020.04835252662
                                     },
                                     "freeCollateral": {
-                                        "current": -172483.91152975292
+                                        "current": -172483.91152975295
                                     },
                                     "quoteBalance": {
                                         "current": 68257.215192
@@ -564,7 +564,7 @@ class V4AccountTests : V4BaseTests() {
                                             "exitPrice": 17106.497989,
                                             "netFunding": 0.0,
                                             "unrealizedPnl": {
-                                                "current": 69435.46665219103
+                                                "current": 69435.46665219101
                                             },
                                             "createdAt": "2022-12-11T17:27:36.351Z",
                                             "entryPrice": {
@@ -576,13 +576,13 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 0.4070549327057244
+                                                "current": 0.40705493270572424
                                             },
                                             "valueTotal": {
-                                                "current": -43112.8545625066
+                                                "current": -43112.854562506596
                                             },
                                             "notionalTotal": {
-                                                "current": 43112.8545625066
+                                                "current": 43112.854562506596
                                             },
                                             "adjustedImf": {
                                                 "current": 5.0E-2
@@ -602,7 +602,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -102.716895
                                             },
                                             "unrealizedPnl": {
-                                                "current": -51808.1520058774
+                                                "current": -51808.15200587743
                                             },
                                             "createdAt": "2022-12-11T17:29:39.792Z",
                                             "entryPrice": {
@@ -618,19 +618,19 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -0.3853807678054771
+                                                "current": -0.38538076780547736
                                             },
                                             "valueTotal": {
-                                                "current": -1.8616440898202E+5
+                                                "current": -186164.40898202002
                                             },
                                             "notionalTotal": {
-                                                "current": 1.8616440898202E+5
+                                                "current": 186164.40898202002
                                             },
                                             "adjustedImf": {
                                                 "current": 5.0E-2
                                             },
                                             "initialRiskTotal": {
-                                                "current": 9.308220449101E+3
+                                                "current": 9308.220449101002
                                             },
                                             "leverage": {
                                             },
@@ -716,7 +716,7 @@ class V4AccountTests : V4BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": -41124.1844645066
+                                        "current": -41124.184464506594
                                     },
                                     "openPositions": {
                                         "ETH-USD": {

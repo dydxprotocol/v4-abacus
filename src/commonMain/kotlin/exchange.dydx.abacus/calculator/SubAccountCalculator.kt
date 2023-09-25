@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.AppVersion
@@ -73,7 +74,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             position,
                             market,
                             subaccount,
-                            parser.asDecimal(price?.get(key)),
+                            parser.asDouble(price?.get(key)),
                             periods,
                             version
                         )
@@ -94,18 +95,18 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         position: IMap<String, Any>,
         market: IMap<String, Any>?,
         subaccount: IMap<String, Any>,
-        price: BigDecimal?,
+        price: Double?,
         periods: kollections.Set<CalculationPeriod>,
         version: AppVersion,
     ): IMutableMap<String, Any> {
         val modified = position.mutable()
         for (period in periods) {
-            val size = parser.asDecimal(value(position, "size", period))
-            val entryPrice = parser.asDecimal(value(position, "entryPrice", period))
+            val size = parser.asDouble(value(position, "size", period))
+            val entryPrice = parser.asDouble(value(position, "entryPrice", period))
             val status = parser.asString(value(position, "status", period))
 
             if (size != null && status != null) {
-                val realizedPnl = parser.asDecimal(value(position, "realizedPnl", period))
+                val realizedPnl = parser.asDouble(value(position, "realizedPnl", period))
                 if (realizedPnl != null) {
                     when (status) {
                         "CLOSED", "LIQUIDATED" -> {
@@ -116,7 +117,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             if (entryPrice != null) {
                                 val positionEntryValue = (size * entryPrice).abs()
                                 set(
-                                    if (positionEntryValue > Numeric.decimal.ZERO) realizedPnl / positionEntryValue else null,
+                                    if (positionEntryValue > Numeric.double.ZERO) realizedPnl / positionEntryValue else null,
                                     modified,
                                     "realizedPnlPercent",
                                     period
@@ -128,8 +129,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     set(null, modified, "realizedPnlPercent", period)
                 }
 
-                val marketIndexPrice = parser.asDecimal(market?.get("indexPrice"))
-                    ?: parser.asDecimal(market?.get("oraclePrice"))
+                val marketIndexPrice = parser.asDouble(market?.get("indexPrice"))
+                    ?: parser.asDouble(market?.get("oraclePrice"))
                 val indexPrice =
                     if (period == CalculationPeriod.current) marketIndexPrice else (price
                         ?: marketIndexPrice)
@@ -146,7 +147,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 val currentValue = size * indexPrice
                                 val unrealizedPnl = currentValue - entryValue
                                 val unrealizedPnlPercent =
-                                    if (entryValue != Numeric.decimal.ZERO) unrealizedPnl / entryValue.abs() else null
+                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() else null
                                 set(unrealizedPnl, modified, "unrealizedPnl", period)
                                 set(unrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
                             }
@@ -158,7 +159,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 }
 
 
-                val marketOraclePrice = parser.asDecimal(oraclePrice(market))
+                val marketOraclePrice = parser.asDouble(oraclePrice(market))
                 val oraclePrice =
                     if (period == CalculationPeriod.current) marketOraclePrice else (price
                         ?: marketOraclePrice)
@@ -191,7 +192,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 version
                             )
                             val maxLeverage =
-                                if (adjustedImf != Numeric.decimal.ZERO) Numeric.decimal.ONE / adjustedImf else null
+                                if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
                             set(adjustedImf, modified, "adjustedImf", period)
                             set(adjustedMmf, modified, "adjustedMmf", period)
                             set(
@@ -229,32 +230,32 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     private fun calculatedAdjustedImf(
         configs: IMap<String, Any>?,
         subaccount: IMap<String, Any>,
-        size: BigDecimal?,
-        notional: BigDecimal?,
+        size: Double?,
+        notional: Double?,
         version: AppVersion,
-    ): BigDecimal {
+    ): Double {
         val initialMarginFraction =
-            parser.asDecimal(configs?.get("initialMarginFraction")) ?: Numeric.decimal.ZERO
+            parser.asDouble(configs?.get("initialMarginFraction")) ?: Numeric.double.ZERO
         val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
         return calculateV4MarginFraction(configs, initialMarginFraction, notionalValue)
     }
 
     private fun calculatedAdjustedMmf(
         configs: IMap<String, Any>?,
-        notional: BigDecimal?,
+        notional: Double?,
         version: AppVersion,
-    ): BigDecimal {
+    ): Double {
         val maintenanceMarginFraction =
-            parser.asDecimal(configs?.get("maintenanceMarginFraction")) ?: Numeric.decimal.ZERO
+            parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO
         val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
         return calculateV4MarginFraction(configs, maintenanceMarginFraction, notionalValue)
     }
 
     private fun calculateV4MarginFraction(
         configs: IMap<String, Any>?,
-        initialMarginFraction: BigDecimal,
+        initialMarginFraction: Double,
         notional: Double,
-    ): BigDecimal {
+    ): Double {
         val basePositionNotional =
             parser.asDouble(configs?.get("basePositionNotional")) ?: Numeric.double.ZERO
         return if (basePositionNotional == Numeric.double.ZERO) {
@@ -265,7 +266,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
             val ratio = notional / basePositionNotional
             val adjusted: Double = parser.asDouble(initialMarginFraction)!! * sqrt(ratio)
             val min: Double = arrayOf(Numeric.double.ONE, adjusted).min()
-            parser.asDecimal(min) ?: initialMarginFraction
+            parser.asDouble(min) ?: initialMarginFraction
         }
     }
 
@@ -353,38 +354,38 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         positions?.let {
             for (period in periods) {
                 val initialRiskTotal =
-                    parser.asDecimal(value(subaccount, "initialRiskTotal", period))
-                val equity = parser.asDecimal(value(subaccount, "equity", period))
+                    parser.asDouble(value(subaccount, "initialRiskTotal", period))
+                val equity = parser.asDouble(value(subaccount, "equity", period))
                 for ((key, position) in positions) {
                     val leverage = calculatePositionLeverage(
                         equity,
-                        parser.asDecimal(value(position, "valueTotal", period))
+                        parser.asDouble(value(position, "valueTotal", period))
                     )
-                    set(leverage?.doubleValue(false), position, "leverage", period)
+                    set(leverage, position, "leverage", period)
                     val liquidationPrice = calculatePositionLiquidationPrice(
-                        equity ?: Numeric.decimal.ZERO,
+                        equity ?: Numeric.double.ZERO,
                         key,
                         positions,
                         markets,
                         period
                     )
-                    set(liquidationPrice?.doubleValue(false), position, "liquidationPrice", period)
+                    set(liquidationPrice, position, "liquidationPrice", period)
                     val buyingPower = calculatePositionBuyingPower(
                         equity,
                         initialRiskTotal,
-                        parser.asDecimal(value(position, "adjustedImf", period))
+                        parser.asDouble(value(position, "adjustedImf", period))
                     )
-                    set(buyingPower?.doubleValue(false), position, "buyingPower", period)
+                    set(buyingPower, position, "buyingPower", period)
                 }
             }
         }
     }
 
     private fun calculatePositionLeverage(
-        equity: BigDecimal?,
-        notionalValue: BigDecimal?,
-    ): BigDecimal? {
-        return if (equity != null && notionalValue != null && equity > Numeric.decimal.ZERO) {
+        equity: Double?,
+        notionalValue: Double?,
+    ): Double? {
+        return if (equity != null && notionalValue != null && equity > Numeric.double.ZERO) {
             notionalValue / equity
         } else {
             null
@@ -393,23 +394,23 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
 
     private fun calculatePositionLiquidationPrice(
-        equity: BigDecimal,
+        equity: Double,
         market: String,
         positions: IMap<String, IMutableMap<String, Any>>?,
         markets: IMap<String, Any>?,
         period: CalculationPeriod,
-    ): BigDecimal? {
+    ): Double? {
         val otherPositionsRisk =
             calculationOtherPositionsRisk(positions, markets, except = market, period)
 
-        var liquidationPrice: BigDecimal? = null
+        var liquidationPrice: Double? = null
         positions?.get(market)?.let { position ->
             parser.asMap(markets?.get(market))?.let { market ->
                 parser.asMap(market["configs"])?.let { configs ->
-                    parser.asDecimal(value(position, "adjustedMmf", period))
+                    parser.asDouble(value(position, "adjustedMmf", period))
                         ?.let { maintenanceMarginFraction ->
-                            parser.asDecimal(oraclePrice(market))?.let { oraclePrice ->
-                                parser.asDecimal(value(position, "size", period))?.let { size ->
+                            parser.asDouble(oraclePrice(market))?.let { oraclePrice ->
+                                parser.asDouble(value(position, "size", period))?.let { size ->
                                     /*
                                       const liquidationPrice =
                                         side === POSITION_SIDES.LONG
@@ -423,8 +424,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                               .div(sizeBN.times(maintenanceMarginFraction).plus(sizeBN));
                                      */
                                     val denominator =
-                                        if (size > Numeric.decimal.ZERO) (size - size * maintenanceMarginFraction) else (size + size * maintenanceMarginFraction)
-                                    liquidationPrice = if (denominator != Numeric.decimal.ZERO) {
+                                        if (size > Numeric.double.ZERO) (size - size * maintenanceMarginFraction) else (size + size * maintenanceMarginFraction)
+                                    liquidationPrice = if (denominator != Numeric.double.ZERO) {
                                         (otherPositionsRisk + size * oraclePrice - equity) / denominator
                                     } else null
                                     if (liquidationPrice != null && liquidationPrice!! < Numeric.double.ZERO) {
@@ -436,7 +437,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 }
             }
         }
-        if (liquidationPrice != null && liquidationPrice!! < Numeric.decimal.ZERO) {
+        if (liquidationPrice != null && liquidationPrice!! < Numeric.double.ZERO) {
             liquidationPrice = null
         }
         return liquidationPrice
@@ -447,9 +448,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         markets: IMap<String, Any>?,
         except: String,
         period: CalculationPeriod,
-    ): BigDecimal {
+    ): Double {
         positions?.let {
-            var risk = Numeric.decimal.ZERO
+            var risk = Numeric.double.ZERO
             for ((key, position) in positions) {
                 if (key != except) {
                     risk += calculatePositionRisk(
@@ -461,35 +462,35 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
             }
             return risk
         }
-        return Numeric.decimal.ZERO
+        return Numeric.double.ZERO
     }
 
     private fun calculatePositionRisk(
         position: IMap<String, Any>,
         market: IMap<String, Any>?,
         period: CalculationPeriod,
-    ): BigDecimal {
+    ): Double {
         market?.let {
             parser.asMap(market["configs"])?.let { configs ->
-                parser.asDecimal(value(position, "adjustedMmf", period))
+                parser.asDouble(value(position, "adjustedMmf", period))
                     ?.let { maintenanceMarginFraction ->
-                        parser.asDecimal(oraclePrice(market))?.let { oraclePrice ->
-                            parser.asDecimal(value(position, "size", period))?.let { size ->
+                        parser.asDouble(oraclePrice(market))?.let { oraclePrice ->
+                            parser.asDouble(value(position, "size", period))?.let { size ->
                                 return size.abs() * oraclePrice * maintenanceMarginFraction
                             }
                         }
                     }
             }
         }
-        return Numeric.decimal.ZERO
+        return Numeric.double.ZERO
     }
 
 
     private fun calculatePositionBuyingPower(
-        equity: BigDecimal?,
-        initialRiskTotal: BigDecimal?,
-        imf: BigDecimal?,
-    ): BigDecimal? {
+        equity: Double?,
+        initialRiskTotal: Double?,
+        imf: Double?,
+    ): Double? {
         return if (equity != null && initialRiskTotal != null && imf != null) {
             calculateBuyingPower(
                 equity,
@@ -508,15 +509,15 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
             val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
             if (quoteBalance != null) {
                 val equity =
-                    parser.asDecimal(value(subaccount, "equity", period)) ?: Numeric.decimal.ZERO
+                    parser.asDouble(value(subaccount, "equity", period)) ?: Numeric.double.ZERO
                 val initialRiskTotal =
-                    parser.asDecimal(value(subaccount, "initialRiskTotal", period))
-                        ?: Numeric.decimal.ZERO
+                    parser.asDouble(value(subaccount, "initialRiskTotal", period))
+                        ?: Numeric.double.ZERO
                 val imf =
-                    parser.asDecimal(configs?.get("initialMarginFraction"))
-                        ?: parser.asDecimal(0.05)!!
+                    parser.asDouble(configs?.get("initialMarginFraction"))
+                        ?: parser.asDouble(0.05)!!
                 set(
-                    calculateBuyingPower(equity, initialRiskTotal, imf).doubleValue(false),
+                    calculateBuyingPower(equity, initialRiskTotal, imf),
                     subaccount,
                     "buyingPower",
                     period
@@ -533,12 +534,12 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculateBuyingPower(
-        equity: BigDecimal,
-        initialRiskTotal: BigDecimal,
-        imf: BigDecimal,
-    ): BigDecimal {
+        equity: Double,
+        initialRiskTotal: Double,
+        imf: Double,
+    ): Double {
         val buyingPowerFreeCollateral = equity - initialRiskTotal
-        return buyingPowerFreeCollateral / (if (imf > Numeric.decimal.ZERO) imf else parser.asDecimal(
+        return buyingPowerFreeCollateral / (if (imf > Numeric.double.ZERO) imf else parser.asDouble(
             0.05
         )!!)
     }

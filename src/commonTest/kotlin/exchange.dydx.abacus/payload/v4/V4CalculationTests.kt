@@ -110,7 +110,7 @@ class V4CalculationTests : V4BaseTests() {
                                                 "current": 1000.0
                                             },
                                             "liquidationPrice": {
-                                                "current": 927.8350515463917
+                                                "current": 927.8350515463918
                                             }
                                         }
                                     }

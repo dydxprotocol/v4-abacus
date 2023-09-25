@@ -688,7 +688,7 @@ open class V4TradeInputTests : V4BaseTests() {
                                                 "postOrder": 0.16431676725154984
                                             },
                                             "liquidationPrice": {
-                                                "current": 2511.4689643861384,
+                                                "current": 2511.468964386139,
                                                 "postOrder": 2484.3090217561517
                                             }
                                         },
@@ -702,7 +702,7 @@ open class V4TradeInputTests : V4BaseTests() {
                                                 "postOrder": 0.09486832980505139
                                             },
                                             "liquidationPrice": {
-                                                "postOrder": 57353.8004918222
+                                                "postOrder": 57353.80049182219
                                             }
                                         }
                                     }
