@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.RegulatoryRestriction
+import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -108,6 +110,14 @@ class V4StateManagerAdaptor(
             }
         }
 
+    private var indexerRestriction: RegulatoryRestriction? = null
+        set(value) {
+            if (field !== value) {
+                field = value
+                didSetIndexerRestriction(field)
+            }
+        }
+
 
     private val MAX_NUM_BLOCK_DELAY = 10
 
@@ -191,7 +201,7 @@ class V4StateManagerAdaptor(
     }
 
     override fun screenUrl(): String? {
-        return configs.privateApiUrl("screen")
+        return configs.publicApiUrl("screen")
     }
 
     override fun subaccountParams(): IMap<String, String>? {
@@ -340,9 +350,6 @@ class V4StateManagerAdaptor(
         if (accountAddress != null) {
             if (sourceAddress != null) {
                 screenSourceAddress()
-            }
-            if (accountAddress != null) {
-                screenAccountAddress()
             }
             if (readyToConnect) {
                 retrieveSubaccounts()
@@ -1041,15 +1048,10 @@ class V4StateManagerAdaptor(
         super.get(url, params, headers, private) { response, httpCode ->
             when (httpCode) {
                 403 -> {
-                    ioImplementations.threading?.async(ThreadingType.abacus) {
-                        val error = ParsingError(
-                            ParsingErrorType.HttpError403,
-                            "API error: $httpCode",
-                            "ERRORS.HTTP_ERROR_$httpCode"
-                        )
-
-                        emitError(error)
-                        trackApiCall()
+                    if (indexerRestriction != RegulatoryRestriction.http403Restriction) {
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            indexerRestriction = RegulatoryRestriction.http403Restriction
+                        }
                     }
                 }
 
@@ -1062,6 +1064,14 @@ class V4StateManagerAdaptor(
             }
 
         }
+    }
+
+    private fun didSetIndexerRestriction(indexerRestriction: RegulatoryRestriction?) {
+        updateRestriction()
+    }
+
+    override fun updateRestriction() {
+        restriction = indexerRestriction ?: addressRestriction ?: RegulatoryRestriction.noRestriction
     }
 
     override fun dispose() {

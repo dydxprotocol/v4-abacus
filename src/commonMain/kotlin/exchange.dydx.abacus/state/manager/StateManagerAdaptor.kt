@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.RegulatoryRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
@@ -260,11 +261,11 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var accountAddressRestricted: Restriction? = null
+    private var accountAddressRestriction: Restriction? = null
         set(value) {
             if (field != value) {
                 field = value
-                didSetAccountAddressRestricted(value)
+                didSetaccountAddressRestriction(value)
             }
         }
 
@@ -285,15 +286,15 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var sourceAddressRestricted: Restriction? = null
+    private var sourceAddressRestriction: Restriction? = null
         set(value) {
             if (field != value) {
                 field = value
-                didSetSourceAddressRestricted(value)
+                didSetsourceAddressRestriction(value)
             }
         }
 
-    private var addressRestriction: Restriction? = null
+    internal var addressRestriction: RegulatoryRestriction? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -301,7 +302,13 @@ open class StateManagerAdaptor(
             }
         }
 
-    var restriction: Restriction? = Restriction.NO_RESTRICTION
+    internal open var restriction: RegulatoryRestriction = RegulatoryRestriction.noRestriction
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetRestriction(value)
+            }
+        }
 
     var subaccountNumber: Int = 0
         internal set(value) {
@@ -500,41 +507,18 @@ open class StateManagerAdaptor(
             updateConnectedSubaccountNumber()
         }
         accountAddressTimer = null
-        accountAddressRestricted = null
+        accountAddressRestriction = null
         screenAccountAddress()
     }
 
-    private fun didSetAccountAddressRestricted(accountAddressRestricted: Restriction?) {
+    private fun didSetaccountAddressRestriction(accountAddressRestriction: Restriction?) {
         updateAddressRestriction()
     }
 
     private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
         sourceAddressTimer = null
-        sourceAddressRestricted = null
+        sourceAddressRestriction = null
         screenSourceAddress()
-    }
-
-    private fun didSetSourceAddressRestricted(sourceAddressRestricted: Restriction?) {
-        updateAddressRestriction()
-    }
-
-    private fun updateAddressRestriction() {
-        val restrictions: Set<Restriction?> = iSetOf(accountAddressRestricted, sourceAddressRestricted)
-        if (restrictions.contains(Restriction.USER_RESTRICTED)) {
-            addressRestriction = Restriction.USER_RESTRICTED
-        } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
-            addressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
-        } else {
-            if (sourceAddressRestricted == null && accountAddressRestricted == null) {
-                addressRestriction = null
-            } else {
-                addressRestriction = Restriction.NO_RESTRICTION
-            }
-        }
-    }
-
-    private fun didSetAddressRestriction(addressRestriction: Restriction?) {
-        restriction = addressRestriction ?: Restriction.NO_RESTRICTION
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
@@ -1300,92 +1284,6 @@ open class StateManagerAdaptor(
         })
     }
 
-    open fun screenSourceAddress() {
-        val address = sourceAddress
-        if (address != null) {
-            screen(address) { restriction ->
-                when (restriction) {
-                    Restriction.USER_RESTRICTED -> {
-                        sourceAddressRestricted = Restriction.USER_RESTRICTED
-                    }
-                    Restriction.NO_RESTRICTION -> {
-                        sourceAddressRestricted = Restriction.NO_RESTRICTION
-                    }
-                    Restriction.USER_RESTRICTION_UNKNOWN -> {
-                        sourceAddressRestricted = Restriction.USER_RESTRICTION_UNKNOWN
-                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
-                        sourceAddressTimer = timer.schedule(
-                            subaccountsPollingDelay,
-                            null
-                        ) {
-                            sourceAddressTimer = null
-                            screenSourceAddress()
-                            false
-                        }
-                    }
-                    else -> {
-                        throw Exception("Unexpected restriction value")
-                    }
-                }
-            }
-        } else {
-            sourceAddressRestricted = Restriction.NO_RESTRICTION
-        }
-    }
-
-    open fun screenAccountAddress() {
-        val address = accountAddress
-        if (address != null) {
-            screen(address) { restriction ->
-                when (restriction) {
-                    Restriction.USER_RESTRICTED -> {
-                        accountAddressRestricted = Restriction.USER_RESTRICTED
-                    }
-                    Restriction.NO_RESTRICTION -> {
-                        accountAddressRestricted = Restriction.NO_RESTRICTION
-                    }
-                    Restriction.USER_RESTRICTION_UNKNOWN -> {
-                        accountAddressRestricted = Restriction.USER_RESTRICTION_UNKNOWN
-                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
-                        accountAddressTimer = timer.schedule(
-                            subaccountsPollingDelay,
-                            null
-                        ) {
-                            accountAddressTimer = null
-                            screenAccountAddress()
-                            false
-                        }
-                    }
-                    else -> {
-                        throw Exception("Unexpected restriction value")
-                    }
-                }
-            }
-        } else {
-            accountAddressRestricted = Restriction.NO_RESTRICTION
-        }
-    }
-
-    open fun screen(address: String, callback: ((Restriction) -> Unit)) {
-        val url = screenUrl()
-        if (url != null) {
-            get(
-                url,
-                iMapOf("address" to address),
-                null,
-                false,
-                callback = { response, httpCode ->
-                    if (success(httpCode) && response != null) {
-                        val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
-                        val restricted = parser.asBool(payload["restricted"]) ?: false
-                        callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
-                    } else {
-                        callback(Restriction.USER_RESTRICTION_UNKNOWN)
-                    }
-                })
-        }
-    }
-
     open fun retrieveSubaccounts() {
         val oldState = stateMachine.state
         val url = subaccountsUrl()
@@ -2072,6 +1970,159 @@ open class StateManagerAdaptor(
             }
         }
     }
+
+
+    open fun screenSourceAddress() {
+        val address = sourceAddress
+        if (address != null) {
+            screen(address) { restriction ->
+                when (restriction) {
+                    Restriction.USER_RESTRICTED -> {
+                        sourceAddressRestriction = Restriction.USER_RESTRICTED
+                    }
+
+                    Restriction.NO_RESTRICTION -> {
+                        sourceAddressRestriction = Restriction.NO_RESTRICTION
+                    }
+
+                    Restriction.USER_RESTRICTION_UNKNOWN -> {
+                        sourceAddressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
+                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                        sourceAddressTimer = timer.schedule(
+                            subaccountsPollingDelay,
+                            null
+                        ) {
+                            sourceAddressTimer = null
+                            screenSourceAddress()
+                            false
+                        }
+                    }
+
+                    else -> {
+                        throw Exception("Unexpected restriction value")
+                    }
+                }
+            }
+        } else {
+            sourceAddressRestriction = Restriction.NO_RESTRICTION
+        }
+    }
+
+    open fun screenAccountAddress() {
+        val address = accountAddress
+        if (address != null) {
+            screen(address) { restriction ->
+                when (restriction) {
+                    Restriction.USER_RESTRICTED -> {
+                        accountAddressRestriction = Restriction.USER_RESTRICTED
+                    }
+
+                    Restriction.NO_RESTRICTION -> {
+                        accountAddressRestriction = Restriction.NO_RESTRICTION
+                    }
+
+                    Restriction.USER_RESTRICTION_UNKNOWN -> {
+                        accountAddressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
+                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                        accountAddressTimer = timer.schedule(
+                            subaccountsPollingDelay,
+                            null
+                        ) {
+                            accountAddressTimer = null
+                            screenAccountAddress()
+                            false
+                        }
+                    }
+
+                    else -> {
+                        throw Exception("Unexpected restriction value")
+                    }
+                }
+            }
+        } else {
+            accountAddressRestriction = Restriction.NO_RESTRICTION
+        }
+    }
+
+    open fun screen(address: String, callback: ((Restriction) -> Unit)) {
+        val url = screenUrl()
+        if (url != null) {
+            get(
+                url,
+                iMapOf("address" to address),
+                null,
+                false,
+                callback = { response, httpCode ->
+                    if (success(httpCode) && response != null) {
+                        val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
+                        val restricted = parser.asBool(payload["restricted"]) ?: false
+                        callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                    } else {
+                        callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                    }
+                })
+        }
+    }
+
+    private fun didSetsourceAddressRestriction(sourceAddressRestriction: Restriction?) {
+        updateAddressRestriction()
+    }
+
+    private fun updateAddressRestriction() {
+        val restrictions: Set<Restriction?> =
+            iSetOf(accountAddressRestriction, sourceAddressRestriction)
+        addressRestriction = if (restrictions.contains(Restriction.USER_RESTRICTED)) {
+            RegulatoryRestriction.userRestriction
+        } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
+            RegulatoryRestriction.userRestrictionUnknown
+        } else {
+            if (sourceAddressRestriction == null && accountAddressRestriction == null) {
+                null
+            } else {
+                RegulatoryRestriction.noRestriction
+            }
+        }
+    }
+
+    private fun didSetAddressRestriction(addressRestriction: RegulatoryRestriction?) {
+        updateRestriction()
+    }
+
+    internal open fun updateRestriction() {
+        restriction = addressRestriction ?: RegulatoryRestriction.noRestriction
+    }
+
+    private fun didSetRestriction(restriction: RegulatoryRestriction?) {
+        val state = stateMachine.state
+        stateMachine.state = PerpetualState(
+            state?.assets,
+            state?.marketsSummary,
+            state?.orderbooks,
+            state?.candles,
+            state?.trades,
+            state?.historicalFundings,
+            state?.wallet,
+            state?.account,
+            state?.historicalPnl,
+            state?.fills,
+            state?.transfers,
+            state?.fundingPayments,
+            state?.configs,
+            state?.input,
+            state?.availableSubaccountNumbers ?: iListOf(),
+            state?.transferStatuses,
+            restriction,
+        )
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.stateChanged(
+                stateMachine.state,
+                StateChanges(
+                    iListOf(Changes.restriction),
+                ),
+            )
+        }
+    }
+
 
     internal open fun dispose() {
         stateNotification = null

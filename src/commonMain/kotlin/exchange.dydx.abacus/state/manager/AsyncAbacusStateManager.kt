@@ -332,7 +332,7 @@ class AsyncAbacusStateManager(
         }
 
     var accountAddress: String? = null
-        private set(value) {
+        set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.accountAddress = field
@@ -340,7 +340,7 @@ class AsyncAbacusStateManager(
         }
 
     var sourceAddress: String? = null
-        private set(value) {
+        set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.sourceAddress = field

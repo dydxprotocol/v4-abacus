@@ -21,6 +21,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Parser
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 
@@ -118,6 +119,7 @@ class TestFileSystem : FileSystemProtocol {
 class TestRest() : RestProtocol {
     private val mock = AbacusMockData()
     private var responses = iMutableMapOf<String, String>()
+    private val parser = Parser()
 
     var requests = iMutableListOf<String>()
 
@@ -196,7 +198,12 @@ class TestRest() : RestProtocol {
         val response = responses[url]
         if (response != null) {
             responses.remove(url)
-            callback(response, 200)
+            val code = parser.asInt(response)
+            if (code != null) {
+                callback(null, code)
+            } else {
+                callback(response, 200)
+            }
         } else {
             callback(null, 404)
         }

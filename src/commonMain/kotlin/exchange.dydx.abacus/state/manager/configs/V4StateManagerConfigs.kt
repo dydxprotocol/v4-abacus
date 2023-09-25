@@ -24,6 +24,7 @@ class V4StateManagerConfigs(
                          "sparklines":"/v4/sparklines",
                          "subaccounts":"/v4/addresses",
                          "time":"/v4/time",
+                         "screen":"/v4/screen",
                          "height":"/v4/height"
                       },
                       "private":{

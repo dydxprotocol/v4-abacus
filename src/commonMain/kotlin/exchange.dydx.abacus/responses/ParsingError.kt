@@ -1,5 +1,11 @@
 package exchange.dydx.abacus.responses
 
+import exchange.dydx.abacus.output.FeeDiscountResources
+import exchange.dydx.abacus.output.RegulatoryRestriction
+import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.IMap
 import kotlinx.serialization.Serializable
 import kollections.JsExport
 
@@ -17,10 +23,11 @@ enum class ParsingErrorType(val rawValue: String) {
     Unhandled("Unhandled"),
     BackendError("Backend Error"),
     HttpError403("Http Error 403"),
+    UserRestricted("User Restricted"),
     ;
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             ParsingErrorType.values().firstOrNull { it.rawValue == rawValue }
     }
 }
