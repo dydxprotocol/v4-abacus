@@ -1,16 +1,12 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableMapOf
-import kollections.toIMap
-import kollections.toIMutableMap
 
 /*
 Transform position and account
@@ -29,12 +25,12 @@ Delta object
 internal class SubaccountTransformer {
     private fun deltaFromTrade(
         parser: ParserProtocol,
-        trade: IMap<String, Any>
-    ): IMap<String, Any>? {
+        trade: Map<String, Any>
+    ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
         val side = parser.asString(trade["side"])
         if (marketId != null && side != null) {
-            parser.asMap(trade["summary"])?.let { summary ->
+            parser.asNativeMap(trade["summary"])?.let { summary ->
                 if (parser.asBool(summary["filled"]) == true) {
                     val multiplier =
                         (if (side == "BUY") Numeric.decimal.NEGATIVE else Numeric.decimal.POSITIVE)
@@ -47,7 +43,7 @@ internal class SubaccountTransformer {
                         ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE
                     val feeRate = parser.asDecimal(summary["feeRate"]) ?: Numeric.decimal.ZERO
                     if (price != null && size != Numeric.decimal.ZERO) {
-                        return iMapOf(
+                        return mapOf(
                             "marketId" to marketId,
                             "size" to size,
                             "price" to price,
@@ -55,21 +51,21 @@ internal class SubaccountTransformer {
                             "fee" to fee,
                             "feeRate" to feeRate,
                             "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false)
-                        ).toIMap()
+                        )
                     }
                 }
             }
-            return iMapOf(
+            return mapOf(
                 "marketId" to marketId,
-            ).toIMap()
+            )
         }
         return null
     }
 
     private fun deltaFromTransfer(
         parser: ParserProtocol,
-        transfer: IMap<String, Any>
-    ): IMap<String, Any>? {
+        transfer: Map<String, Any>
+    ): Map<String, Any>? {
         val type = parser.asString(transfer["type"])
         if (type != null) {
             val summary = parser.asMap(transfer["summary"])
@@ -80,10 +76,10 @@ internal class SubaccountTransformer {
                     (parser.asDecimal(summary["usdcSize"]) ?: Numeric.decimal.ZERO) * multiplier
                 val fee = (parser.asDecimal(summary["fee"])
                     ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE
-                return iMapOf(
+                return mapOf(
                     "usdcSize" to usdcSize,
                     "fee" to fee
-                ).toIMap()
+                )
             }
         }
         return null
@@ -91,9 +87,9 @@ internal class SubaccountTransformer {
 
     internal fun deltaFromOrder(
         parser: ParserProtocol,
-        order: IMap<String, Any>,
-        account: IMap<String, Any>
-    ): IMap<String, Any>? {
+        order: Map<String, Any>,
+        account: Map<String, Any>
+    ): Map<String, Any>? {
         if (parser.asString(order["status"]) == "OPEN") {
             val marketId = parser.asString(order["marketId"])
             val side = parser.asString(order["side"])
@@ -115,7 +111,7 @@ internal class SubaccountTransformer {
                     )
                 ) ?: Numeric.decimal.ZERO
                 val fee = usdcSize * feeRate
-                return iMapOf(
+                return mapOf(
                     "marketId" to marketId,
                     "size" to size,
                     "price" to price,
@@ -130,16 +126,16 @@ internal class SubaccountTransformer {
     }
 
     internal fun applyTransferToWallet(
-        wallet: IMap<String, Any>,
+        wallet: Map<String, Any>,
         subaccountNumber: Int?,
-        transfer: IMap<String, Any>,
+        transfer: Map<String, Any>,
         parser: ParserProtocol,
         period: String
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         val delta = deltaFromTransfer(parser, transfer)
         return if (delta != null) {
             val key = "account.subaccounts.$subaccountNumber"
-            val subaccount = parser.asMap(parser.value(wallet, key))
+            val subaccount = parser.asNativeMap(parser.value(wallet, key))
             if (subaccount != null) {
                 val modifiedSubaccount = applyDeltaToSubaccount(subaccount, delta, parser, period)
                 val modifiedWallet = wallet.mutable()
@@ -150,11 +146,11 @@ internal class SubaccountTransformer {
     }
 
     internal fun applyTradeToSubaccount(
-        subaccount: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
         parser: ParserProtocol,
         period: String
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         if (subaccount != null) {
             val delta = deltaFromTrade(parser, trade)
             return applyDeltaToSubaccount(subaccount, delta, parser, period)
@@ -162,8 +158,8 @@ internal class SubaccountTransformer {
         return subaccount
     }
 
-    private fun nullPosition(marketId: String): IMap<String, Any> {
-        return iMapOf(
+    private fun nullPosition(marketId: String): Map<String, Any> {
+        return mapOf(
             "id" to marketId,
             "status" to "OPEN",
             "id" to marketId,
@@ -171,23 +167,23 @@ internal class SubaccountTransformer {
             "side" to {
                 "current" to "NONE"
             },
-            "size" to iMapOf(
+            "size" to mapOf(
                 "current" to 0.0
             ),
-            "entryPrice" to iMapOf(
+            "entryPrice" to mapOf(
                 "current" to 0.0
             ),
-            "realizedPnl" to iMapOf(
+            "realizedPnl" to mapOf(
                 "current" to 0.0
             ),
             "maxSize" to 0.0,
             "netFunding" to 0.0,
             "unrealizedPnl" to 0.0,
-            "resources" to iMapOf(
-                "sideStringKey" to iMapOf(
+            "resources" to mapOf(
+                "sideStringKey" to mapOf(
                     "current" to "APP.GENERAL.NONE"
                 ),
-                "indicator" to iMapOf(
+                "indicator" to mapOf(
                     "current" to "none"
                 )
             )
@@ -195,16 +191,16 @@ internal class SubaccountTransformer {
     }
 
     private fun applyDeltaToPositions(
-        positions: IMap<String, Any>,
-        delta: IMap<String, Any>?,
+        positions: Map<String, Any>,
+        delta: Map<String, Any>?,
         parser: ParserProtocol,
         period: String
-    ): IMap<String, Any> {
-        val nullDelta = if (delta != null) iMapOf("size" to 0.0) else null
-        val modified = iMutableMapOf<String, Any>()
+    ): Map<String, Any> {
+        val nullDelta = if (delta != null) mapOf("size" to 0.0) else null
+        val modified = mutableMapOf<String, Any>()
         val deltaMarketId = parser.asString(delta?.get("marketId"))
         for ((marketId, value) in positions) {
-            val position = parser.asMap(value)
+            val position = parser.asNativeMap(value)
             if (position != null) {
                 val modifiedPosition = applyDeltaToPosition(
                     position,
@@ -224,7 +220,7 @@ internal class SubaccountTransformer {
             val position = nullPosition(deltaMarketId)
             val modifiedDelta = if (delta != null) transformDelta(
                 delta,
-                parser.asDecimal(parser.value(position, "size.current")) ?: Numeric.decimal.ZERO,
+                parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO,
                 parser
             ) else null
             modified[deltaMarketId] = applyDeltaToPosition(position, modifiedDelta, parser, period)
@@ -234,20 +230,20 @@ internal class SubaccountTransformer {
     }
 
     private fun applyDeltaToSubaccount(
-        subaccount: IMap<String, Any>,
-        delta: IMap<String, Any>?,
+        subaccount: Map<String, Any>,
+        delta: Map<String, Any>?,
         parser: ParserProtocol,
         period: String
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         val modified = subaccount.mutable()
 
         val deltaMarketId = parser.asString(delta?.get("marketId"))
         val positions =
-            parser.asMap(subaccount["openPositions"])?.mutable() ?: iMutableMapOf()
+            parser.asNativeMap(subaccount["openPositions"])?.mutable() ?: mutableMapOf()
         val marketPosition = positions[deltaMarketId]
         val modifiedDelta = if (delta != null) transformDelta(
             delta,
-            parser.asDecimal(parser.value(marketPosition, "size.current")) ?: Numeric.decimal.ZERO,
+            parser.asDouble(parser.value(marketPosition, "size.current")) ?: Numeric.double.ZERO,
             parser
         ) else null
 
@@ -257,7 +253,7 @@ internal class SubaccountTransformer {
         if (delta != null && usdcSize != Numeric.decimal.ZERO) {
             val fee = (parser.asDecimal(modifiedDelta?.get("fee")) ?: Numeric.decimal.ZERO)
             val quoteBalance =
-                parser.asMap(subaccount["quoteBalance"])?.mutable() ?: iMutableMapOf()
+                parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
             val quoteBalanceValue =
                 (parser.asDecimal(quoteBalance["current"])
                     ?: Numeric.decimal.ZERO) + usdcSize + fee
@@ -265,7 +261,7 @@ internal class SubaccountTransformer {
             modified["quoteBalance"] = quoteBalance
         } else {
             val quoteBalance =
-                parser.asMap(subaccount["quoteBalance"])?.mutable() ?: iMutableMapOf()
+                parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
             quoteBalance.safeSet(period, null)
             modified["quoteBalance"] = quoteBalance
         }
@@ -273,26 +269,26 @@ internal class SubaccountTransformer {
     }
 
     private fun transformDelta(
-        delta: IMap<String, Any>,
-        positionSize: BigDecimal,
+        delta: Map<String, Any>,
+        positionSize: Double,
         parser: ParserProtocol
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         val marketId = parser.asString(delta["marketId"])
         if (parser.asBool(delta["reduceOnly"]) == true && marketId != null) {
-            val size = parser.asDecimal(delta["size"]) ?: Numeric.decimal.ZERO
-            val price = parser.asDecimal(delta["price"]) ?: Numeric.decimal.ZERO
+            val size = parser.asDouble(delta["size"]) ?: Numeric.double.ZERO
+            val price = parser.asDouble(delta["price"]) ?: Numeric.double.ZERO
             val modifiedSize =
-                if (positionSize > Numeric.decimal.ZERO && size < Numeric.decimal.ZERO) {
-                    maxOf(size, positionSize * Numeric.decimal.NEGATIVE)
-                } else if (positionSize < Numeric.decimal.ZERO && size > Numeric.decimal.ZERO) {
-                    minOf(size, positionSize * Numeric.decimal.NEGATIVE)
+                if (positionSize > Numeric.double.ZERO && size < Numeric.double.ZERO) {
+                    maxOf(size, positionSize * Numeric.double.NEGATIVE)
+                } else if (positionSize < Numeric.double.ZERO && size > Numeric.double.ZERO) {
+                    minOf(size, positionSize * Numeric.double.NEGATIVE)
                 } else {
-                    Numeric.decimal.ZERO
+                    Numeric.double.ZERO
                 }
-            val usdcSize = modifiedSize * price * Numeric.decimal.NEGATIVE
-            val feeRate = parser.asDecimal(delta["feeRate"]) ?: Numeric.decimal.ZERO
-            val fee = (usdcSize * feeRate).abs() * Numeric.decimal.NEGATIVE
-            return iMapOf(
+            val usdcSize = modifiedSize * price * Numeric.double.NEGATIVE
+            val feeRate = parser.asDouble(delta["feeRate"]) ?: Numeric.double.ZERO
+            val fee = (usdcSize * feeRate).abs() * Numeric.double.NEGATIVE
+            return mapOf(
                 "price" to price,
                 "size" to size,
                 "usdcSize" to usdcSize,
@@ -305,13 +301,13 @@ internal class SubaccountTransformer {
 
 
     private fun applyDeltaToPosition(
-        position: IMap<String, Any>,
-        delta: IMap<String, Any>?,
+        position: Map<String, Any>,
+        delta: Map<String, Any>?,
         parser: ParserProtocol,
         period: String
-    ): IMap<String, Any> {
-        val sizes = parser.asMap(position["size"])
-        val modifiedSize = sizes?.toIMutableMap() ?: iMutableMapOf()
+    ): Map<String, Any> {
+        val sizes = parser.asNativeMap(position["size"])
+        val modifiedSize = sizes?.toMutableMap() ?: mutableMapOf()
         val deltaSize = parser.asDecimal(delta?.get("size"))
         if (delta != null && deltaSize != null) {
             val size = parser.asDecimal(sizes?.get("current")) ?: Numeric.decimal.ZERO
@@ -325,17 +321,17 @@ internal class SubaccountTransformer {
     }
 
     private fun adjustDeltaSize(
-        size: BigDecimal,
-        deltaSize: BigDecimal,
+        size: Double,
+        deltaSize: Double,
         reduceOnly: Boolean
-    ): BigDecimal {
+    ): Double {
         return if (reduceOnly) {
-            if (size > Numeric.decimal.ZERO && deltaSize < Numeric.decimal.ZERO) {
-                maxOf(deltaSize, size * Numeric.decimal.NEGATIVE)
-            } else if (size < Numeric.decimal.ZERO && deltaSize > Numeric.decimal.ZERO) {
-                minOf(deltaSize, size * Numeric.decimal.NEGATIVE)
+            if (size > Numeric.double.ZERO && deltaSize < Numeric.double.ZERO) {
+                maxOf(deltaSize, size * Numeric.double.NEGATIVE)
+            } else if (size < Numeric.double.ZERO && deltaSize > Numeric.double.ZERO) {
+                minOf(deltaSize, size * Numeric.double.NEGATIVE)
             } else {
-                Numeric.decimal.ZERO
+                Numeric.double.ZERO
             }
         } else {
             deltaSize

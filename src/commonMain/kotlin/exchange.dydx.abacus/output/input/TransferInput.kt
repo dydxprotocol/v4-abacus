@@ -25,7 +25,7 @@ data class DepositInputOptions(
         internal fun create(
             existing: DepositInputOptions?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): DepositInputOptions? {
             DebugLogger.log("creating Deposit Input Options\n")
 
@@ -98,7 +98,7 @@ data class WithdrawalInputOptions(
         internal fun create(
             existing: WithdrawalInputOptions?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): WithdrawalInputOptions? {
             DebugLogger.log("creating Withdrawal Input Options\n")
 
@@ -168,7 +168,7 @@ data class TransferOutInputOptions(
         internal fun create(
             existing: TransferOutInputOptions?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferOutInputOptions? {
             DebugLogger.log("creating TransferOut Input Options\n")
 
@@ -217,7 +217,7 @@ data class TransferInputChainResource(
         internal fun create(
             existing: TransferInputChainResource?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferInputChainResource? {
             DebugLogger.log("creating Transfer Input Chain Resource\n")
 
@@ -264,7 +264,7 @@ data class TransferInputTokenResource(
         internal fun create(
             existing: TransferInputTokenResource?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferInputTokenResource? {
             DebugLogger.log("creating Transfer Input Token Resource\n")
 
@@ -308,7 +308,7 @@ data class TransferInputResources(
         internal fun create(
             existing: TransferInputResources?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferInputResources? {
             DebugLogger.log("creating Transfer Input Resources\n")
 
@@ -365,7 +365,7 @@ data class TransferInputRequestPayload(
         internal fun create(
             existing: TransferInputRequestPayload?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferInputRequestPayload? {
             DebugLogger.log("creating Transfer Input Request Payload\n")
 
@@ -423,7 +423,8 @@ data class TransferInputSummary(
     companion object {
         internal fun create(
             existing: TransferInputSummary?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): TransferInputSummary? {
             DebugLogger.log("creating Transfer Input Summary\n")
 
@@ -472,7 +473,8 @@ data class TransferInputSize(
     companion object {
         internal fun create(
             existing: TransferInputSize?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): TransferInputSize? {
             DebugLogger.log("creating Transfer Input Size\n")
 
@@ -530,7 +532,7 @@ data class TransferInput(
         internal fun create(
             existing: TransferInput?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferInput? {
             DebugLogger.log("creating Transfer Input\n")
 

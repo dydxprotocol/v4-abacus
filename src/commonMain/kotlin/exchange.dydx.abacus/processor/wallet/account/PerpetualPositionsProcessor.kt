@@ -2,20 +2,17 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableMapOf
 
 internal class PerpetualPositionsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = PerpetualPositionProcessor(parser = parser)
 
-    internal fun received(payload: IMap<String, Any>?): IMap<String, Any>? {
+    internal fun received(payload: Map<String, Any>?): Map<String, Any>? {
         if (payload != null) {
-            val result = iMutableMapOf<String, Any>()
+            val result = mutableMapOf<String, Any>()
             for ((key, value) in payload) {
-                parser.asMap(value)?.let { value ->
+                parser.asNativeMap(value)?.let { value ->
                     val item = itemProcessor.received(null, value)
                     result.safeSet(key, item)
                 }
@@ -26,16 +23,16 @@ internal class PerpetualPositionsProcessor(parser: ParserProtocol) : BaseProcess
     }
 
     internal fun receivedChanges(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): Map<String, Any>? {
         return if (payload != null) {
-            val output = existing?.mutable() ?: iMutableMapOf()
+            val output = existing?.mutable() ?: mutableMapOf()
             for (item in payload) {
-                parser.asMap(item)?.let { item ->
+                parser.asNativeMap(item)?.let { item ->
                     parser.asString(item["market"])?.let {
                         val modified =
-                            itemProcessor.receivedChanges(parser.asMap(existing?.get(it)), item)
+                            itemProcessor.receivedChanges(parser.asNativeMap(existing?.get(it)), item)
                         output.safeSet(it, modified)
                     }
                 }

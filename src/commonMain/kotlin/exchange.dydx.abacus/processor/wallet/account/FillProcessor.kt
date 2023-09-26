@@ -2,14 +2,11 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 
 internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val fillKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val fillKeyMap = mapOf(
+        "string" to mapOf(
             "id" to "id",
             "side" to "side",
             "liquidity" to "liquidity",
@@ -17,27 +14,27 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "market" to "marketId",
             "orderId" to "orderId"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "createdAt" to "createdAt"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "price" to "price",
             "size" to "size",
             "fee" to "fee"
         )
     )
 
-    private val sideMap = iMapOf(
+    private val sideMap = mapOf(
         "BUY" to "APP.GENERAL.BUY",
         "SELL" to "APP.GENERAL.SELL"
     )
 
-    private val liquidityMap = iMapOf(
+    private val liquidityMap = mapOf(
         "MAKER" to "APP.TRADE.MAKER",
         "TAKER" to "APP.TRADE.TAKER"
     )
 
-    private val typeMap = iMapOf(
+    private val typeMap = mapOf(
         "MARKET" to "APP.TRADE.MARKET_ORDER_SHORT",
         "LIMIT" to "APP.TRADE.LIMIT_ORDER_SHORT",
         "STOP_LIMIT" to "APP.TRADE.STOP_LIMIT",
@@ -49,21 +46,21 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "LIQUIDATION" to "APP.TRADE.LIQUIDATION"
     )
 
-    private val sideIconMap = iMapOf(
+    private val sideIconMap = mapOf(
         "BUY" to "Buy",
         "SELL" to "Sell"
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         val fill = transform(existing, payload, fillKeyMap)
         if (fill["marketId"] == null) {
             fill.safeSet("marketId", parser.asString(payload["ticker"]))
         }
 
-        val resources = iMutableMapOf<String, Any>()
+        val resources = mutableMapOf<String, Any>()
         fill["side"]?.let {
             sideMap[it]?.let {
                 resources["sideStringKey"] = it

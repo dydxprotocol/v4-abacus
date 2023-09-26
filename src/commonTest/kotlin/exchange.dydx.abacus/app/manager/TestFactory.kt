@@ -23,11 +23,10 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Parser
 import kollections.iMutableListOf
-import kollections.iMutableMapOf
 
 class TestFileSystem : FileSystemProtocol {
     private val mock = AbacusMockData()
-    var cachedFiles = iMutableMapOf<String, String>()
+    var cachedFiles = mutableMapOf<String, String>()
 
     override fun readTextFile(
         location: FileLocation,
@@ -118,7 +117,7 @@ class TestFileSystem : FileSystemProtocol {
 
 class TestRest() : RestProtocol {
     private val mock = AbacusMockData()
-    private var responses = iMutableMapOf<String, String>()
+    private var responses = mutableMapOf<String, String>()
     private val parser = Parser()
 
     var requests = iMutableListOf<String>()

@@ -23,7 +23,8 @@ data class SelectionOption(
     companion object {
         internal fun create(
             existing: SelectionOption?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): SelectionOption? {
             DebugLogger.log("creating Selection Option\n")
 
@@ -113,7 +114,8 @@ data class TradeInputOptions(
 
         internal fun create(
             existing: TradeInputOptions?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
             version: AppVersion,
         ): TradeInputOptions? {
             DebugLogger.log("creating Trade Input Options\n")
@@ -222,7 +224,8 @@ data class TradeInputSummary(
     companion object {
         internal fun create(
             existing: TradeInputSummary?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputSummary? {
             DebugLogger.log("creating Trade Input Summary\n")
 
@@ -278,7 +281,8 @@ data class OrderbookUsage(
     companion object {
         internal fun create(
             existing: OrderbookUsage?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): OrderbookUsage? {
             DebugLogger.log("creating Orderbook Line\n")
             data?.let {
@@ -313,7 +317,8 @@ data class TradeInputMarketOrder(
     companion object {
         internal fun create(
             existing: TradeInputMarketOrder?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputMarketOrder? {
             DebugLogger.log("creating Trade Input Market Order\n")
 
@@ -373,7 +378,8 @@ data class TradeInputSize(
     companion object {
         internal fun create(
             existing: TradeInputSize?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputSize? {
             DebugLogger.log("creating Trade Input Size\n")
 
@@ -408,7 +414,8 @@ data class TradeInputPrice(
     companion object {
         internal fun create(
             existing: TradeInputPrice?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputPrice? {
             DebugLogger.log("creating Trade Input Price\n")
 
@@ -440,7 +447,8 @@ data class TradeInputGoodUntil(
     companion object {
         internal fun create(
             existing: TradeInputGoodUntil?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputGoodUntil? {
             DebugLogger.log("creating Trade Input Good Until\n")
 
@@ -471,7 +479,8 @@ data class TradeInputBracketSide(
     companion object {
         internal fun create(
             existing: TradeInputBracketSide?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputBracketSide? {
             DebugLogger.log("creating Trade Input Good Until\n")
 
@@ -505,7 +514,8 @@ data class TradeInputBracket(
     companion object {
         internal fun create(
             existing: TradeInputBracket?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): TradeInputBracket? {
             DebugLogger.log("creating Trade Input Bracket\n")
 
@@ -629,7 +639,7 @@ enum class ReceiptLine(val rawValue: String) {
 
         internal fun create(
             parser: ParserProtocol,
-            data: IList<Any>?,
+            data: List<Any>?,
         ): IList<ReceiptLine>? {
             return data?.mapNotNull {
                 val string = parser.asString(it)
@@ -662,7 +672,8 @@ data class TradeInput(
     companion object {
         internal fun create(
             existing: TradeInput?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
             version: AppVersion,
         ): TradeInput? {
             DebugLogger.log("creating Trade Input\n")

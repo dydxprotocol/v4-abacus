@@ -3,18 +3,15 @@ package exchange.dydx.abacus.state.modal
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
-import kollections.toIMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.receivedSubaccountSubscribed(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     height: Int?,
 ): StateChanges {
     this.wallet = walletProcessor.subscribed(wallet, payload, height)
@@ -32,7 +29,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
 }
 
 internal fun TradingStateMachine.receivedAccountsChanges(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     info: SocketInfo,
     height: Int?,
 ): StateChanges {
@@ -66,7 +63,7 @@ internal fun TradingStateMachine.receivedAccountsChanges(
 }
 
 internal fun TradingStateMachine.receivedBatchAccountsChanges(
-    payload: IList<Any>,
+    payload: List<Any>,
     info: SocketInfo,
     height: Int?
 ): StateChanges {
@@ -86,38 +83,38 @@ internal fun TradingStateMachine.receivedBatchAccountsChanges(
 }
 
 internal fun TradingStateMachine.user(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     return receivedUser(json)
 }
 
-internal fun TradingStateMachine.receivedUser(payload: IMap<String, Any>): StateChanges {
+internal fun TradingStateMachine.receivedUser(payload: Map<String, Any>): StateChanges {
     this.wallet = walletProcessor.receivedUser(wallet, payload)
     return StateChanges(iListOf(Changes.wallet), null)
 }
 
 internal fun TradingStateMachine.onChainUserFeeTier(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     return receivedOnChainUserFeeTier(json)
 }
 
-private fun TradingStateMachine.receivedOnChainUserFeeTier(payload: IMap<String, Any>): StateChanges {
+private fun TradingStateMachine.receivedOnChainUserFeeTier(payload: Map<String, Any>): StateChanges {
     this.wallet = walletProcessor.receivedOnChainUserFeeTier(wallet, payload)
     return StateChanges(iListOf(Changes.wallet), null)
 }
 
 internal fun TradingStateMachine.onChainUserStats(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     this.wallet = walletProcessor.receivedOnChainUserStats(wallet, json)
     return StateChanges(iListOf(Changes.wallet), null)
 }
 
 internal fun TradingStateMachine.fills(payload: String, subaccountNumber: Int): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     return receivedFills(json, subaccountNumber)
 }
 
 internal fun TradingStateMachine.receivedFills(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int,
 ): StateChanges {
     val size = parser.asList(payload["fills"])?.size ?: 0
@@ -128,12 +125,12 @@ internal fun TradingStateMachine.receivedFills(
 }
 
 internal fun TradingStateMachine.transfers(payload: String, subaccountNumber: Int): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     return receivedTransfers(json, subaccountNumber)
 }
 
 internal fun TradingStateMachine.receivedTransfers(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int,
 ): StateChanges {
     val size = parser.asList(payload["transfers"])?.size ?: 0
@@ -165,7 +162,7 @@ internal fun TradingStateMachine.orderCanceled(
 internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateChanges {
     val json = Json.parseToJsonElement(payload)
     return try {
-        val account = json.jsonArray.toIList()
+        val account = json.jsonArray.toList()
         this.wallet = walletProcessor.receivedAccountBalances(wallet, account)
         return StateChanges(iListOf(Changes.accountBalances), null)
     } catch (e: Exception) {
@@ -176,7 +173,7 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
 internal fun TradingStateMachine.onChainDelegations(payload: String): StateChanges {
     val json = Json.parseToJsonElement(payload)
     return try {
-        val response = json.jsonObject.toIMap()
+        val response = json.jsonObject.toMap()
         val delegations = response["delegationResponses"]?.let {
             parser.asList(it)
         } ?: iListOf()

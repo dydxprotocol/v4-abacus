@@ -212,8 +212,8 @@ class V4SquidTests : V4BaseTests() {
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        val result = perp.squidProcessor.tokenResources("1") as IMap<String, String>
-        assertTrue(result.keys.size > 0)
+        val result = perp.squidProcessor.tokenResources("1")
+        assertTrue((result?.keys?.size ?: 0) > 0)
     }
 
     @Test

@@ -1,7 +1,5 @@
 package exchange.dydx.abacus.validator
 
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -23,32 +21,32 @@ enum class PositionChange(val rawValue: String) {
 
 interface ValidatorProtocol {
     fun validate(
-        wallet: IMap<String, Any>?,
-        user: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        transaction: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        user: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        transaction: Map<String, Any>,
         transactionType: String
-    ): IList<Any>?
+    ): List<Any>?
 }
 
 interface TradeValidatorProtocol {
     fun validateTrade(
-        subaccount: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        market: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean
-    ): IList<Any>?
+    ): List<Any>?
 }
 
 interface TransferValidatorProtocol {
     fun validateTransfer(
-        wallet: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        transfer: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        transfer: Map<String, Any>,
         restricted: Boolean
-    ): IList<Any>?
+    ): List<Any>?
 }

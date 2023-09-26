@@ -37,6 +37,8 @@ interface ParserProtocol {
     // parse to a list
     fun asList(data: Any?): IList<Any>?
 
+    fun asNativeList(data: Any?): List<Any>?
+
     fun value(data: Any?, path: String): Any?
 
     fun decodeJsonObject(text: String): IMap<String, Any>?

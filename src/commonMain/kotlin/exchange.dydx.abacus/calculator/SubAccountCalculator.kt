@@ -1,15 +1,11 @@
 package exchange.dydx.abacus.calculator
 
 import abs
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.AppVersion
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableMapOf
 import kotlin.math.sqrt
 
 
@@ -26,17 +22,17 @@ internal enum class CalculationPeriod(val rawValue: String) {
 @Suppress("UNCHECKED_CAST")
 internal class SubaccountCalculator(val parser: ParserProtocol) {
     internal fun calculate(
-        subaccount: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        price: IMap<String, Any>?,
-        periods: kollections.Set<CalculationPeriod>,
+        subaccount: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        price: Map<String, Any>?,
+        periods: Set<CalculationPeriod>,
         version: AppVersion,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         if (subaccount != null) {
             val modified = subaccount.mutable()
             val positions = calculatePositionsValues(
-                parser.asMap(subaccount["openPositions"]),
+                parser.asNativeMap(subaccount["openPositions"]),
                 markets,
                 subaccount,
                 price,
@@ -58,18 +54,18 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculatePositionsValues(
-        positions: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        subaccount: IMap<String, Any>,
-        price: IMap<String, Any>?,
-        periods: kollections.Set<CalculationPeriod>,
+        positions: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        subaccount: Map<String, Any>,
+        price: Map<String, Any>?,
+        periods: Set<CalculationPeriod>,
         version: AppVersion,
-    ): IMutableMap<String, IMutableMap<String, Any>>? {
+    ): MutableMap<String, MutableMap<String, Any>>? {
         return if (positions != null) {
-            val modified = iMutableMapOf<String, IMutableMap<String, Any>>()
+            val modified = mutableMapOf<String, MutableMap<String, Any>>()
             for ((key, position) in positions) {
-                parser.asMap(position)?.let { position ->
-                    parser.asMap(markets?.get(key))?.let { market ->
+                parser.asNativeMap(position)?.let { position ->
+                    parser.asNativeMap(markets?.get(key))?.let { market ->
                         modified[key] = calculatePositionValues(
                             position,
                             market,
@@ -87,18 +83,18 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         }
     }
 
-    private fun oraclePrice(market: IMap<*, *>?): Double? {
+    private fun oraclePrice(market: Map<*, *>?): Double? {
         return parser.asDouble(market?.get("oraclePrice"))
     }
 
     private fun calculatePositionValues(
-        position: IMap<String, Any>,
-        market: IMap<String, Any>?,
-        subaccount: IMap<String, Any>,
+        position: Map<String, Any>,
+        market: Map<String, Any>?,
+        subaccount: Map<String, Any>,
         price: Double?,
-        periods: kollections.Set<CalculationPeriod>,
+        periods: Set<CalculationPeriod>,
         version: AppVersion,
-    ): IMutableMap<String, Any> {
+    ): MutableMap<String, Any> {
         val modified = position.mutable()
         for (period in periods) {
             val size = parser.asDouble(value(position, "size", period))
@@ -180,14 +176,14 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             val notional = valueTotal.abs()
                             set(notional, modified, "notionalTotal", period)
                             val adjustedImf = calculatedAdjustedImf(
-                                parser.asMap(market?.get("configs")),
+                                parser.asNativeMap(market?.get("configs")),
                                 subaccount,
                                 size,
                                 notional,
                                 version
                             )
                             val adjustedMmf = calculatedAdjustedMmf(
-                                parser.asMap(market?.get("configs")),
+                                parser.asNativeMap(market?.get("configs")),
                                 notional,
                                 version
                             )
@@ -228,8 +224,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculatedAdjustedImf(
-        configs: IMap<String, Any>?,
-        subaccount: IMap<String, Any>,
+        configs: Map<String, Any>?,
+        subaccount: Map<String, Any>,
         size: Double?,
         notional: Double?,
         version: AppVersion,
@@ -241,7 +237,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculatedAdjustedMmf(
-        configs: IMap<String, Any>?,
+        configs: Map<String, Any>?,
         notional: Double?,
         version: AppVersion,
     ): Double {
@@ -252,7 +248,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculateV4MarginFraction(
-        configs: IMap<String, Any>?,
+        configs: Map<String, Any>?,
         initialMarginFraction: Double,
         notional: Double,
     ): Double {
@@ -271,9 +267,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculateSubaccountEquity(
-        subaccount: IMutableMap<String, Any>,
-        positions: IMap<String, IMap<String, Any>>?,
-        periods: kollections.Set<CalculationPeriod>,
+        subaccount: MutableMap<String, Any>,
+        positions: Map<String, Map<String, Any>>?,
+        periods: Set<CalculationPeriod>,
     ) {
         for (period in periods) {
             val quoteBalance = parser.asDecimal(value(subaccount, "quoteBalance", period))
@@ -346,10 +342,10 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculatePositionsLeverages(
-        positions: IMutableMap<String, IMutableMap<String, Any>>?,
-        markets: IMap<String, Any>?,
-        subaccount: IMutableMap<String, Any>,
-        periods: kollections.Set<CalculationPeriod>,
+        positions: MutableMap<String, MutableMap<String, Any>>?,
+        markets: Map<String, Any>?,
+        subaccount: MutableMap<String, Any>,
+        periods: Set<CalculationPeriod>,
     ) {
         positions?.let {
             for (period in periods) {
@@ -396,8 +392,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     private fun calculatePositionLiquidationPrice(
         equity: Double,
         market: String,
-        positions: IMap<String, IMutableMap<String, Any>>?,
-        markets: IMap<String, Any>?,
+        positions: Map<String, MutableMap<String, Any>>?,
+        markets: Map<String, Any>?,
         period: CalculationPeriod,
     ): Double? {
         val otherPositionsRisk =
@@ -405,8 +401,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
         var liquidationPrice: Double? = null
         positions?.get(market)?.let { position ->
-            parser.asMap(markets?.get(market))?.let { market ->
-                parser.asMap(market["configs"])?.let { configs ->
+            parser.asNativeMap(markets?.get(market))?.let { market ->
+                parser.asNativeMap(market["configs"])?.let { configs ->
                     parser.asDouble(value(position, "adjustedMmf", period))
                         ?.let { maintenanceMarginFraction ->
                             parser.asDouble(oraclePrice(market))?.let { oraclePrice ->
@@ -444,8 +440,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculationOtherPositionsRisk(
-        positions: IMap<String, IMutableMap<String, Any>>?,
-        markets: IMap<String, Any>?,
+        positions: Map<String, Map<String, Any>>?,
+        markets: Map<String, Any>?,
         except: String,
         period: CalculationPeriod,
     ): Double {
@@ -455,7 +451,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 if (key != except) {
                     risk += calculatePositionRisk(
                         position,
-                        parser.asMap(markets?.get(key)),
+                        parser.asNativeMap(markets?.get(key)),
                         period
                     )
                 }
@@ -466,12 +462,12 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculatePositionRisk(
-        position: IMap<String, Any>,
-        market: IMap<String, Any>?,
+        position: Map<String, Any>,
+        market: Map<String, Any>?,
         period: CalculationPeriod,
     ): Double {
         market?.let {
-            parser.asMap(market["configs"])?.let { configs ->
+            parser.asNativeMap(market["configs"])?.let { configs ->
                 parser.asDouble(value(position, "adjustedMmf", period))
                     ?.let { maintenanceMarginFraction ->
                         parser.asDouble(oraclePrice(market))?.let { oraclePrice ->
@@ -501,9 +497,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     }
 
     private fun calculateSubaccountBuyingPower(
-        subaccount: IMutableMap<String, Any>,
-        configs: IMap<String, Any>?,
-        periods: kollections.Set<CalculationPeriod>,
+        subaccount: MutableMap<String, Any>,
+        configs: Map<String, Any>?,
+        periods: Set<CalculationPeriod>,
     ) {
         for (period in periods) {
             val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
@@ -548,9 +544,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         return period.rawValue
     }
 
-    private fun value(data: IMap<*, *>, key: String, period: CalculationPeriod): Any? {
+    private fun value(data: Map<*, *>, key: String, period: CalculationPeriod): Any? {
         val value = data[key]
-        val map = parser.asMap(value)
+        val map = parser.asNativeMap(value)
         return if (map != null) {
             map[key(period)]
         } else {
@@ -560,12 +556,12 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
     private fun set(
         value: Any?,
-        data: IMutableMap<String, Any>,
+        data: MutableMap<String, Any>,
         key: String,
         period: CalculationPeriod,
     ) {
-        val map: IMutableMap<String, Any> =
-            parser.asMap(data[key])?.mutable() ?: iMutableMapOf<String, Any>()
+        val map: MutableMap<String, Any> =
+            parser.asNativeMap(data[key])?.mutable() ?: mutableMapOf<String, Any>()
         map.safeSet(key(period), value)
         data[key] = map
     }

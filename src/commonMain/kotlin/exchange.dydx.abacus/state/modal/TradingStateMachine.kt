@@ -25,9 +25,7 @@ import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
-import kollections.iSetOf
 import kollections.toIList
-import kollections.toIMap
 import kollections.toIMutableMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -63,9 +61,9 @@ open class TradingStateMachine(
     internal val inputValidator = InputValidator(localizer, formatter, parser)
 
 
-    internal var data: IMap<String, Any>? = null
+    internal var data: Map<String, Any>? = null
 
-    private var dummySubaccountPNLs = iMutableMapOf<String, SubaccountHistoricalPNL>();
+    private var dummySubaccountPNLs = mutableMapOf<String, SubaccountHistoricalPNL>();
 
     internal var groupingMultiplier: Int
         get() = marketsProcessor.groupingMultiplier
@@ -73,100 +71,100 @@ open class TradingStateMachine(
             marketsProcessor.groupingMultiplier = value
         }
 
-    internal var marketsSummary: IMap<String, Any>?
+    internal var marketsSummary: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("markets"))
+            return parser.asNativeMap(data?.get("markets"))
         }
         set(value) {
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("markets", value)
             this.data = if (modified.size != 0) modified else null
         }
 
     internal var historicalPnlDays: Int = 1
 
-    internal var assets: IMap<String, Any>?
+    internal var assets: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("assets"))
+            return parser.asNativeMap(data?.get("assets"))
         }
         set(value) {
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("assets", value)
             this.data = if (modified.size != 0) modified else null
         }
 
-    internal var wallet: IMap<String, Any>?
+    internal var wallet: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("wallet"))
+            return parser.asNativeMap(data?.get("wallet"))
         }
         set(value) {
             val oldAddress = parser.asString(parser.value(wallet, "walletAddress"))
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("wallet", value)
             this.data = if (modified.isEmpty()) null else modified
             val address = parser.asString(parser.value(wallet, "walletAddress"))
             if (address != oldAddress) {
-                dummySubaccountPNLs = iMutableMapOf()
+                dummySubaccountPNLs = mutableMapOf()
             }
         }
 
-    internal var account: IMap<String, Any>?
+    internal var account: Map<String, Any>?
         get() {
-            return parser.asMap(wallet?.get("account"))
+            return parser.asNativeMap(wallet?.get("account"))
         }
         set(value) {
-            val modified = wallet?.mutable() ?: iMutableMapOf()
+            val modified = wallet?.mutable() ?: mutableMapOf()
             modified.safeSet("account", value)
             this.wallet = if (modified.size != 0) modified else null
         }
 
-    internal var user: IMap<String, Any>?
+    internal var user: Map<String, Any>?
         get() {
-            return parser.asMap(wallet?.get("user"))
+            return parser.asNativeMap(wallet?.get("user"))
         }
         set(value) {
-            val modified = wallet?.mutable() ?: iMutableMapOf()
+            val modified = wallet?.mutable() ?: mutableMapOf()
             modified.safeSet("user", value)
             this.wallet = if (modified.size != 0) modified else null
         }
 
 
-    internal var configs: IMap<String, Any>?
+    internal var configs: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("configs"))
+            return parser.asNativeMap(data?.get("configs"))
         }
         set(value) {
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("configs", value)
             this.data = if (modified.size != 0) modified else null
         }
 
-    internal var input: IMap<String, Any>?
+    internal var input: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("input"))
+            return parser.asNativeMap(data?.get("input"))
         }
         set(value) {
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("input", value)
             this.data = if (modified.size != 0) modified else null
         }
 
-    internal var transferStatuses: IMap<String, Any>?
+    internal var transferStatuses: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("transferStatuses"))
+            return parser.asNativeMap(data?.get("transferStatuses"))
         }
         set(value) {
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("transferStatuses", value)
             this.data = if (modified.size != 0) modified else null
         }
 
-    internal var rewardsParams: IMap<String, Any>?
+    internal var rewardsParams: Map<String, Any>?
         get() {
-            return parser.asMap(data?.get("rewardsParams"))
+            return parser.asNativeMap(data?.get("rewardsParams"))
         }
         set(value) {
-            val modified = data?.mutable() ?: iMutableMapOf()
+            val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("rewardsParams", value)
             this.data = if (modified.size != 0) modified else null
         }
@@ -186,7 +184,7 @@ open class TradingStateMachine(
         val errors = iMutableListOf<ParsingError>()
         val json =
             try {
-                Json.parseToJsonElement(jsonString).jsonObject.toIMap()
+                Json.parseToJsonElement(jsonString).jsonObject.toMap()
             } catch (e: Exception) {
                 errors.add(
                     ParsingError(
@@ -206,7 +204,7 @@ open class TradingStateMachine(
     @Throws(Exception::class)
     private fun socket(
         url: AbUrl,
-        payload: IMap<String, Any>,
+        payload: Map<String, Any>,
         subaccountNumber: Int,
         height: Int?,
     ): StateResponse {
@@ -219,7 +217,7 @@ open class TradingStateMachine(
         try {
             when (type) {
                 "subscribed" -> {
-                    val content = parser.asMap(payload["contents"])
+                    val content = parser.asNativeMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
                             payload.toString()
@@ -261,7 +259,7 @@ open class TradingStateMachine(
                 "unsubscribed" -> {}
 
                 "channel_data" -> {
-                    val content = parser.asMap(payload["contents"])
+                    val content = parser.asNativeMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
                             payload.toString()
@@ -491,7 +489,7 @@ open class TradingStateMachine(
     }
 
     internal fun configurations(payload: String, subaccountNumber: Int?): StateChanges {
-        val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+        val json = Json.parseToJsonElement(payload).jsonObject.toMap()
         return receivedMarketsConfigurations(json, subaccountNumber)
     }
 
@@ -500,12 +498,12 @@ open class TradingStateMachine(
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
 
             val subaccount = if (subaccountNumber != null)
-                parser.asMap(parser.value(this.account, "subaccounts.$subaccountNumber")) else null
+                parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber")) else null
             this.input = inputValidator.validate(
                 this.wallet,
                 this.user,
                 subaccount,
-                parser.asMap(this.marketsSummary?.get("markets")),
+                parser.asNativeMap(this.marketsSummary?.get("markets")),
                 this.input,
                 this.configs
             )
@@ -575,11 +573,11 @@ open class TradingStateMachine(
 
     private fun calculateTrade(tag: String, calculation: TradeCalculation, subaccountNumber: Int?) {
         val input = this.input?.mutable()
-        val trade = parser.asMap(input?.get(tag))
+        val trade = parser.asNativeMap(input?.get(tag))
         val inputType = parser.asString(parser.value(trade, "size.input"))
         val calculator = TradeInputCalculator(parser, calculation)
-        val params = iMutableMapOf<String, Any>()
-        params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
+        val params = mutableMapOf<String, Any>()
+        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("account", account)
         params.safeSet("user", user)
         params.safeSet("trade", trade)
@@ -587,9 +585,9 @@ open class TradingStateMachine(
         params.safeSet("configs", configs)
 
         val modified = calculator.calculate(params, subaccountNumber, inputType)
-        this.setMarkets(parser.asMap(modified["markets"]))
-        this.account = parser.asMap(modified["account"])
-        input?.safeSet(tag, parser.asMap(modified["trade"]))
+        this.setMarkets(parser.asNativeMap(modified["markets"]))
+        this.account = parser.asNativeMap(modified["account"])
+        input?.safeSet(tag, parser.asNativeMap(modified["trade"]))
 
         this.input = input
     }
@@ -600,28 +598,28 @@ open class TradingStateMachine(
 
     private fun calculateTransfer(subaccountNumber: Int?) {
         val input = this.input?.mutable()
-        val transfer = parser.asMap(input?.get("transfer"))
+        val transfer = parser.asNativeMap(input?.get("transfer"))
         val calculator = TransferInputCalculator(parser)
-        val params = iMutableMapOf<String, Any>()
-        params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
+        val params = mutableMapOf<String, Any>()
+        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("user", user)
         params.safeSet("transfer", transfer)
         params.safeSet("wallet", wallet)
 
         val modified = calculator.calculate(params, subaccountNumber)
-        this.setMarkets(parser.asMap(modified["markets"]))
-        this.wallet = parser.asMap(modified["wallet"])
-        input?.safeSet("transfer", parser.asMap(modified["transfer"]))
+        this.setMarkets(parser.asNativeMap(modified["markets"]))
+        this.wallet = parser.asNativeMap(modified["wallet"])
+        input?.safeSet("transfer", parser.asNativeMap(modified["transfer"]))
 
         this.input = input
     }
 
-    private fun subaccount(subaccountNumber: Int): IMap<String, Any>? {
-        return parser.asMap(parser.value(account, "subaccounts.$subaccountNumber"))
+    private fun subaccount(subaccountNumber: Int): Map<String, Any>? {
+        return parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
     }
 
-    private fun setSubaccount(subaccount: IMap<String, Any>?, subaccountNumber: Int) {
-        val modifiedAccount = account?.mutable() ?: iMutableMapOf()
+    private fun setSubaccount(subaccount: Map<String, Any>?, subaccountNumber: Int) {
+        val modifiedAccount = account?.mutable() ?: mutableMapOf()
         modifiedAccount.safeSet("subaccounts.$subaccountNumber", subaccount)
         this.account = modifiedAccount
     }
@@ -631,7 +629,7 @@ open class TradingStateMachine(
     }
 
     private fun setSubaccountList(list: IList<Any>?, subaccountNumber: Int, name: String) {
-        val modifiedSubaccount = subaccount(subaccountNumber)?.mutable() ?: iMutableMapOf()
+        val modifiedSubaccount = subaccount(subaccountNumber)?.mutable() ?: mutableMapOf()
         modifiedSubaccount.safeSet(name, list)
         setSubaccount(modifiedSubaccount, subaccountNumber)
     }
@@ -670,9 +668,9 @@ open class TradingStateMachine(
     }
 
     private fun allSubaccountNumbers(): IList<Int> {
-        val subaccountsData = parser.asMap(account?.get("subaccounts"))
+        val subaccountsData = parser.asNativeMap(account?.get("subaccounts"))
         return if (subaccountsData != null) {
-            parser.asMap(subaccountsData)?.keys?.mapNotNull { key ->
+            parser.asNativeMap(subaccountsData)?.keys?.mapNotNull { key ->
                 parser.asInt(key)
             }?.toIList() ?: iListOf<Int>()
         } else iListOf<Int>()
@@ -680,7 +678,7 @@ open class TradingStateMachine(
 
     private fun maxSubaccountNumber(): Int? {
         var maxSubaccountNumber: Int? = null
-        val subaccountsData = parser.asMap(account?.get("subaccounts"))
+        val subaccountsData = parser.asNativeMap(account?.get("subaccounts"))
         if (subaccountsData != null) {
             for ((key, value) in subaccountsData) {
                 val subaccountNumber = parser.asInt(key)
@@ -709,14 +707,14 @@ open class TradingStateMachine(
     private fun recalculateStates(changes: StateChanges) {
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
         if (changes.changes.contains(Changes.subaccount)) {
-            val periods = if (this.input != null) iSetOf(
+            val periods = if (this.input != null) setOf(
                 CalculationPeriod.current,
                 CalculationPeriod.post,
                 CalculationPeriod.settled
-            ) else iSetOf(CalculationPeriod.current)
+            ) else setOf(CalculationPeriod.current)
 
             this.marketsSummary?.let { marketsSummary ->
-                parser.asMap(marketsSummary["markets"])?.let { markets ->
+                parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
                     val modifiedAccount = accountCalculator.calculate(
                         account,
                         subaccountNumbers,
@@ -766,14 +764,14 @@ open class TradingStateMachine(
         }
     }
 
-    private fun calculateReceipt(input: IMap<String, Any>): IList<String>? {
+    private fun calculateReceipt(input: Map<String, Any>): List<String>? {
         return when (parser.asString(input["current"])) {
             "trade" -> {
-                val trade = parser.asMap(input["trade"]) ?: return null
+                val trade = parser.asNativeMap(input["trade"]) ?: return null
                 val type = parser.asString(trade["type"]) ?: return null
                 return when (type) {
                     "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET", "TRAILING_STOP" -> {
-                        iListOf(
+                        listOf(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.expectedPrice.rawValue,
@@ -783,7 +781,7 @@ open class TradingStateMachine(
                     }
 
                     else -> {
-                        iListOf(
+                        listOf(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.fee.rawValue,
@@ -794,7 +792,7 @@ open class TradingStateMachine(
             }
 
             "closePosition" -> {
-                iListOf(
+                listOf(
                     ReceiptLine.buyingPower.rawValue,
                     ReceiptLine.marginUsage.rawValue,
                     ReceiptLine.expectedPrice.rawValue,
@@ -804,11 +802,11 @@ open class TradingStateMachine(
             }
 
             "transfer" -> {
-                val transfer = parser.asMap(input["transfer"]) ?: return null
+                val transfer = parser.asNativeMap(input["transfer"]) ?: return null
                 val type = parser.asString(transfer["type"]) ?: return null
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
-                        iListOf(
+                        listOf(
                             ReceiptLine.equity.rawValue,
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.exchangeRate.rawValue,
@@ -819,14 +817,14 @@ open class TradingStateMachine(
                         )
                     }
                     "TRANSFER_OUT" -> {
-                        iListOf(
+                        listOf(
                             ReceiptLine.equity.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.fee.rawValue
                         )
                     }
                     else -> {
-                        iListOf()
+                        listOf()
                     }
                 }
             }
@@ -854,7 +852,7 @@ open class TradingStateMachine(
         val restriction = state?.restriction
 
         if (changes.changes.contains(Changes.markets)) {
-            parser.asMap(data?.get("markets"))?.let {
+            parser.asNativeMap(data?.get("markets"))?.let {
                 marketsSummary = PerpetualMarketSummary.apply(marketsSummary, parser, it, this.assets, changes)
             } ?: run {
                 marketsSummary = null
@@ -866,7 +864,7 @@ open class TradingStateMachine(
                 val modified = orderbooks?.toIMutableMap() ?: iMutableMapOf()
                 for (marketId in markets) {
                     val data =
-                        parser.asMap(parser.value(data, "markets.markets.$marketId.orderbook"))
+                        parser.asNativeMap(parser.value(data, "markets.markets.$marketId.orderbook"))
                     val existing = orderbooks?.get(marketId)
                     val orderbook = MarketOrderbook.create(existing, parser, data)
                     modified.typedSafeSet(marketId, orderbook)
@@ -879,14 +877,14 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.trades)) {
             val markets = changes.markets
             if (markets != null) {
-                val modified = trades?.toIMutableMap() ?: iMutableMapOf()
+                val modified = trades?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
                     val data = parser.asList(
                         parser.value(
                             data,
                             "markets.markets.$marketId.trades"
                         )
-                    ) as? IList<IMap<String, Any>>
+                    ) as? IList<Map<String, Any>>
                     val existing = trades?.get(marketId)
                     val trades = MarketTrade.create(existing, parser, data)
                     modified.typedSafeSet(marketId, trades)
@@ -899,14 +897,14 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.historicalFundings)) {
             val markets = changes.markets
             if (markets != null) {
-                val modified = historicalFundings?.toIMutableMap() ?: iMutableMapOf()
+                val modified = historicalFundings?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
                     val data = parser.asList(
                         parser.value(
                             data,
                             "markets.markets.$marketId.historicalFunding"
                         )
-                    ) as? IList<IMap<String, Any>>
+                    ) as? IList<Map<String, Any>>
                     val existing = historicalFundings?.get(marketId)
                     val historicalFunding = MarketHistoricalFunding.create(existing, parser, data)
                     modified.typedSafeSet(marketId, historicalFunding)
@@ -919,9 +917,9 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.candles)) {
             val markets = changes.markets
             if (markets != null) {
-                val modified = candles?.toIMutableMap() ?: iMutableMapOf()
+                val modified = candles?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    val data = parser.asMap(parser.value(data, "markets.markets.$marketId.candles"))
+                    val data = parser.asNativeMap(parser.value(data, "markets.markets.$marketId.candles"))
                     val existing = candles?.get(marketId)
                     val candles = MarketCandles.create(existing, parser, data)
                     modified.typedSafeSet(marketId, candles)
@@ -933,9 +931,9 @@ open class TradingStateMachine(
         }
         if (changes.changes.contains(Changes.assets)) {
             this.assets?.let {
-                assets = assets ?: iMutableMapOf<String, Asset>()
+                assets = assets ?: mutableMapOf<String, Asset>()
                 for ((key, data) in it) {
-                    parser.asMap(data)?.let {
+                    parser.asNativeMap(data)?.let {
                         Asset.create(assets?.get(key), parser, it)?.let {
                             assets!![key] = it
                         }
@@ -966,7 +964,7 @@ open class TradingStateMachine(
                 account = if (account == null) {
                     Account.create(null, parser, accountData)
                 } else {
-                    val subaccounts = account.subaccounts?.toIMutableMap() ?: iMutableMapOf()
+                    val subaccounts = account.subaccounts?.toIMutableMap() ?: mutableMapOf()
                     for (subaccountNumber in subaccountNumbers) {
                         val subaccount = Subaccount.create(
                             account.subaccounts?.get("$subaccountNumber"),
@@ -992,16 +990,16 @@ open class TradingStateMachine(
             val subaccountNumber = subaccountNumbers.first()
             val subaccountText = "$subaccountNumber"
             val subaccount =
-                parser.asMap(parser.value(this.account, "subaccounts.$subaccountNumber"))
+                parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber"))
 
             if (changes.changes.contains(Changes.historicalPnl)) {
                 val now = ServerTime.now()
                 val start = now - historicalPnlDays.days
-                val modifiedHistoricalPnl = historicalPnl?.toIMutableMap() ?: iMutableMapOf()
+                val modifiedHistoricalPnl = historicalPnl?.toIMutableMap() ?: mutableMapOf()
                 var subaccountHistoricalPnl = historicalPnl?.get(subaccountText)
                 val subaccountHistoricalPnlData =
-                    (subaccountHistoricalPnl(subaccountNumber) as? IList<IMap<String, Any>>)?.mutable()
-                        ?: iMutableListOf()
+                    (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
+                        ?: mutableListOf()
                 val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
                 if (subaccountHistoricalPnl?.size == 1) {
                     // Check if the PNL was generated from equity
@@ -1020,34 +1018,34 @@ open class TradingStateMachine(
                 historicalPnl = modifiedHistoricalPnl
             }
             if (changes.changes.contains(Changes.fills)) {
-                val modifiedFills = fills?.toIMutableMap() ?: iMutableMapOf()
+                val modifiedFills = fills?.toIMutableMap() ?: mutableMapOf()
                 var subaccountFills = fills?.get(subaccountText)
                 subaccountFills = SubaccountFill.create(
                     subaccountFills,
                     parser,
-                    subaccountFills(subaccountNumber) as? IList<IMap<String, Any>>
+                    subaccountFills(subaccountNumber) as? IList<Map<String, Any>>
                 )
                 modifiedFills.typedSafeSet(subaccountText, subaccountFills)
                 fills = modifiedFills
             }
             if (changes.changes.contains(Changes.transfers)) {
-                val modifiedTransfers = transfers?.toIMutableMap() ?: iMutableMapOf()
+                val modifiedTransfers = transfers?.toIMutableMap() ?: mutableMapOf()
                 var subaccountTransfers = transfers?.get(subaccountText)
                 subaccountTransfers = SubaccountTransfer.create(
                     subaccountTransfers,
                     parser,
-                    subaccountTransfers(subaccountNumber) as? IList<IMap<String, Any>>
+                    subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>
                 )
                 modifiedTransfers.typedSafeSet(subaccountText, subaccountTransfers)
                 transfers = modifiedTransfers
             }
             if (changes.changes.contains(Changes.fundingPayments)) {
-                val modifiedFundingPayments = fundingPayments?.toIMutableMap() ?: iMutableMapOf()
+                val modifiedFundingPayments = fundingPayments?.toIMutableMap() ?: mutableMapOf()
                 var subaccountFundingPayments = fundingPayments?.get(subaccountText)
                 subaccountFundingPayments = SubaccountFundingPayment.create(
                     subaccountFundingPayments,
                     parser,
-                    subaccountFundingPayments(subaccountNumber) as? IList<IMap<String, Any>>
+                    subaccountFundingPayments(subaccountNumber) as? IList<Map<String, Any>>
                 )
                 modifiedFundingPayments.typedSafeSet(subaccountText, subaccountFundingPayments)
                 fundingPayments = modifiedFundingPayments
@@ -1058,7 +1056,7 @@ open class TradingStateMachine(
                     this.wallet,
                     this.user,
                     subaccount,
-                    parser.asMap(this.marketsSummary?.get("markets")),
+                    parser.asNativeMap(this.marketsSummary?.get("markets")),
                     this.input,
                     this.configs
                 )
@@ -1069,9 +1067,9 @@ open class TradingStateMachine(
         }
         if (changes.changes.contains(Changes.transferStatuses)) {
             this.transferStatuses?.let {
-                transferStatuses = transferStatuses ?: iMutableMapOf<String, TransferStatus>()
+                transferStatuses = transferStatuses ?: mutableMapOf<String, TransferStatus>()
                 for ((key, data) in it) {
-                    parser.asMap(data)?.let {
+                    parser.asNativeMap(data)?.let {
                         val status = TransferStatus.create(transferStatuses?.get(key), parser, it)
                         if (status != null) {
                             transferStatuses!![key] = status
@@ -1106,14 +1104,14 @@ open class TradingStateMachine(
     private fun calculateAccount(subaccountNumbers: IList<Int>, period: CalculationPeriod) {
         this.account?.let {
             this.marketsSummary?.let { marketsSummary ->
-                parser.asMap(marketsSummary["markets"])?.let { markets ->
+                parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
                     this.account = accountCalculator.calculate(
                         it,
                         subaccountNumbers,
                         null,
                         markets,
                         priceOverwrite(markets),
-                        iSetOf(period),
+                        setOf(period),
                         version
                     )
                 }
@@ -1121,15 +1119,15 @@ open class TradingStateMachine(
         }
     }
 
-    private fun priceOverwrite(markets: IMap<String, Any>): IMap<String, Any>? {
+    private fun priceOverwrite(markets: Map<String, Any>): Map<String, Any>? {
         if (parser.asString(input?.get("current")) == "trade") {
-            val trade = parser.asMap(input?.get("trade"))
+            val trade = parser.asNativeMap(input?.get("trade"))
             when (parser.asString(trade?.get("type"))) {
                 "LIMIT", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
                     val price = parser.asDouble(parser.value(trade, "summary.price"))
                     val marketId = parser.asString(trade?.get("marketId"))
                     if (marketId != null && price != null) {
-                        val market = parser.asMap(markets[marketId])
+                        val market = parser.asNativeMap(markets[marketId])
                         val oraclePrice =
                             parser.asDouble(market?.get("oraclePrice"))
                         if (oraclePrice != null) {
@@ -1145,7 +1143,7 @@ open class TradingStateMachine(
         return null
     }
 
-    private fun setMarkets(markets: IMap<String, Any>?) {
+    private fun setMarkets(markets: Map<String, Any>?) {
 
     }
 
@@ -1185,20 +1183,20 @@ open class TradingStateMachine(
         } else noChange()
     }
 
-    fun clearTradeInput(input: IMap<String, Any>): IMap<String, Any> {
-        val trade = parser.asMap(input["trade"])?.toIMutableMap()
+    fun clearTradeInput(input: Map<String, Any>): Map<String, Any> {
+        val trade = parser.asNativeMap(input["trade"])?.toMutableMap()
         trade?.safeSet("size", null)
         trade?.safeSet("price", null)
-        val modifiedInput = input.toIMutableMap()
+        val modifiedInput = input.toMutableMap()
         modifiedInput.safeSet("trade", trade)
         return modifiedInput
     }
 
-    fun clearTransferInput(input: IMap<String, Any>): IMap<String, Any> {
-        val trade = parser.asMap(input["trade"])?.toIMutableMap()
+    fun clearTransferInput(input: Map<String, Any>): Map<String, Any> {
+        val trade = parser.asNativeMap(input["trade"])?.toMutableMap()
         trade?.safeSet("size", null)
         trade?.safeSet("price", null)
-        val modifiedInput = input.toIMutableMap()
+        val modifiedInput = input.toMutableMap()
         modifiedInput.safeSet("trade", trade)
         return modifiedInput
     }

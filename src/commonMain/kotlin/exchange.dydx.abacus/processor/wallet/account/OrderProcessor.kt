@@ -2,11 +2,7 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -69,7 +65,7 @@ import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("UNCHECKED_CAST")
 internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val typeStringKeys = iMapOf(
+    private val typeStringKeys = mapOf(
         "MARKET" to "APP.TRADE.MARKET_ORDER_SHORT",
         "STOP_MARKET" to "APP.TRADE.STOP_MARKET",
         "TAKE_PROFIT_MARKET" to "APP.TRADE.TAKE_PROFIT_MARKET_SHORT",
@@ -80,11 +76,11 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "LIQUIDATED" to "APP.TRADE.LIQUIDATED",
         "LIQUIDATION" to "APP.TRADE.LIQUIDATION",
     )
-    private val sideStringKeys = iMapOf(
+    private val sideStringKeys = mapOf(
         "BUY" to "APP.GENERAL.BUY",
         "SELL" to "APP.GENERAL.SELL"
     )
-    private val statusStringKeys = iMapOf(
+    private val statusStringKeys = mapOf(
         "OPEN" to "APP.TRADE.OPEN_STATUS",
         "CANCELED" to "APP.TRADE.CANCELED",
         "FILLED" to "APP.TRADE.ORDER_FILLED",
@@ -94,12 +90,12 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "UNTRIGGERED" to "APP.TRADE.UNTRIGGERED",
         "PARTIALLY_FILLED" to "APP.TRADE.PARTIALLY_FILLED",
     )
-    private val timeInForceStringKeys = iMapOf(
+    private val timeInForceStringKeys = mapOf(
         "FOK" to "APP.TRADE.FILL_OR_KILL",
         "IOC" to "APP.TRADE.IMMEDIATE_OR_CANCEL",
         "GTT" to "APP.TRADE.GOOD_TIL_TIME"
     )
-    private val cancelReasonStringKeys = iMapOf(
+    private val cancelReasonStringKeys = mapOf(
         "COULD_NOT_FILL" to "APP.TRADE.COULD_NOT_FILL",
         "EXPIRED" to "APP.TRADE.EXPIRED",
         "FAILED" to "APP.TRADE.FAILED",
@@ -109,8 +105,8 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "USER_CANCELED" to "APP.TRADE.USER_CANCELED"
     )
 
-    private val orderKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val orderKeyMap = mapOf(
+        "string" to mapOf(
             "id" to "id",
             "clientId" to "clientId",
             "market" to "marketId",
@@ -121,7 +117,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 //            "cancelReason" to "cancelReason",
 //            "removalReason" to "removalReason"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "price" to "price",
             "triggerPrice" to "triggerPrice",
             "trailingPercent" to "trailingPercent",
@@ -129,18 +125,18 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 //            "remainingSize" to "remainingSize",
 //            "totalFilled" to "totalFilled"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "createdAt" to "createdAt",
             "unfillableAt" to "unfillableAt",
             "expiresAt" to "expiresAt",
             "updatedAt" to "updatedAt",
             "goodTilBlockTime" to "goodTilBlockTime"
         ),
-        "bool" to iMapOf(
+        "bool" to mapOf(
             "postOnly" to "postOnly",
             "reduceOnly" to "reduceOnly"
         ),
-        "int" to iMapOf(
+        "int" to mapOf(
             "clobPairId" to "clobPairId",
             "orderFlags" to "orderFlags",
             "goodTilBlock" to "goodTilBlock",
@@ -149,7 +145,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         )
     )
 
-    private fun shouldUpdate(existing: IMap<String, Any>?, payload: IMap<String, Any>): Boolean {
+    private fun shouldUpdate(existing: Map<String, Any>?, payload: Map<String, Any>): Boolean {
         // First, use updatedAt timestamp, available in v3
         val updatedAt = parser.asDatetime(existing?.get("updatedAt"))
             ?: parser.asDatetime(existing?.get("createdAt"))
@@ -170,10 +166,10 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         height: Int?,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return if (shouldUpdate(existing, payload)) {
             val modified = transform(existing, payload, orderKeyMap)
             if (modified["marketId"] == null) {
@@ -227,9 +223,9 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         } else existing
     }
 
-    private fun updateResource(modified: IMutableMap<String, Any>) {
-        val resources = parser.asMap(modified["resources"])?.mutable()
-            ?: iMutableMapOf()
+    private fun updateResource(modified: MutableMap<String, Any>) {
+        val resources = parser.asNativeMap(modified["resources"])?.mutable()
+            ?: mutableMapOf()
 
         val type = parser.asString(modified["type"])
 
@@ -263,16 +259,16 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
 
     override fun received(
-        existing: IMap<String, Any>,
+        existing: Map<String, Any>,
         height: Int?,
-    ): Pair<IMap<String, Any>, Boolean> {
+    ): Pair<Map<String, Any>, Boolean> {
         return updateHeight(existing, height)
     }
 
     private fun updateHeight(
-        existing: IMap<String, Any>,
+        existing: Map<String, Any>,
         height: Int?,
-    ): Pair<IMap<String, Any>, Boolean> {
+    ): Pair<Map<String, Any>, Boolean> {
         if (height != null) {
             when (val status = parser.asString(existing["status"])) {
                 "BEST_EFFORT_CANCELED" -> {
@@ -282,7 +278,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                         val modifiedStatus = "CANCELED";
                         modified["status"] = modifiedStatus
                         val resources =
-                            parser.asMap(modified["resources"])?.mutable() ?: iMutableMapOf()
+                            parser.asNativeMap(modified["resources"])?.mutable() ?: mutableMapOf()
                         statusStringKeys[modifiedStatus]?.let {
                             resources["statusStringKey"] = it
                         }
@@ -298,8 +294,8 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun canceled(
-        existing: IMap<String, Any>,
-    ): IMap<String, Any> {
+        existing: Map<String, Any>,
+    ): Map<String, Any> {
         val modified = existing.mutable()
         modified["status"] = "BEST_EFFORT_CANCELED"
         modified["cancelReason"] = "USER_CANCELED"

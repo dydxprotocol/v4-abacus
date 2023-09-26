@@ -9,7 +9,7 @@ import kotlin.time.Duration.Companion.minutes
 
 class GoodTil {
     companion object {
-        internal fun duration(goodTil: IMap<String, Any>?, parser: ParserProtocol) : Duration? {
+        internal fun duration(goodTil: Map<String, Any>?, parser: ParserProtocol) : Duration? {
             if (goodTil === null) return null
             val duration = parser.asInt(goodTil["duration"]) ?: return null
             val timeInterval = when (parser.asString(goodTil["unit"])) {

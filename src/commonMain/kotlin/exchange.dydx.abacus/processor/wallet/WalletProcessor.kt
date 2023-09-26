@@ -6,8 +6,6 @@ import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -17,168 +15,168 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private var userProcessor = UserProcessor(parser = parser)
 
     internal fun subscribed(
-        existing: IMap<String, Any>?,
-        content: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        content: Map<String, Any>,
         height: Int?,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return receivedObject(
             existing,
             "account",
-            parser.asMap(content)
+            parser.asNativeMap(content)
         ) { existing, payload ->
-            parser.asMap(payload)?.let {
+            parser.asNativeMap(payload)?.let {
                 if (it["account"] != null) {
-                    v3accountProcessor.subscribed(parser.asMap(existing), it, height)
+                    v3accountProcessor.subscribed(parser.asNativeMap(existing), it, height)
                 } else {
-                    v4accountProcessor.subscribed(parser.asMap(existing), it, height)
+                    v4accountProcessor.subscribed(parser.asNativeMap(existing), it, height)
                 }
             }
         }
     }
 
     internal fun channel_data(
-        existing: IMap<String, Any>?,
-        content: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        content: Map<String, Any>,
         info: SocketInfo,
         height: Int?,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return receivedObject(
             existing,
             "account",
-            parser.asMap(content)
+            parser.asNativeMap(content)
         ) { existing, payload ->
-            parser.asMap(payload)?.let { payload ->
+            parser.asNativeMap(payload)?.let { payload ->
                 if (payload["accounts"] != null) {
-                    v3accountProcessor.channel_data(parser.asMap(existing), payload, height)
+                    v3accountProcessor.channel_data(parser.asNativeMap(existing), payload, height)
                 } else {
-                    v4accountProcessor.channel_data(parser.asMap(existing), payload, info, height)
+                    v4accountProcessor.channel_data(parser.asNativeMap(existing), payload, info, height)
                 }
             }
         }
     }
 
     internal fun receivedSubaccounts(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedSubaccounts(parser.asMap(existing), payload as? IList<Any>)
+            v4accountProcessor.receivedSubaccounts(parser.asNativeMap(existing), payload as? List<Any>)
         }
     }
 
     internal fun receivedAccountBalances(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v4accountProcessor.receivedAccountBalances(
-                parser.asMap(existing),
-                payload as? IList<Any>
+                parser.asNativeMap(existing),
+                payload as? List<Any>
             )
         }
     }
 
     internal fun receivedDelegations(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v4accountProcessor.receivedDelegations(
-                parser.asMap(existing),
-                payload as? IList<Any>
+                parser.asNativeMap(existing),
+                payload as? List<Any>
             )
         }
     }
 
     internal fun receivedUser(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?,
+    ): Map<String, Any>? {
         return receivedObject(
             existing,
             "user",
-            parser.asMap(payload?.get("user"))
+            parser.asNativeMap(payload?.get("user"))
         ) { existing, payload ->
-            parser.asMap(payload)?.let {
-                userProcessor.received(parser.asMap(existing), it)
+            parser.asNativeMap(payload)?.let {
+                userProcessor.received(parser.asNativeMap(existing), it)
             }
         }
     }
 
     internal fun receivedOnChainUserFeeTier(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?,
+    ): Map<String, Any>? {
         return receivedObject(
             existing,
             "user",
-            parser.asMap(payload?.get("tier"))
+            parser.asNativeMap(payload?.get("tier"))
         ) { existing, payload ->
-            parser.asMap(payload)?.let {
-                userProcessor.receivedOnChainUserFeeTier(parser.asMap(existing), it)
+            parser.asNativeMap(payload)?.let {
+                userProcessor.receivedOnChainUserFeeTier(parser.asNativeMap(existing), it)
             }
         }
     }
 
     internal fun receivedOnChainUserStats(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>?,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?,
+    ): Map<String, Any>? {
         return receivedObject(existing, "user", payload) { existing, payload ->
-            parser.asMap(payload)?.let {
-                userProcessor.receivedOnChainUserStats(parser.asMap(existing), it)
+            parser.asNativeMap(payload)?.let {
+                userProcessor.receivedOnChainUserStats(parser.asNativeMap(existing), it)
             }
         }
     }
 
     internal fun receivedHistoricalPnls(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         subaccountNumber: Int,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v3accountProcessor.receivedHistoricalPnls(
-                parser.asMap(existing),
-                parser.asMap(payload),
+                parser.asNativeMap(existing),
+                parser.asNativeMap(payload),
                 subaccountNumber
             )
         }
     }
 
     internal fun receivedFills(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         subaccountNumber: Int,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v3accountProcessor.receivedFills(
-                parser.asMap(existing),
-                parser.asMap(payload),
+                parser.asNativeMap(existing),
+                parser.asNativeMap(payload),
                 subaccountNumber
             )
         }
     }
 
     internal fun receivedTransfers(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         subaccountNumber: Int,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v3accountProcessor.receivedTransfers(
-                parser.asMap(existing),
-                parser.asMap(payload),
+                parser.asNativeMap(existing),
+                parser.asNativeMap(payload),
                 subaccountNumber
             )
         }
     }
 
     internal fun received(
-        existing: IMap<String, Any>,
+        existing: Map<String, Any>,
         subaccountNumber: Int,
         height: Int?,
-    ): Pair<IMap<String, Any>, Boolean> {
-        val account = parser.asMap(existing["account"])
+    ): Pair<Map<String, Any>, Boolean> {
+        val account = parser.asNativeMap(existing["account"])
         if (account != null) {
             val (modifiedAccount, accountUpdated) = v4accountProcessor.received(
                 account,
@@ -195,11 +193,11 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun orderCanceled(
-        existing: IMap<String, Any>,
+        existing: Map<String, Any>,
         orderId: String,
         subaccountNumber: Int,
-    ): Pair<IMap<String, Any>, Boolean> {
-        val account = parser.asMap(existing["account"])
+    ): Pair<Map<String, Any>, Boolean> {
+        val account = parser.asNativeMap(existing["account"])
         if (account != null) {
             val (modifiedAccount, updated) = v4accountProcessor.orderCanceled(
                 account,

@@ -2,20 +2,18 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import kollections.iMutableListOf
 
 @Suppress("UNCHECKED_CAST")
 internal class HistoricalPNLsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = HistoricalPNLProcessor(parser = parser)
 
     override fun received(
-        existing: IList<Any>?,
-        payload: IList<Any>
-    ): IList<Any>? {
-        val history = iMutableListOf<Any>()
+        existing: List<Any>?,
+        payload: List<Any>
+    ): List<Any>? {
+        val history = mutableListOf<Any>()
         for (item in payload.reversed()) {
-            parser.asMap(item)?.let {
+            parser.asNativeMap(item)?.let {
                 history.add(itemProcessor.received(null, it))
             }
         }

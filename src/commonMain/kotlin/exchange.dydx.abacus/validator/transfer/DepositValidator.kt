@@ -3,8 +3,6 @@ package exchange.dydx.abacus.validator.transfer
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.TransferValidatorProtocol
 
@@ -15,11 +13,11 @@ internal class DepositValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TransferValidatorProtocol {
     override fun validateTransfer(
-        wallet: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        transfer: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        transfer: Map<String, Any>,
         restricted: Boolean
-    ): IList<Any>? {
+    ): List<Any>? {
         return null
 //        val balance = parser.asDecimal(parser.value(wallet, "balance"))
 //        val size = parser.asDecimal(parser.value(transfer, "size.size"))

@@ -2,30 +2,26 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import kollections.iMutableListOf
-import kollections.toIList
 
 @Suppress("UNCHECKED_CAST")
 internal class HistoricalFundingsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = HistoricalFundingProcessor(parser = parser)
     internal fun received(
-        existing: IList<Any>?,
-        content: IMap<String, Any>,
-    ): IList<Any>? {
-        val payload = parser.asList(content["historicalFunding"]) as? IList<IMap<String, Any>>
+        existing: List<Any>?,
+        content: Map<String, Any>,
+    ): List<Any>? {
+        val payload = parser.asNativeList(content["historicalFunding"]) as? List<Map<String, Any>>
         return if (payload != null) receivedList(existing, payload) else null
     }
 
     private fun receivedList(
-        existing: IList<Any>?,
-        payload: IList<Any>?,
-    ): IList<Any>? {
+        existing: List<Any>?,
+        payload: List<Any>?,
+    ): List<Any>? {
         if (payload != null) {
-            val history = iMutableListOf<Any>()
+            val history = mutableListOf<Any>()
             for (value in payload) {
-                parser.asMap(value)?.let {
+                parser.asNativeMap(value)?.let {
                     val item = itemProcessor.received(null, it)
                     history.add(item)
                 }
@@ -33,7 +29,7 @@ internal class HistoricalFundingsProcessor(parser: ParserProtocol) : BaseProcess
             return merge(
                 parser,
                 existing,
-                history.reversed().toIList(),
+                history.reversed().toList(),
                 "effectiveAt",
                 true
             )

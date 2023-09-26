@@ -2,15 +2,9 @@ package exchange.dydx.abacus.processor.base
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableListOf
-import kollections.iMutableMapOf
-import kollections.toIMutableMap
 import kotlinx.datetime.Instant
 
 internal enum class ComparisonOrder {
@@ -37,11 +31,11 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
         }
 
     internal fun transform(
-        existing: IMap<String, Any>?,
-        input: IMap<*, *>?,
-        keymap: IMap<String, IMap<String, String>>
-    ): IMutableMap<String, Any> {
-        val output = existing?.mutable() ?: iMutableMapOf<String, Any>()
+        existing: Map<String, Any>?,
+        input: Map<*, *>?,
+        keymap: Map<String, Map<String, String>>
+    ): MutableMap<String, Any> {
+        val output = existing?.mutable() ?: mutableMapOf<String, Any>()
         if (input != null) {
             for ((type, map) in keymap) {
                 for ((key, target) in map) {
@@ -56,17 +50,17 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     }
 
     internal fun transform(
-        existing: IMap<String, Any>?,
-        input: IMap<*, *>,
+        existing: Map<String, Any>?,
+        input: Map<*, *>,
         state: String,
-        keymap: IMap<String, IMap<String, String>>
-    ): IMutableMap<String, Any> {
-        val output = existing?.mutable() ?: iMutableMapOf<String, Any>()
+        keymap: Map<String, Map<String, String>>
+    ): MutableMap<String, Any> {
+        val output = existing?.mutable() ?: mutableMapOf<String, Any>()
         for ((type, map) in keymap) {
             for ((key, target) in map) {
                 val value: Any? = value(input, key, type)
-                val existingValue = parser.asMap(existing?.get(value))
-                val outputMap = existingValue?.mutable() ?: iMutableMapOf<String, Any>()
+                val existingValue = parser.asNativeMap(existing?.get(value))
+                val outputMap = existingValue?.mutable() ?: mutableMapOf<String, Any>()
                 outputMap.safeSet(state, value)
                 output[target] = outputMap
             }
@@ -74,7 +68,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
         return output
     }
 
-    private fun value(input: IMap<*, *>, key: String, type: String): Any? {
+    private fun value(input: Map<*, *>, key: String, type: String): Any? {
         val result = parser.value(input, key)
         when (type) {
             "string" -> {
@@ -112,18 +106,18 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     }
 
     internal fun receivedObject(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         key: String,
         payload: Any?,
         process: (Any?, payload: Any) -> Any?
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         if (payload != null) {
-            val modified = existing?.toIMutableMap() ?: iMutableMapOf()
-            val map = parser.asMap(payload)
+            val modified = existing?.toMutableMap() ?: mutableMapOf()
+            val map = parser.asNativeMap(payload)
             val transformed = if (map != null) {
-                process(parser.asMap(modified[key]), map)
+                process(parser.asNativeMap(modified[key]), map)
             } else {
-                val list = parser.asList(payload)
+                val list = parser.asNativeList(payload)
                 if (list != null) {
                     process(modified[key], list)
                 } else null
@@ -135,73 +129,73 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     }
 
     internal open fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         height: Int?,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return received(existing, payload)
     }
 
     internal open fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any>? {
         return existing
     }
 
     internal open fun received(
-        existing: IList<Any>?,
-        payload: IList<Any>,
+        existing: List<Any>?,
+        payload: List<Any>,
         height: Int?,
-    ): IList<Any>? {
+    ): List<Any>? {
         return existing
     }
 
     internal open fun received(
-        existing: IList<Any>?,
-        payload: IList<Any>
-    ): IList<Any>? {
+        existing: List<Any>?,
+        payload: List<Any>
+    ): List<Any>? {
         return received(existing, payload)
     }
 
     internal open fun received(
-        existing: IList<Any>,
+        existing: List<Any>,
         height: Int?,
-    ): Pair<IList<Any>, Boolean> {
+    ): Pair<List<Any>, Boolean> {
         return Pair(existing, false)
     }
 
     internal open fun received(
-        existing: IMap<String, Any>,
+        existing: Map<String, Any>,
         height: Int?,
-    ): Pair<IMap<String, Any>, Boolean> {
+    ): Pair<Map<String, Any>, Boolean> {
         return Pair(existing, false)
     }
 
 
     internal open fun merge(
         parser: ParserProtocol,
-        existing: IList<Any>?,
-        incoming: IList<Any>?,
+        existing: List<Any>?,
+        incoming: List<Any>?,
         timeField: String,
         ascending: Boolean = true
-    ): IList<Any>? {
+    ): List<Any>? {
         return if (existing != null) {
             if (incoming != null) {
                 val lastIncomingTime =
-                    parser.asDatetime(parser.asMap(incoming.lastOrNull())?.get(timeField))
+                    parser.asDatetime(parser.asNativeMap(incoming.lastOrNull())?.get(timeField))
                 val firstIncomingTime =
-                    parser.asDatetime(parser.asMap(incoming.firstOrNull())?.get(timeField))
+                    parser.asDatetime(parser.asNativeMap(incoming.firstOrNull())?.get(timeField))
                 val lastExisting =
-                    parser.asDatetime(parser.asMap(existing.lastOrNull())?.get(timeField))
+                    parser.asDatetime(parser.asNativeMap(existing.lastOrNull())?.get(timeField))
                 val firstExisting =
-                    parser.asDatetime(parser.asMap(existing.firstOrNull())?.get(timeField))
+                    parser.asDatetime(parser.asNativeMap(existing.firstOrNull())?.get(timeField))
                 if (lastIncomingTime != null && firstExisting != null && lastIncomingTime != firstExisting && ascending(
                         lastIncomingTime,
                         firstExisting
                     ) == ascending
                 ) {
-                    val result = iMutableListOf<Any>()
+                    val result = mutableListOf<Any>()
                     result.addAll(incoming)
                     result.addAll(existing)
                     result
@@ -210,15 +204,15 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                         lastExisting
                     ) != ascending
                 ) {
-                    val result = iMutableListOf<Any>()
+                    val result = mutableListOf<Any>()
                     result.addAll(existing)
                     result.addAll(incoming)
                     result
                 } else {
                     return ParsingHelper.merge(parser, existing, incoming,
                         { obj, data ->
-                            val existingTime = parser.asDatetime(parser.asMap(obj)?.get(timeField))
-                            val incomingTime = parser.asDatetime(parser.asMap(data)?.get(timeField))
+                            val existingTime = parser.asDatetime(parser.asNativeMap(obj)?.get(timeField))
+                            val incomingTime = parser.asDatetime(parser.asNativeMap(data)?.get(timeField))
                             ParsingHelper.compare(existingTime, incomingTime, ascending)
                         },
                         { _, _, itemData ->

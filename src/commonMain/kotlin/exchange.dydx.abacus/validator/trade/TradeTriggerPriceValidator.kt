@@ -3,14 +3,9 @@ package exchange.dydx.abacus.validator.trade
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
-import kollections.iListOf
-import kollections.iMutableListOf
 
 enum class RelativeToPrice(val rawValue: String) {
     ABOVE("ABOVE"),
@@ -36,17 +31,17 @@ internal class TradeTriggerPriceValidator(
      */
 
     override fun validateTrade(
-        subaccount: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        market: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
-    ): IList<Any>? {
+    ): List<Any>? {
         val requiresTriggerPrice =
             parser.asBool(parser.value(trade, "options.requiresTriggerPrice")) ?: false
         if (requiresTriggerPrice) {
-            val errors = iMutableListOf<Any>()
+            val errors = mutableListOf<Any>()
             val type = parser.asString(trade["type"]) ?: return null
             val side = parser.asString(trade["side"]) ?: return null
             val indexPrice = parser.asDouble(
@@ -158,16 +153,16 @@ internal class TradeTriggerPriceValidator(
         type: String,
         indexPrice: Double,
         tickSize: String,
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         val fields =
-            if (type == "TRAILING_STOP") iListOf("price.trailingPercent") else
-                iListOf("price.triggerPrice")
+            if (type == "TRAILING_STOP") listOf("price.trailingPercent") else
+                listOf("price.triggerPrice")
         val action =
             if (type == "TRAILING_STOP") "APP.TRADE.MODIFY_TRAILING_PERCENT" else
                 "APP.TRADE.MODIFY_TRIGGER_PRICE"
-        val params = iMapOf(
+        val params = mapOf(
             "INDEX_PRICE" to
-                    iMapOf(
+                    mapOf(
                         "value" to indexPrice,
                         "format" to "price",
                         "tickSize" to tickSize
@@ -220,8 +215,8 @@ internal class TradeTriggerPriceValidator(
     }
 
     private fun liquidationPrice(
-        subaccount: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
     ): Double? {
         val marketId = parser.asString(trade["marketId"]) ?: return null
         return parser.asDouble(
@@ -235,11 +230,11 @@ internal class TradeTriggerPriceValidator(
     private fun triggerToLimitError(
         triggerToLimit: RelativeToPrice,
         triggerLimit: Double,
-    ): IMap<String, Any> {
-        val fields = iListOf("price.triggerPrice")
+    ): Map<String, Any> {
+        val fields = listOf("price.triggerPrice")
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
         val params =
-            iMapOf("TRIGGER_PRICE_LIMIT" to iMapOf("value" to triggerLimit, "format" to "price"))
+            mapOf("TRIGGER_PRICE_LIMIT" to mapOf("value" to triggerLimit, "format" to "price"))
         return when (triggerToLimit) {
             RelativeToPrice.ABOVE -> error(
                 "ERROR",
@@ -265,7 +260,7 @@ internal class TradeTriggerPriceValidator(
 
     private fun stopMarketExecutionWarning(
         parser: ParserProtocol,
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         return error(
             "WARNING",
             "STOP_MARKET_ORDER_MAY_NOT_EXECUTE",

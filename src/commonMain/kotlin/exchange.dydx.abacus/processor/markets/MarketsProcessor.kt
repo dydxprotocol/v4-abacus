@@ -3,12 +3,8 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMapOf
-import kollections.iMutableMapOf
 
 @Suppress("UNCHECKED_CAST")
 internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boolean) :
@@ -22,10 +18,10 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         }
 
     internal fun subscribed(
-        existing: IMap<String, Any>?,
-        content: IMap<String, Any>
-    ): IMap<String, Any>? {
-        val payload = parser.asMap(content["markets"])
+        existing: Map<String, Any>?,
+        content: Map<String, Any>
+    ): Map<String, Any>? {
+        val payload = parser.asNativeMap(content["markets"])
         return if (payload != null) {
             received(existing, payload)
         } else {
@@ -34,19 +30,19 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun channel_data(
-        existing: IMap<String, Any>?,
-        content: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        content: Map<String, Any>
+    ): Map<String, Any> {
         return receivedChanges(existing, content)
     }
 
     internal fun channel_batch_data(
-        existing: IMap<String, Any>?,
-        content: IList<Any>
-    ): IMap<String, Any> {
-        var data = existing ?: iMapOf()
+        existing: Map<String, Any>?,
+        content: List<Any>
+    ): Map<String, Any> {
+        var data = existing ?: mapOf()
         for (partialPayload in content) {
-            parser.asMap(partialPayload)?.let {
+            parser.asNativeMap(partialPayload)?.let {
                 data = receivedChanges(data, it)
             }
         }
@@ -54,15 +50,15 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
-        val markets = existing?.mutable() ?: iMutableMapOf()
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        val markets = existing?.mutable() ?: mutableMapOf()
         for ((market, data) in payload) {
-            val marketPayload = parser.asMap(data)
+            val marketPayload = parser.asNativeMap(data)
             if (marketPayload != null) {
                 val receivedMarket = marketProcessor.received(
-                    parser.asMap(existing?.get(market)),
+                    parser.asNativeMap(existing?.get(market)),
                     marketPayload
                 )
                 markets[market] = receivedMarket
@@ -72,16 +68,16 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     private fun receivedChanges(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
-        val markets = existing?.mutable() ?: iMutableMapOf<String, Any>()
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        val markets = existing?.mutable() ?: mutableMapOf<String, Any>()
         val narrowedPayload = narrow(payload)
         for ((market, data) in narrowedPayload) {
-            val marketPayload = parser.asMap(data)
+            val marketPayload = parser.asNativeMap(data)
             if (marketPayload != null) {
                 val receivedMarket = marketProcessor.receivedDelta(
-                    parser.asMap(existing?.get(market)),
+                    parser.asNativeMap(existing?.get(market)),
                     marketPayload
                 )
                 markets[market] = receivedMarket
@@ -90,23 +86,23 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return markets
     }
 
-    private fun narrow(payload: IMap<String, Any>): IMap<String, Any> {
-        return parser.asMap(payload["trading"]) ?: parser.asMap(payload["oraclePrices"])
-        ?: parser.asMap("markets") ?: payload
+    private fun narrow(payload: Map<String, Any>): Map<String, Any> {
+        return parser.asNativeMap(payload["trading"]) ?: parser.asNativeMap(payload["oraclePrices"])
+        ?: parser.asNativeMap("markets") ?: payload
     }
 
     internal fun receivedConfigurations(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
-        val markets = existing?.mutable() ?: iMutableMapOf<String, Any>()
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        val markets = existing?.mutable() ?: mutableMapOf<String, Any>()
         for ((market, data) in payload) {
-            val marketPayload = parser.asMap(data)
+            val marketPayload = parser.asNativeMap(data)
             if (marketPayload == null) {
                 DebugLogger.warning("Market payload is null")
             } else {
                 val receivedMarket = marketProcessor.receivedConfigurations(
-                    parser.asMap(existing?.get(market)),
+                    parser.asNativeMap(existing?.get(market)),
                     marketPayload
                 )
                 markets[market] = receivedMarket
@@ -116,22 +112,22 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun receivedOrderbook(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
-        val marketData = parser.asMap(existing?.get(market)) ?: iMutableMapOf()
-        val markets = existing?.mutable() ?: iMutableMapOf()
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        val marketData = parser.asNativeMap(existing?.get(market)) ?: mutableMapOf()
+        val markets = existing?.mutable() ?: mutableMapOf()
         markets[market] = marketProcessor.receivedOrderbook(marketData, payload)
         return markets
     }
 
     internal fun receivedBatchOrderbookChanges(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market))
+        payload: List<Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] = marketProcessor.receivedBatchOrderbookChanges(marketData, payload)
@@ -142,22 +138,22 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun receivedTrades(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market)) ?: iMutableMapOf()
-        val markets = existing?.mutable() ?: iMutableMapOf()
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market)) ?: mutableMapOf()
+        val markets = existing?.mutable() ?: mutableMapOf()
         markets[market] = marketProcessor.receivedTrades(marketData, payload)
         return markets
     }
 
     internal fun receivedTradesChanges(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market))
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] = marketProcessor.receivedTradesChanges(marketData, payload)
@@ -169,11 +165,11 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
 
 
     internal fun receivedBatchedTradesChanges(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market))
+        payload: List<Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] = marketProcessor.receivedBatchedTradesChanges(marketData, payload)
@@ -185,16 +181,16 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
 
 
     internal fun receivedCandles(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
         payload["candles"]?.let { candles ->
-            parser.asMap(candles)?.let {
-                val modified = existing?.mutable() ?: iMutableMapOf<String, Any>()
+            parser.asNativeMap(candles)?.let {
+                val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
                 for ((key, itemData) in it) {
                     parser.asString(key)?.let { market ->
-                        parser.asMap(existing?.get(market))?.let { marketData ->
-                            parser.asList(itemData)?.let { list ->
+                        parser.asNativeMap(existing?.get(market))?.let { marketData ->
+                            parser.asNativeList(itemData)?.let { list ->
                                 modified[market] = marketProcessor.receivedCandles(marketData, list)
                             }
                         }
@@ -202,14 +198,14 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
                 }
                 return modified
             }
-            parser.asList(candles)?.let { list ->
-                parser.asMap(list.firstOrNull())?.let { first ->
+            parser.asNativeList(candles)?.let { list ->
+                parser.asNativeMap(list.firstOrNull())?.let { first ->
                     val market =
                         parser.asString(first["market"]) ?: parser.asString(first["ticker"])
                     if (market != null) {
-                        val modified = existing?.mutable() ?: iMutableMapOf<String, Any>()
+                        val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
 
-                        parser.asMap(existing?.get(market))?.let { marketData ->
+                        parser.asNativeMap(existing?.get(market))?.let { marketData ->
                             modified[market] = marketProcessor.receivedCandles(marketData, list)
                         }
                         return modified
@@ -221,14 +217,14 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun receivedSparklines(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
-        val modified = existing?.mutable() ?: iMutableMapOf<String, Any>()
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
         for ((key, itemData) in payload) {
             parser.asString(key)?.let { market ->
-                parser.asMap(existing?.get(market))?.let { marketData ->
-                    parser.asList(itemData)?.let { list ->
+                parser.asNativeMap(existing?.get(market))?.let { marketData ->
+                    parser.asNativeList(itemData)?.let { list ->
                         modified[market] = marketProcessor.receivedSparklines(marketData, list)
                     }
                 }
@@ -238,12 +234,12 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun receivedCandles(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
         resolution: String,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market))
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] = marketProcessor.receivedCandles(marketData, resolution, payload)
@@ -254,12 +250,12 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun receivedCandlesChanges(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
         resolution: String,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market))
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] =
@@ -272,12 +268,12 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
 
 
     internal fun receivedBatchedCandlesChanges(
-        existing: IMap<String, Any>?,
+        existing: Map<String, Any>?,
         market: String,
         resolution: String,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
-        val marketData = parser.asMap(existing?.get(market))
+        payload: List<Any>
+    ): Map<String, Any>? {
+        val marketData = parser.asNativeMap(existing?.get(market))
         return if (existing != null && marketData != null) {
             val markets = existing.mutable()
             markets[market] =
@@ -289,9 +285,9 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
     }
 
     internal fun receivedHistoricalFundings(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
         val market = parser.asString(
             parser.value(payload, "historicalFunding.0.market") ?: parser.value(
                 payload,
@@ -299,7 +295,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             )
         )
         if (market != null) {
-            val marketData = parser.asMap(existing?.get(market))
+            val marketData = parser.asNativeMap(existing?.get(market))
             if (existing != null && marketData != null) {
                 val markets = existing.mutable()
                 markets[market] = marketProcessor.receivedHistoricalFundings(marketData, payload)
@@ -309,15 +305,15 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return existing
     }
 
-    internal fun groupOrderbook(existing: IMap<String, Any>?, market: String?): IMap<String, Any>? {
+    internal fun groupOrderbook(existing: Map<String, Any>?, market: String?): Map<String, Any>? {
         return if (existing != null) {
             val modified = existing.mutable()
             if (market != null) {
-                val existingMarket = parser.asMap(existing[market])
+                val existingMarket = parser.asNativeMap(existing[market])
                 modified.safeSet(market, marketProcessor.groupOrderbook(existingMarket))
             } else {
                 for ((key, value) in existing) {
-                    val existingMarket = parser.asMap(value)
+                    val existingMarket = parser.asNativeMap(value)
                     modified.safeSet(key, marketProcessor.groupOrderbook(existingMarket))
                 }
             }

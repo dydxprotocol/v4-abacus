@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
-import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.changes.Changes
@@ -31,7 +30,7 @@ data class MarketStatus(
         internal fun create(
             existing: MarketStatus?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
+            data: Map<String, Any>,
         ): MarketStatus? {
             val canTrade = parser.asBool(data["canTrade"])
             val canReduce = parser.asBool(data["canReduce"])
@@ -63,7 +62,7 @@ data class MarketConfigsV4(
         internal fun create(
             existing: MarketConfigsV4?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
+            data: Map<String, Any>,
         ): MarketConfigsV4? {
             val clobPairId = parser.asString(data["clobPairId"])
             val atomicResolution = parser.asInt(data["atomicResolution"])
@@ -120,7 +119,7 @@ data class MarketConfigs(
         internal fun create(
             existing: MarketConfigs?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
+            data: Map<String, Any>,
         ): MarketConfigs {
             val clobPairId = parser.asString(data["clobPairId"])
             val largeSize = parser.asInt(data["largeSize"])
@@ -198,7 +197,7 @@ data class MarketHistoricalFunding(
         internal fun create(
             existing: MarketHistoricalFunding?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): MarketHistoricalFunding? {
             DebugLogger.log("creating Market Historical Funding\n")
             data?.let {
@@ -225,7 +224,7 @@ data class MarketHistoricalFunding(
         fun create(
             existing: IList<MarketHistoricalFunding>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?,
+            data: List<Map<String, Any>>?,
         ): IList<MarketHistoricalFunding>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as MarketHistoricalFunding).effectiveAtMilliseconds
@@ -235,7 +234,7 @@ data class MarketHistoricalFunding(
                 ParsingHelper.compare(time1, time2 ?: 0.0, true)
             }, { _, obj, itemData ->
                 obj ?: create(null, parser, parser.asMap(itemData))
-            })
+            })?.toIList()
         }
     }
 }
@@ -256,7 +255,7 @@ data class MarketPerpetual(
         internal fun create(
             existing: MarketPerpetual?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): MarketPerpetual? {
             data?.let {
                 val volume24H = parser.asDouble(data["volume24H"])
@@ -309,7 +308,7 @@ data class CandleOption(
         internal fun create(
             existing: CandleOption?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): CandleOption? {
             DebugLogger.log("creating Candle Option\n")
             data?.let {
@@ -334,10 +333,10 @@ data class CandleOption(
         fun create(
             existing: IList<CandleOption>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?
+            data: List<Map<String, Any>>?
         ): IList<CandleOption>? {
             return if (data != null) {
-                val map = iMutableMapOf<String, CandleOption>()
+                val map = mutableMapOf<String, CandleOption>()
                 if (existing != null) {
                     for (item in existing) {
                         map[item.value] = item
@@ -376,7 +375,8 @@ data class MarketCandle(
     companion object {
         internal fun create(
             existing: MarketCandle?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): MarketCandle? {
             DebugLogger.log("creating Market Candle\n")
             data?.let {
@@ -449,7 +449,7 @@ data class MarketCandles(
         internal fun create(
             existing: MarketCandles?,
             parser: ParserProtocol,
-            data: IMap<String, Any>?,
+            data: Map<String, Any>?,
         ): MarketCandles? {
             DebugLogger.log("creating Market Candles\n")
             data?.let {
@@ -469,7 +469,7 @@ data class MarketCandles(
         private fun candles(
             parser: ParserProtocol,
             existing: IList<MarketCandle>?,
-            data: IList<*>?,
+            data: List<*>?,
         ): IList<MarketCandle>? {
             return ParsingHelper.merge(
                 parser,
@@ -487,7 +487,7 @@ data class MarketCandles(
                     MarketCandle.create(obj as? MarketCandle, parser, parser.asMap(itemData))
                 },
                 true,
-            )
+            )?.toIList()
         }
     }
 }
@@ -499,7 +499,7 @@ data class MarketTradeResources(val sideStringKey: String) {
         internal fun create(
             existing: MarketTradeResources?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): MarketTradeResources? {
             DebugLogger.log("creating Market Trade Resources\n")
             data?.let {
@@ -535,7 +535,8 @@ data class MarketTrade(
     companion object {
         internal fun create(
             existing: MarketTrade?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): MarketTrade? {
             DebugLogger.log("creating Market Trade\n")
             data?.let {
@@ -582,7 +583,7 @@ data class MarketTrade(
         internal fun create(
             existing: IList<MarketTrade>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?,
+            data: List<Map<String, Any>>?,
         ): IList<MarketTrade>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as MarketTrade).createdAtMilliseconds
@@ -591,7 +592,7 @@ data class MarketTrade(
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
                 obj ?: create(null, parser, parser.asMap(itemData))
-            })
+            })?.toIList()
         }
     }
 }
@@ -608,7 +609,8 @@ data class OrderbookLine(
     companion object {
         internal fun create(
             existing: OrderbookLine?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): OrderbookLine? {
             DebugLogger.log("creating Orderbook Line\n")
             data?.let {
@@ -644,7 +646,7 @@ data class MarketOrderbookGrouping(val multiplier: OrderbookGrouping, val tickSi
     companion object {
         internal fun create(
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): MarketOrderbookGrouping? {
             DebugLogger.log("creating Market Grouping\n")
             if (data != null) {
@@ -672,7 +674,7 @@ data class MarketOrderbook(
         internal fun create(
             existing: MarketOrderbook?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): MarketOrderbook? {
             DebugLogger.log("creating Market Orderbook\n")
             data?.let {
@@ -681,8 +683,8 @@ data class MarketOrderbook(
                 val grouping =
                     MarketOrderbookGrouping.create(parser, parser.asMap(data["grouping"]))
 
-                val asks = asks(existing?.asks, parser, data["asks"] as? IList<*>)
-                val bids = bids(existing?.bids, parser, data["bids"] as? IList<*>)
+                val asks = asks(existing?.asks, parser, parser.asNativeList(data["asks"]))
+                val bids = bids(existing?.bids, parser, parser.asNativeList(data["bids"]))
 
                 return if (existing?.midPrice != midPrice ||
                     existing?.spreadPercent != spreadPercent ||
@@ -699,7 +701,7 @@ data class MarketOrderbook(
         private fun asks(
             existing: IList<OrderbookLine>?,
             parser: ParserProtocol,
-            data: IList<*>?,
+            data: List<*>?,
         ): IList<OrderbookLine>? {
             return orderbook(existing, parser, data, true)
         }
@@ -707,7 +709,7 @@ data class MarketOrderbook(
         private fun bids(
             existing: IList<OrderbookLine>?,
             parser: ParserProtocol,
-            data: IList<*>?,
+            data: List<*>?,
         ): IList<OrderbookLine>? {
             return orderbook(existing, parser, data, false)
         }
@@ -715,7 +717,7 @@ data class MarketOrderbook(
         private fun orderbook(
             existing: IList<OrderbookLine>?,
             parser: ParserProtocol,
-            data: IList<*>?,
+            data: List<*>?,
             ascending: Boolean,
         ): IList<OrderbookLine>? {
             return if (data != null) {
@@ -785,8 +787,8 @@ data class PerpetualMarket(
         internal fun create(
             existing: PerpetualMarket?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
-            assets: IMap<String, Any>?,
+            data: Map<String, Any>,
+            assets: Map<String, Any>?,
             resetOrderbook: Boolean,
             resetTrades: Boolean,
         ): PerpetualMarket? {
@@ -871,7 +873,7 @@ data class PerpetualMarket(
         private fun trades(
             existing: IList<MarketTrade>?,
             parser: ParserProtocol,
-            data: IList<Any>?,
+            data: List<Any>?,
         ): IList<MarketTrade>? {
             return ParsingHelper.merge(parser, existing?.toIList(), data, { obj, itemData ->
                 val time1 = (obj as MarketTrade).createdAtMilliseconds
@@ -880,7 +882,7 @@ data class PerpetualMarket(
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
                 obj ?: MarketTrade.create(null, parser, parser.asMap(itemData))
-            })
+            })?.toIList()
         }
     }
 }
@@ -902,13 +904,13 @@ data class PerpetualMarketSummary(
         internal fun create(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
-            assets: IMap<String, Any>?
+            data: Map<String, Any>,
+            assets: Map<String, Any>?
         ): PerpetualMarketSummary? {
             DebugLogger.log("creating Perpetual Market Summary\n")
 
             val markets: IMutableMap<String, PerpetualMarket> =
-                iMutableMapOf<String, PerpetualMarket>()
+                iMutableMapOf()
             val marketsData = parser.asMap(data["markets"]) ?: return null
 
             for ((key, value) in marketsData) {
@@ -932,8 +934,8 @@ data class PerpetualMarketSummary(
         internal fun apply(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
-            assets: IMap<String, Any>?,
+            data: Map<String, Any>,
+            assets: Map<String, Any>?,
             changes: StateChanges,
         ): PerpetualMarketSummary? {
             val marketsData = parser.asMap(data["markets"]) ?: return null
@@ -963,7 +965,7 @@ data class PerpetualMarketSummary(
         private fun perpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
+            data: Map<String, Any>,
             newMarkets: IMutableMap<String, PerpetualMarket>,
         ): PerpetualMarketSummary? {
             val volume24HUSDC = parser.asDouble(data["volume24HUSDC"])

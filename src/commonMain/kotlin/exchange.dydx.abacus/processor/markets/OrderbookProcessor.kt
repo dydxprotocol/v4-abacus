@@ -5,17 +5,10 @@ import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
-import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableListOf
-import numberOfDecimals
 import tickDecimals
 
 @Suppress("UNCHECKED_CAST")
@@ -29,15 +22,15 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     private var lastOffset: Long = 0
 
     internal fun subscribed(
-        content: IMap<String, Any>
-    ): IMap<String, Any> {
+        content: Map<String, Any>
+    ): Map<String, Any> {
         return received(null, content)
     }
 
     internal fun channel_batch_data(
-        existing: IMap<String, Any>?,
-        content: IList<Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        content: List<Any>
+    ): Map<String, Any>? {
         val orderbook = receivedBatchedChanges(existing, content)
         return if (orderbook != null) calculate(orderbook) else null
     }
@@ -47,18 +40,18 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     bids: list of high to low
      */
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
-        val orderbook = existing?.mutable() ?: iMutableMapOf<String, Any>()
-        val asks = parser.asList(payload["asks"])?.map {
-            parser.asMap(it)?.let {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        val orderbook = existing?.mutable() ?: mutableMapOf<String, Any>()
+        val asks = parser.asNativeList(payload["asks"])?.map {
+            parser.asNativeMap(it)?.let {
                 entryProcessor.received(null, it)
             }
         }
         orderbook.safeSet("asks", asks)
-        val bids = parser.asList(payload["bids"])?.map {
-            parser.asMap(it)?.let {
+        val bids = parser.asNativeList(payload["bids"])?.map {
+            parser.asNativeMap(it)?.let {
                 entryProcessor.received(null, it)
             }
         }
@@ -68,35 +61,35 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     private fun receivedBatchedChanges(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>
+    ): Map<String, Any>? {
         var orderbook = existing
         for (change in payload) {
-            orderbook = receivedChanges(orderbook, parser.asMap(change))
+            orderbook = receivedChanges(orderbook, parser.asNativeMap(change))
         }
 
         return if (orderbook != null) calculate(orderbook) else null
     }
 
     private fun receivedChanges(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>?
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?
+    ): Map<String, Any>? {
         if (payload != null) {
-            val orderbook = existing?.mutable() ?: iMutableMapOf()
+            val orderbook = existing?.mutable() ?: mutableMapOf()
             // offset in v4 is always null. We just increment our own offset
             val offset = parser.asLong(payload["offset"]) ?: (lastOffset + 1)
             orderbook["asks"] = receivedChanges(
-                orderbook["asks"] as? IList<IMap<String, Any>>,
-                parser.asList(payload["asks"] ?: payload["ask"]),
+                orderbook["asks"] as? List<Map<String, Any>>,
+                parser.asNativeList(payload["asks"] ?: payload["ask"]),
                 offset,
                 true
             )
 
             orderbook["bids"] = receivedChanges(
-                orderbook["bids"] as? IList<IMap<String, Any>>,
-                parser.asList(payload["bids"] ?: payload["bid"]),
+                orderbook["bids"] as? List<Map<String, Any>>,
+                parser.asNativeList(payload["bids"] ?: payload["bid"]),
                 offset,
                 false
             )
@@ -107,13 +100,13 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     private fun receivedChanges(
-        existing: IList<IMap<String, Any>>?,
-        changes: IList<Any>?,
+        existing: List<Map<String, Any>>?,
+        changes: List<Any>?,
         offset: Long?,
         ascending: Boolean
-    ): IList<IMap<String, Any>> {
+    ): List<Map<String, Any>> {
         if (changes == null || changes.size == 0) {
-            return existing ?: iMutableListOf()
+            return existing ?: mutableListOf()
         }
 
         val bindaryResult = receivedChangesBinary(existing, changes, offset, ascending)
@@ -139,18 +132,18 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     private fun receivedChangesBinary(
-        existing: IList<IMap<String, Any>>?,
-        changes: IList<Any>,
+        existing: List<Map<String, Any>>?,
+        changes: List<Any>,
         offset: Long?,
         ascending: Boolean
-    ): IList<IMap<String, Any>> {
-        val comparator = compareBy<IMap<String, Any>> {
+    ): List<Map<String, Any>> {
+        val comparator = compareBy<Map<String, Any>> {
             val price = parser.asDouble(it["price"])
             if (price != null) {
                 if (ascending) price else (price * Numeric.double.NEGATIVE)
             } else null
         }
-        var orderbook = existing?.mutable() ?: iMutableListOf()
+        var orderbook = existing?.mutable() ?: mutableListOf()
         for (change in changes) {
             orderbook = receiveChangeBinary(orderbook, change, offset, comparator)
         }
@@ -159,16 +152,16 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
 
     private fun receiveChangeBinary(
-        existing: IList<IMap<String, Any>>,
+        existing: List<Map<String, Any>>,
         change: Any,
         offset: Long?,
-        comparator: Comparator<IMap<String, Any>>
-    ): IMutableList<IMap<String, Any>> {
+        comparator: Comparator<Map<String, Any>>
+    ): MutableList<Map<String, Any>> {
         val orderbook = existing.mutable()
         val price = entryPrice(change)
         val size = entrySize(change)
         if (price != null && size != null) {
-            val item = iMutableMapOf<String, Any>("price" to price, "size" to size)
+            val item = mutableMapOf<String, Any>("price" to price, "size" to size)
             item.safeSet("offset", offset)
             val index = existing.binarySearch(item, comparator)
             if (index >= 0) {
@@ -201,8 +194,8 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
     @Throws(Exception::class)
     private fun compareResults(
-        result1: IList<IMap<String, Any>>,
-        result2: IList<IMap<String, Any>>
+        result1: List<Map<String, Any>>,
+        result2: List<Map<String, Any>>
     ) {
         if (result1.size == result2.size) {
             for (i in 0 until result2.size) {
@@ -221,17 +214,17 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     private fun receivedChangesLinear(
-        existing: IList<IMap<String, Any>>?,
-        changes: IList<Any>,
+        existing: List<Map<String, Any>>?,
+        changes: List<Any>,
         offset: Long?,
         ascending: Boolean
-    ): IList<IMap<String, Any>> {
+    ): List<Map<String, Any>> {
         val size1 = existing?.size ?: 0
         val size2 = changes.size ?: 0
         var cursor1 = 0
         var cursor2 = 0
 
-        val result = iMutableListOf<IMap<String, Any>>()
+        val result = mutableListOf<Map<String, Any>>()
 
         if (existing != null) {
             while (cursor1 < size1 && cursor2 < size2) {
@@ -309,13 +302,13 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
     private fun entryPrice(entry: Any): Double? {
         return parser.asDouble(
-            parser.asMap(entry)?.get("price") ?: parser.asList(entry)?.getOrNull(0)
+            parser.asNativeMap(entry)?.get("price") ?: parser.asNativeList(entry)?.getOrNull(0)
         )
     }
 
     private fun entrySize(entry: Any): Double? {
         return parser.asDouble(
-            parser.asMap(entry)?.get("size") ?: parser.asList(entry)?.getOrNull(1)
+            parser.asNativeMap(entry)?.get("size") ?: parser.asNativeList(entry)?.getOrNull(1)
         )
     }
 
@@ -331,10 +324,10 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         }
     }
 
-    private fun calculate(orderbook: IMap<String, Any>): IMap<String, Any> {
+    private fun calculate(orderbook: Map<String, Any>): Map<String, Any> {
         var asksDepth = 0.0
-        val asks = parser.asList(orderbook.get("asks"))?.map { ask ->
-            val map = parser.asMap(ask)!!
+        val asks = parser.asNativeList(orderbook.get("asks"))?.map { ask ->
+            val map = parser.asNativeMap(ask)!!
             val size = parser.asDouble(map["size"]) ?: 0.0
             asksDepth += size
             val modified = map.mutable()
@@ -342,20 +335,20 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             modified
         }
         var bidsDepth = 0.0
-        val bids = parser.asList(orderbook.get("bids"))?.map { bid ->
-            val map = parser.asMap(bid)!!
+        val bids = parser.asNativeList(orderbook.get("bids"))?.map { bid ->
+            val map = parser.asNativeMap(bid)!!
             val size = parser.asDouble(map["size"]) ?: 0.0
             bidsDepth += size
             val modified = map.mutable()
             modified["depth"] = bidsDepth
             modified
         }
-        val firstAsk = parser.asDouble(parser.asMap(asks?.firstOrNull { item ->
-            val size = parser.asDouble(parser.asMap(item)?.get("size"))
+        val firstAsk = parser.asDouble(parser.asNativeMap(asks?.firstOrNull { item ->
+            val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
             (size != 0.0)
         })?.get("price"))
-        val firstBid = parser.asDouble(parser.asMap(bids?.firstOrNull { item ->
-            val size = parser.asDouble(parser.asMap(item)?.get("size"))
+        val firstBid = parser.asDouble(parser.asNativeMap(bids?.firstOrNull { item ->
+            val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
             (size != 0.0)
         })?.get("price"))
         val modified = orderbook.mutable()
@@ -377,13 +370,13 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
-    fun consolidate(orderbook: IMap<String, Any>?, stepSize: Double): IMap<String, Any>? {
+    fun consolidate(orderbook: Map<String, Any>?, stepSize: Double): Map<String, Any>? {
         /*
         val stepSizeDecimals = stepSize.numberOfDecimals()
-        val asks = parser.asList(orderbook?.get("asks"))?.mutable()
-        val bids = parser.asList(orderbook?.get("bids"))?.mutable()
-        var ask = parser.asMap(asks?.firstOrNull())
-        var bid = parser.asMap(bids?.firstOrNull())
+        val asks = parser.asNativeList(orderbook?.get("asks"))?.mutable()
+        val bids = parser.asNativeList(orderbook?.get("bids"))?.mutable()
+        var ask = parser.asNativeMap(asks?.firstOrNull())
+        var bid = parser.asNativeMap(bids?.firstOrNull())
         return if (asks != null && bids != null && ask != null && bid != null) {
             asks.removeFirstOrNull()
             bids.removeFirstOrNull()
@@ -395,14 +388,14 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 if (askSize > bidSize) {
                     askSize -= bidSize
                     askSize = Rounder.quickRound(askSize, stepSize, stepSizeDecimals)
-                    bid = parser.asMap(bids.firstOrNull())
+                    bid = parser.asNativeMap(bids.firstOrNull())
                     bids.removeFirstOrNull()
                     bidPrice = parser.asDouble(bid?.get("price"))
                     bidSize = parser.asDouble(bid?.get("size")) ?: Numeric.double.ZERO
                 } else {
                     bidSize -= askSize
                     bidSize = Rounder.quickRound(bidSize, stepSize, stepSizeDecimals)
-                    ask = parser.asMap(asks.firstOrNull())
+                    ask = parser.asNativeMap(asks.firstOrNull())
                     asks.removeFirstOrNull()
                     askPrice = parser.asDouble(ask?.get("price"))
                     askSize = parser.asDouble(ask?.get("size")) ?: Numeric.double.ZERO
@@ -418,15 +411,15 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 bid["size"] = bidSize
                 bids.add(0, bid)
             }
-            calculate(iMapOf("asks" to asks, "bids" to bids))
+            calculate(mapOf("asks" to asks, "bids" to bids))
         } else orderbook
         */
 
-        val asks = parser.asList(orderbook?.get("asks"))?.mutable()
-        val bids = parser.asList(orderbook?.get("bids"))?.mutable()
+        val asks = parser.asNativeList(orderbook?.get("asks"))?.mutable()
+        val bids = parser.asNativeList(orderbook?.get("bids"))?.mutable()
         return if (asks != null && bids != null && asks.size > 0 && bids.size > 0) {
-            var ask = parser.asMap(asks.firstOrNull())
-            var bid = parser.asMap(bids.firstOrNull())
+            var ask = parser.asNativeMap(asks.firstOrNull())
+            var bid = parser.asNativeMap(bids.firstOrNull())
             while (ask != null && bid != null && crossed(ask, bid)) {
                 val askOffset = parser.asLong(ask["offset"]) ?: 0L
                 val bidOffset = parser.asLong(bid["offset"]) ?: 0L
@@ -439,23 +432,23 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                     val bidSize = parser.asDouble(bid["size"]) ?: Numeric.double.ZERO
                     if (askSize >= bidSize) {
                         bids.removeFirst()
-                        bid = parser.asMap(bids.firstOrNull())
+                        bid = parser.asNativeMap(bids.firstOrNull())
                     } else {
                         asks.removeFirst()
-                        ask = parser.asMap(asks.firstOrNull())
+                        ask = parser.asNativeMap(asks.firstOrNull())
                     }
                 } else {
                     // Offsets are not equal. Give precedence to the larger offset.
                     if (askOffset > bidOffset) {
                         bids.removeFirst()
-                        bid = parser.asMap(bids.firstOrNull())
+                        bid = parser.asNativeMap(bids.firstOrNull())
                     } else {
                         asks.removeFirst()
-                        ask = parser.asMap(asks.firstOrNull())
+                        ask = parser.asNativeMap(asks.firstOrNull())
                     }
                 }
             }
-            calculate(iMapOf("asks" to asks, "bids" to bids))
+            calculate(mapOf("asks" to asks, "bids" to bids))
         } else orderbook
     }
 
@@ -470,21 +463,21 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     private fun buildGroupingLookup(tickSize: Double) {
         if (groupingTickSize != tickSize) {
             groupingTickSize = tickSize
-            groupingLookup = iMutableMapOf()
+            groupingLookup = mutableMapOf()
         }
     }
 
-    fun group(orderbook: IMap<String, Any>?, tickSize: Double): IMap<String, Any>? {
+    fun group(orderbook: Map<String, Any>?, tickSize: Double): Map<String, Any>? {
         buildGroupingLookup(tickSize)
         return if (orderbook != null) {
             if (groupingMultiplier != 1) {
                 val groupingTickSize = grouping(tickSize, groupingMultiplier)
                 val modified = orderbook.mutable()
-                modified.safeSet("asks", group(parser.asList(modified["asks"]), groupingTickSize))
-                modified.safeSet("bids", group(parser.asList(modified["bids"]), groupingTickSize))
+                modified.safeSet("asks", group(parser.asNativeList(modified["asks"]), groupingTickSize))
+                modified.safeSet("bids", group(parser.asNativeList(modified["bids"]), groupingTickSize))
                 modified.safeSet(
                     "grouping",
-                    iMapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
+                    mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
                 )
                 modified
             } else {
@@ -492,24 +485,24 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 val modified = orderbook.mutable()
                 modified.safeSet(
                     "grouping",
-                    iMapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
+                    mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
                 )
                 modified
             }
         } else orderbook
     }
 
-    fun group(orderbook: IList<Any>?, grouping: BigDecimal): IList<Any>? {
+    fun group(orderbook: List<Any>?, grouping: BigDecimal): List<Any>? {
         return if (orderbook != null && orderbook.size > 0) {
             val firstPrice = parser.asDecimal(parser.value(orderbook.firstOrNull(), "price"))!!
             var floor = Rounder.roundDecimal(firstPrice, grouping).doubleValue(false)
             var ceiling = (parser.asDecimal(floor)!! + grouping).doubleValue(false)
             var size = Numeric.double.ZERO
             var depth = Numeric.double.ZERO
-            val result = iMutableListOf<IMap<String, Any>>()
+            val result = mutableListOf<Map<String, Any>>()
 
             for (item in orderbook) {
-                val line = parser.asMap(item)
+                val line = parser.asNativeMap(item)
                 val linePrice = parser.asDouble(line?.get("price"))
                 if (linePrice != null) {
                     val lineSize = parser.asDouble(line?.get("size")) ?: Numeric.double.ZERO
@@ -519,18 +512,18 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                             size += lineSize
                             depth += lineDepth
                         } else {
-                            result.add(iMapOf("price" to floor, "size" to size, "depth" to depth))
+                            result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
                             floor = ceiling
                             ceiling = (parser.asDecimal(floor)!! + grouping).doubleValue(false)
                         }
                     } else {
-                        result.add(iMapOf("price" to floor, "size" to size, "depth" to depth))
+                        result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
                         ceiling = floor
                         floor = (parser.asDecimal(ceiling)!! - grouping).doubleValue(false)
                     }
                 }
             }
-            val item = iMapOf("price" to floor, "size" to size, "depth" to depth)
+            val item = mapOf("price" to floor, "size" to size, "depth" to depth)
             result.add(item)
 
             return result
@@ -549,7 +542,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 tickDecimals * grouping.toBigDecimal(null, Numeric.decimal.mode)
             }
             if (groupingLookup == null) {
-                groupingLookup = iMutableMapOf()
+                groupingLookup = mutableMapOf()
             }
             groupingLookup?.set(grouping, decimals)
             decimals

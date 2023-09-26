@@ -6,12 +6,9 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
-import kollections.iListOf
-import kollections.iMutableListOf
 import kotlin.time.Duration.Companion.days
 
 /*
@@ -41,23 +38,23 @@ internal class TradeInputDataValidator(
     private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS = 20
 
     override fun validateTrade(
-        subaccount: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        market: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
-    ): IList<Any>? {
+    ): List<Any>? {
         return validateTradeInput(subaccount, market, configs, trade)
     }
 
     private fun validateTradeInput(
-        subaccount: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        trade: IMap<String, Any>,
-    ): IList<Any>? {
-        val errors = iMutableListOf<Any>()
+        subaccount: Map<String, Any>?,
+        market: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        trade: Map<String, Any>,
+    ): List<Any>? {
+        val errors = mutableListOf<Any>()
         validateOrder(trade, subaccount, configs)?.let {
             /*
             USER_MAX_ORDERS
@@ -102,10 +99,10 @@ internal class TradeInputDataValidator(
     }
 
     private fun validateOrder(
-        trade: IMap<String, Any>,
-        subaccount: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-    ): IList<Any>? {
+        trade: Map<String, Any>,
+        subaccount: Map<String, Any>?,
+        configs: Map<String, Any>?,
+    ): List<Any>? {
         /*
         USER_MAX_ORDERS
         */
@@ -118,7 +115,7 @@ internal class TradeInputDataValidator(
         val numOrders = orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
 
         return if (numOrders >= equityTierLimit) {
-            iListOf(
+            listOf(
                 error(
                     "ERROR",
                     "USER_MAX_ORDERS",
@@ -126,8 +123,8 @@ internal class TradeInputDataValidator(
                     null,
                     "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
                     "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_EQUITY_TIER",
-                    iMapOf(
-                        "LIMIT" to iMapOf(
+                    mapOf(
+                        "LIMIT" to mapOf(
                             "value" to equityTierLimit,
                             "format" to "string"
                         )
@@ -139,8 +136,8 @@ internal class TradeInputDataValidator(
 
     private fun maxOrdersForEquityTier(
         isStatefulOrder: Boolean,
-        subaccount: IMap<String, Any>?,
-        configs: IMap<String, Any>?
+        subaccount: Map<String, Any>?,
+        configs: Map<String, Any>?
     ): Int {
         /*
          USER_MAX_ORDERS according to Equity Tier
@@ -150,11 +147,11 @@ internal class TradeInputDataValidator(
         val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current")) ?: 0.0
         val equityTierKey: String =
             if (isStatefulOrder) "statefulOrderEquityTiers" else "shortTermOrderEquityTiers"
-        parser.asMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
-            parser.asList(equityTiers[equityTierKey])?.let { tiers ->
+        parser.asNativeMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
+            parser.asNativeList(equityTiers[equityTierKey])?.let { tiers ->
                 if (tiers.size == 0) return fallbackMaxNumOrders
                 for (tier in tiers) {
-                    parser.asMap(tier)?.let { item ->
+                    parser.asNativeMap(tier)?.let { item ->
                         val requiredTotalNetCollateralUSD =
                             parser.asDouble(item["requiredTotalNetCollateralUSD"]) ?: 0.0
                         if (requiredTotalNetCollateralUSD <= equity) {
@@ -172,12 +169,12 @@ internal class TradeInputDataValidator(
 
     private fun orderCount(
         shouldCountStatefulOrders: Boolean,
-        subaccount: IMap<String, Any>?,
+        subaccount: Map<String, Any>?,
     ): Int {
         var count = 0
-        parser.asMap(subaccount?.get("orders"))?.let { orders ->
+        parser.asNativeMap(subaccount?.get("orders"))?.let { orders ->
             for ((_, item) in orders) {
-                parser.asMap(item)?.let { order ->
+                parser.asNativeMap(item)?.let { order ->
                     val status = parser.asString(order["status"])
                     val orderType = parser.asString(order["type"])
                     val timeInForce = parser.asString(order["timeInForce"])
@@ -198,17 +195,17 @@ internal class TradeInputDataValidator(
     }
 
     private fun validateSize(
-        trade: IMap<String, Any>,
-        market: IMap<String, Any>?,
-    ): IList<Any>? {
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): List<Any>? {
         /*
         AMOUNT_INPUT_STEP_SIZE
         ORDER_SIZE_BELOW_MIN_SIZE
         */
         val symbol = parser.asString(market?.get("assetId")) ?: return null
         parser.asDecimal(parser.value(trade, "size.size"))?.let { size ->
-            parser.asMap(market?.get("configs"))?.let { configs ->
-                val errors = iMutableListOf<IMap<String, Any>>()
+            parser.asNativeMap(market?.get("configs"))?.let { configs ->
+                val errors = mutableListOf<Map<String, Any>>()
                 parser.asDecimal(configs["stepSize"])?.let { stepSize ->
                     if (Rounder.roundDecimal(size, stepSize) != size) {
                         errors.add(
@@ -219,8 +216,8 @@ internal class TradeInputDataValidator(
                                 null,
                                 "ERRORS.TRADE_BOX_TITLE.AMOUNT_INPUT_STEP_SIZE",
                                 "ERRORS.TRADE_BOX.AMOUNT_INPUT_STEP_SIZE",
-                                iMapOf(
-                                    "STEP_SIZE" to iMapOf(
+                                mapOf(
+                                    "STEP_SIZE" to mapOf(
                                         "value" to stepSize,
                                         "format" to "size"
                                     )
@@ -239,12 +236,12 @@ internal class TradeInputDataValidator(
                                 null,
                                 "ERRORS.TRADE_BOX_TITLE.ORDER_SIZE_BELOW_MIN_SIZE",
                                 "ERRORS.TRADE_BOX.ORDER_SIZE_BELOW_MIN_SIZE",
-                                iMapOf(
-                                    "MIN_SIZE" to iMapOf(
+                                mapOf(
+                                    "MIN_SIZE" to mapOf(
                                         "value" to minOrderSize,
                                         "format" to "size"
                                     ),
-                                    "SYMBOL" to iMapOf(
+                                    "SYMBOL" to mapOf(
                                         "value" to symbol,
                                         "format" to "string"
                                     )
@@ -261,9 +258,9 @@ internal class TradeInputDataValidator(
     }
 
     private fun validateTriggerPrice(
-        trade: IMap<String, Any>,
-        market: IMap<String, Any>?,
-    ): IList<Any>? {
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): List<Any>? {
         /*
         TRIGGER_MUST_ABOVE_INDEX_PRICE
         TRIGGER_MUST_BELOW_INDEX_PRICE
@@ -308,7 +305,7 @@ internal class TradeInputDataValidator(
 
                         else -> null
                     }
-                    return if (error != null) iListOf(error) else null
+                    return if (error != null) listOf(error) else null
                 }
             }
         }
@@ -319,17 +316,17 @@ internal class TradeInputDataValidator(
         aboveIndexPrice: Boolean,
         indexPrice: BigDecimal,
         tickSize: String,
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         return error(
             "ERROR",
             if (aboveIndexPrice) "TRIGGER_MUST_ABOVE_INDEX_PRICE" else "TRIGGER_MUST_BELOW_INDEX_PRICE",
-            iListOf("price.triggerPrice"),
+            listOf("price.triggerPrice"),
             "APP.TRADE.MODIFY_TRIGGER_PRICE",
             if (aboveIndexPrice) "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_BELOW_INDEX_PRICE",
             if (aboveIndexPrice) "ERRORS.TRADE_BOX.TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRADE_BOX.TRIGGER_MUST_BELOW_INDEX_PRICE",
-            iMapOf(
+            mapOf(
                 "INDEX_PRICE" to
-                        iMapOf(
+                        mapOf(
                             "value" to indexPrice,
                             "format" to "price",
                             "tickSize" to tickSize
@@ -339,9 +336,9 @@ internal class TradeInputDataValidator(
     }
 
     private fun validateLimitPrice(
-        trade: IMap<String, Any>,
-        market: IMap<String, Any>?,
-    ): IList<Any>? {
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): List<Any>? {
         /*
         LIMIT_MUST_ABOVE_TRIGGER_PRICE
         LIMIT_MUST_BELOW_TRIGGER_PRICE
@@ -355,11 +352,11 @@ internal class TradeInputDataValidator(
                                 ?.let { triggerPrice ->
                                     if (side == "BUY" && limitPrice < triggerPrice) {
                                         // BUY
-                                        return iListOf(
+                                        return listOf(
                                             error(
                                                 "ERROR",
                                                 "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                iListOf("price.triggerPrice"),
+                                                listOf("price.triggerPrice"),
                                                 "APP.TRADE.MODIFY_TRIGGER_PRICE",
                                                 "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                                 "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
@@ -367,11 +364,11 @@ internal class TradeInputDataValidator(
                                         )
                                     } else if (side == "SELL" && limitPrice > triggerPrice) {
                                         // SELL
-                                        return iListOf(
+                                        return listOf(
                                             error(
                                                 "ERROR",
                                                 "LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                iListOf("price.triggerPrice"),
+                                                listOf("price.triggerPrice"),
                                                 "APP.TRADE.MODIFY_TRIGGER_PRICE",
                                                 "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
                                                 "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
@@ -389,25 +386,25 @@ internal class TradeInputDataValidator(
     }
 
     private fun validateTimeInForce(
-        trade: IMap<String, Any>,
-        market: IMap<String, Any>?,
-    ): IList<Any>? {
-        val fields = parser.asList(trade["fields"])
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): List<Any>? {
+        val fields = parser.asNativeList(trade["fields"])
         val field = fields?.firstOrNull {
-            val field = parser.asMap(it)?.get("field")
+            val field = parser.asNativeMap(it)?.get("field")
             field == "goodUntil"
         }
 
         return if (fields != null && parser.asBool(parser.value(trade, "options.needsGoodUntil")) == true) {
-            val goodUntil = parser.asMap(trade["goodUntil"])
+            val goodUntil = parser.asNativeMap(trade["goodUntil"])
             // null is handled by FieldsInputValidator
             val timeInterval = GoodTil.duration(goodUntil, parser)
             if (timeInterval != null && timeInterval > 90.days) {
-                iListOf(
+                listOf(
                     error(
                         "ERROR",
                         "INVALID_GOOD_TIL",
-                        iListOf("goodUntil"),
+                        listOf("goodUntil"),
                         "APP.TRADE.MODIFY_GOOD_TIL",
                         "ERRORS.TRADE_BOX_TITLE.INVALID_GOOD_TIL",
                         "ERRORS.TRADE_BOX.INVALID_GOOD_TIL_MAX_90_DAYS"

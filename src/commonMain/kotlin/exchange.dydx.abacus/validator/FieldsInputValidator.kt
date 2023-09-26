@@ -3,9 +3,6 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import kollections.iMutableListOf
 
 internal class FieldsInputValidator(
     localizer: LocalizerProtocol?,
@@ -14,18 +11,18 @@ internal class FieldsInputValidator(
 ) :
     BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     override fun validate(
-        wallet: IMap<String, Any>?,
-        user: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        transaction: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        user: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        transaction: Map<String, Any>,
         transactionType: String,
-    ): IList<Any>? {
-        parser.asList(transaction["fields"])?.let { fields ->
-            val errors = iMutableListOf<Any>()
+    ): List<Any>? {
+        parser.asNativeList(transaction["fields"])?.let { fields ->
+            val errors = mutableListOf<Any>()
             for (item in fields) {
-                parser.asMap(item)?.let {
+                parser.asNativeMap(item)?.let {
                     parser.asString(it["field"])?.let { field ->
                         parser.asString(it["type"])?.let { type ->
                             missingData(
@@ -48,11 +45,11 @@ internal class FieldsInputValidator(
 
     private fun missingData(
         parser: ParserProtocol,
-        transaction: IMap<String, Any>,
+        transaction: Map<String, Any>,
         transactionType: String,
         field: String,
         type: String,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return if (hasData(parser, transaction, field, type)) null else {
             val errorCode = errorCode(field)
             val errorStringKey = errorStringKey(transaction, transactionType, field)
@@ -78,7 +75,7 @@ internal class FieldsInputValidator(
     }
 
     private fun errorStringKey(
-        transaction: IMap<String, Any>,
+        transaction: Map<String, Any>,
         transactionType: String,
         field: String
     ): String? {
@@ -116,7 +113,7 @@ internal class FieldsInputValidator(
 
     private fun hasData(
         parser: ParserProtocol,
-        transaction: IMap<String, Any>,
+        transaction: Map<String, Any>,
         field: String,
         type: String,
     ): Boolean {

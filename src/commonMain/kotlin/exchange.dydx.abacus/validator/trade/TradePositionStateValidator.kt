@@ -4,15 +4,10 @@ import abs
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
-import kollections.iListOf
-import kollections.iMutableListOf
 
 internal class TradePositionStateValidator(
     localizer: LocalizerProtocol?,
@@ -21,22 +16,22 @@ internal class TradePositionStateValidator(
 ) :
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     override fun validateTrade(
-        subaccount: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        market: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
-    ): IList<Any>? {
+    ): List<Any>? {
         val marketId = parser.asString(trade["marketId"])
-        val position = if (marketId != null) parser.asMap(
+        val position = if (marketId != null) parser.asNativeMap(
             parser.value(
                 subaccount,
                 "openPositions.$marketId"
             )
         ) else null
 
-        val errors = iMutableListOf<Any>()
+        val errors = mutableListOf<Any>()
         val closeOnlyError = validateCloseOnly(
             market,
             change
@@ -71,14 +66,14 @@ internal class TradePositionStateValidator(
 
 
     private fun validateCloseOnly(
-        market: IMap<String, Any>?,
+        market: Map<String, Any>?,
         change: PositionChange,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         /*
         MARKET_STATUS_CLOSE_ONLY
          */
-        val status = parser.asMap(market?.get("status"))
-        val marketId = parser.asMap(market?.get("assetId")) ?: ""
+        val status = parser.asNativeMap(market?.get("status"))
+        val marketId = parser.asNativeMap(market?.get("assetId")) ?: ""
         val canTrade = parser.asBool(status?.get("canTrade")) ?: false
         val canReduce = parser.asBool(status?.get("canReduce")) ?: false
         return if (!canTrade && canReduce) {
@@ -89,12 +84,12 @@ internal class TradePositionStateValidator(
             error(
                 if (isError) "ERROR" else "WARNING",
                 "MARKET_STATUS_CLOSE_ONLY",
-                if (isError) iListOf("size.size") else null,
+                if (isError) listOf("size.size") else null,
                 if (isError) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
                 "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
                 "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                iMapOf(
-                    "MARKET" to iMapOf(
+                mapOf(
+                    "MARKET" to mapOf(
                         "value" to marketId,
                         "format" to "string"
                     )
@@ -104,11 +99,11 @@ internal class TradePositionStateValidator(
     }
 
     private fun validatePositionLeverage(
-        position: IMap<String, Any>,
-        trade: IMap<String, Any>,
+        position: Map<String, Any>,
+        trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         /*
         MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE
         MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE
@@ -129,7 +124,7 @@ internal class TradePositionStateValidator(
                 error(
                     if (increasingPosition) "ERROR" else "WARNING",
                     "MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                    if (increasingPosition) iListOf("size.size") else null,
+                    if (increasingPosition) listOf("size.size") else null,
                     if (increasingPosition) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
                     "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
                     "ERRORS.TRADE_BOX.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE"
@@ -138,7 +133,7 @@ internal class TradePositionStateValidator(
                 if (change == PositionChange.NEW) error(
                     "ERROR",
                     "INVALID_NEW_POSITION_LEVERAGE",
-                    iListOf("size.size"),
+                    listOf("size.size"),
                     "APP.TRADE.MODIFY_SIZE_FIELD",
                     "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_POSITION_LEVERAGE",
                     "ERRORS.TRADE_BOX.INVALID_NEW_POSITION_LEVERAGE"
@@ -146,7 +141,7 @@ internal class TradePositionStateValidator(
                 else error(
                     "ERROR",
                     "INVALID_LARGE_POSITION_LEVERAGE",
-                    iListOf("size.size"),
+                    listOf("size.size"),
                     "APP.TRADE.MODIFY_SIZE_FIELD",
                     "ERRORS.TRADE_BOX_TITLE.INVALID_LARGE_POSITION_LEVERAGE",
                     "ERRORS.TRADE_BOX.INVALID_LARGE_POSITION_LEVERAGE"
@@ -163,7 +158,7 @@ internal class TradePositionStateValidator(
                     error(
                         "WARNING",
                         "MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
-                        iListOf("size.size"),
+                        listOf("size.size"),
                         "APP.TRADE.MODIFY_SIZE_FIELD",
                         "WARNINGS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
                         "WARNINGS.TRADE_BOX.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE"
@@ -174,7 +169,7 @@ internal class TradePositionStateValidator(
     }
 
     private fun overMaxLeverage(
-        position: IMap<String, Any>,
+        position: Map<String, Any>,
     ): Boolean {
         val leverage = parser.asDouble(parser.value(position, "leverage.postOrder"))?.abs()
         val adjustedImf = parser.asDouble(parser.value(position, "adjustedImf.current"))
@@ -188,7 +183,7 @@ internal class TradePositionStateValidator(
     }
 
     private fun orderOverMaxLeverage(
-        position: IMap<String, Any>,
+        position: Map<String, Any>,
     ): Boolean {
         val leverage = parser.asDouble(parser.value(position, "leverage.postOrder"))?.abs()
         val adjustedImf = parser.asDouble(parser.value(position, "adjustedImf.postOrder"))
@@ -196,9 +191,9 @@ internal class TradePositionStateValidator(
     }
 
     private fun validatePositionSize(
-        position: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-    ): IMap<String, Any>? {
+        position: Map<String, Any>?,
+        market: Map<String, Any>?,
+    ): Map<String, Any>? {
         /*
         NEW_POSITION_SIZE_OVER_MAX
          */
@@ -212,16 +207,16 @@ internal class TradePositionStateValidator(
         return if (size > maxSize) error(
             "ERROR",
             "NEW_POSITION_SIZE_OVER_MAX",
-            iListOf("size.size"),
+            listOf("size.size"),
             "APP.TRADE.MODIFY_SIZE_FIELD",
             "ERRORS.TRADE_BOX_TITLE.NEW_POSITION_SIZE_OVER_MAX",
             "ERRORS.TRADE_BOX.NEW_POSITION_SIZE_OVER_MAX",
-            iMapOf(
-                "MAX_SIZE" to iMapOf(
+            mapOf(
+                "MAX_SIZE" to mapOf(
                     "value" to maxSize,
                     "format" to "size"
                 ),
-                "SYMBOL" to iMapOf(
+                "SYMBOL" to mapOf(
                     "value" to symbol,
                     "format" to "string"
                 )
@@ -231,8 +226,8 @@ internal class TradePositionStateValidator(
 
     private fun validatePositionFlip(
         change: PositionChange,
-        trade: IMap<String, Any>,
-    ): IMap<String, Any>? {
+        trade: Map<String, Any>,
+    ): Map<String, Any>? {
         /*
         ORDER_WOULD_FLIP_POSITION
          */
@@ -240,7 +235,7 @@ internal class TradePositionStateValidator(
         return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true && change == PositionChange.CROSSING) error(
             "ERROR",
             "ORDER_WOULD_FLIP_POSITION",
-            iListOf("size.size"),
+            listOf("size.size"),
             "APP.TRADE.MODIFY_SIZE_FIELD",
             "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
             "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION"

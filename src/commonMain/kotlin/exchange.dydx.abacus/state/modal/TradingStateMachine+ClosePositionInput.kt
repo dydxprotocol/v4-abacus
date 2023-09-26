@@ -4,9 +4,8 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMutableMapOf
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.reduceOnlySupported
 import exchange.dydx.abacus.utils.safeSet
@@ -36,7 +35,7 @@ fun TradingStateMachine.closePosition(
     var error: ParsingError? = null
     val typeText = type.rawValue
 
-    val input = this.input?.mutable() ?: iMutableMapOf()
+    val input = this.input?.mutable() ?: mutableMapOf()
     input["current"] = "closePosition"
     val trade =
         parser.asMap(input["closePosition"])?.mutable() ?: inititiateClosePosition(
@@ -100,7 +99,7 @@ fun TradingStateMachine.closePosition(
 fun TradingStateMachine.getPosition(
     marketId: String,
     subaccountNumber: Int = 0
-): IMap<String, Any>? {
+): Map<String, Any>? {
     val position = parser.asMap(
         parser.value(
             wallet,

@@ -12,6 +12,7 @@ import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
 import kollections.iMapOf
 import kollections.iMutableMapOf
+import kollections.toIList
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -27,7 +28,7 @@ data class SubaccountHistoricalPNL(
         internal fun create(
             existing: SubaccountHistoricalPNL?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): SubaccountHistoricalPNL? {
             DebugLogger.log("creating Account Historical PNL\n")
             data?.let {
@@ -61,7 +62,7 @@ data class SubaccountHistoricalPNL(
         fun create(
             existing: IList<SubaccountHistoricalPNL>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?,
+            data: List<Map<String, Any>>?,
             startTime: Instant,
         ): IList<SubaccountHistoricalPNL>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
@@ -84,7 +85,7 @@ data class SubaccountHistoricalPNL(
             }, { itemData ->
                 val createdAt = parser.asDatetime(itemData["createdAt"])
                 createdAt != null && createdAt >= startTime
-            })
+            })?.toIList()
         }
     }
 }
@@ -99,7 +100,8 @@ data class SubaccountPositionResources(
     companion object {
         internal fun create(
             existing: SubaccountPositionResources?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: IMap<*, *>?,
         ): SubaccountPositionResources? {
             DebugLogger.log("creating Account Position Resources\n")
             data?.let {
@@ -151,7 +153,7 @@ data class TradeStatesWithPositionSides(
         internal fun create(
             existing: TradeStatesWithPositionSides?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): TradeStatesWithPositionSides {
             val currentString = parser.asString(data?.get("current"))
             val postOrderString = parser.asString(data?.get("postOrder"))
@@ -217,7 +219,7 @@ data class SubaccountPosition(
         internal fun create(
             existing: SubaccountPosition?,
             parser: ParserProtocol,
-            data: IMap<String, Any>?,
+            data: Map<String, Any>?,
         ): SubaccountPosition? {
             DebugLogger.log("creating Account Position\n")
             data?.let {
@@ -410,7 +412,8 @@ data class SubaccountOrderResources(
     companion object {
         internal fun create(
             existing: SubaccountOrderResources?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): SubaccountOrderResources? {
             DebugLogger.log("creating Account Order Resources\n")
 
@@ -475,7 +478,8 @@ data class SubaccountOrder(
     companion object {
         internal fun create(
             existing: SubaccountOrder?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): SubaccountOrder? {
             DebugLogger.log("creating Account Order\n")
             data?.let {
@@ -600,7 +604,8 @@ data class SubaccountFillResources(
     companion object {
         internal fun create(
             existing: SubaccountFillResources?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): SubaccountFillResources? {
             DebugLogger.log("creating Account Fill Resources\n")
 
@@ -660,7 +665,8 @@ data class SubaccountFill(
     companion object {
         internal fun create(
             existing: SubaccountFill?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): SubaccountFill? {
             DebugLogger.log("creating Account Fill\n")
             data?.let {
@@ -721,14 +727,14 @@ data class SubaccountFill(
         fun create(
             existing: IList<SubaccountFill>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?,
+            data: List<Map<String, Any>>?,
         ): IList<SubaccountFill>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountFill).createdAtMilliseconds
                 val time2 =
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()
                         ?.toDouble()
-                val id1 = (obj as SubaccountFill).id
+                val id1 = obj.id
                 val id2 = parser.asString(itemData["id"])
                 if (id1 == id2) {
                     ParsingHelper.compare(time1, time2 ?: 0.0, true)
@@ -737,7 +743,7 @@ data class SubaccountFill(
                 }
             }, { _, obj, itemData ->
                 obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData))
-            }, true)
+            }, true)?.toIList()
         }
     }
 }
@@ -759,7 +765,7 @@ data class SubaccountTransferResources(
         internal fun create(
             existing: SubaccountTransferResources?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): SubaccountTransferResources? {
             DebugLogger.log("creating Account Transfer Resources\n")
 
@@ -824,7 +830,8 @@ data class SubaccountTransfer(
     companion object {
         internal fun create(
             existing: SubaccountTransfer?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
         ): SubaccountTransfer? {
             DebugLogger.log("creating Account Transfer\n")
             data?.let {
@@ -880,7 +887,7 @@ data class SubaccountTransfer(
         fun create(
             existing: IList<SubaccountTransfer>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?,
+            data: List<Map<String, Any>>?,
         ): IList<SubaccountTransfer>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountTransfer).updatedAtMilliseconds
@@ -895,7 +902,7 @@ data class SubaccountTransfer(
                     parser,
                     parser.asMap(itemData)
                 )
-            })
+            })?.toIList()
         }
     }
 }
@@ -914,7 +921,7 @@ data class SubaccountFundingPayment(
         internal fun create(
             existing: SubaccountFundingPayment?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): SubaccountFundingPayment? {
             DebugLogger.log("creating Account Funding Payment\n")
 
@@ -955,7 +962,7 @@ data class SubaccountFundingPayment(
         fun create(
             existing: IList<SubaccountFundingPayment>?,
             parser: ParserProtocol,
-            data: IList<IMap<String, Any>>?,
+            data: List<Map<String, Any>>?,
         ): IList<SubaccountFundingPayment>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountFundingPayment).effectiveAtMilliSeconds
@@ -969,7 +976,7 @@ data class SubaccountFundingPayment(
                     parser,
                     parser.asMap(itemData)
                 )
-            })
+            })?.toIList()
         }
     }
 }
@@ -1004,7 +1011,7 @@ data class Subaccount(
         internal fun create(
             existing: Subaccount?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): Subaccount? {
             DebugLogger.log("creating Account\n")
 
@@ -1151,7 +1158,7 @@ data class Subaccount(
         private fun openPositions(
             existing: IList<SubaccountPosition>?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): IList<SubaccountPosition>? {
             return ParsingHelper.transform(parser, existing, data, {
                 (it as SubaccountPosition).id
@@ -1166,13 +1173,13 @@ data class Subaccount(
                 parser.asMap(itemData)?.let {
                     SubaccountPosition.create(obj as? SubaccountPosition, parser, it)
                 }
-            })
+            })?.toIList()
         }
 
         private fun orders(
             parser: ParserProtocol,
             existing: IList<SubaccountOrder>?,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
         ): IList<SubaccountOrder>? {
             val orders = ParsingHelper.transform(parser, existing, data, {
                 (it as SubaccountOrder).id
@@ -1205,7 +1212,7 @@ data class Subaccount(
                 parser.asMap(itemData)?.let {
                     SubaccountOrder.create(obj as? SubaccountOrder, parser, it)
                 }
-            })
+            })?.toIList()
             return orders
         }
 
@@ -1218,7 +1225,7 @@ data class Subaccount(
         private fun transfers(
             parser: ParserProtocol,
             existing: IList<SubaccountTransfer>?,
-            data: IList<*>?,
+            data: List<*>?,
         ): IList<SubaccountTransfer>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountTransfer).updatedAtMilliseconds
@@ -1233,13 +1240,13 @@ data class Subaccount(
                     parser,
                     parser.asMap(itemData)
                 )
-            }, true)
+            }, true)?.toIList()
         }
 
         private fun fundingPayments(
             parser: ParserProtocol,
             existing: IList<SubaccountFundingPayment>?,
-            data: IList<*>?,
+            data: List<*>?,
         ): IList<SubaccountFundingPayment>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountFundingPayment).effectiveAtMilliSeconds
@@ -1248,7 +1255,7 @@ data class Subaccount(
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
                 obj ?: SubaccountFundingPayment.create(null, parser, itemData)
-            }, true)
+            }, true)?.toIList()
         }
     }
 }
@@ -1263,7 +1270,7 @@ data class AccountBalance(
         internal fun create(
             existing: AccountBalance?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
+            data: Map<String, Any>,
         ): AccountBalance? {
             DebugLogger.log("creating Account Balance\n")
 
@@ -1294,7 +1301,7 @@ data class Account(
         internal fun create(
             existing: Account?,
             parser: ParserProtocol,
-            data: IMap<String, Any>,
+            data: Map<String, Any>,
         ): Account {
             DebugLogger.log("creating Account\n")
 

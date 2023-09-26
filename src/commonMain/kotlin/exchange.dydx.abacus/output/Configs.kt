@@ -18,7 +18,7 @@ data class FeeDiscountResources(
         internal fun create(
             existing: FeeDiscountResources?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): FeeDiscountResources? {
             if (data == null) {
                 DebugLogger.debug("Fee Discount Resources not valid")
@@ -50,7 +50,7 @@ data class FeeDiscount(
         internal fun create(
             existing: IList<FeeDiscount>?,
             parser: ParserProtocol,
-            data: IList<*>?
+            data: List<*>?
         ): IList<FeeDiscount>? {
             data?.let {
                 val feeDiscounts = iMutableListOf<FeeDiscount>()
@@ -72,7 +72,7 @@ data class FeeDiscount(
         internal fun create(
             existing: FeeDiscount?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): FeeDiscount? {
             data?.let {
                 val id = parser.asString(data["id"])
@@ -111,7 +111,8 @@ data class FeeTierResources(
     companion object {
         internal fun create(
             existing: FeeTierResources?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): FeeTierResources? {
             data?.let {
                 val stringKey = parser.asString(data["stringKey"])
@@ -147,7 +148,7 @@ data class FeeTier(
         internal fun create(
             existing: IList<FeeTier>?,
             parser: ParserProtocol,
-            data: IList<*>?
+            data: List<*>?
         ): IList<FeeTier>? {
             data?.let {
                 val feeTiers = iMutableListOf<FeeTier>()
@@ -169,7 +170,7 @@ data class FeeTier(
         internal fun create(
             existing: FeeTier?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): FeeTier? {
             data?.let {
                 val id = parser.asString(data["id"])
@@ -216,7 +217,7 @@ data class NetworkConfigs(
         internal fun create(
             existing: NetworkConfigs?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): NetworkConfigs? {
             data?.let {
                 val api = parser.asString(data["api"])
@@ -249,7 +250,7 @@ data class Configs(
         internal fun create(
             existing: Configs?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): Configs? {
             data?.let {
                 val network =

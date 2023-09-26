@@ -2,10 +2,7 @@ package exchange.dydx.abacus.processor.squid
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
-import kollections.iMutableMapOf
 
 internal class SquidStatusProcessor(
     parser: ParserProtocol,
@@ -13,10 +10,10 @@ internal class SquidStatusProcessor(
     ) : BaseProcessor(parser) {
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = existing?.mutable() ?: iMutableMapOf()
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = existing?.mutable() ?: mutableMapOf()
         val hash = transactionId ?: parser.asString(parser.value(payload, "fromChain.transactionId"))
         if (hash != null) {
             modified[hash] = payload

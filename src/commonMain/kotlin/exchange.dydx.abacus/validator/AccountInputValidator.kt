@@ -3,9 +3,6 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import kollections.iListOf
 
 internal class AccountInputValidator(
     localizer: LocalizerProtocol?,
@@ -13,25 +10,25 @@ internal class AccountInputValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     override fun validate(
-        wallet: IMap<String, Any>?,
-        user: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        transaction: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        user: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        transaction: Map<String, Any>,
         transactionType: String,
-    ): IList<Any>? {
+    ): List<Any>? {
         val error = missingWallet(parser, wallet) ?: missingAccount(parser, wallet) ?: checkEquity(
             parser,
             subaccount
         )
-        return if (error != null) iListOf(error) else null
+        return if (error != null) listOf(error) else null
     }
 
     private fun missingWallet(
         parser: ParserProtocol,
-        wallet: IMap<String, Any>?,
-    ): IMap<String, Any>? {
+        wallet: Map<String, Any>?,
+    ): Map<String, Any>? {
         return if (wallet != null) null else {
             error(
                 "ERROR",
@@ -48,9 +45,9 @@ internal class AccountInputValidator(
 
     private fun missingAccount(
         parser: ParserProtocol,
-        wallet: IMap<String, Any>?,
-    ): IMap<String, Any>? {
-        val account = parser.asMap(wallet?.get("account"))
+        wallet: Map<String, Any>?,
+    ): Map<String, Any>? {
+        val account = parser.asNativeMap(wallet?.get("account"))
         return if (account != null) null else {
             error(
                 "ERROR",
@@ -68,8 +65,8 @@ internal class AccountInputValidator(
 
     private fun checkEquity(
         parser: ParserProtocol,
-        subaccount: IMap<String, Any>?,
-    ): IMap<String, Any>? {
+        subaccount: Map<String, Any>?,
+    ): Map<String, Any>? {
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
         return if (equity != null && equity > 0) null else {
             error(

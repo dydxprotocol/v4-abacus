@@ -2,10 +2,6 @@ package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
-import kollections.iMutableListOf
-import kollections.iMutableMapOf
-import kollections.toIList
-import kollections.toIMap
 import kotlinx.datetime.Instant
 
 internal typealias ObjectKeyBlock = (Any) -> Any?
@@ -32,15 +28,15 @@ internal class ParsingHelper {
 
         internal inline fun <reified T : Any> transform(
             parser: ParserProtocol,
-            existing: IList<T>?,
-            data: IMap<*, *>?,
+            existing: List<T>?,
+            data: Map<*, *>?,
             key: ObjectKeyBlock,
             changed: ObjectAndDataChangedBlock,
             crossinline comparison: ObjectComparisonBlock,
             createObject: ObjectCreationBlock,
-        ): IList<T>? {
+        ): List<T>? {
             if (data != null) {
-                val existingMap = iMutableMapOf<String, T>()
+                val existingMap = mutableMapOf<String, T>()
                 existing?.let {
                     for (obj in it) {
                         key(obj)?.let {
@@ -50,7 +46,7 @@ internal class ParsingHelper {
                         }
                     }
                 }
-                val merged = iMutableMapOf<String, T>()
+                val merged = mutableMapOf<String, T>()
                 for ((key, itemData) in data) {
                     parser.asMap(itemData)?.let { itemData ->
                         (key as? String)?.let {
@@ -71,7 +67,7 @@ internal class ParsingHelper {
                         ComparisonOrder.descending -> 1
                         ComparisonOrder.same -> 0
                     }
-                }.toIList()
+                }
             } else {
                 return existing
             }
@@ -79,16 +75,16 @@ internal class ParsingHelper {
 
         internal fun <T : Any> merge(
             parser: ParserProtocol,
-            existing: IList<T>?,
-            data: IList<*>?,
+            existing: List<T>?,
+            data: List<*>?,
             comparison: ObjectAndDataComparisonBlock,
             createObject: ObjectCreationBlock,
             syncItems: Boolean = false,
             includesObjectBlock: IncludesObjectBlock? = null,
             includesDataBlock: IncludesDataBlock? = null,
-        ): IList<T>? {
+        ): List<T>? {
             if (data != null) {
-                val result = iMutableListOf<T>()
+                val result = mutableListOf<T>()
 
                 val size1 = existing?.size ?: 0
                 val size2 = data.size
@@ -237,10 +233,10 @@ internal class ParsingHelper {
         }
 
         internal fun merge(
-            existing: IMap<String, Any>?,
-            incoming: IMap<String, Any>?,
-        ): IMap<String, Any>? {
-            return mergeMap(existing?.toMap(), incoming?.toMap())?.toIMap()
+            existing: Map<String, Any>?,
+            incoming: Map<String, Any>?,
+        ): Map<String, Any>? {
+            return mergeMap(existing?.toMap(), incoming?.toMap())
         }
 
         private fun mergeMap(
