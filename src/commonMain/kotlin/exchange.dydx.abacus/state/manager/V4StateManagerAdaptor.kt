@@ -170,7 +170,7 @@ class V4StateManagerAdaptor(
         accountAddress: String,
         subaccountNumber: Int,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
+        return iMapOf("id" to "$accountAddress/$subaccountNumber")
     }
 
     override fun faucetBody(amount: Double): String? {
