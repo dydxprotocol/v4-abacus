@@ -95,6 +95,7 @@ class V4SquidTests : V4BaseTests() {
             assertNotNull(summary)
             assertTrue { summary.slippage!! > 0 }
             assertTrue { summary.exchangeRate!! > 0 }
+            assertTrue { summary.estimatedRouteDuration!! > 0 }
             assertTrue { summary.gasFee!! > 0 }
             assertTrue { summary.bridgeFee!! > 0 }
             assertNotNull(it.state?.input?.transfer?.requestPayload)
