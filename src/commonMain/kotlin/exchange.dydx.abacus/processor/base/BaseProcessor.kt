@@ -196,7 +196,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                     parser.asDatetime(parser.asMap(existing.lastOrNull())?.get(timeField))
                 val firstExisting =
                     parser.asDatetime(parser.asMap(existing.firstOrNull())?.get(timeField))
-                if (lastIncomingTime != null && firstExisting != null && ascending(
+                if (lastIncomingTime != null && firstExisting != null && lastIncomingTime != firstExisting && ascending(
                         lastIncomingTime,
                         firstExisting
                     ) == ascending
@@ -205,7 +205,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                     result.addAll(incoming)
                     result.addAll(existing)
                     result
-                } else if (firstIncomingTime != null && lastExisting != null && ascending(
+                } else if (firstIncomingTime != null && lastExisting != null && firstIncomingTime != lastExisting && ascending(
                         firstIncomingTime,
                         lastExisting
                     ) != ascending

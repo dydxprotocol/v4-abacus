@@ -184,7 +184,7 @@ class V4ForegroundCycleTests {
         )
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_candles","id":"ETH-USD/1DAY"}
+                {"type":"subscribe","channel":"v4_candles","id":"ETH-USD/1DAY","batched":"true"}
             """.trimIndent(),
             testWebSocket?.messages?.get(3),
             "4th message should be v4_candles subscribe"
@@ -246,14 +246,14 @@ class V4ForegroundCycleTests {
         )
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_candles","id":"ETH-USD/1DAY"}
+                {"type":"unsubscribe","channel":"v4_candles","id":"ETH-USD/1DAY","batched":"true"}
             """.trimIndent(),
             testWebSocket?.messages?.get(8),
             "9th message should be v4_candles unsubscribe"
         )
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_candles","id":"BTC-USD/1DAY"}
+                {"type":"subscribe","channel":"v4_candles","id":"BTC-USD/1DAY","batched":"true"}
             """.trimIndent(),
             testWebSocket?.messages?.get(9),
             "10th message should be v4_candles subscribe"
@@ -387,7 +387,7 @@ class V4ForegroundCycleTests {
         assertEquals(2, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
+                {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
             """.trimIndent(),
             testWebSocket?.messages?.get(1)
         )
@@ -465,7 +465,7 @@ class V4ForegroundCycleTests {
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
+                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"}
             """.trimIndent(),
             testWebSocket?.messages?.get(2)
         )
@@ -494,7 +494,7 @@ class V4ForegroundCycleTests {
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
+                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"}
             """.trimIndent(),
             testWebSocket?.messages?.get(2)
         )

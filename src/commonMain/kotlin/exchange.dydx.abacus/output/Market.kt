@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.changes.Changes
@@ -233,7 +234,7 @@ data class MarketHistoricalFunding(
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, true)
             }, { _, obj, itemData ->
-                create(obj as? MarketHistoricalFunding, parser, parser.asMap(itemData))
+                obj ?: create(null, parser, parser.asMap(itemData))
             })
         }
     }
@@ -368,6 +369,7 @@ data class MarketCandle(
     val high: Double,
     val open: Double,
     val close: Double,
+    val trades: Int? = null,
     val baseTokenVolume: Double,
     val usdVolume: Double,
 ) {
@@ -380,45 +382,57 @@ data class MarketCandle(
             data?.let {
                 val startedAtMilliseconds =
                     parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
-                val updatedAtMilliseconds =
-                    parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble()
-                val low = parser.asDouble(data["low"])
-                val high = parser.asDouble(data["high"])
-                val open = parser.asDouble(data["open"])
-                val close = parser.asDouble(data["close"])
-                val baseTokenVolume = parser.asDouble(data["baseTokenVolume"])
-                val usdVolume = parser.asDouble(data["usdVolume"])
+                val trades = parser.asInt(data["trades"])
+                if (existing?.startedAtMilliseconds != startedAtMilliseconds ||
+                    existing?.trades != trades) {
+                    val updatedAtMilliseconds =
+                        parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble()
+                    val low = parser.asDouble(data["low"])
+                    val high = parser.asDouble(data["high"])
+                    val open = parser.asDouble(data["open"])
+                    val close = parser.asDouble(data["close"])
+                    val baseTokenVolume = parser.asDouble(data["baseTokenVolume"])
+                    val usdVolume = parser.asDouble(data["usdVolume"])
 
-                if (startedAtMilliseconds != null && low != null && high != null && open != null && close != null && baseTokenVolume != null && usdVolume != null) {
-                    return if (existing?.startedAtMilliseconds != startedAtMilliseconds ||
-                        existing.updatedAtMilliseconds != updatedAtMilliseconds ||
-                        existing.low != low ||
-                        existing.high != high ||
-                        existing.open != open ||
-                        existing.close != close ||
-                        existing.baseTokenVolume != baseTokenVolume ||
-                        existing.usdVolume != usdVolume
+                    if (startedAtMilliseconds != null &&
+                        low != null &&
+                        high != null &&
+                        open != null &&
+                        close != null &&
+                        baseTokenVolume != null &&
+                        usdVolume != null
                     ) {
-                        MarketCandle(
-                            startedAtMilliseconds,
-                            updatedAtMilliseconds,
-                            low,
-                            high,
-                            open,
-                            close,
-                            baseTokenVolume,
-                            usdVolume
-                        )
+                        return if (existing?.startedAtMilliseconds != startedAtMilliseconds ||
+                            existing.trades != trades ||
+                            existing.updatedAtMilliseconds != updatedAtMilliseconds ||
+                            existing.low != low ||
+                            existing.high != high ||
+                            existing.open != open ||
+                            existing.close != close ||
+                            existing.baseTokenVolume != baseTokenVolume ||
+                            existing.usdVolume != usdVolume
+                        ) {
+                            MarketCandle(
+                                startedAtMilliseconds,
+                                updatedAtMilliseconds,
+                                low,
+                                high,
+                                open,
+                                close,
+                                trades,
+                                baseTokenVolume,
+                                usdVolume
+                            )
+                        } else {
+                            existing
+                        }
                     } else {
-                        existing
+                        print("Market Candle data not valid")
                     }
                 }
             }
-            print("Market Candle not valid")
-            return null
+            return existing
         }
-
-
     }
 }
 
@@ -457,14 +471,23 @@ data class MarketCandles(
             existing: IList<MarketCandle>?,
             data: IList<*>?,
         ): IList<MarketCandle>? {
-            return ParsingHelper.merge(parser, existing?.toIList(), data, { obj, itemData ->
-                val time1 = (obj as MarketCandle).startedAtMilliseconds
-                val time2 =
-                    parser.asDatetime(itemData["startedAt"])?.toEpochMilliseconds()?.toDouble()
-                ParsingHelper.compare(time1, time2 ?: 0.0, true)
-            }, { _, obj, itemData ->
-                MarketCandle.create(obj as? MarketCandle, parser, parser.asMap(itemData))
-            })
+            return ParsingHelper.merge(
+                parser,
+                existing,
+                data,
+                { obj, itemData ->
+                    val time1 = (obj as MarketCandle).startedAtMilliseconds
+                    val time2 =
+                        parser.asDatetime(itemData["startedAt"])?.toEpochMilliseconds()?.toDouble()
+
+                    ParsingHelper.compare(time1, time2 ?: 0.0, true)
+                },
+                { _, obj, itemData ->
+                    // Candles are mutable. Even if obj is not null, we need to create a new object
+                    MarketCandle.create(obj as? MarketCandle, parser, parser.asMap(itemData))
+                },
+                true,
+            )
         }
     }
 }
@@ -567,7 +590,7 @@ data class MarketTrade(
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
-                create(obj as? MarketTrade, parser, parser.asMap(itemData))
+                obj ?: create(null, parser, parser.asMap(itemData))
             })
         }
     }
@@ -856,7 +879,7 @@ data class PerpetualMarket(
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
-                MarketTrade.create(obj as? MarketTrade, parser, parser.asMap(itemData))
+                obj ?: MarketTrade.create(null, parser, parser.asMap(itemData))
             })
         }
     }

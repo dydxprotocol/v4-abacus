@@ -102,7 +102,8 @@ internal class ParsingHelper {
                         if (itemData != null) {
                             when (comparison(existingEntry, itemData)) {
                                 ComparisonOrder.same -> {
-                                    result.add(existingEntry)
+                                    val entry = createObject(parser, existingEntry, itemData) as T
+                                    result.add(entry)
                                     cursor1 += 1
                                     cursor2 += 1
                                 }

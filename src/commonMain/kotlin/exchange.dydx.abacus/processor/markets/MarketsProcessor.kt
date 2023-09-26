@@ -11,7 +11,8 @@ import kollections.iMapOf
 import kollections.iMutableMapOf
 
 @Suppress("UNCHECKED_CAST")
-internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boolean) : BaseProcessor(parser) {
+internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boolean) :
+    BaseProcessor(parser) {
     private val marketProcessor = MarketProcessor(parser, calculateSparklines)
 
     internal var groupingMultiplier: Int
@@ -236,13 +237,67 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return modified
     }
 
+    internal fun receivedCandles(
+        existing: IMap<String, Any>?,
+        market: String,
+        resolution: String,
+        payload: IMap<String, Any>
+    ): IMap<String, Any>? {
+        val marketData = parser.asMap(existing?.get(market))
+        return if (existing != null && marketData != null) {
+            val markets = existing.mutable()
+            markets[market] = marketProcessor.receivedCandles(marketData, resolution, payload)
+            markets
+        } else {
+            existing
+        }
+    }
+
+    internal fun receivedCandlesChanges(
+        existing: IMap<String, Any>?,
+        market: String,
+        resolution: String,
+        payload: IMap<String, Any>
+    ): IMap<String, Any>? {
+        val marketData = parser.asMap(existing?.get(market))
+        return if (existing != null && marketData != null) {
+            val markets = existing.mutable()
+            markets[market] =
+                marketProcessor.receivedCandlesChanges(marketData, resolution, payload)
+            markets
+        } else {
+            existing
+        }
+    }
+
+
+    internal fun receivedBatchedCandlesChanges(
+        existing: IMap<String, Any>?,
+        market: String,
+        resolution: String,
+        payload: IList<Any>
+    ): IMap<String, Any>? {
+        val marketData = parser.asMap(existing?.get(market))
+        return if (existing != null && marketData != null) {
+            val markets = existing.mutable()
+            markets[market] =
+                marketProcessor.receivedBatchedCandlesChanges(marketData, resolution, payload)
+            markets
+        } else {
+            existing
+        }
+    }
+
     internal fun receivedHistoricalFundings(
         existing: IMap<String, Any>?,
         payload: IMap<String, Any>
     ): IMap<String, Any>? {
         val market = parser.asString(
-            parser.value(payload, "historicalFunding.0.market") ?:
-            parser.value(payload, "historicalFunding.0.ticker"))
+            parser.value(payload, "historicalFunding.0.market") ?: parser.value(
+                payload,
+                "historicalFunding.0.ticker"
+            )
+        )
         if (market != null) {
             val marketData = parser.asMap(existing?.get(market))
             if (existing != null && marketData != null) {

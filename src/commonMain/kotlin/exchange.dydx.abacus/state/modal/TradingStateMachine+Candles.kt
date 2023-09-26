@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.modal
 
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import kollections.iListOf
 import kollections.toIList
@@ -17,7 +18,8 @@ internal fun TradingStateMachine.candles(payload: String): StateChanges {
 private fun TradingStateMachine.receivedCandles(payload: IMap<String, Any>): StateChanges {
     val markets = parser.asMap(payload["candles"])
     val marketIds = if (markets != null) markets.keys.toIList() else {
-        val marketId = parser.asString(parser.value(payload, "candles.0.market")) ?: parser.asString(parser.value(payload, "candles.0.ticker"))
+        val marketId = parser.asString(parser.value(payload, "candles.0.market"))
+            ?: parser.asString(parser.value(payload, "candles.0.ticker"))
         if (marketId != null) iListOf(marketId) else null
     }
     return if (marketIds != null) {
@@ -43,4 +45,35 @@ internal fun TradingStateMachine.sparklines(payload: String): StateChanges? {
 private fun TradingStateMachine.receivedSparklines(payload: IMap<String, Any>): StateChanges {
     marketsSummary = marketsProcessor.receivedSparklines(marketsSummary, payload)
     return StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
+}
+
+
+internal fun TradingStateMachine.receivedCandles(
+    market: String,
+    resolution: String,
+    payload: IMap<String, Any>
+): StateChanges {
+    this.marketsSummary =
+        marketsProcessor.receivedCandles(marketsSummary, market, resolution, payload)
+    return StateChanges(iListOf(Changes.candles), iListOf(market))
+}
+
+internal fun TradingStateMachine.receivedCandlesChanges(
+    market: String,
+    resolution: String,
+    payload: IMap<String, Any>
+): StateChanges {
+    this.marketsSummary =
+        marketsProcessor.receivedCandlesChanges(marketsSummary, market, resolution, payload)
+    return StateChanges(iListOf(Changes.candles), iListOf(market))
+}
+
+internal fun TradingStateMachine.receivedBatchedCandlesChanges(
+    market: String,
+    resolution: String,
+    payload: IList<Any>
+): StateChanges {
+    this.marketsSummary =
+        marketsProcessor.receivedBatchedCandlesChanges(marketsSummary, market, resolution, payload)
+    return StateChanges(iListOf(Changes.candles), iListOf(market))
 }
