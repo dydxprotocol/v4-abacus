@@ -1,13 +1,7 @@
 package exchange.dydx.abacus.responses
 
-import exchange.dydx.abacus.output.FeeDiscountResources
-import exchange.dydx.abacus.output.UsageRestriction
-import exchange.dydx.abacus.output.Restriction
-import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
-import exchange.dydx.abacus.utils.IMap
 import kotlinx.serialization.Serializable
-import kollections.JsExport
+import kotlin.js.JsExport
 
 @JsExport
 @Serializable

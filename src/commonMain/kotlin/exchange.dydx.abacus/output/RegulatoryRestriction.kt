@@ -1,14 +1,11 @@
 package exchange.dydx.abacus.output
 
-import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
-import exchange.dydx.abacus.utils.DebugLogger
-import exchange.dydx.abacus.utils.IMap
-import kollections.JsExport
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
-@kotlin.js.JsExport
+@JsExport
 @Serializable
 enum class Restriction(val rawValue: String?) {
     NO_RESTRICTION("NO_RESTRICTION"),
