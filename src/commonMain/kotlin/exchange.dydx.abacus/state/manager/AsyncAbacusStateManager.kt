@@ -242,6 +242,16 @@ data class ApiState(
 }
 
 @JsExport
+@Serializable
+data class AppStateResponse(
+    val state: PerpetualState?,
+    val changes: StateChanges?,
+    val errors: IList<ParsingError>?,
+    val apiState: ApiState?,
+    val lastOrder: SubaccountOrder?
+) {
+}
+@JsExport
 class AsyncAbacusStateManager(
     val environmentsUrl: String,
     val environmentsFile: String,
