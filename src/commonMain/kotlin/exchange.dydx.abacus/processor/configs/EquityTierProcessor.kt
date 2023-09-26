@@ -10,7 +10,7 @@ internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parse
         "int" to mapOf(
             "maxOrders" to "maxOrders"
             ),
-        "decimal" to mapOf(
+        "double" to mapOf(
             "requiredTotalNetCollateralUSD" to "requiredTotalNetCollateralUSD",
             ),
     )

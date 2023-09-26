@@ -7,7 +7,7 @@ import exchange.dydx.abacus.utils.safeSet
 
 internal class OrderbookEntryProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val orderbookEntryKeyMap = mapOf(
-        "decimal" to mapOf(
+        "double" to mapOf(
             "size" to "size",
             "price" to "price"
         )

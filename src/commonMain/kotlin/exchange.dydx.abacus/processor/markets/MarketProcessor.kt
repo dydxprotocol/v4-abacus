@@ -71,12 +71,10 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     )
 
     private val configsKeyMap = mapOf(
-        "decimal" to mapOf(
+        "double" to mapOf(
             "maintenanceMarginFraction" to "maintenanceMarginFraction",
             "incrementalInitialMarginFraction" to "incrementalInitialMarginFraction",
-            "incrementalPositionSize" to "incrementalPositionSize"
-        ),
-        "double" to mapOf(
+            "incrementalPositionSize" to "incrementalPositionSize",
             "stepSize" to "stepSize",
             "tickSize" to "tickSize",
             "minOrderSize" to "minOrderSize",
@@ -99,9 +97,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
 
     private val marketKeyMap = mapOf(
         "decimal" to mapOf(
-            "indexPrice" to "indexPrice",
             "oraclePrice" to "oraclePrice",
-            "price" to "oraclePrice"
         ),
         "string" to mapOf(
             "market" to "market",
