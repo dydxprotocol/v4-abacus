@@ -386,7 +386,7 @@ class V4ForegroundCycleTests {
         assertEquals(2, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
+                {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
             """.trimIndent(),
             testWebSocket?.messages?.get(1)
         )
@@ -464,7 +464,7 @@ class V4ForegroundCycleTests {
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"}
+                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
             """.trimIndent(),
             testWebSocket?.messages?.get(2)
         )
@@ -493,7 +493,7 @@ class V4ForegroundCycleTests {
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"}
+                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
             """.trimIndent(),
             testWebSocket?.messages?.get(2)
         )
