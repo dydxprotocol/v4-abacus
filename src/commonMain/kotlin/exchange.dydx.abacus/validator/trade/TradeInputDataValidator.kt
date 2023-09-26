@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.trade
 
+import abs
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -206,11 +207,11 @@ internal class TradeInputDataValidator(
         ORDER_SIZE_BELOW_MIN_SIZE
         */
         val symbol = parser.asString(market?.get("assetId")) ?: return null
-        parser.asDecimal(parser.value(trade, "size.size"))?.let { size ->
+        parser.asDouble(parser.value(trade, "size.size"))?.let { size ->
             parser.asMap(market?.get("configs"))?.let { configs ->
                 val errors = iMutableListOf<IMap<String, Any>>()
-                parser.asDecimal(configs["stepSize"])?.let { stepSize ->
-                    if (Rounder.roundDecimal(size, stepSize) != size) {
+                parser.asDouble(configs["stepSize"])?.let { stepSize ->
+                    if (Rounder.round(size, stepSize) != size) {
                         errors.add(
                             error(
                                 "ERROR",
@@ -229,7 +230,7 @@ internal class TradeInputDataValidator(
                         )
                     }
                 }
-                parser.asDecimal(configs["minOrderSize"])?.let { minOrderSize ->
+                parser.asDouble(configs["minOrderSize"])?.let { minOrderSize ->
                     if (size.abs() < minOrderSize) {
                         errors.add(
                             error(
@@ -269,10 +270,10 @@ internal class TradeInputDataValidator(
         TRIGGER_MUST_BELOW_INDEX_PRICE
         */
         val tickSize = parser.asString(parser.value(market, "configs.tickSize")) ?: "0.01"
-        parser.asDecimal(parser.value(trade, "size.size"))?.let { size ->
+        parser.asDouble(parser.value(trade, "size.size"))?.let { size ->
             val signedSize = if (parser.asString(trade["side"]) == "BUY") size else -size
-            parser.asDecimal(parser.value(trade, "price.triggerPrice"))?.let { triggerPrice ->
-                val indexPrice = parser.asDecimal(
+            parser.asDouble(parser.value(trade, "price.triggerPrice"))?.let { triggerPrice ->
+                val indexPrice = parser.asDouble(
                     parser.value(market, "indexPrice") ?: parser.value(
                         market,
                         "oraclePrice"
@@ -317,7 +318,7 @@ internal class TradeInputDataValidator(
 
     private fun triggerPriceError(
         aboveIndexPrice: Boolean,
-        indexPrice: BigDecimal,
+        indexPrice: Double,
         tickSize: String,
     ): IMap<String, Any> {
         return error(
@@ -349,9 +350,9 @@ internal class TradeInputDataValidator(
         return when (parser.asString(trade["type"])) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
                 parser.asString(parser.value(trade, "side"))?.let { side ->
-                    parser.asDecimal(parser.value(trade, "price.limitPrice"))
+                    parser.asDouble(parser.value(trade, "price.limitPrice"))
                         ?.let { limitPrice ->
-                            parser.asDecimal(parser.value(trade, "price.triggerPrice"))
+                            parser.asDouble(parser.value(trade, "price.triggerPrice"))
                                 ?.let { triggerPrice ->
                                     if (side == "BUY" && limitPrice < triggerPrice) {
                                         // BUY

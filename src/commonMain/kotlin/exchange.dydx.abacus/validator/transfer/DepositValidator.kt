@@ -21,8 +21,8 @@ internal class DepositValidator(
         restricted: Boolean
     ): IList<Any>? {
         return null
-//        val balance = parser.asDecimal(parser.value(wallet, "balance"))
-//        val size = parser.asDecimal(parser.value(transfer, "size.size"))
+//        val balance = parser.asDouble(parser.value(wallet, "balance"))
+//        val size = parser.asDouble(parser.value(transfer, "size.size"))
 //        return if (size != null) {
 //            if (balance == null) {
 //                listOf(

@@ -276,36 +276,36 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         periods: kollections.Set<CalculationPeriod>,
     ) {
         for (period in periods) {
-            val quoteBalance = parser.asDecimal(value(subaccount, "quoteBalance", period))
+            val quoteBalance = parser.asDouble(value(subaccount, "quoteBalance", period))
             if (quoteBalance != null) {
-                var notionalTotal = Numeric.decimal.ZERO
-                var valueTotal = Numeric.decimal.ZERO
-                var initialRiskTotal = Numeric.decimal.ZERO
+                var notionalTotal = Numeric.double.ZERO
+                var valueTotal = Numeric.double.ZERO
+                var initialRiskTotal = Numeric.double.ZERO
                 positions?.let {
                     for ((key, position) in positions) {
-                        notionalTotal += parser.asDecimal(
+                        notionalTotal += parser.asDouble(
                             value(
                                 position,
                                 "notionalTotal",
                                 period
                             )
-                        ) ?: Numeric.decimal.ZERO
+                        ) ?: Numeric.double.ZERO
 
-                        valueTotal += parser.asDecimal(
+                        valueTotal += parser.asDouble(
                             value(
                                 position,
                                 "valueTotal",
                                 period
                             )
-                        ) ?: Numeric.decimal.ZERO
+                        ) ?: Numeric.double.ZERO
 
-                        initialRiskTotal += parser.asDecimal(
+                        initialRiskTotal += parser.asDouble(
                             value(
                                 position,
                                 "initialRiskTotal",
                                 period
                             )
-                        ) ?: Numeric.decimal.ZERO
+                        ) ?: Numeric.double.ZERO
                     }
                 }
 

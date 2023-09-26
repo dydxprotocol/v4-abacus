@@ -55,7 +55,6 @@ class V3PerpTests : V3BaseTests() {
                             "ETH-USD": {
                                 "assetId": "ETH",
                                 "market": "ETH-USD",
-                                "indexPrice": 1754.0223,
                                 "oraclePrice": 1753.2932,
                                 "priceChange24H": 14.47502,
                                 "status": {
@@ -101,7 +100,6 @@ class V3PerpTests : V3BaseTests() {
                             "ETH-USD": {
                                 "assetId": "ETH",
                                 "market": "ETH-USD",
-                                "indexPrice": 1754.0223,
                                 "oraclePrice": 1753.2932,
                                 "priceChange24H": 14.47502,
                                 "status": {
