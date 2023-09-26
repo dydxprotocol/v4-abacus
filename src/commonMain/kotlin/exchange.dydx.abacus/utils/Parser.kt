@@ -86,11 +86,16 @@ class Parser : ParserProtocol {
 
         val string = data as? String
         if (string != null) {
+            val withDecimalPoint = string.replace(",", ".")
             return try {
-                string.replace(",", "") .toDouble()
+                withDecimalPoint.toDouble()
             } catch (e: Exception) {
-                DebugLogger.error("Failed to parse double: $string", e)
-                null
+                try {
+                    withDecimalPoint.toBigDecimal(null, Numeric.decimal.mode).doubleValue(false)
+                } catch (e: Exception) {
+                    DebugLogger.error("Failed to parse double: $string", e)
+                    null
+                }
             }
         }
 

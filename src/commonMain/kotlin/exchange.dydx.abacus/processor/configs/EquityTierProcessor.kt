@@ -23,7 +23,7 @@ internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parse
 
         val requiredTotalNetCollateralUSD = parser.asDecimal(payload["usdTncRequired"])
         if (requiredTotalNetCollateralUSD != null) {
-            received["requiredTotalNetCollateralUSD"] = requiredTotalNetCollateralUSD / QUANTUM_MULTIPLIER
+            received["requiredTotalNetCollateralUSD"] = parser.asDouble(requiredTotalNetCollateralUSD / QUANTUM_MULTIPLIER)!!
         }
 
         val maxOrders = payload["limit"]

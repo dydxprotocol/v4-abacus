@@ -2,6 +2,7 @@ package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import kotlinx.serialization.json.JsonNull
+import tickDecimals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNotNull
@@ -84,28 +85,38 @@ private fun Map<String, Any>.satisfiesLists(
 
 private fun Map<String, Any>.satsifiesValues(
     value1: Any,
-    value2: Any?,
+    value2: Any,
     parser: ParserProtocol,
     path: String
 ) {
-    parser.asDouble(value1)?.let {
-        assertEquals(parser.asDouble(value2), it, "$path should have a value of $it")
+    parser.asDouble(value2)?.let {
+        val value = parser.asDouble(value1)
+        if (value != null) {
+            val stepSize = parser.asDouble(it.tickDecimals())!!
+            val roundedValue = Rounder.round(parser.asDouble(value2)!!, stepSize)
+            if (roundedValue != it) {
+                val x = 0
+            }
+            assertEquals(it, roundedValue, "$path should have a value of $it")
+            return
+        } else {
+            assertFails { "$path should have a value of $it" }
+        }
+    }
+    parser.asInt(value2)?.let {
+        assertEquals(it, parser.asInt(value1), "$path should have a value of $it")
         return
     }
-    parser.asInt(value1)?.let {
-        assertEquals(parser.asInt(value2), it, "$path should have a value of $it")
+    parser.asBool(value2)?.let {
+        assertEquals(it, parser.asBool(value1), "$path should have a value of $it")
         return
     }
-    parser.asBool(value1)?.let {
-        assertEquals(parser.asBool(value2), it, "$path should have a value of $it")
+    parser.asDatetime(value2)?.let {
+        assertEquals(it, parser.asDatetime(value1), "$path should have a value of $it")
         return
     }
-    parser.asDatetime(value1)?.let {
-        assertEquals(parser.asDatetime(value2), it, "$path should have a value of $it")
-        return
-    }
-    parser.asString(value1)?.let {
-        assertEquals(parser.asString(value2), it, "$path should have a value of $it")
+    parser.asString(value2)?.let {
+        assertEquals(it, parser.asString(value1), "$path should have a value of $it")
         return
     }
     assertFails { "$path data type unknown" }

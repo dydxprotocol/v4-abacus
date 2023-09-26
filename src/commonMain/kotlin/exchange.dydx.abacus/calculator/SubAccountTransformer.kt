@@ -33,16 +33,16 @@ internal class SubaccountTransformer {
             parser.asNativeMap(trade["summary"])?.let { summary ->
                 if (parser.asBool(summary["filled"]) == true) {
                     val multiplier =
-                        (if (side == "BUY") Numeric.decimal.NEGATIVE else Numeric.decimal.POSITIVE)
-                    val price = parser.asDecimal(summary["price"])
-                    val size = (parser.asDecimal(summary["size"])
-                        ?: Numeric.decimal.ZERO) * multiplier * Numeric.decimal.NEGATIVE
+                        (if (side == "BUY") Numeric.double.NEGATIVE else Numeric.double.POSITIVE)
+                    val price = parser.asDouble(summary["price"])
+                    val size = (parser.asDouble(summary["size"])
+                        ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
                     val usdcSize =
-                        (parser.asDecimal(summary["usdcSize"]) ?: Numeric.decimal.ZERO) * multiplier
-                    val fee = (parser.asDecimal(summary["fee"])
-                        ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE
-                    val feeRate = parser.asDecimal(summary["feeRate"]) ?: Numeric.decimal.ZERO
-                    if (price != null && size != Numeric.decimal.ZERO) {
+                        (parser.asDouble(summary["usdcSize"]) ?: Numeric.double.ZERO) * multiplier
+                    val fee = (parser.asDouble(summary["fee"])
+                        ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
+                    val feeRate = parser.asDouble(summary["feeRate"]) ?: Numeric.double.ZERO
+                    if (price != null && size != Numeric.double.ZERO) {
                         return mapOf(
                             "marketId" to marketId,
                             "size" to size,
@@ -71,11 +71,11 @@ internal class SubaccountTransformer {
             val summary = parser.asMap(transfer["summary"])
             if (summary != null) {
                 val multiplier =
-                    (if (type == "DEPOSIT") Numeric.decimal.POSITIVE else Numeric.decimal.NEGATIVE)
+                    (if (type == "DEPOSIT") Numeric.double.POSITIVE else Numeric.double.NEGATIVE)
                 val usdcSize =
-                    (parser.asDecimal(summary["usdcSize"]) ?: Numeric.decimal.ZERO) * multiplier
-                val fee = (parser.asDecimal(summary["fee"])
-                    ?: Numeric.decimal.ZERO) * Numeric.decimal.NEGATIVE
+                    (parser.asDouble(summary["usdcSize"]) ?: Numeric.double.ZERO) * multiplier
+                val fee = (parser.asDouble(summary["fee"])
+                    ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
                 return mapOf(
                     "usdcSize" to usdcSize,
                     "fee" to fee
@@ -93,15 +93,15 @@ internal class SubaccountTransformer {
         if (parser.asString(order["status"]) == "OPEN") {
             val marketId = parser.asString(order["marketId"])
             val side = parser.asString(order["side"])
-            val price = parser.asDecimal(order["price"])
+            val price = parser.asDouble(order["price"])
             val multiplier =
-                if (side == "BUY") Numeric.decimal.POSITIVE else Numeric.decimal.NEGATIVE
+                if (side == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
             val size =
-                ((parser.asDecimal(order["remainingSize"]) ?: parser.asDecimal(order["size"]))
-                    ?: Numeric.decimal.ZERO) * multiplier
-            if (marketId != null && price != null && size != Numeric.decimal.ZERO) {
-                val usdcSize = price * size * Numeric.decimal.NEGATIVE
-                val feeRate = parser.asDecimal(
+                ((parser.asDouble(order["remainingSize"]) ?: parser.asDouble(order["size"]))
+                    ?: Numeric.double.ZERO) * multiplier
+            if (marketId != null && price != null && size != Numeric.double.ZERO) {
+                val usdcSize = price * size * Numeric.double.NEGATIVE
+                val feeRate = parser.asDouble(
                     parser.value(
                         account,
                         when (parser.asString(order["type"])) {
@@ -109,7 +109,7 @@ internal class SubaccountTransformer {
                             else -> "user.makerFeeRate"
                         }
                     )
-                ) ?: Numeric.decimal.ZERO
+                ) ?: Numeric.double.ZERO
                 val fee = usdcSize * feeRate
                 return mapOf(
                     "marketId" to marketId,
@@ -249,15 +249,15 @@ internal class SubaccountTransformer {
 
         val modifiedPositions = applyDeltaToPositions(positions, modifiedDelta, parser, period)
         modified["openPositions"] = modifiedPositions
-        val usdcSize = parser.asDecimal(modifiedDelta?.get("usdcSize")) ?: Numeric.decimal.ZERO
-        if (delta != null && usdcSize != Numeric.decimal.ZERO) {
-            val fee = (parser.asDecimal(modifiedDelta?.get("fee")) ?: Numeric.decimal.ZERO)
+        val usdcSize = parser.asDouble(modifiedDelta?.get("usdcSize")) ?: Numeric.double.ZERO
+        if (delta != null && usdcSize != Numeric.double.ZERO) {
+            val fee = (parser.asDouble(modifiedDelta?.get("fee")) ?: Numeric.double.ZERO)
             val quoteBalance =
                 parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
             val quoteBalanceValue =
-                (parser.asDecimal(quoteBalance["current"])
-                    ?: Numeric.decimal.ZERO) + usdcSize + fee
-            quoteBalance[period] = quoteBalanceValue.doubleValue(false)
+                (parser.asDouble(quoteBalance["current"])
+                    ?: Numeric.double.ZERO) + usdcSize + fee
+            quoteBalance[period] = quoteBalanceValue
             modified["quoteBalance"] = quoteBalance
         } else {
             val quoteBalance =
@@ -308,9 +308,9 @@ internal class SubaccountTransformer {
     ): Map<String, Any> {
         val sizes = parser.asNativeMap(position["size"])
         val modifiedSize = sizes?.toMutableMap() ?: mutableMapOf()
-        val deltaSize = parser.asDecimal(delta?.get("size"))
+        val deltaSize = parser.asDouble(delta?.get("size"))
         if (delta != null && deltaSize != null) {
-            val size = parser.asDecimal(sizes?.get("current")) ?: Numeric.decimal.ZERO
+            val size = parser.asDouble(sizes?.get("current")) ?: Numeric.double.ZERO
             modifiedSize[period] = size + deltaSize
         } else {
             modifiedSize.safeSet(period, null)

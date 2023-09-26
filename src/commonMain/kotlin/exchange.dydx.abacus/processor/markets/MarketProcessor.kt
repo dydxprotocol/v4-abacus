@@ -96,15 +96,13 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     )
 
     private val marketKeyMap = mapOf(
-        "decimal" to mapOf(
-            "oraclePrice" to "oraclePrice",
-        ),
         "string" to mapOf(
             "market" to "market",
             "ticker" to "ticker",
             "baseAsset" to "assetId"
         ),
         "double" to mapOf(
+            "oraclePrice" to "oraclePrice",
             "priceChange24H" to "priceChange24H"
         )
     )

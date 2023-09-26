@@ -60,22 +60,4 @@ internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         }
         return received
     }
-
-    fun constructVolume(absoluteVolumeRequirement: Map<String, Any>): BigDecimal {
-        val low = parser.asInt(absoluteVolumeRequirement["low"]) ?: 0
-        val high = parser.asInt(absoluteVolumeRequirement["high"]) ?: 0
-        val unsigned = parser.asBool(absoluteVolumeRequirement["unsigned"]) ?: false
-        return constructDecimalFromLong(low, high, !unsigned)
-    }
-
-    fun constructDecimalFromLong(low: Int, high: Int, signed: Boolean): BigDecimal {
-        return if (signed) {
-            val value = (high.toLong() shl 32) or low.toLong()
-            parser.asDecimal(value) ?: Numeric.decimal.ZERO
-        } else {
-            val negative = (high and 0x80000000.toInt()) != 0
-            val value = ((high and 0x7FFFFFFF).toLong() shl 32) or low.toLong()
-            (parser.asDecimal(value) ?: Numeric.decimal.ZERO) * if (negative) -1 else 1
-        }
-    }
 }

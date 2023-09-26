@@ -110,7 +110,7 @@ fun TradingStateMachine.transfer(
                 }
                 TransferInputField.usdcSize.rawValue,
                 TransferInputField.usdcFee.rawValue -> {
-                    transfer.safeSet(typeText, parser.asDecimal(data))
+                    transfer.safeSet(typeText, parser.asDouble(data))
                     transfer.safeSet("route", null)
                     transfer.safeSet("requestPayload", null)
                     changes = StateChanges(
@@ -120,7 +120,7 @@ fun TradingStateMachine.transfer(
                     )
                 }
                 TransferInputField.size.rawValue -> {
-                    transfer.safeSet("size.size", parser.asDecimal(data))
+                    transfer.safeSet("size.size", parser.asDouble(data))
                     transfer.safeSet("route", null)
                     transfer.safeSet("requestPayload", null)
                     if (transfer["type"] == "DEPOSIT") {
