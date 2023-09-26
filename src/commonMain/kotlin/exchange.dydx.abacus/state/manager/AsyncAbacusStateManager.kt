@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -250,7 +251,6 @@ data class AppStateResponse(
     val lastOrder: SubaccountOrder?
 ) {
 }
-
 @JsExport
 class AsyncAbacusStateManager(
     val environmentsUrl: String,
@@ -588,6 +588,11 @@ class AsyncAbacusStateManager(
         }
     }
 
+    fun setAddresses(source: String?, account: String?) {
+        sourceAddress = source
+        accountAddress = account
+    }
+
     fun trade(data: String?, type: TradeInputField?) {
         adaptor?.trade(data, type)
     }
@@ -701,5 +706,9 @@ class AsyncAbacusStateManager(
             amount,
             submitTimeInMilliseconds
         )
+    }
+
+    fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
+        adaptor?.screen(address, callback)
     }
 }

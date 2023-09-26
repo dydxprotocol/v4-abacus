@@ -67,7 +67,7 @@ class V4ForegroundCycleTests {
 
     private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManager) {
         setStateMachineConnectedWithMarkets(stateManager)
-        stateManager.accountAddress = testCosmoAddress
+        stateManager.setAddresses(null, testCosmoAddress)
     }
 
     @Test
@@ -349,12 +349,12 @@ class V4ForegroundCycleTests {
         setStateMachineConnected(stateManager)
 
         val testAddress = "0xsecondaryFakeAddress"
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
-        assertEquals(6, testRest?.requests?.size)
+        assertEquals(7, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
-            testRest?.requests?.get(5)
+            testRest?.requests?.get(6)
         )
     }
 
@@ -371,23 +371,22 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
+        stateManager.setAddresses(null, testAddress)
 
-        stateManager.accountAddress = testAddress
-
-        assertEquals(9, testRest?.requests?.size)
+        assertEquals(10, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(6)
+            testRest?.requests?.get(7)
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(8)
+            testRest?.requests?.get(9)
         )
 
         assertEquals(2, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
+                {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
             """.trimIndent(),
             testWebSocket?.messages?.get(1)
         )
@@ -422,16 +421,16 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
-        assertEquals(10, testRest?.requests?.size)
+        assertEquals(11, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(8)
+            testRest?.requests?.get(9)
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(9)
+            testRest?.requests?.get(10)
         )
     }
 
@@ -451,21 +450,21 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
-        stateManager.accountAddress = secondAddress
+        stateManager.setAddresses(null, secondAddress)
 
-        assertEquals(10, testRest?.requests?.size)
+        assertEquals(12, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
-            testRest?.requests?.get(9)
+            testRest?.requests?.get(11)
         )
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"}
+                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
             """.trimIndent(),
             testWebSocket?.messages?.get(2)
         )
@@ -485,16 +484,16 @@ class V4ForegroundCycleTests {
         setStateMachineReadyToConnect(stateManager)
         setStateMachineConnected(stateManager)
 
-        stateManager.accountAddress = testAddress
+        stateManager.setAddresses(null, testAddress)
 
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
-        stateManager.accountAddress = null
+        stateManager.setAddresses(null, null)
 
-        assertEquals(9, testRest?.requests?.size)
+        assertEquals(10, testRest?.requests?.size)
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """
-                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"}
+                {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
             """.trimIndent(),
             testWebSocket?.messages?.get(2)
         )

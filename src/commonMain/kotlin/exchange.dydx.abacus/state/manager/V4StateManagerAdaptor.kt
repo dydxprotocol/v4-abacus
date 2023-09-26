@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -108,6 +110,14 @@ class V4StateManagerAdaptor(
             }
         }
 
+    private var indexerRestriction: UsageRestriction? = null
+        set(value) {
+            if (field !== value) {
+                field = value
+                didSetIndexerRestriction(field)
+            }
+        }
+
 
     private val MAX_NUM_BLOCK_DELAY = 10
 
@@ -160,7 +170,7 @@ class V4StateManagerAdaptor(
         accountAddress: String,
         subaccountNumber: Int,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
+        return iMapOf("id" to "$accountAddress/$subaccountNumber")
     }
 
     override fun faucetBody(amount: Double): String? {
@@ -188,6 +198,10 @@ class V4StateManagerAdaptor(
         return if (url != null) {
             "$url/$accountAddress"
         } else null
+    }
+
+    override fun screenUrl(): String? {
+        return configs.publicApiUrl("screen")
     }
 
     override fun subaccountParams(): IMap<String, String>? {
@@ -334,8 +348,15 @@ class V4StateManagerAdaptor(
         super.didSetAccountAddress(accountAddress, oldValue)
 
         if (accountAddress != null) {
-            retrieveSubaccounts()
-            pollAccountBalances()
+            if (sourceAddress != null) {
+                screenSourceAddress()
+            }
+            if (readyToConnect) {
+                retrieveSubaccounts()
+                if (validatorConnected) {
+                    pollAccountBalances()
+                }
+            }
         } else {
             accountBalancesTimer = null
         }
@@ -1027,15 +1048,10 @@ class V4StateManagerAdaptor(
         super.get(url, params, headers, private) { response, httpCode ->
             when (httpCode) {
                 403 -> {
-                    ioImplementations.threading?.async(ThreadingType.abacus) {
-                        val error = ParsingError(
-                            ParsingErrorType.HttpError403,
-                            "API error: $httpCode",
-                            "ERRORS.HTTP_ERROR_$httpCode"
-                        )
-
-                        emitError(error)
-                        trackApiCall()
+                    if (indexerRestriction != UsageRestriction.http403Restriction) {
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            indexerRestriction = UsageRestriction.http403Restriction
+                        }
                     }
                 }
 
@@ -1048,6 +1064,14 @@ class V4StateManagerAdaptor(
             }
 
         }
+    }
+
+    private fun didSetIndexerRestriction(indexerRestriction: UsageRestriction?) {
+        updateRestriction()
+    }
+
+    override fun updateRestriction() {
+        restriction = indexerRestriction ?: addressRestriction ?: UsageRestriction.noRestriction
     }
 
     override fun dispose() {

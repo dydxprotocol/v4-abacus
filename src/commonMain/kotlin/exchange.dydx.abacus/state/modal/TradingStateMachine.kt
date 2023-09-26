@@ -555,6 +555,12 @@ open class TradingStateMachine(
 
                 Changes.wallet -> state?.wallet != wallet
                 Changes.input -> state?.input != input
+
+                // Restriction is handled separately and shouldn't have gone through here
+                Changes.restriction -> {
+                    DebugLogger.log("Restriction is handled separately and shouldn't have gone through here")
+                    false
+                }
             }
             if (didChange) {
                 realChanges.add(change)
@@ -845,6 +851,7 @@ open class TradingStateMachine(
         var configs = state?.configs
         var input = state?.input
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
+        val restriction = state?.restriction
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asMap(data?.get("markets"))?.let {
@@ -1092,6 +1099,7 @@ open class TradingStateMachine(
             input,
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
             transferStatuses,
+            restriction,
         )
     }
 
