@@ -265,7 +265,7 @@ open class StateManagerAdaptor(
         set(value) {
             if (field != value) {
                 field = value
-                didSetaccountAddressRestriction(value)
+                didSetAccountAddressRestriction(value)
             }
         }
 
@@ -290,7 +290,7 @@ open class StateManagerAdaptor(
         set(value) {
             if (field != value) {
                 field = value
-                didSetsourceAddressRestriction(value)
+                didSetSourceAddressRestriction(value)
             }
         }
 
@@ -511,7 +511,7 @@ open class StateManagerAdaptor(
         screenAccountAddress()
     }
 
-    private fun didSetaccountAddressRestriction(accountAddressRestriction: Restriction?) {
+    private fun didSetAccountAddressRestriction(accountAddressRestriction: Restriction?) {
         updateAddressRestriction()
     }
 
@@ -2064,7 +2064,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    private fun didSetsourceAddressRestriction(sourceAddressRestriction: Restriction?) {
+    private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {
         updateAddressRestriction()
     }
 
