@@ -12,7 +12,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
+import exchange.dydx.abacus.utils.mutableMapOf
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
@@ -36,7 +36,7 @@ class DynamicLocalizer(
             if (field != value) {
                 field = value
                 val languages = iMutableListOf<SelectionOption>()
-                val languagesMap = iMutableMapOf<String, Language>()
+                val languagesMap = mutableMapOf<String, Language>()
                 for (item in value) {
                     languages.add(SelectionOption(item.code, item.name, null))
                     languagesMap[item.code] = item
@@ -162,7 +162,7 @@ class DynamicLocalizer(
 
 
     private fun loadLocalLanguageFiles(filePaths: IList<String>): IMap<String, IMap<String, Any>>? {
-        val result = iMutableMapOf<String, IMap<String, Any>>()
+        val result = mutableMapOf<String, IMap<String, Any>>()
         for (filePath in filePaths) {
             val data = loadLocalLanguageFile(filePath)
             if (data != null) {
@@ -215,7 +215,7 @@ class DynamicLocalizer(
         language: String,
     ) {
         val modified = languagesData.toIMutableMap()
-        val languageData = modified[language]?.toIMutableMap() ?: iMutableMapOf()
+        val languageData = modified[language]?.toIMutableMap() ?: mutableMapOf()
         languageData[filePath] = data
         modified[language] = languageData
         languagesData = modified

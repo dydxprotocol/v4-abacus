@@ -26,7 +26,11 @@ data class User(
     val walletId: String?
 ) {
     companion object {
-        internal fun create(existing: User?, parser: ParserProtocol, data: IMap<*, *>?): User? {
+        internal fun create(
+            existing: User?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): User? {
             DebugLogger.log("creating Account User\n")
             data?.let {
                 val isRegistered = parser.asBool(data["isRegistered"]) ?: false
@@ -97,7 +101,7 @@ data class Wallet(
         internal fun create(
             existing: Wallet?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): Wallet? {
             DebugLogger.log("creating Wallet\n")
 

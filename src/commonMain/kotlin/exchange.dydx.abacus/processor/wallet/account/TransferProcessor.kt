@@ -2,17 +2,13 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val transferKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val transferKeyMap = mapOf(
+        "string" to mapOf(
             "id" to "id",
             "clientId" to "clientId",
             "type" to "type",
@@ -24,19 +20,19 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             "status" to "status",
             "transactionHash" to "transactionHash"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "createdAt" to "createdAt",
             "confirmedAt" to "confirmedAt"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "size" to "amount",
         ),
-        "int" to iMapOf(
+        "int" to mapOf(
             "createdAtHeight" to "updatedAtBlock",
         )
     )
 
-    private val typeMap = iMapOf(
+    private val typeMap = mapOf(
         "DEPOSIT" to "APP.GENERAL.DEPOSIT",
         "WITHDRAWAL" to "APP.GENERAL.WITHDRAW",
         "FAST_WITHDRAWAL" to "APP.GENERAL.FAST_WITHDRAW",
@@ -44,7 +40,7 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         "TRANSFER_IN" to "APP.GENERAL.TRANSFER_IN"
     )
 
-    private val typeIconMap = iMapOf(
+    private val typeIconMap = mapOf(
         "DEPOSIT" to "Incoming",
         "WITHDRAWAL" to "Outgoing",
         "FAST_WITHDRAWAL" to "Outgoing",
@@ -52,19 +48,19 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         "TRANSFER_IN" to "Incoming"
     )
 
-    private val statusMap = iMapOf(
+    private val statusMap = mapOf(
         "PENDING" to "pending",
         "CONFIRMED" to "confirmed",
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         val modified = transform(existing, payload, transferKeyMap).mutable()
 
-        val sender = parser.asMap(payload["sender"])
-        val recipient = parser.asMap(payload["recipient"])
+        val sender = parser.asNativeMap(payload["sender"])
+        val recipient = parser.asNativeMap(payload["recipient"])
 
         sender?.let { 
             modified.safeSet("fromAddress", parser.asString(it["address"]))
@@ -94,8 +90,8 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         return modified
     }
 
-    private fun updateResource(transfer: IMutableMap<String, Any>) {
-        val resources = iMutableMapOf<String, Any>()
+    private fun updateResource(transfer: MutableMap<String, Any>) {
+        val resources = mutableMapOf<String, Any>()
         parser.asString(transfer["type"])?.let { type ->
             val modifiedType = when (type) {
                 // For DEPOSIT, we always show as "Deposit"

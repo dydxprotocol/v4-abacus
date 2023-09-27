@@ -3,33 +3,30 @@ package exchange.dydx.abacus.processor.configs
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
-import kollections.toIMap
 
 @Suppress("UNCHECKED_CAST")
 internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val feeTierKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val feeTierKeyMap = mapOf(
+        "string" to mapOf(
             "tier" to "tier",
             "name" to "tier",
             "symbol" to "symbol"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "maker" to "maker",
             "taker" to "taker"
         ),
-        "int" to iMapOf(
+        "int" to mapOf(
             "volume" to "volume"
-        ).toIMap()
+        ).toMap()
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
         val received = transform(existing, payload, feeTierKeyMap)
         val absoluteVolumeRequirement = parser.asDecimal(payload["absoluteVolumeRequirement"])
         if (absoluteVolumeRequirement != null) {
@@ -59,7 +56,7 @@ internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         val tier = received["tier"]
         if (tier != null) {
             received["id"] = tier
-            received["resources"] = iMapOf("stringKey" to "FEE_TIER.$tier")
+            received["resources"] = mapOf("stringKey" to "FEE_TIER.$tier")
         }
         return received
     }

@@ -5,10 +5,7 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
-import exchange.dydx.abacus.utils.iMutableMapOf
-import exchange.dydx.abacus.utils.isAddressValid
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
@@ -44,14 +41,14 @@ fun TradingStateMachine.transfer(
     var error: ParsingError? = null
     val typeText = type?.rawValue
 
-    val input = this.input?.mutable() ?: iMutableMapOf()
+    val input = this.input?.mutable() ?: mutableMapOf()
     input["current"] = "transfer"
     val transfer = parser.asMap(input["transfer"])?.mutable() ?: kotlin.run {
-        val transfer = iMutableMapOf<String, Any>()
+        val transfer = mutableMapOf<String, Any>()
         transfer["type"] = "DEPOSIT"
 
         val calculator = TransferInputCalculator(parser)
-        val params = iMutableMapOf<String, Any>()
+        val params = mutableMapOf<String, Any>()
         params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
         params.safeSet("account", account)
         params.safeSet("user", user)
@@ -174,7 +171,7 @@ fun TradingStateMachine.transfer(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-private fun TradingStateMachine.updateTransferToTokenType(transfer: IMutableMap<String, Any>, token: String) {
+private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<String, Any>, token: String) {
     if (transfer["type"] == "TRANSFER_OUT") {
         transfer.safeSet("size.usdcSize", null)
         transfer.safeSet("size.size", null)
@@ -192,7 +189,7 @@ private fun TradingStateMachine.updateTransferToTokenType(transfer: IMutableMap<
     transfer.safeSet("requestPayload", null)
 }
 
-private fun TradingStateMachine.updateTransferToChainType(transfer: IMutableMap<String, Any>, chainType: String) {
+private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<String, Any>, chainType: String) {
     val tokenOptions = squidProcessor.tokenOptions(chainType)
     if (transfer["type"] != "TRANSFER_OUT") {
         transfer.safeSet(
@@ -239,7 +236,7 @@ private fun TradingStateMachine.transferDataOptionSize(typeText: String?): Strin
     }
 }
 
-fun TradingStateMachine.validTransferInput(transfer: IMap<String, Any>, typeText: String?): Boolean {
+fun TradingStateMachine.validTransferInput(transfer: Map<String, Any>, typeText: String?): Boolean {
     val option = if (transfer["type"] == "TRANSFER_OUT" && transfer["token"] == "dydx") {
         transferDataOptionSize(typeText)
     } else {

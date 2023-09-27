@@ -2,8 +2,6 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
 
 /*
     {
@@ -35,8 +33,8 @@ import exchange.dydx.abacus.utils.iMapOf
             }
  */
 internal class CandleProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val candleKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val candleKeyMap = mapOf(
+        "double" to mapOf(
             "low" to "low",
             "high" to "high",
             "open" to "open",
@@ -45,19 +43,19 @@ internal class CandleProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "usdVolume" to "usdVolume",
             "startingOpenInterest" to "startingOpenInterest",
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "startedAt" to "startedAt",
             "updatedAt" to "updatedAt",
         ),
-        "int" to iMapOf(
+        "int" to mapOf(
             "trades" to "trades",
         ),
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         return transform(existing, payload, candleKeyMap)
     }
 }

@@ -6,7 +6,6 @@ import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.utils.GoodTil
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -98,7 +97,7 @@ fun PerpTradingStateMachine.placeOrder(height: Int): PlaceOrderPayload? {
 @Throws(IllegalStateException::class)
 fun PerpTradingStateMachine.placeTradeOrder(
     height: Int,
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): PlaceOrderPayload? {
     val marketId =
         parser.asString(trade["marketId"]) ?: throw IllegalStateException("Cannot get marketId")
@@ -219,7 +218,7 @@ private fun PerpTradingStateMachine.flags(
     }
 }
 
-internal fun PerpTradingStateMachine.calculateClientMetaData(trade: IMap<String, Any>): Int {
+internal fun PerpTradingStateMachine.calculateClientMetaData(trade: Map<String, Any>): Int {
     return when (parser.asString(trade["type"])) {
         "LIMIT" -> 0
         "MARKET" -> 1
@@ -300,7 +299,7 @@ internal fun PerpTradingStateMachine.subticks(
 // https://www.notion.so/dydx/CLOB-Advanced-Orders-Product-Spec-4fbd6e5166ba4f779fca69b9c6ff1582
 
 internal fun PerpTradingStateMachine.executionCondition(
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): ExecutionCondition {
     return if (parser.asBool(trade["reduceOnly"]) == true) {
         ExecutionCondition.EXECUTION_CONDITION_REDUCE_ONLY
@@ -310,7 +309,7 @@ internal fun PerpTradingStateMachine.executionCondition(
 }
 
 internal fun PerpTradingStateMachine.orderSide(
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): OrderSide {
     return when (parser.asString(trade["side"])) {
         "BUY" -> OrderSide.buy
@@ -320,7 +319,7 @@ internal fun PerpTradingStateMachine.orderSide(
 }
 
 internal fun PerpTradingStateMachine.timeInForce(
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): TimeInForce {
     return when (orderType(trade)) {
         "MARKET" -> TimeInForce.TIME_IN_FORCE_IOC
@@ -364,7 +363,7 @@ internal fun PerpTradingStateMachine.timeInForce(
 }
 
 internal fun PerpTradingStateMachine.orderFlags(
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): OrderFlags {
     return when (orderType(trade)) {
         "MARKET" -> OrderFlags.SHORT_TERM
@@ -381,7 +380,7 @@ internal fun PerpTradingStateMachine.orderFlags(
 }
 
 internal fun PerpTradingStateMachine.conditionType(
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): ConditionType {
     return when (orderType(trade)) {
         "MARKET", "LIMIT" -> ConditionType.CONDITION_TYPE_UNSPECIFIED
@@ -394,7 +393,7 @@ internal fun PerpTradingStateMachine.conditionType(
     }
 }
 
-internal fun PerpTradingStateMachine.goodUntilBlock(trade: IMap<String, Any>, height: Int): Int? {
+internal fun PerpTradingStateMachine.goodUntilBlock(trade: Map<String, Any>, height: Int): Int? {
     return when (orderType(trade)) {
         "MARKET" -> height + SHORT_TERM_ORDER_DURATION
 
@@ -409,7 +408,7 @@ internal fun PerpTradingStateMachine.goodUntilBlock(trade: IMap<String, Any>, he
     }
 }
 
-internal fun PerpTradingStateMachine.goodUntilTime(trade: IMap<String, Any>): Double? {
+internal fun PerpTradingStateMachine.goodUntilTime(trade: Map<String, Any>): Double? {
     return when (orderType(trade)) {
         "MARKET" -> null
 
@@ -439,7 +438,7 @@ internal fun PerpTradingStateMachine.goodUntilTime(trade: IMap<String, Any>): Do
     }
 }
 
-internal fun PerpTradingStateMachine.orderType(trade: IMap<String, Any>): String {
+internal fun PerpTradingStateMachine.orderType(trade: Map<String, Any>): String {
     // for initial demo only. Send LIMIT order with MARKET order options (SHORT_TERM)
 //    val type = parser.asString(trade["type"]) ?: "LIMIT"
 //    return if (type == "LIMIT") "MARKET" else type
@@ -477,7 +476,7 @@ fun PerpTradingStateMachine.placeOrder2(height: Int): PlaceOrderPayload2? {
 
 fun PerpTradingStateMachine.placeTradeOrder2(
     height: Int,
-    trade: IMap<String, Any>,
+    trade: Map<String, Any>,
 ): PlaceOrderPayload2? {
     val marketId = parser.asString(trade["marketId"])
         ?: throw IllegalStateException("Cannot get marketId")

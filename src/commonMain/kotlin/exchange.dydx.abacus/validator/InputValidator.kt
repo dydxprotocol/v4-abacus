@@ -3,25 +3,19 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.modify
-import kollections.iListOf
-import kollections.iMutableListOf
-import kollections.toIList
 
 internal class InputValidator(
     val localizer: LocalizerProtocol?,
     val formatter: Formatter?,
     val parser: ParserProtocol,
 ) {
-    private val errorTypeLookup = iMapOf<String, Int>(
+    private val errorTypeLookup = mapOf<String, Int>(
         "ERROR" to 0,
         "REQUIRED" to 1,
         "WARNING" to 2,
     )
-    private val errorCodeLookup = iMapOf<String, Int>(
+    private val errorCodeLookup = mapOf<String, Int>(
         "REQUIRED_WALLET" to 1000,
         "REQUIRED_ACCOUNT" to 1001,
         "NO_EQUITY_DEPOSIT_FIRST" to 1002,
@@ -69,34 +63,34 @@ internal class InputValidator(
         "LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_HIGHER" to 1204
     )
 
-    private val tradeValidators = iListOf<ValidatorProtocol>(
+    private val tradeValidators = listOf<ValidatorProtocol>(
         AccountInputValidator(localizer, formatter, parser),
         FieldsInputValidator(localizer, formatter, parser),
         TradeInputValidator(localizer, formatter, parser)
     )
 
-    private val closePositionValidators = iListOf<ValidatorProtocol>(
+    private val closePositionValidators = listOf<ValidatorProtocol>(
         AccountInputValidator(localizer, formatter, parser),
         FieldsInputValidator(localizer, formatter, parser),
         TradeInputValidator(localizer, formatter, parser)
     )
 
-    private val transferValidators = iListOf<ValidatorProtocol>(
+    private val transferValidators = listOf<ValidatorProtocol>(
         FieldsInputValidator(localizer, formatter, parser),
         TransferInputValidator(localizer, formatter, parser)
     )
 
     fun validate(
-        wallet: IMap<String, Any>?,
-        user: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        input: IMap<String, Any>?,
-        configs: IMap<String, Any>?
-    ): IMap<String, Any>? {
+        wallet: Map<String, Any>?,
+        user: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        input: Map<String, Any>?,
+        configs: Map<String, Any>?
+    ): Map<String, Any>? {
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
-            val transaction = parser.asMap(input[transactionType]) ?: return input
+            val transaction = parser.asNativeMap(input[transactionType]) ?: return input
             val errors = sort(validate(
                 wallet,
                 user,
@@ -117,17 +111,17 @@ internal class InputValidator(
     }
 
     private fun validate(
-        wallet: IMap<String, Any>?,
-        user: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        transaction: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        user: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        transaction: Map<String, Any>,
         transactionType: String
-    ): IList<Any>? {
+    ): List<Any>? {
         val validators = validatorsFor(transactionType)
         return if (validators != null) {
-            val result = iMutableListOf<Any>()
+            val result = mutableListOf<Any>()
             for (validator in validators) {
                 val validatorErrors =
                     validator.validate(
@@ -147,7 +141,7 @@ internal class InputValidator(
         } else null
     }
 
-    private fun validatorsFor(transactionType: String): IList<ValidatorProtocol>? {
+    private fun validatorsFor(transactionType: String): List<ValidatorProtocol>? {
         return when (transactionType) {
             "closePosition" -> closePositionValidators
             "transfer" -> transferValidators
@@ -156,7 +150,7 @@ internal class InputValidator(
         }
     }
 
-    private fun sort(errors: IList<Any>?): IList<Any>? {
+    private fun sort(errors: List<Any>?): List<Any>? {
         return if (errors != null) {
             return errors.sortedWith{ error1, error2 ->
                 val typeString1 = parser.asString(parser.value(error1, "type"))
@@ -196,7 +190,7 @@ internal class InputValidator(
                         }
                     }
                 }
-            }.toIList()
+            }
 
         } else null
     }

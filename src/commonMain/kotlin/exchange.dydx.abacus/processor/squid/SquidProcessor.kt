@@ -2,28 +2,23 @@ package exchange.dydx.abacus.processor.squid
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableListOf
 
 internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private var chains: IList<Any>? = null
-    private var tokens: IList<Any>? = null
+    private var chains: List<Any>? = null
+    private var tokens: List<Any>? = null
 
     internal fun receivedChains(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
         if (this.chains != null) {
             return existing
         }
-        this.chains = parser.asList(payload.get("chains"))
+        this.chains = parser.asNativeList(payload.get("chains"))
 
-        var modified = iMutableMapOf<String, Any>()
+        var modified = mutableMapOf<String, Any>()
         existing?.let {
             modified = it.mutable()
         }
@@ -42,15 +37,15 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun receivedTokens(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
         if (this.tokens != null) {
             return existing
         }
-        this.tokens = parser.asList(payload.get("tokens")) as IList<IMap<String, Any>>?
+        this.tokens = parser.asNativeList(payload.get("tokens")) as List<Map<String, Any>>?
 
-        var modified = iMutableMapOf<String, Any>()
+        var modified = mutableMapOf<String, Any>()
         existing?.let {
             modified = it.mutable()
         }
@@ -62,17 +57,17 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun receivedRoute(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
-        var modified = iMutableMapOf<String, Any>()
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        var modified = mutableMapOf<String, Any>()
         existing?.let {
             modified = it.mutable()
         }
 
         val processor = SquidRouteProcessor(parser)
-        modified.safeSet("transfer.route", processor.received(null, payload) as IMutableMap<String, Any>)
-        if (parser.asMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
+        modified.safeSet("transfer.route", processor.received(null, payload) as MutableMap<String, Any>)
+        if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
 		    val value = parser.value(modified, "transfer.route.toAmountUSD")
             modified.safeSet("transfer.size.usdcSize", value)
         }
@@ -81,11 +76,11 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun receivedStatus(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         transactionId: String?,
-    ): IMap<String, Any>? {
-        var modified = iMutableMapOf<String, Any>()
+    ): Map<String, Any>? {
+        var modified = mutableMapOf<String, Any>()
         existing?.let {
             modified = it.mutable()
         }
@@ -94,7 +89,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return processor.received(existing, payload)
     }
 
-    private fun updateTokensDefaults(modified: IMutableMap<String, Any>, selectedChainId: String?) {
+    private fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         modified.safeSet("transfer.depositOptions.assets", tokenOptions(selectedChainId))
         modified.safeSet("transfer.withdrawalOptions.assets", tokenOptions(selectedChainId))
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
@@ -102,34 +97,34 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun defaultChainId(): String? {
-        val selectedChain = parser.asMap(this.chains?.firstOrNull())
+        val selectedChain = parser.asNativeMap(this.chains?.firstOrNull())
         return parser.asString(selectedChain?.get("chainId"))
     }
     
     internal fun selectedTokenSymbol(tokenAddress: String?): String? {
         this.tokens?.find {
-            parser.asString(parser.asMap(it)?.get("address")) == tokenAddress
+            parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress
         }?.let {
-            return parser.asString(parser.asMap(it)?.get("symbol"))
+            return parser.asString(parser.asNativeMap(it)?.get("symbol"))
         }
         return null
     }
 
     internal fun selectedTokenDecimals(tokenAddress: String?): String? {
         this.tokens?.find {
-            parser.asString(parser.asMap(it)?.get("address")) == tokenAddress
+            parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress
         }?.let {
-            return parser.asString(parser.asMap(it)?.get("decimals"))
+            return parser.asString(parser.asNativeMap(it)?.get("decimals"))
         }
         return null
     }
 
-    private fun filteredTokens(chainId: String?): IList<Any>? {
+    private fun filteredTokens(chainId: String?): List<Any>? {
         chainId?.let {
-            val filteredTokens = iMutableListOf<IMap<String, Any>>()
+            val filteredTokens = mutableListOf<Map<String, Any>>()
             this.tokens?.let {
                 for (token in it) {
-                    parser.asMap(token)?.let { token ->
+                    parser.asNativeMap(token)?.let { token ->
                         if (parser.asString(token.get("chainId")) == chainId) {
                             filteredTokens.add(token)
                         }
@@ -142,18 +137,18 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun defaultTokenAddress(chainId: String?): String? {
-        val selectedToken = parser.asMap(this.filteredTokens(chainId)?.firstOrNull())
+        val selectedToken = parser.asNativeMap(this.filteredTokens(chainId)?.firstOrNull())
         return parser.asString(selectedToken?.get("address"))
     }
 
-    internal fun chainResources(chainId: String?): IMap<String, Any>? {
-        val chainResources = iMutableMapOf<String, Any>()
+    internal fun chainResources(chainId: String?): Map<String, Any>? {
+        val chainResources = mutableMapOf<String, Any>()
         chainId?.let {
             this.chains?.find {
-                parser.asString(parser.asMap(it)?.get("chainId")) == chainId
+                parser.asString(parser.asNativeMap(it)?.get("chainId")) == chainId
             }?.let {
                 val processor = SquidChainResourceProcessor(parser)
-                parser.asMap(it)?.let { payload ->
+                parser.asNativeMap(it)?.let { payload ->
                     chainResources[chainId] = processor.received(null, payload)
                 }
             }
@@ -161,12 +156,12 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return chainResources
     }
 
-    internal fun tokenResources(chainId: String?): IMap<String, Any>? {
-        val tokenResources = iMutableMapOf<String, Any>()
+    internal fun tokenResources(chainId: String?): Map<String, Any>? {
+        val tokenResources = mutableMapOf<String, Any>()
         filteredTokens(chainId)?.forEach {
-            parser.asString(parser.asMap(it)?.get("address"))?.let { key ->
+            parser.asString(parser.asNativeMap(it)?.get("address"))?.let { key ->
                 val processor = SquidTokenResourceProcessor(parser)
-                parser.asMap(it)?.let { payload ->
+                parser.asNativeMap(it)?.let { payload ->
                     tokenResources[key] = processor.received(null, payload)
                 }
             }
@@ -174,13 +169,13 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return tokenResources
     }
 
-    private fun chainOptions(): IList<Any> {
+    private fun chainOptions(): List<Any> {
         val chainProcessor = SquidChainProcessor(parser)
-        val options = iMutableListOf<Any>()
+        val options = mutableListOf<Any>()
 
         this.chains?.let {
             for (chain in it) {
-                parser.asMap(chain)?.let { chain ->
+                parser.asNativeMap(chain)?.let { chain ->
                     if (parser.asString(chain.get("chainType")) != "cosmos") {
                         chainProcessor.received(null, chain)?.let {
                             options.add(it)
@@ -193,15 +188,15 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return options
     }
 
-    internal fun tokenOptions(chainId: String?): IList<Any> {
+    internal fun tokenOptions(chainId: String?): List<Any> {
         val processor = SquidTokenProcessor(parser)
-        val options = iMutableListOf<Any>()
+        val options = mutableListOf<Any>()
 
         val selectedChainId = chainId ?: defaultChainId()
         selectedChainId?.let { selectedChainId
             this.tokens?.let {
                 for (token in it) {
-                    parser.asMap(token)?.let { token ->
+                    parser.asNativeMap(token)?.let { token ->
                         if (parser.asString(token.get("chainId")) == selectedChainId) {
                             processor.received(null, token)?.let {
                                 options.add(it)

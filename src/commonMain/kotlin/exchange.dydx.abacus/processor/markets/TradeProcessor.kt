@@ -2,36 +2,33 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 
 internal class TradeProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val tradeKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val tradeKeyMap = mapOf(
+        "string" to mapOf(
             "id" to "id",
             "side" to "side"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "size" to "size",
             "price" to "price"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "createdAt" to "createdAt"
         ),
-        "bool" to iMapOf(
+        "bool" to mapOf(
             "liquidation" to "liquidation"
         )
     )
 
-    private val sideStringKeys = iMapOf(
+    private val sideStringKeys = mapOf(
         "BUY" to "APP.GENERAL.BUY",
         "SELL" to "APP.GENERAL.SELL"
     )
 
-    override fun received(existing: IMap<String, Any>?, payload: IMap<String, Any>): IMap<String, Any> {
+    override fun received(existing: Map<String, Any>?, payload: Map<String, Any>): Map<String, Any> {
         val trade = transform(existing, payload, tradeKeyMap)
-        val resources = iMutableMapOf<String, Any>()
+        val resources = mutableMapOf<String, Any>()
 
         (parser.asString(payload["side"])).let {
             sideStringKeys[it]?.let {

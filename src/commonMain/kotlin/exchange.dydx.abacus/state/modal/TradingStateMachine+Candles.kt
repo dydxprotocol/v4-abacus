@@ -2,20 +2,17 @@ package exchange.dydx.abacus.state.modal
 
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.iListOf
 import kollections.toIList
-import kollections.toIMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.candles(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     return receivedCandles(json)
 }
 
-private fun TradingStateMachine.receivedCandles(payload: IMap<String, Any>): StateChanges {
+private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): StateChanges {
     val markets = parser.asMap(payload["candles"])
     val marketIds = if (markets != null) markets.keys.toIList() else {
         val marketId = parser.asString(parser.value(payload, "candles.0.market"))
@@ -38,11 +35,11 @@ private fun TradingStateMachine.receivedCandles(payload: IMap<String, Any>): Sta
 }
 
 internal fun TradingStateMachine.sparklines(payload: String): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toIMap()
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     return receivedSparklines(json)
 }
 
-private fun TradingStateMachine.receivedSparklines(payload: IMap<String, Any>): StateChanges {
+private fun TradingStateMachine.receivedSparklines(payload: Map<String, Any>): StateChanges {
     marketsSummary = marketsProcessor.receivedSparklines(marketsSummary, payload)
     return StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
 }
@@ -51,7 +48,7 @@ private fun TradingStateMachine.receivedSparklines(payload: IMap<String, Any>): 
 internal fun TradingStateMachine.receivedCandles(
     market: String,
     resolution: String,
-    payload: IMap<String, Any>
+    payload: Map<String, Any>
 ): StateChanges {
     this.marketsSummary =
         marketsProcessor.receivedCandles(marketsSummary, market, resolution, payload)
@@ -61,7 +58,7 @@ internal fun TradingStateMachine.receivedCandles(
 internal fun TradingStateMachine.receivedCandlesChanges(
     market: String,
     resolution: String,
-    payload: IMap<String, Any>
+    payload: Map<String, Any>
 ): StateChanges {
     this.marketsSummary =
         marketsProcessor.receivedCandlesChanges(marketsSummary, market, resolution, payload)
@@ -71,7 +68,7 @@ internal fun TradingStateMachine.receivedCandlesChanges(
 internal fun TradingStateMachine.receivedBatchedCandlesChanges(
     market: String,
     resolution: String,
-    payload: IList<Any>
+    payload: List<Any>
 ): StateChanges {
     this.marketsSummary =
         marketsProcessor.receivedBatchedCandlesChanges(marketsSummary, market, resolution, payload)

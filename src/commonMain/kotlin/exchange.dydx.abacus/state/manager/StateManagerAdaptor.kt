@@ -66,13 +66,12 @@ import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kollections.iMutableSetOf
+import kollections.iMutableMapOf
 import kollections.iSetOf
 import kollections.toIList
 import kollections.toIMap
@@ -615,7 +614,7 @@ open class StateManagerAdaptor(
     internal fun socket(
         type: String, channel: String, params: IMap<String, Any>? = null,
     ) {
-        val request = iMutableMapOf<String, Any>("type" to type, "channel" to channel)
+        val request = mutableMapOf<String, Any>("type" to type, "channel" to channel)
         if (params != null) {
             for ((key, value) in params) {
                 request[key] = value
@@ -1097,13 +1096,13 @@ open class StateManagerAdaptor(
 
     internal open fun get(
         url: String,
-        params: IMap<String, String>?,
-        headers: IMap<String, String>?,
+        params: Map<String, String>?,
+        headers: Map<String, String>?,
         private: Boolean,
         callback: (String?, Int) -> Unit,
     ) {
         val fullUrl = if (params != null) {
-            val queryString = params.joinToString("&") { "${it.key}=${it.value}" }
+            val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }
             "$url?$queryString"
         } else url
 
@@ -1112,7 +1111,7 @@ open class StateManagerAdaptor(
         } else headers
 
         ioImplementations.threading?.async(ThreadingType.network) {
-            ioImplementations.rest?.get(fullUrl, modifiedHeaders) { response, httpCode ->
+            ioImplementations.rest?.get(fullUrl, modifiedHeaders?.toIMap()) { response, httpCode ->
                 val time = if (configs.isIndexer(url) && success(httpCode)) {
                     Clock.System.now()
                 } else null
@@ -1143,11 +1142,11 @@ open class StateManagerAdaptor(
     internal open fun privateHeaders(
         path: String,
         verb: String,
-        params: IMap<String, String>?,
-        headers: IMap<String, String>?,
+        params: Map<String, String>?,
+        headers: Map<String, String>?,
         body: String?,
     ): IMap<String, String>? {
-        return headers
+        return headers?.toIMap()
     }
 
     fun post(
@@ -1320,7 +1319,7 @@ open class StateManagerAdaptor(
     private fun retrieveSubaccountHistoricalPnls() {
         val url = configs.privateApiUrl("historical-pnl") ?: return
         val params = subaccountParams()
-        val historicalPnl = parser.asList(
+        val historicalPnl = parser.asNativeList(
             parser.value(
                 stateMachine.data,
                 "wallet.account.subaccounts.$subaccountNumber.historicalPnl"
@@ -1401,14 +1400,14 @@ open class StateManagerAdaptor(
 
     internal fun retrieveTimed(
         url: String,
-        items: IList<Any>?,
+        items: List<Any>?,
         timeField: String,
         sampleDuration: Duration,
         maxDuration: Duration,
         beforeParam: String,
         afterParam: String? = null,
         private: Boolean = false,
-        additionalParams: IMap<String, String>? = null,
+        additionalParams: Map<String, String>? = null,
         callback: (response: String?, httpCode: Int) -> Unit,
     ) {
         if (items != null) {
@@ -1460,9 +1459,9 @@ open class StateManagerAdaptor(
         beforeParam: String,
         after: Instant?,
         afterParam: String?,
-        additionalParams: IMap<String, String>? = null,
-    ): IMap<String, String>? {
-        val params = iMutableMapOf<String, String>()
+        additionalParams: Map<String, String>? = null,
+    ): Map<String, String>? {
+        val params = mutableMapOf<String, String>()
         val beforeString = before?.toString()
         if (beforeString != null) {
             params[beforeParam] = beforeString
@@ -1474,7 +1473,7 @@ open class StateManagerAdaptor(
         }
 
         return if (additionalParams != null) {
-            ParsingHelper.merge(params, additionalParams) as? IMap<String, String>
+            ParsingHelper.merge(params, additionalParams) as? Map<String, String>
         } else {
             params
         }

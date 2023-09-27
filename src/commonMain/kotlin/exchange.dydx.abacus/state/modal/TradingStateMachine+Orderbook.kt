@@ -3,13 +3,11 @@ package exchange.dydx.abacus.state.modal
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.iListOf
 
 internal fun TradingStateMachine.receivedOrderbook(
     market: String?,
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int
 ): StateChanges? {
     return if (market != null) {
@@ -22,7 +20,7 @@ internal fun TradingStateMachine.receivedOrderbook(
 
 internal fun TradingStateMachine.receivedOrderbookChanges(
     market: String?,
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int
 ): StateChanges? {
     // To do: marketsProcessor needs a receivedOrderbookChanges function
@@ -35,7 +33,7 @@ internal fun TradingStateMachine.receivedOrderbookChanges(
 
 internal fun TradingStateMachine.receivedBatchOrderbookChanges(
     market: String?,
-    payload: IList<Any>,
+    payload: List<Any>,
     subaccountNumber: Int
 ): StateChanges? {
     return if (market != null) {

@@ -3,13 +3,9 @@ package exchange.dydx.abacus.processor.wallet.account
 import abs
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iMutableMapOf
-import kollections.toIMutableMap
 
 /*
     "ETH-USD": {
@@ -74,70 +70,70 @@ import kollections.toIMutableMap
 
 @Suppress("UNCHECKED_CAST")
 internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val sideStringKeys = iMapOf(
+    private val sideStringKeys = mapOf(
         "LONG" to "APP.GENERAL.LONG_POSITION_SHORT",
         "SHORT" to "APP.GENERAL.SHORT_POSITION_SHORT",
         "NONE" to "APP.GENERAL.NONE"
     )
-    private val indicators = iMapOf(
+    private val indicators = mapOf(
         "LONG" to "long",
         "SHORT" to "short",
         "NONE" to "none"
     )
-    private val positionKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val positionKeyMap = mapOf(
+        "string" to mapOf(
             "market" to "id",
             "status" to "status"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "maxSize" to "maxSize",
             "exitPrice" to "exitPrice",
             "netFunding" to "netFunding",
             "unrealizedPnl" to "unrealizedPnl"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "createdAt" to "createdAt",
             "closedAt" to "closedAt",
         )
     )
 
-    private val currentPositionKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val currentPositionKeyMap = mapOf(
+        "double" to mapOf(
             "entryPrice" to "entryPrice",
             "realizedPnl" to "realizedPnl"
         ),
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         var modified = transform(existing, payload, positionKeyMap)
         modified = transform(modified, payload, "current", currentPositionKeyMap)
 
         val size = parser.asDouble(payload["size"])
-        val sizeMap = size(parser.asMap(payload["size"]), size, parser.asString(payload["side"]))
+        val sizeMap = size(parser.asNativeMap(payload["size"]), size, parser.asString(payload["side"]))
         modified.safeSet("size", sizeMap)
 
         ParsingHelper.asset(parser.asString(modified["id"]))?.let {
             modified["assetId"] = it
         }
 
-        val resources = parser.asMap(modified["resources"])?.toIMutableMap()
-            ?: iMutableMapOf<String, Any>()
+        val resources = parser.asNativeMap(modified["resources"])?.toMutableMap()
+            ?: mutableMapOf<String, Any>()
         val side = parser.asString(payload["side"]) ?: "NONE"
         sideStringKeys[side]?.let {
-            resources["sideStringKey"] = iMapOf("current" to it)
+            resources["sideStringKey"] = mapOf("current" to it)
         }
         indicators[side]?.let {
-            resources["indicator"] = iMapOf("current" to it)
+            resources["indicator"] = mapOf("current" to it)
         }
         modified["resources"] = resources
         return modified
     }
 
-    private fun size(existing: IMap<String, Any>?, size: Double?, side: String?): IMap<String, Any>? {
-        val sizeMap = existing?.toIMutableMap() ?: iMutableMapOf()
+    private fun size(existing: Map<String, Any>?, size: Double?, side: String?): Map<String, Any>? {
+        val sizeMap = existing?.toMutableMap() ?: mutableMapOf()
         val signedSize = if (size != null) if (side == "SHORT") (size.abs() * -1.0) else size else null
         sizeMap.safeSet("current", signedSize)
         return sizeMap
@@ -155,9 +151,9 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
     }
 
     internal fun receivedChanges(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>?
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?
+    ): Map<String, Any>? {
         // Keep the position even if it is closed in the internal state.
         // Filter at output
         return if (payload != null) {

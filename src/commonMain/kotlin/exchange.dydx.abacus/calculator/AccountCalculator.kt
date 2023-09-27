@@ -2,22 +2,20 @@ package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.AppVersion
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 class AccountCalculator(val parser: ParserProtocol) {
     private val subaccountCalculator = SubaccountCalculator(parser)
     internal fun calculate(
-        account: IMap<String, Any>?,
-        subaccountNumbers: IList<Int>,
-        configs: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        price: IMap<String, Any>?,
-        periods: kollections.Set<CalculationPeriod>,
+        account: Map<String, Any>?,
+        subaccountNumbers: List<Int>,
+        configs: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        price: Map<String, Any>?,
+        periods: Set<CalculationPeriod>,
         version: AppVersion
-    ): IMap<String, Any>? {
+    ): Map<String, Any>? {
         return if (account != null) {
             val modified = account.mutable()
             for (subaccountNumber in subaccountNumbers) {

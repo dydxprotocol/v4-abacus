@@ -2,14 +2,12 @@ package exchange.dydx.abacus.processor.wallet.user
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 
 @Suppress("UNCHECKED_CAST")
 internal class UserProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val userKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val userKeyMap = mapOf(
+        "double" to mapOf(
             "makerFeeRate" to "makerFeeRate",
             "takerFeeRate" to "takerFeeRate",
             "makerVolume30D" to "makerVolume30D",
@@ -18,35 +16,35 @@ internal class UserProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         )
     )
 
-    private val OnChainUserFeeTierKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val OnChainUserFeeTierKeyMap = mapOf(
+        "double" to mapOf(
             "makerFeePpm" to "makerFeePpm",
             "takerFeePpm" to "takerFeePpm"
         ),
-        "string" to iMapOf(
+        "string" to mapOf(
             "name" to "feeTierId"
         ),
     )
 
-    private val OnChainUserFeeStatsKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val OnChainUserFeeStatsKeyMap = mapOf(
+        "double" to mapOf(
             "makerNotional" to "makerNotional",
             "takerNotional" to "takerNotional"
         )
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         return transform(existing, payload, userKeyMap)
     }
 
 
     fun receivedOnChainUserFeeTier(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         val received = transform(existing, payload, OnChainUserFeeTierKeyMap)
         val makerFeePpm = parser.asDecimal(received["makerFeePpm"])
         if (makerFeePpm != null) {
@@ -61,9 +59,9 @@ internal class UserProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     fun receivedOnChainUserStats(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         val received = transform(existing, payload, OnChainUserFeeStatsKeyMap)
         val makerNotional = parser.asDecimal(received["makerNotional"])
         if (makerNotional != null) {

@@ -18,7 +18,8 @@ data class ClosePositionInputSize(
     companion object {
         internal fun create(
             existing: ClosePositionInputSize?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): ClosePositionInputSize? {
             DebugLogger.log("creating Trade Input Size\n")
 
@@ -58,7 +59,8 @@ data class ClosePositionInput(
     companion object {
         internal fun create(
             existing: ClosePositionInput?,
-            parser: ParserProtocol, data: IMap<*, *>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
             version: AppVersion
         ): ClosePositionInput? {
             DebugLogger.log("creating Close Position Input\n")
@@ -96,7 +98,7 @@ data class ClosePositionInput(
 
                 return if (
                     existing?.type !== type ||
-                    existing?.side !==  side ||
+                    existing?.side !== side ||
                     existing?.marketId != marketId ||
                     existing?.size !== size ||
                     existing?.price !== price ||

@@ -2,21 +2,19 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
 
 internal class HistoricalFundingProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val keyMap = iMapOf(
-        "double" to iMapOf(
+    private val keyMap = mapOf(
+        "double" to mapOf(
             "rate" to "rate",
             "price" to "price"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "effectiveAt" to "effectiveAt"
         )
     )
 
-    override fun received(existing: IMap<String, Any>?, payload: IMap<String, Any>): IMap<String, Any> {
+    override fun received(existing: Map<String, Any>?, payload: Map<String, Any>): Map<String, Any> {
         return transform(existing, payload, keyMap)
     }
 }

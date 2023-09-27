@@ -286,8 +286,23 @@ class Parser : ParserProtocol {
     }
 
     override fun asList(data: Any?): IList<Any>? {
+        if (data == null) return null
+        val iList = data as? IList<Any>
+        if (iList != null) return iList
+        val list = data as? List<Any>
+        if (list != null) return list.toIList()
         val jsonArray = data as? JsonArray
-        return jsonArray?.toIList() ?: data as? IList<Any>
+        if (jsonArray != null) return jsonArray.toIList()
+        return null
+    }
+
+    override fun asNativeList(data: Any?): List<Any>? {
+        if (data == null) return null
+        val list = data as? List<Any>
+        if (list != null) return list
+        val jsonArray = data as? JsonArray
+        if (jsonArray != null) return jsonArray.toList()
+        return null
     }
 
     override fun value(data: Any?, path: String): Any? {

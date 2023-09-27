@@ -2,14 +2,11 @@ package exchange.dydx.abacus.state.modal
 
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.iListOf
-import kollections.iMutableSetOf
 import kollections.toIList
 
 internal fun TradingStateMachine.receivedMarkets(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int,
 ): StateChanges {
     marketsSummary = marketsProcessor.subscribed(marketsSummary, payload)
@@ -29,7 +26,7 @@ internal fun TradingStateMachine.receivedMarkets(
 }
 
 internal fun TradingStateMachine.receivedMarketsChanges(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int,
 ): StateChanges {
     val blankAssets = assets == null
@@ -54,12 +51,12 @@ internal fun TradingStateMachine.receivedMarketsChanges(
 }
 
 internal fun TradingStateMachine.receivedBatchedMarketsChanges(
-    payload: IList<Any>,
+    payload: List<Any>,
     subaccountNumber: Int,
 ): StateChanges {
     val blankAssets = assets == null
     marketsSummary = marketsProcessor.channel_batch_data(marketsSummary, payload)
-    val keys = iMutableSetOf<String>()
+    val keys = mutableSetOf<String>()
     for (partialPayload in payload) {
         parser.asMap(partialPayload)?.let { partialPayload ->
             val narrowedPayload =
@@ -88,7 +85,7 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
 }
 
 internal fun TradingStateMachine.receivedMarketsConfigurations(
-    payload: IMap<String, Any>,
+    payload: Map<String, Any>,
     subaccountNumber: Int?,
 ): StateChanges {
     this.marketsSummary = marketsProcessor.receivedConfigurations(this.marketsSummary, payload)

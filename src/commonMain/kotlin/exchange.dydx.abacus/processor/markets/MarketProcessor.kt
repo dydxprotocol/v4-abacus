@@ -2,19 +2,10 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iListOf
-import kollections.iMutableMapOf
-import kollections.toIList
-import kollections.toIMap
-import kollections.toIMutableMap
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -39,38 +30,38 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             orderbookProcessor.groupingMultiplier = value
         }
 
-    private val candleOptions = iListOf(
-        iMapOf("stringKey" to "GERNERAL.TIME_STRINGS.1MIN", "value" to "1MIN", "seconds" to 60),
-        iMapOf(
+    private val candleOptions = listOf(
+        mapOf("stringKey" to "GERNERAL.TIME_STRINGS.1MIN", "value" to "1MIN", "seconds" to 60),
+        mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.5MINS",
             "value" to "5MINS",
             "seconds" to 60 * 5
         ),
-        iMapOf(
+        mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.15MINS",
             "value" to "15MINS",
             "seconds" to 60 * 15
         ),
-        iMapOf(
+        mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.30MINS",
             "value" to "30MINS",
             "seconds" to 60 * 30
         ),
-        iMapOf("stringKey" to "GERNERAL.TIME_STRINGS.1H", "value" to "1HOUR", "seconds" to 60 * 60),
-        iMapOf(
+        mapOf("stringKey" to "GERNERAL.TIME_STRINGS.1H", "value" to "1HOUR", "seconds" to 60 * 60),
+        mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.4H",
             "value" to "4HOURS",
             "seconds" to 60 * 60 * 4
         ),
-        iMapOf(
+        mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.1D",
             "value" to "1DAY",
             "seconds" to 60 * 60 * 24
         )
     )
 
-    private val configsV4KeyMap = iMapOf(
-        "int" to iMapOf(
+    private val configsV4KeyMap = mapOf(
+        "int" to mapOf(
             "clobPairId" to "clobPairId",
             "atomicResolution" to "atomicResolution",
             "stepBaseQuantums" to "stepBaseQuantums",
@@ -79,13 +70,11 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         )
     )
 
-    private val configsKeyMap = iMapOf(
-        "decimal" to iMapOf(
+    private val configsKeyMap = mapOf(
+        "double" to mapOf(
             "maintenanceMarginFraction" to "maintenanceMarginFraction",
             "incrementalInitialMarginFraction" to "incrementalInitialMarginFraction",
-            "incrementalPositionSize" to "incrementalPositionSize"
-        ),
-        "double" to iMapOf(
+            "incrementalPositionSize" to "incrementalPositionSize",
             "stepSize" to "stepSize",
             "tickSize" to "tickSize",
             "minOrderSize" to "minOrderSize",
@@ -94,49 +83,49 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             "baselinePositionSize" to "baselinePositionSize",
             "basePositionNotional" to "basePositionNotional",
         ),
-        "int" to iMapOf(
+        "int" to mapOf(
             "clobPairId" to "clobPairId"
         )
     )
 
-    private val displayConfigsKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val displayConfigsKeyMap = mapOf(
+        "double" to mapOf(
             "displayStepSize" to "displayStepSize",
             "displayTickSize" to "displayTickSize"
         )
     )
 
-    private val marketKeyMap = iMapOf(
-        "string" to iMapOf(
+    private val marketKeyMap = mapOf(
+        "string" to mapOf(
             "market" to "market",
             "ticker" to "ticker",
             "baseAsset" to "assetId"
         ),
-        "double" to iMapOf(
+        "double" to mapOf(
             "oraclePrice" to "oraclePrice",
             "price" to "oraclePrice",
             "priceChange24H" to "priceChange24H"
         )
     )
 
-    private val perpetualKeyMap = iMapOf(
-        "double" to iMapOf(
+    private val perpetualKeyMap = mapOf(
+        "double" to mapOf(
             "volume24H" to "volume24H",
             "openInterest" to "openInterest",
             "nextFundingRate" to "nextFundingRate"
         ),
-        "datetime" to iMapOf(
+        "datetime" to mapOf(
             "nextFundingAt" to "nextFundingAt"
         ),
-        "int" to iMapOf(
+        "int" to mapOf(
             "trades24H" to "trades24H",
         )
     )
 
     override fun received(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
         val output = transform(existing, payload, marketKeyMap)
         val oraclePrice = parser.asDouble(output.get("oraclePrice"))
         var name = parser.asString(output["market"])
@@ -156,7 +145,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             }
         }
         output["status"] = status(payload)
-        output["configs"] = configs(parser.asMap(existing?.get("configs")), payload)
+        output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)
         output["perpetual"] = perpetual(null, payload, oraclePrice)
         output.safeSet("line", line(output))
         return calculate(output)
@@ -177,19 +166,19 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedDelta(
-        market: IMap<String, Any>?,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
+        market: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
         val modified = transform(market, payload, marketKeyMap)
         modified.safeSet("line", line(modified))
 
         val oraclePrice = parser.asDouble(modified.get("oraclePrice"))
         modified["perpetual"] =
-            perpetual(parser.asMap(modified["perpetual"]), payload, oraclePrice)
+            perpetual(parser.asNativeMap(modified["perpetual"]), payload, oraclePrice)
         return calculate(modified)
     }
 
-    private fun calculate(market: IMap<String, Any>): IMap<String, Any> {
+    private fun calculate(market: Map<String, Any>): Map<String, Any> {
         val priceChange24H = parser.asDouble(market["priceChange24H"])
         val oraclePrice =
             parser.asDouble(parser.value(market, "oraclePrice"))
@@ -207,17 +196,17 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedConfigurations(
-        market: IMap<String, Any>?,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market?.mutable() ?: iMutableMapOf()
-        val configs = transform(parser.asMap(market?.get("configs")), payload, displayConfigsKeyMap)
+        market: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market?.mutable() ?: mutableMapOf()
+        val configs = transform(parser.asNativeMap(market?.get("configs")), payload, displayConfigsKeyMap)
         modified.safeSet("configs", configs)
         return modified
     }
 
-    private fun status(payload: IMap<String, Any>): IMap<String, Any> {
-        val status = iMutableMapOf<String, Any>()
+    private fun status(payload: Map<String, Any>): Map<String, Any> {
+        val status = mutableMapOf<String, Any>()
         when (parser.asString(payload["status"])) {
             "ONLINE", "ACTIVE" -> {
                 status["canTrade"] = true
@@ -238,9 +227,9 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     private fun configs(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any> {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
         val configs = transform(existing, payload, configsKeyMap)
         val configsV4 = transform(null, payload, configsV4KeyMap)
         configs.safeSet("v4", configsV4)
@@ -261,10 +250,10 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     private fun perpetual(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>,
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
         oraclePrice: Double?,
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         val perpetual = transform(existing, payload, perpetualKeyMap)
         oraclePrice?.let {
             parser.asDouble(perpetual["openInterest"])?.let {
@@ -278,34 +267,34 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedTrades(
-        market: IMap<String, Any>,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        market: Map<String, Any>,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val trades = tradesProcessor.subscribed(payload)
         modified.safeSet("trades", trades)
         return modified
     }
 
     internal fun receivedTradesChanges(
-        market: IMap<String, Any>,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        market: Map<String, Any>,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val trades =
-            tradesProcessor.channel_data(market["trades"] as? IList<IMap<String, Any>>, payload)
+            tradesProcessor.channel_data(market["trades"] as? List<Map<String, Any>>, payload)
         modified.safeSet("trades", trades)
         return modified
     }
 
     internal fun receivedBatchedTradesChanges(
-        market: IMap<String, Any>,
-        payload: IList<Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
-        var trades = market["trades"] as? IList<Any>
+        market: Map<String, Any>,
+        payload: List<Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
+        var trades = market["trades"] as? List<Any>
         for (partialPayload in payload) {
-            parser.asMap(partialPayload)?.let { it ->
+            parser.asNativeMap(partialPayload)?.let { it ->
                 trades = tradesProcessor.channel_data(trades, it)
             }
         }
@@ -314,10 +303,10 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedOrderbook(
-        market: IMap<String, Any>,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        market: Map<String, Any>,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val orderbookRaw = orderbookProcessor.subscribed(payload)
         modified["orderbook_raw"] = orderbookRaw
         val stepSize = parser.asDouble(parser.value(market, "configs.stepSize")) ?: fallbackStepSize
@@ -330,12 +319,12 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedBatchOrderbookChanges(
-        market: IMap<String, Any>,
-        payload: IList<Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        market: Map<String, Any>,
+        payload: List<Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val orderbookRaw = orderbookProcessor.channel_batch_data(
-            parser.asMap(market["orderbook_raw"]),
+            parser.asNativeMap(market["orderbook_raw"]),
             payload
         )
         modified.safeSet("orderbook_raw", orderbookRaw)
@@ -348,18 +337,18 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedCandles(
-        market: IMap<String, Any>,
-        payload: IList<Any>,
-    ): IMap<String, Any> {
+        market: Map<String, Any>,
+        payload: List<Any>,
+    ): Map<String, Any> {
         if (payload.isNotEmpty()) {
-            (parser.asMap(payload.firstOrNull()))?.let {
+            (parser.asNativeMap(payload.firstOrNull()))?.let {
                 parser.asString(it["resolution"])?.let { resolution ->
-                    val modified = market.toIMutableMap()
+                    val modified = market.toMutableMap()
                     val candles =
-                        parser.asMap(market["candles"])?.toIMutableMap()
-                            ?: iMutableMapOf()
+                        parser.asNativeMap(market["candles"])?.toMutableMap()
+                            ?: mutableMapOf()
                     val existingResolution =
-                        parser.asList(candles[resolution])
+                        parser.asNativeList(candles[resolution])
                     val modifiedResolution = candlesProcessor.received(
                         existingResolution,
                         payload
@@ -379,16 +368,16 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedSparklines(
-        market: IMap<String, Any>,
-        payload: IList<Any>,
-    ): IMap<String, Any> {
+        market: Map<String, Any>,
+        payload: List<Any>,
+    ): Map<String, Any> {
         return if (payload.isNotEmpty()) {
-            val modified = market.toIMutableMap()
+            val modified = market.toMutableMap()
             val perpetual =
-                parser.asMap(modified["perpetual"])?.toIMutableMap() ?: iMutableMapOf()
+                parser.asNativeMap(modified["perpetual"])?.toMutableMap() ?: mutableMapOf()
             perpetual["line"] = payload.mapNotNull {
                 parser.asDouble(it)
-            }.reversed().toIList()
+            }.reversed().toList()
             modified.safeSet("perpetual", perpetual)
             modified
         } else {
@@ -397,38 +386,38 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     }
 
     internal fun receivedCandles(
-        market: IMap<String, Any>,
+        market: Map<String, Any>,
         resolution: String,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val candles =
-            candlesProcessor.subscribed(parser.asMap(market["candles"]), resolution, payload)
+            candlesProcessor.subscribed(parser.asNativeMap(market["candles"]), resolution, payload)
         modified.safeSet("candles", candles)
         return modified
     }
 
     internal fun receivedCandlesChanges(
-        market: IMap<String, Any>,
+        market: Map<String, Any>,
         resolution: String,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val candles =
-            candlesProcessor.channel_data(parser.asMap(market["candles"]), resolution, payload)
+            candlesProcessor.channel_data(parser.asNativeMap(market["candles"]), resolution, payload)
         modified.safeSet("candles", candles)
         return modified
     }
 
     internal fun receivedBatchedCandlesChanges(
-        market: IMap<String, Any>,
+        market: Map<String, Any>,
         resolution: String,
-        payload: IList<Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
-        var candles = parser.asMap(market["candles"])
+        payload: List<Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
+        var candles = parser.asNativeMap(market["candles"])
         for (partialPayload in payload) {
-            parser.asMap(partialPayload)?.let { it ->
+            parser.asNativeMap(partialPayload)?.let { it ->
                 candles = candlesProcessor.channel_data(candles, resolution, it)
             }
         }
@@ -436,16 +425,16 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return modified
     }
 
-    private fun line(market: IMap<String, Any>): IList<Double>? {
+    private fun line(market: Map<String, Any>): List<Double>? {
         if (calculateSparklines) {
-            parser.asMap(market["candles"])?.let {
-                parser.asList(it["1HOUR"])?.let { candles ->
+            parser.asNativeMap(market["candles"])?.let {
+                parser.asNativeList(it["1HOUR"])?.let { candles ->
                     val now = ServerTime.now()
                     val hour = 3600.seconds
                     val day = (24 * 3600).seconds
                     val begin = now.minus(day)
-                    val closes: IMutableList<Double> = candles.mapNotNull { candle ->
-                        parser.asMap(candle)?.let { data ->
+                    val closes: MutableList<Double> = candles.mapNotNull { candle ->
+                        parser.asNativeMap(candle)?.let { data ->
                             parser.asDatetime(data["startedAt"])?.let { startTime ->
                                 val endTime = startTime.plus(hour)
                                 if (endTime > begin) {
@@ -454,7 +443,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
                             }
                         }
                         null
-                    }.toIList().mutable()
+                    }.toList().mutable()
                     val oraclePrice = parser.asDouble(market["oraclePrice"])
                     if (oraclePrice != null) {
                         closes.add(oraclePrice)
@@ -464,28 +453,28 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             }
             return null
         } else {
-            return parser.asList(market.get("line")) as? IList<Double>
+            return parser.asNativeList(market.get("line")) as? List<Double>
         }
     }
 
     internal fun receivedHistoricalFundings(
-        market: IMap<String, Any>,
-        payload: IMap<String, Any>,
-    ): IMap<String, Any> {
-        val modified = market.toIMutableMap()
+        market: Map<String, Any>,
+        payload: Map<String, Any>,
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         val historicalFundings =
             historicalFundingsProcessor.received(
-                parser.asList(market["historicalFunding"]) as? IList<IMap<String, Any>>,
+                parser.asNativeList(market["historicalFunding"]) as? List<Map<String, Any>>,
                 payload
             )
         modified.safeSet("historicalFunding", historicalFundings)
         return modified
     }
 
-    internal fun groupOrderbook(existing: IMap<String, Any>?): IMap<String, Any>? {
+    internal fun groupOrderbook(existing: Map<String, Any>?): Map<String, Any>? {
         return if (existing != null) {
-            val modified = existing.toIMutableMap()
-            val orderbookConsolidated = parser.asMap(existing["orderbook_consolidated"])
+            val modified = existing.toMutableMap()
+            val orderbookConsolidated = parser.asNativeMap(existing["orderbook_consolidated"])
             val tickSize = parser.asDouble(parser.value(existing, "configs.tickSize")) ?: 0.01
             val orderbook = orderbookProcessor.group(orderbookConsolidated, tickSize)
             modified.safeSet("orderbook", orderbook)

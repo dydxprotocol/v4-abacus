@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IList
 import kollections.iListOf
 import kotlinx.serialization.json.Json
 
@@ -17,7 +16,7 @@ internal fun TradingStateMachine.subaccounts(payload: String): StateChanges {
 }
 
 internal fun TradingStateMachine.receivedSubaccounts(
-    payload: IList<Any>
+    payload: List<Any>
 ): StateChanges {
     this.wallet = walletProcessor.receivedSubaccounts(wallet, payload)
     return StateChanges(iListOf(Changes.subaccount))

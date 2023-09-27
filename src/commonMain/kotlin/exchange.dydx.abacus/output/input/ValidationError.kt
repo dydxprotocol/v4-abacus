@@ -19,7 +19,8 @@ data class ErrorParam(
     companion object {
         internal fun create(
             existing: ErrorParam?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): ErrorParam? {
             DebugLogger.log("creating Error Param\n")
 
@@ -57,7 +58,8 @@ data class ErrorString(
     companion object {
         internal fun create(
             existing: ErrorString?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): ErrorString? {
             DebugLogger.log("creating Error String\n")
 
@@ -80,7 +82,8 @@ data class ErrorString(
                     val localized = parser.asString(data["localized"])
                     return if (existing?.stringKey != stringKey ||
                         existing.params != params ||
-                        existing.localized != localized) {
+                        existing.localized != localized
+                    ) {
                         ErrorString(stringKey, params, localized)
                     } else {
                         existing
@@ -103,7 +106,8 @@ data class ErrorResources(
     companion object {
         internal fun create(
             existing: ErrorResources?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): ErrorResources? {
             DebugLogger.log("creating Error Resources\n")
 
@@ -164,7 +168,8 @@ data class ValidationError(
     companion object {
         internal fun create(
             existing: IList<ValidationError>?,
-            parser: ParserProtocol, data: IList<Any>?
+            parser: ParserProtocol,
+            data: List<Any>?
         ): IList<ValidationError>? {
             DebugLogger.log("creating Validation Errors\n")
             return if (data != null) {
@@ -182,7 +187,8 @@ data class ValidationError(
 
         internal fun create(
             existing: ValidationError?,
-            parser: ParserProtocol, data: IMap<*, *>?
+            parser: ParserProtocol,
+            data: Map<*, *>?
         ): ValidationError? {
             DebugLogger.log("creating Validation Error\n")
 
@@ -206,7 +212,8 @@ data class ValidationError(
                                         }
                                     }
                                     val actionString = parser.asString(data["action"])
-                                    val action = if (actionString != null) ErrorAction.invoke(actionString) else null
+                                    val action =
+                                        if (actionString != null) ErrorAction.invoke(actionString) else null
                                     return if (existing?.code != code ||
                                         existing.type !== type ||
                                         existing.fields != fields ||

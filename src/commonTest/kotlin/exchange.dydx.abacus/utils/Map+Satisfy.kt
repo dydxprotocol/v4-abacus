@@ -9,8 +9,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 @Suppress("UNCHECKED_CAST")
-internal fun IMap<String, Any>.satisfies(
-    expected: IMap<String, Any>,
+internal fun Map<String, Any>.satisfies(
+    expected: Map<String, Any>,
     parser: ParserProtocol,
     path: String? = null
 ) {
@@ -31,7 +31,7 @@ private fun combine(path: String?, key: String): String {
     return if (path != null) "$path.$key" else key
 }
 
-private fun IMap<String, Any>.satisfies(
+private fun Map<String, Any>.satisfies(
     actual: Any,
     expected: Any,
     parser: ParserProtocol,
@@ -55,9 +55,9 @@ private fun IMap<String, Any>.satisfies(
     satsifiesValues(actual, expected, parser, path)
 }
 
-private fun IMap<String, Any>.satisfiesMaps(
-    map1: IMap<String, Any>?,
-    map2: IMap<String, Any>,
+private fun Map<String, Any>.satisfiesMaps(
+    map1: Map<String, Any>?,
+    map2: Map<String, Any>,
     parser: ParserProtocol,
     path: String
 ) {
@@ -65,9 +65,9 @@ private fun IMap<String, Any>.satisfiesMaps(
     map1.satisfies(map2, parser, path)
 }
 
-private fun IMap<String, Any>.satisfiesLists(
-    actual: IList<Any>?,
-    expected: IList<Any>,
+private fun Map<String, Any>.satisfiesLists(
+    actual: List<Any>?,
+    expected: List<Any>,
     parser: ParserProtocol,
     path: String
 ) {
@@ -82,7 +82,7 @@ private fun IMap<String, Any>.satisfiesLists(
     }
 }
 
-private fun IMap<String, Any>.satsifiesValues(
+private fun Map<String, Any>.satsifiesValues(
     actual: Any,
     expected: Any,
     parser: ParserProtocol,

@@ -3,18 +3,13 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.validator.trade.TradeAccountStateValidator
 import exchange.dydx.abacus.validator.trade.TradeBracketOrdersValidator
 import exchange.dydx.abacus.validator.trade.TradeInputDataValidator
 import exchange.dydx.abacus.validator.trade.TradeMarketOrderInputValidator
 import exchange.dydx.abacus.validator.trade.TradePositionStateValidator
 import exchange.dydx.abacus.validator.trade.TradeTriggerPriceValidator
-import kollections.iListOf
-import kollections.iMutableListOf
 
 internal class TradeInputValidator(
     localizer: LocalizerProtocol?,
@@ -22,7 +17,7 @@ internal class TradeInputValidator(
     parser: ParserProtocol
 ) :
     BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
-    private val tradeValidators = iListOf<TradeValidatorProtocol>(
+    private val tradeValidators = listOf<TradeValidatorProtocol>(
         TradeInputDataValidator(localizer, formatter, parser),
         TradeMarketOrderInputValidator(localizer, formatter, parser),
         TradeBracketOrdersValidator(localizer, formatter, parser),
@@ -32,20 +27,20 @@ internal class TradeInputValidator(
     )
 
     override fun validate(
-        wallet: IMap<String, Any>?,
-        user: IMap<String, Any>?,
-        subaccount: IMap<String, Any>?,
-        markets: IMap<String, Any>?,
-        configs: IMap<String, Any>?,
-        transaction: IMap<String, Any>,
+        wallet: Map<String, Any>?,
+        user: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        configs: Map<String, Any>?,
+        transaction: Map<String, Any>,
         transactionType: String,
-    ): IList<Any>? {
+    ): List<Any>? {
         if (transactionType == "trade") {
             val marketId = parser.asString(transaction["marketId"]) ?: return null
             val change = change(parser, subaccount, transaction)
             val restricted = parser.asBool(user?.get("restricted")) ?: false
-            val market = parser.asMap(markets?.get(marketId))
-            val errors = iMutableListOf<Any>()
+            val market = parser.asNativeMap(markets?.get(marketId))
+            val errors = mutableListOf<Any>()
 
             val closeOnlyError =
                 validateClosingOnly(
@@ -80,12 +75,12 @@ internal class TradeInputValidator(
 
     private fun change(
         parser: ParserProtocol,
-        subaccount: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
     ): PositionChange {
         val marketId = parser.asString(trade["marketId"]) ?: return PositionChange.NONE
         val position =
-            parser.asMap(parser.value(subaccount, "openPositions.$marketId"))
+            parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
                 ?: return PositionChange.NONE
         val size = parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
         val postOrder =
@@ -122,13 +117,13 @@ internal class TradeInputValidator(
 
     private fun validateClosingOnly(
         parser: ParserProtocol,
-        subaccount: IMap<String, Any>?,
-        market: IMap<String, Any>?,
-        trade: IMap<String, Any>,
+        subaccount: Map<String, Any>?,
+        market: Map<String, Any>?,
+        trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
-    ): IMap<String, Any>? {
-        val marketId = parser.asMap(market?.get("assetId")) ?: ""
+    ): Map<String, Any>? {
+        val marketId = parser.asNativeMap(market?.get("assetId")) ?: ""
         val canTrade = parser.asBool(parser.value(market, "status.canTrade")) ?: true
         val canReduce = parser.asBool(parser.value(market, "status.canTrade")) ?: true
         return if (canTrade) {
@@ -155,12 +150,12 @@ internal class TradeInputValidator(
                     error(
                         "ERROR",
                         "CLOSE_ONLY_MARKET",
-                        iListOf("size.size"),
+                        listOf("size.size"),
                         "APP.TRADE.MODIFY_SIZE_FIELD",
                         "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
                         "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                        iMapOf(
-                            "MARKET" to iMapOf(
+                        mapOf(
+                            "MARKET" to mapOf(
                                 "value" to marketId,
                                 "format" to "string"
                             )
@@ -176,8 +171,8 @@ internal class TradeInputValidator(
             null,
             "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
             "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-            iMapOf(
-                "MARKET" to iMapOf(
+            mapOf(
+                "MARKET" to mapOf(
                     "value" to marketId,
                     "format" to "string"
                 )

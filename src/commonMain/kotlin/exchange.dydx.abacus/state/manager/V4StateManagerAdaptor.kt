@@ -1040,8 +1040,8 @@ class V4StateManagerAdaptor(
 
     override fun get(
         url: String,
-        params: IMap<String, String>?,
-        headers: IMap<String, String>?,
+        params: Map<String, String>?,
+        headers: Map<String, String>?,
         private: Boolean,
         callback: (String?, Int) -> Unit
     ) {

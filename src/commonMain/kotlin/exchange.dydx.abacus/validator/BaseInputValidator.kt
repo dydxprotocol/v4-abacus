@@ -3,16 +3,9 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.filterNotNull
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
-import kollections.iListOf
-import kollections.iMutableListOf
-import kollections.iMutableMapOf
-import kollections.toIMap
 
 internal open class BaseInputValidator(
     internal val localizer: LocalizerProtocol?,
@@ -24,13 +17,13 @@ internal open class BaseInputValidator(
         errorCode: String,
         field: String,
         actionStringKey: String,
-    ): IMap<String, Any> {
-        return iMapOf(
+    ): Map<String, Any> {
+        return mapOf(
             "type" to "REQUIRED",
             "code" to errorCode,
-            "fields" to iListOf(field),
-            "resources" to iMapOf(
-                "action" to iMapOf(
+            "fields" to listOf(field),
+            "resources" to mapOf(
+                "action" to mapOf(
                     "stringKey" to actionStringKey
                 )
             )
@@ -40,43 +33,43 @@ internal open class BaseInputValidator(
     internal fun error(
         type: String,
         errorCode: String,
-        fields: IList<String>?,
+        fields: List<String>?,
         actionStringKey: String?,
         titleStringKey: String,
         textStringKey: String,
-        textParams: IMap<String, Any>? = null,
+        textParams: Map<String, Any>? = null,
         action: String? = null,
-    ): IMap<String, Any> {
-        return iMapOf(
+    ): Map<String, Any> {
+        return mapOf(
             "type" to type,
             "code" to errorCode,
             "fields" to fields,
             "action" to action,
-            "resources" to iMapOf(
+            "resources" to mapOf(
                 "title" to listOfNotNull(
                     localize(titleStringKey, null)?.let { "localized" to it } ?: run { null },
                     "stringKey" to titleStringKey
-                ).toMap().toIMap(),
+                ).toMap(),
                 "text" to listOfNotNull(
                     localize(textStringKey, textParams)?.let { "localized" to it } ?: run { null },
                     "stringKey" to textStringKey,
                     "params" to params(parser, textParams)
-                ).toMap().toIMap(),
+                ).toMap(),
                 "action" to listOfNotNull(
                     localize(actionStringKey, null)?.let { "localized" to it } ?: run { null },
                     "stringKey" to actionStringKey
-                ).toMap().toIMap()
+                ).toMap(),
             )
         ).filterNotNull()
     }
 
-    private fun localize(stringKey: String?, params: IMap<String, Any>? = null): String? {
+    private fun localize(stringKey: String?, params: Map<String, Any>? = null): String? {
         return if (stringKey == null) {
             null
         } else {
-            val parameters = iMutableMapOf<String, String>()
+            val parameters = mutableMapOf<String, String>()
             for ((key, value) in params ?: emptyMap()) {
-                parser.asMap(value)?.let {
+                parser.asNativeMap(value)?.let {
                     formatParam(it)?.let { formattedParam ->
                         parameters[key] = formattedParam
                     }
@@ -86,7 +79,7 @@ internal open class BaseInputValidator(
         }
     }
 
-    private fun formatParam(params: IMap<String, Any>): String? {
+    private fun formatParam(params: Map<String, Any>): String? {
         val format = parser.asString(params["format"])
         val value = params["value"]
         val tickSize = parser.asString(params["tickSize"])
@@ -118,12 +111,12 @@ internal open class BaseInputValidator(
     }
 
     private fun params(
-        parser: ParserProtocol, map: IMap<String, Any>?,
-    ): IList<IMap<String, Any>>? {
+        parser: ParserProtocol, map: Map<String, Any>?,
+    ): List<Map<String, Any>>? {
         if (map != null) {
-            val params = iMutableListOf<IMap<String, Any>>()
+            val params = mutableListOf<Map<String, Any>>()
             for ((key, value) in map) {
-                parser.asMap(value)?.let {
+                parser.asNativeMap(value)?.let {
                     val param = it.mutable()
                     param["key"] = key
                     params.add(param)

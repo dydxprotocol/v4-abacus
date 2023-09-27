@@ -36,7 +36,7 @@ data class Input(
         internal fun create(
             existing: Input?,
             parser: ParserProtocol,
-            data: IMap<*, *>?,
+            data: Map<*, *>?,
             version: AppVersion
         ): Input? {
             DebugLogger.log("creating Input\n")

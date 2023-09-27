@@ -21,7 +21,7 @@ class TransferStatus(
         internal fun create(
             existing: TransferStatus?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferStatus {
             val status = parser.asString(data?.get("status"))
             val gasStatus = parser.asString(data?.get("gasStatus"))
@@ -87,7 +87,7 @@ class TransferChainStatus(
         internal fun create(
             existing: TransferChainStatus?,
             parser: ParserProtocol,
-            chain: IMap<*, *>?,
+            chain: Map<*, *>?,
         ): TransferChainStatus {
             val transactionUrl = parser.asString(chain?.get("transactionUrl"))
             val transactionId = parser.asString(chain?.get("transactionId"))
@@ -116,7 +116,7 @@ class TransferRouteStatus(
         internal fun create(
             existing: TransferRouteStatus?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TransferRouteStatus {
             val chainId = parser.asString(data?.get("chainId"))
             val txHash = parser.asString(data?.get("txHash"))

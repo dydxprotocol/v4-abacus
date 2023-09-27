@@ -21,7 +21,7 @@ data class AssetResources(
         internal fun create(
             existing: AssetResources?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): AssetResources? {
             data?.let {
                 val websiteLink = parser.asString(data["websiteLink"])
@@ -68,7 +68,11 @@ data class Asset(
     val resources: AssetResources?
 ) {
     companion object {
-        internal fun create(existing: Asset?, parser: ParserProtocol, data: IMap<*, *>?): Asset? {
+        internal fun create(
+            existing: Asset?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): Asset? {
             data?.let {
                 val id = parser.asString(data["id"])
                 val resourcesData = parser.asMap(data["resources"])

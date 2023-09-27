@@ -1,23 +1,18 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kollections.iListOf
 
 @Suppress("UNCHECKED_CAST")
 internal class TransferInputCalculator(val parser: ParserProtocol) {
     private val subaccountTransformer = SubaccountTransformer()
     internal fun calculate(
-        state: IMap<String, Any>,
+        state: Map<String, Any>,
         subaccountNumber: Int?
-    ): IMap<String, Any> {
-        val wallet = parser.asMap(state["wallet"])
-        val transfer = parser.asMap(state["transfer"])
+    ): Map<String, Any> {
+        val wallet = parser.asNativeMap(state["wallet"])
+        val transfer = parser.asNativeMap(state["transfer"])
         val type = parser.asString(transfer?.get("type"))
         return if (wallet != null && transfer != null && type != null) {
             val modifiedTransfer = finalize(transfer, type)
@@ -37,9 +32,9 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
     }
 
     private fun finalize(
-        transfer: IMap<String, Any>,
+        transfer: Map<String, Any>,
         type: String
-    ): IMap<String, Any> {
+    ): Map<String, Any> {
         val modified = transfer.mutable()
         val fields = requiredFields(type)
         modified.safeSet("fields", fields)
@@ -48,24 +43,24 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
         return modified
     }
 
-    private fun requiredFields(type: String): IList<Any>? {
+    private fun requiredFields(type: String): List<Any>? {
         return when (type) {
             "DEPOSIT" -> {
-                iListOf(
+                listOf(
                     sizeField(),
                     gaslessField()
                 )
             }
 
             "WITHDRAWAL" -> {
-                iListOf(
+                listOf(
                     sizeField(),
                     speedField()
                 )
             }
 
             "TRANSFER_OUT" -> {
-                iListOf(
+                listOf(
                     sizeField(),
                     addressField()
                 )
@@ -75,45 +70,45 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
         }
     }
 
-    private fun sizeField(): IMap<String, Any> {
-        return iMapOf(
+    private fun sizeField(): Map<String, Any> {
+        return mapOf(
             "field" to "size.usdcSize",
             "type" to "double"
         )
     }
 
-    private fun gaslessField(): IMap<String, Any> {
-        return iMapOf(
+    private fun gaslessField(): Map<String, Any> {
+        return mapOf(
             "field" to "gasless",
             "type" to "bool"
         )
     }
 
-    private fun speedField(): IMap<String, Any> {
-        return iMapOf(
+    private fun speedField(): Map<String, Any> {
+        return mapOf(
             "field" to "fastSpeed",
             "type" to "bool",
             "default" to true
         )
     }
 
-    private fun addressField(): IMap<String, Any> {
-        return iMapOf(
+    private fun addressField(): Map<String, Any> {
+        return mapOf(
             "field" to "address",
             "type" to "string"
         )
     }
 
-    private fun calculatedOptionsFromFields(fields: IList<Any>?): IMap<String, Any>? {
+    private fun calculatedOptionsFromFields(fields: List<Any>?): Map<String, Any>? {
         fields?.let { fields ->
-            val options = iMutableMapOf<String, Any>(
+            val options = mutableMapOf<String, Any>(
                 "needsSize" to false,
                 "needsGasless" to false,
                 "needsFastSpeed" to false,
                 "needsAddress" to false
             )
             for (item in fields) {
-                parser.asMap(item)?.let { field ->
+                parser.asNativeMap(item)?.let { field ->
                     when (parser.asString(field["field"])) {
                         "size.usdcSize" -> options["needsSize"] = true
                         "gasless" -> options["needsGasless"] = true
@@ -127,16 +122,16 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
         return null
     }
 
-    private fun calculatedOptions(type: String): IMap<String, Any>? {
+    private fun calculatedOptions(type: String): Map<String, Any>? {
         val fields = requiredFields(type)
         return calculatedOptionsFromFields(fields)
     }
 
     private fun summaryForType(
-        transfer: IMap<String, Any>,
+        transfer: Map<String, Any>,
         type: String
-    ): IMap<String, Any> {
-        val summary = iMutableMapOf<String, Any>()
+    ): Map<String, Any> {
+        val summary = mutableMapOf<String, Any>()
         when (type) {
             "DEPOSIT" -> {
                 val size = parser.asDouble(parser.value(transfer, "size.size"))

@@ -22,7 +22,7 @@ data class TradeStatesWithDoubleValues(
         internal fun create(
             existing: TradeStatesWithDoubleValues?,
             parser: ParserProtocol,
-            data: IMap<String, Any>?
+            data: Map<String, Any>?
         ): TradeStatesWithDoubleValues {
             val current = parser.asDouble(data?.get("current"))
             val postOrder = parser.asDouble(data?.get("postOrder"))
@@ -63,7 +63,7 @@ class TradeStatesWithStringValues(
         internal fun create(
             existing: TradeStatesWithStringValues?,
             parser: ParserProtocol,
-            data: IMap<*, *>?
+            data: Map<*, *>?
         ): TradeStatesWithStringValues {
             val current = parser.asString(data?.get("current"))
             val postOrder = parser.asString(data?.get("postOrder"))

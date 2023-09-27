@@ -17,7 +17,7 @@ import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.iMutableMapOf
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -34,7 +34,7 @@ class NotificationsProvider(
     ): IMap<String, Notification> {
         val fillsNotifcations = buildFillsNotifications(stateMachine, subaccountNumber)
         val positionsNotifications = buildPositionsNotifications(stateMachine, subaccountNumber)
-        return ParsingHelper.merge(fillsNotifcations, positionsNotifications) as IMap<String, Notification>
+        return (ParsingHelper.merge(fillsNotifcations, positionsNotifications) as? Map<String, Notification>)!!.toIMap()
     }
 
     private fun asset(marketId: String): String {
@@ -50,19 +50,19 @@ class NotificationsProvider(
         1. Order doesn't have an updatedAt timestamp
         2. Order doesn't have an average filled price
          */
-        val notifications = iMutableMapOf<String, Notification>()
+        val notifications = mutableMapOf<String, Notification>()
         val subaccount =
             stateMachine.state?.subaccount(subaccountNumber) ?: return kollections.iMapOf()
 
         val subaccountFills = stateMachine.state?.fills?.get("$subaccountNumber")
         if (subaccountFills != null) {
             // Cache the orders
-            val orders = iMutableMapOf<String, SubaccountOrder>()
+            val orders = mutableMapOf<String, SubaccountOrder>()
             for (order in subaccount.orders ?: iListOf()) {
                 orders[order.id] = order
             }
             // Cache the fills
-            val fills = iMutableMapOf<String, IMutableList<SubaccountFill>>()
+            val fills = mutableMapOf<String, IMutableList<SubaccountFill>>()
             val liquidated = iMutableListOf<SubaccountFill>()
 
             for (fill in subaccountFills) {
@@ -255,7 +255,7 @@ class NotificationsProvider(
         We have to go to the dynamic data to find closed positions
         Struct contains open positions only
          */
-        val notifications = iMutableMapOf<String, Notification>()
+        val notifications = mutableMapOf<String, Notification>()
         val positions = parser.asMap(parser.value(stateMachine.data, "wallet.account.subaccounts.$subaccountNumber.positions"))
 
         if (positions != null) {

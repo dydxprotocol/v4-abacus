@@ -7,9 +7,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
-import exchange.dydx.abacus.utils.iMutableMapOf
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
@@ -62,7 +60,7 @@ internal fun TradingStateMachine.tradeInMarket(
     if (parser.asString(parser.value(input, "trade.marketId")) == marketId) {
         return StateResponse(state, StateChanges(iListOf()))
     } else {
-        val input = this.input?.mutable() ?: iMutableMapOf()
+        val input = this.input?.mutable() ?: mutableMapOf()
         val existingTrade = parser.asMap(input["trade"])
 
         val trade = if (existingTrade != null) {
@@ -95,14 +93,14 @@ internal fun TradingStateMachine.tradeInMarket(
 internal fun TradingStateMachine.initiateTrade(
     marketId: String?,
     subaccountNumber: Int,
-): IMutableMap<String, Any> {
-    val trade = iMutableMapOf<String, Any>()
+): MutableMap<String, Any> {
+    val trade = mutableMapOf<String, Any>()
     trade["type"] = "LIMIT"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.trade)
-    val params = iMutableMapOf<String, Any>()
+    val params = mutableMapOf<String, Any>()
     params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
     params.safeSet("account", account)
     params.safeSet("user", user)
@@ -118,14 +116,14 @@ internal fun TradingStateMachine.initiateTrade(
 internal fun TradingStateMachine.inititiateClosePosition(
     marketId: String?,
     subaccountNumber: Int,
-): IMutableMap<String, Any> {
-    val trade = iMutableMapOf<String, Any>()
+): MutableMap<String, Any> {
+    val trade = mutableMapOf<String, Any>()
     trade["type"] = "MARKET"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
-    val params = iMutableMapOf<String, Any>()
+    val params = mutableMapOf<String, Any>()
     params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
     params.safeSet("account", account)
     params.safeSet("user", user)
@@ -147,7 +145,7 @@ fun TradingStateMachine.trade(
     var error: ParsingError? = null
     val typeText = type?.rawValue
 
-    val input = this.input?.mutable() ?: iMutableMapOf()
+    val input = this.input?.mutable() ?: mutableMapOf()
     input["current"] = "trade"
     val trade =
         parser.asMap(input["trade"])?.mutable() ?: initiateTrade(null, subaccountNumber)
@@ -313,7 +311,7 @@ fun TradingStateMachine.tradeDataOption(typeText: String?): String? {
     }
 }
 
-fun TradingStateMachine.validTradeInput(trade: IMap<String, Any>, typeText: String?): Boolean {
+fun TradingStateMachine.validTradeInput(trade: Map<String, Any>, typeText: String?): Boolean {
     val option = this.tradeDataOption(typeText)
     return if (option != null) {
         val value = parser.value(trade, option)

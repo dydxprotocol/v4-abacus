@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.configs
 
-import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.*
@@ -13,15 +12,15 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     private val networkConfigsProcessor = NetworkConfigsProcessor(parser)
 
     internal fun receivedOnChainEquityTiers(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
-        val modified = existing?.mutable() ?: iMutableMapOf()
-        val map = parser.asMap(payload) as IMap<String, IList<Any>>?
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        val modified = existing?.mutable() ?: mutableMapOf()
+        val map = parser.asNativeMap(payload) as Map<String, List<Any>>?
         modified?.safeSet("equityTiers", map)
 
         return receivedObject(existing, "equityTiers", modified) { existing, payload ->
-            val map = parser.asMap(payload) as IMap<String, IMap<String, IList<Any>>>?
+            val map = parser.asNativeMap(payload) as Map<String, Map<String, List<Any>>>?
             if (map != null) {
                 equityTiersProcessor.received(map)
             } else {
@@ -31,11 +30,11 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     }
 
     internal fun receivedFeeTiers(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>
+    ): Map<String, Any>? {
         return receivedObject(existing, "feeTiers", payload) { existing, payload ->
-            val list = parser.asList(payload)
+            val list = parser.asNativeList(payload)
             if (list != null) {
                 feeTiersProcessor.received(list)
             } else {
@@ -45,11 +44,11 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     }
 
     internal fun receivedOnChainFeeTiers(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>
+    ): Map<String, Any>? {
         return receivedObject(existing, "feeTiers", payload) { existing, payload ->
-            val list = parser.asList(payload)
+            val list = parser.asNativeList(payload)
             if (list != null) {
                 feeTiersProcessor.received(list)
             } else {
@@ -59,11 +58,11 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     }
 
     internal fun receivedFeeDiscounts(
-        existing: IMap<String, Any>?,
-        payload: IList<Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: List<Any>
+    ): Map<String, Any>? {
         return receivedObject(existing, "feeDiscounts", payload) { existing, payload ->
-            val list = parser.asList(payload)
+            val list = parser.asNativeList(payload)
             if (list != null) {
                 feeDiscountsProcessor.received(list)
             } else {
@@ -73,13 +72,13 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     }
 
     internal fun receivedNetworkConfigs(
-        existing: IMap<String, Any>?,
-        payload: IMap<String, Any>
-    ): IMap<String, Any>? {
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
         return receivedObject(existing, "network", payload) { existing, payload ->
-            val map = parser.asMap(payload)
+            val map = parser.asNativeMap(payload)
             if (map != null) {
-                networkConfigsProcessor.received(parser.asMap(existing), map)
+                networkConfigsProcessor.received(parser.asNativeMap(existing), map)
             } else {
                 null
             }
