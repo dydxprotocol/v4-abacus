@@ -40,6 +40,9 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
+        if (existing === null) {
+            return null
+        }
         val received = transform(existing, payload, assetKeyMap)
         val symbol = received["symbol"]
         if (symbol != null) {

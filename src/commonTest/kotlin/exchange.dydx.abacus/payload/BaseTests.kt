@@ -1215,8 +1215,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         val name = asset?.get("name")
         if (data != null &&
             data["id"] != null &&
-            parser.asBool(parser.value(data, "status.canTrade")) == true &&
-            asset != null && name != null
+            parser.asBool(parser.value(data, "status.canTrade")) == true
         ) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
