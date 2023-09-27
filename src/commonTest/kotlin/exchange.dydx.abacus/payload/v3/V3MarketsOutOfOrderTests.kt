@@ -97,7 +97,7 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                     "markets": {
                         "markets": {
                             "ETH-USD": {
-                                "oraclePrice": 1754.0223,
+                                "oraclePrice": 1753.2932,
                                 "priceChange24H": 14.47502
                             }
                         }

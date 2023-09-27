@@ -62,13 +62,12 @@ internal class MarketCalculator(val parser: ParserProtocol) {
     ): IMap<String, Any> {
         val assetId = parser.asString(market["assetId"]) ?: return market
         val asset = parser.asMap(assets[assetId]) ?: return market
-        val indexPrice =
-            parser.asDouble(market["indexPrice"]) ?: parser.asDouble(market["oraclePrice"])
+        val oraclePrice = parser.asDouble(market["oraclePrice"])
             ?: return market
         val circulatingSupply = parser.asDouble(asset["circulatingSupply"]) ?: return market
 
         val modified = market.mutable()
-        modified["marketCaps"] = indexPrice * circulatingSupply
+        modified["marketCaps"] = oraclePrice * circulatingSupply
         return modified
     }
 

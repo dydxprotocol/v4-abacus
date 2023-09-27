@@ -143,7 +143,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": 126.640212
                                             },
                                             "unrealizedPnl": {
-                                                "current": 69435.46665219101
+                                                "current": 69361.31
                                             },
                                             "createdAt": "2022-12-11T17:27:36.351Z",
                                             "entryPrice": {
@@ -159,7 +159,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": 7.424091096228274E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 0.40705493270572424
+                                                "current": 0.4066
                                             },
                                             "valueTotal": {
                                                 "current": 2.399413946951037E+5
@@ -186,7 +186,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -102.716895
                                             },
                                             "unrealizedPnl": {
-                                                "current": -51808.15200587743
+                                                "current": -51730.73627724242
                                             },
                                             "createdAt": "2022-12-11T17:29:39.792Z",
                                             "entryPrice": {
@@ -202,7 +202,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -0.38538076780547736
+                                                "current": -0.3848
                                             },
                                             "valueTotal": {
                                                 "current": -186164.40898202002
@@ -564,7 +564,7 @@ class V4AccountTests : V4BaseTests() {
                                             "exitPrice": 17106.497989,
                                             "netFunding": 0.0,
                                             "unrealizedPnl": {
-                                                "current": 69435.46665219101
+                                                "current": 69361.30568685036
                                             },
                                             "createdAt": "2022-12-11T17:27:36.351Z",
                                             "entryPrice": {
@@ -576,7 +576,7 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 0.40705493270572424
+                                                "current": 0.4066
                                             },
                                             "valueTotal": {
                                                 "current": -43112.854562506596
@@ -602,7 +602,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -102.716895
                                             },
                                             "unrealizedPnl": {
-                                                "current": -51808.15200587743
+                                                "current": -51730.74
                                             },
                                             "createdAt": "2022-12-11T17:29:39.792Z",
                                             "entryPrice": {
@@ -618,7 +618,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -0.38538076780547736
+                                                "current": -0.3848
                                             },
                                             "valueTotal": {
                                                 "current": -186164.40898202002

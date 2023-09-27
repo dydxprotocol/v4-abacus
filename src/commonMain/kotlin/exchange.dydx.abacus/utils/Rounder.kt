@@ -12,7 +12,13 @@ import kotlin.math.*
 @JsExport
 @Serializable
 class Rounder {
+    enum class RoundingMode {
+        TOWARDS_ZERO,
+        NEAREST,
+    }
     companion object {
+        private val positive = 0.5.toBigDecimal(null, Numeric.decimal.mode)
+        private val negative = -0.5.toBigDecimal(null, Numeric.decimal.mode)
         fun quickRound(number: Double, stepSize: Double, stepSizeDecimals: Int): Double {
             val negative = number < 0.0
             val multiplier = (number.abs() / stepSize).roundToInt()
@@ -29,7 +35,12 @@ class Rounder {
                 } else {
                     stringBuilder.append(multiplierString.substring(0, length - stepSizeDecimals))
                     stringBuilder.append(".")
-                    stringBuilder.append(multiplierString.substring(length - stepSizeDecimals, length))
+                    stringBuilder.append(
+                        multiplierString.substring(
+                            length - stepSizeDecimals,
+                            length
+                        )
+                    )
                 }
                 stringBuilder.toString().toDouble()
             } else {
@@ -40,12 +51,16 @@ class Rounder {
             }
         }
 
-        fun round(number: Double, stepSize: Double): Double {
-            return roundDecimal(number.toBigDecimal(null, Numeric.decimal.mode),
-                stepSize.toBigDecimal(null, Numeric.decimal.mode)).doubleValue(false)
+        fun round(number: Double, stepSize: Double, roundingMode: RoundingMode = RoundingMode.TOWARDS_ZERO): Double {
+            val roundedDecimal = roundDecimal(
+                number.toBigDecimal(null, Numeric.decimal.mode),
+                stepSize.toBigDecimal(null, Numeric.decimal.mode),
+                roundingMode
+            )
+            return roundedDecimal.doubleValue(false)
         }
 
-        fun roundDecimal(number: BigDecimal, stepSize: BigDecimal): BigDecimal {
+        fun roundDecimal(number: BigDecimal, stepSize: BigDecimal, roundingMode: RoundingMode = RoundingMode.TOWARDS_ZERO): BigDecimal {
             /*
             It should be (number / stepSize).toLong() * stepSize
             However, calculation with Double will cause problems
@@ -67,7 +82,13 @@ class Rounder {
             }
              */
             return if (stepSize > Numeric.double.ZERO) {
-                val long = (number / stepSize).longValue(false)
+                val modifier = when (roundingMode) {
+                    RoundingMode.TOWARDS_ZERO -> Numeric.decimal.ZERO
+                    RoundingMode.NEAREST ->
+                        if (number >= Numeric.decimal.ZERO) positive else negative
+                }
+                val long =
+                    (number / stepSize + modifier).longValue(false)
                 return stepSize * long.toBigDecimal(null, Numeric.decimal.mode)
             } else number
         }
