@@ -31,13 +31,13 @@ enum class ExecutionCondition(val rawValue: Int) {
 
 @JsExport
 @Serializable
-enum class OrderSide(val rawValue: Int) {
+enum class TransactionOrderSide(val rawValue: Int) {
     BUY(1),
     SELL(2);
 
     companion object {
         operator fun invoke(rawValue: Int) =
-            OrderSide.values().firstOrNull { it.rawValue == rawValue }
+            TransactionOrderSide.values().firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -322,11 +322,11 @@ internal fun PerpTradingStateMachine.executionCondition(
 
 internal fun PerpTradingStateMachine.orderSide(
     trade: IMap<String, Any>,
-): OrderSide {
+): TransactionOrderSide {
     return when (parser.asString(trade["side"])) {
-        "BUY" -> OrderSide.BUY
-        "SELL" -> OrderSide.SELL
-        else -> OrderSide.BUY
+        "BUY" -> TransactionOrderSide.BUY
+        "SELL" -> TransactionOrderSide.SELL
+        else -> TransactionOrderSide.BUY
     }
 }
 
