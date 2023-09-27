@@ -270,35 +270,35 @@ internal class TradeInputDataValidator(
         parser.asDouble(parser.value(trade, "size.size"))?.let { size ->
             val signedSize = if (parser.asString(trade["side"]) == "BUY") size else -size
             parser.asDouble(parser.value(trade, "price.triggerPrice"))?.let { triggerPrice ->
-                val indexPrice = parser.asDouble(
-                    parser.value(market, "indexPrice") ?: parser.value(
+                val oraclePrice = parser.asDouble(
+                    parser.value(
                         market,
                         "oraclePrice"
                     )
                 )
-                if (indexPrice != null) {
+                if (oraclePrice != null) {
                     val error = when (parser.asString(trade["type"])) {
                         "STOP_MARKET", "STOP_LIMIT" -> {
-                            if (signedSize > Numeric.double.ZERO && triggerPrice < indexPrice) triggerPriceError(
+                            if (signedSize > Numeric.double.ZERO && triggerPrice < oraclePrice) triggerPriceError(
                                 true,
-                                indexPrice,
+                                oraclePrice,
                                 tickSize
-                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > indexPrice) triggerPriceError(
+                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > oraclePrice) triggerPriceError(
                                 false,
-                                indexPrice,
+                                oraclePrice,
                                 tickSize
                             )
                             else null
                         }
 
                         "TAKE_PROFIT_MARKET", "TAKE_PROFIT" -> {
-                            if (signedSize > Numeric.double.ZERO && triggerPrice < indexPrice) triggerPriceError(
+                            if (signedSize > Numeric.double.ZERO && triggerPrice < oraclePrice) triggerPriceError(
                                 true,
-                                indexPrice,
+                                oraclePrice,
                                 tickSize
-                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > indexPrice) triggerPriceError(
+                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > oraclePrice) triggerPriceError(
                                 false,
-                                indexPrice,
+                                oraclePrice,
                                 tickSize
                             )
                             else null
@@ -315,7 +315,7 @@ internal class TradeInputDataValidator(
 
     private fun triggerPriceError(
         aboveIndexPrice: Boolean,
-        indexPrice: Double,
+        oraclePrice: Double,
         tickSize: String,
     ): Map<String, Any> {
         return error(
@@ -328,7 +328,7 @@ internal class TradeInputDataValidator(
             mapOf(
                 "INDEX_PRICE" to
                         mapOf(
-                            "value" to indexPrice,
+                            "value" to oraclePrice,
                             "format" to "price",
                             "tickSize" to tickSize
                         )

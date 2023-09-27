@@ -98,6 +98,8 @@ fun TradingStateMachine.transfer(
                 }
                 TransferInputField.token.rawValue -> {
                     val token = parser.asString(data)
+                    transfer.safeSet("size.size", null)
+                    transfer.safeSet("size.usdcSize", null)
                     transfer.safeSet(typeText, token)
                     if (token != null) {
                         updateTransferToTokenType(transfer, token)

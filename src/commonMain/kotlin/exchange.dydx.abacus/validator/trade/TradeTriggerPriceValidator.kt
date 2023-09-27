@@ -44,8 +44,8 @@ internal class TradeTriggerPriceValidator(
             val errors = mutableListOf<Any>()
             val type = parser.asString(trade["type"]) ?: return null
             val side = parser.asString(trade["side"]) ?: return null
-            val indexPrice = parser.asDouble(
-                parser.value(market, "indexPrice") ?: parser.value(
+            val oraclePrice = parser.asDouble(
+                parser.value(
                     market,
                     "oraclePrice"
                 )
@@ -59,12 +59,12 @@ internal class TradeTriggerPriceValidator(
                 TRIGGER_MUST_BELOW_INDEX_PRICE
                  */
                 RelativeToPrice.ABOVE -> {
-                    if (triggerPrice <= indexPrice) {
+                    if (triggerPrice <= oraclePrice) {
                         errors.add(
                             triggerToIndexError(
                                 triggerToIndex,
                                 type,
-                                indexPrice,
+                                oraclePrice,
                                 tickSize
                             )
                         )
@@ -72,12 +72,12 @@ internal class TradeTriggerPriceValidator(
                 }
 
                 RelativeToPrice.BELOW -> {
-                    if (triggerPrice >= indexPrice) {
+                    if (triggerPrice >= oraclePrice) {
                         errors.add(
                             triggerToIndexError(
                                 triggerToIndex,
                                 type,
-                                indexPrice,
+                                oraclePrice,
                                 tickSize
                             )
                         )
@@ -151,7 +151,7 @@ internal class TradeTriggerPriceValidator(
     private fun triggerToIndexError(
         triggerToIndex: RelativeToPrice,
         type: String,
-        indexPrice: Double,
+        oraclePrice: Double,
         tickSize: String,
     ): Map<String, Any> {
         val fields =
@@ -163,7 +163,7 @@ internal class TradeTriggerPriceValidator(
         val params = mapOf(
             "INDEX_PRICE" to
                     mapOf(
-                        "value" to indexPrice,
+                        "value" to oraclePrice,
                         "format" to "price",
                         "tickSize" to tickSize
                     )

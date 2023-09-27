@@ -1246,13 +1246,12 @@ internal class TradeInputCalculator(
                         if (usdcSize != null) (usdcSize * multiplier + (fee
                             ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE) else null
 
-                    val indexPrice = parser.asDouble(market?.get("indexPrice"))
-                        ?: parser.asDouble(market?.get("oraclePrice"))  // if no indexPrice(v4), use oraclePrice
+                    val oraclePrice = parser.asDouble(market?.get("oraclePrice"))  // if no indexPrice(v4), use oraclePrice
                     val priceDiff =
-                        slippage(worstPrice, indexPrice, parser.asString(trade["side"]))
+                        slippage(worstPrice, oraclePrice, parser.asString(trade["side"]))
                     val indexSlippage =
-                        if (priceDiff != null && indexPrice != null && indexPrice > Numeric.double.ZERO) Rounder.round(
-                            priceDiff / indexPrice, 0.00001
+                        if (priceDiff != null && oraclePrice != null && oraclePrice > Numeric.double.ZERO) Rounder.round(
+                            priceDiff / oraclePrice, 0.00001
                         ) else null
                     /*
                     indexSlippage can be negative. For example, it is OK to buy below index price
@@ -1466,9 +1465,9 @@ internal class TradeInputCalculator(
         return maxLeverageFromPosition(position, market)
     }
 
-    private fun slippage(price: Double?, indexPrice: Double?, side: String?): Double? {
-        return if (price != null && indexPrice != null) {
-            if (side == "BUY") price - indexPrice else indexPrice - price
+    private fun slippage(price: Double?, oraclePrice: Double?, side: String?): Double? {
+        return if (price != null && oraclePrice != null) {
+            if (side == "BUY") price - oraclePrice else oraclePrice - price
         } else null
     }
 

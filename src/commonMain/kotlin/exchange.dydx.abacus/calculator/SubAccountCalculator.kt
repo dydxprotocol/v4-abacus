@@ -125,12 +125,11 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     set(null, modified, "realizedPnlPercent", period)
                 }
 
-                val marketIndexPrice = parser.asDouble(market?.get("indexPrice"))
-                    ?: parser.asDouble(market?.get("oraclePrice"))
-                val indexPrice =
-                    if (period == CalculationPeriod.current) marketIndexPrice else (price
-                        ?: marketIndexPrice)
-                if (indexPrice != null) {
+                val marketOraclePrice = parser.asDouble(oraclePrice(market))
+                val oraclePrice =
+                    if (period == CalculationPeriod.current) marketOraclePrice else (price
+                        ?: marketOraclePrice)
+                if (oraclePrice != null) {
                     when (status) {
                         "CLOSED", "LIQUIDATED" -> {
                             set(null, modified, "unrealizedPnl", period)
@@ -140,7 +139,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                         else -> {
                             if (entryPrice != null) {
                                 val entryValue = size * entryPrice
-                                val currentValue = size * indexPrice
+                                val currentValue = size * oraclePrice
                                 val unrealizedPnl = currentValue - entryValue
                                 val unrealizedPnlPercent =
                                     if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() else null
@@ -155,10 +154,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 }
 
 
-                val marketOraclePrice = parser.asDouble(oraclePrice(market))
-                val oraclePrice =
-                    if (period == CalculationPeriod.current) marketOraclePrice else (price
-                        ?: marketOraclePrice)
                 if (oraclePrice != null) {
                     when (status) {
                         "CLOSED", "LIQUIDATED" -> {
