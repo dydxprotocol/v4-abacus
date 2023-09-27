@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.modal
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.utils.GoodTil
@@ -26,18 +27,6 @@ enum class ExecutionCondition(val rawValue: Int) {
     companion object {
         operator fun invoke(rawValue: Int) =
             ExecutionCondition.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class OrderSide(val rawValue: Int) {
-    BUY(1),
-    SELL(2);
-
-    companion object {
-        operator fun invoke(rawValue: Int) =
-            OrderSide.values().firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -324,9 +313,9 @@ internal fun PerpTradingStateMachine.orderSide(
     trade: IMap<String, Any>,
 ): OrderSide {
     return when (parser.asString(trade["side"])) {
-        "BUY" -> OrderSide.BUY
-        "SELL" -> OrderSide.SELL
-        else -> OrderSide.BUY
+        "BUY" -> OrderSide.buy
+        "SELL" -> OrderSide.sell
+        else -> OrderSide.buy
     }
 }
 
@@ -529,9 +518,14 @@ fun PerpTradingStateMachine.placeTradeOrder2(
     val conditionalOrderTriggerSubticks =
         subticks(triggerPrice, atomicResolution, quantumConversionExponent, subticksPerTick)
 
+    val orderSideInt: Int
+    when (orderSide) {
+        OrderSide.buy -> orderSideInt = 1
+        OrderSide.sell -> orderSideInt = 2
+    }
     return PlaceOrderPayload2(
         clobPairId,
-        orderSide.rawValue,
+        orderSideInt,
         quantums.toDouble(),
         subticks.toDouble(),
         goodTilBlock,
