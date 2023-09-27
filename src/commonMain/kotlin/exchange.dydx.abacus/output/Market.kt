@@ -769,7 +769,6 @@ data class PerpetualMarket(
     val id: String,
     val assetId: String,
     val market: String?,
-    val indexPrice: Double?,
     val oraclePrice: Double? = null,
     val marketCaps: Double?,
     val priceChange24H: Double?,
@@ -800,7 +799,6 @@ data class PerpetualMarket(
             val assetId = parser.asString(data["assetId"])
             val market = parser.asString(data["market"])
 
-            val indexPrice = parser.asDouble(data["indexPrice"])
             val oraclePrice = parser.asDouble(data["oraclePrice"])
             val marketCaps = parser.asDouble(data["marketCaps"])
             val priceChange24H = parser.asDouble(data["priceChange24H"])
@@ -840,7 +838,6 @@ data class PerpetualMarket(
             val significantChange = existing?.id != id ||
                     existing.assetId != assetId ||
                     existing.market != market ||
-                    existing.indexPrice != indexPrice ||
                     existing.oraclePrice != oraclePrice ||
                     existing.marketCaps != marketCaps ||
                     existing.priceChange24H != priceChange24H ||
@@ -856,7 +853,6 @@ data class PerpetualMarket(
                     id,
                     assetId,
                     market,
-                    indexPrice,
                     oraclePrice,
                     marketCaps,
                     priceChange24H,

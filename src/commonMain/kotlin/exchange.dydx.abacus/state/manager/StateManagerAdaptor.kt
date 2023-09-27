@@ -222,7 +222,13 @@ open class StateManagerAdaptor(
         NotificationsProvider(uiImplementations, parser, jsonEncoder)
 
     private var subaccountsTimer: LocalTimerProtocol? = null
-    private val subaccountsPollingDelay = 5.0
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+    private val subaccountsPollingDelay = 15.0
     private var sparklinesTimer: LocalTimerProtocol? = null
     private val sparklinesPollingDuration = 60.0
 

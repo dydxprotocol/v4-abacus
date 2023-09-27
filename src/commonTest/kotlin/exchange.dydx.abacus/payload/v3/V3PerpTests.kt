@@ -49,13 +49,12 @@ class V3PerpTests : V3BaseTests() {
                 {
                     "markets": {
                         "volume24HUSDC": 1.4184778841793003E9,
-                        "openInterestUSDC": 4.26419937841791E8,
+                        "openInterestUSDC": 4.26177643402556E8,
                         "trades24H": 246191,
                         "markets": {
                             "ETH-USD": {
                                 "assetId": "ETH",
                                 "market": "ETH-USD",
-                                "indexPrice": 1754.0223,
                                 "oraclePrice": 1753.2932,
                                 "priceChange24H": 14.47502,
                                 "status": {
@@ -101,7 +100,6 @@ class V3PerpTests : V3BaseTests() {
                             "ETH-USD": {
                                 "assetId": "ETH",
                                 "market": "ETH-USD",
-                                "indexPrice": 1754.0223,
                                 "oraclePrice": 1753.2932,
                                 "priceChange24H": 14.47502,
                                 "status": {
@@ -145,7 +143,7 @@ class V3PerpTests : V3BaseTests() {
                     "markets": {
                         "markets": {
                             "ETH-USD": {
-                                "marketCaps": 2.0781121573878827E11
+                                "marketCaps": 2.077248341931288E11
                             }
                         }
                     },

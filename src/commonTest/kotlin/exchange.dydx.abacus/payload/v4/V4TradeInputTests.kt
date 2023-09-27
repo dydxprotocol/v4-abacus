@@ -431,10 +431,10 @@ open class V4TradeInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "equity": {
-                                    "current": 4185.625704
+                                    "current": 4185.63
                                 },
                                 "quoteBalance": {
-                                    "current": 7250.506704
+                                    "current": 7250.51
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -460,10 +460,10 @@ open class V4TradeInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "equity": {
-                                    "current": 4272.436277
+                                    "current": 4272.44
                                 },
                                 "quoteBalance": {
-                                    "current": 8772.436277
+                                    "current": 8772.44
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -489,10 +489,10 @@ open class V4TradeInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "equity": {
-                                    "current": 4272.436277
+                                    "current": 4272.44
                                 },
                                 "quoteBalance": {
-                                    "current": 8772.436277
+                                    "current": 8772.44
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -534,10 +534,10 @@ open class V4TradeInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "equity": {
-                                    "current": 4272.436277
+                                    "current": 4272.44
                                 },
                                 "quoteBalance": {
-                                    "current": 8772.436277
+                                    "current": 8772.44
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -579,10 +579,10 @@ open class V4TradeInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "equity": {
-                                    "current": 4272.436277
+                                    "current": 4272.44
                                 },
                                 "quoteBalance": {
-                                    "current": 8772.436277
+                                    "current": 8772.44
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -624,10 +624,10 @@ open class V4TradeInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "equity": {
-                                    "current": 4272.436277
+                                    "current": 4272.44
                                 },
                                 "quoteBalance": {
-                                    "current": 8772.436277
+                                    "current": 8772.44
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -680,29 +680,29 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "openPositions": {
                                         "ETH-USD": {
                                             "adjustedImf": {
-                                                "current": 0.2738612787525831,
-                                                "postOrder": 0.2738612787525831
+                                                "current": 0.2739,
+                                                "postOrder": 0.2739
                                             },
                                             "adjustedMmf": {
-                                                "current": 0.16431676725154984,
-                                                "postOrder": 0.16431676725154984
+                                                "current": 0.1643,
+                                                "postOrder": 0.1643
                                             },
                                             "liquidationPrice": {
-                                                "current": 2511.4689643861384,
-                                                "postOrder": 2484.3090217561517
+                                                "current": 2511.47,
+                                                "postOrder": 2484.31
                                             }
                                         },
                                         "BTC-USD": {
                                             "adjustedImf": {
                                                 "current": 0.05,
-                                                "postOrder": 0.158113883008419
+                                                "postOrder": 0.1581
                                             },
                                             "adjustedMmf": {
                                                 "current": 0.03,
-                                                "postOrder": 0.09486832980505139
+                                                "postOrder": 0.0949
                                             },
                                             "liquidationPrice": {
-                                                "postOrder": 57353.8004918222
+                                                "postOrder": 57353.80
                                             }
                                         }
                                     }

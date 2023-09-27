@@ -107,17 +107,14 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     )
 
     private val marketKeyMap = iMapOf(
-        "decimal" to iMapOf(
-            "indexPrice" to "indexPrice",
-            "oraclePrice" to "oraclePrice",
-            "price" to "oraclePrice"
-        ),
         "string" to iMapOf(
             "market" to "market",
             "ticker" to "ticker",
             "baseAsset" to "assetId"
         ),
         "double" to iMapOf(
+            "oraclePrice" to "oraclePrice",
+            "price" to "oraclePrice",
             "priceChange24H" to "priceChange24H"
         )
     )
@@ -141,7 +138,6 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         payload: IMap<String, Any>,
     ): IMap<String, Any> {
         val output = transform(existing, payload, marketKeyMap)
-        val indexPrice = parser.asDouble(output.get("indexPrice"))
         val oraclePrice = parser.asDouble(output.get("oraclePrice"))
         var name = parser.asString(output["market"])
         if (name == null) {
@@ -161,7 +157,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         }
         output["status"] = status(payload)
         output["configs"] = configs(parser.asMap(existing?.get("configs")), payload)
-        output["perpetual"] = perpetual(null, payload, indexPrice ?: oraclePrice)
+        output["perpetual"] = perpetual(null, payload, oraclePrice)
         output.safeSet("line", line(output))
         return calculate(output)
     }
@@ -187,24 +183,21 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val modified = transform(market, payload, marketKeyMap)
         modified.safeSet("line", line(modified))
 
-        val indexPrice = parser.asDouble(modified.get("indexPrice"))
         val oraclePrice = parser.asDouble(modified.get("oraclePrice"))
         modified["perpetual"] =
-            perpetual(parser.asMap(modified["perpetual"]), payload, indexPrice ?: oraclePrice)
+            perpetual(parser.asMap(modified["perpetual"]), payload, oraclePrice)
         return calculate(modified)
     }
 
     private fun calculate(market: IMap<String, Any>): IMap<String, Any> {
         val priceChange24H = parser.asDouble(market["priceChange24H"])
-        val indexPrice =
-            parser.asDouble(
-                parser.value(market, "indexPrice") ?: parser.value(market, "oraclePrice")
-            )
+        val oraclePrice =
+            parser.asDouble(parser.value(market, "oraclePrice"))
         val modified = market.mutable()
         modified.safeSet(
             "priceChange24HPercent",
-            if (priceChange24H != null && indexPrice != null && indexPrice > priceChange24H) {
-                val basePrice = (indexPrice - priceChange24H)
+            if (priceChange24H != null && oraclePrice != null && oraclePrice > priceChange24H) {
+                val basePrice = (oraclePrice - priceChange24H)
                 if (basePrice > Numeric.double.ZERO) (priceChange24H / basePrice) else null
             } else
                 null
@@ -270,12 +263,12 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     private fun perpetual(
         existing: IMap<String, Any>?,
         payload: IMap<String, Any>,
-        indexPrice: Double?,
+        oraclePrice: Double?,
     ): IMap<String, Any> {
         val perpetual = transform(existing, payload, perpetualKeyMap)
-        indexPrice?.let {
+        oraclePrice?.let {
             parser.asDouble(perpetual["openInterest"])?.let {
-                perpetual["openInterestUSDC"] = it * indexPrice
+                perpetual["openInterestUSDC"] = it * oraclePrice
             }
         }
         if (perpetual["nextFundingAt"] == null) {
@@ -462,11 +455,9 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
                         }
                         null
                     }.toIList().mutable()
-                    val indexPrice =
-                        parser.asDouble(market["indexPrice"])
-                            ?: parser.asDouble(market["oraclePrice"])
-                    if (indexPrice != null) {
-                        closes.add(indexPrice)
+                    val oraclePrice = parser.asDouble(market["oraclePrice"])
+                    if (oraclePrice != null) {
+                        closes.add(oraclePrice)
                     }
                     closes
                 }

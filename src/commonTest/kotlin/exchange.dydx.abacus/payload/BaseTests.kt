@@ -135,10 +135,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     internal fun test(perp: TradingStateMachine, expected: String) {
-        val json = Json.parseToJsonElement(expected)
+        val json = parser.asMap(Json.parseToJsonElement(expected))
+        assertNotNull(json, "Missing expectations")
         val data = perp.data
         assertNotNull(data, "Missing data")
-        data.satisfies(parser.asMap(json), parser)
+        data.satisfies(json, parser)
     }
 
     internal fun test(perp: TradingStateMachine, json: JsonElement?) {
@@ -1224,7 +1225,6 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asString(data["assetId"]), obj.assetId, "$trace.assetId")
             assertEquals(parser.asString(data["market"]), obj.market, "$trace.market")
             assertEquals(parser.asDouble(data["marketCaps"]), obj.marketCaps, "$trace.marketCaps")
-            assertEquals(parser.asDouble(data["indexPrice"]), obj.indexPrice, "$trace.indexPrice")
             assertEquals(
                 parser.asDouble(data["oraclePrice"]),
                 obj.oraclePrice,

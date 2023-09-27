@@ -226,7 +226,7 @@ class TradeInputTests : V3BaseTests() {
                             "size": {
                                 "size": 1.0,
                                 "usdcSize": 1655.7,
-                                "leverage": 0.8017014152220583,
+                                "leverage": 0.8017,
                                 "input": "size.size"
                             },
                             "marketOrder": {
@@ -249,31 +249,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206821.311246
+                                        "postOrder": 206821.31
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187976.4370598
+                                        "postOrder": 187976.44
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64353.807378
+                                        "postOrder": -64353.81
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.312017650353467
+                                        "postOrder": 1.3120
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09111669427424385
+                                        "postOrder": 0.0911
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3759528.741196
+                                        "postOrder": 3759528.74
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -285,8 +285,8 @@ class TradeInputTests : V3BaseTests() {
                                                 "postOrder": 20
                                             },
                                             "buyingPower": {
-                                                "current": 3759346.727396,
-                                                "postOrder": 3759528.741196
+                                                "current": 3759346.73,
+                                                "postOrder": 3759528.74
                                             }
                                         }
                                     }
@@ -346,31 +346,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206821.311246
+                                        "postOrder": 206821.31
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187976.4370598
+                                        "postOrder": 187976.44
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64353.807378
+                                        "postOrder": -64353.81
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.312017650353467
+                                        "postOrder": 1.3120
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09111669427424385
+                                        "postOrder": 0.0911
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3759528.741196
+                                        "postOrder": 3759528.74
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -407,14 +407,14 @@ class TradeInputTests : V3BaseTests() {
                             "size": {
                                 "size": 35.0,
                                 "usdcSize": 57949.8769,
-                                "leverage": 1.0728660273301338,
+                                "leverage": 1.07,
                                 "input": "size.size"
                             },
                             "marketOrder": {
                                 "size": 35.0,
                                 "usdcSize": 57949.8769,
                                 "worstPrice": 1655.8,
-                                "price": 1655.7107685714286,
+                                "price": 1655.71,
                                 "filled": true,
                                 "orderbook": [
                                     {
@@ -430,31 +430,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 210110.95605755
+                                        "postOrder": 210110.96
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 188285.48343135
+                                        "postOrder": 188285.48
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -120676.13136645
+                                        "postOrder": -120676.13
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 330965.179624
+                                        "postOrder": 330965.18
                                     },
                                     "valueTotal": {
-                                        "postOrder": 330787.087424
+                                        "postOrder": 330787.09
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 21825.4726262
+                                        "postOrder": 21825.47
                                     },
                                     "leverage": {
-                                        "postOrder": 1.5751923927914908
+                                        "postOrder": 1.5752
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.10387593791264238
+                                        "postOrder": 0.1039
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3765709.668627
+                                        "postOrder": 3765709.67
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -489,7 +489,7 @@ class TradeInputTests : V3BaseTests() {
                             "size": {
                                 "size": 2.113,
                                 "usdcSize": 3500.0,
-                                "leverage": 0.8107145169233759,
+                                "leverage": 0.8107,
                                 "input": "size.usdcSize"
                             },
                             "marketOrder": {
@@ -512,31 +512,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206929.01108055
+                                        "postOrder": 206929.01
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187986.56612777
+                                        "postOrder": 187986.57
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -66197.52287505
+                                        "postOrder": -66197.52
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 273304.6261556
+                                        "postOrder": 273304.63
                                     },
                                     "valueTotal": {
-                                        "postOrder": 273126.5339556
+                                        "postOrder": 273126.53
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18942.44495278
+                                        "postOrder": 18942.44
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3207651490163086
+                                        "postOrder": 1.32
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09154078905546204
+                                        "postOrder": 0.0915
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3759731.3225554
+                                        "postOrder": 3759731.32
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -572,14 +572,14 @@ class TradeInputTests : V3BaseTests() {
                             "size": {
                                 "size": 36.238,
                                 "usdcSize": 60000.0,
-                                "leverage": 1.082580051235497,
+                                "leverage": 1.08,
                                 "input": "size.usdcSize"
                             },
                             "marketOrder": {
                                 "size": 36.238,
                                 "usdcSize": 59999.7573,
                                 "worstPrice": 1655.8,
-                                "price": 1655.7138169876926,
+                                "price": 1655.71,
                                 "filled": true,
                                 "orderbook": [
                                     {
@@ -595,31 +595,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 210230.62769895
+                                        "postOrder": 210230.63
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 188296.62622367
+                                        "postOrder": 188296.63
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -122727.03670665
+                                        "postOrder": -122727.04
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 333135.7566056
+                                        "postOrder": 333135.76
                                     },
                                     "valueTotal": {
-                                        "postOrder": 332957.6644056
+                                        "postOrder": 332957.66
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 21934.00147528
+                                        "postOrder": 21934.00
                                     },
                                     "leverage": {
-                                        "postOrder": 1.5846204725348108
+                                        "postOrder": 1.58
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.10433304469170623
+                                        "postOrder": 0.1043
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3765932.5244734
+                                        "postOrder": 3765932.52
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -682,31 +682,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 200163.0873642
+                                        "postOrder": 200163.09
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187106.53534848
+                                        "postOrder": 187106.54
                                     },
                                     "quoteBalance": {
-                                        "postOrder": 44754.4121498
+                                        "postOrder": 44754.41
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 155586.7674144
+                                        "postOrder": 155586.77
                                     },
                                     "valueTotal": {
-                                        "postOrder": 155408.6752144
+                                        "postOrder": 155408.68
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 13056.55201572
+                                        "postOrder": 13056.55
                                     },
                                     "leverage": {
-                                        "postOrder": 0.7772999980326409
+                                        "postOrder": 0.78
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.06522956948582326
+                                        "postOrder": 0.0652
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3742130.7069696
+                                        "postOrder": 3742130.71
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -761,31 +761,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 212314.44562405
+                                        "postOrder": 212314.45
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 188490.39407917
+                                        "postOrder": 188490.39
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -158444.22017355
+                                        "postOrder": -158444.22
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 370936.7579976
+                                        "postOrder": 370936.76
                                     },
                                     "valueTotal": {
-                                        "postOrder": 370758.6657976
+                                        "postOrder": 370758.67
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 23824.05154488
+                                        "postOrder": 23824.05
                                     },
                                     "leverage": {
-                                        "postOrder": 1.7471103151145266
+                                        "postOrder": 1.75
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.1122111662014077
+                                        "postOrder": 0.1122
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3769807.8815834
+                                        "postOrder": 3769807.88
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -824,7 +824,7 @@ class TradeInputTests : V3BaseTests() {
                                 "size": 224.655,
                                 "usdcSize": 371212.7747,
                                 "worstPrice": 1.6511E+3,
-                                "price": 1652.3681854398967,
+                                "price": 1652.37,
                                 "filled": true,
                                 "orderbook": [
                                     {
@@ -840,31 +840,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 183865.63036265
+                                        "postOrder": 183865.63
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 161819.68111655
+                                        "postOrder": 161819.68
                                     },
                                     "quoteBalance": {
-                                        "postOrder": 308329.88878465
+                                        "postOrder": 308329.89
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 335374.712022
+                                        "postOrder": 335374.71
                                     },
                                     "valueTotal": {
-                                        "postOrder": -124464.258422
+                                        "postOrder": -124464.26
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 22045.9492461
+                                        "postOrder": 22045.95
                                     },
                                     "leverage": {
-                                        "postOrder": 1.8240206794522658
+                                        "postOrder": 1.82
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.1199025027277657
+                                        "postOrder": 0.1199
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3236393.622331
+                                        "postOrder": 3236393.62
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -872,13 +872,13 @@ class TradeInputTests : V3BaseTests() {
                                                 "postOrder": -131.085
                                             },
                                             "valueTotal": {
-                                                "postOrder": -229830.439122
+                                                "postOrder": -229830.44
                                             },
                                             "notionalTotal": {
-                                                "postOrder": 229830.439122
+                                                "postOrder": 229830.44
                                             },
                                             "leverage": {
-                                                "postOrder": -1.2499913043492177
+                                                "postOrder": -1.25
                                             }
                                         }
                                     }
@@ -905,12 +905,12 @@ class TradeInputTests : V3BaseTests() {
                             "size": {
                                 "size": 250.0,
                                 "usdcSize": 413058.0213,
-                                "leverage": -1.513177996767875,
+                                "leverage": -1.5132,
                                 "input": "size.size"
                             },
                             "marketOrder": {
                                 "size": 2.5E+2,
-                                "usdcSize": 4.130580213E+5,
+                                "usdcSize": 413058.02,
                                 "worstPrice": 1.651E+3,
                                 "price": 1652.2320852,
                                 "filled": true,
@@ -928,31 +928,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 181252.73818535
+                                        "postOrder": 181252.74
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 156984.92813155
+                                        "postOrder": 156984.93
                                     },
                                     "quoteBalance": {
-                                        "postOrder": 350154.21276135
+                                        "postOrder": 350154.21
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 379811.928176
+                                        "postOrder": 379811.93
                                     },
                                     "valueTotal": {
-                                        "postOrder": -168901.474576
+                                        "postOrder": -168901.47
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 24267.8100538
+                                        "postOrder": 24267.81
                                     },
                                     "leverage": {
-                                        "postOrder": 2.0954824295542633
+                                        "postOrder": 2.0955
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.1338893431170326
+                                        "postOrder": 0.1339
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3139698.562631
+                                        "postOrder": 3139698.56
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -960,13 +960,13 @@ class TradeInputTests : V3BaseTests() {
                                                 "postOrder": -156.43
                                             },
                                             "valueTotal": {
-                                                "postOrder": -2.74267655276E+5
+                                                "postOrder": -274267.66
                                             },
                                             "notionalTotal": {
-                                                "postOrder": 2.74267655276E+5
+                                                "postOrder": 274267.66
                                             },
                                             "leverage": {
-                                                "postOrder": -1.513177996767875
+                                                "postOrder": -1.51
                                             }
                                         }
                                     }
@@ -997,9 +997,9 @@ class TradeInputTests : V3BaseTests() {
                             },
                             "summary": {
                                 "size": 159.795,
-                                "usdcSize": 264647.41120000003,
+                                "usdcSize": 264647.41,
                                 "price": 1656.1682856159455,
-                                "total": -264779.7349056,
+                                "total": -264779.73,
                                 "slippage": 0.00078,
                                 "filled": true
                             },
@@ -1020,31 +1020,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 222112.2978844
+                                        "postOrder": 222112.30
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 189346.7140135
+                                        "postOrder": 189346.71
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -327477.0144336
+                                        "postOrder": -327477.01
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 549767.404518
+                                        "postOrder": 549767.40
                                     },
                                     "valueTotal": {
-                                        "postOrder": 549589.312318
+                                        "postOrder": 549589.31
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 32765.5838709
+                                        "postOrder": 32765.58
                                     },
                                     "leverage": {
-                                        "postOrder": 2.475177690539812
+                                        "postOrder": 2.48
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.14751809865094956
+                                        "postOrder": 0.1475
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3786934.28027
+                                        "postOrder": 3786934.28
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1081,7 +1081,7 @@ class TradeInputTests : V3BaseTests() {
                             "summary": {
                                 "size": 159.795,
                                 "usdcSize": 264096.5028,
-                                "price": 1652.7206908851967,
+                                "price": 1652.72,
                                 "total": 263964.4545486,
                                 "slippage": 0.00126,
                                 "filled": true
@@ -1103,31 +1103,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 190521.5135506
+                                        "postOrder": 190521.51
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 174161.4941521
+                                        "postOrder": 174161.49
                                     },
                                     "quoteBalance": {
-                                        "postOrder": 201267.1750206
+                                        "postOrder": 201267.18
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 221656.11507
+                                        "postOrder": 221656.12
                                     },
                                     "valueTotal": {
-                                        "postOrder": -10745.66147
+                                        "postOrder": -10745.66
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 16360.0193985
+                                        "postOrder": 16360.02
                                     },
                                     "leverage": {
-                                        "postOrder": 1.1634177733483682
+                                        "postOrder": 1.16
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.08586966948567198
+                                        "postOrder": 0.0859
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3483229.883042
+                                        "postOrder": 3483229.88
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1240,31 +1240,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206643.572316
+                                        "postOrder": 206643.57
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187798.6981298
+                                        "postOrder": 187798.70
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64531.546308
+                                        "postOrder": -64531.55
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3131461471690289
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09119506585659665
+                                        "postOrder": 0.0912
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3755973.962596
+                                        "postOrder": 3755973.96
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1330,31 +1330,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206643.572316
+                                        "postOrder": 206643.57
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187798.6981298
+                                        "postOrder": 187798.70
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64531.546308
+                                        "postOrder": -64531.55
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3131461471690289
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09119506585659665
+                                        "postOrder": 0.0912
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3755973.962596
+                                        "postOrder": 3755973.96
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1419,31 +1419,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206643.572316
+                                        "postOrder": 206643.57
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187798.6981298
+                                        "postOrder": 187798.70
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64531.546308
+                                        "postOrder": -64531.55
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3131461471690289
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09119506585659665
+                                        "postOrder": 0.0912
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3755973.962596
+                                        "postOrder": 3755973.96
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1527,31 +1527,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206643.022146
+                                        "postOrder": 206643.02
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187798.1479598
+                                        "postOrder": 187798.15
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64532.096478
+                                        "postOrder": -64532.10
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3131496433123213
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.0911953086559365
+                                        "postOrder": 0.09
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3755962.959196
+                                        "postOrder": 3755962.96
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1634,31 +1634,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206643.022146
+                                        "postOrder": 206643.02
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187798.1479598
+                                        "postOrder": 187798.15
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64532.096478
+                                        "postOrder": -64532.10
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3131496433123213
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.0911953086559365
+                                        "postOrder": 0.0912
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3755962.959196
+                                        "postOrder": 3755962.96
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1693,90 +1693,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.trade("1.0", TradeInputField.size, 0)
         }, null)
-
-        test(
-            {
-                perp.trade("0.05", TradeInputField.trailingPercent, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TRAILING_STOP",
-                            "side": "BUY",
-                            "marketId": "ETH-USD",
-                            "price": {
-                                "trailingPercent": 0.05
-                            },
-                            "size": {
-                                "size": 1.0,
-                                "input": "size.size"
-                            },
-                            "summary": {
-                                "size": 1.0,
-                                "usdcSize": 1840.95786,
-                                "price": 1840.95786,
-                                "total": -1841.87833893,
-                                "filled": true
-                            },
-                            "options": {
-                                "needsSize": true,
-                                "needsTriggerPrice": false,
-                                "needsLimitPrice": false,
-                                "needsTrailingPercent": true,
-                                "needsGoodUntil": true,
-                                "needsReduceOnly": false,
-                                "needsPostOnly": false,
-                                "needsBrackets": false
-                            }
-                        }
-                    },
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "0": {
-                                    "equity": {
-                                        "postOrder": 206635.96075707
-                                    },
-                                    "freeCollateral": {
-                                        "postOrder": 187791.08657087
-                                    },
-                                    "quoteBalance": {
-                                        "postOrder": -64539.15786693
-                                    },
-                                    "notionalTotal": {
-                                        "postOrder": 271353.210824
-                                    },
-                                    "valueTotal": {
-                                        "postOrder": 271175.118624
-                                    },
-                                    "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
-                                    },
-                                    "leverage": {
-                                        "postOrder": 1.313194517691015
-                                    },
-                                    "marginUsage": {
-                                        "postOrder": 0.09119842508127052
-                                    },
-                                    "buyingPower": {
-                                        "postOrder": 3755821.7314174
-                                    },
-                                    "openPositions": {
-                                        "ETH-USD": {
-                                            "size": {
-                                                "postOrder": 94.57
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
     }
 
 
@@ -1841,31 +1757,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 206476.839096
+                                        "postOrder": 206476.84
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 187631.9649098
+                                        "postOrder": 187631.96
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64698.279528
+                                        "postOrder": -64698.28
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 271353.210824
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 271175.118624
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 18844.8741862
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3142065328588073
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09126870727344971
+                                        "postOrder": 0.09
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3752639.298196
+                                        "postOrder": 3752639.30
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -1942,31 +1858,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 183023.151172
+                                        "postOrder": 183023.15
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 165375.973882
+                                        "postOrder": 165375.97
                                     },
                                     "quoteBalance": {
-                                        "postOrder": -64198.029528
+                                        "postOrder": -64198.03
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 247399.2729
+                                        "postOrder": 247399.27
                                     },
                                     "valueTotal": {
-                                        "postOrder": 247221.1807
+                                        "postOrder": 247221.18
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 17647.17729
+                                        "postOrder": 17647.18
                                     },
                                     "leverage": {
-                                        "postOrder": 1.3517375879267925
+                                        "postOrder": 1.35
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.09642046471714227
+                                        "postOrder": 0.0964
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3307519.47764
+                                        "postOrder": 3307519.48
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -2105,39 +2021,39 @@ class TradeInputTests : V3BaseTests() {
                                 "0": {
                                     "equity": {
                                         "current": 10000.0,
-                                        "postOrder": 10009.676535
+                                        "postOrder": 10009.68
                                     },
                                     "freeCollateral": {
                                         "current": 10000.0,
-                                        "postOrder": 10000.910069
+                                        "postOrder": 10000.91
                                     },
                                     "quoteBalance": {
                                         "current": 10000.0,
-                                        "postOrder": 9834.347215
+                                        "postOrder": 9834.35
                                     },
                                     "notionalTotal": {
                                         "current": 0.0,
-                                        "postOrder": 175.32932
+                                        "postOrder": 175.33
                                     },
                                     "valueTotal": {
                                         "current": 0.0,
-                                        "postOrder": 175.32932
+                                        "postOrder": 175.33
                                     },
                                     "initialRiskTotal": {
                                         "current": 0.0,
-                                        "postOrder": 8.766466
+                                        "postOrder": 8.77
                                     },
                                     "leverage": {
                                         "current": 0.0,
-                                        "postOrder": 0.017515982598132977
+                                        "postOrder": 0.0175
                                     },
                                     "marginUsage": {
                                         "current": 0.0,
-                                        "postOrder": 8.757991299067625E-4
+                                        "postOrder": 0.000876
                                     },
                                     "buyingPower": {
                                         "current": 200000.0,
-                                        "postOrder": 200018.20138
+                                        "postOrder": 200018.20
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
@@ -2145,16 +2061,16 @@ class TradeInputTests : V3BaseTests() {
                                                 "postOrder": 0.1
                                             },
                                             "valueTotal": {
-                                                "postOrder": 1.7532932E+2
+                                                "postOrder": 175.33
                                             },
                                             "notionalTotal": {
-                                                "postOrder": 1.7532932E+2
+                                                "postOrder": 175.33
                                             },
                                             "initialRiskTotal": {
-                                                "postOrder": 8.766466
+                                                "postOrder": 8.77
                                             },
                                             "leverage": {
-                                                "postOrder": 0.017515982598132977
+                                                "postOrder": 0.0175
                                             }
                                         }
                                     }

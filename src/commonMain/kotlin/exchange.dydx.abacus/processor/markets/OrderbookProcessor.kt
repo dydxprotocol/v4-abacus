@@ -24,7 +24,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     internal var groupingMultiplier: Int = 1
 
     private var groupingTickSize: Double? = null
-    private var groupingLookup: MutableMap<Int, BigDecimal>? = null
+    private var groupingLookup: MutableMap<Int, Double>? = null
 
     private var lastOffset: Long = 0
 
@@ -499,11 +499,11 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         } else orderbook
     }
 
-    fun group(orderbook: IList<Any>?, grouping: BigDecimal): IList<Any>? {
+    fun group(orderbook: IList<Any>?, grouping: Double): IList<Any>? {
         return if (orderbook != null && orderbook.size > 0) {
-            val firstPrice = parser.asDecimal(parser.value(orderbook.firstOrNull(), "price"))!!
-            var floor = Rounder.roundDecimal(firstPrice, grouping).doubleValue(false)
-            var ceiling = (parser.asDecimal(floor)!! + grouping).doubleValue(false)
+            val firstPrice = parser.asDouble(parser.value(orderbook.firstOrNull(), "price"))!!
+            var floor = Rounder.round(firstPrice, grouping)
+            var ceiling = floor + grouping
             var size = Numeric.double.ZERO
             var depth = Numeric.double.ZERO
             val result = iMutableListOf<IMap<String, Any>>()
@@ -521,12 +521,12 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                         } else {
                             result.add(iMapOf("price" to floor, "size" to size, "depth" to depth))
                             floor = ceiling
-                            ceiling = (parser.asDecimal(floor)!! + grouping).doubleValue(false)
+                            ceiling = floor + grouping
                         }
                     } else {
                         result.add(iMapOf("price" to floor, "size" to size, "depth" to depth))
                         ceiling = floor
-                        floor = (parser.asDecimal(ceiling)!! - grouping).doubleValue(false)
+                        floor = ceiling - grouping
                     }
                 }
             }
@@ -537,16 +537,16 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         } else null
     }
 
-    private fun grouping(tickSize: Double, grouping: Int): BigDecimal {
+    private fun grouping(tickSize: Double, grouping: Int): Double {
         val cached = groupingLookup?.get(grouping)
         return if (cached != null) {
             cached
         } else {
             val decimals = if (grouping == 1)
-                tickSize.tickDecimals()
+                parser.asDouble(tickSize.tickDecimals())!!
             else {
-                val tickDecimals = tickSize.tickDecimals()
-                tickDecimals * grouping.toBigDecimal(null, Numeric.decimal.mode)
+                val tickDecimals = parser.asDouble(tickSize.tickDecimals())!!
+                tickDecimals * grouping
             }
             if (groupingLookup == null) {
                 groupingLookup = iMutableMapOf()

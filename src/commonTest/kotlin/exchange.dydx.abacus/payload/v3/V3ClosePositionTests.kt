@@ -66,7 +66,7 @@ class V3ClosePositionTests : V3BaseTests() {
                         },
                         "reduceOnly": false,
                         "summary": {
-                            "price": 1653.7426427838577,
+                            "price": 1653.74,
                             "size": 23.392,
                             "usdcSize": 38684.3479,
                             "total": 38684.3479
@@ -78,8 +78,8 @@ class V3ClosePositionTests : V3BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": -62697.279528,
-                                    "postOrder": -24012.931628
+                                    "current": -62697.28,
+                                    "postOrder": -24012.93
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -116,10 +116,10 @@ class V3ClosePositionTests : V3BaseTests() {
                         },
                         "reduceOnly": false,
                         "summary": {
-                            "price": 1654.1581266666667,
+                            "price": 1654.16,
                             "size": 15.0,
-                            "usdcSize": 24812.371900000002,
-                            "total": 24812.371900000002
+                            "usdcSize": 24812.37,
+                            "total": 24812.37
                         }
                     }
                 },
@@ -128,14 +128,14 @@ class V3ClosePositionTests : V3BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": -62697.279528,
-                                    "postOrder": -37884.907628
+                                    "current": -62697.28,
+                                    "postOrder": -37884.91
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
                                         "size": {
                                             "current": 93.57,
-                                            "postOrder": 7.857E+1
+                                            "postOrder": 78.57
                                         }
                                     }
                                 }
@@ -200,14 +200,14 @@ class V3ClosePositionTests : V3BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": 68257.215192,
-                                    "postOrder": 24308.314392
+                                    "current": 68257.22,
+                                    "postOrder": 24308.31
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
                                         "size": {
-                                            "current": -106.17985,
-                                            "postOrder": -7.963585E+1
+                                            "current": -106.18,
+                                            "postOrder": -79.64
                                         }
                                     }
                                 }
@@ -250,14 +250,14 @@ class V3ClosePositionTests : V3BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": 68257.215192,
-                                    "postOrder": 43421.715192
+                                    "current": 68257.22,
+                                    "postOrder": 43421.72
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
                                         "size": {
-                                            "current": -106.17985,
-                                            "postOrder": -91.17985
+                                            "current": -106.18,
+                                            "postOrder": -91.18
                                         }
                                     }
                                 }
