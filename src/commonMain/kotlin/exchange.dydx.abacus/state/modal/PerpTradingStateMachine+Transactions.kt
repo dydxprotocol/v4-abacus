@@ -520,8 +520,8 @@ fun PerpTradingStateMachine.placeTradeOrder2(
 
     val orderSideInt: Int
     when (orderSide) {
-        OrderSide.buy -> orderSideInt = 0
-        OrderSide.sell -> orderSideInt = 1
+        OrderSide.buy -> orderSideInt = 1
+        OrderSide.sell -> orderSideInt = 2
     }
     return PlaceOrderPayload2(
         clobPairId,
