@@ -72,8 +72,8 @@ data class SubaccountHistoricalPNL(
                     ParsingHelper.compare(time1, time2MS ?: 0.0, true)
                 } else null
             }, { _, obj, itemData ->
-                SubaccountHistoricalPNL.create(
-                    obj as? SubaccountHistoricalPNL,
+                obj ?: SubaccountHistoricalPNL.create(
+                    null,
                     parser,
                     parser.asMap(itemData)
                 )
@@ -736,7 +736,7 @@ data class SubaccountFill(
                     ParsingHelper.compare(id1, id2, true)
                 }
             }, { _, obj, itemData ->
-                SubaccountFill.create(obj as? SubaccountFill, parser, parser.asMap(itemData))
+                obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData))
             }, true)
         }
     }
@@ -890,8 +890,8 @@ data class SubaccountTransfer(
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
-                SubaccountTransfer.create(
-                    obj as? SubaccountTransfer,
+                obj ?: SubaccountTransfer.create(
+                    null,
                     parser,
                     parser.asMap(itemData)
                 )
@@ -964,8 +964,8 @@ data class SubaccountFundingPayment(
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, true)
             }, { _, obj, itemData ->
-                SubaccountFundingPayment.create(
-                    obj as? SubaccountFundingPayment,
+                obj ?: SubaccountFundingPayment.create(
+                    null,
                     parser,
                     parser.asMap(itemData)
                 )
@@ -1229,7 +1229,7 @@ data class Subaccount(
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
                 SubaccountTransfer.create(
-                    obj as? SubaccountTransfer,
+                    null,
                     parser,
                     parser.asMap(itemData)
                 )
@@ -1247,7 +1247,7 @@ data class Subaccount(
                     parser.asDatetime(itemData["effectiveAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
-                SubaccountFundingPayment.create(obj as? SubaccountFundingPayment, parser, itemData)
+                obj ?: SubaccountFundingPayment.create(null, parser, itemData)
             }, true)
         }
     }

@@ -2,6 +2,8 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -33,8 +35,11 @@ import exchange.dydx.abacus.state.modal.historicalPnl
 import exchange.dydx.abacus.state.modal.orderCanceled
 import exchange.dydx.abacus.state.modal.receivedAccountsChanges
 import exchange.dydx.abacus.state.modal.receivedBatchOrderbookChanges
+import exchange.dydx.abacus.state.modal.receivedBatchedCandlesChanges
 import exchange.dydx.abacus.state.modal.receivedBatchedMarketsChanges
 import exchange.dydx.abacus.state.modal.receivedBatchedTradesChanges
+import exchange.dydx.abacus.state.modal.receivedCandles
+import exchange.dydx.abacus.state.modal.receivedCandlesChanges
 import exchange.dydx.abacus.state.modal.receivedFills
 import exchange.dydx.abacus.state.modal.receivedMarkets
 import exchange.dydx.abacus.state.modal.receivedMarketsChanges
@@ -248,7 +253,62 @@ open class StateManagerAdaptor(
             }
         }
 
+    private var accountAddressTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private var accountAddressRestriction: Restriction? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetAccountAddressRestriction(value)
+            }
+        }
+
     var sourceAddress: String? = null
+        internal set(value) {
+            if (field != value) {
+                val oldValue = field
+                field = value
+                didSetSourceAddress(sourceAddress, oldValue)
+            }
+        }
+
+    private var sourceAddressTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private var sourceAddressRestriction: Restriction? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetSourceAddressRestriction(value)
+            }
+        }
+
+    internal var addressRestriction: UsageRestriction? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetAddressRestriction(value)
+            }
+        }
+
+    internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetRestriction(value)
+            }
+        }
 
     var subaccountNumber: Int = 0
         internal set(value) {
@@ -402,7 +462,11 @@ open class StateManagerAdaptor(
                 retrieveMarketHistoricalFundings()
                 retrieveMarketCandles()
             }
+            if (sourceAddress != null) {
+                screenSourceAddress()
+            }
             if (accountAddress != null) {
+                screenAccountAddress()
                 retrieveSubaccounts()
             }
             if (subaccount != null) {
@@ -432,18 +496,29 @@ open class StateManagerAdaptor(
     }
 
     internal open fun didSetAccountAddress(accountAddress: String?, oldValue: String?) {
-        ioImplementations.threading?.async(ThreadingType.abacus) {
-            val stateResponse = stateMachine.resetWallet(accountAddress)
-            ioImplementations.threading?.async(ThreadingType.main) {
-                stateNotification?.stateChanged(
-                    stateResponse.state,
-                    stateResponse.changes,
-                )
-                connectedSubaccountNumber = null
-                subaccountNumber = 0
-                updateConnectedSubaccountNumber()
-            }
+        val stateResponse = stateMachine.resetWallet(accountAddress)
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.stateChanged(
+                stateResponse.state,
+                stateResponse.changes,
+            )
+            connectedSubaccountNumber = null
+            subaccountNumber = 0
+            updateConnectedSubaccountNumber()
         }
+        accountAddressTimer = null
+        accountAddressRestriction = null
+        screenAccountAddress()
+    }
+
+    private fun didSetAccountAddressRestriction(accountAddressRestriction: Restriction?) {
+        updateAddressRestriction()
+    }
+
+    private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
+        sourceAddressTimer = null
+        sourceAddressRestriction = null
+        screenSourceAddress()
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
@@ -645,6 +720,8 @@ open class StateManagerAdaptor(
                         )
                     changes = socketSubscribed(channel, id, subaccountNumber, content)
                 }
+
+                "unsubscribed" -> {}
 
                 "channel_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
@@ -882,6 +959,11 @@ open class StateManagerAdaptor(
                 stateMachine.receivedTrades(id, content)
             }
 
+            configs.marketCandlesChannel() -> {
+                val (market, resolution) = splitCandlesChannel(id)
+                stateMachine.receivedCandles(market, resolution, content)
+            }
+
             else -> {
                 throw ParsingException(
                     ParsingErrorType.UnknownChannel,
@@ -889,6 +971,25 @@ open class StateManagerAdaptor(
                 )
             }
         }
+    }
+
+    private fun splitCandlesChannel(channel: String?): Pair<String, String> {
+        if (channel == null) {
+            throw ParsingException(
+                ParsingErrorType.UnknownChannel,
+                "$channel is not known"
+            )
+        }
+        val marketAndResolution = channel.split("/")
+        if (marketAndResolution.size != 2) {
+            throw ParsingException(
+                ParsingErrorType.UnknownChannel,
+                "$channel is not known"
+            )
+        }
+        val market = marketAndResolution[0]
+        val resolution = marketAndResolution[1]
+        return Pair(market, resolution)
     }
 
     open fun socketConnectedSubaccountNumber(id: String?): Int {
@@ -922,6 +1023,11 @@ open class StateManagerAdaptor(
 
             configs.marketTradesChannel() -> {
                 stateMachine.receivedTradesChanges(id, content)
+            }
+
+            configs.marketCandlesChannel() -> {
+                val (market, resolution) = splitCandlesChannel(id)
+                stateMachine.receivedCandlesChanges(market, resolution, content)
             }
 
             else -> {
@@ -959,6 +1065,11 @@ open class StateManagerAdaptor(
                     content,
                     subaccountNumber ?: 0
                 )
+            }
+
+            configs.marketCandlesChannel() -> {
+                val (market, resolution) = splitCandlesChannel(id)
+                stateMachine.receivedBatchedCandlesChanges(market, resolution, content)
             }
 
             else -> {
@@ -1193,6 +1304,10 @@ open class StateManagerAdaptor(
     }
 
     open fun subaccountsUrl(): String? {
+        return null
+    }
+
+    open fun screenUrl(): String? {
         return null
     }
 
@@ -1855,6 +1970,159 @@ open class StateManagerAdaptor(
             }
         }
     }
+
+
+    open fun screenSourceAddress() {
+        val address = sourceAddress
+        if (address != null) {
+            screen(address) { restriction ->
+                when (restriction) {
+                    Restriction.USER_RESTRICTED -> {
+                        sourceAddressRestriction = Restriction.USER_RESTRICTED
+                    }
+
+                    Restriction.NO_RESTRICTION -> {
+                        sourceAddressRestriction = Restriction.NO_RESTRICTION
+                    }
+
+                    Restriction.USER_RESTRICTION_UNKNOWN -> {
+                        sourceAddressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
+                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                        sourceAddressTimer = timer.schedule(
+                            subaccountsPollingDelay,
+                            null
+                        ) {
+                            sourceAddressTimer = null
+                            screenSourceAddress()
+                            false
+                        }
+                    }
+
+                    else -> {
+                        throw Exception("Unexpected restriction value")
+                    }
+                }
+            }
+        } else {
+            sourceAddressRestriction = Restriction.NO_RESTRICTION
+        }
+    }
+
+    open fun screenAccountAddress() {
+        val address = accountAddress
+        if (address != null) {
+            screen(address) { restriction ->
+                when (restriction) {
+                    Restriction.USER_RESTRICTED -> {
+                        accountAddressRestriction = Restriction.USER_RESTRICTED
+                    }
+
+                    Restriction.NO_RESTRICTION -> {
+                        accountAddressRestriction = Restriction.NO_RESTRICTION
+                    }
+
+                    Restriction.USER_RESTRICTION_UNKNOWN -> {
+                        accountAddressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
+                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                        accountAddressTimer = timer.schedule(
+                            subaccountsPollingDelay,
+                            null
+                        ) {
+                            accountAddressTimer = null
+                            screenAccountAddress()
+                            false
+                        }
+                    }
+
+                    else -> {
+                        throw Exception("Unexpected restriction value")
+                    }
+                }
+            }
+        } else {
+            accountAddressRestriction = Restriction.NO_RESTRICTION
+        }
+    }
+
+    open fun screen(address: String, callback: ((Restriction) -> Unit)) {
+        val url = screenUrl()
+        if (url != null) {
+            get(
+                url,
+                iMapOf("address" to address),
+                null,
+                false,
+                callback = { response, httpCode ->
+                    if (success(httpCode) && response != null) {
+                        val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
+                        val restricted = parser.asBool(payload["restricted"]) ?: false
+                        callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                    } else {
+                        callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                    }
+                })
+        }
+    }
+
+    private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {
+        updateAddressRestriction()
+    }
+
+    private fun updateAddressRestriction() {
+        val restrictions: Set<Restriction?> =
+            iSetOf(accountAddressRestriction, sourceAddressRestriction)
+        addressRestriction = if (restrictions.contains(Restriction.USER_RESTRICTED)) {
+            UsageRestriction.userRestriction
+        } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
+            UsageRestriction.userRestrictionUnknown
+        } else {
+            if (sourceAddressRestriction == null && accountAddressRestriction == null) {
+                null
+            } else {
+                UsageRestriction.noRestriction
+            }
+        }
+    }
+
+    private fun didSetAddressRestriction(addressRestriction: UsageRestriction?) {
+        updateRestriction()
+    }
+
+    internal open fun updateRestriction() {
+        restriction = addressRestriction ?: UsageRestriction.noRestriction
+    }
+
+    private fun didSetRestriction(restriction: UsageRestriction?) {
+        val state = stateMachine.state
+        stateMachine.state = PerpetualState(
+            state?.assets,
+            state?.marketsSummary,
+            state?.orderbooks,
+            state?.candles,
+            state?.trades,
+            state?.historicalFundings,
+            state?.wallet,
+            state?.account,
+            state?.historicalPnl,
+            state?.fills,
+            state?.transfers,
+            state?.fundingPayments,
+            state?.configs,
+            state?.input,
+            state?.availableSubaccountNumbers ?: iListOf(),
+            state?.transferStatuses,
+            restriction,
+        )
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.stateChanged(
+                stateMachine.state,
+                StateChanges(
+                    iListOf(Changes.restriction),
+                ),
+            )
+        }
+    }
+
 
     internal open fun dispose() {
         stateNotification = null

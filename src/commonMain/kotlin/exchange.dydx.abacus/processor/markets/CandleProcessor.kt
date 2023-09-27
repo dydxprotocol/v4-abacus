@@ -43,11 +43,15 @@ internal class CandleProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "close" to "close",
             "baseTokenVolume" to "baseTokenVolume",
             "usdVolume" to "usdVolume",
+            "startingOpenInterest" to "startingOpenInterest",
         ),
         "datetime" to iMapOf(
             "startedAt" to "startedAt",
             "updatedAt" to "updatedAt",
-        )
+        ),
+        "int" to iMapOf(
+            "trades" to "trades",
+        ),
     )
 
     override fun received(

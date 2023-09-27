@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.markets
 
+import exchange.dydx.abacus.output.AssetResources
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
@@ -130,6 +131,52 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
     ): IMap<String, Any>? {
         val markets =
             marketsProcessor.receivedSparklines(parser.asMap(existing?.get("markets")), payload)
+        return modify(existing, markets)
+    }
+
+    internal fun receivedCandles(
+        existing: IMap<String, Any>?,
+        market: String,
+        resolution: String,
+        payload: IMap<String, Any>
+    ): IMap<String, Any>? {
+        val markets =
+            marketsProcessor.receivedCandles(
+                parser.asMap(existing?.get("markets")),
+                market,
+                resolution,
+                payload
+            )
+        return modify(existing, markets)
+    }
+
+    internal fun receivedCandlesChanges(
+        existing: IMap<String, Any>?,
+        market: String,
+        resolution: String,
+        payload: IMap<String, Any>
+    ): IMap<String, Any>? {
+        val markets = marketsProcessor.receivedCandlesChanges(
+            parser.asMap(existing?.get("markets")),
+            market,
+            resolution,
+            payload
+        )
+        return modify(existing, markets)
+    }
+
+    internal fun receivedBatchedCandlesChanges(
+        existing: IMap<String, Any>?,
+        market: String,
+        resolution: String,
+        payload: IList<Any>
+    ): IMap<String, Any>? {
+        val markets = marketsProcessor.receivedBatchedCandlesChanges(
+            parser.asMap(existing?.get("markets")),
+            market,
+            resolution,
+            payload
+        )
         return modify(existing, markets)
     }
 

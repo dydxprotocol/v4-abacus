@@ -1,5 +1,8 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -10,6 +13,7 @@ import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
+import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.ClosePositionInputField
 import exchange.dydx.abacus.state.modal.TradeInputField
@@ -237,7 +241,16 @@ data class ApiState(
     }
 }
 
-
+@JsExport
+@Serializable
+data class AppStateResponse(
+    val state: PerpetualState?,
+    val changes: StateChanges?,
+    val errors: IList<ParsingError>?,
+    val apiState: ApiState?,
+    val lastOrder: SubaccountOrder?
+) {
+}
 @JsExport
 class AsyncAbacusStateManager(
     val environmentsUrl: String,
@@ -575,6 +588,11 @@ class AsyncAbacusStateManager(
         }
     }
 
+    fun setAddresses(source: String?, account: String?) {
+        sourceAddress = source
+        accountAddress = account
+    }
+
     fun trade(data: String?, type: TradeInputField?) {
         adaptor?.trade(data, type)
     }
@@ -688,5 +706,9 @@ class AsyncAbacusStateManager(
             amount,
             submitTimeInMilliseconds
         )
+    }
+
+    fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
+        adaptor?.screen(address, callback)
     }
 }

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.responses
 
 import kotlinx.serialization.Serializable
-import kollections.JsExport
+import kotlin.js.JsExport
 
 @JsExport
 @Serializable
@@ -17,10 +17,11 @@ enum class ParsingErrorType(val rawValue: String) {
     Unhandled("Unhandled"),
     BackendError("Backend Error"),
     HttpError403("Http Error 403"),
+    UserRestricted("User Restricted"),
     ;
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             ParsingErrorType.values().firstOrNull { it.rawValue == rawValue }
     }
 }

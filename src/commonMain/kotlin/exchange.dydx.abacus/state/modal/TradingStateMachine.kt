@@ -243,14 +243,22 @@ open class TradingStateMachine(
                             changes = receivedTrades(market, content)
                         }
 
+                        "v4_candles" -> {
+                            val channel = parser.asString(payload["id"])
+                            val (market, resolution) = splitCandlesChannel(channel)
+                            changes = receivedCandles(market, resolution, content)
+                        }
+
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel subscribed is not known"
                             )
                         }
                     }
                 }
+
+                "unsubscribed" -> {}
 
                 "channel_data" -> {
                     val content = parser.asMap(payload["contents"])
@@ -280,10 +288,16 @@ open class TradingStateMachine(
                             changes = receivedTradesChanges(market, content)
                         }
 
+                        "v4_candles" -> {
+                            val channel = parser.asString(payload["id"])
+                            val (market, resolution) = splitCandlesChannel(channel)
+                            changes = receivedCandlesChanges(market, resolution, content)
+                        }
+
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel channel data is not known"
                             )
                         }
                     }
@@ -305,6 +319,12 @@ open class TradingStateMachine(
                             changes = receivedBatchedTradesChanges(market, content)
                         }
 
+                        "v4_candles" -> {
+                            val channel = parser.asString(payload["id"])
+                            val (market, resolution) = splitCandlesChannel(channel)
+                            changes = receivedBatchedCandlesChanges(market, resolution, content)
+                        }
+
                         "v3_orderbook", "v4_orderbook" -> {
                             val market = parser.asString(payload["id"])
                             changes = receivedBatchOrderbookChanges(
@@ -321,7 +341,7 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel channel batch data is not known"
                             )
                         }
                     }
@@ -348,6 +368,25 @@ open class TradingStateMachine(
         } catch (e: ParsingException) {
             return StateResponse(state, null, iListOf(e.toParsingError()), info)
         }
+    }
+
+    private fun splitCandlesChannel(channel: String?): Pair<String, String> {
+        if (channel == null) {
+            throw ParsingException(
+                ParsingErrorType.UnknownChannel,
+                "$channel is not known"
+            )
+        }
+        val marketAndResolution = channel.split("/")
+        if (marketAndResolution.size != 2) {
+            throw ParsingException(
+                ParsingErrorType.UnknownChannel,
+                "$channel is not known"
+            )
+        }
+        val market = marketAndResolution[0]
+        val resolution = marketAndResolution[1]
+        return Pair(market, resolution)
     }
 
     fun rest(url: AbUrl, payload: String, subaccountNumber: Int, height: Int?): StateResponse {
@@ -516,6 +555,12 @@ open class TradingStateMachine(
 
                 Changes.wallet -> state?.wallet != wallet
                 Changes.input -> state?.input != input
+
+                // Restriction is handled separately and shouldn't have gone through here
+                Changes.restriction -> {
+                    DebugLogger.log("Restriction is handled separately and shouldn't have gone through here")
+                    false
+                }
             }
             if (didChange) {
                 realChanges.add(change)
@@ -807,6 +852,7 @@ open class TradingStateMachine(
         var configs = state?.configs
         var input = state?.input
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
+        val restriction = state?.restriction
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asMap(data?.get("markets"))?.let {
@@ -1054,6 +1100,7 @@ open class TradingStateMachine(
             input,
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
             transferStatuses,
+            restriction,
         )
     }
 
