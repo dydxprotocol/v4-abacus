@@ -815,7 +815,8 @@ open class TradingStateMachine(
                             ReceiptLine.exchangeReceived.rawValue,
                             ReceiptLine.bridgeFee.rawValue,
                             ReceiptLine.fee.rawValue,
-                            ReceiptLine.slippage.rawValue
+                            ReceiptLine.slippage.rawValue,
+                            ReceiptLine.transferRouteEstimatedDuration.rawValue
                         )
                     }
                     "TRANSFER_OUT" -> {
