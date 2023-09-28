@@ -19,9 +19,8 @@ class EnvironmentsMock {
                  "default":"dydxprotocol-staging"
               }
            },
-           "environments":[
-              {
-                 "id":"dydxprotocol-staging",
+           "environments":{
+              "dydxprotocol-staging":{
                  "name":"v4 Staging",
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
@@ -60,8 +59,7 @@ class EnvironmentsMock {
                     "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
                  }
               },
-              {
-                 "id":"dydxprotocol-testnet",
+              "dydxprotocol-testnet":{
                  "name":"v4 Public Testnet",
                  "ethereumChainId":"5",
                  "dydxChainId":"dydx-testnet-3",
@@ -102,7 +100,7 @@ class EnvironmentsMock {
                     "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
                  }
               }
-           ]
+           }
         }
     """.trimIndent()
 }

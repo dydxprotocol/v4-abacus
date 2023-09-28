@@ -21,9 +21,9 @@
 		641959F32A96BCED00BCB69C /* Bundle+UIBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F22A96BCED00BCB69C /* Bundle+UIBundle.swift */; };
 		641959F52A96BD0600BCB69C /* JsonLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F42A96BD0600BCB69C /* JsonLoader.swift */; };
 		641959F72A96BD5F00BCB69C /* StringLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641959F62A96BD5F00BCB69C /* StringLoader.swift */; };
-		641959F92A96C28D00BCB69C /* config in Resources */ = {isa = PBXBuildFile; fileRef = 641959F82A96C28D00BCB69C /* config */; };
 		641959FB2A9805BB00BCB69C /* v4-native-client.js in Resources */ = {isa = PBXBuildFile; fileRef = 641959FA2A9805BB00BCB69C /* v4-native-client.js */; };
 		642EE3D028F5E16E0062CAC0 /* V3PrivateApiSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642EE3CF28F5E16E0062CAC0 /* V3PrivateApiSigner.swift */; };
+		647B8BE52AC64125003A3AF0 /* configs in Resources */ = {isa = PBXBuildFile; fileRef = 647B8BE42AC64124003A3AF0 /* configs */; };
 		64810BA72A28F56F003BD337 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA62A28F56F003BD337 /* File.swift */; };
 		64810BA92A28F57C003BD337 /* Directory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64810BA82A28F57C003BD337 /* Directory.swift */; };
 		6482C69B2A96B54B0038671F /* JavascriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482C6992A96B54B0038671F /* JavascriptRunner.swift */; };
@@ -68,9 +68,9 @@
 		641959F22A96BCED00BCB69C /* Bundle+UIBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+UIBundle.swift"; sourceTree = "<group>"; };
 		641959F42A96BD0600BCB69C /* JsonLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonLoader.swift; sourceTree = "<group>"; };
 		641959F62A96BD5F00BCB69C /* StringLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringLoader.swift; sourceTree = "<group>"; };
-		641959F82A96C28D00BCB69C /* config */ = {isa = PBXFileReference; lastKnownFileType = folder; name = config; path = "../../../../v4-localization/config"; sourceTree = "<group>"; };
 		641959FA2A9805BB00BCB69C /* v4-native-client.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "v4-native-client.js"; sourceTree = "<group>"; };
 		642EE3CF28F5E16E0062CAC0 /* V3PrivateApiSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = V3PrivateApiSigner.swift; sourceTree = "<group>"; };
+		647B8BE42AC64124003A3AF0 /* configs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = configs; path = "../../../../v4-web/public/configs"; sourceTree = "<group>"; };
 		64810BA62A28F56F003BD337 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		64810BA82A28F57C003BD337 /* Directory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Directory.swift; sourceTree = "<group>"; };
 		6482C6992A96B54B0038671F /* JavascriptRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavascriptRunner.swift; sourceTree = "<group>"; };
@@ -156,9 +156,9 @@
 				64A69DAE28CBF2F3008D7ACB /* abacus-ios-Info.plist */,
 				028B6371286F9F3400A3A2FE /* abacus_iosApp.swift */,
 				028B6373286F9F3400A3A2FE /* ContentView.swift */,
+				647B8BE42AC64124003A3AF0 /* configs */,
 				028B6375286F9F3400A3A2FE /* Assets.xcassets */,
 				028B6377286F9F3400A3A2FE /* Preview Content */,
-				641959F82A96C28D00BCB69C /* config */,
 				64A69CAE28C01DD5008D7ACB /* Utils.swift */,
 			);
 			path = abacus.ios;
@@ -353,7 +353,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				641959F92A96C28D00BCB69C /* config in Resources */,
+				647B8BE52AC64125003A3AF0 /* configs in Resources */,
 				641959FB2A9805BB00BCB69C /* v4-native-client.js in Resources */,
 				028B6379286F9F3400A3A2FE /* Preview Assets.xcassets in Resources */,
 				028B6376286F9F3400A3A2FE /* Assets.xcassets in Resources */,

@@ -188,6 +188,7 @@ open class StateManagerAdaptor(
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
     open val configs: StateManagerConfigs,
+    val appConfigs: AppConfigs,
     var stateNotification: StateNotificationProtocol?,
     var dataNotification: DataNotificationProtocol?,
 ) {

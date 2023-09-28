@@ -464,10 +464,10 @@ class AsyncAbacusStateManager(
         val targetDefault = parser.asString(target["default"])
 
         if (items != null) {
-            val environmentsData = parser.asList(items["environments"]) ?: return false
+            val environmentsData = parser.asMap(items["environments"]) ?: return false
             val parsedEnvironments = mutableMapOf<String, V4Environment>()
-            for (item in environmentsData) {
-                val environment = parseEnvironment(parser.asMap(item), parser)
+            for ((key, value) in environmentsData) {
+                val environment = parseEnvironment(key, parser.asMap(value), parser)
                 if (environment != null) {
                     parsedEnvironments[environment.id] = environment
                 }
@@ -493,11 +493,10 @@ class AsyncAbacusStateManager(
         }
     }
 
-    private fun parseEnvironment(item: IMap<String, Any>?, parser: ParserProtocol): V4Environment? {
+    private fun parseEnvironment(id: String, item: IMap<String, Any>?, parser: ParserProtocol): V4Environment? {
         if (item == null) {
             return null
         }
-        val id = parser.asString(item["id"]) ?: return null
         val name = parser.asString(item["name"]) ?: id
         val ethereumChainId = parser.asString(item["ethereumChainId"]) ?: return null
         val dydxChainId = parser.asString(item["dydxChainId"])
@@ -617,6 +616,7 @@ class AsyncAbacusStateManager(
                 ioImplementations,
                 uiImplementations,
                 V4StateManagerConfigs(deploymentUri, environment),
+                appConfigs,
                 stateNotification,
                 dataNotification,
             )
