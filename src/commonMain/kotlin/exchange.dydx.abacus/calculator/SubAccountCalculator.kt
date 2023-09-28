@@ -2,7 +2,6 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -27,7 +26,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         markets: Map<String, Any>?,
         price: Map<String, Any>?,
         periods: Set<CalculationPeriod>,
-        version: AppVersion,
     ): Map<String, Any>? {
         if (subaccount != null) {
             val modified = subaccount.mutable()
@@ -37,7 +35,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 subaccount,
                 price,
                 periods,
-                version
             )
             positions?.let {
                 modified.safeSet("openPositions", it)
@@ -59,7 +56,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         subaccount: Map<String, Any>,
         price: Map<String, Any>?,
         periods: Set<CalculationPeriod>,
-        version: AppVersion,
     ): MutableMap<String, MutableMap<String, Any>>? {
         return if (positions != null) {
             val modified = mutableMapOf<String, MutableMap<String, Any>>()
@@ -72,7 +68,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             subaccount,
                             parser.asDouble(price?.get(key)),
                             periods,
-                            version
                         )
                     }
                 }
@@ -93,7 +88,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         subaccount: Map<String, Any>,
         price: Double?,
         periods: Set<CalculationPeriod>,
-        version: AppVersion,
     ): MutableMap<String, Any> {
         val modified = position.mutable()
         for (period in periods) {
@@ -175,12 +169,10 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 subaccount,
                                 size,
                                 notional,
-                                version
                             )
                             val adjustedMmf = calculatedAdjustedMmf(
                                 parser.asNativeMap(market?.get("configs")),
                                 notional,
-                                version
                             )
                             val maxLeverage =
                                 if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
@@ -223,7 +215,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         subaccount: Map<String, Any>,
         size: Double?,
         notional: Double?,
-        version: AppVersion,
     ): Double {
         val initialMarginFraction =
             parser.asDouble(configs?.get("initialMarginFraction")) ?: Numeric.double.ZERO
@@ -234,7 +225,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
     private fun calculatedAdjustedMmf(
         configs: Map<String, Any>?,
         notional: Double?,
-        version: AppVersion,
     ): Double {
         val maintenanceMarginFraction =
             parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO

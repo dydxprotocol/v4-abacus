@@ -32,7 +32,7 @@ class TestFileSystem : FileSystemProtocol {
         location: FileLocation,
         path: String,
     ): String? {
-        if (path.contains("endpoints.json")) {
+        if (path.contains("env.json")) {
             return mock.environments.environments
         }
         when (location) {
@@ -125,11 +125,7 @@ class TestRest() : RestProtocol {
 
     init {
         setResponse(
-            "https://dydx-v4-shared-resources.vercel.app/v4/markets.json",
-            mock.marketsConfigurations.configurations
-        )
-        setResponse(
-            "https://dydx-v4-shared-resources.vercel.app/config/markets.json",
+            "https://api.examples.com/configs/markets.json",
             mock.marketsConfigurations.configurations
         )
         setResponse(
@@ -187,7 +183,7 @@ class TestRest() : RestProtocol {
         headers: IMap<String, String>?,
         callback: (response: String?, httpCode: Int) -> Unit,
     ) {
-        if (url.contains("endpoints.json")) {
+        if (url.contains("env.json")) {
             callback(mock.environments.environments, 200)
             return
         }

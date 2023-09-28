@@ -1,10 +1,8 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -37,16 +35,15 @@ data class Input(
             existing: Input?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            version: AppVersion
         ): Input? {
             DebugLogger.log("creating Input\n")
 
             data?.let {
                 val current = InputType.invoke(parser.asString(data["current"]))
                 val trade =
-                    TradeInput.create(existing?.trade, parser, parser.asMap(data["trade"]), version)
+                    TradeInput.create(existing?.trade, parser, parser.asMap(data["trade"]))
                 val closePosition =
-                    ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]), version)
+                    ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
                 val transfer =
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]))
                 val errors =

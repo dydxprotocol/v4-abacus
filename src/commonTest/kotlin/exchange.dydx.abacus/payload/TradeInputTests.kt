@@ -31,8 +31,6 @@ class TradeInputTests : V3BaseTests() {
             perp.loadSimpleAccounts(mock)
         }, null)
 
-        loadUser()
-
         loadOrderbook()
         testSimpleTradeInputOnce()
     }
@@ -45,8 +43,6 @@ class TradeInputTests : V3BaseTests() {
             perp.loadSimpleAccounts(mock)
         }, null)
 
-        loadUser()
-
         loadOrderbook()
         testLimitTradeInputOnce()
     }
@@ -58,7 +54,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.loadSimpleAccounts(mock)
         }, null)
-        loadUser()
 
         loadOrderbook()
 
@@ -2021,15 +2016,15 @@ class TradeInputTests : V3BaseTests() {
                                 "0": {
                                     "equity": {
                                         "current": 10000.0,
-                                        "postOrder": 10009.68
+                                        "postOrder": 10009.76
                                     },
                                     "freeCollateral": {
                                         "current": 10000.0,
-                                        "postOrder": 10000.91
+                                        "postOrder": 10000.99
                                     },
                                     "quoteBalance": {
                                         "current": 10000.0,
-                                        "postOrder": 9834.35
+                                        "postOrder": 9834.43
                                     },
                                     "notionalTotal": {
                                         "current": 0.0,
@@ -2053,7 +2048,7 @@ class TradeInputTests : V3BaseTests() {
                                     },
                                     "buyingPower": {
                                         "current": 200000.0,
-                                        "postOrder": 200018.20
+                                        "postOrder": 200019.90
                                     },
                                     "openPositions": {
                                         "ETH-USD": {

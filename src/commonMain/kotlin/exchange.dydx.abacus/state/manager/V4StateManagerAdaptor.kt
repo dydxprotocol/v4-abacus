@@ -41,14 +41,21 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 
 class V4StateManagerAdaptor(
+    deploymentUri: String,
+    environment: V4Environment,
     ioImplementations: IOImplementations,
     uiImplementations: UIImplementations,
-    environment: V4Environment,
     override var configs: V4StateManagerConfigs,
     stateNotification: StateNotificationProtocol?,
     dataNotification: DataNotificationProtocol?,
 ) : StateManagerAdaptor(
-    ioImplementations, uiImplementations, environment, configs, stateNotification, dataNotification
+    deploymentUri,
+    environment,
+    ioImplementations,
+    uiImplementations,
+    configs,
+    stateNotification,
+    dataNotification
 ) {
     private var validatorUrl: String? = null
         set(value) {
@@ -472,7 +479,7 @@ class V4StateManagerAdaptor(
     }
 
     private fun connectChain(validatorUrl: String, callback: (successful: Boolean) -> Unit) {
-        val indexerUrl = environment.URIs.indexers?.firstOrNull()?.api ?: return
+        val indexerUrl = environment.endpoints.indexers?.firstOrNull()?.api ?: return
         val websocketUrl = configs.websocketUrl() ?: return
         val chainId = environment.dydxChainId ?: return
         val faucetUrl = configs.faucetUrl()

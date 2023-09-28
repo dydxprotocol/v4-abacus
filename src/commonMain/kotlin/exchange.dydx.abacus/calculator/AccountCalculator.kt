@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -14,7 +13,6 @@ class AccountCalculator(val parser: ParserProtocol) {
         markets: Map<String, Any>?,
         price: Map<String, Any>?,
         periods: Set<CalculationPeriod>,
-        version: AppVersion
     ): Map<String, Any>? {
         return if (account != null) {
             val modified = account.mutable()
@@ -22,7 +20,7 @@ class AccountCalculator(val parser: ParserProtocol) {
                 val key = "subaccounts.$subaccountNumber"
                 val subaccount = parser.asMap(parser.value(account, key))
                 if (subaccount != null) {
-                    modified.safeSet(key, subaccountCalculator.calculate(subaccount, configs, markets, price, periods, version))
+                    modified.safeSet(key, subaccountCalculator.calculate(subaccount, configs, markets, price, periods))
                 }
             }
             modified

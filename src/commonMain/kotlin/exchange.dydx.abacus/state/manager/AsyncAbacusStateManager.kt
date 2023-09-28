@@ -1,8 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
-import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
-import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -13,7 +11,6 @@ import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
-import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.ClosePositionInputField
 import exchange.dydx.abacus.state.modal.TradeInputField
@@ -32,6 +29,7 @@ import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
+import kollections.iMutableMapOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -39,68 +37,71 @@ import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
 
 @JsExport
-enum class AppVersion(val rawValue: String) {
-    v4("v4");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            AppVersion.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
 data class IndexerURIs(
     val api: String,
-    val socket: String)
+    val socket: String
+)
 
 @JsExport
-data class EnvironmentURIs(
+data class EnvironmentEndpoints(
     val indexers: IList<IndexerURIs>?,
-    val configs: String?,
     val validators: IList<String>?,
     val faucet: String?,
     val squid: String?,
-    val statusPageUrl: String?,
-    val marketImageUrl: String?,
-    val tosUrl: String?,
-    val privacyPolicyUrl: String?,
-    val mintscanUrl: String?,
+)
+
+@JsExport
+data class EnvironmentLinks(
+    val tos: String?,
+    val privacy: String?,
+    val mintscan: String?,
+    val documentation: String?,
+    val community: String?,
+    val feedback: String?,
+)
+
+@JsExport
+data class TokenInfo(
+    val name: String,
+    val denom: String,
+    val imageUrl: String?,
 )
 
 @JsExport
 open class Environment(
-    val environment: String,
+    val id: String,
+    val name: String?,
     val ethereumChainId: String,
     val dydxChainId: String?,
-    val stringKey: String,
-    val string: String,
     val isMainNet: Boolean,
-    val version: AppVersion,
-    val maxSubaccountNumber: Int,
 ) {
 }
 
 @JsExport
 class V4Environment(
-    environment: String,
+    id: String,
+    name: String?,
     ethereumChainId: String,
     dydxChainId: String?,
-    stringKey: String,
-    string: String,
     isMainNet: Boolean,
-    version: AppVersion,
-    maxSubaccountNumber: Int,
-    val URIs: EnvironmentURIs,
+    val tokens: IMap<String, TokenInfo>,
+    val endpoints: EnvironmentEndpoints,
+    val links: EnvironmentLinks?,
 ) : Environment(
-    environment,
+    id,
+    name,
     ethereumChainId,
     dydxChainId,
-    stringKey,
-    string,
     isMainNet,
-    version,
-    maxSubaccountNumber
 )
+
+@JsExport
+class AppConfigs(val subscribeToCandles: Boolean) {
+    companion object {
+        val forApp = AppConfigs(true)
+        val forWeb = AppConfigs(false)
+    }
+}
 
 @JsExport
 @Serializable
@@ -132,6 +133,7 @@ enum class CandlesPeriod(val rawValue: String) {
             CandlesPeriod.values().firstOrNull { it.rawValue == rawValue }
     }
 }
+
 @JsExport
 @Serializable
 enum class OrderbookGrouping(val rawValue: Int) {
@@ -242,24 +244,17 @@ data class ApiState(
 }
 
 @JsExport
-@Serializable
-data class AppStateResponse(
-    val state: PerpetualState?,
-    val changes: StateChanges?,
-    val errors: IList<ParsingError>?,
-    val apiState: ApiState?,
-    val lastOrder: SubaccountOrder?
-) {
-}
-@JsExport
 class AsyncAbacusStateManager(
-    val environmentsUrl: String,
-    val environmentsFile: String,
+    val deploymentUri: String,
+    val deployment: String, // MAINNET, TESTNET, DEV
+    val appConfigs: AppConfigs,
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
 ) {
+    private val environmentsFile = "/configs/env.json"
+
     private var environments: IList<V4Environment> = iListOf()
         set(value) {
             field = value
@@ -272,7 +267,7 @@ class AsyncAbacusStateManager(
 
     val availableEnvironments: IList<SelectionOption>
         get() = environments.map { environment ->
-            SelectionOption(environment.environment, environment.stringKey, null)
+            SelectionOption(environment.id, environment.name, null, null)
         }
 
     var environmentId: String? = null
@@ -433,6 +428,7 @@ class AsyncAbacusStateManager(
     }
 
     private fun loadEnvironments() {
+        val environmentsUrl = "$deploymentUri$environmentsFile"
         ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
             if (success(httpCode) && response != null) {
                 val parser = Parser()
@@ -462,22 +458,34 @@ class AsyncAbacusStateManager(
 
 
     private fun parseEnvironments(items: IMap<String, Any>?, parser: ParserProtocol): Boolean {
-        val environments = iMutableListOf<V4Environment>()
+        val deployments = parser.asMap(items?.get("deployments")) ?: return false
+        val target = parser.asMap(deployments[deployment]) ?: return false
+        val targetEnvironments = parser.asList(target["environments"]) ?: return false
+        val targetDefault = parser.asString(target["default"])
+
         if (items != null) {
             val environmentsData = parser.asList(items["environments"]) ?: return false
+            val parsedEnvironments = mutableMapOf<String, V4Environment>()
             for (item in environmentsData) {
                 val environment = parseEnvironment(parser.asMap(item), parser)
+                if (environment != null) {
+                    parsedEnvironments[environment.id] = environment
+                }
+            }
+            if (parsedEnvironments.isEmpty()) {
+                return false
+            }
+            val environments = iMutableListOf<V4Environment>()
+            for (environmentId in targetEnvironments) {
+                val environment = parsedEnvironments[parser.asString(environmentId)!!]
                 if (environment != null) {
                     environments.add(environment)
                 }
             }
-            if (environments.isEmpty()) {
-                return false
-            }
+
             this.environments = environments
-            val defaultEnvironment = parser.asString(items["defaultEnvironment"])
-            if (defaultEnvironment != null && this.environmentId == null) {
-                this.environmentId = defaultEnvironment
+            if (targetDefault != null && this.environmentId == null) {
+                this.environmentId = targetDefault
             }
             return true
         } else {
@@ -489,64 +497,96 @@ class AsyncAbacusStateManager(
         if (item == null) {
             return null
         }
-        val environment = parser.asString(item["environment"]) ?: return null
+        val id = parser.asString(item["id"]) ?: return null
+        val name = parser.asString(item["name"]) ?: id
         val ethereumChainId = parser.asString(item["ethereumChainId"]) ?: return null
         val dydxChainId = parser.asString(item["dydxChainId"])
-        val stringKey = parser.asString(item["stringKey"]) ?: return null
-        val string = parser.asString(item["string"]) ?: return null
         val isMainNet = parser.asBool(item["isMainNet"]) ?: false
-        val versionValue = parser.asString(item["version"]) ?: return null
-        val version = AppVersion.invoke(versionValue) ?: return null
-        val maxSubaccountNumber = parser.asInt(item["maxSubaccountNumber"]) ?: 0
-        val URIs: EnvironmentURIs =
-            parseEnviromentURIs(parser.asMap(item["endpoints"]), parser) ?: return null
+        val tokens = parseTokens(parser.asMap(item["tokens"]), parser)
+        val endpoints =
+            parseEnviromentEndpoints(parser.asMap(item["endpoints"]), parser) ?: return null
+        val links = parseEnviromentLinks(parser.asMap(item["links"]), parser) // Links are optional
 
         return V4Environment(
-            environment,
+            id,
+            name,
             ethereumChainId,
             dydxChainId,
-            stringKey,
-            string,
             isMainNet,
-            version,
-            maxSubaccountNumber,
-            URIs
+            tokens,
+            endpoints,
+            links,
         )
     }
 
-    private fun parseEnviromentURIs(
+
+    private fun parseTokens(
         item: IMap<String, Any>?,
         parser: ParserProtocol,
-    ): EnvironmentURIs? {
+    ): IMap<String, TokenInfo> {
+        val tokens = iMutableMapOf<String, TokenInfo>()
+        if (item != null) {
+            for (key in item.keys) {
+                val token = parser.asMap(item[key])
+                if (token != null) {
+                    val name = parser.asString(token["name"]) ?: continue
+                    val denom = parser.asString(token["denom"]) ?: continue
+                    val imageUrl = parser.asString(token["image"])?.let {
+                        "$deploymentUri$it"
+                    }
+                    tokens[key] = TokenInfo(name, denom, imageUrl)
+                }
+            }
+        }
+
+        return tokens
+    }
+
+    private fun parseEnviromentEndpoints(
+        item: IMap<String, Any>?,
+        parser: ParserProtocol,
+    ): EnvironmentEndpoints? {
         if (item == null) {
             return null
         }
         val indexers =
             parser.asList(item["indexers"])?.map { parseIndexerURIs(parser.asMap(it), parser) }
                 ?.filterNotNull()?.toIList()
-        val configs = parser.asString(item["configs"])
         val validators =
             parser.asList(item["validators"])?.map { parser.asString(it) }?.filterNotNull()
                 ?.toIList()
         val faucet = parser.asString(item["faucet"])
         val squid = parser.asString(item["0xsquid"])
-        val statusPageUrl = parser.asString(item["statusPageUrl"])
-        val marketImageUrl = parser.asString(item["marketImageUrl"])
-        val tosUrl = parser.asString(item["tosUrl"])
-        val privacyPolicyUrl = parser.asString(item["privacyPolicyUrl"])
-        val mintscanUrl = parser.asString(item["mintscanUrl"])
 
-        return EnvironmentURIs(
+        return EnvironmentEndpoints(
             indexers,
-            configs,
             validators,
             faucet,
             squid,
-            statusPageUrl,
-            marketImageUrl,
-            tosUrl,
-            privacyPolicyUrl,
-            mintscanUrl
+        )
+    }
+
+    private fun parseEnviromentLinks(
+        item: IMap<String, Any>?,
+        parser: ParserProtocol,
+    ): EnvironmentLinks? {
+        if (item == null) {
+            return null
+        }
+        val tos = parser.asString(item["tos"])
+        val privacy = parser.asString(item["privacy"])
+        val mintscan = parser.asString(item["mintscan"])
+        val documentation = parser.asString(item["documentation"])
+        val community = parser.asString(item["community"])
+        val feedback = parser.asString(item["feedback"])
+
+        return EnvironmentLinks(
+            tos,
+            privacy,
+            mintscan,
+            documentation,
+            community,
+            feedback,
         )
     }
 
@@ -564,27 +604,22 @@ class AsyncAbacusStateManager(
 
     private fun findEnvironment(environment: String?): V4Environment? {
         return environments.firstOrNull { it ->
-            it.environment == environment
+            it.id == environment
         }
     }
 
     private fun reconnect() {
         val environment = environment
-        adaptor = when (environment?.version) {
-            AppVersion.v4 -> {
-                V4StateManagerAdaptor(
-                    ioImplementations,
-                    uiImplementations,
-                    environment,
-                    V4StateManagerConfigs(environment),
-                    stateNotification,
-                    dataNotification,
-                )
-            }
-
-            else -> {
-                null
-            }
+        if (environment != null) {
+            adaptor = V4StateManagerAdaptor(
+                deploymentUri,
+                environment,
+                ioImplementations,
+                uiImplementations,
+                V4StateManagerConfigs(deploymentUri, environment),
+                stateNotification,
+                dataNotification,
+            )
         }
     }
 

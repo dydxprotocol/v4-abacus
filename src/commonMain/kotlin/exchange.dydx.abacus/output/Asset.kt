@@ -61,10 +61,8 @@ the object may contain empty fields until both payloads are received and process
 @Serializable
 data class Asset(
     val id: String,
-    val symbol: String?,
     val name: String?,
     val tags: IList<String>?,
-    val circulatingSupply: Double?,
     val resources: AssetResources?
 ) {
     companion object {
@@ -79,19 +77,15 @@ data class Asset(
                 if (id != null) {
                     val resources =
                         AssetResources.create(existing?.resources, parser, resourcesData)
-                    val symbol = parser.asString(data["symbol"])
                     val name = parser.asString(data["name"])
                     val tags = parser.asStrings(data["tags"])
-                    val circulatingSupply = parser.asDouble(data["circulatingSupply"])
 
                     return if (existing?.id != id ||
-                        existing.symbol != symbol ||
                         existing.name != name ||
                         existing.tags != tags ||
-                        existing.circulatingSupply != circulatingSupply ||
                         existing.resources !== resources
                     ) {
-                        Asset(id, symbol, name, tags, circulatingSupply, resources)
+                        Asset(id, name, tags, resources)
                     } else {
                         existing
                     }
