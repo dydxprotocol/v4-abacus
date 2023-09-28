@@ -68,7 +68,7 @@ data class TradeInputOptions(
     val typeOptions: IList<SelectionOption>,
     val sideOptions: IList<SelectionOption>,
     val timeInForceOptions: IList<SelectionOption>?,
-    val goodUntilUnitOptions: IList<SelectionOption>,
+    val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
 ) {
     companion object {
@@ -143,7 +143,7 @@ data class TradeInputOptions(
                 SelectionOption(OrderSide.sell.rawValue, null, "APP.GENERAL.SELL", null)
             )
 
-        private val goodUntilUnitOptionsArray =
+        private val goodTilUnitOptionsArray =
             iListOf(
                 SelectionOption("M", null, "APP.GENERAL.TIME_STRINGS.MINUTES_SHORT", null),
                 SelectionOption("H", null, "APP.GENERAL.TIME_STRINGS.HOURS", null),
@@ -233,7 +233,7 @@ data class TradeInputOptions(
                         typeOptions,
                         sideOptionsArray,
                         timeInForceOptionsArray,
-                        goodUntilUnitOptionsArray,
+                        goodTilUnitOptionsArray,
                         executionOptionsArray
                     )
                 } else {
@@ -546,7 +546,7 @@ data class TradeInputBracketSide(
 data class TradeInputBracket(
     val stopLoss: TradeInputBracketSide?,
     val takeProfit: TradeInputBracketSide?,
-    val goodUntil: TradeInputGoodUntil?,
+    val goodTil: TradeInputGoodUntil?,
     val execution: String?,
 ) {
     companion object {
@@ -569,18 +569,18 @@ data class TradeInputBracket(
                         parser,
                         parser.asMap(data["takeProfit"])
                     )
-                val goodUntil = TradeInputGoodUntil.create(
-                    existing?.goodUntil,
+                val goodTil = TradeInputGoodUntil.create(
+                    existing?.goodTil,
                     parser,
-                    parser.asMap(data["goodUntil"])
+                    parser.asMap(data["goodTil"])
                 )
                 val execution = parser.asString(data["execution"])
                 return if (existing?.stopLoss != stopLoss ||
                     existing?.takeProfit != takeProfit ||
-                    existing?.goodUntil != goodUntil ||
+                    existing?.goodTil != goodTil ||
                     existing?.execution != execution
                 ) {
-                    TradeInputBracket(stopLoss, takeProfit, goodUntil, execution)
+                    TradeInputBracket(stopLoss, takeProfit, goodTil, execution)
                 } else {
                     existing
                 }
@@ -698,7 +698,7 @@ data class TradeInput(
     val size: TradeInputSize?,
     val price: TradeInputPrice?,
     val timeInForce: String?,
-    val goodUntil: TradeInputGoodUntil?,
+    val goodTil: TradeInputGoodUntil?,
     val execution: String?,
     val reduceOnly: Boolean,
     val postOnly: Boolean,
@@ -737,10 +737,10 @@ data class TradeInput(
 
                 val fee = parser.asDouble(data["fee"])
 
-                val goodUntil = TradeInputGoodUntil.create(
-                    existing?.goodUntil,
+                val goodTil = TradeInputGoodUntil.create(
+                    existing?.goodTil,
                     parser,
-                    parser.asMap(data["goodUntil"])
+                    parser.asMap(data["goodTil"])
                 )
                 val bracket = TradeInputBracket.create(
                     existing?.bracket,
@@ -770,7 +770,7 @@ data class TradeInput(
                     existing?.size != size ||
                     existing?.price != price ||
                     existing?.timeInForce != timeInForce ||
-                    existing?.goodUntil != goodUntil ||
+                    existing?.goodTil != goodTil ||
                     existing?.execution != execution ||
                     existing?.reduceOnly != reduceOnly ||
                     existing.postOnly != postOnly ||
@@ -787,7 +787,7 @@ data class TradeInput(
                         size,
                         price,
                         timeInForce,
-                        goodUntil,
+                        goodTil,
                         execution,
                         reduceOnly,
                         postOnly,

@@ -308,9 +308,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             )
             verifyInputTradeInputSizeState(parser.asNativeMap(data["size"]), obj.size, "$trace.size")
             verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodUntil"]),
-                obj.goodUntil,
-                "$trace.goodUntil"
+                parser.asNativeMap(data["goodTil"]),
+                obj.goodTil,
+                "$trace.goodTil"
             )
             verifyInputTradeInputMarketOrderState(
                 parser.asNativeMap(data["marketOrder"]),
@@ -697,9 +697,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.execution $doesntMatchText"
             )
             verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodUntil"]),
-                obj.goodUntil,
-                "$trace.goodUntil"
+                parser.asNativeMap(data["goodTil"]),
+                obj.goodTil,
+                "$trace.goodTil"
             )
             verifyInputTradeInputBracketTriggerState(
                 parser.asNativeMap(data["stopLoss"]),

@@ -66,11 +66,11 @@ Trailing percent for Trailing Stop order
 
 TimeInForce
 
-## goodUntilDuration
+## goodTilDuration
 
 Numeric duration of GoodTil
 
-## goodUntilUnit
+## goodTilUnit
 
 Time unit of the GoodTil
 

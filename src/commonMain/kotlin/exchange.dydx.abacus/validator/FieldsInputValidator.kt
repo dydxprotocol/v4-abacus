@@ -66,7 +66,7 @@ internal class FieldsInputValidator(
             "price.limitPrice" -> "REQUIRED_LIMIT_PRICE"
             "price.trailingPercent" -> "REQUIRED_TRAILING_PERCENT"
             "timeInForce" -> "REQUIRED_TIME_IN_FORCE"
-            "goodUntil" -> "REQUIRED_GOOD_UNTIL"
+            "goodTil" -> "REQUIRED_GOOD_UNTIL"
             "execution" -> "REQUIRED_EXECUTION"
             "asset" -> "REQUIRED_ASSET"
             "address" -> "REQUIRED_ADDRESS"
@@ -86,7 +86,7 @@ internal class FieldsInputValidator(
                 "price.limitPrice" -> "APP.TRADE.ENTER_LIMIT_PRICE"
                 "price.trailingPercent" -> "APP.TRADE.ENTER_TRAILING_PERCENT"
                 "timeInForce" -> "APP.TRADE.ENTER_TIME_IN_FORCE"
-                "goodUntil" -> "APP.TRADE.ENTER_GOOD_UNTIL"
+                "goodTil" -> "APP.TRADE.ENTER_GOOD_UNTIL"
                 "execution" -> "APP.TRADE.ENTER_EXECUTION"
                 else -> null
             }

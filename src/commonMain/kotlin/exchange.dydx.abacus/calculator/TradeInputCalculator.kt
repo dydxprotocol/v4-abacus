@@ -728,7 +728,7 @@ internal class TradeInputCalculator(
                 listOf(
                     sizeField(),
                     triggerPriceField(),
-                    goodUntilField(),
+                    goodTilField(),
                     executionField(false)
                 ), reduceOnlyField()
             )
@@ -740,7 +740,7 @@ internal class TradeInputCalculator(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
-                            goodUntilField(),
+                            goodTilField(),
                             postOnlyField()
                         ), reduceOnlyField()
                     )
@@ -760,7 +760,7 @@ internal class TradeInputCalculator(
                     sizeField(),
                     limitPriceField(),
                     triggerPriceField(),
-                    goodUntilField(),
+                    goodTilField(),
                     executionField(true),
                 ), reduceOnlyField()
             )
@@ -769,7 +769,7 @@ internal class TradeInputCalculator(
                 listOf(
                     sizeField(),
                     trailingPercentField(),
-                    goodUntilField(),
+                    goodTilField(),
                     executionField(false),
                 ), reduceOnlyField()
             )
@@ -874,7 +874,7 @@ internal class TradeInputCalculator(
             "type" to listOf(
                 stopLossField(),
                 takeProfitField(),
-                goodUntilField(),
+                goodTilField(),
                 executionField(false)
             )
         )
@@ -926,32 +926,32 @@ internal class TradeInputCalculator(
         )
     }
 
-    private fun goodUntilField(): Map<String, Any> {
+    private fun goodTilField(): Map<String, Any> {
         return mapOf(
-            "field" to "goodUntil",
+            "field" to "goodTil",
             "type" to listOf(
-                goodUntilDurationField(),
-                goodUntilUnitField()
+                goodTilDurationField(),
+                goodTilUnitField()
             )
         )
     }
 
-    private fun goodUntilDurationField(): Map<String, Any> {
+    private fun goodTilDurationField(): Map<String, Any> {
         return mapOf(
             "field" to "duration",
             "type" to "int"
         )
     }
 
-    private fun goodUntilUnitField(): Map<String, Any> {
+    private fun goodTilUnitField(): Map<String, Any> {
         return mapOf(
             "field" to "unit",
             "type" to "string",
             "options" to listOf(
-                goodUntilUnitMinutes,
-                goodUntilUnitHours,
-                goodUntilUnitDays,
-                goodUntilUnitWeeks
+                goodTilUnitMinutes,
+                goodTilUnitHours,
+                goodTilUnitDays,
+                goodTilUnitWeeks
             )
         )
     }
@@ -1017,9 +1017,9 @@ internal class TradeInputCalculator(
                             options.safeSet("needsTimeInForce", true)
                         }
 
-                        "goodUntil" -> {
+                        "goodTil" -> {
                             options.safeSet(
-                                "goodUntilUnitOptions",
+                                "goodTilUnitOptions",
                                 parser.asNativeList(parser.value(field, "type.1.options"))
                             )
                             options.safeSet("needsGoodUntil", true)
@@ -1085,11 +1085,11 @@ internal class TradeInputCalculator(
                     modified.safeSet("timeInForce", first(items))
                 }
             }
-        parser.asNativeList(calculatedOptions(trade, position, market)?.get("goodUntilUnitOptions"))
+        parser.asNativeList(calculatedOptions(trade, position, market)?.get("goodTilUnitOptions"))
             ?.let { items ->
-                val key = "goodUntil.unit"
+                val key = "goodTil.unit"
                 if (!found(parser.asString(parser.value(trade, key)), items)) {
-                    modified.safeSet("goodUntil.unit", "D")
+                    modified.safeSet("goodTil.unit", "D")
                 }
             }
         parser.asNativeList(calculatedOptions(trade, position, market)?.get("executionOptions"))
@@ -1106,9 +1106,9 @@ internal class TradeInputCalculator(
                 )?.get("needsGoodUntil")
             ) == true
         ) {
-            val key = "goodUntil.duration"
+            val key = "goodTil.duration"
             if (parser.value(modified, key) == null) {
-                modified.safeSet("goodUntil.duration", 28)
+                modified.safeSet("goodTil.duration", 28)
             }
         }
 
@@ -1523,22 +1523,22 @@ internal class TradeInputCalculator(
     private val timeInForceOptionIOC: Map<String, Any>
         get() = mapOf("type" to "IOC", "stringKey" to "APP.TRADE.IMMEDIATE_OR_CANCEL")
 
-    private val goodUntilUnitMinutes: Map<String, Any>
+    private val goodTilUnitMinutes: Map<String, Any>
         get() = mapOf(
             "type" to "M",
             "stringKey" to "APP.GENERAL.TIME_STRINGS.MINUTES_ABBREVIATED"
         )
-    private val goodUntilUnitHours: Map<String, Any>
+    private val goodTilUnitHours: Map<String, Any>
         get() = mapOf(
             "type" to "H",
             "stringKey" to "APP.GENERAL.TIME_STRINGS.HOURS_ABBREVIATED"
         )
-    private val goodUntilUnitDays: Map<String, Any>
+    private val goodTilUnitDays: Map<String, Any>
         get() = mapOf(
             "type" to "D",
             "stringKey" to "APP.GENERAL.TIME_STRINGS.DAYS_ABBREVIATED"
         )
-    private val goodUntilUnitWeeks: Map<String, Any>
+    private val goodTilUnitWeeks: Map<String, Any>
         get() = mapOf(
             "type" to "W",
             "stringKey" to "APP.GENERAL.TIME_STRINGS.WEEKS_ABBREVIATED"

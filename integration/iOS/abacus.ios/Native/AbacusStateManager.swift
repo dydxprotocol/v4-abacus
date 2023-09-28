@@ -14,8 +14,6 @@ public final class AbacusStateManager: NSObject {
     // async
     public lazy var asyncStateManager = {
         UIImplementations.reset(language: nil)
-        let url = "https://dydx-v4-shared-resources.vercel.app/config/staging/dev_endpoints.json"
-        let file = "/config/staging/dev_endpoints.json"
         let stateManager = AsyncAbacusStateManager(
             deploymentUri: "https://trader-fe.vercel.app",
             deployment: "DEV",

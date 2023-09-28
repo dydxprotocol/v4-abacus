@@ -1229,7 +1229,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsBrackets": false
                             },
                             "timeInForce": "GTT",
-                            "goodUntil": {
+                            "goodTil": {
                                 "unit": "D",
                                 "duration": 28
                             }
@@ -1284,7 +1284,7 @@ class TradeInputTests : V3BaseTests() {
         test(
             {
 
-                perp.trade("10", TradeInputField.goodUntilDuration, 0)
+                perp.trade("10", TradeInputField.goodTilDuration, 0)
             },
             """
                 {
@@ -1319,7 +1319,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsBrackets": false
                             },
                             "timeInForce": "GTT",
-                            "goodUntil": {
+                            "goodTil": {
                                 "unit": "D",
                                 "duration": 10
                             }
@@ -1373,7 +1373,7 @@ class TradeInputTests : V3BaseTests() {
 
         test(
             {
-                perp.trade("M", TradeInputField.goodUntilUnit, 0)
+                perp.trade("M", TradeInputField.goodTilUnit, 0)
             },
             """
                 {
@@ -1408,7 +1408,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsBrackets": false
                             },
                             "timeInForce": "GTT",
-                            "goodUntil": {
+                            "goodTil": {
                                 "unit": "M",
                                 "duration": 10
                             }

@@ -1643,7 +1643,7 @@ open class StateManagerAdaptor(
         val execution = trade.execution ?: "Default"
         val goodTilTimeInSeconds = ((if (timeInForce == "GTT") {
             val timeInterval =
-                GoodTil.duration(trade.goodUntil) ?: throw Exception("goodUntil is null")
+                GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
             timeInterval / 1.seconds
         } else null))?.toInt()
         return HumanReadablePlaceOrderPayload(
