@@ -54,30 +54,39 @@ data class MarketStatus(
 @JsExport
 @Serializable
 data class MarketConfigsV4(
-    val clobPairId: String,
+    val clobPairId: Int,
     val atomicResolution: Int,
     val stepBaseQuantums: Int,
+    val quantumConversionExponent: Int,
+    val subticksPerTick: Int,
 ) {
     companion object {
         internal fun create(
             existing: MarketConfigsV4?,
             parser: ParserProtocol,
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
         ): MarketConfigsV4? {
-            val clobPairId = parser.asString(data["clobPairId"])
-            val atomicResolution = parser.asInt(data["atomicResolution"])
-            val stepBaseQuantums = parser.asInt(data["stepBaseQuantums"])
+            return if (data != null) {
+                val clobPairId = parser.asInt(data["clobPairId"]) ?: return null
+                val atomicResolution = parser.asInt(data["atomicResolution"]) ?: return null
+                val stepBaseQuantums = parser.asInt(data["stepBaseQuantums"]) ?: return null
+                val quantumConversionExponent =
+                    parser.asInt(data["quantumConversionExponent"]) ?: return null
+                val subticksPerTick = parser.asInt(data["subticksPerTick"]) ?: return null
 
-            return if (clobPairId != null && atomicResolution != null && stepBaseQuantums != null) {
                 if (existing == null ||
                     existing.clobPairId != clobPairId ||
                     existing.atomicResolution != atomicResolution ||
-                    existing.stepBaseQuantums != stepBaseQuantums
+                    existing.stepBaseQuantums != stepBaseQuantums ||
+                    existing.quantumConversionExponent != quantumConversionExponent ||
+                    existing.subticksPerTick != subticksPerTick
                 ) {
                     MarketConfigsV4(
                         clobPairId,
                         atomicResolution,
                         stepBaseQuantums,
+                        quantumConversionExponent,
+                        subticksPerTick,
                     )
                 } else {
                     existing
@@ -114,6 +123,7 @@ data class MarketConfigs(
     val basePositionNotional: Double? = null,
     val baselinePositionSize: Double? = null,
     val candleOptions: IList<CandleOption>? = null,
+    val v4: MarketConfigsV4? = null,
 ) {
     companion object {
         internal fun create(
@@ -141,6 +151,11 @@ data class MarketConfigs(
                 parser,
                 parser.asList(data["candleOptions"]) as? IList<IMap<String, Any>>
             )
+            val v4 = MarketConfigsV4.create(
+                existing?.v4,
+                parser,
+                parser.asMap(data["v4"])
+            )
 
             return if (existing == null ||
                 existing.largeSize != largeSize ||
@@ -156,7 +171,8 @@ data class MarketConfigs(
                 existing.maxPositionSize != maxPositionSize ||
                 existing.baselinePositionSize != baselinePositionSize ||
                 existing.basePositionNotional != basePositionNotional ||
-                existing.candleOptions != candleOptions
+                existing.candleOptions != candleOptions ||
+                existing.v4 != v4
             ) {
                 MarketConfigs(
                     clobPairId,
@@ -177,7 +193,8 @@ data class MarketConfigs(
                     maxPositionSize,
                     basePositionNotional,
                     baselinePositionSize,
-                    candleOptions
+                    candleOptions,
+                    v4,
                 )
             } else {
                 existing
@@ -779,6 +796,7 @@ data class PerpetualMarket(
     val status: MarketStatus?,
     val configs: MarketConfigs?,
     val perpetual: MarketPerpetual?,
+    val v4Configs: MarketConfigsV4? = null,
 ) {
     companion object {
         internal fun create(

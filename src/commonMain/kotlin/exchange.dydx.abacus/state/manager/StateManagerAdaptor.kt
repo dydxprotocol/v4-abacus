@@ -96,6 +96,16 @@ internal data class Subaccount(
 
 @JsExport
 @Serializable
+data class PlaceOrderMarketInfo(
+    val clobPairId: Int,
+    val atomicResolution: Int,
+    val stepBaseQuantums: Int,
+    val quantumConversionExponent: Int,
+    val subticksPerTick: Int,
+)
+
+@JsExport
+@Serializable
 data class HumanReadablePlaceOrderPayload(
     val subaccountNumber: Int,
     val marketId: String,
@@ -110,6 +120,8 @@ data class HumanReadablePlaceOrderPayload(
     val timeInForce: String,
     val execution: String,
     val goodTilTimeInSeconds: Int?,
+    val marketInfo: PlaceOrderMarketInfo? = null,
+    val curerntHeight: Int? = null,
 )
 
 @JsExport
@@ -122,6 +134,7 @@ data class HumanReadableCancelOrderPayload(
     val clobPairId: Int,
     val goodTilBlock: Int?,
     val goodTilBlockTime: Int?,
+    val curerntHeight: Int? = null,
 )
 
 @JsExport
@@ -1187,7 +1200,10 @@ open class StateManagerAdaptor(
         if (url != null) {
             get(url, null, null, false, callback = { response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    update(stateMachine.configurations(response, subaccountNumber, deploymentUri), oldState)
+                    update(
+                        stateMachine.configurations(response, subaccountNumber, deploymentUri),
+                        oldState
+                    )
                 }
             })
         }
@@ -1646,6 +1662,8 @@ open class StateManagerAdaptor(
                 GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
             timeInterval / 1.seconds
         } else null))?.toInt()
+        val marketInfo = marketInfo(marketId)
+        val currentHeight = calculateCurrentHeight()
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1659,8 +1677,18 @@ open class StateManagerAdaptor(
             postOnly,
             timeInForce,
             execution,
-            goodTilTimeInSeconds
+            goodTilTimeInSeconds,
+            marketInfo,
+            currentHeight
         )
+    }
+
+    internal open fun marketInfo(market: String): PlaceOrderMarketInfo? {
+        return null
+    }
+
+    internal open fun calculateCurrentHeight(): Int? {
+        return null
     }
 
     fun placeOrderPayloadJson(): String {
@@ -1789,6 +1817,7 @@ open class StateManagerAdaptor(
         val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
+        val currentHeight = calculateCurrentHeight()
 
         return HumanReadableCancelOrderPayload(
             subaccountNumber,
@@ -1797,7 +1826,8 @@ open class StateManagerAdaptor(
             orderFlags,
             clobPairId,
             goodTilBlock,
-            goodTilBlockTime
+            goodTilBlockTime,
+            currentHeight,
         )
     }
 

@@ -108,6 +108,8 @@ class V4StateManagerAdaptor(
             }
         }
 
+    private var firstBlockAndTime: BlockAndTime? = null
+
     internal var indexerState = NetworkState()
     internal var validatorState = NetworkState()
     private var apiState: ApiState? = null
@@ -600,11 +602,16 @@ class V4StateManagerAdaptor(
         val json = Json.parseToJsonElement(response).jsonObject.toIMap()
         if (json["error"] != null) {
             validatorState.updateHeight(null, null)
+            firstBlockAndTime = null
         } else {
             val header = parser.asMap(parser.value(json, "header"))
             val height = parser.asInt(header?.get("height"))
             val time = parser.asDatetime(header?.get("time"))
             validatorState.updateHeight(height, time)
+            // Always use validator blockAndHeight as source of truth
+            if (firstBlockAndTime == null) {
+                firstBlockAndTime = validatorState.blockAndTime
+            }
         }
         updateApiState()
     }
@@ -638,7 +645,7 @@ class V4StateManagerAdaptor(
 
                     NetworkStatus.HALTED -> {
                         status = ApiStatus.INDEXER_HALTED
-                        haltedBlock = indexerState.block
+                        haltedBlock = indexerState.blockAndTime?.block
                     }
                 }
             }
@@ -662,7 +669,7 @@ class V4StateManagerAdaptor(
 
                     NetworkStatus.HALTED -> {
                         status = ApiStatus.INDEXER_HALTED
-                        haltedBlock = indexerState.block
+                        haltedBlock = indexerState.blockAndTime?.block
                     }
                 }
             }
@@ -674,12 +681,12 @@ class V4StateManagerAdaptor(
 
             NetworkStatus.HALTED -> {
                 status = ApiStatus.VALIDATOR_HALTED
-                haltedBlock = validatorState.block
+                haltedBlock = validatorState.blockAndTime?.block
             }
         }
         if (status == ApiStatus.NORMAL) {
-            val indexerBlock = indexerState.block
-            val validatorBlock = validatorState.block
+            val indexerBlock = indexerState.blockAndTime?.block
+            val validatorBlock = validatorState.blockAndTime?.block
             if (indexerBlock != null && validatorBlock != null) {
                 val diff = validatorBlock - indexerBlock
                 if (diff > MAX_NUM_BLOCK_DELAY) {
@@ -689,11 +696,13 @@ class V4StateManagerAdaptor(
                 }
             }
         }
-        val block = if (validatorState.block != null) {
-            if (indexerState.block != null) {
-                max(validatorState.block!!, indexerState.block!!)
-            } else validatorState.block
-        } else indexerState.block
+        val validatorBlockAndTime = validatorState.blockAndTime
+        val indexerBlockAndTime = indexerState.blockAndTime
+        val block = if (validatorBlockAndTime != null) {
+            if (indexerBlockAndTime != null) {
+                max(validatorBlockAndTime.block, indexerBlockAndTime.block)
+            } else validatorBlockAndTime.block
+        } else indexerBlockAndTime?.block
         if (apiState?.status != status ||
             apiState.height != block ||
             apiState.haltedBlock != haltedBlock ||
@@ -1041,8 +1050,8 @@ class V4StateManagerAdaptor(
                 "lastSuccessfulIndexerRPC" to indexerTime,
                 "lastSuccessfulFullNodeRPC" to validatorTime,
                 "elapsedTime" to interval,
-                "blockHeight" to indexerState.block,
-                "nodeHeight" to validatorState.block,
+                "blockHeight" to indexerState.blockAndTime?.block,
+                "nodeHeight" to validatorState.blockAndTime?.block,
             ).filterValues { it != null } as Map<String, Any>
 
             tracking(AnalyticsEvent.NetworkStatus.rawValue, params.toIMap())
@@ -1083,6 +1092,53 @@ class V4StateManagerAdaptor(
 
     override fun updateRestriction() {
         restriction = indexerRestriction ?: addressRestriction ?: UsageRestriction.noRestriction
+    }
+
+    override fun marketInfo(market: String): PlaceOrderMarketInfo? {
+        val market = stateMachine.state?.market(market) ?: return null
+        val v4config = market.configs?.v4 ?: return null
+
+        return PlaceOrderMarketInfo(
+            v4config.clobPairId,
+            v4config.atomicResolution,
+            v4config.stepBaseQuantums,
+            v4config.quantumConversionExponent,
+            v4config.subticksPerTick,
+        )
+    }
+
+    override fun calculateCurrentHeight(): Int? {
+        val latestBlockAndTime =
+            validatorState.blockAndTime ?: indexerState.blockAndTime ?: return null
+        val currentTime = Clock.System.now()
+        val lapsedTime = currentTime - latestBlockAndTime.time
+        return if (lapsedTime.inWholeMilliseconds <= 0L) {
+            // This should never happen unless the clock is wrong, then we don't want to estimate height
+            null
+        } else {
+            val firstBlockAndTime = firstBlockAndTime
+            if (firstBlockAndTime == null) {
+                // This should never happen, but just in case, assume 1.5s per block
+                null
+            } else {
+                val lapsedBlocks = latestBlockAndTime.block - firstBlockAndTime.block
+                if (lapsedBlocks <= 0) {
+                    // This should never happen
+                    null
+                } else {
+                    val betweenLastAndFirstBlockTime =
+                        latestBlockAndTime.time - firstBlockAndTime.time
+                    val averageMillisecondsPerBlock =
+                        betweenLastAndFirstBlockTime.inWholeMilliseconds / lapsedBlocks
+                    if (averageMillisecondsPerBlock <= 0L) {
+                        // This should never happen
+                        latestBlockAndTime.block
+                    } else {
+                        latestBlockAndTime.block + (lapsedTime.inWholeMilliseconds / averageMillisecondsPerBlock).toInt()
+                    }
+                }
+            }
+        }
     }
 
     override fun dispose() {

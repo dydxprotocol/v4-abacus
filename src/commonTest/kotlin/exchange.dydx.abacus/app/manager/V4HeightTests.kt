@@ -66,10 +66,10 @@ class V4HeightTests {
         assertNull(testState?.apiState?.height)
 
         assertEquals(NetworkStatus.UNKNOWN, v4Adapter?.indexerState?.status)
-        assertNull(v4Adapter?.indexerState?.block)
+        assertNull(v4Adapter?.indexerState?.blockAndTime?.block)
 
         assertEquals(NetworkStatus.UNKNOWN, v4Adapter?.validatorState?.status)
-        assertNull(v4Adapter?.validatorState?.block)
+        assertNull(v4Adapter?.validatorState?.blockAndTime?.block)
     }
 
     @Test
@@ -87,7 +87,7 @@ class V4HeightTests {
 
         assertNotNull(v4Adapter)
         assertEquals(NetworkStatus.NORMAL, v4Adapter?.indexerState?.status)
-        assertEquals(16750, v4Adapter?.indexerState?.block)
+        assertEquals(16750, v4Adapter?.indexerState?.blockAndTime?.block)
 
         assertEquals(ApiStatus.NORMAL, testState?.apiState?.status)
         assertEquals(16750, testState?.apiState?.height)
@@ -104,10 +104,10 @@ class V4HeightTests {
 
         assertNotNull(v4Adapter)
         assertEquals(NetworkStatus.UNKNOWN, v4Adapter?.indexerState?.status)
-        assertNull(v4Adapter?.indexerState?.block)
+        assertNull(v4Adapter?.indexerState?.blockAndTime?.block)
 
         assertEquals(NetworkStatus.NORMAL, v4Adapter?.validatorState?.status)
-        assertEquals(16753, v4Adapter?.validatorState?.block)
+        assertEquals(16753, v4Adapter?.validatorState?.blockAndTime?.block)
 
         assertEquals(ApiStatus.NORMAL, testState?.apiState?.status)
         assertEquals(16753, testState?.apiState?.height)
@@ -129,17 +129,17 @@ class V4HeightTests {
 
         assertNotNull(v4Adapter)
         assertEquals(NetworkStatus.NORMAL, v4Adapter?.indexerState?.status)
-        assertEquals(16750, v4Adapter?.indexerState?.block)
+        assertEquals(16750, v4Adapter?.indexerState?.blockAndTime?.block)
 
         assertEquals(NetworkStatus.NORMAL, v4Adapter?.validatorState?.status)
-        assertEquals(16753, v4Adapter?.validatorState?.block)
+        assertEquals(16753, v4Adapter?.validatorState?.blockAndTime?.block)
 
         assertEquals(ApiStatus.NORMAL, testState?.apiState?.status)
         assertEquals(16753, testState?.apiState?.height)
 
         // Halting Indexer
         for (i in 0..10) {
-            // This causes 10x same height from validator
+            // This causes 10x same height from validatorsh
             stateManager.readyToConnect = false
             testRest?.setResponse(
                 "https://indexer.v4staging.dydx.exchange/v4/height",
