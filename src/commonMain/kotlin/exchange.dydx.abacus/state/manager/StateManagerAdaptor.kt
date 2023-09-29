@@ -134,7 +134,6 @@ data class HumanReadableCancelOrderPayload(
     val clobPairId: Int,
     val goodTilBlock: Int?,
     val goodTilBlockTime: Int?,
-    val curerntHeight: Int? = null,
 )
 
 @JsExport
@@ -1817,7 +1816,6 @@ open class StateManagerAdaptor(
         val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
-        val currentHeight = calculateCurrentHeight()
 
         return HumanReadableCancelOrderPayload(
             subaccountNumber,
@@ -1827,7 +1825,6 @@ open class StateManagerAdaptor(
             clobPairId,
             goodTilBlock,
             goodTilBlockTime,
-            currentHeight,
         )
     }
 
