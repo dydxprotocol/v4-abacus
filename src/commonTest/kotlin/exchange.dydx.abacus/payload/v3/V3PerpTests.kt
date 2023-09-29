@@ -157,7 +157,7 @@ class V3PerpTests : V3BaseTests() {
                                 "websiteLink": "https://ethereum.org/",
                                 "whitepaperLink": "https://ethereum.org/whitepaper/",
                                 "coinMarketCapsLink": "https://coinmarketcap.com/currencies/ethereum/",
-                                "imageUrl": "https://api.examples.com/currencies/eth.svg",
+                                "imageUrl": "https://api.examples.com/currencies/eth.png",
                                 "primaryDescriptionKey": "__ASSETS.ETH.PRIMARY",
                                 "secondaryDescriptionKey": "__ASSETS.ETH.SECONDARY"
                             }
