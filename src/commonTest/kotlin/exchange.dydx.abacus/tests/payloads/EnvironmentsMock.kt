@@ -3,180 +3,104 @@ package exchange.dydx.abacus.tests.payloads
 class EnvironmentsMock {
     internal val environments = """
         {
-            "environments":[
-               {
-                  "comment":"V4 Dev",
-                  "environment":"dydxprotocol-dev",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev",
-                  "stringKey":"CHAIN.V4_DEVNET",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                           "api":"http://indexer.v4dev.dydx.exchange",
-                           "socket":"wss://indexer.v4dev.dydx.exchange"
-                        }
-                     ],
-                     "faucet":"http://faucet.v4dev.dydx.exchange",
-                     "validators":[
-                        "http://validator.v4dev.dydx.exchange"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 2",
-                  "environment":"dydxprotocol-dev-2",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 2",
-                  "stringKey":"CHAIN.V4_DEVNET_2",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                           "api":"http://dev2-indexer-apne1-lb-public-2076363889.ap-northeast-1.elb.amazonaws.com",
-                           "socket":"ws://dev2-indexer-apne1-lb-public-2076363889.ap-northeast-1.elb.amazonaws.com"
-                        }
-                     ],
-                     "validators":[
-                        "http://35.75.227.118"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 3",
-                  "environment":"dydxprotocol-dev-3",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 3",
-                  "stringKey":"CHAIN.V4_DEVNET_3",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 4",
-                  "environment":"dydxprotocol-dev-4",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 4",
-                  "stringKey":"CHAIN.V4_DEVNET_4",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                           "api":"http://indexer.v4dev4.dydx.exchange",
-                           "socket":"ws://indexer.v4dev4.dydx.exchange"
-                        }
-                     ],
-                     "validators":[
-                        "http://validator.v4dev4.dydx.exchange"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V4 Dev 5",
-                  "environment":"dydxprotocol-dev-5",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Dev 5",
-                  "stringKey":"CHAIN.V4_DEVNET_5",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                           "api":"http://dev5-indexer-apne1-lb-public-1721328151.ap-northeast-1.elb.amazonaws.com",
-                           "socket":"ws://dev5-indexer-apne1-lb-public-1721328151.ap-northeast-1.elb.amazonaws.com"
-                        }
-                     ],
-                     "validators":[
-                        "http://18.223.78.50"
-                     ],
-                     "0xsquid":"https://testnet.api.0xsquid.com",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V4 Staging",
-                  "environment":"dydxprotocol-staging",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydxprotocol-testnet",
-                  "string":"v4 Staging",
-                  "stringKey":"CHAIN.V4_STAGING",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                           "api":"https://indexer.v4staging.dydx.exchange",
-                           "socket":"wss://indexer.v4staging.dydx.exchange"
-                        }
-                     ],
-                     "faucet":"https://faucet.v4staging.dydx.exchange",
-                     "validators":[
-                        "https://validator.v4staging.dydx.exchange"
-                     ],
-                     "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               },
-               {
-                  "comment":"V4 Public Testnet #2",
-                  "environment":"dydxprotocol-testnet",
-                  "ethereumChainId":"5",
-                  "dydxChainId":"dydx-testnet-2",
-                  "string":"v4 Public Testnet #2",
-                  "stringKey":"CHAIN.V4_TESTNET2",
-                  "isMainNet":false,
-                  "version":"v4",
-                  "maxSubaccountNumber":127,
-                  "endpoints":{
-                     "indexers":[
-                        {
-                           "api":"https://indexer.v4testnet2.dydx.exchange",
-                           "socket":"wss://indexer.v4testnet2.dydx.exchange"
-                        }
-                     ],
-                     "validators":[
-                        "https://validator.v4testnet2.dydx.exchange",
-                        "https://dydx-testnet.nodefleet.org",
-                        "https://dydx-testnet-archive.allthatnode.com:26657"
-                     ],
-                     "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
-                     "configs":"https://dydx-v4-shared-resources.vercel.app",
-                     "faucet":"https://faucet.v4testnet2.dydx.exchange",
-                     "marketImageUrl": "https://trader-fe.vercel.app/currenties/{asset}.svg"
-                  }
-               }
-            ],
-            "defaultEnvironment":"dydxprotocol-staging"
-         }
+           "deployments":{
+              "MAINNET":null,
+              "TESTNET":{
+                 "environments":[
+                    "dydxprotocol-testnet"
+                 ],
+                 "default":"dydxprotocol-testnet"
+              },
+              "DEV":{
+                 "environments":[
+                    "dydxprotocol-staging",
+                    "dydxprotocol-testnet"
+                 ],
+                 "default":"dydxprotocol-staging"
+              }
+           },
+           "environments":{
+              "dydxprotocol-staging":{
+                 "name":"v4 Staging",
+                 "ethereumChainId":"5",
+                 "dydxChainId":"dydxprotocol-testnet",
+                 "isMainNet":false,
+                 "tokens":{
+                    "chain": {
+                       "name": "DYDX",
+                       "denom": "dv4tnt",
+                       "image": "/currencies/dydx.png"
+                    },
+                    "usdc": {
+                       "name": "USDC",
+                       "denom": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                       "image": "/currencies/usdc.png"
+                    }
+                 },
+                 "endpoints":{
+                    "indexers":[
+                       {
+                          "api":"https://indexer.v4staging.dydx.exchange",
+                          "socket":"wss://indexer.v4staging.dydx.exchange"
+                       }
+                    ],
+                    "faucet":"https://faucet.v4staging.dydx.exchange",
+                    "validators":[
+                       "https://validator.v4staging.dydx.exchange"
+                    ],
+                    "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app"
+                 },
+                 "links":{
+                    "tos":"https://dydx.exchange/v4-terms",
+                    "privacy":"https://dydx.exchange/privacy",
+                    "mintscan":"https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
+                    "documentation":"https://v4-teacher.vercel.app/",
+                    "community":"https://discord.com/invite/dydx",
+                    "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
+                 }
+              },
+              "dydxprotocol-testnet":{
+                 "name":"v4 Public Testnet",
+                 "ethereumChainId":"5",
+                 "dydxChainId":"dydx-testnet-3",
+                 "isMainNet":false,
+                 "tokens":{
+                    "chain": {
+                       "name": "DYDX",
+                       "denom": "dv4tnt",
+                       "image": "/currencies/dydx.png"
+                    },
+                    "usdc": {
+                       "name": "USDC",
+                       "denom": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                       "image": "/currencies/usdc.png"
+                    }
+                 },
+                 "endpoints":{
+                    "indexers":[
+                       {
+                          "api":"https://dydx-testnet.imperator.co",
+                          "socket":"wss://dydx-testnet.imperator.co"
+                       }
+                    ],
+                    "validators":[
+                       "https://dydx-testnet.nodefleet.org",
+                       "https://dydx-testnet-archive.allthatnode.com:26657/XZvMM41hESf8PJrEQiTzbCOMVyFca79R",
+                       "https://test-dydx.kingnodes.com/"
+                    ],
+                    "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app",
+                    "faucet":"https://faucet.v4testnet.dydx.exchange"
+                 },
+                 "links":{
+                    "tos":"https://dydx.exchange/v4-terms",
+                    "privacy":"https://dydx.exchange/privacy",
+                    "mintscan":"https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
+                    "documentation":"https://v4-teacher.vercel.app/",
+                    "community":"https://discord.com/invite/dydx",
+                    "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
+                 }
+              }
+           }
+        }
     """.trimIndent()
 }

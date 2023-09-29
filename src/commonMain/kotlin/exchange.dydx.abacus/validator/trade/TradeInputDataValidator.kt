@@ -393,19 +393,19 @@ internal class TradeInputDataValidator(
         val fields = parser.asNativeList(trade["fields"])
         val field = fields?.firstOrNull {
             val field = parser.asNativeMap(it)?.get("field")
-            field == "goodUntil"
+            field == "goodTil"
         }
 
         return if (fields != null && parser.asBool(parser.value(trade, "options.needsGoodUntil")) == true) {
-            val goodUntil = parser.asNativeMap(trade["goodUntil"])
+            val goodTil = parser.asNativeMap(trade["goodTil"])
             // null is handled by FieldsInputValidator
-            val timeInterval = GoodTil.duration(goodUntil, parser)
+            val timeInterval = GoodTil.duration(goodTil, parser)
             if (timeInterval != null && timeInterval > 90.days) {
                 listOf(
                     error(
                         "ERROR",
                         "INVALID_GOOD_TIL",
-                        listOf("goodUntil"),
+                        listOf("goodTil"),
                         "APP.TRADE.MODIFY_GOOD_TIL",
                         "ERRORS.TRADE_BOX_TITLE.INVALID_GOOD_TIL",
                         "ERRORS.TRADE_BOX.INVALID_GOOD_TIL_MAX_90_DAYS"

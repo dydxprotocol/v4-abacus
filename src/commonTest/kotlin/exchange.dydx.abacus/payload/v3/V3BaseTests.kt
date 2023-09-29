@@ -14,31 +14,6 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 
 open class V3BaseTests : BaseTests(0) {
-    @Test
-    fun testBadSocket() {
-        test({
-            perp.socket(mock.socketUrl, "blah", 0, null)
-        }, null, {
-            val error = it.errors?.firstOrNull()
-            assertNotNull(error)
-        })
-    }
-
-    @Test
-    fun testBadRest() {
-        test({
-            perp.rest(
-                AbUrl(host = "https://api.dydx.exchange", path = "/v2/fake_endpoint"),
-                "test",
-                0,
-                null,
-            )
-        }, null, {
-            val error = it.errors?.firstOrNull()
-            assertNotNull(error)
-        })
-    }
-
     internal fun loadMarkets(): StateResponse {
         return test({
             perp.loadMarkets(mock)
@@ -48,7 +23,7 @@ open class V3BaseTests : BaseTests(0) {
     internal fun loadMarketsConfigurations(): StateResponse {
         return test(
             {
-                perp.loadMarketsConfigurations(mock)
+                perp.loadMarketsConfigurations(mock, deploymentUri)
             }, """
             {
                 "markets": {

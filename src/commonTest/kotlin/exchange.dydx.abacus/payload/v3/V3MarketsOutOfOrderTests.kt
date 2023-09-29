@@ -116,9 +116,8 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                 {
                     "assets": {
                         "ETH": {
-                            "symbol": "ETH",
+                            "id": "ETH",
                             "name": "Ethereum",
-                            "circulatingSupply": 1.1847695194E8,
                             "tags": [
                                 "Layer 1"
                             ],
@@ -126,9 +125,9 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                                 "websiteLink": "https://ethereum.org/",
                                 "whitepaperLink": "https://ethereum.org/whitepaper/",
                                 "coinMarketCapsLink": "https://coinmarketcap.com/currencies/ethereum/",
-                                "imageUrl": "https://v4.testnet.dydx.exchange/currencies/eth.svg",
-                                "primaryDescriptionKey": "ETHEREUM_PRIMARY_DESCRIPTION",
-                                "secondaryDescriptionKey": "ETHEREUM_SECONDARY_DESCRIPTION"
+                                "imageUrl": "https://api.examples.com/currencies/eth.svg",
+                                "primaryDescriptionKey": "__ASSETS.ETH.PRIMARY",
+                                "secondaryDescriptionKey": "__ASSETS.ETH.SECONDARY"
                             }
                         },
                         "SOL": {

@@ -2,8 +2,6 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.placeOrder
-import exchange.dydx.abacus.state.modal.quantum
 import exchange.dydx.abacus.state.modal.trade
 import exchange.dydx.abacus.state.modal.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
@@ -231,20 +229,7 @@ open class V4TradeInputTests : V4BaseTests() {
 
         test({
             perp.trade("1500", TradeInputField.limitPrice, 0)
-        }, null, {
-            val placeOrder = perp.placeOrder(20)
-            assertEquals(1, placeOrder?.clobPairId)
-            assertEquals("SELL", placeOrder?.side)
-            assertEquals(200000000.0, placeOrder?.quantums)
-            assertEquals(1500000000.0, placeOrder?.subticks)
-            assertEquals(null, placeOrder?.goodUntilBlock)
-            assertEquals(false, placeOrder?.reduceOnly)
-            assertEquals("TIME_IN_FORCE_UNSPECIFIED", placeOrder?.timeInForce)
-            assertEquals("LONG_TERM", placeOrder?.orderFlags)
-
-            val quatum = perp.quantum(parser.asDecimal(1.089)!!, -10, parser.asDecimal(10)!!)
-            assertEquals(10890000000, quatum)
-        })
+        }, null)
 
 
 
@@ -271,14 +256,11 @@ open class V4TradeInputTests : V4BaseTests() {
 
         test({
             perp.trade("0.1", TradeInputField.size, 0)
-        }, null, {
-            val placeOrder = perp.placeOrder(20)
-            assertEquals(placeOrder?.clobPairId, 0)
-        })
+        }, null)
 
         test(
             {
-                perp.trade("190", TradeInputField.goodUntilDuration, 0)
+                perp.trade("190", TradeInputField.goodTilDuration, 0)
             }, """
             {
                 "input": {
@@ -287,7 +269,7 @@ open class V4TradeInputTests : V4BaseTests() {
                             "type": "ERROR",
                             "code": "INVALID_GOOD_TIL",
                             "fields": [
-                                "goodUntil"
+                                "goodTil"
                             ],
                             "resources": {
                                 "title": {
@@ -721,11 +703,11 @@ open class V4TradeInputTests : V4BaseTests() {
         }, null)
 
         test({
-            perp.trade("12", TradeInputField.goodUntilDuration, 0)
+            perp.trade("12", TradeInputField.goodTilDuration, 0)
         }, null)
 
         test({
-            perp.trade("D", TradeInputField.goodUntilUnit, 0)
+            perp.trade("D", TradeInputField.goodTilUnit, 0)
         }, null)
 
         test({
@@ -745,19 +727,7 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-            val placeOrder = perp.placeOrder(20)
-            assertEquals(0, placeOrder?.clobPairId)
-            assertEquals("SELL", placeOrder?.side)
-            assertEquals(1000000000.0, placeOrder?.quantums)
-            assertEquals(9000000.0, placeOrder?.subticks)
-            assertEquals(23, placeOrder?.goodUntilBlock)
-            assertEquals(false, placeOrder?.reduceOnly)
-            assertEquals("TIME_IN_FORCE_UNSPECIFIED", placeOrder?.timeInForce)
-            assertEquals("CONDITIONAL", placeOrder?.orderFlags)
-            assertEquals("CONDITION_TYPE_STOP_LOSS", placeOrder?.conditionType)
-            assertEquals(10000000.0, placeOrder?.conditionalOrderTriggerSubticks)
-        })
+        """.trimIndent())
 
         test(
             {

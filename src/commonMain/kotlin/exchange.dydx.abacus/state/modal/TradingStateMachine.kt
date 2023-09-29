@@ -13,7 +13,6 @@ import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.*
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -41,11 +40,10 @@ open class TradingStateMachine(
     private val environment: V4Environment?,
     private val localizer: LocalizerProtocol?,
     private val formatter: Formatter?,
-    private val version: AppVersion,
     private val maxSubaccountNumber: Int,
 ) {
     internal val parser: ParserProtocol = Parser()
-    internal val marketsProcessor = MarketsSummaryProcessor(parser, version == AppVersion.v4)
+    internal val marketsProcessor = MarketsSummaryProcessor(parser)
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(parser)
         processor.environment = environment
@@ -387,7 +385,7 @@ open class TradingStateMachine(
         return Pair(market, resolution)
     }
 
-    fun rest(url: AbUrl, payload: String, subaccountNumber: Int, height: Int?): StateResponse {
+    fun rest(url: AbUrl, payload: String, subaccountNumber: Int, height: Int?, deploymentUri: String? = null): StateResponse {
         /*
         For backward compatibility only
          */
@@ -427,16 +425,10 @@ open class TradingStateMachine(
                 changes = transfers(payload, subaccountNumber)
             }
 
-            "/config/markets.json", "/v4/markets.json" -> {
-                changes = configurations(payload, subaccountNumber)
-            }
-
-            "/config/staging/fee_tiers.json", "/config/fee_tiers.json" -> {
-                changes = feeTiers(payload)
-            }
-
-            "/config/staging/fee_discounts.json", "/config/fee_discounts.json" -> {
-                changes = feeDiscounts(payload)
+            "/configs/markets.json" -> {
+                if (deploymentUri != null) {
+                    changes = configurations(payload, subaccountNumber, deploymentUri)
+                }
             }
 
             else -> {
@@ -488,9 +480,13 @@ open class TradingStateMachine(
         return StateResponse(state, changes, null)
     }
 
-    internal fun configurations(payload: String, subaccountNumber: Int?): StateChanges {
+    internal fun configurations(
+        payload: String,
+        subaccountNumber: Int?,
+        deploymentUri: String
+    ): StateChanges {
         val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-        return receivedMarketsConfigurations(json, subaccountNumber)
+        return receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
     }
 
     internal fun update(changes: StateChanges): StateChanges {
@@ -498,7 +494,12 @@ open class TradingStateMachine(
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
 
             val subaccount = if (subaccountNumber != null)
-                parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber")) else null
+                parser.asNativeMap(
+                    parser.value(
+                        this.account,
+                        "subaccounts.$subaccountNumber"
+                    )
+                ) else null
             this.input = inputValidator.validate(
                 this.wallet,
                 this.user,
@@ -722,7 +723,6 @@ open class TradingStateMachine(
                         markets,
                         priceOverwrite(markets),
                         periods,
-                        version
                     )
                     this.account = modifiedAccount
                 }
@@ -817,6 +817,7 @@ open class TradingStateMachine(
                             ReceiptLine.transferRouteEstimatedDuration.rawValue
                         )
                     }
+
                     "TRANSFER_OUT" -> {
                         listOf(
                             ReceiptLine.equity.rawValue,
@@ -824,6 +825,7 @@ open class TradingStateMachine(
                             ReceiptLine.fee.rawValue
                         )
                     }
+
                     else -> {
                         listOf()
                     }
@@ -854,7 +856,8 @@ open class TradingStateMachine(
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asNativeMap(data?.get("markets"))?.let {
-                marketsSummary = PerpetualMarketSummary.apply(marketsSummary, parser, it, this.assets, changes)
+                marketsSummary =
+                    PerpetualMarketSummary.apply(marketsSummary, parser, it, this.assets, changes)
             } ?: run {
                 marketsSummary = null
             }
@@ -865,7 +868,12 @@ open class TradingStateMachine(
                 val modified = orderbooks?.toIMutableMap() ?: iMutableMapOf()
                 for (marketId in markets) {
                     val data =
-                        parser.asNativeMap(parser.value(data, "markets.markets.$marketId.orderbook"))
+                        parser.asNativeMap(
+                            parser.value(
+                                data,
+                                "markets.markets.$marketId.orderbook"
+                            )
+                        )
                     val existing = orderbooks?.get(marketId)
                     val orderbook = MarketOrderbook.create(existing, parser, data)
                     modified.typedSafeSet(marketId, orderbook)
@@ -920,7 +928,8 @@ open class TradingStateMachine(
             if (markets != null) {
                 val modified = candles?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    val data = parser.asNativeMap(parser.value(data, "markets.markets.$marketId.candles"))
+                    val data =
+                        parser.asNativeMap(parser.value(data, "markets.markets.$marketId.candles"))
                     val existing = candles?.get(marketId)
                     val candles = MarketCandles.create(existing, parser, data)
                     modified.typedSafeSet(marketId, candles)
@@ -1062,7 +1071,7 @@ open class TradingStateMachine(
                     this.configs
                 )
                 this.input?.let {
-                    input = Input.create(input, parser, it, version)
+                    input = Input.create(input, parser, it)
                 }
             }
         }
@@ -1113,7 +1122,6 @@ open class TradingStateMachine(
                         markets,
                         priceOverwrite(markets),
                         setOf(period),
-                        version
                     )
                 }
             }

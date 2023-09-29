@@ -7,12 +7,13 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Parser
 
 open class StateManagerConfigs(
-    private val environment: V4Environment,
-    private val configs: IMap<String, Any>
+    internal val deploymentUrl: String,
+    internal val environment: V4Environment,
+    internal val configs: IMap<String, Any>
 ) {
 
     internal val indexerConfigs: IList<IndexerURIs>?
-        get() = environment.URIs.indexers
+        get() = environment.endpoints.indexers
 
     internal var indexerConfig: IndexerURIs? = null
 
@@ -54,7 +55,7 @@ open class StateManagerConfigs(
     }
 
     fun configsUrl(type: String): String? {
-        val api = environment.URIs.configs
+        val api = deploymentUrl
         val path = configsApiPath(type) ?: return null
         return "$api$path"
     }
@@ -64,7 +65,7 @@ open class StateManagerConfigs(
     }
 
     fun faucetUrl(): String? {
-        return environment.URIs.faucet
+        return environment.endpoints.faucet
     }
 
     fun marketsChannel(): String? {
@@ -94,10 +95,10 @@ open class StateManagerConfigs(
     }
 
     fun validatorUrls(): IList<String>? {
-        return environment.URIs.validators
+        return environment.endpoints.validators
     }
 
     fun isIndexer(url: String): Boolean {
-        return environment.URIs.indexers?.any { url.contains(it.api) } ?: false
+        return environment.endpoints.indexers?.any { url.contains(it.api) } ?: false
     }
 }

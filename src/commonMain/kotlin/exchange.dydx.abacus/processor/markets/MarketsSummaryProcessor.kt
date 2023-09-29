@@ -6,7 +6,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("UNCHECKED_CAST")
-internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklines: Boolean) :
+internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklines: Boolean = false) :
     BaseProcessor(parser) {
     private val marketsProcessor = MarketsProcessor(parser, calculateSparklines)
 

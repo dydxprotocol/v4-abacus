@@ -183,10 +183,12 @@ data class CancelOrderRecord(
 
 @JsExport
 open class StateManagerAdaptor(
+    val deploymentUri: String,
+    val environment: V4Environment,
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
-    val environment: V4Environment,
     open val configs: StateManagerConfigs,
+    val appConfigs: AppConfigs,
     var stateNotification: StateNotificationProtocol?,
     var dataNotification: DataNotificationProtocol?,
 ) {
@@ -194,8 +196,7 @@ open class StateManagerAdaptor(
         environment,
         uiImplementations.localizer,
         Formatter(uiImplementations.formatter),
-        environment.version,
-        environment.maxSubaccountNumber,
+        127,
     )
 
     internal var indexerConfig: IndexerURIs?
@@ -1186,7 +1187,7 @@ open class StateManagerAdaptor(
         if (url != null) {
             get(url, null, null, false, callback = { response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    update(stateMachine.configurations(response, subaccountNumber), oldState)
+                    update(stateMachine.configurations(response, subaccountNumber, deploymentUri), oldState)
                 }
             })
         }
@@ -1642,7 +1643,7 @@ open class StateManagerAdaptor(
         val execution = trade.execution ?: "Default"
         val goodTilTimeInSeconds = ((if (timeInForce == "GTT") {
             val timeInterval =
-                GoodTil.duration(trade.goodUntil) ?: throw Exception("goodUntil is null")
+                GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
             timeInterval / 1.seconds
         } else null))?.toInt()
         return HumanReadablePlaceOrderPayload(

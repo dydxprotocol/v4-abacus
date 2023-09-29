@@ -2,7 +2,6 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
@@ -11,13 +10,12 @@ import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 
 
 open class V4BaseTests : BaseTests(127) {
-
     internal val testWsUrl =
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
     override fun createState(): PerpTradingStateMachine {
-        return PerpTradingStateMachine(mock.v4Environment, null, null, AppVersion.v4, 127)
+        return PerpTradingStateMachine(mock.v4Environment, null, null, 127)
     }
 
     internal open fun loadMarkets(): StateResponse {
@@ -28,7 +26,7 @@ open class V4BaseTests : BaseTests(127) {
 
     internal fun loadMarketsConfigurations(): StateResponse {
         return test({
-            perp.loadMarketsConfigurations(mock)
+            perp.loadMarketsConfigurations(mock, deploymentUri)
         }, null)
     }
 

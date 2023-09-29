@@ -384,7 +384,8 @@ data class MarketCandle(
                     parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
                 val trades = parser.asInt(data["trades"])
                 if (existing?.startedAtMilliseconds != startedAtMilliseconds ||
-                    existing?.trades != trades) {
+                    existing?.trades != trades
+                ) {
                     val updatedAtMilliseconds =
                         parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble()
                     val low = parser.asDouble(data["low"])
@@ -778,9 +779,6 @@ data class PerpetualMarket(
     val status: MarketStatus?,
     val configs: MarketConfigs?,
     val perpetual: MarketPerpetual?,
-//    val candles: MarketCandles?,
-//    val trades: MarketTrades?,
-//    val orderbook: MarketOrderbook?
 ) {
     companion object {
         internal fun create(
@@ -797,8 +795,8 @@ data class PerpetualMarket(
             if (status?.canTrade != true) {
                 return null
             }
-            val id = parser.asString(data["id"])
-            val assetId = parser.asString(data["assetId"])
+            val id = parser.asString(data["id"]) ?: return null
+            val assetId = parser.asString(data["assetId"]) ?: return null
             val market = parser.asString(data["market"])
 
             val oraclePrice = parser.asDouble(data["oraclePrice"])
@@ -812,31 +810,7 @@ data class PerpetualMarket(
             val perpetual: MarketPerpetual? = parser.asMap(data["perpetual"])?.let {
                 MarketPerpetual.create(existing?.perpetual, parser, it)
             }
-//            val candles: MarketCandles? = (data["candles"] as? IMap<String, Any>)?.let {
-//                MarketCandles.create(existing?.candles, parser, it)
-//            }
-//            val trades = PerpetualMarket.trades(
-//                if (resetTrades) null else existing?.trades,
-//                parser,
-//                data["trades"] as? IList<IMap<String, Any>>
-//            )
-//
-//            val orderbook = MarketOrderbook.create(
-//                if (resetOrderbook) null else existing?.orderbook,
-//                parser,
-//                data["orderbook"] as? IMap<String, Any>
-//            )
 
-            if (id == null || assetId == null) {
-                /*
-                If the market is in the config, but not from v3_markets socket, let's skip
-                 */
-                return null
-            }
-            val asset = parser.asMap(assets?.get(assetId)) ?: return null
-            if (asset["name"] == null) {
-                return null
-            }
             val significantChange = existing?.id != id ||
                     existing.assetId != assetId ||
                     existing.market != market ||
@@ -847,9 +821,6 @@ data class PerpetualMarket(
                     existing.status !== status ||
                     existing.configs !== configs ||
                     existing.perpetual !== perpetual
-//                    existing.candles != candles ||
-//                    existing.trades != trades ||
-//                    existing.orderbook != orderbook
             return if (!significantChange) existing else {
                 PerpetualMarket(
                     id,

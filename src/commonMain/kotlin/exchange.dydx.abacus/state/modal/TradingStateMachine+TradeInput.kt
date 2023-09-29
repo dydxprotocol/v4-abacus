@@ -29,8 +29,8 @@ enum class TradeInputField(val rawValue: String) {
     trailingPercent("price.trailingPercent"),
 
     timeInForceType("timeInForce"),
-    goodUntilDuration("goodUntil.duration"),
-    goodUntilUnit("goodUntil.unit"),
+    goodTilDuration("goodTil.duration"),
+    goodTilUnit("goodTil.unit"),
 
     execution("execution"),
     reduceOnly("reduceOnly"),
@@ -42,8 +42,8 @@ enum class TradeInputField(val rawValue: String) {
     bracketsTakeProfitPrice("brackets.takeProfit.triggerPrice"),
     bracketsTakeProfitPercent("brackets.takeProfit.percent"),
     bracketsTakeProfitReduceOnly("brackets.takeProfit.reduceOnly"),
-    bracketsGoodUntilDuration("brackets.goodUntil.duration"),
-    bracketsGoodUntilUnit("brackets.goodUntil.unit"),
+    bracketsGoodUntilDuration("brackets.goodTil.duration"),
+    bracketsGoodUntilUnit("brackets.goodTil.unit"),
     bracketsExecution("brackets.execution");
 
     companion object {
@@ -204,7 +204,7 @@ fun TradingStateMachine.trade(
                 }
 
                 TradeInputField.timeInForceType.rawValue,
-                TradeInputField.goodUntilUnit.rawValue,
+                TradeInputField.goodTilUnit.rawValue,
                 TradeInputField.bracketsGoodUntilUnit.rawValue,
                 TradeInputField.execution.rawValue,
                 TradeInputField.bracketsExecution.rawValue,
@@ -216,7 +216,7 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.goodUntilDuration.rawValue,
+                TradeInputField.goodTilDuration.rawValue,
                 TradeInputField.bracketsGoodUntilDuration.rawValue,
                 -> {
                     trade.safeSet(typeText, parser.asInt(data))
@@ -288,8 +288,8 @@ fun TradingStateMachine.tradeDataOption(typeText: String?): String? {
         TradeInputField.triggerPrice.rawValue -> "options.needsTriggerPrice"
         TradeInputField.trailingPercent.rawValue -> "options.needsTrailingPercent"
 
-        TradeInputField.goodUntilDuration.rawValue -> "options.needsGoodUntil"
-        TradeInputField.goodUntilUnit.rawValue -> "options.needsGoodUntil"
+        TradeInputField.goodTilDuration.rawValue -> "options.needsGoodUntil"
+        TradeInputField.goodTilUnit.rawValue -> "options.needsGoodUntil"
         TradeInputField.reduceOnly.rawValue -> "options.needsReduceOnly"
         TradeInputField.postOnly.rawValue -> "options.needsPostOnly"
 

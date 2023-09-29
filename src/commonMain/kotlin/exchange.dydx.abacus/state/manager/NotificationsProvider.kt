@@ -114,9 +114,9 @@ class NotificationsProvider(
         val fill = fillsForOrder.firstOrNull() ?: return null
         val orderId = order.id
         val marketId = fill.marketId
-        val asset = asset(stateMachine, marketId) ?: return null
-        val assetText = asset.symbol
-        val marketImageUrl = asset.resources?.imageUrl
+        val asset = asset(stateMachine, marketId)
+        val assetText = asset?.name ?: marketId
+        val marketImageUrl = asset?.resources?.imageUrl
         val side = fill.side.rawValue
         val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
         val amountText = parser.asString(order.size)
@@ -213,7 +213,7 @@ class NotificationsProvider(
         val fillId = fill.id
         val marketId = fill.marketId
         val asset = asset(stateMachine, marketId) ?: return null
-        val assetText = asset.symbol
+        val assetText = asset.name
         val marketImageUrl = asset.resources?.imageUrl
         val side = fill.side.rawValue
         val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
@@ -265,7 +265,7 @@ class NotificationsProvider(
                 if (positionStatus == "CLOSED") {
                     val closedAt = parser.asDatetime(position["closedAt"]) ?: continue
                     val asset = asset(stateMachine, marketId) ?: continue
-                    val assetText = asset.symbol
+                    val assetText = asset.name
                     val marketImageUrl = asset.resources?.imageUrl
                     val params = (iMapOf(
                         "MARKET" to marketId,

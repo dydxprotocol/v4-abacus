@@ -2,6 +2,7 @@ package exchange.dydx.abacus.app.manager
 
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
+import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
@@ -39,8 +40,9 @@ class V4RestrictionsTests {
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
         stateManager = AsyncAbacusStateManager(
-            "https://dydx-v4-shared-resources.vercel.app/config/staging/dev_endpoints.json",
-            "/config/staging/dev_endpoints.json",
+            "https://api.examples.com",
+            "DEV",
+            AppConfigs.forApp,
             ioImplementations,
             uiImplementations,
             TestState(),

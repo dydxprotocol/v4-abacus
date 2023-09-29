@@ -1,9 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.DebugLogger
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -61,7 +59,6 @@ data class ClosePositionInput(
             existing: ClosePositionInput?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            version: AppVersion
         ): ClosePositionInput? {
             DebugLogger.log("creating Close Position Input\n")
 

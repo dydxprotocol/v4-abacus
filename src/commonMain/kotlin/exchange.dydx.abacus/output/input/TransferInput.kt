@@ -172,18 +172,19 @@ data class TransferOutInputOptions(
         ): TransferOutInputOptions? {
             DebugLogger.log("creating TransferOut Input Options\n")
 
-            val host = "https://v4.testnet.dydx.exchange/"       // TODO: get this from the environment
+            val host =
+                "https://v4.testnet.dydx.exchange/"       // TODO: get this from the environment
 
             val needsSize = parser.asBool(data?.get("needsSize")) ?: false
             val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
 
             val chains: IList<SelectionOption> = iListOf(
-                SelectionOption("dydx", "APP.GENERAL.DYDX_CHAIN", "$host/currencies/dydx.png")
+                SelectionOption("dydx", null, "APP.GENERAL.DYDX_CHAIN", "$host/currencies/dydx.png")
             )
 
             val assets: IList<SelectionOption> = iListOf(
-                SelectionOption("usdc", "USDC", "$host/currencies/usdc.png"),
-                SelectionOption("dydx", "DYDX", "$host/currencies/dydx.png")
+                SelectionOption("usdc", "USDC", null, "$host/currencies/usdc.png"),
+                SelectionOption("dydx", "DYDX", null, "$host/currencies/dydx.png")
             )
 
             return if (existing?.needsSize != needsSize ||
@@ -314,22 +315,24 @@ data class TransferInputResources(
 
             data?.let {
                 val chainResourcesMap = parser.asMap(data["chainResources"])
-                val chainResources: IMap<String, TransferInputChainResource> = chainResourcesMap?.mapValues { entry ->
-                    TransferInputChainResource.create(
-                        null,
-                        parser,
-                        parser.asMap(entry.value)
-                    ) ?: TransferInputChainResource(null, null, null, null, null)
-                }?.toIMap() ?: iMapOf()
+                val chainResources: IMap<String, TransferInputChainResource> =
+                    chainResourcesMap?.mapValues { entry ->
+                        TransferInputChainResource.create(
+                            null,
+                            parser,
+                            parser.asMap(entry.value)
+                        ) ?: TransferInputChainResource(null, null, null, null, null)
+                    }?.toIMap() ?: iMapOf()
 
                 val tokenResourcesMap = parser.asMap(data["tokenResources"])
-                val tokenResources: IMap<String, TransferInputTokenResource> = tokenResourcesMap?.mapValues {
-                    TransferInputTokenResource.create(
-                        null,
-                        parser,
-                        parser.asMap(it.value)
-                    ) ?: TransferInputTokenResource(null, null, null, null, null)
-                }?.toIMap() ?: iMapOf()
+                val tokenResources: IMap<String, TransferInputTokenResource> =
+                    tokenResourcesMap?.mapValues {
+                        TransferInputTokenResource.create(
+                            null,
+                            parser,
+                            parser.asMap(it.value)
+                        ) ?: TransferInputTokenResource(null, null, null, null, null)
+                    }?.toIMap() ?: iMapOf()
 
                 return if (
                     existing?.chainResources != chainResources ||
@@ -592,14 +595,14 @@ data class TransferInput(
                     parser.asMap(data["resources"])
                 )
 
-                val route =  parser.asMap(data["route"])
+                val route = parser.asMap(data["route"])
                 val requestPayload = TransferInputRequestPayload.create(
                     null,
                     parser,
                     parser.asMap(route?.get("requestPayload"))
                 )
 
-                val errors =  parser.asString(route?.get("errors"))
+                val errors = parser.asString(route?.get("errors"))
 
                 return if (existing?.type !== type ||
                     existing?.size !== size ||

@@ -82,6 +82,8 @@ class V4MarketsTests : V4BaseTests() {
             {
                "markets":{
                   "markets":{
+                     "TEST-USD": {
+                     },
                      "BTC-USD":{
                         "priceChange24H":0.0,
                         "market":"BTC-USD",
