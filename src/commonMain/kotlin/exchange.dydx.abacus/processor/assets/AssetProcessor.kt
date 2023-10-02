@@ -43,7 +43,7 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             payload,
             assetConfigurationsResourcesKeyMap
         ).mutable()
-        val imageUrl = "${deploymentUri}/currencies/${assetId.lowercase()}.svg"
+        val imageUrl = "${deploymentUri}/currencies/${assetId.lowercase()}.png"
         val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
         val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
         resources.safeSet("imageUrl", imageUrl)

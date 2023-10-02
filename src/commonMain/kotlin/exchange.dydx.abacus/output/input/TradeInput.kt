@@ -29,7 +29,7 @@ data class SelectionOption(
 
             data?.let {
                 parser.asString(data["type"])?.let { type ->
-                    val string = parser.asString(data["stringKey"])
+                    val string = parser.asString(data["string"])
                     val stringKey = parser.asString(data["stringKey"])
                     if (string != null || stringKey != null) {
                         val iconUrl = parser.asString(data["iconUrl"])

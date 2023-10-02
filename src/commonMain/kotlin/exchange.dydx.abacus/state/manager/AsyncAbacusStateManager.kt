@@ -162,13 +162,13 @@ enum class NetworkStatus(val rawValue: String) {
     }
 }
 
+internal class BlockAndTime(val block: Int, val time: Instant)
+
 internal class NetworkState() {
     var status: NetworkStatus = NetworkStatus.UNKNOWN
         private set
-    var block: Int? = null
+    var blockAndTime: BlockAndTime? = null
         private set
-    private var blockTime: Instant? = null
-
     private var sameBlockCount: Int = 0
     private var failCount: Int = 0
 
@@ -178,15 +178,13 @@ internal class NetworkState() {
     requestTime and requestId are only here to keep old V4ApiAdatpor to compile. Remove after we retire V4ApiAdaptor
      */
     internal var requestTime: Instant? = null
-    internal var requestId: Long? = null
 
     internal fun updateHeight(height: Int?, heightTime: Instant?) {
         time = ServerTime.now()
-        if (height != null) {
+        if (height != null && heightTime != null) {
             failCount = 0
-            if (block != height) {
-                block = height
-                blockTime = heightTime
+            if (blockAndTime?.block != height) {
+                blockAndTime = BlockAndTime(height, heightTime)
                 sameBlockCount = 0
             } else {
                 sameBlockCount += 1
@@ -204,12 +202,11 @@ internal class NetworkState() {
                 NetworkStatus.UNREACHABLE
             else if (sameBlockCount >= 6)
                 NetworkStatus.HALTED
-            else if (block != null)
+            else if (blockAndTime != null)
                 NetworkStatus.NORMAL
             else
                 NetworkStatus.UNKNOWN
         } else NetworkStatus.UNKNOWN
-
     }
 }
 
