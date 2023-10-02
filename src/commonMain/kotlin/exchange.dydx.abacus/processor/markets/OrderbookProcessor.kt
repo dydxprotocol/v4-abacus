@@ -470,25 +470,22 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     fun group(orderbook: Map<String, Any>?, tickSize: Double): Map<String, Any>? {
         buildGroupingLookup(tickSize)
         return if (orderbook != null) {
-            if (groupingMultiplier != 1) {
-                val groupingTickSize = grouping(tickSize, groupingMultiplier)
-                val modified = orderbook.mutable()
-                modified.safeSet("asks", group(parser.asNativeList(modified["asks"]), groupingTickSize))
-                modified.safeSet("bids", group(parser.asNativeList(modified["bids"]), groupingTickSize))
-                modified.safeSet(
-                    "grouping",
-                    mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
-                )
+            val groupingTickSize = grouping(tickSize, groupingMultiplier)
+            val modified = if (groupingMultiplier != 1) {
+                val modified = mutableMapOf<String, Any>()
+                modified.safeSet("asks", group(parser.asNativeList(orderbook["asks"]), groupingTickSize))
+                modified.safeSet("bids", group(parser.asNativeList(orderbook["bids"]), groupingTickSize))
+                modified.safeSet("midPrice", orderbook["midPrice"])
+                modified.safeSet("spreadPercent", orderbook["spreadPercent"])
                 modified
             } else {
-                val groupingTickSize = grouping(tickSize, groupingMultiplier)
-                val modified = orderbook.mutable()
-                modified.safeSet(
-                    "grouping",
-                    mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
-                )
-                modified
+                orderbook.toMutableMap()
             }
+            modified.safeSet(
+                "grouping",
+                mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
+            )
+            modified
         } else orderbook
     }
 
@@ -506,20 +503,25 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 val linePrice = parser.asDouble(line?.get("price"))
                 if (linePrice != null) {
                     val lineSize = parser.asDouble(line?.get("size")) ?: Numeric.double.ZERO
-                    val lineDepth = parser.asDouble(line?.get("depth")) ?: Numeric.double.ZERO
                     if (linePrice >= floor) {
                         if (linePrice < ceiling) {
                             size += lineSize
-                            depth += lineDepth
+                            depth += lineSize
                         } else {
                             result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
-                            floor = ceiling
+                            floor = Rounder.round(linePrice, grouping)
                             ceiling = floor + grouping
+
+                            size = lineSize
+                            depth += lineSize
                         }
                     } else {
                         result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
-                        ceiling = floor
-                        floor = ceiling - grouping
+                        floor = Rounder.round(linePrice, grouping)
+                        ceiling = floor + grouping
+
+                        size = lineSize
+                        depth += lineSize
                     }
                 }
             }
