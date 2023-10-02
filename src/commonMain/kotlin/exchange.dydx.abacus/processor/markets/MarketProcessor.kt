@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
@@ -136,13 +137,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
 
         if (name != null) {
             output["id"] = name
-            val assetId = output["assetId"]
-            if (assetId == null || assetId == "") {
-                val elements = name.split("-")
-                if (elements.size == 2) {
-                    output["assetId"] = elements.first()
-                }
-            }
+            output.safeSet("assetId", MarketId.assetid(name))
         }
         output["status"] = status(payload)
         output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)

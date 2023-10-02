@@ -7,8 +7,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 class V4StateManagerConfigs(
-    private val environment: V4Environment
-): StateManagerConfigs(environment, configs) {
+    deploymentUrl: String,
+    environment: V4Environment,
+): StateManagerConfigs(deploymentUrl, environment, configs) {
     companion object {
         internal val configs: IMap<String, Any> =
             Json.parseToJsonElement(
@@ -43,15 +44,7 @@ class V4StateManagerConfigs(
                          "status":"/v1/status"
                       },
                       "configs":{
-                         "0x_assets":"/config/prod/0x_assets.json",
-                         "countries":"/config/countries.json",
-                         "epoch_start":"/config/epoch_start.json",
-                         "fee_discounts":"/config/fee_discounts.json",
-                         "fee_tiers":"/config/fee_tiers.json",
-                         "markets":"/v4/markets.json",
-                         "network_configs":"/config/network_configs.json",
-                         "version":"/config/version_ios.json",
-                         "walletsV2":"/config/prod/walletsV2.json"
+                         "markets":"/configs/markets.json"
                       }
                    },
                    "socket":"/v4/ws",
@@ -72,25 +65,25 @@ class V4StateManagerConfigs(
     }
 
     fun squidStatus(): String? {
-        val squid = environment.URIs.squid
+        val squid = environment.endpoints.squid ?: return null
         val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
         return "$squid$path"
     }
 
     fun squidRoute(): String? {
-        val squid = environment.URIs.squid
+        val squid = environment.endpoints.squid ?: return null
         val path = parser.asString(parser.value(configs, "paths.0xsquid.route"))
         return "$squid$path"
     }
 
     fun squidChains(): String? {
-        val squid = environment.URIs.squid
+        val squid = environment.endpoints.squid ?: return null
         val path = parser.asString(parser.value(configs, "paths.0xsquid.chains"))
         return "$squid$path"
     }
 
     fun squidToken(): String? {
-        val squid = environment.URIs.squid
+        val squid = environment.endpoints.squid ?: return null
         val path = parser.asString(parser.value(configs, "paths.0xsquid.tokens"))
         return "$squid$path"
     }

@@ -2,10 +2,8 @@ package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.output.*
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import kollections.JsExport
 import kollections.iListOf
@@ -17,7 +15,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SelectionOption(
     val type: String,
-    val stringKey: String,
+    val string: String?,
+    val stringKey: String?,
     val iconUrl: String?,
 ) {
     companion object {
@@ -30,13 +29,16 @@ data class SelectionOption(
 
             data?.let {
                 parser.asString(data["type"])?.let { type ->
-                    parser.asString(data["stringKey"])?.let { stringKey ->
+                    val string = parser.asString(data["stringKey"])
+                    val stringKey = parser.asString(data["stringKey"])
+                    if (string != null || stringKey != null) {
                         val iconUrl = parser.asString(data["iconUrl"])
                         return if (existing?.type != type ||
+                            existing.string != string ||
                             existing.stringKey != stringKey ||
                             existing.iconUrl != iconUrl
                         ) {
-                            SelectionOption(type, stringKey, iconUrl)
+                            SelectionOption(type, string, stringKey, iconUrl)
                         } else {
                             existing
                         }
@@ -66,33 +68,70 @@ data class TradeInputOptions(
     val typeOptions: IList<SelectionOption>,
     val sideOptions: IList<SelectionOption>,
     val timeInForceOptions: IList<SelectionOption>?,
-    val goodUntilUnitOptions: IList<SelectionOption>,
+    val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
 ) {
     companion object {
         private val typeOptionsArray =
             iListOf(
-                SelectionOption(OrderType.limit.rawValue, "APP.TRADE.LIMIT_ORDER_SHORT", null),
-                SelectionOption(OrderType.market.rawValue, "APP.TRADE.MARKET_ORDER_SHORT", null),
-                SelectionOption(OrderType.stopLimit.rawValue, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.stopMarket.rawValue, "APP.TRADE.STOP_MARKET", null),
-                SelectionOption(OrderType.trailingStop.rawValue, "APP.TRADE.TRAILING_STOP", null),
-                SelectionOption(OrderType.takeProfitLimit.rawValue, "APP.TRADE.TAKE_PROFIT", null),
+                SelectionOption(
+                    OrderType.limit.rawValue,
+                    null,
+                    "APP.TRADE.LIMIT_ORDER_SHORT",
+                    null
+                ),
+                SelectionOption(
+                    OrderType.market.rawValue,
+                    null,
+                    "APP.TRADE.MARKET_ORDER_SHORT",
+                    null
+                ),
+                SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
+                SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
+                SelectionOption(
+                    OrderType.trailingStop.rawValue,
+                    null,
+                    "APP.TRADE.TRAILING_STOP",
+                    null
+                ),
+                SelectionOption(
+                    OrderType.takeProfitLimit.rawValue,
+                    null,
+                    "APP.TRADE.TAKE_PROFIT",
+                    null
+                ),
                 SelectionOption(
                     OrderType.takeProfitMarket.rawValue,
+                    null,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
                     null
                 ),
             )
         private val typeOptionsV4Array =
             iListOf(
-                SelectionOption(OrderType.limit.rawValue, "APP.TRADE.LIMIT_ORDER_SHORT", null),
-                SelectionOption(OrderType.market.rawValue, "APP.TRADE.MARKET_ORDER_SHORT", null),
-                SelectionOption(OrderType.stopLimit.rawValue, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.stopMarket.rawValue, "APP.TRADE.STOP_MARKET", null),
-                SelectionOption(OrderType.takeProfitLimit.rawValue, "APP.TRADE.TAKE_PROFIT", null),
+                SelectionOption(
+                    OrderType.limit.rawValue,
+                    null,
+                    "APP.TRADE.LIMIT_ORDER_SHORT",
+                    null
+                ),
+                SelectionOption(
+                    OrderType.market.rawValue,
+                    null,
+                    "APP.TRADE.MARKET_ORDER_SHORT",
+                    null
+                ),
+                SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
+                SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
+                SelectionOption(
+                    OrderType.takeProfitLimit.rawValue,
+                    null,
+                    "APP.TRADE.TAKE_PROFIT",
+                    null
+                ),
                 SelectionOption(
                     OrderType.takeProfitMarket.rawValue,
+                    null,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
                     null
                 ),
@@ -100,23 +139,22 @@ data class TradeInputOptions(
 
         private val sideOptionsArray =
             iListOf(
-                SelectionOption(OrderSide.buy.rawValue, "APP.GENERAL.BUY", null),
-                SelectionOption(OrderSide.sell.rawValue, "APP.GENERAL.SELL", null)
+                SelectionOption(OrderSide.buy.rawValue, null, "APP.GENERAL.BUY", null),
+                SelectionOption(OrderSide.sell.rawValue, null, "APP.GENERAL.SELL", null)
             )
 
-        private val goodUntilUnitOptionsArray =
+        private val goodTilUnitOptionsArray =
             iListOf(
-                SelectionOption("M", "APP.GENERAL.TIME_STRINGS.MINUTES_SHORT", null),
-                SelectionOption("H", "APP.GENERAL.TIME_STRINGS.HOURS", null),
-                SelectionOption("D", "APP.GENERAL.TIME_STRINGS.DAYS", null),
-                SelectionOption("W", "APP.GENERAL.TIME_STRINGS.WEEKS", null)
+                SelectionOption("M", null, "APP.GENERAL.TIME_STRINGS.MINUTES_SHORT", null),
+                SelectionOption("H", null, "APP.GENERAL.TIME_STRINGS.HOURS", null),
+                SelectionOption("D", null, "APP.GENERAL.TIME_STRINGS.DAYS", null),
+                SelectionOption("W", null, "APP.GENERAL.TIME_STRINGS.WEEKS", null)
             )
 
         internal fun create(
             existing: TradeInputOptions?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            version: AppVersion,
         ): TradeInputOptions? {
             DebugLogger.log("creating Trade Input Options\n")
 
@@ -195,7 +233,7 @@ data class TradeInputOptions(
                         typeOptions,
                         sideOptionsArray,
                         timeInForceOptionsArray,
-                        goodUntilUnitOptionsArray,
+                        goodTilUnitOptionsArray,
                         executionOptionsArray
                     )
                 } else {
@@ -508,7 +546,7 @@ data class TradeInputBracketSide(
 data class TradeInputBracket(
     val stopLoss: TradeInputBracketSide?,
     val takeProfit: TradeInputBracketSide?,
-    val goodUntil: TradeInputGoodUntil?,
+    val goodTil: TradeInputGoodUntil?,
     val execution: String?,
 ) {
     companion object {
@@ -531,18 +569,18 @@ data class TradeInputBracket(
                         parser,
                         parser.asMap(data["takeProfit"])
                     )
-                val goodUntil = TradeInputGoodUntil.create(
-                    existing?.goodUntil,
+                val goodTil = TradeInputGoodUntil.create(
+                    existing?.goodTil,
                     parser,
-                    parser.asMap(data["goodUntil"])
+                    parser.asMap(data["goodTil"])
                 )
                 val execution = parser.asString(data["execution"])
                 return if (existing?.stopLoss != stopLoss ||
                     existing?.takeProfit != takeProfit ||
-                    existing?.goodUntil != goodUntil ||
+                    existing?.goodTil != goodTil ||
                     existing?.execution != execution
                 ) {
-                    TradeInputBracket(stopLoss, takeProfit, goodUntil, execution)
+                    TradeInputBracket(stopLoss, takeProfit, goodTil, execution)
                 } else {
                     existing
                 }
@@ -660,7 +698,7 @@ data class TradeInput(
     val size: TradeInputSize?,
     val price: TradeInputPrice?,
     val timeInForce: String?,
-    val goodUntil: TradeInputGoodUntil?,
+    val goodTil: TradeInputGoodUntil?,
     val execution: String?,
     val reduceOnly: Boolean,
     val postOnly: Boolean,
@@ -675,7 +713,6 @@ data class TradeInput(
             existing: TradeInput?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            version: AppVersion,
         ): TradeInput? {
             DebugLogger.log("creating Trade Input\n")
 
@@ -700,10 +737,10 @@ data class TradeInput(
 
                 val fee = parser.asDouble(data["fee"])
 
-                val goodUntil = TradeInputGoodUntil.create(
-                    existing?.goodUntil,
+                val goodTil = TradeInputGoodUntil.create(
+                    existing?.goodTil,
                     parser,
-                    parser.asMap(data["goodUntil"])
+                    parser.asMap(data["goodTil"])
                 )
                 val bracket = TradeInputBracket.create(
                     existing?.bracket,
@@ -720,7 +757,6 @@ data class TradeInput(
                     existing?.options,
                     parser,
                     parser.asMap(data["options"]),
-                    version
                 )
                 val summary = TradeInputSummary.create(
                     existing?.summary,
@@ -734,7 +770,7 @@ data class TradeInput(
                     existing?.size != size ||
                     existing?.price != price ||
                     existing?.timeInForce != timeInForce ||
-                    existing?.goodUntil != goodUntil ||
+                    existing?.goodTil != goodTil ||
                     existing?.execution != execution ||
                     existing?.reduceOnly != reduceOnly ||
                     existing.postOnly != postOnly ||
@@ -751,7 +787,7 @@ data class TradeInput(
                         size,
                         price,
                         timeInForce,
-                        goodUntil,
+                        goodTil,
                         execution,
                         reduceOnly,
                         postOnly,

@@ -41,14 +41,23 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 
 class V4StateManagerAdaptor(
+    deploymentUri: String,
+    environment: V4Environment,
     ioImplementations: IOImplementations,
     uiImplementations: UIImplementations,
-    environment: V4Environment,
     override var configs: V4StateManagerConfigs,
+    appConfigs: AppConfigs,
     stateNotification: StateNotificationProtocol?,
     dataNotification: DataNotificationProtocol?,
 ) : StateManagerAdaptor(
-    ioImplementations, uiImplementations, environment, configs, stateNotification, dataNotification
+    deploymentUri,
+    environment,
+    ioImplementations,
+    uiImplementations,
+    configs,
+    appConfigs,
+    stateNotification,
+    dataNotification
 ) {
     private var validatorUrl: String? = null
         set(value) {
@@ -158,12 +167,14 @@ class V4StateManagerAdaptor(
 
     @Throws(Exception::class)
     fun marketCandlesSubscription(market: String, resolution: String, subscribe: Boolean = true) {
-        val channel = configs.candlesChannel() ?: throw Exception("candlesChannel is null")
-        socket(
-            socketAction(subscribe),
-            channel,
-            iMapOf("id" to "$market/$resolution", "batched" to "true")
-        )
+        if (appConfigs.subscribeToCandles) {
+            val channel = configs.candlesChannel() ?: throw Exception("candlesChannel is null")
+            socket(
+                socketAction(subscribe),
+                channel,
+                iMapOf("id" to "$market/$resolution", "batched" to "true")
+            )
+        }
     }
 
     override fun subaccountChannelParams(
@@ -472,7 +483,7 @@ class V4StateManagerAdaptor(
     }
 
     private fun connectChain(validatorUrl: String, callback: (successful: Boolean) -> Unit) {
-        val indexerUrl = environment.URIs.indexers?.firstOrNull()?.api ?: return
+        val indexerUrl = environment.endpoints.indexers?.firstOrNull()?.api ?: return
         val websocketUrl = configs.websocketUrl() ?: return
         val chainId = environment.dydxChainId ?: return
         val faucetUrl = configs.faucetUrl()

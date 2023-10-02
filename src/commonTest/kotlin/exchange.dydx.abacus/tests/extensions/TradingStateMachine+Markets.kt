@@ -16,13 +16,13 @@ fun TradingStateMachine.loadMarketsChanged(mock: AbacusMockData): StateResponse 
     return socket(mock.socketUrl, mock.marketsChannel.channel_data, 0, null)
 }
 
-fun TradingStateMachine.loadMarketsConfigurations(mock: AbacusMockData): StateResponse {
+fun TradingStateMachine.loadMarketsConfigurations(mock: AbacusMockData, deploymentUri: String): StateResponse {
     return rest(
         AbUrl(
             host = "dydx-v4-shared-resources.vercel.app",
-            path = "/v4/markets.json",
+            path = "/configs/markets.json",
             scheme = "https://"
-        ), mock.marketsConfigurations.configurations, 0, null
+        ), mock.marketsConfigurations.configurations, 0, null, deploymentUri
     )
 }
 

@@ -38,7 +38,7 @@ class DynamicLocalizer(
                 val languages = iMutableListOf<SelectionOption>()
                 val languagesMap = mutableMapOf<String, Language>()
                 for (item in value) {
-                    languages.add(SelectionOption(item.code, item.name, null))
+                    languages.add(SelectionOption(item.code, item.name, null, null))
                     languagesMap[item.code] = item
                 }
                 this.languages = languages
@@ -158,7 +158,6 @@ class DynamicLocalizer(
             "localization_notifications/$languageCode/app.json",
         )
     }
-
 
 
     private fun loadLocalLanguageFiles(filePaths: IList<String>): IMap<String, IMap<String, Any>>? {

@@ -1,10 +1,10 @@
 package exchange.dydx.abacus.tests.payloads
 
-import exchange.dydx.abacus.state.manager.AppVersion
-import exchange.dydx.abacus.state.manager.EnvironmentURIs
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
 import kollections.JsExport
+import kollections.iMapOf
 
 @JsExport
 class AbacusMockData {
@@ -39,23 +39,14 @@ class AbacusMockData {
         "test",
         "test",
         "test",
-        "test",
         false,
-        AppVersion.v4,
-        127,
-        EnvironmentURIs(
+        iMapOf(),
+        EnvironmentEndpoints(
             null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            "https://v4.testnet.dydx.exchange/currencies/{asset}.svg",
             null,
             null,
             null,
         ),
-
-
+        null,
         )
 }

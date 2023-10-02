@@ -51,7 +51,6 @@ import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.output.input.TradeInputSummary
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.manager.AppVersion
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
 import exchange.dydx.abacus.state.modal.TradingStateMachine
@@ -76,6 +75,7 @@ internal typealias VerificationFunction = (response: StateResponse) -> Unit
 
 open class BaseTests(private val maxSubaccountNumber: Int) {
     open val doAsserts = true
+    internal val deploymentUri = "https://api.examples.com"
     internal val doesntMatchText = "doesn't match"
     internal val parser = Parser()
     internal val mock = AbacusMockData()
@@ -114,7 +114,6 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             mock.v4Environment,
             testLocalizer(ioImplementations),
             null,
-            AppVersion.v4,
             maxSubaccountNumber,
         )
     }
@@ -127,6 +126,10 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         perp.assets = null
         perp.configs = null
         setup()
+    }
+
+    internal fun payload(text: String): Map<String, Any>? {
+        return parser.asNativeMap(Json.parseToJsonElement(text))
     }
 
     internal open fun setup() {
@@ -305,9 +308,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             )
             verifyInputTradeInputSizeState(parser.asNativeMap(data["size"]), obj.size, "$trace.size")
             verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodUntil"]),
-                obj.goodUntil,
-                "$trace.goodUntil"
+                parser.asNativeMap(data["goodTil"]),
+                obj.goodTil,
+                "$trace.goodTil"
             )
             verifyInputTradeInputMarketOrderState(
                 parser.asNativeMap(data["marketOrder"]),
@@ -694,9 +697,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.execution $doesntMatchText"
             )
             verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodUntil"]),
-                obj.goodUntil,
-                "$trace.goodUntil"
+                parser.asNativeMap(data["goodTil"]),
+                obj.goodTil,
+                "$trace.goodTil"
             )
             verifyInputTradeInputBracketTriggerState(
                 parser.asNativeMap(data["stopLoss"]),
@@ -1138,19 +1141,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.id"
             )
             assertEquals(
-                parser.asString(data.get("symbol")),
-                obj.symbol,
-                "$trace.symbol"
-            )
-            assertEquals(
                 parser.asString(data.get("name")),
                 obj.name,
                 "$trace.name"
-            )
-            assertEquals(
-                parser.asDouble(data.get("circulatingSupply")),
-                obj.circulatingSupply,
-                "$trace.circulatingSupply"
             )
             val tagsData = parser.asList(data["tags"])
             val tags = obj.tags

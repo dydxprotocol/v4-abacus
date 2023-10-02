@@ -7,7 +7,7 @@ data class TradeInput(
 &emsp;val size: [TradeInputSize](#TradeInputSize)?,  
 &emsp;val price: [TradeInputPrice](#TradeInputPrice)?,  
 &emsp;val timeInForce: String?,  
-&emsp;val goodUntil: [TradeInputGoodUntil](#TradeInputGoodUntil)?,  
+&emsp;val goodTil: [TradeInputGoodUntil](#TradeInputGoodUntil)?,  
 &emsp;val execution: String?,  
 &emsp;val reduceOnly: Boolean,  
 &emsp;val postOnly: Boolean,  
@@ -140,7 +140,7 @@ time unit
 data class TradeInputBracket(  
 &emsp;val stopLoss: TradeInputBracketSide?,  
 &emsp;val takeProfit: TradeInputBracketSide?,  
-&emsp;val goodUntil: [TradeInputGoodUntil](#TradeInputGoodUntil)?,  
+&emsp;val goodTil: [TradeInputGoodUntil](#TradeInputGoodUntil)?,  
 &emsp;val execution: String?  
 )
 
@@ -152,7 +152,7 @@ Stoploss side of the bracket order
 
 Take profit side of the bracket order
 
-## goodUntil
+## goodTil
 
 Good until settings for the bracket orders
 
@@ -211,7 +211,7 @@ data class TradeInputOptions(
 &emsp;val typeOptions: Array<SelectionOption>,  
 &emsp;val sideOptions: Array<SelectionOption>,  
 &emsp;val timeInForceOptions: Array<SelectionOption>?,  
-&emsp;val goodUntilUnitOptions: Array<SelectionOption>?,  
+&emsp;val goodTilUnitOptions: Array<SelectionOption>?,  
 &emsp;val executionOptions: Array<SelectionOption>?  
 )
 
@@ -267,7 +267,7 @@ Order side available for selection
 
 TimeInForce options
 
-## goodUntilUnitOptions
+## goodTilUnitOptions
 
 Time units for goodTil
 

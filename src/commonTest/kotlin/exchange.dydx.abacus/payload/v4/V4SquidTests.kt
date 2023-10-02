@@ -29,9 +29,9 @@ class V4SquidTests : V4BaseTests() {
             val chains = it.state?.input?.transfer?.depositOptions?.chains!!
             assertTrue(chains.size > 0)
             val chain = chains[0]
-            assertTrue(chain.type.length > 0)
-            assertTrue(chain.iconUrl!!.length > 0)
-            assertTrue(chain.stringKey.length > 0)
+            assertTrue(chain.type.isNotEmpty())
+            assertTrue(chain.iconUrl!!.isNotEmpty())
+            assertTrue(chain.stringKey != null || chain.string != null)
             assertTrue(it.state?.input?.transfer?.resources?.chainResources != null)
         })
 
@@ -59,9 +59,9 @@ class V4SquidTests : V4BaseTests() {
             val assets = it.state?.input?.transfer?.depositOptions?.assets!!
             assertTrue(assets.size > 0)
             val token = assets[0]
-            assertTrue(token.type.length > 0)
-            assertTrue(token.iconUrl!!.length > 0)
-            assertTrue(token.stringKey.length > 0)
+            assertTrue(token.type.isNotEmpty())
+            assertTrue(token.iconUrl!!.isNotEmpty())
+            assertTrue(token.stringKey != null || token.string != null)
             assertTrue(it.state?.input?.transfer?.resources?.tokenResources != null)
             assertTrue(it.state?.input?.transfer?.token != null)
         })

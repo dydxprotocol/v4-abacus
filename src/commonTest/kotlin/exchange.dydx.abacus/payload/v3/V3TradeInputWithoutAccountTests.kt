@@ -57,7 +57,7 @@ class V3TradeInputWithoutAccountTests: V3BaseTests() {
                             "side": "BUY",
                             "marketId": "ETH-USD",
                             "timeInForce": "GTT",
-                            "goodUntil": {
+                            "goodTil": {
                                 "unit": "D",
                                 "duration": 28
                             },
@@ -100,7 +100,7 @@ class V3TradeInputWithoutAccountTests: V3BaseTests() {
                             "side": "BUY",
                             "marketId": "ETH-USD",
                             "timeInForce": "GTT",
-                            "goodUntil": {
+                            "goodTil": {
                                 "unit": "D",
                                 "duration": 28
                             },

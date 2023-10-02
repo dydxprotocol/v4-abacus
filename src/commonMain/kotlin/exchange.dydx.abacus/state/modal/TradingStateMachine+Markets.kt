@@ -10,7 +10,6 @@ internal fun TradingStateMachine.receivedMarkets(
     subaccountNumber: Int,
 ): StateChanges {
     marketsSummary = marketsProcessor.subscribed(marketsSummary, payload)
-    assets = assetsProcessor.subscribed(assets, payload)
     marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
     return StateChanges(
         iListOf(
@@ -87,9 +86,10 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
 internal fun TradingStateMachine.receivedMarketsConfigurations(
     payload: Map<String, Any>,
     subaccountNumber: Int?,
+    deploymentUri: String,
 ): StateChanges {
     this.marketsSummary = marketsProcessor.receivedConfigurations(this.marketsSummary, payload)
-    assets = assetsProcessor.receivedConfigurations(assets, payload)
+    assets = assetsProcessor.receivedConfigurations(assets, payload, deploymentUri)
     this.marketsSummary = marketsCalculator.calculate(this.marketsSummary, assets, null)
     return if (subaccountNumber != null)
         StateChanges(
