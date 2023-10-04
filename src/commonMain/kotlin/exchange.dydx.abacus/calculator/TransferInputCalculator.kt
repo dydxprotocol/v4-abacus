@@ -193,6 +193,9 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
 
                 val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
                 summary.safeSet("gasFee", gasFee)
+
+                val toAmount = parser.asString(parser.value(transfer, "route.toAmountMin"))
+                summary.safeSet("toAmount", toAmount)
             }
 
             "TRANSFER_OUT" -> {

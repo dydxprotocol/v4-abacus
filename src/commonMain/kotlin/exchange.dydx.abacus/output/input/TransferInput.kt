@@ -422,7 +422,8 @@ data class TransferInputSummary(
     val exchangeRate: Double?,
     val estimatedRouteDuration: Double?,
     val bridgeFee: Double?,
-    val gasFee: Double?
+    val gasFee: Double?,
+    val toAmount: String?
 ) {
     companion object {
         internal fun create(
@@ -441,6 +442,7 @@ data class TransferInputSummary(
                 val estimatedRouteDuration = parser.asDouble(data["estimatedRouteDuration"])
                 val bridgeFee = parser.asDouble(data["bridgeFee"])
                 val gasFee = parser.asDouble(data["gasFee"])
+                val toAmount = parser.asString(data["toAmount"])
 
                 return if (existing?.usdcSize != usdcSize ||
                     existing?.fee != fee ||
@@ -449,7 +451,8 @@ data class TransferInputSummary(
                     existing.exchangeRate != exchangeRate ||
                     existing.estimatedRouteDuration != estimatedRouteDuration ||
                     existing.bridgeFee != bridgeFee ||
-                    existing.gasFee != gasFee
+                    existing.gasFee != gasFee ||
+                    existing.toAmount != toAmount
                 ) {
                     TransferInputSummary(
                         usdcSize,
@@ -459,7 +462,8 @@ data class TransferInputSummary(
                         exchangeRate,
                         estimatedRouteDuration,
                         bridgeFee,
-                        gasFee
+                        gasFee,
+                        toAmount
                     )
                 } else {
                     existing
