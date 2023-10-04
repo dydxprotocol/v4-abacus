@@ -55,10 +55,10 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
         )
 
         val oldState = stateMachine.state
-        get(url, params, null, false, callback = { response, httpCode ->
+        get(url, params, null, false, callback = { _, response, httpCode ->
             if (success(httpCode) && response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
-                val oldFromAmount= oldState?.input?.transfer?.size?.size
+                val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRoute(response, subaccountNumber), oldState)
                 }
@@ -72,7 +72,8 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(callback: (Double?) -> Uni
 
     transaction(
         TransactionType.simulateWithdraw,
-        payload) { response ->
+        payload
+    ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
             callback(null)
@@ -93,7 +94,8 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(callback: (Double
 
     transaction(
         TransactionType.simulateTransferNativeToken,
-        payload) { response ->
+        payload
+    ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
             callback(null)
@@ -108,6 +110,7 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(callback: (Double
         callback(usdcAmount)
     }
 }
+
 internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
     val state = stateMachine.state
     val toChain = state?.input?.transfer?.chain
@@ -148,7 +151,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
         )
 
         val oldState = stateMachine.state
-        get(url, params, null, false, callback = { response, httpCode ->
+        get(url, params, null, false, callback = { _, response, httpCode ->
             if (success(httpCode) && response != null) {
                 update(stateMachine.squidRoute(response, subaccountNumber), oldState)
             }
@@ -169,7 +172,7 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     val url = configs.squidStatus()
     if (url != null) {
         val oldState = stateMachine.state
-        get(url, params, null, false, callback = { response, httpCode ->
+        get(url, params, null, false, callback = { _, response, httpCode ->
             if (response != null) {
                 update(stateMachine.squidStatus(response, hash), oldState)
             }

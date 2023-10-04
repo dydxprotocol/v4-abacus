@@ -12,6 +12,7 @@ import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -295,6 +296,9 @@ open class StateManagerAdaptor(
                 didSetSourceAddress(sourceAddress, oldValue)
             }
         }
+
+    private val addressRetryDuration = 10.0
+    private val addressContinousMonitoringDuration = 60.0 * 60.0
 
     private var sourceAddressTimer: LocalTimerProtocol? = null
         set(value) {
@@ -1112,7 +1116,7 @@ open class StateManagerAdaptor(
         params: Map<String, String>?,
         headers: Map<String, String>?,
         private: Boolean,
-        callback: (String?, Int) -> Unit,
+        callback: (url: String, response: String?, code: Int) -> Unit,
     ) {
         val fullUrl = if (params != null) {
             val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }
@@ -1134,7 +1138,7 @@ open class StateManagerAdaptor(
                         this.lastIndexerCallTime = time
                     }
                     try {
-                        callback(response, httpCode)
+                        callback(url, response, httpCode)
                     } catch (e: Exception) {
                         e.printStackTrace()
                         val error = ParsingError(
@@ -1181,7 +1185,7 @@ open class StateManagerAdaptor(
     private fun retrieveServerTime() {
         val url = configs.publicApiUrl("time")
         if (url != null) {
-            get(url, null, null, false, callback = { response, httpCode ->
+            get(url, null, null, false, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val json = Json.parseToJsonElement(response).jsonObject.toIMap()
                     val time = parser.asDatetime(json["time"])
@@ -1197,7 +1201,7 @@ open class StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.configsUrl("markets")
         if (url != null) {
-            get(url, null, null, false, callback = { response, httpCode ->
+            get(url, null, null, false, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(
                         stateMachine.configurations(response, subaccountNumber, deploymentUri),
@@ -1225,7 +1229,7 @@ open class StateManagerAdaptor(
     private fun retrieveSparklines() {
         val url = configs.publicApiUrl("sparklines")
         if (url != null) {
-            get(url, sparklinesParams(), null, false, callback = { response, httpCode ->
+            get(url, sparklinesParams(), null, false, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     parseSparklinesResponse(response)
                 }
@@ -1269,7 +1273,7 @@ open class StateManagerAdaptor(
             iMapOf(
                 "resolution" to candleResolution
             ),
-        ) { response, httpCode ->
+        ) { url, response, httpCode ->
             val oldState = stateMachine.state
             if (success(httpCode) && response != null) {
                 val changes = stateMachine.candles(response)
@@ -1298,7 +1302,7 @@ open class StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.publicApiUrl("historical-funding") ?: return
         val market = market ?: return
-        get("$url/$market", null, null, false, callback = { response, httpCode ->
+        get("$url/$market", null, null, false, callback = { _, response, httpCode ->
             if (success(httpCode) && response != null) {
                 update(stateMachine.historicalFundings(response), oldState)
             }
@@ -1309,7 +1313,7 @@ open class StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = subaccountsUrl()
         if (url != null) {
-            get(url, null, null, false, callback = { response, httpCode ->
+            get(url, null, null, false, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.subaccounts(response), oldState)
                     updateConnectedSubaccountNumber()
@@ -1359,7 +1363,7 @@ open class StateManagerAdaptor(
             "createdAtOrAfter",
             accountIsPrivate(),
             params
-        ) { response, httpCode ->
+        ) { url, response, httpCode ->
             val oldState = stateMachine.state
             if (success(httpCode) && !response.isNullOrEmpty()) {
                 val changes = stateMachine.historicalPnl(
@@ -1383,7 +1387,7 @@ open class StateManagerAdaptor(
         val url = configs.privateApiUrl("fills")
         val params = subaccountParams()
         if (url != null && params != null) {
-            get(url, params, null, accountIsPrivate(), callback = { response, httpCode ->
+            get(url, params, null, accountIsPrivate(), callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val fills = Json.parseToJsonElement(response).jsonObject.toIMap()
                     if (fills.size != 0) {
@@ -1399,7 +1403,7 @@ open class StateManagerAdaptor(
         val url = configs.privateApiUrl("transfers")
         val params = subaccountParams()
         if (url != null && params != null) {
-            get(url, params, null, accountIsPrivate(), callback = { response, httpCode ->
+            get(url, params, null, accountIsPrivate(), callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val tranfers = Json.parseToJsonElement(response).jsonObject.toIMap()
                     if (tranfers.size != 0) {
@@ -1424,7 +1428,7 @@ open class StateManagerAdaptor(
         afterParam: String? = null,
         private: Boolean = false,
         additionalParams: Map<String, String>? = null,
-        callback: (response: String?, httpCode: Int) -> Unit,
+        callback: (url: String, response: String?, httpCode: Int) -> Unit,
     ) {
         if (items != null) {
             val lastItemTime =
@@ -2010,29 +2014,21 @@ open class StateManagerAdaptor(
         if (address != null) {
             screen(address) { restriction ->
                 when (restriction) {
-                    Restriction.USER_RESTRICTED -> {
-                        sourceAddressRestriction = Restriction.USER_RESTRICTED
-                    }
-
-                    Restriction.NO_RESTRICTION -> {
-                        sourceAddressRestriction = Restriction.NO_RESTRICTION
-                    }
-
+                    Restriction.USER_RESTRICTED,
+                    Restriction.NO_RESTRICTION,
                     Restriction.USER_RESTRICTION_UNKNOWN -> {
-                        sourceAddressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
-                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
-                        sourceAddressTimer = timer.schedule(
-                            subaccountsPollingDelay,
-                            null
-                        ) {
-                            sourceAddressTimer = null
-                            screenSourceAddress()
-                            false
-                        }
+                        sourceAddressRestriction = restriction
                     }
 
                     else -> {
                         throw Exception("Unexpected restriction value")
+                    }
+                }
+                rerunAddressScreeningDelay(sourceAddressRestriction)?.let {
+                    val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                    sourceAddressTimer = timer.run(it) {
+                        sourceAddressTimer = null
+                        screenSourceAddress()
                     }
                 }
             }
@@ -2041,34 +2037,36 @@ open class StateManagerAdaptor(
         }
     }
 
+
+    private fun rerunAddressScreeningDelay(restriction: Restriction?): Double? {
+        return when (restriction) {
+            Restriction.NO_RESTRICTION -> addressContinousMonitoringDuration
+            Restriction.USER_RESTRICTION_UNKNOWN -> addressRetryDuration
+            else -> null
+        }
+    }
+
+
     open fun screenAccountAddress() {
         val address = accountAddress
         if (address != null) {
             screen(address) { restriction ->
                 when (restriction) {
-                    Restriction.USER_RESTRICTED -> {
-                        accountAddressRestriction = Restriction.USER_RESTRICTED
-                    }
-
-                    Restriction.NO_RESTRICTION -> {
-                        accountAddressRestriction = Restriction.NO_RESTRICTION
-                    }
-
+                    Restriction.USER_RESTRICTED,
+                    Restriction.NO_RESTRICTION,
                     Restriction.USER_RESTRICTION_UNKNOWN -> {
-                        accountAddressRestriction = Restriction.USER_RESTRICTION_UNKNOWN
-                        val timer = ioImplementations.timer ?: CoroutineTimer.instance
-                        accountAddressTimer = timer.schedule(
-                            subaccountsPollingDelay,
-                            null
-                        ) {
-                            accountAddressTimer = null
-                            screenAccountAddress()
-                            false
-                        }
+                        accountAddressRestriction = restriction
                     }
 
                     else -> {
                         throw Exception("Unexpected restriction value")
+                    }
+                }
+                rerunAddressScreeningDelay(accountAddressRestriction)?.let {
+                    val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                    accountAddressTimer = timer.run(it) {
+                        accountAddressTimer = null
+                        screenAccountAddress()
                     }
                 }
             }
@@ -2085,7 +2083,7 @@ open class StateManagerAdaptor(
                 iMapOf("address" to address),
                 null,
                 false,
-                callback = { response, httpCode ->
+                callback = { _, response, httpCode ->
                     if (success(httpCode) && response != null) {
                         val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
                         val restricted = parser.asBool(payload["restricted"]) ?: false

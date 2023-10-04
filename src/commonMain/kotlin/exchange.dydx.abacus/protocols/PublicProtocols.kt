@@ -276,6 +276,14 @@ interface TimerProtocol {
 }
 
 @JsExport
+fun TimerProtocol.run(after: Double, block: (() -> Unit)): LocalTimerProtocol {
+    return this.schedule(after, null) {
+        block()
+        false
+    }
+}
+
+@JsExport
 fun FileSystemProtocol.readCachedTextFile(
     path: String,
 ): String? {
