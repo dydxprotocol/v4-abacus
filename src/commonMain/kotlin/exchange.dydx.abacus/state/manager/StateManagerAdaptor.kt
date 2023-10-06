@@ -298,7 +298,7 @@ open class StateManagerAdaptor(
         }
 
     private val addressRetryDuration = 10.0
-    private val addressContinousMonitoringDuration = 60.0 * 60.0
+    private val addressContinuousMonitoringDuration = 60.0 * 60.0
 
     private var sourceAddressTimer: LocalTimerProtocol? = null
         set(value) {
@@ -2042,7 +2042,7 @@ open class StateManagerAdaptor(
 
     private fun rerunAddressScreeningDelay(restriction: Restriction?): Double? {
         return when (restriction) {
-            Restriction.NO_RESTRICTION -> addressContinousMonitoringDuration
+            Restriction.NO_RESTRICTION -> addressContinuousMonitoringDuration
             Restriction.USER_RESTRICTION_UNKNOWN -> addressRetryDuration
             else -> null
         }
