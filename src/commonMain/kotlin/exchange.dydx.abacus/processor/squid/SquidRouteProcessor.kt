@@ -13,6 +13,7 @@ internal class SquidRouteProcessor(parser: ParserProtocol) : BaseProcessor(parse
             "route.estimate.exchangeRate" to "exchangeRate",
             "route.estimate.toAmountUSD" to "toAmountUSD",
             "route.estimate.estimatedRouteDuration" to "estimatedRouteDuration",
+            "route.estimate.toAmountMin" to "toAmountMin",
             "errors" to "errors"
         )
     )
