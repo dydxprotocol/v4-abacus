@@ -11,6 +11,7 @@ import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
@@ -110,6 +111,8 @@ class V4StateManagerAdaptor(
 
     private var firstBlockAndTime: BlockAndTime? = null
 
+    private var restRetryTimers: MutableMap<String, LocalTimerProtocol> = mutableMapOf()
+
     internal var indexerState = NetworkState()
     internal var validatorState = NetworkState()
     private var apiState: ApiState? = null
@@ -208,7 +211,7 @@ class V4StateManagerAdaptor(
 
     override fun subaccountsUrl(): String? {
         val url = configs.privateApiUrl("subaccounts")
-        return if (url != null) {
+        return if (accountAddress != null && url != null) {
             "$url/$accountAddress"
         } else null
     }
@@ -553,7 +556,7 @@ class V4StateManagerAdaptor(
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.requestTime = Clock.System.now()
-            get(url, null, null, false) { response, httpCode ->
+            get(url, null, null, false) {_, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val json = Json.parseToJsonElement(response).jsonObject.toIMap()
                     val height = parser.asInt(json["height"])
@@ -578,7 +581,7 @@ class V4StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.squidChains()
         if (url != null) {
-            get(url, null, null, false) { response, httpCode ->
+            get(url, null, null, false) {_, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidChains(response), oldState)
                 }
@@ -590,7 +593,7 @@ class V4StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.squidToken()
         if (url != null) {
-            get(url, null, null, false) { response, httpCode ->
+            get(url, null, null, false) {_, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidTokens(response), oldState)
                 }
@@ -1063,24 +1066,39 @@ class V4StateManagerAdaptor(
         params: Map<String, String>?,
         headers: Map<String, String>?,
         private: Boolean,
-        callback: (String?, Int) -> Unit
+        callback: (url: String, response: String?, code: Int) -> Unit
     ) {
-        super.get(url, params, headers, private) { response, httpCode ->
+        super.get(url, params, headers, private) {url, response, httpCode ->
             when (httpCode) {
                 403 -> {
-                    if (indexerRestriction != UsageRestriction.http403Restriction) {
-                        ioImplementations.threading?.async(ThreadingType.abacus) {
-                            indexerRestriction = UsageRestriction.http403Restriction
+                    indexerRestriction = if (response != null) {
+                        val json = Json.parseToJsonElement(response).jsonObject.toMap()
+                        val errors = parser.asList(parser.value(json, "errors"))
+                        val userRestriction = errors?.firstOrNull { error ->
+                            val msg = parser.asString(parser.value(error, "msg"))
+                            msg?.contains("address") == true
                         }
-                    }
+
+                        if (userRestriction !== null)
+                            UsageRestriction.userRestriction
+                        else
+                            UsageRestriction.http403Restriction
+                    } else UsageRestriction.http403Restriction
                 }
 
                 429 -> {
-                    /* We may need better handling of 429 */
-                    callback(response, httpCode)
+                    // retry after 5 seconds
+                    val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                    val localTimer = timer.run(5.0) {
+                        restRetryTimers[url]?.cancel()
+                        restRetryTimers.remove(url)
+
+                        get(url, params, headers, private, callback)
+                    }
+                    restRetryTimers[url] = localTimer
                 }
 
-                else -> callback(response, httpCode)
+                else -> callback(url, response, httpCode)
             }
 
         }
