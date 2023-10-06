@@ -211,7 +211,7 @@ class V4StateManagerAdaptor(
 
     override fun subaccountsUrl(): String? {
         val url = configs.privateApiUrl("subaccounts")
-        return if (url != null) {
+        return if (accountAddress != null && url != null) {
             "$url/$accountAddress"
         } else null
     }

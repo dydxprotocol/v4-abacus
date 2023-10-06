@@ -530,6 +530,8 @@ open class StateManagerAdaptor(
         }
         accountAddressTimer = null
         accountAddressRestriction = null
+
+        subaccountsTimer = null
         screenAccountAddress()
     }
 
