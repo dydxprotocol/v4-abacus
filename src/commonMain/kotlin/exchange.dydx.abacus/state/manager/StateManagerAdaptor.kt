@@ -530,6 +530,8 @@ open class StateManagerAdaptor(
         }
         accountAddressTimer = null
         accountAddressRestriction = null
+
+        subaccountsTimer = null
         screenAccountAddress()
     }
 
@@ -2042,9 +2044,9 @@ open class StateManagerAdaptor(
                 }
                 rerunAddressScreeningDelay(sourceAddressRestriction)?.let {
                     val timer = ioImplementations.timer ?: CoroutineTimer.instance
-                    sourceAddressTimer = timer.run(it) {
-                        sourceAddressTimer = null
+                    sourceAddressTimer = timer.schedule(it, it) {
                         screenSourceAddress()
+                        true
                     }
                 }
             }
@@ -2080,9 +2082,9 @@ open class StateManagerAdaptor(
                 }
                 rerunAddressScreeningDelay(accountAddressRestriction)?.let {
                     val timer = ioImplementations.timer ?: CoroutineTimer.instance
-                    accountAddressTimer = timer.run(it) {
-                        accountAddressTimer = null
+                    accountAddressTimer = timer.schedule(it, it) {
                         screenAccountAddress()
+                        true
                     }
                 }
             }
