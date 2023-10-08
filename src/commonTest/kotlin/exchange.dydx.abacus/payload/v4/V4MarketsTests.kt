@@ -348,7 +348,12 @@ class V4MarketsTests : V4BaseTests() {
 
         test(
             {
-                perp.socket(testWsUrl, mock.marketsChannel.v4_channel_batch_data_oracle_prices, 0, null)
+                perp.socket(
+                    testWsUrl,
+                    mock.marketsChannel.v4_channel_batch_data_oracle_prices,
+                    0,
+                    null
+                )
             }, """
             {
                "markets":{
@@ -536,5 +541,80 @@ class V4MarketsTests : V4BaseTests() {
                     trades?.size
                 )
             })
+    }
+
+
+    @Test
+    fun testInitializingMarkets() {
+        // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
+        setup()
+
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.marketsChannel.v4_subscribed_with_initializing_status,
+                    0,
+                    null
+                )
+            }, """
+            {
+               "markets":{
+                  "markets":{
+                     "MATIC-USD":{
+                        "ticker":"MATIC-USD",
+                        "status":{
+                           "canTrade":false,
+                           "canReduce":false
+                        }
+                     }
+                  }
+               }
+            }
+        """.trimIndent(),
+            {
+                val markets = perp.state?.marketIds()
+                assertNotNull(markets)
+                val first = markets.firstOrNull()
+                assertNotNull(first)
+                val market = perp.state?.market(first)
+                assertNotNull(first)
+            }
+        )
+
+
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.marketsChannel.v4_channel_batch_data_oracle_prices_for_initializing_status,
+                    0,
+                    null
+                )
+            }, """
+            {
+               "markets":{
+                  "markets":{
+                     "MATIC-USD":{
+                        "ticker":"MATIC-USD",
+                        "status":{
+                           "canTrade":false,
+                           "canReduce":false
+                        },
+                        "oraclePrice":0.56
+                     }
+                  }
+               }
+            }
+        """.trimIndent(),
+            {
+                val markets = perp.state?.marketIds()
+                assertNotNull(markets)
+                val first = markets.firstOrNull()
+                assertNotNull(first)
+                val market = perp.state?.market(first)
+                assertNotNull(first)
+            }
+        )
     }
 }

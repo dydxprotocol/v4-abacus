@@ -316,9 +316,11 @@ class AsyncAbacusStateManager(
 
     var market: String? = null
         set(value) {
-            field = value
-            ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.market = field
+            if (isMarketValid(value) && field != value) {
+                field = value
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    adaptor?.market = field
+                }
             }
         }
 
@@ -635,6 +637,15 @@ class AsyncAbacusStateManager(
 
     fun transfer(data: String?, type: TransferInputField?) {
         adaptor?.transfer(data, type)
+    }
+
+    fun isMarketValid(marketId: String?): Boolean {
+        return if (marketId == null) {
+            true
+        } else {
+            val market = adaptor?.stateMachine?.state?.market(marketId)
+            (market?.status?.canTrade == true || market?.status?.canReduce == true)
+        }
     }
 
     fun transferStatus(hash: String, fromChainId: String?, toChainId: String?) {

@@ -810,7 +810,7 @@ data class PerpetualMarket(
             val status: MarketStatus? = parser.asMap(data["status"])?.let {
                 MarketStatus.create(existing?.status, parser, it)
             }
-            if (status?.canTrade != true) {
+            if (status?.canTrade != true && status?.canReduce != true) {
                 return null
             }
             val id = parser.asString(data["id"]) ?: return null
