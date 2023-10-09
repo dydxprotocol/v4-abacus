@@ -556,7 +556,7 @@ class V4StateManagerAdaptor(
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.requestTime = Clock.System.now()
-            get(url, null, null, false) {_, response, httpCode ->
+            get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val json = Json.parseToJsonElement(response).jsonObject.toIMap()
                     val height = parser.asInt(json["height"])
@@ -581,7 +581,7 @@ class V4StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.squidChains()
         if (url != null) {
-            get(url, null, null, false) {_, response, httpCode ->
+            get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidChains(response), oldState)
                 }
@@ -593,7 +593,7 @@ class V4StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.squidToken()
         if (url != null) {
-            get(url, null, null, false) {_, response, httpCode ->
+            get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidTokens(response), oldState)
                 }
@@ -1062,13 +1062,11 @@ class V4StateManagerAdaptor(
     }
 
     override fun get(
-        url: String,
-        params: Map<String, String>?,
+        fullUrl: String,
         headers: Map<String, String>?,
-        private: Boolean,
         callback: (url: String, response: String?, code: Int) -> Unit
     ) {
-        super.get(url, params, headers, private) {url, response, httpCode ->
+        super.get(fullUrl, headers) { url, response, httpCode ->
             when (httpCode) {
                 403 -> {
                     indexerRestriction = if (response != null) {
@@ -1093,7 +1091,7 @@ class V4StateManagerAdaptor(
                         restRetryTimers[url]?.cancel()
                         restRetryTimers.remove(url)
 
-                        get(url, params, headers, private, callback)
+                        get(fullUrl, headers, callback)
                     }
                     restRetryTimers[url] = localTimer
                 }

@@ -1113,25 +1113,35 @@ open class StateManagerAdaptor(
 
     }
 
-    internal open fun get(
+    fun get(
         url: String,
         params: Map<String, String>?,
         headers: Map<String, String>?,
-        private: Boolean,
         callback: (url: String, response: String?, code: Int) -> Unit,
     ) {
-        val fullUrl = if (params != null) {
+        val fullUrl = fullUrl(url, params)
+
+        get(fullUrl, headers, callback)
+    }
+
+    private fun fullUrl(
+        url: String,
+        params: Map<String, String>?
+    ): String {
+        return if (params != null) {
             val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }
             "$url?$queryString"
         } else url
+    }
 
-        val modifiedHeaders = if (private) {
-            privateHeaders(url, "GET", null, params, null)
-        } else headers
-
+    open fun get(
+        fullUrl: String,
+        headers: Map<String, String>?,
+        callback: (url: String, response: String?, code: Int) -> Unit,
+    ) {
         ioImplementations.threading?.async(ThreadingType.network) {
-            ioImplementations.rest?.get(fullUrl, modifiedHeaders?.toIMap()) { response, httpCode ->
-                val time = if (configs.isIndexer(url) && success(httpCode)) {
+            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode ->
+                val time = if (configs.isIndexer(fullUrl) && success(httpCode)) {
                     Clock.System.now()
                 } else null
 
@@ -1140,7 +1150,7 @@ open class StateManagerAdaptor(
                         this.lastIndexerCallTime = time
                     }
                     try {
-                        callback(url, response, httpCode)
+                        callback(fullUrl, response, httpCode)
                     } catch (e: Exception) {
                         e.printStackTrace()
                         val error = ParsingError(
@@ -1187,7 +1197,7 @@ open class StateManagerAdaptor(
     private fun retrieveServerTime() {
         val url = configs.publicApiUrl("time")
         if (url != null) {
-            get(url, null, null, false, callback = { _, response, httpCode ->
+            get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val json = Json.parseToJsonElement(response).jsonObject.toIMap()
                     val time = parser.asDatetime(json["time"])
@@ -1195,7 +1205,7 @@ open class StateManagerAdaptor(
                         ServerTime.overWrite = time
                     }
                 }
-            })
+            }
         }
     }
 
@@ -1203,14 +1213,14 @@ open class StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.configsUrl("markets")
         if (url != null) {
-            get(url, null, null, false, callback = { _, response, httpCode ->
+            get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(
                         stateMachine.configurations(response, subaccountNumber, deploymentUri),
                         oldState
                     )
                 }
-            })
+            }
         }
     }
 
@@ -1231,11 +1241,11 @@ open class StateManagerAdaptor(
     private fun retrieveSparklines() {
         val url = configs.publicApiUrl("sparklines")
         if (url != null) {
-            get(url, sparklinesParams(), null, false, callback = { _, response, httpCode ->
+            get(url, sparklinesParams(), null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     parseSparklinesResponse(response)
                 }
-            })
+            }
         }
     }
 
@@ -1271,10 +1281,10 @@ open class StateManagerAdaptor(
             maxDuration,
             "toISO",
             "fromISO",
-            false,
-            iMapOf(
+            mapOf(
                 "resolution" to candleResolution
             ),
+            null,
         ) { url, response, httpCode ->
             val oldState = stateMachine.state
             if (success(httpCode) && response != null) {
@@ -1304,7 +1314,7 @@ open class StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = configs.publicApiUrl("historical-funding") ?: return
         val market = market ?: return
-        get("$url/$market", null, null, false, callback = { _, response, httpCode ->
+        get("$url/$market", null, null, callback = { _, response, httpCode ->
             if (success(httpCode) && response != null) {
                 update(stateMachine.historicalFundings(response), oldState)
             }
@@ -1315,7 +1325,7 @@ open class StateManagerAdaptor(
         val oldState = stateMachine.state
         val url = subaccountsUrl()
         if (url != null) {
-            get(url, null, null, false, callback = { _, response, httpCode ->
+            get(url, null, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.subaccounts(response), oldState)
                     updateConnectedSubaccountNumber()
@@ -1338,7 +1348,7 @@ open class StateManagerAdaptor(
         return null
     }
 
-    private fun retrieveSubaccountHistoricalPnls() {
+    private fun retrieveSubaccountHistoricalPnls(previousUrl: String? = null) {
         val url = configs.privateApiUrl("historical-pnl") ?: return
         val params = subaccountParams()
         val historicalPnl = parser.asNativeList(
@@ -1363,8 +1373,8 @@ open class StateManagerAdaptor(
             180.days,
             "createdBeforeOrAt",
             "createdAtOrAfter",
-            accountIsPrivate(),
-            params
+            params,
+            previousUrl
         ) { url, response, httpCode ->
             val oldState = stateMachine.state
             if (success(httpCode) && !response.isNullOrEmpty()) {
@@ -1374,14 +1384,10 @@ open class StateManagerAdaptor(
                 )
                 update(changes, oldState)
                 if (changes.changes.contains(Changes.historicalPnl)) {
-                    retrieveSubaccountHistoricalPnls()
+                    retrieveSubaccountHistoricalPnls(url)
                 }
             }
         }
-    }
-
-    open fun accountIsPrivate(): Boolean {
-        return true
     }
 
     private fun retrieveSubaccountFills() {
@@ -1389,7 +1395,7 @@ open class StateManagerAdaptor(
         val url = configs.privateApiUrl("fills")
         val params = subaccountParams()
         if (url != null && params != null) {
-            get(url, params, null, accountIsPrivate(), callback = { _, response, httpCode ->
+            get(url, params, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val fills = Json.parseToJsonElement(response).jsonObject.toIMap()
                     if (fills.size != 0) {
@@ -1405,7 +1411,7 @@ open class StateManagerAdaptor(
         val url = configs.privateApiUrl("transfers")
         val params = subaccountParams()
         if (url != null && params != null) {
-            get(url, params, null, accountIsPrivate(), callback = { _, response, httpCode ->
+            get(url, params, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val tranfers = Json.parseToJsonElement(response).jsonObject.toIMap()
                     if (tranfers.size != 0) {
@@ -1428,8 +1434,8 @@ open class StateManagerAdaptor(
         maxDuration: Duration,
         beforeParam: String,
         afterParam: String? = null,
-        private: Boolean = false,
         additionalParams: Map<String, String>? = null,
+        previousUrl: String?,
         callback: (url: String, response: String?, httpCode: Int) -> Unit,
     ) {
         if (items != null) {
@@ -1455,7 +1461,10 @@ open class StateManagerAdaptor(
                     afterParam,
                     additionalParams
                 )
-                get(url, params, null, private, callback)
+                val fullUrl = fullUrl(url, params)
+                if (fullUrl != previousUrl) {
+                    get(fullUrl,null, callback)
+                }
             } else if (firstItemTime != null) {
                 /*
                 Get previous
@@ -1465,14 +1474,21 @@ open class StateManagerAdaptor(
                     val after = beforeOrAt - 99 * sampleDuration
                     val params =
                         timedParams(beforeOrAt, beforeParam, after, afterParam, additionalParams)
-                    get(url, params, null, private, callback)
+
+                    val fullUrl = fullUrl(url, params)
+                    if (fullUrl != previousUrl) {
+                        get(fullUrl,null, callback)
+                    }
                 }
             }
         } else {
             /*
             Get latest
              */
-            get(url, additionalParams, null, private, callback)
+            val fullUrl = fullUrl(url, additionalParams)
+            if (fullUrl != previousUrl) {
+                get(fullUrl,null, callback)
+            }
         }
     }
 
@@ -2082,9 +2098,8 @@ open class StateManagerAdaptor(
         if (url != null) {
             get(
                 url,
-                iMapOf("address" to address),
+                mapOf("address" to address),
                 null,
-                false,
                 callback = { _, response, httpCode ->
                     if (success(httpCode) && response != null) {
                         val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
