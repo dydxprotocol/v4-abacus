@@ -246,7 +246,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asString(data["current"]), obj.current?.rawValue, "$trace.current")
             when (obj.current?.rawValue) {
                 "trade" -> {
-                    verifyInputTradeState(parser.asNativeMap(data["trade"]), obj.trade, "$trace.trade")
+                    verifyInputTradeState(
+                        parser.asNativeMap(data["trade"]),
+                        obj.trade,
+                        "$trace.trade"
+                    )
                 }
 
                 "closePosition" -> {
@@ -306,7 +310,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.reduceOnly,
                 "$trace.reduceOnly $doesntMatchText"
             )
-            verifyInputTradeInputSizeState(parser.asNativeMap(data["size"]), obj.size, "$trace.size")
+            verifyInputTradeInputSizeState(
+                parser.asNativeMap(data["size"]),
+                obj.size,
+                "$trace.size"
+            )
             verifyInputTradeInputGoodUntilState(
                 parser.asNativeMap(data["goodTil"]),
                 obj.goodTil,
@@ -850,7 +858,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.buyingPower,
                 "$trace.buyingPower"
             )
-            verifyDoubleValues(parser.asNativeMap(data["leverage"]), obj.leverage, "$trace.leverage")
+            verifyDoubleValues(
+                parser.asNativeMap(data["leverage"]),
+                obj.leverage,
+                "$trace.leverage"
+            )
             verifyDoubleValues(
                 parser.asNativeMap(data["freeCollateral"]),
                 obj.freeCollateral,
@@ -963,7 +975,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.entryPrice,
                 "$trace.entryPrice"
             )
-            verifyDoubleValues(parser.asNativeMap(data["leverage"]), obj.leverage, "$trace.leverage")
+            verifyDoubleValues(
+                parser.asNativeMap(data["leverage"]),
+                obj.leverage,
+                "$trace.leverage"
+            )
             verifyDoubleValues(
                 parser.asNativeMap(data["maxLeverage"]),
                 obj.maxLeverage,
@@ -1029,7 +1045,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
             for (order in obj) {
                 val orderId = order.id
-                verifyAccountSubaccountOrder(parser.asNativeMap(data[orderId]), order, "$trace.$orderId")
+                verifyAccountSubaccountOrder(
+                    parser.asNativeMap(data[orderId]),
+                    order,
+                    "$trace.$orderId"
+                )
             }
         } else {
             assertNull(obj)
@@ -1208,7 +1228,8 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         val name = asset?.get("name")
         if (data != null &&
             data["id"] != null &&
-            parser.asBool(parser.value(data, "status.canTrade")) == true
+            (parser.asBool(parser.value(data, "status.canTrade")) == true ||
+                    parser.asBool(parser.value(data, "status.canReduce")) == true)
         ) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
@@ -1368,7 +1389,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertNotNull(obj)
             assertEquals(data.size, obj.size, "$trace.size")
             for (i in obj.indices) {
-                verifyMarketsHistoricalFundingState(parser.asNativeMap(data[i]), obj[i], "$trace.$i")
+                verifyMarketsHistoricalFundingState(
+                    parser.asNativeMap(data[i]),
+                    obj[i],
+                    "$trace.$i"
+                )
             }
         } else {
             assertNull(obj)
@@ -1595,7 +1620,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         assertEquals(compacted?.size, obj?.size, "$trace.size")
         if (obj != null) {
             for (i in obj.indices) {
-                verifyMarketOrderbookLine(parser.asNativeMap(compacted?.get(i)), obj[i], "$trace.$i")
+                verifyMarketOrderbookLine(
+                    parser.asNativeMap(compacted?.get(i)),
+                    obj[i],
+                    "$trace.$i"
+                )
             }
         }
     }
@@ -1893,7 +1922,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertNotNull(obj)
             assertEquals(data.size, obj.size, "$trace.size")
             for (i in obj.indices) {
-                verifySubaccountFundingPaymentState(parser.asNativeMap(data[i]), obj[i], "$trace.$i")
+                verifySubaccountFundingPaymentState(
+                    parser.asNativeMap(data[i]),
+                    obj[i],
+                    "$trace.$i"
+                )
             }
         } else {
             assertNull(obj)
