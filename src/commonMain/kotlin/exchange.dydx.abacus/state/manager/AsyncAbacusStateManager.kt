@@ -73,7 +73,7 @@ data class EnvironmentEndpoints(
                 parser.asString(it)
             }?.toIList() ?: return null
             val faucet = parser.asString(data["faucet"])
-            val squid = parser.asString(data["squid"])
+            val squid = parser.asString(data["0xsquid"])
             return EnvironmentEndpoints(indexers, validators, faucet, squid)
         }
     }
@@ -143,12 +143,12 @@ data class WalletConnectClient(
 ) {
     companion object {
         fun parse(
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
             parser: ParserProtocol,
         ): WalletConnectClient? {
-            val name = parser.asString(data["name"]) ?: return null
-            val description = parser.asString(data["description"]) ?: return null
-            val iconUrl = parser.asString(data["iconUrl"])
+            val name = parser.asString(data?.get("name")) ?: return null
+            val description = parser.asString(data?.get("description")) ?: return null
+            val iconUrl = parser.asString(data?.get("iconUrl"))
             return WalletConnectClient(name, description, iconUrl)
         }
     }
@@ -160,10 +160,10 @@ data class WalletConnectV1(
 ) {
     companion object {
         fun parse(
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
             parser: ParserProtocol,
         ): WalletConnectV1? {
-            val bridgeUrl = parser.asString(data["bridgeUrl"]) ?: return null
+            val bridgeUrl = parser.asString(data?.get("bridgeUrl")) ?: return null
             return WalletConnectV1(bridgeUrl)
         }
     }
@@ -175,10 +175,10 @@ data class WalletConnectV2(
 ) {
     companion object {
         fun parse(
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
             parser: ParserProtocol,
         ): WalletConnectV2? {
-            val projectId = parser.asString(data["projectId"]) ?: return null
+            val projectId = parser.asString(data?.get("projectId")) ?: return null
             return WalletConnectV2(projectId)
         }
     }
@@ -187,22 +187,22 @@ data class WalletConnectV2(
 @JsExport
 data class WalletConnect(
     val client: WalletConnectClient,
-    val v1: WalletConnectV1,
-    val v2: WalletConnectV2,
+    val v1: WalletConnectV1?,
+    val v2: WalletConnectV2?,
 ) {
     companion object {
         fun parse(
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
             parser: ParserProtocol,
         ): WalletConnect? {
             val client =
-                WalletConnectClient.parse(parser.asMap(data["client"]) ?: return null, parser)
+                WalletConnectClient.parse(parser.asMap(data?.get("client")), parser)
                     ?: return null
-            val v1 = WalletConnectV1.parse(parser.asMap(data["v1"]) ?: return null, parser)
-                ?: return null
-            val v2 = WalletConnectV2.parse(parser.asMap(data["v2"]) ?: return null, parser)
-                ?: return null
-            return WalletConnect(client, v1, v2)
+            val v1 = WalletConnectV1.parse(parser.asMap(data?.get("v1")), parser)
+            val v2 = WalletConnectV2.parse(parser.asMap(data?.get("v2")), parser)
+            return if (v1 != null || v2 != null)
+                WalletConnect(client, v1, v2)
+            else null
         }
     }
 }
@@ -213,10 +213,10 @@ data class WalletSegue(
 ) {
     companion object {
         fun parse(
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
             parser: ParserProtocol,
         ): WalletSegue? {
-            val callbackUrl = parser.asString(data["callbackUrl"]) ?: return null
+            val callbackUrl = parser.asString(data?.get("callbackUrl")) ?: return null
             return WalletSegue(callbackUrl)
         }
     }
@@ -224,8 +224,8 @@ data class WalletSegue(
 
 @JsExport
 data class WalletConnection(
-    val walletConnect: WalletConnect,
-    val walletSegue: WalletSegue,
+    val walletConnect: WalletConnect?,
+    val walletSegue: WalletSegue?,
     val images: String,
 ) {
     companion object {
@@ -239,12 +239,12 @@ data class WalletConnection(
                         ?: parser.asMap(data["walletconnect"])
                         ?: return null, parser
                 )
-                    ?: return null
             val walletSegue =
                 WalletSegue.parse(parser.asMap(data["walletSegue"]) ?: return null, parser)
-                    ?: return null
             val images = parser.asString(data["images"]) ?: return null
-            return WalletConnection(walletConnect, walletSegue, images)
+            return if (walletConnect != null || walletSegue != null)
+                WalletConnection(walletConnect, walletSegue, images)
+            else null
         }
     }
 }
@@ -259,7 +259,7 @@ open class Environment(
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
-    val walletConnection: WalletConnection,
+    val walletConnection: WalletConnection?,
 )
 
 @JsExport
@@ -271,7 +271,7 @@ class V4Environment(
     isMainNet: Boolean,
     endpoints: EnvironmentEndpoints,
     links: EnvironmentLinks?,
-    walletConnection: WalletConnection,
+    walletConnection: WalletConnection?,
     val tokens: IMap<String, TokenInfo>,
 ) : Environment(
     id,
@@ -304,7 +304,6 @@ class V4Environment(
                     ?: return null,
                 parser
             )
-                ?: return null
             val tokens = parseTokens(parser.asMap(data["tokens"]), parser, deploymentUri)
 
             return V4Environment(
