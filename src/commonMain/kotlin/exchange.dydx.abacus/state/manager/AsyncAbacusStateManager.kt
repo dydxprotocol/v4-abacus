@@ -145,11 +145,12 @@ data class WalletConnectClient(
         fun parse(
             data: Map<String, Any>?,
             parser: ParserProtocol,
+            deploymentUri: String,
         ): WalletConnectClient? {
             val name = parser.asString(data?.get("name")) ?: return null
             val description = parser.asString(data?.get("description")) ?: return null
             val iconUrl = parser.asString(data?.get("iconUrl"))
-            return WalletConnectClient(name, description, iconUrl)
+            return WalletConnectClient(name, description, "$deploymentUri$iconUrl")
         }
     }
 }
@@ -194,9 +195,10 @@ data class WalletConnect(
         fun parse(
             data: Map<String, Any>?,
             parser: ParserProtocol,
+            deploymentUri: String,
         ): WalletConnect? {
             val client =
-                WalletConnectClient.parse(parser.asMap(data?.get("client")), parser)
+                WalletConnectClient.parse(parser.asMap(data?.get("client")), parser, deploymentUri)
                     ?: return null
             val v1 = WalletConnectV1.parse(parser.asMap(data?.get("v1")), parser)
             val v2 = WalletConnectV2.parse(parser.asMap(data?.get("v2")), parser)
@@ -215,9 +217,10 @@ data class WalletSegue(
         fun parse(
             data: Map<String, Any>?,
             parser: ParserProtocol,
+            deploymentUri: String,
         ): WalletSegue? {
             val callbackUrl = parser.asString(data?.get("callbackUrl")) ?: return null
-            return WalletSegue(callbackUrl)
+            return WalletSegue("$deploymentUri$callbackUrl")
         }
     }
 }
@@ -230,20 +233,22 @@ data class WalletConnection(
 ) {
     companion object {
         fun parse(
-            data: Map<String, Any>,
+            data: Map<String, Any>?,
             parser: ParserProtocol,
+            deploymentUri: String,
         ): WalletConnection? {
             val walletConnect =
                 WalletConnect.parse(
-                    parser.asMap(data["walletConnect"])
-                        ?: parser.asMap(data["walletconnect"])
-                        ?: return null, parser
+                    parser.asMap(data?.get("walletConnect"))
+                        ?: parser.asMap(data?.get("walletconnect")),
+                    parser,
+                    deploymentUri
                 )
             val walletSegue =
-                WalletSegue.parse(parser.asMap(data["walletSegue"]) ?: return null, parser)
-            val images = parser.asString(data["images"]) ?: return null
+                WalletSegue.parse(parser.asMap(data?.get("walletSegue")), parser, deploymentUri)
+            val images = parser.asString(data?.get("images")) ?: return null
             return if (walletConnect != null || walletSegue != null)
-                WalletConnection(walletConnect, walletSegue, images)
+                WalletConnection(walletConnect, walletSegue, "$deploymentUri$images")
             else null
         }
     }
@@ -300,9 +305,9 @@ class V4Environment(
             val links = EnvironmentLinks.parse(parser.asMap(data["links"]) ?: return null, parser)
             val walletConnection = WalletConnection.parse(
                 parser.asMap(data["walletConnection"])
-                    ?: parser.asMap(data["wallets"])
-                    ?: return null,
-                parser
+                    ?: parser.asMap(data["wallets"]),
+                parser,
+                deploymentUri
             )
             val tokens = parseTokens(parser.asMap(data["tokens"]), parser, deploymentUri)
 
