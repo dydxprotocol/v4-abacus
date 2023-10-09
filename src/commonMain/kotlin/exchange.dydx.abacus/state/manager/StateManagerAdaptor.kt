@@ -1463,7 +1463,7 @@ open class StateManagerAdaptor(
                 )
                 val fullUrl = fullUrl(url, params)
                 if (fullUrl != previousUrl) {
-                    get(fullUrl,null, callback)
+                    get(fullUrl, null, callback)
                 }
             } else if (firstItemTime != null) {
                 /*
@@ -1477,7 +1477,7 @@ open class StateManagerAdaptor(
 
                     val fullUrl = fullUrl(url, params)
                     if (fullUrl != previousUrl) {
-                        get(fullUrl,null, callback)
+                        get(fullUrl, null, callback)
                     }
                 }
             }
@@ -1487,7 +1487,7 @@ open class StateManagerAdaptor(
              */
             val fullUrl = fullUrl(url, additionalParams)
             if (fullUrl != previousUrl) {
-                get(fullUrl,null, callback)
+                get(fullUrl, null, callback)
             }
         }
     }
@@ -2106,10 +2106,32 @@ open class StateManagerAdaptor(
                         val restricted = parser.asBool(payload["restricted"]) ?: false
                         callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
                     } else {
-                        callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                        if (httpCode == 403) {
+                            // It could be 403 due to GEOBLOCKED
+                            val usageRestriction = restrictionReason(response)
+                            callback(usageRestriction.restriction)
+                        } else {
+                            callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                        }
                     }
                 })
         }
+    }
+
+    internal fun restrictionReason(response: String?): UsageRestriction {
+        return if (response != null) {
+            val json = Json.parseToJsonElement(response).jsonObject.toMap()
+            val errors = parser.asList(parser.value(json, "errors"))
+            val geoRestriciton = errors?.firstOrNull { error ->
+                val code = parser.asString(parser.value(error, "code"))
+                code?.contains("GEOBLOCKED") == true
+            }
+
+            if (geoRestriciton !== null)
+                UsageRestriction.http403Restriction
+            else
+                UsageRestriction.userRestriction
+        } else UsageRestriction.http403Restriction
     }
 
     private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {

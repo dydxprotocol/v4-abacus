@@ -1069,19 +1069,7 @@ class V4StateManagerAdaptor(
         super.get(fullUrl, headers) { url, response, httpCode ->
             when (httpCode) {
                 403 -> {
-                    indexerRestriction = if (response != null) {
-                        val json = Json.parseToJsonElement(response).jsonObject.toMap()
-                        val errors = parser.asList(parser.value(json, "errors"))
-                        val userRestriction = errors?.firstOrNull { error ->
-                            val msg = parser.asString(parser.value(error, "msg"))
-                            msg?.contains("address") == true
-                        }
-
-                        if (userRestriction !== null)
-                            UsageRestriction.userRestriction
-                        else
-                            UsageRestriction.http403Restriction
-                    } else UsageRestriction.http403Restriction
+                    indexerRestriction = restrictionReason(response)
                 }
 
                 429 -> {
@@ -1101,6 +1089,7 @@ class V4StateManagerAdaptor(
 
         }
     }
+
 
     private fun didSetIndexerRestriction(indexerRestriction: UsageRestriction?) {
         updateRestriction()

@@ -57,6 +57,25 @@ class EnvironmentsMock {
                     "documentation":"https://v4-teacher.vercel.app/",
                     "community":"https://discord.com/invite/dydx",
                     "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
+                 },
+                 "wallets":{
+                    "walletconnect":{
+                       "client":{
+                          "name":"dYdX v4",
+                          "description":"dYdX v4 App",
+                          "iconUrl":"/logos/dydx-x.png"
+                       },
+                       "v1":{
+                          "bridgeUrl":"wss://api.stage.dydx.exchange/wc/"
+                       },
+                       "v2":{
+                          "projectId":"47559b2ec96c09aed9ff2cb54a31ab0e"
+                       }
+                    },
+                    "walletSegue":{
+                       "callbackUrl":"/walletsegue"
+                    },
+                    "images":"/wallets/"
                  }
               },
               "dydxprotocol-testnet":{
@@ -98,6 +117,25 @@ class EnvironmentsMock {
                     "documentation":"https://v4-teacher.vercel.app/",
                     "community":"https://discord.com/invite/dydx",
                     "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
+                 },
+                 "wallets":{
+                    "walletconnect":{
+                       "client":{
+                          "name":"dYdX v4",
+                          "description":"dYdX v4 App",
+                          "iconUrl":"/logos/dydx-x.png"
+                       },
+                       "v1":{
+                          "bridgeUrl":"wss://api.stage.dydx.exchange/wc/"
+                       },
+                       "v2":{
+                          "projectId":"47559b2ec96c09aed9ff2cb54a31ab0e"
+                       }
+                    },
+                    "walletSegue":{
+                       "callbackUrl":"/walletsegue"
+                    },
+                    "images":"/wallets/"
                  }
               }
            }

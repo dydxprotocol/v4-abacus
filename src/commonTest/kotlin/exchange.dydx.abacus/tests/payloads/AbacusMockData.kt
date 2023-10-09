@@ -3,6 +3,12 @@ package exchange.dydx.abacus.tests.payloads
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
+import exchange.dydx.abacus.state.manager.WalletConnect
+import exchange.dydx.abacus.state.manager.WalletConnectClient
+import exchange.dydx.abacus.state.manager.WalletConnectV1
+import exchange.dydx.abacus.state.manager.WalletConnectV2
+import exchange.dydx.abacus.state.manager.WalletConnection
+import exchange.dydx.abacus.state.manager.WalletSegue
 import kollections.JsExport
 import kollections.iMapOf
 
@@ -40,7 +46,6 @@ class AbacusMockData {
         "test",
         "test",
         false,
-        iMapOf(),
         EnvironmentEndpoints(
             null,
             null,
@@ -48,5 +53,23 @@ class AbacusMockData {
             null,
         ),
         null,
-        )
+        WalletConnection(
+            WalletConnect(
+                WalletConnectClient(
+                    "test",
+                    "test",
+                    "test",
+                ),
+                WalletConnectV1(
+                    "test",
+                ),
+                WalletConnectV2(
+                    "test",
+                )
+            ),
+            WalletSegue("callback"),
+            "/images/",
+        ),
+        iMapOf(),
+    )
 }
