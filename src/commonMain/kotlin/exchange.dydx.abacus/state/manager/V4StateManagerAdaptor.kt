@@ -25,6 +25,7 @@ import exchange.dydx.abacus.state.modal.onChainRewardsParams
 import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
+import exchange.dydx.abacus.state.modal.orderCanceled
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
 import exchange.dydx.abacus.utils.CoroutineTimer
@@ -905,6 +906,7 @@ class V4StateManagerAdaptor(
             val error = parseTransactionResponse(response)
             if (error == null) {
                 ioImplementations.threading?.async(ThreadingType.abacus) {
+                    this.orderCanceled(orderId)
                     this.cancelOrderRecords.add(
                         CancelOrderRecord(
                             subaccountNumber,
