@@ -122,7 +122,7 @@ data class HumanReadablePlaceOrderPayload(
     val execution: String,
     val goodTilTimeInSeconds: Int?,
     val marketInfo: PlaceOrderMarketInfo? = null,
-    val curerntHeight: Int? = null,
+    val currentHeight: Int? = null,
 )
 
 @JsExport
