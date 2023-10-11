@@ -112,7 +112,8 @@ internal class TradeInputDataValidator(
 
         if (orderType == null || timeInForce == null) return null
 
-        val equityTierLimit = maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
+        val equityTierLimit =
+            maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
         val numOrders = orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
 
         return if (numOrders >= equityTierLimit) {
@@ -346,38 +347,41 @@ internal class TradeInputDataValidator(
         */
         return when (parser.asString(trade["type"])) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
-                parser.asString(parser.value(trade, "side"))?.let { side ->
-                    parser.asDouble(parser.value(trade, "price.limitPrice"))
-                        ?.let { limitPrice ->
-                            parser.asDouble(parser.value(trade, "price.triggerPrice"))
-                                ?.let { triggerPrice ->
-                                    if (side == "BUY" && limitPrice < triggerPrice) {
-                                        // BUY
-                                        return listOf(
-                                            error(
-                                                "ERROR",
-                                                "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                listOf("price.triggerPrice"),
-                                                "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                val execution = parser.asString(trade["execution"])
+                if (execution == "IOC" || execution == "FOK") {
+                    parser.asString(parser.value(trade, "side"))?.let { side ->
+                        parser.asDouble(parser.value(trade, "price.limitPrice"))
+                            ?.let { limitPrice ->
+                                parser.asDouble(parser.value(trade, "price.triggerPrice"))
+                                    ?.let { triggerPrice ->
+                                        if (side == "BUY" && limitPrice < triggerPrice) {
+                                            // BUY
+                                            return listOf(
+                                                error(
+                                                    "ERROR",
+                                                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                    listOf("price.triggerPrice"),
+                                                    "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                    "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                                )
                                             )
-                                        )
-                                    } else if (side == "SELL" && limitPrice > triggerPrice) {
-                                        // SELL
-                                        return listOf(
-                                            error(
-                                                "ERROR",
-                                                "LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                listOf("price.triggerPrice"),
-                                                "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                        } else if (side == "SELL" && limitPrice > triggerPrice) {
+                                            // SELL
+                                            return listOf(
+                                                error(
+                                                    "ERROR",
+                                                    "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                    listOf("price.triggerPrice"),
+                                                    "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                    "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                                )
                                             )
-                                        )
+                                        } else null
                                     }
-                                }
-                        }
+                            }
+                    }
                 }
                 null
             }
@@ -396,7 +400,13 @@ internal class TradeInputDataValidator(
             field == "goodTil"
         }
 
-        return if (fields != null && parser.asBool(parser.value(trade, "options.needsGoodUntil")) == true) {
+        return if (fields != null && parser.asBool(
+                parser.value(
+                    trade,
+                    "options.needsGoodUntil"
+                )
+            ) == true
+        ) {
             val goodTil = parser.asNativeMap(trade["goodTil"])
             // null is handled by FieldsInputValidator
             val timeInterval = GoodTil.duration(goodTil, parser)
