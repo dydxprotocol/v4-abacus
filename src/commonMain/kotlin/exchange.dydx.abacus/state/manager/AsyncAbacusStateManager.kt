@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.manager
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
+import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -351,10 +352,11 @@ class V4Environment(
 }
 
 @JsExport
-class AppConfigs(val subscribeToCandles: Boolean) {
+class AppConfigs(val subscribeToCandles: Boolean, val loadRemote: Boolean = true) {
     companion object {
-        val forApp = AppConfigs(true)
-        val forWeb = AppConfigs(false)
+        val forApp = AppConfigs(true, true)
+        val forAppDebug = AppConfigs(true, false)
+        val forWeb = AppConfigs(false, true)
     }
 }
 
@@ -682,18 +684,21 @@ class AsyncAbacusStateManager(
     }
 
     private fun loadEnvironments() {
-        val environmentsUrl = "$deploymentUri$environmentsFile"
-        ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
-            if (success(httpCode) && response != null) {
-                val parser = Parser()
-                val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
-                if (!parseEnvironments(json, parser)) {
-                    loadEnvironmentsFromLocalFile()
+        if (appConfigs.loadRemote) {
+            loadEnvironmentsFromLocalFile()
+            val environmentsUrl = "$deploymentUri$environmentsFile"
+            ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    val parser = Parser()
+                    val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+                    if (parseEnvironments(json, parser)) {
+                        writeEnvironmentsToLocalFile(response)
+                    }
                 }
-            } else {
-                loadEnvironmentsFromLocalFile()
-            }
-        })
+            })
+        } else {
+            loadEnvironmentsFromBundledLocalFile()
+        }
     }
 
     private fun loadEnvironmentsFromLocalFile() {
@@ -706,8 +711,26 @@ class AsyncAbacusStateManager(
         }
     }
 
+    private fun loadEnvironmentsFromBundledLocalFile() {
+        ioImplementations.fileSystem?.readTextFile(
+            FileLocation.AppBundle,
+            environmentsFile,
+        )?.let { response ->
+            val parser = Parser()
+            val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+            parseEnvironments(json, parser)
+        }
+    }
+
     private fun success(httpCode: Int): Boolean {
         return httpCode in 200..299
+    }
+
+    private fun writeEnvironmentsToLocalFile(response: String) {
+        ioImplementations.fileSystem?.writeTextFile(
+            environmentsFile,
+            response
+        )
     }
 
 
