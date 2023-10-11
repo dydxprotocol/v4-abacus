@@ -701,7 +701,7 @@ internal class TradeInputCalculator(
             )
         ) else null
         val modified = defaultOptions(trade, position, market)
-        val fields = requiredFields(trade)
+        val fields = requiredFields(modified)
         modified.safeSet("fields", fields)
         modified.safeSet("options", calculatedOptionsFromFields(fields, position, market))
         modified.safeSet(
