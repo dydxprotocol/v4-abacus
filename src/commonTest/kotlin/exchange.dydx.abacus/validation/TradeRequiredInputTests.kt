@@ -526,6 +526,24 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "trade": {
                             "type": "STOP_LIMIT"
                         },
+                        "errors": null
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT"
+                        },
                         "errors": [
                             {
                                 "type": "ERROR",
@@ -536,6 +554,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                 }
             """.trimIndent()
         )
+
 
         test(
             {
@@ -713,6 +732,23 @@ class TradeRequiredInputTests : V3BaseTests() {
         test(
             {
                 perp.trade("1923", TradeInputField.triggerPrice, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT"
+                        },
+                        "errors": null
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.execution, 0)
             },
             """
                 {
