@@ -1121,7 +1121,7 @@ open class StateManagerAdaptor(
     ) {
         val fullUrl = fullUrl(url, params)
 
-        get(fullUrl, headers, callback)
+        getFullUrl(fullUrl, headers, callback)
     }
 
     private fun fullUrl(
@@ -1134,7 +1134,7 @@ open class StateManagerAdaptor(
         } else url
     }
 
-    open fun get(
+    open fun getFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
         callback: (url: String, response: String?, code: Int) -> Unit,
@@ -1463,7 +1463,7 @@ open class StateManagerAdaptor(
                 )
                 val fullUrl = fullUrl(url, params)
                 if (fullUrl != previousUrl) {
-                    get(fullUrl, null, callback)
+                    getFullUrl(fullUrl, null, callback)
                 }
             } else if (firstItemTime != null) {
                 /*
@@ -1477,7 +1477,7 @@ open class StateManagerAdaptor(
 
                     val fullUrl = fullUrl(url, params)
                     if (fullUrl != previousUrl) {
-                        get(fullUrl, null, callback)
+                        getFullUrl(fullUrl, null, callback)
                     }
                 }
             }
@@ -1487,7 +1487,7 @@ open class StateManagerAdaptor(
              */
             val fullUrl = fullUrl(url, additionalParams)
             if (fullUrl != previousUrl) {
-                get(fullUrl, null, callback)
+                getFullUrl(fullUrl, null, callback)
             }
         }
     }
