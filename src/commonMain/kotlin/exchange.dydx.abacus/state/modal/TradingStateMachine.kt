@@ -1071,7 +1071,7 @@ open class TradingStateMachine(
                     this.configs
                 )
                 this.input?.let {
-                    input = Input.create(input, parser, it)
+                    input = Input.create(input, parser, it, environment)
                 }
             }
         }

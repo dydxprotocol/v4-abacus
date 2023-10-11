@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
@@ -35,6 +36,7 @@ data class Input(
             existing: Input?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            environment: V4Environment?
         ): Input? {
             DebugLogger.log("creating Input\n")
 
@@ -45,7 +47,7 @@ data class Input(
                 val closePosition =
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
                 val transfer =
-                    TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]))
+                    TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment)
                 val errors =
                     ValidationError.create(existing?.errors, parser, parser.asList(data["errors"]))
                 val receiptLines = ReceiptLine.create(parser, parser.asList(data["receiptLines"]))

@@ -988,7 +988,7 @@ class V4StateManagerAdaptor(
                     } else {
                         receiveTransferGas(null)
                     }
-                } else if (token == "dydx") {
+                } else if (token == "chain") {
                     val address = state.input.transfer.address
                     if ((state.input.transfer.size?.size
                             ?: 0.0) > 0.0 && address.isAddressValid()

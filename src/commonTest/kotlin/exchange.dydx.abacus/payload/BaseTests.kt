@@ -61,6 +61,7 @@ import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
+import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -140,7 +141,14 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         assertNotNull(json, "Missing expectations")
         val data = perp.data
         assertNotNull(data, "Missing data")
-        data.satisfies(json, parser)
+        try {
+            data.satisfies(json, parser)
+        } catch (e: Throwable) {
+            println("Internal state match failed...")
+            println("  Actual State: ${data.toJsonPrettyPrint()}")
+            println("  Expected State: ${json.toJsonPrettyPrint()}")
+            throw e
+        }
     }
 
     internal fun test(perp: TradingStateMachine, json: JsonElement?) {

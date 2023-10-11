@@ -69,7 +69,7 @@ fun TradingStateMachine.transfer(
                         transfer.safeSet("route", null)
                         transfer.safeSet("requestPayload", null)
                         if (parser.asString(data) == "TRANSFER_OUT") {
-                            transfer.safeSet("chain", "dydx")
+                            transfer.safeSet("chain", "chain")
                             transfer.safeSet("token", "usdc")
                         } else {
                             val chainType = squidProcessor.defaultChainId()
@@ -237,7 +237,7 @@ private fun TradingStateMachine.transferDataOptionSize(typeText: String?): Strin
 }
 
 fun TradingStateMachine.validTransferInput(transfer: Map<String, Any>, typeText: String?): Boolean {
-    val option = if (transfer["type"] == "TRANSFER_OUT" && transfer["token"] == "dydx") {
+    val option = if (transfer["type"] == "TRANSFER_OUT" && transfer["token"] == "chain") {
         transferDataOptionSize(typeText)
     } else {
         transferDataOptionUsdcSize(typeText)

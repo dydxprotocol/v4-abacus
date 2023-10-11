@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.modal.transfer
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class TransferInputTests : V3BaseTests() {
     @Test
@@ -468,6 +469,10 @@ class TransferInputTests : V3BaseTests() {
                     }
                 }
             """.trimIndent()
+            , { response ->
+                assertTrue { response.state?.input?.transfer?.transferOutOptions?.assets?.count()  == 2 }
+                assertTrue { response.state?.input?.transfer?.transferOutOptions?.chains?.count()  == 1 }
+            }
         )
     }
 }
