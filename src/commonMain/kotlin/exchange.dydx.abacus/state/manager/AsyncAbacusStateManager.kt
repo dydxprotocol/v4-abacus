@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.manager
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
+import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -683,8 +684,8 @@ class AsyncAbacusStateManager(
     }
 
     private fun loadEnvironments() {
-        loadEnvironmentsFromLocalFile()
         if (appConfigs.loadRemote) {
+            loadEnvironmentsFromLocalFile()
             val environmentsUrl = "$deploymentUri$environmentsFile"
             ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
                 if (success(httpCode) && response != null) {
@@ -695,12 +696,25 @@ class AsyncAbacusStateManager(
                     }
                 }
             })
+        } else {
+            loadEnvironmentsFromBundledLocalFile()
         }
     }
 
     private fun loadEnvironmentsFromLocalFile() {
         ioImplementations.fileSystem?.readCachedTextFile(
             environmentsFile
+        )?.let { response ->
+            val parser = Parser()
+            val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+            parseEnvironments(json, parser)
+        }
+    }
+
+    private fun loadEnvironmentsFromBundledLocalFile() {
+        ioImplementations.fileSystem?.readTextFile(
+            FileLocation.AppBundle,
+            environmentsFile,
         )?.let { response ->
             val parser = Parser()
             val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
