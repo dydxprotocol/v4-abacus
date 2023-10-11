@@ -195,7 +195,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         payload: Map<String, Any>,
     ): Map<String, Any> {
         val modified = market?.mutable() ?: mutableMapOf()
-        val configs = transform(parser.asNativeMap(market?.get("configs")), payload, displayConfigsKeyMap)
+        val configs =
+            transform(parser.asNativeMap(market?.get("configs")), payload, displayConfigsKeyMap)
         modified.safeSet("configs", configs)
         return modified
     }
@@ -301,8 +302,15 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
-        val modified = market.toMutableMap()
         val orderbookRaw = orderbookProcessor.subscribed(payload)
+        return processRawOrderbook(market, orderbookRaw)
+    }
+
+    private fun processRawOrderbook(
+        market: Map<String, Any>,
+        orderbookRaw: Map<String, Any>
+    ): Map<String, Any> {
+        val modified = market.toMutableMap()
         modified["orderbook_raw"] = orderbookRaw
         val stepSize = parser.asDouble(parser.value(market, "configs.stepSize")) ?: fallbackStepSize
         val orderbookConsolidated = orderbookProcessor.consolidate(orderbookRaw, stepSize)
@@ -317,18 +325,11 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         market: Map<String, Any>,
         payload: List<Any>,
     ): Map<String, Any> {
-        val modified = market.toMutableMap()
         val orderbookRaw = orderbookProcessor.channel_batch_data(
             parser.asNativeMap(market["orderbook_raw"]),
             payload
         )
-        modified.safeSet("orderbook_raw", orderbookRaw)
-        val stepSize = parser.asDouble(market["stepSize"]) ?: fallbackStepSize
-        val orderbookConsolidated = orderbookProcessor.consolidate(orderbookRaw, stepSize)
-        val tickSize = parser.asDouble(parser.value(market, "configs.tickSize")) ?: fallbackTickSize
-        val orderbook = orderbookProcessor.group(orderbookConsolidated, tickSize)
-        modified.safeSet("orderbook", orderbook)
-        return modified
+        return processRawOrderbook(market, orderbookRaw)
     }
 
     internal fun receivedCandles(
@@ -399,7 +400,11 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     ): Map<String, Any> {
         val modified = market.toMutableMap()
         val candles =
-            candlesProcessor.channel_data(parser.asNativeMap(market["candles"]), resolution, payload)
+            candlesProcessor.channel_data(
+                parser.asNativeMap(market["candles"]),
+                resolution,
+                payload
+            )
         modified.safeSet("candles", candles)
         return modified
     }
