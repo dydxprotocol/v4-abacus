@@ -30,9 +30,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     internal fun channel_batch_data(
         existing: Map<String, Any>?,
         content: List<Any>
-    ): Map<String, Any>? {
+    ): Map<String, Any> {
         val orderbook = receivedBatchedChanges(existing, content)
-        return if (orderbook != null) calculate(orderbook) else null
+        return if (orderbook != null) calculate(orderbook) else mutableMapOf()
     }
 
     /*
@@ -473,8 +473,14 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val groupingTickSize = grouping(tickSize, groupingMultiplier)
             val modified = if (groupingMultiplier != 1) {
                 val modified = mutableMapOf<String, Any>()
-                modified.safeSet("asks", group(parser.asNativeList(orderbook["asks"]), groupingTickSize))
-                modified.safeSet("bids", group(parser.asNativeList(orderbook["bids"]), groupingTickSize))
+                modified.safeSet(
+                    "asks",
+                    group(parser.asNativeList(orderbook["asks"]), groupingTickSize)
+                )
+                modified.safeSet(
+                    "bids",
+                    group(parser.asNativeList(orderbook["bids"]), groupingTickSize)
+                )
                 modified.safeSet("midPrice", orderbook["midPrice"])
                 modified.safeSet("spreadPercent", orderbook["spreadPercent"])
                 modified
