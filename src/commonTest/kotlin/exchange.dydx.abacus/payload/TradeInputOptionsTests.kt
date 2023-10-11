@@ -20,7 +20,22 @@ class TradeInputOptionsTests : V3BaseTests() {
     private fun testTradeInputOnce() {
         test({
             perp.tradeInMarket("ETH-USD", 0)
-        }, null)
+        }, """
+            {
+                "input": {
+                    "current": "trade",
+                    "trade": {
+                        "type": "LIMIT",
+                        "side": "BUY",
+                        "marketId": "ETH-USD",
+                        "timeInForce": "GTT",
+                        "options": {
+                            "needsPostOnly": true
+                        }
+                    }
+                }
+            }
+        """.trimIndent())
 
         test(
             {

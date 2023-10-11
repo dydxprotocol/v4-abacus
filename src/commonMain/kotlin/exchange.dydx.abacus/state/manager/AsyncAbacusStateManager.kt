@@ -336,7 +336,7 @@ class V4Environment(
                     if (token != null) {
                         val name = parser.asString(token["name"]) ?: continue
                         val denom = parser.asString(token["denom"]) ?: continue
-                        val gasDenom = parser.asString(token["gasDenom"]) ?: continue
+                        val gasDenom = parser.asString(token["gasDenom"])
                         val imageUrl = parser.asString(token["image"])?.let {
                             "$deploymentUri$it"
                         }

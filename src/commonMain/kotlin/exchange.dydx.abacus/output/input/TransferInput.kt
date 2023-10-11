@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -9,6 +10,7 @@ import exchange.dydx.abacus.utils.iMapOf
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
+import kollections.toIList
 import kollections.toIMap
 import kotlinx.serialization.Serializable
 
@@ -168,24 +170,36 @@ data class TransferOutInputOptions(
         internal fun create(
             existing: TransferOutInputOptions?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            environment: V4Environment?
         ): TransferOutInputOptions? {
             DebugLogger.log("creating TransferOut Input Options\n")
-
-            val host =
-                "https://v4.testnet.dydx.exchange/"       // TODO: get this from the environment
 
             val needsSize = parser.asBool(data?.get("needsSize")) ?: false
             val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
 
-            val chains: IList<SelectionOption> = iListOf(
-                SelectionOption("dydx", null, "APP.GENERAL.DYDX_CHAIN", "$host/currencies/dydx.png")
-            )
+            val chain = environment?.tokens?.get("chain")
+            val chainOption: SelectionOption = if (chain != null) {
+                SelectionOption(
+                    "chain",
+                    chain.name,
+                    null,
+                    chain.imageUrl
+                )
+            } else {
+                return null
+            }
+            val chains: IList<SelectionOption> = iListOf(chainOption)
 
-            val assets: IList<SelectionOption> = iListOf(
-                SelectionOption("usdc", "USDC", null, "$host/currencies/usdc.png"),
-                SelectionOption("dydx", "DYDX", null, "$host/currencies/dydx.png")
-            )
+            val assets: IList<SelectionOption> = environment?.tokens?.keys?.map { key ->
+                val token = environment.tokens[key]!!
+                SelectionOption(
+                    key,
+                    token.name,
+                    null,
+                    token.imageUrl
+                )
+            }?.toIList() ?: iListOf()
 
             return if (existing?.needsSize != needsSize ||
                 existing?.needsAddress != needsAddress ||
@@ -543,7 +557,8 @@ data class TransferInput(
         internal fun create(
             existing: TransferInput?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            environment: V4Environment?
         ): TransferInput? {
             DebugLogger.log("creating Transfer Input\n")
 
@@ -583,7 +598,8 @@ data class TransferInput(
                     transferOutOptions = TransferOutInputOptions.create(
                         existing?.transferOutOptions,
                         parser,
-                        parser.asMap(data["transferOutOptions"])
+                        parser.asMap(data["transferOutOptions"]),
+                        environment
                     )
                 }
 
