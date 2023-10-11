@@ -3,6 +3,7 @@ package exchange.dydx.abacus.tests.payloads
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
+import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.WalletConnect
 import exchange.dydx.abacus.state.manager.WalletConnectClient
 import exchange.dydx.abacus.state.manager.WalletConnectV1
@@ -11,6 +12,7 @@ import exchange.dydx.abacus.state.manager.WalletConnection
 import exchange.dydx.abacus.state.manager.WalletSegue
 import kollections.JsExport
 import kollections.iMapOf
+import kollections.toIMap
 
 @JsExport
 class AbacusMockData {
@@ -70,6 +72,9 @@ class AbacusMockData {
             WalletSegue("callback"),
             "/images/",
         ),
-        iMapOf(),
+        mapOf(
+            "chain" to TokenInfo("DYDX", "dv4tnt",  null,"/currencies/dydx.png"),
+            "usdc" to TokenInfo("USDC", "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5", null, "/currencies/usdc.png"),
+        ).toIMap()
     )
 }
