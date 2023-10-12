@@ -47,6 +47,8 @@ class AbacusMockData {
         "test",
         "test",
         "test",
+        "dYdX Chain",
+        "dYdX-logo.png",
         false,
         EnvironmentEndpoints(
             null,
@@ -71,6 +73,8 @@ class AbacusMockData {
             ),
             WalletSegue("callback"),
             "/images/",
+            "test",
+            "test",
         ),
         mapOf(
             "chain" to TokenInfo("DYDX", "dv4tnt",  null,"/currencies/dydx.png"),
