@@ -201,7 +201,7 @@ data class WalletConnection(
     val walletSegue: WalletSegue?,
     val images: String,
     val signTypedDataAction: String?,
-    val signTypedDataMessage: String?,
+    val signTypedDataDomainName: String?,
 ) {
     companion object {
         fun parse(
@@ -220,14 +220,14 @@ data class WalletConnection(
                 WalletSegue.parse(parser.asMap(data?.get("walletSegue")), parser, deploymentUri)
             val images = parser.asString(data?.get("images")) ?: return null
             val signTypedDataAction = parser.asString(data?.get("signTypedDataAction"))
-            val signTypedDataMessage = parser.asString(data?.get("signTypedDataMessage"))
+            val signTypedDataDomainName = parser.asString(data?.get("signTypedDataDomainName"))
             return if (walletConnect != null || walletSegue != null)
                 WalletConnection(
                     walletConnect,
                     walletSegue,
                     "$deploymentUri$images",
                     signTypedDataAction,
-                    signTypedDataMessage
+                    signTypedDataDomainName
                 )
             else null
         }
