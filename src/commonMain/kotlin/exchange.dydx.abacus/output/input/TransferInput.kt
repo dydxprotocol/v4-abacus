@@ -178,13 +178,13 @@ data class TransferOutInputOptions(
             val needsSize = parser.asBool(data?.get("needsSize")) ?: false
             val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
 
-            val chain = environment?.tokens?.get("chain")
-            val chainOption: SelectionOption = if (chain != null) {
+            val chainName = environment?.chainName
+            val chainOption: SelectionOption = if (chainName != null) {
                 SelectionOption(
                     "chain",
-                    chain.name,
+                    chainName,
                     null,
-                    chain.imageUrl
+                    environment?.chainLogo
                 )
             } else {
                 return null
