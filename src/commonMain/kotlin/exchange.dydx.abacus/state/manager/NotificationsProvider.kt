@@ -409,8 +409,8 @@ class NotificationsProvider(
                     paramsAsJson
                 )
 
-            val orderid = order.id
-            val notificationId = "orderstatus:$orderid"
+            val orderId = order.id
+            val notificationId = "orderstatus:$orderId"
             return Notification(
                 notificationId,
                 NotificationType.INFO,
@@ -418,7 +418,7 @@ class NotificationsProvider(
                 marketImageUrl,
                 title,
                 text,
-                null,
+                "/orders/$orderId",
                 params,
                 updatedAtMilliseconds,
             )
