@@ -470,6 +470,7 @@ data class SubaccountOrder(
     val createdAtMilliseconds: Double?,
     val unfillableAtMilliseconds: Double?,
     val expiresAtMilliseconds: Double?,
+    val updatedAtMilliseconds: Double?,
     val postOnly: Boolean,
     val reduceOnly: Boolean,
     val cancelReason: String?,
@@ -518,6 +519,7 @@ data class SubaccountOrder(
                     val goodTilBlockTime =
                         parser.asDatetime(data["goodTilBlockTime"])?.epochSeconds?.toInt();
                     val createdAtHeight = parser.asInt(data["createdAtHeight"]);
+                    val updatedAtMilliseconds = parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble();
                     val expiresAtMilliseconds =
                         parser.asDatetime(data["expiresAt"] ?: data["goodTilBlockTime"])
                             ?.toEpochMilliseconds()?.toDouble()
@@ -545,6 +547,7 @@ data class SubaccountOrder(
                         existing.createdAtMilliseconds != createdAtMilliseconds ||
                         existing.unfillableAtMilliseconds != unfillableAtMilliseconds ||
                         existing.expiresAtMilliseconds != expiresAtMilliseconds ||
+                        existing.updatedAtMilliseconds != updatedAtMilliseconds ||
                         existing.postOnly != postOnly ||
                         existing.reduceOnly != reduceOnly ||
                         existing.cancelReason != cancelReason ||
@@ -569,9 +572,10 @@ data class SubaccountOrder(
                             goodTilBlock,
                             goodTilBlockTime,
                             createdAtHeight,
-                            createdAtMilliseconds?.toDouble(),
-                            unfillableAtMilliseconds?.toDouble(),
-                            expiresAtMilliseconds?.toDouble(),
+                            createdAtMilliseconds,
+                            unfillableAtMilliseconds,
+                            expiresAtMilliseconds,
+                            updatedAtMilliseconds,
                             postOnly,
                             reduceOnly,
                             cancelReason,
