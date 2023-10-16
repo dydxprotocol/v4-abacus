@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -12,26 +13,32 @@ import kotlinx.serialization.Serializable
 @JsExport
 @Serializable
 data class FeeDiscountResources(
-    val stringKey: String?
+    val string: String?,
+    val stringKey: String,
 ) {
     companion object {
         internal fun create(
             existing: FeeDiscountResources?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): FeeDiscountResources? {
             if (data == null) {
                 DebugLogger.debug("Fee Discount Resources not valid")
                 return null
             }
             val stringKey = parser.asString(data["stringKey"])
-            return if (existing?.stringKey != stringKey) {
-                FeeDiscountResources(
-                    stringKey
-                )
-            } else {
-                existing
-            }
+            return if (stringKey != null) {
+                if (existing?.stringKey != stringKey) {
+                    val string = localizer?.localize(stringKey)
+                    FeeDiscountResources(
+                        string,
+                        stringKey,
+                    )
+                } else {
+                    existing
+                }
+            } else null
         }
     }
 }
@@ -50,7 +57,8 @@ data class FeeDiscount(
         internal fun create(
             existing: IList<FeeDiscount>?,
             parser: ParserProtocol,
-            data: List<*>?
+            data: List<*>?,
+            localizer: LocalizerProtocol?,
         ): IList<FeeDiscount>? {
             data?.let {
                 val feeDiscounts = iMutableListOf<FeeDiscount>()
@@ -58,7 +66,7 @@ data class FeeDiscount(
                     val item = data[i]
                     parser.asMap(item)?.let {
                         val discount = existing?.getOrNull(i)
-                        FeeDiscount.create(discount, parser, it)?.let { feeDiscount ->
+                        FeeDiscount.create(discount, parser, it, localizer)?.let { feeDiscount ->
                             feeDiscounts.add(feeDiscount)
                         }
                     }
@@ -72,7 +80,8 @@ data class FeeDiscount(
         internal fun create(
             existing: FeeDiscount?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): FeeDiscount? {
             data?.let {
                 val id = parser.asString(data["id"])
@@ -83,7 +92,12 @@ data class FeeDiscount(
                 val resourcesData = parser.asMap(data["resources"])
                 if (id != null && tier != null && symbol != null && balance != null) {
                     val resources =
-                        FeeDiscountResources.create(existing?.resources, parser, resourcesData)
+                        FeeDiscountResources.create(
+                            existing?.resources,
+                            parser,
+                            resourcesData,
+                            localizer
+                        )
                     return if (existing?.id != id ||
                         existing.tier != tier ||
                         existing.symbol != symbol ||
@@ -106,24 +120,30 @@ data class FeeDiscount(
 @JsExport
 @Serializable
 data class FeeTierResources(
-    val stringKey: String?
+    val string: String?,
+    val stringKey: String
 ) {
     companion object {
         internal fun create(
             existing: FeeTierResources?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): FeeTierResources? {
             data?.let {
                 val stringKey = parser.asString(data["stringKey"])
 
-                return if (existing?.stringKey != stringKey) {
-                    FeeTierResources(
-                        stringKey
-                    )
-                } else {
-                    existing
-                }
+                return if (stringKey != null) {
+                    if (existing?.stringKey != stringKey) {
+                        val string = localizer?.localize(stringKey)
+                        FeeTierResources(
+                            string,
+                            stringKey,
+                        )
+                    } else {
+                        existing
+                    }
+                } else null
             }
             DebugLogger.debug("Fee Tier Resources not valid")
             return null
@@ -148,7 +168,8 @@ data class FeeTier(
         internal fun create(
             existing: IList<FeeTier>?,
             parser: ParserProtocol,
-            data: List<*>?
+            data: List<*>?,
+            localizer: LocalizerProtocol?,
         ): IList<FeeTier>? {
             data?.let {
                 val feeTiers = iMutableListOf<FeeTier>()
@@ -156,7 +177,7 @@ data class FeeTier(
                     val item = data[i]
                     parser.asMap(item)?.let {
                         val tier = existing?.getOrNull(i)
-                        FeeTier.create(tier, parser, it)?.let { feeTier ->
+                        FeeTier.create(tier, parser, it, localizer)?.let { feeTier ->
                             feeTiers.add(feeTier)
                         }
                     }
@@ -170,7 +191,8 @@ data class FeeTier(
         internal fun create(
             existing: FeeTier?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): FeeTier? {
             data?.let {
                 val id = parser.asString(data["id"])
@@ -184,7 +206,12 @@ data class FeeTier(
                 val resourcesData = parser.asMap(data["resources"])
                 if (id != null && tier != null && symbol != null && volume != null) {
                     val resources =
-                        FeeTierResources.create(existing?.resources, parser, resourcesData)
+                        FeeTierResources.create(
+                            existing?.resources,
+                            parser,
+                            resourcesData,
+                            localizer
+                        )
                     return if (existing?.id != id ||
                         existing.tier != tier ||
                         existing.symbol != symbol ||
@@ -195,7 +222,17 @@ data class FeeTier(
                         existing.taker != taker ||
                         existing.resources !== resources
                     ) {
-                        FeeTier(id, tier, symbol, volume, totalShare, makerShare, maker, taker, resources)
+                        FeeTier(
+                            id,
+                            tier,
+                            symbol,
+                            volume,
+                            totalShare,
+                            makerShare,
+                            maker,
+                            taker,
+                            resources
+                        )
                     } else {
                         existing
                     }
@@ -250,17 +287,23 @@ data class Configs(
         internal fun create(
             existing: Configs?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): Configs? {
             data?.let {
                 val network =
                     NetworkConfigs.create(existing?.network, parser, parser.asMap(data["network"]))
-                val feeTiers =
-                    FeeTier.create(existing?.feeTiers, parser, parser.asList(data["feeTiers"]))
+                val feeTiers = FeeTier.create(
+                    existing?.feeTiers,
+                    parser,
+                    parser.asList(data["feeTiers"]),
+                    localizer,
+                )
                 val feeDiscounts = FeeDiscount.create(
-                    existing?.feeDiscounts, parser, parser.asList(
-                        data["feeDiscounts"]
-                    )
+                    existing?.feeDiscounts,
+                    parser,
+                    parser.asList(data["feeDiscounts"]),
+                    localizer,
                 )
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
