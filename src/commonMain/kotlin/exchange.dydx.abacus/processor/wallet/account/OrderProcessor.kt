@@ -149,19 +149,39 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         // First, use updatedAt timestamp, available in v3
         val updatedAt = parser.asDatetime(existing?.get("updatedAt"))
             ?: parser.asDatetime(existing?.get("createdAt"))
-        val incomingUpdatedAt =
-            parser.asDatetime(payload["updatedAt"]) ?: parser.asDatetime(payload["createdAt"])
-        return if (updatedAt != null && incomingUpdatedAt != null) updatedAt < incomingUpdatedAt else {
-            // If there is no timestamp, look at the status
-            when (parser.asString(existing?.get("status"))) {
-                "FILLED", "CANCELED" -> false
-                "BEST_EFFORT_CANCELED" -> {
-                    val newStatus = parser.asString(payload["status"])
-                    (newStatus == "FILLED") || (newStatus == "CANCELED") || (newStatus == "BEST_EFFORT_CANCELED")
+        val incomingUpdatedAt = parser.asDatetime(payload["updatedAt"])
+            ?: parser.asDatetime(payload["createdAt"])
+        if (updatedAt != null) {
+            if (incomingUpdatedAt != null) {
+                if (updatedAt < incomingUpdatedAt) {
+                    return true
+                } else if (updatedAt > incomingUpdatedAt) {
+                    return false
                 }
-
-                else -> true
+                // If they are the same, fall through to the status and filled check
             }
+        } else {
+            if (incomingUpdatedAt != null) {
+                return true
+            }
+            // If they are both null, fall through to the status and filled check
+        }
+        val filled = parser.asDouble(existing?.get("totalFilled")) ?: Numeric.double.ZERO
+        val incomingFilled = parser.asDouble(payload["totalFilled"]) ?: Numeric.double.ZERO
+        if (incomingFilled > filled) {
+            return true
+        } else if (incomingFilled < filled) {
+            return false
+        }
+        // If updatedAt and totalFilled are the same, we use status for best guess
+        return when (parser.asString(existing?.get("status"))) {
+            "FILLED", "CANCELED" -> false
+            "BEST_EFFORT_CANCELED" -> {
+                val newStatus = parser.asString(payload["status"])
+                (newStatus == "FILLED") || (newStatus == "CANCELED") || (newStatus == "BEST_EFFORT_CANCELED")
+            }
+
+            else -> true
         }
     }
 
