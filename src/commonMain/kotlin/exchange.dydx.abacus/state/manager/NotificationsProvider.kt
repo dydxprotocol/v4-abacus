@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
+import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
@@ -14,7 +15,9 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -32,9 +35,19 @@ class NotificationsProvider(
         stateMachine: TradingStateMachine,
         subaccountNumber: Int
     ): IMap<String, Notification> {
-        val fillsNotifcations = buildFillsNotifications(stateMachine, subaccountNumber)
+        val fillsNotifications = buildFillsNotifications(stateMachine, subaccountNumber)
         val positionsNotifications = buildPositionsNotifications(stateMachine, subaccountNumber)
-        return (ParsingHelper.merge(fillsNotifcations, positionsNotifications) as? Map<String, Notification>)!!.toIMap()
+        val orderStatusChangesNotifications =
+            buildOrderStatusChangesNotifications(stateMachine, subaccountNumber)
+        val merged1 = ParsingHelper.merge(
+            fillsNotifications,
+            positionsNotifications
+        )
+        val merged2 = ParsingHelper.merge(
+            merged1,
+            orderStatusChangesNotifications
+        )
+        return (merged2 as? Map<String, Notification>)!!.toIMap()
     }
 
     private fun asset(marketId: String): String {
@@ -44,7 +57,7 @@ class NotificationsProvider(
     private fun buildFillsNotifications(
         stateMachine: TradingStateMachine,
         subaccountNumber: Int
-    ): IMap<String, Notification> {
+    ): Map<String, Notification> {
         /*
         We have to go through fills instead of orders, because
         1. Order doesn't have an updatedAt timestamp
@@ -86,19 +99,29 @@ class NotificationsProvider(
             for ((orderId, fillsForOrder) in fills) {
                 val order = orders[orderId] ?: continue
                 val notificationId = "order:$orderId"
-                notifications.typedSafeSet(notificationId, createFillNotification(stateMachine, fillsForOrder, order))
+                notifications.typedSafeSet(
+                    notificationId,
+                    createFillNotification(stateMachine, fillsForOrder, order)
+                )
             }
 
             for (fill in liquidated) {
                 val fillId = fill.id
                 val notificationId = "fill:$fillId"
-                notifications.typedSafeSet(notificationId, createLiquidationNotification(stateMachine, fill))
+                notifications.typedSafeSet(
+                    notificationId,
+                    createLiquidationNotification(stateMachine, fill)
+                )
             }
         }
         return notifications
     }
 
-    private fun asset(stateMachine:TradingStateMachine, marketId: String): Asset? {
+    private fun market(stateMachine: TradingStateMachine, marketId: String): PerpetualMarket? {
+        return stateMachine.state?.market(marketId)
+    }
+
+    private fun asset(stateMachine: TradingStateMachine, marketId: String): Asset? {
         val market = stateMachine.state?.market(marketId) ?: return null
         val assetId = market.assetId
         return stateMachine.state?.asset(assetId)
@@ -114,6 +137,8 @@ class NotificationsProvider(
         val fill = fillsForOrder.firstOrNull() ?: return null
         val orderId = order.id
         val marketId = fill.marketId
+        val market = market(stateMachine, marketId) ?: return null
+        val tickSize = market.configs?.tickSize ?: return null
         val asset = asset(stateMachine, marketId)
         val assetText = asset?.name ?: marketId
         val marketImageUrl = asset?.resources?.imageUrl
@@ -121,7 +146,7 @@ class NotificationsProvider(
         val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
         val amountText = parser.asString(order.size)
         val filledAmountText = parser.asString(order.totalFilled)
-        val priceText = parser.asString(fill.price)
+        val priceText = priceText(fill.price, tickSize)
         val averagePriceText = parser.asString(averagePrice(fillsForOrder))
         val params = (iMapOf(
             "MARKET" to marketId,
@@ -149,6 +174,11 @@ class NotificationsProvider(
             params,
             fill.createdAtMilliseconds,
         )
+    }
+
+    private fun priceText(price: Double, tickSize: Double): String {
+        val rounded = Rounder.round(price, tickSize, Rounder.RoundingMode.NEAREST)
+        return "$rounded"
     }
 
     private fun averagePrice(fillsForOrder: IList<SubaccountFill>): Double? {
@@ -250,13 +280,18 @@ class NotificationsProvider(
     private fun buildPositionsNotifications(
         stateMachine: TradingStateMachine,
         subaccountNumber: Int
-    ): IMap<String, Notification> {
+    ): Map<String, Notification> {
         /*
         We have to go to the dynamic data to find closed positions
         Struct contains open positions only
          */
         val notifications = mutableMapOf<String, Notification>()
-        val positions = parser.asMap(parser.value(stateMachine.data, "wallet.account.subaccounts.$subaccountNumber.positions"))
+        val positions = parser.asMap(
+            parser.value(
+                stateMachine.data,
+                "wallet.account.subaccounts.$subaccountNumber.positions"
+            )
+        )
 
         if (positions != null) {
             for ((marketId, data) in positions) {
@@ -300,4 +335,93 @@ class NotificationsProvider(
         return notifications
     }
 
+    private fun buildOrderStatusChangesNotifications(
+        stateMachine: TradingStateMachine,
+        subaccountNumber: Int
+    ): Map<String, Notification> {
+        /*
+        We have to go through fills instead of orders, because
+        1. Order doesn't have an updatedAt timestamp
+        2. Order doesn't have an average filled price
+         */
+        val notifications = mutableMapOf<String, Notification>()
+        val subaccount =
+            stateMachine.state?.subaccount(subaccountNumber) ?: return kollections.iMapOf()
+        subaccount.orders
+
+        val subaccountOrders = subaccount.orders
+
+        if (subaccountOrders != null) {
+            for (order in subaccountOrders) {
+                val orderStatusNotification = createOrderStatusNotification(stateMachine, order)
+                if (orderStatusNotification != null) {
+                    val orderId = order.id
+                    val notificationId = "order_status:$orderId"
+                    notifications.typedSafeSet(notificationId, orderStatusNotification)
+                }
+            }
+        }
+        return notifications
+    }
+
+    private fun createOrderStatusNotification(
+        stateMachine: TradingStateMachine,
+        order: SubaccountOrder,
+    ): Notification? {
+        val updatedAtMilliseconds = order.updatedAtMilliseconds ?: return null
+        val statusNotificationStringKey = when (order.status) {
+            OrderStatus.open -> {
+                when (order.type) {
+                    OrderType.stopLimit, OrderType.stopMarket, OrderType.takeProfitLimit, OrderType.takeProfitMarket -> {
+                        if (order.totalFilled == Numeric.double.ZERO) {
+                            "NOTIFICATIONS.ORDER_TRIGGERED"
+                        } else null
+                    }
+
+                    else -> null
+                }
+            }
+
+            OrderStatus.cancelled -> "NOTIFICATIONS.ORDER_CANCEL"
+
+            else -> null
+        }
+        return if (statusNotificationStringKey != null) {
+            val marketId = order.marketId
+            val asset = asset(stateMachine, marketId) ?: return null
+            val marketImageUrl = asset.resources?.imageUrl
+            val side = order.side.rawValue
+            val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
+            val amountText = parser.asString(order.size)
+            val params = (iMapOf(
+                "MARKET" to marketId,
+                "SIDE" to sideText,
+                "AMOUNT" to amountText,
+            ).filterValues { it != null } as Map<String, String>).toIMap()
+            val paramsAsJson = jsonEncoder.encode(params)
+
+            val title =
+                uiImplementations.localizer?.localize("$statusNotificationStringKey.TITLE")
+                    ?: return null
+            val text =
+                uiImplementations.localizer?.localize(
+                    "$statusNotificationStringKey.BODY",
+                    paramsAsJson
+                )
+
+            val orderId = order.id
+            val notificationId = "orderstatus:$orderId"
+            return Notification(
+                notificationId,
+                NotificationType.INFO,
+                NotificationPriority.NORMAL,
+                marketImageUrl,
+                title,
+                text,
+                "/orders/$orderId",
+                params,
+                updatedAtMilliseconds,
+            )
+        } else null
+    }
 }
