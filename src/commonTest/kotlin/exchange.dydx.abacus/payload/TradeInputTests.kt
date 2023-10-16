@@ -745,7 +745,7 @@ class TradeInputTests : V3BaseTests() {
                                 "size": 57.798,
                                 "usdcSize": 95699.0911,
                                 "worstPrice": 1.656E+3,
-                                "price": 1655.7509100660923,
+                                "price": 1655.750910066092,
                                 "filled": true,
                                 "orderbook": [
                                     {
