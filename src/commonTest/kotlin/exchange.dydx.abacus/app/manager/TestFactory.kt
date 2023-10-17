@@ -296,11 +296,7 @@ class TestChain : DYDXChainTransactionsProtocol {
     """.trimIndent()
 
     override fun connectNetwork(
-        indexerUrl: String,
-        indexerSocketUrl: String,
-        validatorUrl: String,
-        chainId: String,
-        faucetUrl: String?,
+        paramsInJson: String,
         callback: (response: String?) -> Unit,
     ) {
         callback(dummySuccess)
