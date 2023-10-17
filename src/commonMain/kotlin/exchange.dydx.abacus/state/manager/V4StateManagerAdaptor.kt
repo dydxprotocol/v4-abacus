@@ -498,10 +498,10 @@ class V4StateManagerAdaptor(
         val usdcToken = environment.tokens["usdc"] ?: return
         val chainToken = environment.tokens["chain"] ?: return
         val usdcDenom = usdcToken.denom
-        val usdcDenomExponent = usdcToken.exponents
+        val usdcDecimals = usdcToken.decimals
         val usdcGasDenom = usdcToken.gasDenom
         val chainTokenDenom = chainToken.denom
-        val chainTokenDenomExponent = chainToken.exponents
+        val chainTokenDecimals = chainToken.decimals
 
         val params = mutableMapOf<String, Any>()
         params["indexerUrl"] = indexerUrl
@@ -511,10 +511,10 @@ class V4StateManagerAdaptor(
         params.safeSet("faucetUrl", faucetUrl)
 
         params.safeSet("USDC_DENOM", usdcDenom)
-        params.safeSet("USDC_DENOM_EXPONENT", usdcDenomExponent)
+        params.safeSet("USDC_DECIMALS", usdcDecimals)
         params.safeSet("USDC_GAS_DENOM", usdcGasDenom)
         params.safeSet("CHAINTOKEN_DENOM", chainTokenDenom)
-        params.safeSet("CHAINTOKEN_DENOM_EXPONENT", chainTokenDenomExponent)
+        params.safeSet("CHAINTOKEN_DECIMALS", chainTokenDecimals)
         val jsonString = JsonEncoder().encode(params) ?: return
 
         ioImplementations.threading?.async(ThreadingType.main) {
