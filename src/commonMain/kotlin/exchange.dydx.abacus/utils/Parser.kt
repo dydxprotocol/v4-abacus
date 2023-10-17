@@ -118,7 +118,7 @@ class Parser : ParserProtocol {
             return try {
                 string.toBigDecimal(null, null)
             } catch (e: Exception) {
-                DebugLogger.error("Failed to parse double: $string", e)
+                DebugLogger.error("Failed to parse decimal: $string", e)
                 null
             }
         }

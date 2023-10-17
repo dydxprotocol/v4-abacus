@@ -541,7 +541,7 @@ open class TradingStateMachine(
         val input = state?.input
 
 
-        state = update(state, changes, environment?.tokens?.get("chain")!!, localizer)
+        state = update(state, changes, chainTokenInfo, localizer)
 
         val realChanges = iMutableListOf<Changes>()
         for (change in changes.changes) {
