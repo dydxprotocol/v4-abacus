@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -9,6 +10,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.modal.squidRoute
 import exchange.dydx.abacus.state.modal.squidStatus
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
@@ -24,10 +26,10 @@ private val dydxTokenDemon = "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
     val fromChain = state?.input?.transfer?.chain
     val fromToken = state?.input?.transfer?.token
-    val fromAmount = state?.input?.transfer?.size?.size?.let {
-        val decimals = parser.asDouble(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+    val fromAmount = parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
+        val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
         if (decimals != null) {
-            (it * 10.0.pow(decimals)).toBigDecimal().toBigInteger()
+            (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else null
     }
     val chainId = environment.dydxChainId
@@ -67,12 +69,12 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
     }
 }
 
-internal fun V4StateManagerAdaptor.simulateWithdrawal(callback: (Double?) -> Unit) {
+internal fun V4StateManagerAdaptor.simulateWithdrawal(exponents: Int, callback: (BigDecimal?) -> Unit) {
     val payload = withdrawPayloadJson()
 
     transaction(
         TransactionType.simulateWithdraw,
-        payload
+        payload,
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
@@ -82,14 +84,13 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(callback: (Double?) -> Uni
 
         val result = Json.parseToJsonElement(response).jsonObject.toIMap()
         val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
-        val amount = parser.asDouble(amountMap?.get("amount"))
-        val decimals = 6
-        val usdcAmount = amount?.div(10.0.pow(decimals))
+        val amount = parser.asDecimal(amountMap?.get("amount"))
+        val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(exponents))
         callback(usdcAmount)
     }
 }
 
-internal fun V4StateManagerAdaptor.simulateTransferNativeToken(callback: (Double?) -> Unit) {
+internal fun V4StateManagerAdaptor.simulateTransferNativeToken(exponents: Int, callback: (BigDecimal?) -> Unit) {
     val payload = transferNativeTokenPayloadJson()
 
     transaction(
@@ -104,22 +105,20 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(callback: (Double
 
         val result = Json.parseToJsonElement(response).jsonObject.toIMap()
         val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
-        val amount = parser.asDouble(amountMap?.get("amount"))
-        val decimals = 6
-        val usdcAmount = amount?.div(10.0.pow(decimals))
-        callback(usdcAmount)
+        val amount = parser.asDecimal(amountMap?.get("amount"))
+        val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(exponents))
+        callback(tokenAmount)
     }
 }
 
-internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(gas: Double) {
+internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(exponents: Int, gas: BigDecimal) {
     val state = stateMachine.state
     val toChain = state?.input?.transfer?.chain
     val toToken = state?.input?.transfer?.token
     val toAddress = state?.input?.transfer?.address
-    val usdcSize = state?.input?.transfer?.size?.usdcSize
+    val usdcSize = parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
     val fromAmount = if (usdcSize != null && usdcSize > gas) {
-        val decimals = 6
-        ((usdcSize - gas) * 10.0.pow(decimals)).toBigDecimal().toBigInteger()
+        ((usdcSize - gas) * Numeric.decimal.TEN.pow(exponents)).toBigInteger()
     } else {
         null
     }
@@ -180,12 +179,12 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     }
 }
 
-internal fun V4StateManagerAdaptor.receiveTransferGas(gas: Double?) {
+internal fun V4StateManagerAdaptor.receiveTransferGas(gas: BigDecimal?) {
     val input = stateMachine.input
-    val oldFee = parser.asDouble(parser.value(input, "transfer.fee"))
+    val oldFee = parser.asDecimal(parser.value(input, "transfer.fee"))
     if (oldFee != gas) {
         val oldState = stateMachine.state
-        var modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
+        val modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
         modified.safeSet("transfer.fee", gas)
         update(StateChanges(iListOf(Changes.input)), oldState)
     }

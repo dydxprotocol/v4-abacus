@@ -790,7 +790,7 @@ private class V4AccountBalancesProcessor(parser: ParserProtocol) : BaseProcessor
                         val existing =
                             parser.asNativeMap(existing?.get(key))?.mutable() ?: mutableMapOf()
                         existing.safeSet("denom", denom)
-                        existing.safeSet("amount", parser.asDouble(data?.get("amount")))
+                        existing.safeSet("amount", parser.asDecimal(data?.get("amount")))
                         modified.safeSet(key, existing)
                     }
                 }
@@ -811,16 +811,18 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
                 val delegation = parser.asNativeMap(itemPayload)
                 val balance = parser.asNativeMap(delegation?.get("balance"))
                 if (balance != null) {
-                    val denom = parser.asString(balance?.get("denom"))
+                    val denom = parser.asString(balance["denom"])
                     if (denom != null) {
                         val key = "$denom"
                         val current =
                             parser.asNativeMap(modified[key])?.mutable()
                         if (current == null) {
-                            modified.safeSet(key, mapOf("denom" to denom, "amount" to parser.asDouble(balance?.get("amount"))))
+                            modified.safeSet(key, mapOf("denom" to denom, "amount" to parser.asDecimal(
+                                balance["amount"]
+                            )))
                         } else {
-                            val amount = parser.asDouble(balance?.get("amount"));
-                            val existingAmount = parser.asDouble(current["amount"]);
+                            val amount = parser.asDecimal(balance["amount"]);
+                            val existingAmount = parser.asDecimal(current["amount"]);
                             if (amount != null && existingAmount != null) {
                                 current.safeSet("amount", amount + existingAmount)
                             }
