@@ -69,7 +69,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
     }
 }
 
-internal fun V4StateManagerAdaptor.simulateWithdrawal(exponents: Int, callback: (BigDecimal?) -> Unit) {
+internal fun V4StateManagerAdaptor.simulateWithdrawal(decimals: Int, callback: (BigDecimal?) -> Unit) {
     val payload = withdrawPayloadJson()
 
     transaction(
@@ -85,12 +85,12 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(exponents: Int, callback: 
         val result = Json.parseToJsonElement(response).jsonObject.toIMap()
         val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
         val amount = parser.asDecimal(amountMap?.get("amount"))
-        val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(exponents))
+        val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
         callback(usdcAmount)
     }
 }
 
-internal fun V4StateManagerAdaptor.simulateTransferNativeToken(exponents: Int, callback: (BigDecimal?) -> Unit) {
+internal fun V4StateManagerAdaptor.simulateTransferNativeToken(decimals: Int, callback: (BigDecimal?) -> Unit) {
     val payload = transferNativeTokenPayloadJson()
 
     transaction(
@@ -106,19 +106,19 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(exponents: Int, c
         val result = Json.parseToJsonElement(response).jsonObject.toIMap()
         val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
         val amount = parser.asDecimal(amountMap?.get("amount"))
-        val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(exponents))
+        val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
         callback(tokenAmount)
     }
 }
 
-internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(exponents: Int, gas: BigDecimal) {
+internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: BigDecimal) {
     val state = stateMachine.state
     val toChain = state?.input?.transfer?.chain
     val toToken = state?.input?.transfer?.token
     val toAddress = state?.input?.transfer?.address
     val usdcSize = parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
     val fromAmount = if (usdcSize != null && usdcSize > gas) {
-        ((usdcSize - gas) * Numeric.decimal.TEN.pow(exponents)).toBigInteger()
+        ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
     } else {
         null
     }

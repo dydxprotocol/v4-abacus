@@ -981,15 +981,15 @@ class V4StateManagerAdaptor(
                 type == TransferInputField.chain ||
                 type == TransferInputField.token
             ) {
-                val exponents = environment.tokens["usdc"]?.decimals ?: 6
+                val decimals = environment.tokens["usdc"]?.decimals ?: 6
 
                 val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                 if (usdcSize > Numeric.double.ZERO) {
-                    simulateWithdrawal(exponents) { gasFee ->
+                    simulateWithdrawal(decimals) { gasFee ->
                         if (gasFee != null) {
-                            retrieveWithdrawalRoute(exponents, gasFee)
+                            retrieveWithdrawalRoute(decimals, gasFee)
                         } else {
-                            retrieveWithdrawalRoute(exponents, Numeric.decimal.ZERO)
+                            retrieveWithdrawalRoute(decimals, Numeric.decimal.ZERO)
                         }
                     }
                 }
@@ -1005,24 +1005,24 @@ class V4StateManagerAdaptor(
             ) {
                 val token = state.input.transfer.token
                 if (token == "usdc") {
-                    val exponents = environment.tokens[token]?.decimals ?: 6
+                    val decimals = environment.tokens[token]?.decimals ?: 6
 
                     val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                     if (usdcSize > Numeric.double.ZERO) {
-                        simulateWithdrawal(exponents) { gasFee ->
+                        simulateWithdrawal(decimals) { gasFee ->
                             receiveTransferGas(gasFee)
                         }
                     } else {
                         receiveTransferGas(null)
                     }
                 } else if (token == "chain") {
-                    val exponents = environment.tokens[token]?.decimals ?: 18
+                    val decimals = environment.tokens[token]?.decimals ?: 18
 
                     val address = state.input.transfer.address
                     val tokenSize = parser.asDouble(state.input.transfer.size?.size) ?: Numeric.double.ZERO
                     if (tokenSize > Numeric.double.ZERO && address.isAddressValid()
                     ) {
-                        simulateTransferNativeToken(exponents) { gasFee ->
+                        simulateTransferNativeToken(decimals) { gasFee ->
                             receiveTransferGas(gasFee)
                         }
                     } else {
