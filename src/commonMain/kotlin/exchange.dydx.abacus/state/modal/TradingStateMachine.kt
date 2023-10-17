@@ -385,7 +385,13 @@ open class TradingStateMachine(
         return Pair(market, resolution)
     }
 
-    fun rest(url: AbUrl, payload: String, subaccountNumber: Int, height: Int?, deploymentUri: String? = null): StateResponse {
+    fun rest(
+        url: AbUrl,
+        payload: String,
+        subaccountNumber: Int,
+        height: Int?,
+        deploymentUri: String? = null
+    ): StateResponse {
         /*
         For backward compatibility only
          */
@@ -530,7 +536,7 @@ open class TradingStateMachine(
         val wallet = state?.wallet
         val input = state?.input
 
-        state = update(state, changes)
+        state = update(state, changes, localizer)
 
         val realChanges = iMutableListOf<Changes>()
         for (change in changes.changes) {
@@ -836,7 +842,11 @@ open class TradingStateMachine(
         }
     }
 
-    private fun update(state: PerpetualState?, changes: StateChanges): PerpetualState {
+    private fun update(
+        state: PerpetualState?,
+        changes: StateChanges,
+        localizer: LocalizerProtocol?
+    ): PerpetualState {
         var marketsSummary = state?.marketsSummary
         var orderbooks = state?.orderbooks
         var trades = state?.trades
@@ -895,7 +905,7 @@ open class TradingStateMachine(
                         )
                     ) as? IList<Map<String, Any>>
                     val existing = trades?.get(marketId)
-                    val trades = MarketTrade.create(existing, parser, data)
+                    val trades = MarketTrade.create(existing, parser, data, localizer)
                     modified.typedSafeSet(marketId, trades)
                 }
                 trades = modified
@@ -944,7 +954,7 @@ open class TradingStateMachine(
                 assets = assets ?: mutableMapOf<String, Asset>()
                 for ((key, data) in it) {
                     parser.asNativeMap(data)?.let {
-                        Asset.create(assets?.get(key), parser, it)?.let {
+                        Asset.create(assets?.get(key), parser, it, localizer)?.let {
                             assets!![key] = it
                         }
                     }
@@ -955,7 +965,7 @@ open class TradingStateMachine(
         }
         if (changes.changes.contains(Changes.configs)) {
             this.configs?.let {
-                configs = Configs.create(configs, parser, it)
+                configs = Configs.create(configs, parser, it, localizer)
             } ?: run {
                 configs = null
             }
@@ -972,14 +982,15 @@ open class TradingStateMachine(
         if (accountData != null) {
             if (changes.changes.contains(Changes.subaccount)) {
                 account = if (account == null) {
-                    Account.create(null, parser, accountData)
+                    Account.create(null, parser, accountData, localizer)
                 } else {
                     val subaccounts = account.subaccounts?.toIMutableMap() ?: mutableMapOf()
                     for (subaccountNumber in subaccountNumbers) {
                         val subaccount = Subaccount.create(
                             account.subaccounts?.get("$subaccountNumber"),
                             parser,
-                            subaccount(subaccountNumber)
+                            subaccount(subaccountNumber),
+                            localizer,
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
@@ -987,7 +998,7 @@ open class TradingStateMachine(
                 }
             }
             if (changes.changes.contains(Changes.accountBalances)) {
-                account = Account.create(account, parser, accountData)
+                account = Account.create(account, parser, accountData, localizer)
             }
         } else {
             account = null
@@ -1033,7 +1044,8 @@ open class TradingStateMachine(
                 subaccountFills = SubaccountFill.create(
                     subaccountFills,
                     parser,
-                    subaccountFills(subaccountNumber) as? IList<Map<String, Any>>
+                    subaccountFills(subaccountNumber) as? IList<Map<String, Any>>,
+                    localizer,
                 )
                 modifiedFills.typedSafeSet(subaccountText, subaccountFills)
                 fills = modifiedFills
@@ -1164,7 +1176,7 @@ open class TradingStateMachine(
             val historicalPnls = state?.historicalPnl?.get("$subaccountNumber") ?: return noChange()
             val first = historicalPnls.firstOrNull() ?: return noChange()
             val changes = StateChanges(iListOf(Changes.historicalPnl))
-            state = update(state, changes)
+            state = update(state, changes, localizer)
             StateResponse(state, changes)
         } else noChange()
     }
@@ -1186,7 +1198,7 @@ open class TradingStateMachine(
                     null,
                     iListOf(subaccountNumber)
                 )
-                state = update(state, changes)
+                state = update(state, changes, localizer)
                 StateResponse(state, changes)
             } else noChange()
         } else noChange()
@@ -1222,7 +1234,7 @@ open class TradingStateMachine(
                 this.wallet = wallet
 
                 val changes = StateChanges(iListOf(Changes.subaccount))
-                state = update(state, changes)
+                state = update(state, changes, localizer)
                 return StateResponse(state, changes)
             }
         }

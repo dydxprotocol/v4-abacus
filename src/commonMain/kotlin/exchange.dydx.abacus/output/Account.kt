@@ -2,6 +2,7 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.*
 import exchange.dydx.abacus.processor.base.ComparisonOrder
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -94,6 +95,7 @@ data class SubaccountHistoricalPNL(
 @JsExport
 @Serializable
 data class SubaccountPositionResources(
+    val sideString: TradeStatesWithStringValues,
     val sideStringKey: TradeStatesWithStringValues,
     val indicator: TradeStatesWithStringValues,
 ) {
@@ -102,6 +104,7 @@ data class SubaccountPositionResources(
             existing: SubaccountPositionResources?,
             parser: ParserProtocol,
             data: IMap<*, *>?,
+            localizer: LocalizerProtocol? = null,
         ): SubaccountPositionResources? {
             DebugLogger.log("creating Account Position Resources\n")
             data?.let {
@@ -110,6 +113,17 @@ data class SubaccountPositionResources(
                         existing?.sideStringKey,
                         parser,
                         parser.asMap(data["sideStringKey"])
+                    )
+                val sideString: TradeStatesWithStringValues =
+                    TradeStatesWithStringValues.create(
+                        existing?.sideString,
+                        parser,
+                        parser.asMap(data["sideStringKey"])?.mapValues {
+                            val stringKey = parser.asString(it.value)
+                            if (stringKey != null) {
+                                localizer?.localize(stringKey)
+                            } else null
+                        }
                     )
                 val indicator: TradeStatesWithStringValues =
                     TradeStatesWithStringValues.create(
@@ -120,7 +134,7 @@ data class SubaccountPositionResources(
                 return if (existing?.sideStringKey !== sideStringKey ||
                     existing.indicator !== indicator
                 ) {
-                    SubaccountPositionResources(sideStringKey, indicator)
+                    SubaccountPositionResources(sideString, sideStringKey, indicator)
                 } else {
                     existing
                 }
@@ -404,6 +418,10 @@ BE returns new enum values which Abacus doesn't recognize
 @JsExport
 @Serializable
 data class SubaccountOrderResources(
+    val sideString: String?,
+    val typeString: String?,
+    val statusString: String?,
+    val timeInForceString: String?,
     val sideStringKey: String,
     val typeStringKey: String?,
     val statusStringKey: String?,
@@ -414,11 +432,11 @@ data class SubaccountOrderResources(
             existing: SubaccountOrderResources?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): SubaccountOrderResources? {
             DebugLogger.log("creating Account Order Resources\n")
 
             data?.let {
-
                 val sideStringKey = parser.asString(data["sideStringKey"])
                 val typeStringKey = parser.asString(data["typeStringKey"])
                 val statusStringKey = parser.asString(data["statusStringKey"])
@@ -429,7 +447,15 @@ data class SubaccountOrderResources(
                         existing.statusStringKey != statusStringKey ||
                         existing.timeInForceStringKey != timeInForceStringKey
                     ) {
+                        val sideString = localizer?.localize(sideStringKey)
+                        val typeString = if (typeStringKey != null) localizer?.localize(typeStringKey) else null
+                        val statusString = if (statusStringKey != null) localizer?.localize(statusStringKey) else null
+                        val timeInForceString = if (timeInForceStringKey != null) localizer?.localize(timeInForceStringKey) else null
                         SubaccountOrderResources(
+                            sideString,
+                            typeString,
+                            statusString,
+                            timeInForceString,
                             sideStringKey,
                             typeStringKey,
                             statusStringKey,
@@ -481,6 +507,7 @@ data class SubaccountOrder(
             existing: SubaccountOrder?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): SubaccountOrder? {
             DebugLogger.log("creating Account Order\n")
             data?.let {
@@ -503,7 +530,7 @@ data class SubaccountOrder(
                 val createdAtMilliseconds =
                     parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 val resources = parser.asMap(data["resources"])?.let {
-                    SubaccountOrderResources.create(existing?.resources, parser, it)
+                    SubaccountOrderResources.create(existing?.resources, parser, it, localizer)
                 }
                 if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null
                     && resources != null
@@ -600,6 +627,9 @@ BE returns new transfer type enum values or status enum values which Abacus does
 @JsExport
 @Serializable
 data class SubaccountFillResources(
+    val sideString: String?,
+    val liquidityString: String?,
+    val typeString: String?,
     val sideStringKey: String?,
     val liquidityStringKey: String?,
     val typeStringKey: String?,
@@ -610,6 +640,7 @@ data class SubaccountFillResources(
             existing: SubaccountFillResources?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?
         ): SubaccountFillResources? {
             DebugLogger.log("creating Account Fill Resources\n")
 
@@ -618,12 +649,19 @@ data class SubaccountFillResources(
                 val liquidityStringKey = parser.asString(data["liquidityStringKey"])
                 val typeStringKey = parser.asString(data["typeStringKey"])
                 val iconLocal = parser.asString(data["iconLocal"])
-                return if (existing?.sideStringKey != sideStringKey ||
+                return if (
+                    existing?.sideStringKey != sideStringKey ||
                     existing?.liquidityStringKey != liquidityStringKey ||
                     existing?.typeStringKey != typeStringKey ||
                     existing?.iconLocal != iconLocal
                 ) {
+                    val sideString = if (sideStringKey != null) localizer?.localize(sideStringKey) else null
+                    val liquidityString = if (liquidityStringKey != null) localizer?.localize(liquidityStringKey) else null
+                    val typeString = if (typeStringKey != null) localizer?.localize(typeStringKey) else null
                     SubaccountFillResources(
+                        sideString,
+                        liquidityString,
+                        typeString,
                         sideStringKey,
                         liquidityStringKey,
                         typeStringKey,
@@ -671,6 +709,7 @@ data class SubaccountFill(
             existing: SubaccountFill?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): SubaccountFill? {
             DebugLogger.log("creating Account Fill\n")
             data?.let {
@@ -689,7 +728,7 @@ data class SubaccountFill(
                 val createdAtMilliseconds =
                     parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 val resources = parser.asMap(data["resources"])?.let {
-                    SubaccountFillResources.create(existing?.resources, parser, it)
+                    SubaccountFillResources.create(existing?.resources, parser, it, localizer)
                 }
                 return if (id != null && marketId != null && side != null && type != null && liquidity != null &&
                     price != null && size != null && createdAtMilliseconds != null && resources != null
@@ -732,6 +771,7 @@ data class SubaccountFill(
             existing: IList<SubaccountFill>?,
             parser: ParserProtocol,
             data: List<Map<String, Any>>?,
+            localizer: LocalizerProtocol?,
         ): IList<SubaccountFill>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountFill).createdAtMilliseconds
@@ -746,7 +786,7 @@ data class SubaccountFill(
                     ParsingHelper.compare(id1, id2, true)
                 }
             }, { _, obj, itemData ->
-                obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData))
+                obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData), localizer)
             }, true)?.toIList()
         }
     }
@@ -759,6 +799,8 @@ BE returns new transfer type enum values or status enum values which Abacus does
 @JsExport
 @Serializable
 data class SubaccountTransferResources(
+    val typeString: String?,
+    val statusString: String?,
     val typeStringKey: String?,
     val blockExplorerUrl: String?,
     val statusStringKey: String?,
@@ -770,6 +812,7 @@ data class SubaccountTransferResources(
             existing: SubaccountTransferResources?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol? = null,
         ): SubaccountTransferResources? {
             DebugLogger.log("creating Account Transfer Resources\n")
 
@@ -785,7 +828,11 @@ data class SubaccountTransferResources(
                     existing?.iconLocal != iconLocal ||
                     existing?.indicator != indicator
                 ) {
+                    val typeString = if (typeStringKey != null) localizer?.localize(typeStringKey) else null
+                    val statusString = if (statusStringKey != null) localizer?.localize(statusStringKey) else null
                     SubaccountTransferResources(
+                        typeString,
+                        statusString,
                         typeStringKey,
                         blockExplorerUrl,
                         statusStringKey,
@@ -1016,6 +1063,7 @@ data class Subaccount(
             existing: Subaccount?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): Subaccount? {
             DebugLogger.log("creating Account\n")
 
@@ -1098,7 +1146,7 @@ data class Subaccount(
                     parser,
                     parser.asMap(data["openPositions"])
                 )
-                val orders = orders(parser, existing?.orders, parser.asMap(data["orders"]))
+                val orders = orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
 
                 /*
                 val transfers = AccountTransfers.fromArray(
@@ -1184,6 +1232,7 @@ data class Subaccount(
             parser: ParserProtocol,
             existing: IList<SubaccountOrder>?,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): IList<SubaccountOrder>? {
             val orders = ParsingHelper.transform(parser, existing, data, {
                 (it as SubaccountOrder).id
@@ -1214,7 +1263,7 @@ data class Subaccount(
                 }
             }, { _, obj, itemData ->
                 parser.asMap(itemData)?.let {
-                    SubaccountOrder.create(obj as? SubaccountOrder, parser, it)
+                    SubaccountOrder.create(obj as? SubaccountOrder, parser, it, localizer)
                 }
             })?.toIList()
             return orders
@@ -1306,6 +1355,7 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             data: Map<String, Any>,
+            localizer: LocalizerProtocol?,
         ): Account {
             DebugLogger.log("creating Account\n")
 
@@ -1351,7 +1401,8 @@ data class Account(
                     Subaccount.create(
                         existing?.subaccounts?.get(key),
                         parser,
-                        subaccountData
+                        subaccountData,
+                        localizer,
                     )
                         ?.let { subaccount ->
                             subaccounts[key] = subaccount
