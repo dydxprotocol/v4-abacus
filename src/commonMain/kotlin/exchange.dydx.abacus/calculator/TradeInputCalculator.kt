@@ -620,7 +620,6 @@ internal class TradeInputCalculator(
         var AE = parser.asDouble(equity)!!
         var SZ = parser.asDouble(positionSize) ?: Numeric.double.ZERO
 
-        val stepSizeDecimal = parser.asDouble(stepSize)!!
         orderbookLoop@ for (i in 0 until orderbook.size) {
             val entry = orderbook[i]
 
@@ -632,28 +631,29 @@ internal class TradeInputCalculator(
                         (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
-                    val rounded = this.rounded(sizeTotal, desiredSize, stepSizeDecimal)
-                    sizeTotal += rounded
+                    val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
+                    sizeTotal = Rounder.round(sizeTotal + rounded, stepSize)
                     usdcSizeTotal += rounded * MP
                     worstPrice = entryPrice
                     filled = true
                     marketOrderOrderBook.add(matchingOrderbookEntry(entry, rounded))
                 } else {
-                    sizeTotal += entrySize
-                    usdcSizeTotal += entrySize * MP
+                    val rounded = this.rounded(sizeTotal, entrySize, stepSize)
+                    sizeTotal = Rounder.round(sizeTotal + rounded, stepSize)
+                    usdcSizeTotal += rounded * MP
                     /*
                     new(AE) = AE + X * (OR - MP) - abs(X) * MP * FR
                     */
-                    var signedSize = entrySize
+                    var signedSize = rounded
                     if (!isBuying) {
-                        signedSize = signedSize * Numeric.double.NEGATIVE
+                        signedSize *= Numeric.double.NEGATIVE
                     }
-                    AE = AE + (signedSize * (OR - MP)) - (entrySize * MP * FR)
+                    AE = AE + (signedSize * (OR - MP)) - (rounded * MP * FR)
                     SZ += signedSize
                     marketOrderOrderBook.add(
                         matchingOrderbookEntry(
                             entry,
-                            entrySize
+                            rounded
                         )
                     )
                 }
