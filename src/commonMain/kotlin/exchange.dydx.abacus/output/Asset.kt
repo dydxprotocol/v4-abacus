@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output
 
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -14,6 +15,8 @@ data class AssetResources(
     val whitepaperLink: String?,
     val coinMarketCapsLink: String?,
     val imageUrl: String?,
+    val primaryDescription: String?,
+    val secondaryDescription: String?,
     val primaryDescriptionKey: String?,
     val secondaryDescriptionKey: String?
 ) {
@@ -21,7 +24,8 @@ data class AssetResources(
         internal fun create(
             existing: AssetResources?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): AssetResources? {
             data?.let {
                 val websiteLink = parser.asString(data["websiteLink"])
@@ -37,13 +41,19 @@ data class AssetResources(
                     existing?.primaryDescriptionKey != primaryDescriptionKey ||
                     existing?.secondaryDescriptionKey != secondaryDescriptionKey
                 ) {
+                    val primaryDescription =
+                        if (primaryDescriptionKey != null) localizer?.localize(primaryDescriptionKey) else null
+                    val secondaryDescription =
+                        if (secondaryDescriptionKey != null) localizer?.localize(secondaryDescriptionKey) else null
                     AssetResources(
                         websiteLink,
                         whitepaperLink,
                         coinMarketCapsLink,
                         imageUrl,
+                        primaryDescription,
+                        secondaryDescription,
                         primaryDescriptionKey,
-                        secondaryDescriptionKey
+                        secondaryDescriptionKey,
                     )
                 } else existing
             }
@@ -69,14 +79,19 @@ data class Asset(
         internal fun create(
             existing: Asset?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): Asset? {
             data?.let {
                 val id = parser.asString(data["id"])
                 val resourcesData = parser.asMap(data["resources"])
                 if (id != null) {
-                    val resources =
-                        AssetResources.create(existing?.resources, parser, resourcesData)
+                    val resources = AssetResources.create(
+                        existing?.resources,
+                        parser,
+                        resourcesData,
+                        localizer,
+                        )
                     val name = parser.asString(data["name"])
                     val tags = parser.asStrings(data["tags"])
 

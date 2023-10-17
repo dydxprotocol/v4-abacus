@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.changes.Changes
@@ -512,12 +513,13 @@ data class MarketCandles(
 
 @JsExport
 @Serializable
-data class MarketTradeResources(val sideStringKey: String) {
+data class MarketTradeResources(val sideString: String?, val sideStringKey: String) {
     companion object {
         internal fun create(
             existing: MarketTradeResources?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): MarketTradeResources? {
             DebugLogger.log("creating Market Trade Resources\n")
             data?.let {
@@ -525,8 +527,10 @@ data class MarketTradeResources(val sideStringKey: String) {
 
                 if (sideStringKey != null) {
                     return if (existing?.sideStringKey != sideStringKey) {
+                        val sideString = localizer?.localize(sideStringKey)
                         MarketTradeResources(
-                            sideStringKey
+                            sideString,
+                            sideStringKey,
                         )
                     } else {
                         existing
@@ -555,6 +559,7 @@ data class MarketTrade(
             existing: MarketTrade?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            localizer: LocalizerProtocol?,
         ): MarketTrade? {
             DebugLogger.log("creating Market Trade\n")
             data?.let {
@@ -567,7 +572,7 @@ data class MarketTrade(
                 val createdAtMilliseconds =
                     parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 val resources = parser.asMap(data["resources"])?.let {
-                    MarketTradeResources.create(existing?.resources, parser, it)
+                    MarketTradeResources.create(existing?.resources, parser, it, localizer)
                 }
                 if (size != null && price != null && createdAtMilliseconds != null && resources != null) {
                     return if (
@@ -602,6 +607,7 @@ data class MarketTrade(
             existing: IList<MarketTrade>?,
             parser: ParserProtocol,
             data: List<Map<String, Any>>?,
+            localizer: LocalizerProtocol?,
         ): IList<MarketTrade>? {
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as MarketTrade).createdAtMilliseconds
@@ -609,7 +615,7 @@ data class MarketTrade(
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
-                obj ?: create(null, parser, parser.asMap(itemData))
+                obj ?: create(null, parser, parser.asMap(itemData), localizer)
             })?.toIList()
         }
     }
@@ -859,6 +865,7 @@ data class PerpetualMarket(
             existing: IList<MarketTrade>?,
             parser: ParserProtocol,
             data: List<Any>?,
+            localizer: LocalizerProtocol?,
         ): IList<MarketTrade>? {
             return ParsingHelper.merge(parser, existing?.toIList(), data, { obj, itemData ->
                 val time1 = (obj as MarketTrade).createdAtMilliseconds
@@ -866,7 +873,7 @@ data class PerpetualMarket(
                     parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
-                obj ?: MarketTrade.create(null, parser, parser.asMap(itemData))
+                obj ?: MarketTrade.create(null, parser, parser.asMap(itemData), localizer)
             })?.toIList()
         }
     }
