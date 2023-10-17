@@ -88,6 +88,7 @@ data class EnvironmentLinks(
 data class TokenInfo(
     val name: String,
     val denom: String,
+    val exponents: Int,
     val gasDenom: String?,
     val imageUrl: String?,
 ) {
@@ -95,12 +96,14 @@ data class TokenInfo(
         fun parse(
             data: Map<String, Any>,
             parser: ParserProtocol,
+            defaultExponents: Int,
         ): TokenInfo? {
             val name = parser.asString(data["name"]) ?: return null
             val denom = parser.asString(data["denom"]) ?: return null
+            val exponents = parser.asInt(data["exponents"]) ?: defaultExponents
             val gasDenom = parser.asString(data["gasDenom"])
             val imageUrl = parser.asString(data["imageUrl"])
-            return TokenInfo(name, denom, gasDenom, imageUrl)
+            return TokenInfo(name, denom, exponents, gasDenom, imageUrl)
         }
     }
 }
@@ -322,11 +325,13 @@ class V4Environment(
                     if (token != null) {
                         val name = parser.asString(token["name"]) ?: continue
                         val denom = parser.asString(token["denom"]) ?: continue
+                        val exponents =
+                            parser.asInt(token["exponents"]) ?: (if (key == "chain") 18 else 6)
                         val gasDenom = parser.asString(token["gasDenom"])
                         val imageUrl = parser.asString(token["image"])?.let {
                             "$deploymentUri$it"
                         }
-                        tokens[key] = TokenInfo(name, denom, gasDenom, imageUrl)
+                        tokens[key] = TokenInfo(name, denom, exponents, gasDenom, imageUrl)
                     }
                 }
             }

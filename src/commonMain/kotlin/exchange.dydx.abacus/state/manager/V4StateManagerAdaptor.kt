@@ -498,10 +498,10 @@ class V4StateManagerAdaptor(
         val usdcToken = environment.tokens["usdc"] ?: return
         val chainToken = environment.tokens["chain"] ?: return
         val usdcDenom = usdcToken.denom
-        val usdcDenomExponent = 6
+        val usdcDenomExponent = usdcToken.exponents
         val usdcGasDenom = usdcToken.gasDenom
         val chainTokenDenom = chainToken.denom
-        val chainTokenDenomExponent = 18
+        val chainTokenDenomExponent = chainToken.exponents
 
         val params = mutableMapOf<String, Any>()
         params["indexerUrl"] = indexerUrl
