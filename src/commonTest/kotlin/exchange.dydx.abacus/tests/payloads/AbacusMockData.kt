@@ -77,8 +77,8 @@ class AbacusMockData {
             "test",
         ),
         mapOf(
-            "chain" to TokenInfo("DYDX", "dv4tnt",  null,"/currencies/dydx.png"),
-            "usdc" to TokenInfo("USDC", "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5", null, "/currencies/usdc.png"),
+            "chain" to TokenInfo("DYDX", "adv4tnt",  18, null,"/currencies/dydx.png"),
+            "usdc" to TokenInfo("USDC", "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5", 6,null, "/currencies/usdc.png"),
         ).toIMap()
     )
 }
