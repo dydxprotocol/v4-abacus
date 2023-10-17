@@ -1326,14 +1326,14 @@ data class AccountBalance(
             existing: AccountBalance?,
             parser: ParserProtocol,
             data: Map<String, Any>,
-            exponents: Int,
+            decimals: Int,
         ): AccountBalance? {
             DebugLogger.log("creating Account Balance\n")
 
             val denom = parser.asString(data["denom"])
             val amount = parser.asDecimal(data["amount"])
             if (denom != null && amount != null) {
-                val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * exponents)
+                val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
                 val decimalAmountString = parser.asString(decimalAmount)!!
                 return if (existing?.denom != denom || existing.amount != decimalAmountString) {
                     AccountBalance(denom, decimalAmountString)
@@ -1375,7 +1375,7 @@ data class Account(
                         existing?.balances?.get(key),
                         parser,
                         balanceData,
-                        tokenInfo.exponents,
+                        tokenInfo.decimals,
                     )?.let { balance ->
                         balances[key] = balance
                     }
@@ -1383,7 +1383,7 @@ data class Account(
             }
 
             val stakingBalances: IMutableMap<String, AccountBalance> =
-                iMutableMapOf<String, AccountBalance>()
+                iMutableMapOf()
             val stakingBalancesData = parser.asMap(data["stakingBalances"])
             if (stakingBalancesData != null) {
                 for ((key, value) in stakingBalancesData) {
@@ -1392,7 +1392,7 @@ data class Account(
                         existing?.stakingBalances?.get(key),
                         parser,
                         balanceData,
-                        tokenInfo.exponents,
+                        tokenInfo.decimals,
                     )?.let { balance ->
                         stakingBalances[key] = balance
                     }
@@ -1400,7 +1400,7 @@ data class Account(
             }
 
             val subaccounts: IMutableMap<String, Subaccount> =
-                iMutableMapOf<String, Subaccount>()
+                iMutableMapOf()
 
             val subaccountsData = parser.asMap(data["subaccounts"])
             if (subaccountsData != null) {

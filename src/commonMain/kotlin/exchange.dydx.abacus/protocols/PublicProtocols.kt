@@ -170,11 +170,19 @@ enum class TransactionType(val rawValue: String) {
 @JsExport
 interface DYDXChainTransactionsProtocol {
     fun connectNetwork(
+        paramsInJson: String,
+        /*
         indexerUrl: String,
         indexerSocketUrl: String,
         validatorUrl: String,
         chainId: String,
         faucetUrl: String? = null,
+        USDC_DENOM: String? = null,
+        USDC_DENOM_EXPONENT: Int? = null,
+        USDC_GAS_DENOM: String? = null,
+        CHAINTOKEN_DENOM: String? = null,
+        CHAINTOKEN_DENOM_EXPONENT: String? = null,
+         */
         callback: ((response: String?) -> Unit),
     )
 

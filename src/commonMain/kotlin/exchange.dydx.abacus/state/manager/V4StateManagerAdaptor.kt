@@ -32,9 +32,11 @@ import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
+import exchange.dydx.abacus.utils.safeSet
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -494,13 +496,31 @@ class V4StateManagerAdaptor(
         val websocketUrl = configs.websocketUrl() ?: return
         val chainId = environment.dydxChainId ?: return
         val faucetUrl = configs.faucetUrl()
+        val usdcToken = environment.tokens["usdc"] ?: return
+        val chainToken = environment.tokens["chain"] ?: return
+        val usdcDenom = usdcToken.denom
+        val usdcDecimals = usdcToken.decimals
+        val usdcGasDenom = usdcToken.gasDenom
+        val chainTokenDenom = chainToken.denom
+        val chainTokenDecimals = chainToken.decimals
+
+        val params = mutableMapOf<String, Any>()
+        params["indexerUrl"] = indexerUrl
+        params["websocketUrl"] = websocketUrl
+        params["validatorUrl"] = validatorUrl
+        params["chainId"] = chainId
+        params.safeSet("faucetUrl", faucetUrl)
+
+        params.safeSet("USDC_DENOM", usdcDenom)
+        params.safeSet("USDC_DECIMALS", usdcDecimals)
+        params.safeSet("USDC_GAS_DENOM", usdcGasDenom)
+        params.safeSet("CHAINTOKEN_DENOM", chainTokenDenom)
+        params.safeSet("CHAINTOKEN_DECIMALS", chainTokenDecimals)
+        val jsonString = JsonEncoder().encode(params) ?: return
+
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.chain?.connectNetwork(
-                indexerUrl,
-                websocketUrl,
-                validatorUrl,
-                chainId,
-                faucetUrl
+                jsonString,
             ) { response ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (response != null) {
@@ -961,7 +981,7 @@ class V4StateManagerAdaptor(
                 type == TransferInputField.chain ||
                 type == TransferInputField.token
             ) {
-                val exponents = environment.tokens["usdc"]?.exponents ?: 6
+                val exponents = environment.tokens["usdc"]?.decimals ?: 6
 
                 val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                 if (usdcSize > Numeric.double.ZERO) {
@@ -985,7 +1005,7 @@ class V4StateManagerAdaptor(
             ) {
                 val token = state.input.transfer.token
                 if (token == "usdc") {
-                    val exponents = environment.tokens[token]?.exponents ?: 6
+                    val exponents = environment.tokens[token]?.decimals ?: 6
 
                     val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                     if (usdcSize > Numeric.double.ZERO) {
@@ -996,7 +1016,7 @@ class V4StateManagerAdaptor(
                         receiveTransferGas(null)
                     }
                 } else if (token == "chain") {
-                    val exponents = environment.tokens[token]?.exponents ?: 18
+                    val exponents = environment.tokens[token]?.decimals ?: 18
 
                     val address = state.input.transfer.address
                     val tokenSize = parser.asDouble(state.input.transfer.size?.size) ?: Numeric.double.ZERO
