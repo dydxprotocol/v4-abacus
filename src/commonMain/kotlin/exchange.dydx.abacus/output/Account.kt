@@ -4,10 +4,12 @@ import exchange.dydx.abacus.output.input.*
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
@@ -1317,21 +1319,24 @@ data class Subaccount(
 @Serializable
 data class AccountBalance(
     var denom: String,
-    var amount: Double,
+    var amount: String,
 ) {
     companion object {
         internal fun create(
             existing: AccountBalance?,
             parser: ParserProtocol,
             data: Map<String, Any>,
+            decimals: Int,
         ): AccountBalance? {
             DebugLogger.log("creating Account Balance\n")
 
             val denom = parser.asString(data["denom"])
-            val amount = parser.asDouble(data["amount"])
+            val amount = parser.asDecimal(data["amount"])
             if (denom != null && amount != null) {
-                return if (existing?.denom != denom || existing.amount != amount) {
-                    AccountBalance(denom, amount)
+                val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
+                val decimalAmountString = parser.asString(decimalAmount)!!
+                return if (existing?.denom != denom || existing.amount != decimalAmountString) {
+                    AccountBalance(denom, decimalAmountString)
                 } else {
                     existing
                 }
@@ -1355,12 +1360,13 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             data: Map<String, Any>,
+            tokenInfo: TokenInfo,
             localizer: LocalizerProtocol?,
         ): Account {
             DebugLogger.log("creating Account\n")
 
             val balances: IMutableMap<String, AccountBalance> =
-                iMutableMapOf<String, AccountBalance>()
+                iMutableMapOf()
             val balancesData = parser.asMap(data["balances"])
             if (balancesData != null) {
                 for ((key, value) in balancesData) {
@@ -1368,7 +1374,8 @@ data class Account(
                     AccountBalance.create(
                         existing?.balances?.get(key),
                         parser,
-                        balanceData
+                        balanceData,
+                        tokenInfo.decimals,
                     )?.let { balance ->
                         balances[key] = balance
                     }
@@ -1376,7 +1383,7 @@ data class Account(
             }
 
             val stakingBalances: IMutableMap<String, AccountBalance> =
-                iMutableMapOf<String, AccountBalance>()
+                iMutableMapOf()
             val stakingBalancesData = parser.asMap(data["stakingBalances"])
             if (stakingBalancesData != null) {
                 for ((key, value) in stakingBalancesData) {
@@ -1384,7 +1391,8 @@ data class Account(
                     AccountBalance.create(
                         existing?.stakingBalances?.get(key),
                         parser,
-                        balanceData
+                        balanceData,
+                        tokenInfo.decimals,
                     )?.let { balance ->
                         stakingBalances[key] = balance
                     }
@@ -1392,7 +1400,7 @@ data class Account(
             }
 
             val subaccounts: IMutableMap<String, Subaccount> =
-                iMutableMapOf<String, Subaccount>()
+                iMutableMapOf()
 
             val subaccountsData = parser.asMap(data["subaccounts"])
             if (subaccountsData != null) {

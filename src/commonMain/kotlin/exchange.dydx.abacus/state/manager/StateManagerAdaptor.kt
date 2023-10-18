@@ -141,7 +141,7 @@ data class HumanReadableCancelOrderPayload(
 @Serializable
 data class HumanReadableSubaccountTransferPayload(
     val subaccountNumber: Int,
-    val amount: Double,
+    val amount: String,
     val destinationAddress: String,
     val destinationSubaccountNumber: Int,
 )
@@ -157,21 +157,21 @@ data class HumanReadableFaucetPayload(
 @Serializable
 data class HumanReadableDepositPayload(
     val subaccountNumber: Int,
-    val amount: Double,
+    val amount: String,
 )
 
 @JsExport
 @Serializable
 data class HumanReadableWithdrawPayload(
     val subaccountNumber: Int,
-    val amount: Double,
+    val amount: String,
 )
 
 @JsExport
 @Serializable
 data class HumanReadableTransferPayload(
     val subaccountNumber: Int,
-    val amount: Double,
+    val amount: String,
     val recipient: String,
 )
 
