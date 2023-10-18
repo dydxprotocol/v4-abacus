@@ -492,8 +492,8 @@ data class TransferInputSummary(
 @JsExport
 @Serializable
 data class TransferInputSize(
-    val usdcSize: Double?,
-    var size: Double?
+    val usdcSize: String?,
+    var size: String?
 ) {
     companion object {
         internal fun create(
@@ -504,8 +504,8 @@ data class TransferInputSize(
             DebugLogger.log("creating Transfer Input Size\n")
 
             data?.let {
-                val usdcSize = parser.asDouble(data["usdcSize"])
-                val size = parser.asDouble(data["size"])
+                val usdcSize = parser.asString(data["usdcSize"])
+                val size = parser.asString(data["size"])
 
                 return if (
                     existing?.usdcSize != usdcSize ||

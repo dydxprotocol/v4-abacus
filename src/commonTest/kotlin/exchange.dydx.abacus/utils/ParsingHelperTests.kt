@@ -2,6 +2,7 @@ package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ParsingHelperTests {
@@ -31,5 +32,28 @@ class ParsingHelperTests {
         """.trimIndent()
         val decoded = parser.decodeJsonObject(expected)
         assertTrue(merged == decoded)
+    }
+
+
+    @Test
+    fun testParsing() {
+        val parser = Parser()
+
+        var x = parser.asDecimal(1000000000000000000L)
+        var y = parser.asString(x)
+        assertEquals("1000000000000000000", y)
+
+        x = parser.asDecimal("1000000000000000000")
+        y = parser.asString(x)
+        assertEquals("1000000000000000000", y)
+
+        x = parser.asDecimal(0.00000000000000000000002034002340)
+        y = parser.asString(x)
+        assertEquals("0.0000000000000000000000203400234", y)
+
+        x = parser.asDecimal("0.00000000000000000000002034002340")
+        y = parser.asString(x)
+        assertEquals("0.0000000000000000000000203400234", y)
+
     }
 }

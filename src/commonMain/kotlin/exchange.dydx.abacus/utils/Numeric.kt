@@ -13,7 +13,7 @@ internal class Doubles {
 }
 
 internal class Decimals {
-    val mode = DecimalMode(24, RoundingMode.AWAY_FROM_ZERO, 24)
+    val mode = DecimalMode(24, RoundingMode.TOWARDS_ZERO, 24)
     val highDefinitionMode = DecimalMode(24, RoundingMode.TOWARDS_ZERO, 24)
 
     val ZERO = (0.0).toBigDecimal(null, mode)

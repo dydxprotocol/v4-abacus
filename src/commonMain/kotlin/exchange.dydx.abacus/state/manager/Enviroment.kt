@@ -100,10 +100,10 @@ data class TokenInfo(
         ): TokenInfo? {
             val name = parser.asString(data["name"]) ?: return null
             val denom = parser.asString(data["denom"]) ?: return null
-            val exponents = parser.asInt(data["decimals"]) ?: defaultDecimals
+            val decimals = parser.asInt(data["decimals"]) ?: defaultDecimals
             val gasDenom = parser.asString(data["gasDenom"])
             val imageUrl = parser.asString(data["imageUrl"])
-            return TokenInfo(name, denom, exponents, gasDenom, imageUrl)
+            return TokenInfo(name, denom, decimals, gasDenom, imageUrl)
         }
     }
 }
@@ -331,7 +331,13 @@ class V4Environment(
                         val imageUrl = parser.asString(token["image"])?.let {
                             "$deploymentUri$it"
                         }
-                        tokens[key] = TokenInfo(name, denom, decimals, gasDenom, imageUrl)
+                        tokens[key] = TokenInfo(
+                            name,
+                            denom,
+                            decimals,
+                            gasDenom,
+                            imageUrl
+                        )
                     }
                 }
             }

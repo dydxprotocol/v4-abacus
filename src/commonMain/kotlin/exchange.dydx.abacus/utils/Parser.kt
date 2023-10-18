@@ -33,6 +33,11 @@ class Parser : ParserProtocol {
             return datetime.toString()
         }
 
+        val decimal = data as? BigDecimal
+        if (decimal != null) {
+            return decimal.toStringExpanded()
+        }
+
         if (data != null) {
             return "$data"
         }
@@ -107,38 +112,43 @@ class Parser : ParserProtocol {
         if (decimal != null) {
             return decimal
         }
-        val jsonLiteral = data as? JsonPrimitive
-        if (jsonLiteral != null) {
-            return jsonLiteral.doubleOrNull?.toBigDecimal(null, Numeric.decimal.mode)
-        }
-        val double = data as? Double
-        if (double != null) {
-            return double.toBigDecimal(null, Numeric.decimal.mode)
-        }
-
-        val float = data as? Float
-        if (float != null) {
-            return float.toBigDecimal(null, Numeric.decimal.mode)
-        }
-
-        val long = data as? Long
-        if (long != null) {
-            return long.toBigDecimal(null, Numeric.decimal.mode)
-        }
-
-        val int = data as? Int
-        if (int != null) {
-            return int.toBigDecimal(null, Numeric.decimal.mode)
-        }
 
         val string = data as? String
         if (string != null) {
             return try {
-                string.toBigDecimal(null, Numeric.decimal.mode)
+                string.toBigDecimal(null, null)
             } catch (e: Exception) {
-                DebugLogger.error("Failed to parse double: $string", e)
+                DebugLogger.error("Failed to parse decimal: $string", e)
                 null
             }
+        }
+
+        val jsonLiteral = data as? JsonPrimitive
+        if (jsonLiteral != null) {
+            return if (jsonLiteral.isString) {
+                jsonLiteral.content.toBigDecimal(null, null)
+            } else {
+                jsonLiteral.doubleOrNull?.toBigDecimal(null, null)
+            }
+        }
+        val double = data as? Double
+        if (double != null) {
+            return double.toBigDecimal(null, null)
+        }
+
+        val float = data as? Float
+        if (float != null) {
+            return float.toBigDecimal(null, null)
+        }
+
+        val long = data as? Long
+        if (long != null) {
+            return long.toBigDecimal(null, null)
+        }
+
+        val int = data as? Int
+        if (int != null) {
+            return int.toBigDecimal(null, null)
         }
 
         return null
