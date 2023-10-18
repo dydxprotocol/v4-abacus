@@ -38,9 +38,9 @@ internal class TradeTriggerPriceValidator(
         change: PositionChange,
         restricted: Boolean,
     ): List<Any>? {
-        val requiresTriggerPrice =
-            parser.asBool(parser.value(trade, "options.requiresTriggerPrice")) ?: false
-        if (requiresTriggerPrice) {
+        val needsTriggerPrice =
+            parser.asBool(parser.value(trade, "options.needsTriggerPrice")) ?: false
+        if (needsTriggerPrice) {
             val errors = mutableListOf<Any>()
             val type = parser.asString(trade["type"]) ?: return null
             val side = parser.asString(trade["side"]) ?: return null
@@ -98,7 +98,7 @@ internal class TradeTriggerPriceValidator(
                         RelativeToPrice.ABOVE -> {
                             if (triggerPrice <= liquidationPrice) {
                                 errors.add(
-                                    triggerToLimitError(
+                                    triggerToLiquidationError(
                                         triggerToLiquidation,
                                         liquidationPrice
                                     )
@@ -109,7 +109,7 @@ internal class TradeTriggerPriceValidator(
                         RelativeToPrice.BELOW -> {
                             if (triggerPrice >= liquidationPrice) {
                                 errors.add(
-                                    triggerToLimitError(
+                                    triggerToLiquidationError(
                                         triggerToLiquidation,
                                         liquidationPrice
                                     )
@@ -227,15 +227,16 @@ internal class TradeTriggerPriceValidator(
         )
     }
 
-    private fun triggerToLimitError(
-        triggerToLimit: RelativeToPrice,
-        triggerLimit: Double,
+    private fun triggerToLiquidationError(
+        triggerToLiquidation: RelativeToPrice,
+        triggerLiquidation: Double,
     ): Map<String, Any> {
         val fields = listOf("price.triggerPrice")
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
+        // Localizations uses TRIGGER_PRICE_LIMIT as paramater name
         val params =
-            mapOf("TRIGGER_PRICE_LIMIT" to mapOf("value" to triggerLimit, "format" to "price"))
-        return when (triggerToLimit) {
+            mapOf("TRIGGER_PRICE_LIMIT" to mapOf("value" to triggerLiquidation, "format" to "price"))
+        return when (triggerToLiquidation) {
             RelativeToPrice.ABOVE -> error(
                 "ERROR",
                 "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
