@@ -202,6 +202,29 @@ class TradeRequiredInputTests : V3BaseTests() {
                 }
             """.trimIndent()
         )
+
+
+        test(
+            {
+                perp.trade("3000", TradeInputField.triggerPrice, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET"
+                        },
+                        "errors": [
+                            {
+                                "type": "WARNING",
+                                "code": "STOP_MARKET_ORDER_MAY_NOT_EXECUTE"
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
     }
 
     private fun testTradeInputTakeProfitMarketType() {
@@ -288,7 +311,12 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT_MARKET"
                         },
-                        "errors": null
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "TRIGGER_MUST_BELOW_INDEX_PRICE"
+                            }
+                        ]
                     }
                 }
             """.trimIndent()
@@ -732,6 +760,28 @@ class TradeRequiredInputTests : V3BaseTests() {
         test(
             {
                 perp.trade("1923", TradeInputField.triggerPrice, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT"
+                        },
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "TRIGGER_MUST_BELOW_INDEX_PRICE"
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("1290", TradeInputField.triggerPrice, 0)
             },
             """
                 {

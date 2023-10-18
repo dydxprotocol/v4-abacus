@@ -15,8 +15,6 @@ import kotlin.time.Duration.Companion.days
 /*
 Covers basic check of required fields
 Covers checking
-TRIGGER_MUST_ABOVE_INDEX_PRICE
-TRIGGER_MUST_BELOW_INDEX_PRICE
 LIMIT_MUST_ABOVE_TRIGGER_PRICE
 LIMIT_MUST_BELOW_TRIGGER_PRICE
 AMOUNT_INPUT_STEP_SIZE
@@ -66,13 +64,6 @@ internal class TradeInputDataValidator(
             /*
             AMOUNT_INPUT_STEP_SIZE
             ORDER_SIZE_BELOW_MIN_SIZE
-            */
-            errors.addAll(it)
-        }
-        validateTriggerPrice(trade, market)?.let {
-            /*
-            TRIGGER_MUST_ABOVE_INDEX_PRICE
-            TRIGGER_MUST_BELOW_INDEX_PRICE
             */
             errors.addAll(it)
         }
@@ -257,84 +248,6 @@ internal class TradeInputDataValidator(
 
         }
         return null
-    }
-
-    private fun validateTriggerPrice(
-        trade: Map<String, Any>,
-        market: Map<String, Any>?,
-    ): List<Any>? {
-        /*
-        TRIGGER_MUST_ABOVE_INDEX_PRICE
-        TRIGGER_MUST_BELOW_INDEX_PRICE
-        */
-        val tickSize = parser.asString(parser.value(market, "configs.tickSize")) ?: "0.01"
-        parser.asDouble(parser.value(trade, "size.size"))?.let { size ->
-            val signedSize = if (parser.asString(trade["side"]) == "BUY") size else -size
-            parser.asDouble(parser.value(trade, "price.triggerPrice"))?.let { triggerPrice ->
-                val oraclePrice = parser.asDouble(
-                    parser.value(
-                        market,
-                        "oraclePrice"
-                    )
-                )
-                if (oraclePrice != null) {
-                    val error = when (parser.asString(trade["type"])) {
-                        "STOP_MARKET", "STOP_LIMIT" -> {
-                            if (signedSize > Numeric.double.ZERO && triggerPrice < oraclePrice) triggerPriceError(
-                                true,
-                                oraclePrice,
-                                tickSize
-                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > oraclePrice) triggerPriceError(
-                                false,
-                                oraclePrice,
-                                tickSize
-                            )
-                            else null
-                        }
-
-                        "TAKE_PROFIT_MARKET", "TAKE_PROFIT" -> {
-                            if (signedSize > Numeric.double.ZERO && triggerPrice < oraclePrice) triggerPriceError(
-                                true,
-                                oraclePrice,
-                                tickSize
-                            ) else if (signedSize < Numeric.double.ZERO && triggerPrice > oraclePrice) triggerPriceError(
-                                false,
-                                oraclePrice,
-                                tickSize
-                            )
-                            else null
-                        }
-
-                        else -> null
-                    }
-                    return if (error != null) listOf(error) else null
-                }
-            }
-        }
-        return null
-    }
-
-    private fun triggerPriceError(
-        aboveIndexPrice: Boolean,
-        oraclePrice: Double,
-        tickSize: String,
-    ): Map<String, Any> {
-        return error(
-            "ERROR",
-            if (aboveIndexPrice) "TRIGGER_MUST_ABOVE_INDEX_PRICE" else "TRIGGER_MUST_BELOW_INDEX_PRICE",
-            listOf("price.triggerPrice"),
-            "APP.TRADE.MODIFY_TRIGGER_PRICE",
-            if (aboveIndexPrice) "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_BELOW_INDEX_PRICE",
-            if (aboveIndexPrice) "ERRORS.TRADE_BOX.TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRADE_BOX.TRIGGER_MUST_BELOW_INDEX_PRICE",
-            mapOf(
-                "INDEX_PRICE" to
-                        mapOf(
-                            "value" to oraclePrice,
-                            "format" to "price",
-                            "tickSize" to tickSize
-                        )
-            )
-        )
     }
 
     private fun validateLimitPrice(
