@@ -193,17 +193,14 @@ class AsyncAbacusStateManager(
 ) {
     private val environmentsFile = "/configs/env.json"
 
-    private var initializing: Boolean = true
     private var environments: IList<V4Environment> = iListOf()
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 _environment = findEnvironment(environmentId)
-                if (!initializing) {
-                    ioImplementations.threading?.async(ThreadingType.main) {
-                        stateNotification?.environmentsChanged()
-                        dataNotification?.environmentsChanged()
-                    }
+                ioImplementations.threading?.async(ThreadingType.main) {
+                    stateNotification?.environmentsChanged()
+                    dataNotification?.environmentsChanged()
                 }
             }
         }
@@ -375,7 +372,6 @@ class AsyncAbacusStateManager(
     private fun loadEnvironments() {
         if (appConfigs.loadRemote) {
             loadEnvironmentsFromLocalFile()
-            initializing = false
             val environmentsUrl = "$deploymentUri$environmentsFile"
             ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
                 if (success(httpCode) && response != null) {
