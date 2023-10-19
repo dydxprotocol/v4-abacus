@@ -1360,7 +1360,7 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             data: Map<String, Any>,
-            tokenInfo: TokenInfo,
+            tokensInfo: Map<String, TokenInfo>,
             localizer: LocalizerProtocol?,
         ): Account {
             DebugLogger.log("creating Account\n")
@@ -1371,13 +1371,18 @@ data class Account(
             if (balancesData != null) {
                 for ((key, value) in balancesData) {
                     val balanceData = parser.asMap(value) ?: iMapOf()
-                    AccountBalance.create(
-                        existing?.balances?.get(key),
-                        parser,
-                        balanceData,
-                        tokenInfo.decimals,
-                    )?.let { balance ->
-                        balances[key] = balance
+                    // key is the denom
+                    val tokenInfo = findTokenInfo(tokensInfo, key)
+                    if (tokenInfo != null) {
+                        AccountBalance.create(
+                            existing?.balances?.get(key),
+                            parser,
+                            balanceData,
+                            tokenInfo.decimals,
+//                        tokenInfo.decimals,
+                        )?.let { balance ->
+                            balances[key] = balance
+                        }
                     }
                 }
             }
@@ -1387,14 +1392,20 @@ data class Account(
             val stakingBalancesData = parser.asMap(data["stakingBalances"])
             if (stakingBalancesData != null) {
                 for ((key, value) in stakingBalancesData) {
-                    val balanceData = parser.asMap(value) ?: iMapOf()
-                    AccountBalance.create(
-                        existing?.stakingBalances?.get(key),
-                        parser,
-                        balanceData,
-                        tokenInfo.decimals,
-                    )?.let { balance ->
-                        stakingBalances[key] = balance
+                    // key is the denom
+                    // It should be chain token denom here
+                    val tokenInfo = findTokenInfo(tokensInfo, key)
+                    if (tokenInfo != null) {
+                        val balanceData = parser.asMap(value) ?: iMapOf()
+                        AccountBalance.create(
+                            existing?.stakingBalances?.get(key),
+                            parser,
+                            balanceData,
+                            18,
+//                        tokenInfo.decimals,
+                        )?.let { balance ->
+                            stakingBalances[key] = balance
+                        }
                     }
                 }
             }
@@ -1419,6 +1430,10 @@ data class Account(
             }
 
             return Account(balances, stakingBalances, subaccounts)
+        }
+
+        private fun findTokenInfo(tokensInfo: Map<String, TokenInfo>, denom: String): TokenInfo? {
+            return tokensInfo.values.firstOrNull() { it.denom == denom }
         }
     }
 }

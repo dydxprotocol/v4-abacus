@@ -64,8 +64,8 @@ open class TradingStateMachine(
 
     private var dummySubaccountPNLs = mutableMapOf<String, SubaccountHistoricalPNL>();
 
-    internal val chainTokenInfo: TokenInfo
-        get() = environment?.tokens?.get("chain")!!
+    internal val tokensInfo: Map<String, TokenInfo>
+        get() = environment?.tokens!!
 
     internal var groupingMultiplier: Int
         get() = marketsProcessor.groupingMultiplier
@@ -541,7 +541,7 @@ open class TradingStateMachine(
         val input = state?.input
 
 
-        state = update(state, changes, chainTokenInfo, localizer)
+        state = update(state, changes, tokensInfo, localizer)
 
         val realChanges = iMutableListOf<Changes>()
         for (change in changes.changes) {
@@ -850,7 +850,7 @@ open class TradingStateMachine(
     private fun update(
         state: PerpetualState?,
         changes: StateChanges,
-        tokenInfo: TokenInfo,
+        tokensInfo: Map<String, TokenInfo>,
         localizer: LocalizerProtocol?,
     ): PerpetualState {
         var marketsSummary = state?.marketsSummary
@@ -988,7 +988,7 @@ open class TradingStateMachine(
         if (accountData != null) {
             if (changes.changes.contains(Changes.subaccount)) {
                 account = if (account == null) {
-                    Account.create(null, parser, accountData, tokenInfo, localizer)
+                    Account.create(null, parser, accountData, tokensInfo, localizer)
                 } else {
                     val subaccounts = account.subaccounts?.toIMutableMap() ?: mutableMapOf()
                     for (subaccountNumber in subaccountNumbers) {
@@ -1004,7 +1004,7 @@ open class TradingStateMachine(
                 }
             }
             if (changes.changes.contains(Changes.accountBalances)) {
-                account = Account.create(account, parser, accountData, tokenInfo, localizer)
+                account = Account.create(account, parser, accountData, tokensInfo, localizer)
             }
         } else {
             account = null
@@ -1182,7 +1182,7 @@ open class TradingStateMachine(
             val historicalPnls = state?.historicalPnl?.get("$subaccountNumber") ?: return noChange()
             val first = historicalPnls.firstOrNull() ?: return noChange()
             val changes = StateChanges(iListOf(Changes.historicalPnl))
-            state = update(state, changes, chainTokenInfo, localizer)
+            state = update(state, changes, tokensInfo, localizer)
             StateResponse(state, changes)
         } else noChange()
     }
@@ -1204,7 +1204,7 @@ open class TradingStateMachine(
                     null,
                     iListOf(subaccountNumber)
                 )
-                state = update(state, changes, chainTokenInfo, localizer)
+                state = update(state, changes, tokensInfo, localizer)
                 StateResponse(state, changes)
             } else noChange()
         } else noChange()
@@ -1240,7 +1240,7 @@ open class TradingStateMachine(
                 this.wallet = wallet
 
                 val changes = StateChanges(iListOf(Changes.subaccount))
-                state = update(state, changes, chainTokenInfo, localizer)
+                state = update(state, changes, tokensInfo, localizer)
                 return StateResponse(state, changes)
             }
         }
