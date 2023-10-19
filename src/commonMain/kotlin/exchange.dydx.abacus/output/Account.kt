@@ -450,9 +450,14 @@ data class SubaccountOrderResources(
                         existing.timeInForceStringKey != timeInForceStringKey
                     ) {
                         val sideString = localizer?.localize(sideStringKey)
-                        val typeString = if (typeStringKey != null) localizer?.localize(typeStringKey) else null
-                        val statusString = if (statusStringKey != null) localizer?.localize(statusStringKey) else null
-                        val timeInForceString = if (timeInForceStringKey != null) localizer?.localize(timeInForceStringKey) else null
+                        val typeString =
+                            if (typeStringKey != null) localizer?.localize(typeStringKey) else null
+                        val statusString =
+                            if (statusStringKey != null) localizer?.localize(statusStringKey) else null
+                        val timeInForceString =
+                            if (timeInForceStringKey != null) localizer?.localize(
+                                timeInForceStringKey
+                            ) else null
                         SubaccountOrderResources(
                             sideString,
                             typeString,
@@ -548,7 +553,8 @@ data class SubaccountOrder(
                     val goodTilBlockTime =
                         parser.asDatetime(data["goodTilBlockTime"])?.epochSeconds?.toInt();
                     val createdAtHeight = parser.asInt(data["createdAtHeight"]);
-                    val updatedAtMilliseconds = parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble();
+                    val updatedAtMilliseconds =
+                        parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble();
                     val expiresAtMilliseconds =
                         parser.asDatetime(data["expiresAt"] ?: data["goodTilBlockTime"])
                             ?.toEpochMilliseconds()?.toDouble()
@@ -657,9 +663,12 @@ data class SubaccountFillResources(
                     existing?.typeStringKey != typeStringKey ||
                     existing?.iconLocal != iconLocal
                 ) {
-                    val sideString = if (sideStringKey != null) localizer?.localize(sideStringKey) else null
-                    val liquidityString = if (liquidityStringKey != null) localizer?.localize(liquidityStringKey) else null
-                    val typeString = if (typeStringKey != null) localizer?.localize(typeStringKey) else null
+                    val sideString =
+                        if (sideStringKey != null) localizer?.localize(sideStringKey) else null
+                    val liquidityString =
+                        if (liquidityStringKey != null) localizer?.localize(liquidityStringKey) else null
+                    val typeString =
+                        if (typeStringKey != null) localizer?.localize(typeStringKey) else null
                     SubaccountFillResources(
                         sideString,
                         liquidityString,
@@ -830,8 +839,10 @@ data class SubaccountTransferResources(
                     existing?.iconLocal != iconLocal ||
                     existing?.indicator != indicator
                 ) {
-                    val typeString = if (typeStringKey != null) localizer?.localize(typeStringKey) else null
-                    val statusString = if (statusStringKey != null) localizer?.localize(statusStringKey) else null
+                    val typeString =
+                        if (typeStringKey != null) localizer?.localize(typeStringKey) else null
+                    val statusString =
+                        if (statusStringKey != null) localizer?.localize(statusStringKey) else null
                     SubaccountTransferResources(
                         typeString,
                         statusString,
@@ -1148,7 +1159,8 @@ data class Subaccount(
                     parser,
                     parser.asMap(data["openPositions"])
                 )
-                val orders = orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
+                val orders =
+                    orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
 
                 /*
                 val transfers = AccountTransfers.fromArray(
@@ -1379,7 +1391,6 @@ data class Account(
                             parser,
                             balanceData,
                             tokenInfo.decimals,
-//                        tokenInfo.decimals,
                         )?.let { balance ->
                             balances[key] = balance
                         }
@@ -1401,8 +1412,7 @@ data class Account(
                             existing?.stakingBalances?.get(key),
                             parser,
                             balanceData,
-                            18,
-//                        tokenInfo.decimals,
+                            tokenInfo.decimals,
                         )?.let { balance ->
                             stakingBalances[key] = balance
                         }
