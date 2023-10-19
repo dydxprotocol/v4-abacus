@@ -176,7 +176,9 @@ internal class TradeInputDataValidator(
                         // Short term with IOC or FOK should not be counted
                         val isShortTermAndRequiresImmediateExecution =
                             !isCurrentOrderStateful && (timeInForce == "IOC" || timeInForce == "FOK")
-                        if (!isShortTermAndRequiresImmediateExecution && (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED") && (isCurrentOrderStateful == shouldCountStatefulOrders)) {
+                        if (!isShortTermAndRequiresImmediateExecution &&
+                            (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED" || status == "PARTIALLY_FILLED") &&
+                            (isCurrentOrderStateful == shouldCountStatefulOrders)) {
                             count += 1
                         }
                     }
