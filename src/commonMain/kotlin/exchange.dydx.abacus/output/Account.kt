@@ -1443,7 +1443,7 @@ data class Account(
         }
 
         private fun findTokenInfo(tokensInfo: Map<String, TokenInfo>, denom: String): TokenInfo? {
-            return tokensInfo.values.firstOrNull() { it.denom == denom }
+            return tokensInfo.firstNotNullOfOrNull { if (it.value.denom == denom) it.value else null }
         }
     }
 }
