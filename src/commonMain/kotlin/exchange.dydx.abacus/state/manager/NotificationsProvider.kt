@@ -382,7 +382,13 @@ class NotificationsProvider(
                 }
             }
 
-            OrderStatus.cancelled -> "NOTIFICATIONS.ORDER_CANCEL"
+            OrderStatus.cancelled -> {
+                if ((order.totalFilled ?: Numeric.double.ZERO) > Numeric.double.ZERO) {
+                    "NOTIFICATIONS.ORDER_CANCEL_WITH_PARTIAL_FILL"
+                } else {
+                    "NOTIFICATIONS.ORDER_CANCEL"
+                }
+            }
 
             else -> null
         }
@@ -393,10 +399,12 @@ class NotificationsProvider(
             val side = order.side.rawValue
             val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
             val amountText = parser.asString(order.size)
+            val totalFilled = parser.asString(order.totalFilled)
             val params = (iMapOf(
                 "MARKET" to marketId,
                 "SIDE" to sideText,
                 "AMOUNT" to amountText,
+                "TOTAL_FILLED" to totalFilled,
             ).filterValues { it != null } as Map<String, String>).toIMap()
             val paramsAsJson = jsonEncoder.encode(params)
 
