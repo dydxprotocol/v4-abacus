@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileLocation
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -377,7 +378,7 @@ class AsyncAbacusStateManager(
                 if (success(httpCode) && response != null) {
                     val parser = Parser()
                     val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
-                    if (parseEnvironments(json, parser)) {
+                    if (parseEnvironments(json, parser, uiImplementations.localizer)) {
                         writeEnvironmentsToLocalFile(response)
                     }
                 }
@@ -393,7 +394,7 @@ class AsyncAbacusStateManager(
         )?.let { response ->
             val parser = Parser()
             val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
-            parseEnvironments(json, parser)
+            parseEnvironments(json, parser, uiImplementations.localizer)
         }
     }
 
@@ -404,7 +405,7 @@ class AsyncAbacusStateManager(
         )?.let { response ->
             val parser = Parser()
             val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
-            parseEnvironments(json, parser)
+            parseEnvironments(json, parser, uiImplementations.localizer)
         }
     }
 
@@ -420,7 +421,7 @@ class AsyncAbacusStateManager(
     }
 
 
-    private fun parseEnvironments(items: IMap<String, Any>?, parser: ParserProtocol): Boolean {
+    private fun parseEnvironments(items: IMap<String, Any>?, parser: ParserProtocol, localizer: LocalizerProtocol?): Boolean {
         val deployments = parser.asMap(items?.get("deployments")) ?: return false
         val target = parser.asMap(deployments[deployment]) ?: return false
         val targetEnvironments = parser.asList(target["environments"]) ?: return false
@@ -431,7 +432,7 @@ class AsyncAbacusStateManager(
             val parsedEnvironments = mutableMapOf<String, V4Environment>()
             for ((key, value) in environmentsData) {
                 val data = parser.asMap(value) ?: continue
-                val environment = V4Environment.parse(key, data, parser, deploymentUri) ?: continue
+                val environment = V4Environment.parse(key, data, parser, deploymentUri, localizer) ?: continue
                 parsedEnvironments[environment.id] = environment
             }
             if (parsedEnvironments.isEmpty()) {

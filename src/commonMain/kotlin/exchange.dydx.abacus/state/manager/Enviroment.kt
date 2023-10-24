@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -237,6 +238,59 @@ data class WalletConnection(
     }
 }
 
+@JsExport
+class AppsRequirements(
+    ios: AppRequirements?,
+    android: AppRequirements?,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>,
+            parser: ParserProtocol,
+            localizer: LocalizerProtocol?
+        ): AppsRequirements? {
+            val ios = AppRequirements.parse(
+                parser.asMap(data["ios"]),
+                parser,
+                localizer
+            )
+            val android = AppRequirements.parse(
+                parser.asMap(data["android"]),
+                parser,
+                localizer
+            )
+            return AppsRequirements(ios, android)
+        }
+    }
+}
+
+@JsExport
+class AppRequirements(
+    val minimalVersion: String,
+    val build: Int,
+    val url: String,
+    val title: String?,
+    val text: String?,
+    val action: String?,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+            localizer: LocalizerProtocol?
+        ): AppRequirements? {
+            if (data == null) return null
+            val minimalVersion = parser.asString(data["minimalVersion"]) ?: return null
+            val build = parser.asInt(data["build"]) ?: return null
+            val url = parser.asString(data["url"]) ?: return null
+            val title = localizer?.localize("FORCED_UPDATE.TITLE")
+            val text = localizer?.localize("FORCED_UPDATE.TEXT")
+            val action = localizer?.localize("FORCED_UPDATE.ACTION")
+            return AppRequirements(minimalVersion, build, url, title, text, action)
+        }
+    }
+}
+
 
 @JsExport
 open class Environment(
@@ -248,6 +302,7 @@ open class Environment(
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
     val walletConnection: WalletConnection?,
+    val apps: AppsRequirements?
 )
 
 @JsExport
@@ -262,6 +317,7 @@ class V4Environment(
     endpoints: EnvironmentEndpoints,
     links: EnvironmentLinks?,
     walletConnection: WalletConnection?,
+    apps: AppsRequirements?,
     val tokens: IMap<String, TokenInfo>,
 ) : Environment(
     id,
@@ -272,6 +328,7 @@ class V4Environment(
     endpoints,
     links,
     walletConnection,
+    apps,
 ) {
     companion object {
         fun parse(
@@ -279,6 +336,7 @@ class V4Environment(
             data: Map<String, Any>,
             parser: ParserProtocol,
             deploymentUri: String,
+            localizer: LocalizerProtocol?,
         ): V4Environment? {
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
@@ -296,6 +354,7 @@ class V4Environment(
                 parser,
                 deploymentUri
             )
+            val apps = AppsRequirements.parse(data, parser, localizer)
             val tokens = parseTokens(parser.asMap(data["tokens"]), parser, deploymentUri)
 
             return V4Environment(
@@ -309,6 +368,7 @@ class V4Environment(
                 endpoints,
                 links,
                 walletConnection,
+                apps,
                 tokens
             )
         }
