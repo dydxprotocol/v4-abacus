@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
@@ -219,23 +220,13 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
             modified.safeSet("cancelReason", payload["removalReason"] ?: payload["cancelReason"])
 
-            updateResource(modified)
-            val clientMetadata = parser.asInt(modified["clientMetadata"])
-            if (clientMetadata == 1) {
-                when (parser.asString(modified["type"])) {
-                    "LIMIT" -> {
-                        modified.safeSet("type", "MARKET")
-                    }
-
-                    "STOP_LIMIT" -> {
-                        modified.safeSet("type", "STOP_MARKET")
-                    }
-
-                    "TAKE_PROFIT" -> {
-                        modified.safeSet("type", "TAKE_PROFIT_MARKET")
-                    }
-                }
-            }
+            modified.safeSet(
+                "type",
+                OrderTypeProcessor.orderType(
+                    parser.asString(modified["type"]),
+                    parser.asInt(modified["clientMetadata"])
+                )
+            )
 
             updateResource(modified)
             val (returnValue, updated) = updateHeight(modified, height);

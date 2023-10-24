@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.safeSet
 
@@ -21,7 +22,10 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "price" to "price",
             "size" to "size",
             "fee" to "fee"
-        )
+        ),
+        "int" to mapOf(
+            "clientMetadata" to "clientMetadata",
+        ),
     )
 
     private val sideMap = mapOf(
@@ -59,6 +63,14 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         if (fill["marketId"] == null) {
             fill.safeSet("marketId", parser.asString(payload["ticker"]))
         }
+
+        fill.safeSet(
+            "type",
+            OrderTypeProcessor.orderType(
+                parser.asString(fill["type"]),
+                parser.asInt(fill["clientMetadata"])
+            )
+        )
 
         val resources = mutableMapOf<String, Any>()
         fill["side"]?.let {
