@@ -240,8 +240,8 @@ data class WalletConnection(
 
 @JsExport
 class AppsRequirements(
-    ios: AppRequirements?,
-    android: AppRequirements?,
+    val ios: AppRequirements?,
+    val android: AppRequirements?,
 ) {
     companion object {
         fun parse(
