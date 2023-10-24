@@ -76,6 +76,7 @@ class AbacusMockData {
             "test",
             "test",
         ),
+        null,
         mapOf(
             "chain" to TokenInfo(
                 "DYDX",
