@@ -1237,7 +1237,17 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         if (data != null &&
             data["id"] != null &&
             (parser.asBool(parser.value(data, "status.canTrade")) == true ||
-                    parser.asBool(parser.value(data, "status.canReduce")) == true)
+                    parser.asBool(parser.value(data, "status.canReduce")) == true) &&
+            (parser.asInt(parser.value(data, "configs.stepSize"))) != null &&
+            (parser.asInt(parser.value(data, "configs.tickSize"))) != null &&
+            (parser.asDouble(parser.value(data, "configs.initialMarginFraction"))) != null &&
+            (parser.asDouble(parser.value(data, "configs.maintenanceMarginFraction"))) != null &&
+            (parser.asInt(parser.value(data, "configs.basePositionNotional"))) != null &&
+            (parser.asInt(parser.value(data, "configs.v4.clobPairId"))) != null &&
+            (parser.asInt(parser.value(data, "configs.v4.atomicResolution"))) != null &&
+            (parser.asInt(parser.value(data, "configs.v4.stepBaseQuantums"))) != null &&
+            (parser.asInt(parser.value(data, "configs.v4.quantumConversionExponent"))) != null &&
+            (parser.asInt(parser.value(data, "configs.v4.subticksPerTick"))) != null
         ) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
@@ -1266,6 +1276,10 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.perpetual"
             )
         } else {
+            if (obj != null) {
+                val x = 0
+                val market = PerpetualMarket.create(null, Parser(), data!!, null, false, false)
+            }
             assertNull(obj)
         }
     }

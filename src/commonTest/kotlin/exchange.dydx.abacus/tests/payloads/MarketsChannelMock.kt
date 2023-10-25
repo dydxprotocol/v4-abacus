@@ -10,28 +10,25 @@ internal class MarketsChannelMock {
           "contents": {
             "markets": {
               "BTC-USD": {
-                "market": "BTC-USD",
-                "status": "ONLINE",
-                "stepSize": "0.0001",
-                "tickSize": "1",
-                "indexPrice": "24062.7350",
-                "oraclePrice": "24055.3000",
-                "priceChange24H": "138.180620",
-                "nextFundingRate": "0.0000102743",
-                "nextFundingAt": "2022-07-30T00:00:00.000Z",
-                "minOrderSize": "0.001",
-                "type": "PERPETUAL",
-                "initialMarginFraction": "0.05",
-                "maintenanceMarginFraction": "0.03",
-                "volume24H": "424522782.317100",
-                "trades24H": "54584",
-                "openInterest": "5061.9983",
-                "incrementalInitialMarginFraction": "0.01",
-                "incrementalPositionSize": "5",
-                "maxPositionSize": "500",
-                "baselinePositionSize": "25",
-                "assetResolution": "10000000000",
-                "syntheticAssetId": "0x4254432d3130000000000000000000"
+                "clobPairId":"0",
+                "ticker":"BTC-USD",
+                "status":"ACTIVE",
+                "lastPrice":"0",
+                "priceChange24H":"819.3433",
+                "volume24H":"4035103.5081",
+                "trades24H":19089,
+                "nextFundingRate":"0",
+                "initialMarginFraction":"0.05",
+                "maintenanceMarginFraction":"0.03",
+                "basePositionNotional":"1000000",
+                "openInterest":"71.4053",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "tickSize":"1",
+                "stepSize":"0.0001",
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000,
+                "oraclePrice": "24055.3000"
               },
               "AVAX-USD": {
                 "market": "AVAX-USD",
@@ -55,7 +52,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "300000",
                 "baselinePositionSize": "30000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x415641582d37000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x415641582d37000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "SUSHI-USD": {
                 "market": "SUSHI-USD",
@@ -79,7 +81,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "2000000",
                 "baselinePositionSize": "200000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x53555348492d370000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x53555348492d370000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "XTZ-USD": {
                 "market": "XTZ-USD",
@@ -103,7 +110,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "970000",
                 "baselinePositionSize": "100000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x58545a2d3600000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x58545a2d3600000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ICP-USD": {
                 "market": "ICP-USD",
@@ -127,7 +139,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "58000",
                 "baselinePositionSize": "5800",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x4943502d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4943502d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "NEAR-USD": {
                 "market": "NEAR-USD",
@@ -151,7 +168,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "700000",
                 "baselinePositionSize": "70000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x4e4541522d36000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4e4541522d36000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "1INCH-USD": {
                 "market": "1INCH-USD",
@@ -175,31 +197,33 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "3500000",
                 "baselinePositionSize": "350000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x31494e43482d370000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x31494e43482d370000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ETH-USD": {
-                "market": "ETH-USD",
-                "status": "ONLINE",
-                "stepSize": "0.001",
-                "tickSize": "0.1",
-                "indexPrice": "1754.0223",
                 "oraclePrice": "1753.2932",
+                "clobPairId":"1",
+                "ticker":"ETH-USD",
+                "status":"ACTIVE",
+                "lastPrice":"0",
                 "priceChange24H": "14.475020",
-                "nextFundingRate": "-0.0000178049",
-                "nextFundingAt": "2022-07-30T00:00:00.000Z",
-                "minOrderSize": "0.01",
-                "type": "PERPETUAL",
-                "initialMarginFraction": "0.05",
-                "maintenanceMarginFraction": "0.03",
-                "volume24H": "774356829.130300",
-                "trades24H": "86995",
-                "openInterest": "81484.747",
-                "incrementalInitialMarginFraction": "0.01",
-                "incrementalPositionSize": "100",
-                "maxPositionSize": "10000",
-                "baselinePositionSize": "500",
-                "assetResolution": "1000000000",
-                "syntheticAssetId": "0x4554482d3900000000000000000000"
+                "volume24H":"4698243.8522",
+                "trades24H":22298,
+                "nextFundingRate":"0",
+                "initialMarginFraction":"0.05",
+                "maintenanceMarginFraction":"0.03",
+                "basePositionNotional":"1000000",
+                "openInterest":"1125.863",
+                "atomicResolution":-9,
+                "quantumConversionExponent":-9,
+                "tickSize":"0.1",
+                "stepSize":"0.001",
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "COMP-USD": {
                 "market": "COMP-USD",
@@ -223,7 +247,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "60000",
                 "baselinePositionSize": "6000",
                 "assetResolution": "100000000",
-                "syntheticAssetId": "0x434f4d502d38000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x434f4d502d38000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "CRV-USD": {
                 "market": "CRV-USD",
@@ -247,7 +276,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "6500000",
                 "baselinePositionSize": "650000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x4352562d3600000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4352562d3600000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "MKR-USD": {
                 "market": "MKR-USD",
@@ -271,7 +305,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "5000",
                 "baselinePositionSize": "500",
                 "assetResolution": "1000000000",
-                "syntheticAssetId": "0x4d4b522d3900000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4d4b522d3900000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ETC-USD": {
                 "market": "ETC-USD",
@@ -295,7 +334,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "150000",
                 "baselinePositionSize": "15000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x4554432d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4554432d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "LTC-USD": {
                 "market": "LTC-USD",
@@ -319,7 +363,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "45000",
                 "baselinePositionSize": "4500",
                 "assetResolution": "100000000",
-                "syntheticAssetId": "0x4c54432d3800000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4c54432d3800000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ATOM-USD": {
                 "market": "ATOM-USD",
@@ -343,7 +392,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "700000",
                 "baselinePositionSize": "70000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x41544f4d2d37000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x41544f4d2d37000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "RUNE-USD": {
                 "market": "RUNE-USD",
@@ -367,7 +421,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "1000000",
                 "baselinePositionSize": "100000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x52554e452d36000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x52554e452d36000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "UMA-USD": {
                 "market": "UMA-USD",
@@ -391,7 +450,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "30000",
                 "baselinePositionSize": "2000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x554d412d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x554d412d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "AAVE-USD": {
                 "market": "AAVE-USD",
@@ -415,7 +479,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "70000",
                 "baselinePositionSize": "7000",
                 "assetResolution": "100000000",
-                "syntheticAssetId": "0x414156452d38000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x414156452d38000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "SNX-USD": {
                 "market": "SNX-USD",
@@ -439,7 +508,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "1500000",
                 "baselinePositionSize": "150000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x534e582d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x534e582d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "LINK-USD": {
                 "market": "LINK-USD",
@@ -463,7 +537,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "700000",
                 "baselinePositionSize": "70000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x4c494e4b2d37000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4c494e4b2d37000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "XMR-USD": {
                 "market": "XMR-USD",
@@ -487,7 +566,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "20000",
                 "baselinePositionSize": "2000",
                 "assetResolution": "100000000",
-                "syntheticAssetId": "0x584d522d3800000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x584d522d3800000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ALGO-USD": {
                 "market": "ALGO-USD",
@@ -511,7 +595,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "7500000",
                 "baselinePositionSize": "750000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x414c474f2d36000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x414c474f2d36000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "BCH-USD": {
                 "market": "BCH-USD",
@@ -535,7 +624,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "20000",
                 "baselinePositionSize": "2000",
                 "assetResolution": "100000000",
-                "syntheticAssetId": "0x4243482d3800000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4243482d3800000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "UNI-USD": {
                 "market": "UNI-USD",
@@ -559,7 +653,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "1000000",
                 "baselinePositionSize": "100000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x554e492d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x554e492d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "DOGE-USD": {
                 "market": "DOGE-USD",
@@ -583,7 +682,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "70000000",
                 "baselinePositionSize": "7000000",
                 "assetResolution": "100000",
-                "syntheticAssetId": "0x444f47452d35000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x444f47452d35000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "EOS-USD": {
                 "market": "EOS-USD",
@@ -607,31 +711,33 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "2500000",
                 "baselinePositionSize": "250000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x454f532d3600000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x454f532d3600000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "SOL-USD": {
-                "market": "SOL-USD",
-                "status": "ONLINE",
-                "stepSize": "0.1",
-                "tickSize": "0.001",
-                "indexPrice": "42.9874",
-                "oraclePrice": "42.9300",
-                "priceChange24H": "-0.112650",
-                "nextFundingRate": "0.0000308289",
-                "nextFundingAt": "2022-07-30T00:00:00.000Z",
-                "minOrderSize": "1",
-                "type": "PERPETUAL",
-                "initialMarginFraction": "0.10",
-                "maintenanceMarginFraction": "0.05",
-                "volume24H": "33843759.025500",
-                "trades24H": "14215",
-                "openInterest": "279332.0",
-                "incrementalInitialMarginFraction": "0.02",
-                "incrementalPositionSize": "3000",
-                "maxPositionSize": "150000",
-                "baselinePositionSize": "15000",
-                "assetResolution": "10000000",
-                "syntheticAssetId": "0x534f4c2d3700000000000000000000"
+                "clobPairId":"5",
+                "ticker":"SOL-USD",
+                "status":"ACTIVE",
+                "lastPrice":"0",
+                "priceChange24H":"-2.1523979",
+                "volume24H":"3547942.784",
+                "trades24H":18163,
+                "nextFundingRate":"0",
+                "initialMarginFraction":"0.1",
+                "maintenanceMarginFraction":"0.05",
+                "basePositionNotional":"250000",
+                "openInterest":"3339.7",
+                "atomicResolution":-7,
+                "quantumConversionExponent":-9,
+                "tickSize":"0.01",
+                "stepSize":"0.1",
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":1000000,
+                "oraclePrice": "42.9300"
               },
               "ZRX-USD": {
                 "market": "ZRX-USD",
@@ -655,7 +761,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "8500000",
                 "baselinePositionSize": "850000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x5a52582d3600000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x5a52582d3600000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ADA-USD": {
                 "market": "ADA-USD",
@@ -679,7 +790,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "10000000",
                 "baselinePositionSize": "1000000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x4144412d3600000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4144412d3600000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "CELO-USD": {
                 "market": "CELO-USD",
@@ -703,7 +819,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "355000",
                 "baselinePositionSize": "35500",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x43454c4f2d36000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x43454c4f2d36000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "TRX-USD": {
                 "market": "TRX-USD",
@@ -727,7 +848,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "35000000",
                 "baselinePositionSize": "3500000",
                 "assetResolution": "10000",
-                "syntheticAssetId": "0x5452582d3400000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x5452582d3400000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "FIL-USD": {
                 "market": "FIL-USD",
@@ -751,7 +877,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "400000",
                 "baselinePositionSize": "40000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x46494c2d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x46494c2d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "LUNA-USD": {
                 "market": "LUNA-USD",
@@ -775,7 +906,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "2000000",
                 "baselinePositionSize": "1000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x4c554e412d36000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4c554e412d36000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "YFI-USD": {
                 "market": "YFI-USD",
@@ -799,7 +935,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "500",
                 "baselinePositionSize": "50",
                 "assetResolution": "10000000000",
-                "syntheticAssetId": "0x5946492d3130000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x5946492d3130000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ZEC-USD": {
                 "market": "ZEC-USD",
@@ -823,7 +964,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "35000",
                 "baselinePositionSize": "3500",
                 "assetResolution": "100000000",
-                "syntheticAssetId": "0x5a45432d3800000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x5a45432d3800000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "DOT-USD": {
                 "market": "DOT-USD",
@@ -847,7 +993,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "600000",
                 "baselinePositionSize": "60000",
                 "assetResolution": "10000000",
-                "syntheticAssetId": "0x444f542d3700000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x444f542d3700000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "XLM-USD": {
                 "market": "XLM-USD",
@@ -871,7 +1022,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "20000000",
                 "baselinePositionSize": "2000000",
                 "assetResolution": "100000",
-                "syntheticAssetId": "0x584c4d2d3500000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x584c4d2d3500000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "MATIC-USD": {
                 "market": "MATIC-USD",
@@ -895,7 +1051,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "10000000",
                 "baselinePositionSize": "1000000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x4d415449432d360000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x4d415449432d360000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               },
               "ENJ-USD": {
                 "market": "ENJ-USD",
@@ -919,7 +1080,12 @@ internal class MarketsChannelMock {
                 "maxPositionSize": "1200000",
                 "baselinePositionSize": "125000",
                 "assetResolution": "1000000",
-                "syntheticAssetId": "0x454e4a2d3600000000000000000000"
+                "basePositionNotional":"1000000",
+                "syntheticAssetId": "0x454e4a2d3600000000000000000000",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-9,
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":100000
               }
             }
           }
@@ -992,7 +1158,12 @@ internal class MarketsChannelMock {
                     "maxPositionSize":"0",
                     "stepBaseQuantums":1000000,
                     "subticksPerTick":10000,
-                    "openInterest":"3530.502834378"
+                    "openInterest":"3530.502834378",
+                    "atomicResolution":-10,
+                    "quantumConversionExponent":-8,
+                    "tickSize":"0.01",
+                    "stepSize":"0.000000001",
+                    "stepBaseQuantums":10
                  },
                  "ETH-USD":{
                     "clobPairId":"1",
@@ -1013,7 +1184,12 @@ internal class MarketsChannelMock {
                     "maxPositionSize":"0",
                     "stepBaseQuantums":1000000,
                     "subticksPerTick":10000,
-                    "openInterest":"46115.049878"
+                    "openInterest":"46115.049878",
+                    "atomicResolution":-9,
+                    "quantumConversionExponent":-9,
+                    "tickSize":"0.001",
+                    "stepSize":"0.001",
+                    "stepBaseQuantums":1000
                  },
                  "TEST-USD":{
                     "clobPairId":"33",
@@ -1034,7 +1210,12 @@ internal class MarketsChannelMock {
                     "tickSize":"100000",
                     "stepSize":"0.0001",
                     "stepBaseQuantums":1000000,
-                    "subticksPerTick":1000000000
+                    "subticksPerTick":1000000000,
+                    "atomicResolution":-9,
+                    "quantumConversionExponent":-9,
+                    "tickSize":"0.001",
+                    "stepSize":"0.001",
+                    "stepBaseQuantums":1000
                  }
               }
            }
@@ -1132,6 +1313,7 @@ internal class MarketsChannelMock {
                     "incrementalInitialMarginFraction":"0",
                     "maintenanceMarginFraction":"0.030000",
                     "basePositionSize":"0",
+                    "basePositionNotional":"1000000",
                     "incrementalPositionSize":"0",
                     "maxPositionSize":"0",
                     "openInterest":"0.000000",
@@ -1139,6 +1321,7 @@ internal class MarketsChannelMock {
                     "quantumConversionExponent":-8,
                     "tickSize":"0.01",
                     "stepSize":"0.000000001",
+                    "subticksPerTick":10000,
                     "stepBaseQuantums":10
                  },
                  "ETH-USD":{
@@ -1156,6 +1339,7 @@ internal class MarketsChannelMock {
                     "incrementalInitialMarginFraction":"0",
                     "maintenanceMarginFraction":"0.030000",
                     "basePositionSize":"0",
+                    "basePositionNotional":"1000000",
                     "incrementalPositionSize":"0",
                     "maxPositionSize":"0",
                     "openInterest":"0.000000",
@@ -1163,6 +1347,7 @@ internal class MarketsChannelMock {
                     "quantumConversionExponent":-9,
                     "tickSize":"0.001",
                     "stepSize":"0.001",
+                    "subticksPerTick":10000,
                     "stepBaseQuantums":1000
                  }
               }

@@ -48,9 +48,6 @@ class V3PerpTests : V3BaseTests() {
             """
                 {
                     "markets": {
-                        "volume24HUSDC": 1.4184778841793003E9,
-                        "openInterestUSDC": 4.26177643402556E8,
-                        "trades24H": 246191,
                         "markets": {
                             "ETH-USD": {
                                 "assetId": "ETH",
@@ -62,21 +59,10 @@ class V3PerpTests : V3BaseTests() {
                                     "canReduce": true
                                 },
                                 "configs": {
-                                    "baselinePositionSize": 500.0,
-                                    "maxPositionSize": 10000.0,
-                                    "incrementalInitialMarginFraction": 0.01,
                                     "stepSize": 0.001,
                                     "maintenanceMarginFraction": 0.03,
                                     "initialMarginFraction": 0.05,
-                                    "minOrderSize": 0.01,
-                                    "incrementalPositionSize": 100.0,
                                     "tickSize": 0.1
-                                },
-                                "perpetual": {
-                                    "volume24H": 774356829.1303,
-                                    "trades24H": 86995.0,
-                                    "openInterest": 81484.747,
-                                    "nextFundingRate": -0.0000178049
                                 }
                             },
                             "SOL-USD": {
@@ -107,21 +93,10 @@ class V3PerpTests : V3BaseTests() {
                                     "canReduce": true
                                 },
                                 "configs": {
-                                    "baselinePositionSize": 500.0,
-                                    "maxPositionSize": 10000.0,
-                                    "incrementalInitialMarginFraction": 0.01,
                                     "stepSize": 0.001,
                                     "maintenanceMarginFraction": 0.03,
                                     "initialMarginFraction": 0.05,
-                                    "minOrderSize": 0.01,
-                                    "incrementalPositionSize": 100.0,
                                     "tickSize": 0.1
-                                },
-                                "perpetual": {
-                                    "volume24H": 7.751469063948E8,
-                                    "trades24H": 87076,
-                                    "openInterest": 81495.704,
-                                    "nextFundingRate": -0.0000178049
                                 }
                             },
                             "SOL-USD": {
