@@ -1276,10 +1276,6 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.perpetual"
             )
         } else {
-            if (obj != null) {
-                val x = 0
-                val market = PerpetualMarket.create(null, Parser(), data!!, null, false, false)
-            }
             assertNull(obj)
         }
     }
