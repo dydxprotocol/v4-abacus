@@ -272,7 +272,6 @@ class V4StateManagerAdaptor(
             if (subaccount != null) {
                 getUserFeeTier()
                 pollUserStats()
-                getTransfers()
             }
             if (accountAddress != null) {
                 pollAccountBalances()
@@ -413,7 +412,6 @@ class V4StateManagerAdaptor(
         if (validatorConnected && subaccount != null) {
             getUserFeeTier()
             pollUserStats()
-            getTransfers()
         } else {
             userStatsTimer = null
         }
@@ -446,12 +444,6 @@ class V4StateManagerAdaptor(
         getOnChain(QueryType.UserStats, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainUserStats(response), oldState)
-        }
-    }
-
-    private fun getTransfers() {
-        getOnChain(QueryType.Transfers, null) { response ->
-//            stateMachine.parseOnChainUserFeeTier(response)
         }
     }
 
