@@ -59,6 +59,7 @@ data class EnvironmentLinks(
     val community: String?,
     val feedback: String?,
     val blogs: String?,
+    val help: String?,
 ) {
     companion object {
         fun parse(
@@ -72,6 +73,7 @@ data class EnvironmentLinks(
             val community = parser.asString(data["community"])
             val feedback = parser.asString(data["feedback"])
             val blogs = parser.asString(data["blogs"])
+            val help = parser.asString(data["help"])
             return EnvironmentLinks(
                 tos,
                 privacy,
@@ -79,7 +81,8 @@ data class EnvironmentLinks(
                 documentation,
                 community,
                 feedback,
-                blogs
+                blogs,
+                help
             )
         }
     }
