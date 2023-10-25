@@ -131,21 +131,21 @@ data class MarketConfigs(
             existing: MarketConfigs?,
             parser: ParserProtocol,
             data: Map<String, Any>,
-        ): MarketConfigs {
-            val clobPairId = parser.asString(data["clobPairId"])
+        ): MarketConfigs? {
+            val clobPairId = parser.asString(data["clobPairId"]) ?: return null
             val largeSize = parser.asInt(data["largeSize"])
-            val stepSize = parser.asDouble(data["stepSize"])
-            val tickSize = parser.asDouble(data["tickSize"])
+            val stepSize = parser.asDouble(data["stepSize"]) ?: return null
+            val tickSize = parser.asDouble(data["tickSize"]) ?: return null
             val displayStepSize = parser.asDouble(data["displayStepSize"]) ?: stepSize
             val displayTickSize = parser.asDouble(data["displayTickSize"]) ?: tickSize
             val minOrderSize = parser.asDouble(data["minOrderSize"])
-            val initialMarginFraction = parser.asDouble(data["initialMarginFraction"])
-            val maintenanceMarginFraction = parser.asDouble(data["maintenanceMarginFraction"])
+            val initialMarginFraction = parser.asDouble(data["initialMarginFraction"]) ?: return null
+            val maintenanceMarginFraction = parser.asDouble(data["maintenanceMarginFraction"]) ?: return null
             val incrementalInitialMarginFraction =
                 parser.asDouble(data["incrementalInitialMarginFraction"])
             val incrementalPositionSize = parser.asDouble(data["incrementalPositionSize"])
             val maxPositionSize = parser.asDouble(data["maxPositionSize"])
-            val basePositionNotional = parser.asDouble(data["basePositionNotional"])
+            val basePositionNotional = parser.asDouble(data["basePositionNotional"]) ?: return null
             val baselinePositionSize = parser.asDouble(data["baselinePositionSize"])
             val candleOptions = CandleOption.create(
                 existing?.candleOptions,
@@ -156,7 +156,7 @@ data class MarketConfigs(
                 existing?.v4,
                 parser,
                 parser.asMap(data["v4"])
-            )
+            ) ?: return null
 
             return if (existing == null ||
                 existing.largeSize != largeSize ||
@@ -180,12 +180,12 @@ data class MarketConfigs(
                     largeSize,
                     stepSize,
                     tickSize,
-                    stepSize?.numberOfDecimals(),
-                    tickSize?.numberOfDecimals(),
+                    stepSize.numberOfDecimals(),
+                    tickSize.numberOfDecimals(),
                     displayStepSize,
                     displayTickSize,
-                    displayStepSize?.numberOfDecimals(),
-                    displayTickSize?.numberOfDecimals(),
+                    displayStepSize.numberOfDecimals(),
+                    displayTickSize.numberOfDecimals(),
                     minOrderSize,
                     initialMarginFraction,
                     maintenanceMarginFraction,
@@ -802,7 +802,6 @@ data class PerpetualMarket(
     val status: MarketStatus?,
     val configs: MarketConfigs?,
     val perpetual: MarketPerpetual?,
-    val v4Configs: MarketConfigsV4? = null,
 ) {
     companion object {
         internal fun create(
@@ -813,10 +812,10 @@ data class PerpetualMarket(
             resetOrderbook: Boolean,
             resetTrades: Boolean,
         ): PerpetualMarket? {
-            val status: MarketStatus? = parser.asMap(data["status"])?.let {
+            val status  = parser.asMap(data["status"])?.let {
                 MarketStatus.create(existing?.status, parser, it)
-            }
-            if (status?.canTrade != true && status?.canReduce != true) {
+            } ?: return null
+            if (!status.canTrade && !status.canReduce) {
                 return null
             }
             val id = parser.asString(data["id"]) ?: return null
@@ -828,12 +827,12 @@ data class PerpetualMarket(
             val priceChange24H = parser.asDouble(data["priceChange24H"])
             val priceChange24HPercent = parser.asDouble(data["priceChange24HPercent"])
 
-            val configs: MarketConfigs? = parser.asMap(data["configs"])?.let {
+            val configs = parser.asMap(data["configs"])?.let {
                 MarketConfigs.create(existing?.configs, parser, it)
-            }
-            val perpetual: MarketPerpetual? = parser.asMap(data["perpetual"])?.let {
+            } ?: return null
+            val perpetual = parser.asMap(data["perpetual"])?.let {
                 MarketPerpetual.create(existing?.perpetual, parser, it)
-            }
+            } ?: return null
 
             val significantChange = existing?.id != id ||
                     existing.assetId != assetId ||
@@ -947,9 +946,7 @@ data class PerpetualMarketSummary(
                     changes.changes.contains(Changes.orderbook),
                     changes.changes.contains(Changes.trades)
                 )
-                if (perpMarket != null) {
-                    markets[marketId] = perpMarket
-                }
+                markets.typedSafeSet(marketId, perpMarket)
             }
             return perpetualMarketSummary(existing, parser, data, markets)
         }

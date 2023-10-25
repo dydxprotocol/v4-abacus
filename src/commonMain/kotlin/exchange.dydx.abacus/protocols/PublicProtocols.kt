@@ -136,7 +136,6 @@ enum class QueryType(val rawValue: String) {
     FeeTiers("getFeeTiers"),
     UserFeeTier("getUserFeeTier"),
     UserStats("getUserStats"),
-    Transfers("getTransfers"),
     OptimalNode("getOptimalNode"),
     OptimalIndexer("getOptimalIndexer"),
     GetAccountBalances("getAccountBalances"),
