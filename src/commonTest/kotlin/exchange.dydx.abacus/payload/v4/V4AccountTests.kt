@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.onChainDelegations
+import exchange.dydx.abacus.state.modal.updateHeight
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
@@ -681,6 +682,31 @@ class V4AccountTests : V4BaseTests() {
         test(
             {
                 perp.socket(testWsUrl, mock.accountsChannel.v4_best_effort_cancelled, 0, 16960)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "0": {
+                                    "orders": {
+                                        "80133551-6d61-573b-9788-c1488e11027a": {
+                                            "id": "80133551-6d61-573b-9788-c1488e11027a",
+                                            "status": "CANCELED"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+
+        test(
+            {
+                perp.updateHeight(16960)
             },
             """
                 {

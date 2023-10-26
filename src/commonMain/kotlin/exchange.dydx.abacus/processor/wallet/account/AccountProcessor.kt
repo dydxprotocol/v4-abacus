@@ -403,7 +403,8 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         parser.asDouble(payload["quoteBalance"])?.let {
             quoteBalance["current"] = it
         }
-        val derivedQuoteBalance = deriveQuoteBalance(parser.asNativeMap(subaccount["assetPositions"]))
+        val derivedQuoteBalance =
+            deriveQuoteBalance(parser.asNativeMap(subaccount["assetPositions"]))
         if (derivedQuoteBalance != null) {
             quoteBalance["current"] = derivedQuoteBalance
         }
@@ -440,6 +441,25 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         }
     }
 
+    internal fun updateHeight(
+        existing: Map<String, Any>,
+        height: Int?,
+    ): Pair<Map<String, Any>, Boolean> {
+        val orders = parser.asNativeMap(existing["orders"])
+        if (orders != null) {
+            val (updatedOrders, updated) = ordersProcessor.updateHeight(
+                orders,
+                height,
+            )
+            if (updated) {
+                val modified = existing.mutable()
+                modified.safeSet("orders", updatedOrders)
+                return Pair(modified, true)
+            }
+        }
+        return Pair(existing, false)
+    }
+
     private fun receivedFills(
         subaccount: Map<String, Any>,
         payload: List<Any>?,
@@ -471,7 +491,10 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     ): Map<String, Any> {
         return receivedObject(subaccount, "fundingPayments", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
-                fundingPaymentsProcessor.received(if (reset) null else parser.asNativeList(existing), it)
+                fundingPaymentsProcessor.received(
+                    if (reset) null else parser.asNativeList(existing),
+                    it
+                )
             }
         } ?: subaccount
     }
@@ -750,6 +773,33 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
         return subaccountProcessor.received(existing, height)
     }
 
+    internal fun updateSubaccountsHeight(
+        existing: Map<String, Any>,
+        height: Int?,
+    ): Triple<Map<String, Any>, Boolean, List<Int>?> {
+        var updated = false
+        val modifiedSubaccounts = existing.mutable()
+        val modifiedSubaccountIds = mutableListOf<Int>()
+        for ((key, value) in existing) {
+            val subaccount = parser.asNativeMap(value)
+            if (subaccount != null) {
+                val (modifiedSubaccount, subaccountUpdated) = subaccountProcessor.updateHeight(
+                    subaccount,
+                    height,
+                )
+                if (subaccountUpdated) {
+                    modifiedSubaccounts.safeSet(key, modifiedSubaccount)
+                    updated = true
+                    modifiedSubaccountIds.add(key.toInt())
+                }
+            }
+        }
+        if (updated) {
+            return Triple(modifiedSubaccounts, true, modifiedSubaccountIds)
+        }
+        return Triple(existing, false, null)
+    }
+
     internal fun orderCanceled(
         existing: Map<String, Any>,
         orderId: String,
@@ -817,9 +867,13 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
                         val current =
                             parser.asNativeMap(modified[key])?.mutable()
                         if (current == null) {
-                            modified.safeSet(key, mapOf("denom" to denom, "amount" to parser.asDecimal(
-                                balance["amount"]
-                            )))
+                            modified.safeSet(
+                                key, mapOf(
+                                    "denom" to denom, "amount" to parser.asDecimal(
+                                        balance["amount"]
+                                    )
+                                )
+                            )
                         } else {
                             val amount = parser.asDecimal(balance["amount"]);
                             val existingAmount = parser.asDecimal(current["amount"]);
@@ -882,7 +936,8 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
         return if (subaccountNumber != null) {
             val modified = existing?.mutable() ?: mutableMapOf()
-            val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
+            val subaccount =
+                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
             val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
             return modified
@@ -900,11 +955,28 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
         return if (subaccountNumber != null) {
             val modified = existing?.toMutableMap() ?: mutableMapOf()
-            val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
+            val subaccount =
+                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
             val modifiedsubaccount = subaccountsProcessor.channel_data(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
             return modified
         } else existing
+    }
+
+    internal fun updateHeight(
+        existing: Map<String, Any>,
+        height: Int?,
+    ): Triple<Map<String, Any>, Boolean, List<Int>?> {
+        val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
+        if (subaccounts != null) {
+            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeight(subaccounts, height)
+            if (updated) {
+                val modified = existing.mutable()
+                modified.safeSet("subaccounts", modifiedSubaccounts)
+                return Triple(modified, true, subaccountIds)
+            }
+        }
+        return Triple(existing, false, null)
     }
 
     private fun subaccountNumberFromInfo(info: SocketInfo): Int? {

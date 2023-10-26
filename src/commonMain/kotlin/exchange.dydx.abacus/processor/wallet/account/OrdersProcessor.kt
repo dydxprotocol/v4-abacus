@@ -32,7 +32,7 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
-    override fun received(
+    internal fun updateHeight(
         existing: Map<String, Any>,
         height: Int?
     ): Pair<Map<String, Any>, Boolean> {
@@ -41,7 +41,7 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         for ((key, item) in existing) {
             val order = parser.asNativeMap(item)
             if (order != null) {
-                val (modifiedOrder, orderUpdated) = itemProcessor.received(order, height)
+                val (modifiedOrder, orderUpdated) = itemProcessor.updateHeight(order, height)
                 if (orderUpdated) {
                     modified[key] = modifiedOrder
                     updated = orderUpdated

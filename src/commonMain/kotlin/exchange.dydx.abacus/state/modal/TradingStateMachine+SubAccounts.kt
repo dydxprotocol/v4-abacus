@@ -2,10 +2,17 @@ package exchange.dydx.abacus.state.modal
 
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
+import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
+import kollections.iMutableListOf
+import kollections.toIList
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 
 
 internal fun TradingStateMachine.subaccounts(payload: String): StateChanges {
@@ -20,6 +27,20 @@ internal fun TradingStateMachine.receivedSubaccounts(
 ): StateChanges {
     this.wallet = walletProcessor.receivedSubaccounts(wallet, payload)
     return StateChanges(iListOf(Changes.subaccount))
+}
+
+internal fun TradingStateMachine.updateHeight(
+    height: Int,
+): StateResponse {
+    val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(wallet, height)
+    return if (updated) {
+        this.wallet = modifiedWallet
+        val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
+        val realChanges = update(changes)
+        StateResponse(state, realChanges, null, null)
+    } else {
+        return StateResponse(state, null, null, null)
+    }
 }
 
 internal fun TradingStateMachine.findOrder(

@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.modal.onChainUserStats
 import exchange.dydx.abacus.state.modal.orderCanceled
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
+import exchange.dydx.abacus.state.modal.updateHeight
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
@@ -628,6 +629,15 @@ class V4StateManagerAdaptor(
             // Always use validator blockAndHeight as source of truth
             if (firstBlockAndTime == null) {
                 firstBlockAndTime = validatorState.blockAndTime
+            }
+            if (height != null) {
+                val stateResponse = stateMachine.updateHeight(height)
+                ioImplementations.threading?.async(ThreadingType.main) {
+                    stateNotification?.stateChanged(
+                        stateResponse.state,
+                        stateResponse.changes,
+                    )
+                }
             }
         }
         updateApiState()

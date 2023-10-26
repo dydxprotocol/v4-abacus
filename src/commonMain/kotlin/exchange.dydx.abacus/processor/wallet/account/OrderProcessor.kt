@@ -268,15 +268,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         modified["resources"] = resources
     }
 
-
-    override fun received(
-        existing: Map<String, Any>,
-        height: Int?,
-    ): Pair<Map<String, Any>, Boolean> {
-        return updateHeight(existing, height)
-    }
-
-    private fun updateHeight(
+    internal fun updateHeight(
         existing: Map<String, Any>,
         height: Int?,
     ): Pair<Map<String, Any>, Boolean> {
@@ -286,14 +278,8 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                     val goodTilBlock = parser.asInt(existing["goodTilBlock"])
                     if (goodTilBlock != null && goodTilBlock != 0 && height >= goodTilBlock) {
                         val modified = existing.mutable();
-                        val modifiedStatus = "CANCELED";
-                        modified["status"] = modifiedStatus
-                        val resources =
-                            parser.asNativeMap(modified["resources"])?.mutable() ?: mutableMapOf()
-                        statusStringKeys[modifiedStatus]?.let {
-                            resources["statusStringKey"] = it
-                        }
-                        modified["resources"] = resources
+                        modified["status"] = "CANCELED"
+                        updateResource(modified)
                         return Pair(modified, true)
                     }
                 }
