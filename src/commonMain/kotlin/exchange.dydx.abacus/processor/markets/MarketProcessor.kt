@@ -146,20 +146,6 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return calculate(output)
     }
 
-    private fun calculateNextFundingAt(): Instant {
-        val now: Instant = ServerTime.now()
-        val time = now.toLocalDateTime(TimeZone.UTC)
-        val minute = time.minute
-        val second = time.second
-        val nanosecond = time.nanosecond
-        val duration =
-            nanosecond.toDuration(DurationUnit.NANOSECONDS) +
-                    second.toDuration(DurationUnit.SECONDS) +
-                    minute.toDuration(DurationUnit.MINUTES)
-
-        return now.minus(duration).plus(1.toDuration(DurationUnit.HOURS))
-    }
-
     internal fun receivedDelta(
         market: Map<String, Any>?,
         payload: Map<String, Any>,
@@ -255,9 +241,6 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             parser.asDouble(perpetual["openInterest"])?.let {
                 perpetual["openInterestUSDC"] = it * oraclePrice
             }
-        }
-        if (perpetual["nextFundingAt"] == null) {
-            perpetual.safeSet("nextFundingAt", calculateNextFundingAt())
         }
         return perpetual
     }
