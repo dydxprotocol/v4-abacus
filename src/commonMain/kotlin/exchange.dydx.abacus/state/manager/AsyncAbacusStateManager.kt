@@ -38,6 +38,11 @@ import kotlinx.datetime.Instant
 
 @JsExport
 class AppConfigs(val subscribeToCandles: Boolean, val loadRemote: Boolean = true) {
+    enum class SquidVersion {
+        V1, V2
+    }
+    var squidVersion: SquidVersion = SquidVersion.V1
+
     companion object {
         val forApp = AppConfigs(true, true)
         val forAppDebug = AppConfigs(true, false)
