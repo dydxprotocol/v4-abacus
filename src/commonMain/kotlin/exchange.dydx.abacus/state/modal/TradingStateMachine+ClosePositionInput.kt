@@ -48,8 +48,12 @@ fun TradingStateMachine.closePosition(
         ClosePositionInputField.market.rawValue -> {
             val position = if (data != null) getPosition(data) else null
             if (position != null) {
-                trade["marketId"] = data!!
-                trade.safeSet("size", null)
+                if (data != null) {
+                    if (parser.asString(trade["marketId"]) != data) {
+                        trade.safeSet("marketId", data)
+                        trade.safeSet("size", null)
+                    }
+                }
                 trade["type"] = "MARKET"
                 trade["reduceOnly"] = reduceOnlySupported
 
@@ -68,7 +72,7 @@ fun TradingStateMachine.closePosition(
         }
         ClosePositionInputField.size.rawValue, ClosePositionInputField.percent.rawValue -> {
             sizeChanged = (parser.asDouble(data) != parser.asDouble(trade[typeText]))
-            trade.safeSet(typeText, parser.asDouble(data))
+            trade.safeSet(typeText, data)
             changes = StateChanges(
                 iListOf(Changes.subaccount, Changes.input),
                 null,
