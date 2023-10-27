@@ -90,5 +90,6 @@ class V4StateManagerConfigs(
 
     fun squidV2ApiInfo(): String? {
         // TODO: Implement
+        return null
     }
 }
