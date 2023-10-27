@@ -7,6 +7,7 @@ internal class SquidChainProcessor(parser: ParserProtocol) : BaseProcessor(parse
     private val keyMap = mapOf(
         "string" to mapOf(
             "chainName" to "stringKey",
+            "networkIdentifier" to "stringKey",
             "chainId" to "type",
             "chainIconURI" to "iconUrl"
         )
