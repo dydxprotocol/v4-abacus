@@ -1325,6 +1325,7 @@ open class StateManagerAdaptor(
     }
 
     private fun retrieveMarketHistoricalFundings() {
+        historicalFundingTimer = null
         val oldState = stateMachine.state
         val url = configs.publicApiUrl("historical-funding") ?: return
         val market = market ?: return
@@ -1340,7 +1341,6 @@ open class StateManagerAdaptor(
                     (delay + 30.seconds).inWholeSeconds.toDouble(),
                     null
                 ) {
-                    this.historicalFundingTimer = null
                     retrieveMarketHistoricalFundings()
                     false
                 }
