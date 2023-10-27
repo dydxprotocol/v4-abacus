@@ -64,6 +64,27 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
+    internal fun updateHeight(
+        existing: Map<String, Any>?,
+        height: Int?,
+    ): Triple<Map<String, Any>?, Boolean, List<Int>?> {
+        if (existing != null) {
+            val account = parser.asNativeMap(existing["account"])
+            if (account != null) {
+                val (modifiedAccount, accountUpdated, subaccountIds) = v4accountProcessor.updateHeight(
+                    account,
+                    height
+                )
+                if (accountUpdated) {
+                    val modified = existing.mutable()
+                    modified.safeSet("account", modifiedAccount)
+                    return Triple(modified, true, subaccountIds)
+                }
+            }
+        }
+        return Triple(existing, false, null)
+    }
+
     internal fun receivedAccountBalances(
         existing: Map<String, Any>?,
         payload: List<Any>?,
