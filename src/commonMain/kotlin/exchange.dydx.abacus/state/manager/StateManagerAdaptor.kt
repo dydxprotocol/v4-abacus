@@ -79,6 +79,8 @@ import kollections.toIMap
 import kollections.toISet
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -86,8 +88,12 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 import kotlin.time.times
+import kotlin.time.toDuration
 
 @JsExport
 internal data class Subaccount(
@@ -301,6 +307,14 @@ open class StateManagerAdaptor(
     private val addressContinuousMonitoringDuration = 60.0 * 60.0
 
     private var sourceAddressTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private var historicalFundingTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
                 field?.cancel()
@@ -1318,8 +1332,54 @@ open class StateManagerAdaptor(
             if (success(httpCode) && response != null) {
                 update(stateMachine.historicalFundings(response), oldState)
             }
+            ioImplementations.threading?.async(ThreadingType.main) {
+                val nextHour = calculateNextFundingAt()
+                val delay = nextHour - ServerTime.now()
+                this.historicalFundingTimer = ioImplementations.timer?.schedule(
+                    // Give 30 seconds past the hour to make sure the funding is available
+                    (delay + 30.seconds).inWholeSeconds.toDouble(),
+                    null
+                ) {
+                    this.historicalFundingTimer = null
+                    retrieveMarketHistoricalFundings()
+                    false
+                }
+            }
         })
     }
+
+    private fun calculateNextFundingAt(): Instant {
+        return nextHour()
+        // Can use nextMinute() for testing
+        // return nextMinute()
+    }
+
+    private fun nextHour(): Instant {
+        val now: Instant = ServerTime.now()
+        val time = now.toLocalDateTime(TimeZone.UTC)
+        val minute = time.minute
+        val second = time.second
+        val nanosecond = time.nanosecond
+        val duration =
+            nanosecond.toDuration(DurationUnit.NANOSECONDS) +
+                    second.toDuration(DurationUnit.SECONDS) +
+                    minute.toDuration(DurationUnit.MINUTES)
+
+        return now.minus(duration).plus(1.hours)
+    }
+
+    private fun nextMinute(): Instant {
+        val now: Instant = ServerTime.now()
+        val time = now.toLocalDateTime(TimeZone.UTC)
+        val second = time.second
+        val nanosecond = time.nanosecond
+        val duration =
+            nanosecond.toDuration(DurationUnit.NANOSECONDS) +
+                    second.toDuration(DurationUnit.SECONDS)
+
+        return now.minus(duration).plus(1.minutes)
+    }
+
 
     open fun retrieveSubaccounts() {
         val oldState = stateMachine.state
