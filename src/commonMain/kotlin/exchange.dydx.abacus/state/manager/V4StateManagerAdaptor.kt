@@ -29,6 +29,7 @@ import exchange.dydx.abacus.state.modal.orderCanceled
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
 import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.state.modal.squidV2SdkInfo
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
@@ -238,8 +239,15 @@ class V4StateManagerAdaptor(
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
-            retrieveTransferChains()
-            retrieveTransferTokens()
+            when (appConfigs.squidVersion) {
+                AppConfigs.SquidVersion.V1 -> {
+                    retrieveTransferChains()
+                    retrieveTransferTokens()
+                }
+                AppConfigs.SquidVersion.V2 -> {
+                    retrieveTransferAssets()
+                }
+            }
 
             bestEffortConnectChain()
         } else {
@@ -599,6 +607,19 @@ class V4StateManagerAdaptor(
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidChains(response), oldState)
+                }
+            }
+        }
+    }
+
+    private fun retrieveTransferAssets() {
+        val oldState = stateMachine.state
+        val url = "https://testnet.v2.api.squidrouter.com/v2/sdk-info" //  configs.squidChains()
+        val header = iMapOf("x-integrator-id" to "dYdX-api")
+        if (url != null) {
+            get(url, null, header) { _, response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    update(stateMachine.squidV2SdkInfo(response), oldState)
                 }
             }
         }

@@ -56,6 +56,35 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return modified
     }
 
+    internal fun receivedV2SdkInfo(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        if (this.chains != null && this.tokens != null) {
+            return existing
+        }
+
+        this.chains = parser.asNativeList(payload["chains"])
+        this.tokens = parser.asNativeList(payload["tokens"])
+
+        var modified = mutableMapOf<String, Any>()
+        existing?.let {
+            modified = it.mutable()
+        }
+        val chainOptions = chainOptions()
+        modified.safeSet("transfer.depositOptions.chains", chainOptions)
+        modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
+        val selectedChainId = defaultChainId()
+        modified.safeSet("transfer.chain",  selectedChainId)
+        selectedChainId?.let {
+            modified.safeSet("transfer.resources.chainResources", chainResources(selectedChainId))
+        }
+
+        updateTokensDefaults(modified, selectedChainId)
+
+        return modified
+    }
+
     internal fun receivedRoute(
         existing: Map<String, Any>?,
         payload: Map<String, Any>

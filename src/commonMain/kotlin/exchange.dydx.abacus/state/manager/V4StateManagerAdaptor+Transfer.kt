@@ -1,9 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
@@ -15,15 +13,20 @@ import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kollections.iListOf
 import kollections.toIMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import kotlin.math.pow
-
-private val dydxTokenDemon = "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5"
 
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
+    when (appConfigs.squidVersion) {
+        AppConfigs.SquidVersion.V1 -> retrieveDepositRouteV1(state)
+        AppConfigs.SquidVersion.V2 -> retrieveDepositRouteV2(state)
+    }
+}
+
+private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?) {
     val fromChain = state?.input?.transfer?.chain
     val fromToken = state?.input?.transfer?.token
     val fromAmount = parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
@@ -33,6 +36,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
         } else null
     }
     val chainId = environment.dydxChainId
+    val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidRoute()
     if (fromChain != null &&
@@ -41,10 +45,11 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
         fromAmountString != null &&
         accountAddress != null &&
         chainId != null &&
+        dydxTokenDemon != null &&
         url != null &&
         sourceAddress != null
     ) {
-        val params: IMap<String, String> = iMapOf<String, String>(
+        val params: IMap<String, String> = iMapOf(
             "fromChain" to fromChain,
             "fromToken" to fromToken,
             "fromAmount" to fromAmountString,
@@ -68,6 +73,62 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
         }
     }
 }
+
+private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?) {
+    val fromChain = state?.input?.transfer?.chain
+    val fromToken = state?.input?.transfer?.token
+    val fromAmount = parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
+        val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+        if (decimals != null) {
+            (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+        } else null
+    }
+    val chainId = environment.dydxChainId
+    val dydxTokenDemon = environment.tokens["usdc"]?.denom
+    val fromAmountString = parser.asString(fromAmount)
+    val url = "https://testnet.v2.api.squidrouter.com/v2/route" // configs.squidRoute()
+    if (fromChain != null &&
+        fromToken != null &&
+        fromAmount != null && fromAmount > 0 &&
+        fromAmountString != null &&
+        accountAddress != null &&
+        chainId != null &&
+        dydxTokenDemon != null &&
+        url != null &&
+        sourceAddress != null
+    ) {
+        val body: Map<String, Any> = mapOf(
+            "fromChain" to fromChain,
+            "fromToken" to "0x07865c6E87B9F70255377e024ace6630C1Eaa37F", //fromToken,
+            "fromAddress" to "0xb13CD07B22BC5A69F8500a1Cb3A1b65618d50B22", //sourceAddress.toString(),
+            "fromAmount" to fromAmountString,
+            "toChain" to "grand-1", //chainId,
+            "toToken" to "uusdc", // dydxTokenDemon,
+            "toAddress" to "noble1zqnudqmjrgh9m3ec9yztkrn4ttx7ys64p87kkx", //accountAddress.toString(),
+            "quoteOnly" to false,
+            "enableBoost" to true,
+            "slippage" to 1,
+            "slippageConfig" to iMapOf<String, Any>(
+                "autoMode" to 1
+            ),
+        )
+        val oldState = stateMachine.state
+        val header = iMapOf(
+            "x-integrator-id" to "dYdX-api",
+            "Content-Type" to "application/json",
+        )
+        post(url, header, body.toJsonPrettyPrint()) { response, httpCode ->
+            if (success(httpCode) && response != null) {
+                val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                val oldFromAmount = oldState?.input?.transfer?.size?.size
+                if (currentFromAmount == oldFromAmount) {
+                    update(stateMachine.squidRoute(response, subaccountNumber), oldState)
+                }
+            }
+        }
+    }
+}
+
 
 internal fun V4StateManagerAdaptor.simulateWithdrawal(decimals: Int, callback: (BigDecimal?) -> Unit) {
     val payload = withdrawPayloadJson()
@@ -123,6 +184,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: B
         null
     }
     val chainId = environment.dydxChainId
+    val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidRoute()
     val fromAddress = accountAddress
@@ -133,6 +195,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: B
         fromAmountString != null &&
         accountAddress != null &&
         chainId != null &&
+        dydxTokenDemon != null &&
         url != null &&
         fromAddress != null
     ) {

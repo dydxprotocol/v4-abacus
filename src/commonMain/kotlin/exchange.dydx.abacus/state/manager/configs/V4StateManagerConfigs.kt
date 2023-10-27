@@ -87,4 +87,9 @@ class V4StateManagerConfigs(
         val path = parser.asString(parser.value(configs, "paths.0xsquid.tokens"))
         return "$squid$path"
     }
+
+    fun squidV2ApiInfo(): String? {
+        // TODO: Implement
+        return null
+    }
 }

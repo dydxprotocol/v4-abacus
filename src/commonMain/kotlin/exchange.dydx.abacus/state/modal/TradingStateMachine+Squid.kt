@@ -18,6 +18,12 @@ internal fun TradingStateMachine.squidTokens(payload: String): StateChanges? {
     return StateChanges(iListOf(Changes.input))
 }
 
+internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? {
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
+    input = squidProcessor.receivedV2SdkInfo(input, json)
+    return StateChanges(iListOf(Changes.input))
+}
+
 internal fun TradingStateMachine.squidRoute(payload: String, subaccountNumber: Int): StateChanges? {
     val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     input = squidProcessor.receivedRoute(input, json)
