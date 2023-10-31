@@ -171,7 +171,7 @@ class NotificationsProvider(
             title,
             text,
             "/orders/$orderId",
-            params,
+            paramsAsJson,
             fill.createdAtMilliseconds,
         )
     }
@@ -272,7 +272,7 @@ class NotificationsProvider(
             title,
             text,
             null,
-            params,
+            paramsAsJson,
             fill.createdAtMilliseconds,
         )
     }
@@ -326,7 +326,7 @@ class NotificationsProvider(
                         title,
                         text,
                         null,
-                        params,
+                        paramsAsJson,
                         closedAt.toEpochMilliseconds().toDouble(),
                     )
                 }
@@ -427,7 +427,7 @@ class NotificationsProvider(
                 title,
                 text,
                 "/orders/$orderId",
-                params,
+                paramsAsJson,
                 updatedAtMilliseconds,
             )
         } else null

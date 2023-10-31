@@ -39,7 +39,7 @@ data class Notification(
     val title: String,
     val text: String?,
     val link: String?,
-    val data: IMap<String, String>?,
+    val data: String?,  // JSON String
     val updateTimeInMilliseconds: Double,
 ) {
 }
