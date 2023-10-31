@@ -1208,10 +1208,10 @@ internal class TradeInputCalculator(
                                 ) ?: price
 
                             else ->
-                                priceIfLargeThan(
+                                priceIfLargerThan(
                                     price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE),
                                     priceLimit
-                                ) ?: priceIfLargeThan(
+                                ) ?: priceIfLargerThan(
                                     price * (Numeric.double.ONE - MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD),
                                     priceLimit
                                 ) ?: price
@@ -1433,7 +1433,7 @@ internal class TradeInputCalculator(
         } ?: price
     }
 
-    private fun priceIfLargeThan(price: Double, priceLimit: Double?): Double {
+    private fun priceIfLargerThan(price: Double, priceLimit: Double?): Double {
         return priceLimit?.let {
             if (price > priceLimit) price else null
         } ?: price
