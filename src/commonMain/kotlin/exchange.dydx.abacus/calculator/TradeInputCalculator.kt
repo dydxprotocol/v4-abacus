@@ -1,14 +1,8 @@
 package exchange.dydx.abacus.calculator
 
 import abs
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.*
-import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.reduceOnlySupported
-import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -31,7 +25,6 @@ internal class TradeInputCalculator(
     private val calculation: TradeCalculation,
 ) {
     private val accountTransformer = AccountTransformer()
-    private val fokDisabled = false
 
     private val MARKET_ORDER_MAX_SLIPPAGE = 0.05
     private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01
@@ -122,7 +115,7 @@ internal class TradeInputCalculator(
             val modifiedTradeSize = tradeSize.mutable()
             when (input) {
                 "size.size" -> {
-                    val price =nonMarketOrderPrice(tradePrices, market, type, isBuying)
+                    val price = nonMarketOrderPrice(tradePrices, market, type, isBuying)
                     val size = parser.asDouble(tradeSize.get("size"))
                     val usdcSize =
                         if (price != null && size != null) (price * size) else null
@@ -915,13 +908,10 @@ internal class TradeInputCalculator(
         return mapOf(
             "field" to "timeInForce",
             "type" to "string",
-            "options" to if (fokDisabled) listOf(
+            "options" to listOf(
                 timeInForceOptionGTT,
-                timeInForceOptionIOC
-            ) else listOf(
-                timeInForceOptionGTT,
+                timeInForceOptionIOC,
                 timeInForceOptionFOK,
-                timeInForceOptionIOC
             )
         )
     }
@@ -960,25 +950,16 @@ internal class TradeInputCalculator(
         return mapOf(
             "field" to "execution",
             "type" to "string",
-            "options" to if (fokDisabled) {
-                if (conditionalLimit) listOf(
-                    executionDefault,
-                    executionPostOnly,
-                    executionIOC
-                ) else listOf(
-                    executionIOC
-                )
-            } else {
-                if (conditionalLimit) listOf(
-                    executionDefault,
-                    executionPostOnly,
-                    executionFOK,
-                    executionIOC
-                ) else listOf(
-                    executionFOK,
-                    executionIOC
-                )
-            }
+            "options" to
+                    if (conditionalLimit) listOf(
+                        executionDefault,
+                        executionPostOnly,
+                        executionIOC,
+                        executionFOK,
+                    ) else listOf(
+                        executionIOC,
+                        executionFOK,
+                    )
         )
     }
 
@@ -1227,10 +1208,10 @@ internal class TradeInputCalculator(
                                 ) ?: price
 
                             else ->
-                                priceIfLargeThan(
+                                priceIfLargerThan(
                                     price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE),
                                     priceLimit
-                                ) ?: priceIfLargeThan(
+                                ) ?: priceIfLargerThan(
                                     price * (Numeric.double.ONE - MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD),
                                     priceLimit
                                 ) ?: price
@@ -1246,7 +1227,8 @@ internal class TradeInputCalculator(
                         if (usdcSize != null) (usdcSize * multiplier + (fee
                             ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE) else null
 
-                    val oraclePrice = parser.asDouble(market?.get("oraclePrice"))  // if no indexPrice(v4), use oraclePrice
+                    val oraclePrice =
+                        parser.asDouble(market?.get("oraclePrice"))  // if no indexPrice(v4), use oraclePrice
                     val priceDiff =
                         slippage(worstPrice, oraclePrice, parser.asString(trade["side"]))
                     val indexSlippage =
@@ -1269,7 +1251,10 @@ internal class TradeInputCalculator(
                     summary.safeSet("usdcSize", usdcSize)
                     summary.safeSet("fee", fee)
                     summary.safeSet("feeRate", feeRate)
-                    summary.safeSet("total", if (total == Numeric.double.ZERO) Numeric.double.ZERO else total)
+                    summary.safeSet(
+                        "total",
+                        if (total == Numeric.double.ZERO) Numeric.double.ZERO else total
+                    )
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("indexSlippage", indexSlippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
@@ -1360,7 +1345,10 @@ internal class TradeInputCalculator(
                     summary.safeSet("usdcSize", usdcSize)
                     summary.safeSet("fee", fee)
                     summary.safeSet("feeRate", feeRate)
-                    summary.safeSet("total", if (total == Numeric.double.ZERO) Numeric.double.ZERO else total)
+                    summary.safeSet(
+                        "total",
+                        if (total == Numeric.double.ZERO) Numeric.double.ZERO else total
+                    )
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
@@ -1403,7 +1391,10 @@ internal class TradeInputCalculator(
                 summary.safeSet("usdcSize", usdcSize)
                 summary.safeSet("fee", fee)
                 summary.safeSet("feeRate", feeRate)
-                summary.safeSet("total", if (total == Numeric.double.ZERO) Numeric.double.ZERO else total)
+                summary.safeSet(
+                    "total",
+                    if (total == Numeric.double.ZERO) Numeric.double.ZERO else total
+                )
                 summary.safeSet("filled", true)
                 summary.safeSet("reward", reward)
             }
@@ -1436,13 +1427,13 @@ internal class TradeInputCalculator(
         } else null
     }
 
-    private fun priceIfLessThan(price: Double, priceLimit: Double?): Double? {
+    private fun priceIfLessThan(price: Double, priceLimit: Double?): Double {
         return priceLimit?.let {
             if (price < priceLimit) price else null
         } ?: price
     }
 
-    private fun priceIfLargeThan(price: Double, priceLimit: Double?): Double? {
+    private fun priceIfLargerThan(price: Double, priceLimit: Double?): Double {
         return priceLimit?.let {
             if (price > priceLimit) price else null
         } ?: price

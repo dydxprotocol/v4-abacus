@@ -160,12 +160,12 @@ class TradeInputOptionsTests : V3BaseTests() {
                                     "stringKey": "APP.TRADE.GOOD_TIL_TIME"
                                 },
                                 {
-                                    "type": "FOK",
-                                    "stringKey": "APP.TRADE.FILL_OR_KILL"
-                                },
-                                {
                                     "type": "IOC",
                                     "stringKey": "APP.TRADE.IMMEDIATE_OR_CANCEL"
+                                },
+                                {
+                                    "type": "FOK",
+                                    "stringKey": "APP.TRADE.FILL_OR_KILL"
                                 }
                             ]
                         }
