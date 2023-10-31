@@ -199,6 +199,10 @@ enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
 
+    // Transactions
+    TradePlaceOrder("TradePlaceOrder"),
+    TradeCancelOrder("TradeCancelOrder"),
+
     // Transfers
     TransferFaucetConfirmed("TransferFaucetConfirmed"),
 
@@ -295,14 +299,14 @@ fun FileSystemProtocol.readCachedTextFile(
     path: String,
 ): String? {
     var data = this.readTextFile(FileLocation.AppDocs, path)
-    if (data == null) {
+    return if (data == null) {
         data = this.readTextFile(FileLocation.AppBundle, path)
         if (data != null) {
             this.writeTextFile(path, data)
         }
-        return data
+        data
     } else {
-        return data
+        data
     }
 }
 

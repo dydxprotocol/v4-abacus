@@ -539,22 +539,22 @@ class AsyncAbacusStateManager(
     }
 
     fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
-        try {
-            return adaptor?.commitPlaceOrder(callback)
+        return try {
+            adaptor?.commitPlaceOrder(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
-            return null
+            null
         }
     }
 
     fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
-        try {
-            return adaptor?.commitClosePosition(callback)
+        return try {
+            adaptor?.commitClosePosition(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
-            return null
+            null
         }
     }
 

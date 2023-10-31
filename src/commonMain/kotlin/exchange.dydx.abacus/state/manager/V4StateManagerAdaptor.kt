@@ -809,6 +809,10 @@ class V4StateManagerAdaptor(
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
+                tracking(
+                    AnalyticsEvent.TradePlaceOrder.rawValue,
+                    null,
+                )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
@@ -835,6 +839,10 @@ class V4StateManagerAdaptor(
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
+                tracking(
+                    AnalyticsEvent.TradePlaceOrder.rawValue,
+                    null,
+                )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
@@ -949,6 +957,10 @@ class V4StateManagerAdaptor(
         transaction(TransactionType.CancelOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
+                tracking(
+                    AnalyticsEvent.TradeCancelOrder.rawValue,
+                    null,
+                )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
                     this.cancelOrderRecords.add(
