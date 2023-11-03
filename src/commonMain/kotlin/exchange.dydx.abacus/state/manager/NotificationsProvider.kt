@@ -25,6 +25,7 @@ import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIMap
+import kotlinx.datetime.Clock
 
 class NotificationsProvider(
     private val uiImplementations: UIImplementations,
@@ -148,6 +149,8 @@ class NotificationsProvider(
         val filledAmountText = parser.asString(order.totalFilled)
         val priceText = priceText(fill.price, tickSize)
         val averagePriceText = parser.asString(averagePrice(fillsForOrder))
+        val orderType = order.type.rawValue
+        val orderTypeText = text(orderType)
         val params = (iMapOf(
             "MARKET" to marketId,
             "ASSET" to assetText,
@@ -156,6 +159,8 @@ class NotificationsProvider(
             "FILLED_AMOUNT" to filledAmountText,
             "PRICE" to priceText,
             "AVERAGE_PRICE" to averagePriceText,
+            "ORDER_TYPE" to orderType,
+            "ORDER_TYPE_TEXT" to orderTypeText,
         ).filterValues { it != null } as Map<String, String>).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
@@ -249,12 +254,16 @@ class NotificationsProvider(
         val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
         val amountText = parser.asString(fill.size)
         val priceText = parser.asString(fill.price)
+        val fillType = fill.type.rawValue
+        val fillTypeText = text(fillType)
         val params = (iMapOf(
             "MARKET" to marketId,
             "ASSET" to assetText,
             "SIDE" to sideText,
             "AMOUNT" to amountText,
             "PRICE" to priceText,
+            "FILL_TYPE" to fillType,
+            "FILL_TYPE_TEXT" to fillTypeText,
         ).filterValues { it != null } as Map<String, String>).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
@@ -368,13 +377,25 @@ class NotificationsProvider(
         stateMachine: TradingStateMachine,
         order: SubaccountOrder,
     ): Notification? {
-        val updatedAtMilliseconds = order.updatedAtMilliseconds ?: return null
+        var timestamp: Double? = null
         val statusNotificationStringKey = when (order.status) {
             OrderStatus.open -> {
                 when (order.type) {
                     OrderType.stopLimit, OrderType.stopMarket, OrderType.takeProfitLimit, OrderType.takeProfitMarket -> {
-                        if (order.totalFilled == Numeric.double.ZERO) {
+                        timestamp = order.updatedAtMilliseconds
+                        if (timestamp != null && order.totalFilled == Numeric.double.ZERO) {
                             "NOTIFICATIONS.ORDER_TRIGGERED"
+                        } else null
+                    }
+
+                    OrderType.limit, OrderType.market -> {
+                        /*
+                        Short term orders should get filled/partially filled immediately, so we don't need to handle OPENED notification
+                        And it doesn't have a timestamp
+                         */
+                        timestamp = order.createdAtMilliseconds
+                        if (timestamp != null && order.totalFilled == Numeric.double.ZERO) {
+                            "NOTIFICATIONS.ORDER_OPENED"
                         } else null
                     }
 
@@ -392,7 +413,7 @@ class NotificationsProvider(
 
             else -> null
         }
-        return if (statusNotificationStringKey != null) {
+        return if (statusNotificationStringKey != null && timestamp != null) {
             val marketId = order.marketId
             val asset = asset(stateMachine, marketId) ?: return null
             val marketImageUrl = asset.resources?.imageUrl
@@ -400,11 +421,15 @@ class NotificationsProvider(
             val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
             val amountText = parser.asString(order.size)
             val totalFilled = parser.asString(order.totalFilled)
+            val orderType = order.type.rawValue
+            val orderTypeText = text(orderType)
             val params = (iMapOf(
                 "MARKET" to marketId,
                 "SIDE" to sideText,
                 "AMOUNT" to amountText,
                 "TOTAL_FILLED" to totalFilled,
+                "ORDER_TYPE" to orderType,
+                "ORDER_TYPE_TEXT" to orderTypeText,
             ).filterValues { it != null } as Map<String, String>).toIMap()
             val paramsAsJson = jsonEncoder.encode(params)
 
@@ -428,8 +453,13 @@ class NotificationsProvider(
                 text,
                 "/orders/$orderId",
                 paramsAsJson,
-                updatedAtMilliseconds,
+                timestamp,
             )
         } else null
+    }
+
+    private fun text(orderType: String): String? {
+        return uiImplementations.localizer?.localize("APP.ENUMS.ORDER_TYPE.$orderType")
+            ?: return null
     }
 }

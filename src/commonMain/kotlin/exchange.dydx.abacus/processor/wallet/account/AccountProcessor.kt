@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -187,7 +188,7 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     internal fun subscribed(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.0"))
@@ -199,7 +200,7 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.0"))
@@ -290,7 +291,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     internal fun subscribed(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any> {
         return socket(existing, content, true, height)
     }
@@ -298,7 +299,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any> {
         return socket(existing, content, false, height)
     }
@@ -307,7 +308,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         subscribed: Boolean,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any> {
         var subaccount = existing ?: mutableMapOf()
         val accountPayload = subaccountPayload(content)
@@ -425,7 +426,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     private fun receivedOrders(
         subaccount: Map<String, Any>,
         payload: List<Any>?,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any> {
         return if (payload != null) {
             val modified = subaccount.mutable()
@@ -443,7 +444,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
 
     internal fun updateHeight(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         val orders = parser.asNativeMap(existing["orders"])
         if (orders != null) {
@@ -697,7 +698,7 @@ internal class V3SubaccountProcessor(parser: ParserProtocol) : SubaccountProcess
 internal class V4SubaccountProcessor(parser: ParserProtocol) : SubaccountProcessor(parser) {
     override fun received(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         val orders = parser.asNativeMap(existing["orders"])
         if (orders != null) {
@@ -749,7 +750,7 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         subscribed: Boolean,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any> {
         val modified = super.socket(existing, content, subscribed, height).mutable()
 
@@ -768,14 +769,14 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
 
     override fun received(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         return subaccountProcessor.received(existing, height)
     }
 
     internal fun updateSubaccountsHeight(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Triple<Map<String, Any>, Boolean, List<Int>?> {
         var updated = false
         val modifiedSubaccounts = existing.mutable()
@@ -931,7 +932,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     internal fun subscribed(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
         return if (subaccountNumber != null) {
@@ -948,7 +949,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         info: SocketInfo,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         val subaccountNumber = parser.asInt(parser.value(content, "subaccounts.subaccountNumber"))
             ?: subaccountNumberFromInfo(info)
@@ -965,7 +966,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
     internal fun updateHeight(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Triple<Map<String, Any>, Boolean, List<Int>?> {
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
         if (subaccounts != null) {
@@ -992,7 +993,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     internal fun received(
         existing: Map<String, Any>,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
         if (subaccount != null) {

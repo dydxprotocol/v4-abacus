@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.validator.InputValidator
@@ -181,7 +182,7 @@ open class TradingStateMachine(
         url: AbUrl,
         jsonString: String,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): StateResponse {
         val errors = iMutableListOf<ParsingError>()
         val json =
@@ -208,7 +209,7 @@ open class TradingStateMachine(
         url: AbUrl,
         payload: Map<String, Any>,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): StateResponse {
         var changes: StateChanges? = null
         val type = parser.asString(payload["type"])
@@ -1228,7 +1229,7 @@ open class TradingStateMachine(
         return modifiedInput
     }
 
-    fun received(subaccountNumber: Int, height: Int?): StateResponse {
+    fun received(subaccountNumber: Int, height: BlockAndTime?): StateResponse {
         val wallet = wallet
         if (wallet != null) {
             val (modifiedWallet, updated) = walletProcessor.received(

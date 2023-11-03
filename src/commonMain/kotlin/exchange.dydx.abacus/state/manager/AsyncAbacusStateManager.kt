@@ -109,7 +109,7 @@ enum class NetworkStatus(val rawValue: String) {
     }
 }
 
-internal class BlockAndTime(val block: Int, val time: Instant)
+public class BlockAndTime(val block: Int, val time: Instant)
 
 internal class NetworkState() {
     var status: NetworkStatus = NetworkStatus.UNKNOWN

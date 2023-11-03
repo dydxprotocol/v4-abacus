@@ -6,6 +6,7 @@ import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -17,7 +18,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     internal fun subscribed(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         return receivedObject(
             existing,
@@ -38,7 +39,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         info: SocketInfo,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         return receivedObject(
             existing,
@@ -66,7 +67,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     internal fun updateHeight(
         existing: Map<String, Any>?,
-        height: Int?,
+        height: BlockAndTime?,
     ): Triple<Map<String, Any>?, Boolean, List<Int>?> {
         if (existing != null) {
             val account = parser.asNativeMap(existing["account"])
@@ -195,7 +196,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     internal fun received(
         existing: Map<String, Any>,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         val account = parser.asNativeMap(existing["account"])
         if (account != null) {

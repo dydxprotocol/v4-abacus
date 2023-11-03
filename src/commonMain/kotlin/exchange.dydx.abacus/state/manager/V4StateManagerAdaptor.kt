@@ -25,7 +25,6 @@ import exchange.dydx.abacus.state.modal.onChainRewardsParams
 import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
-import exchange.dydx.abacus.state.modal.orderCanceled
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
 import exchange.dydx.abacus.state.modal.updateHeight
@@ -656,8 +655,8 @@ class V4StateManagerAdaptor(
             if (firstBlockAndTime == null) {
                 firstBlockAndTime = validatorState.blockAndTime
             }
-            if (height != null) {
-                val stateResponse = stateMachine.updateHeight(height)
+            if (height != null && time != null) {
+                val stateResponse = stateMachine.updateHeight(BlockAndTime(height, time))
                 ioImplementations.threading?.async(ThreadingType.main) {
                     stateNotification?.stateChanged(
                         stateResponse.state,

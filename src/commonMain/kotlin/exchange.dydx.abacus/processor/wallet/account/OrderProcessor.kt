@@ -3,6 +3,7 @@ package exchange.dydx.abacus.processor.wallet.account
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -189,7 +190,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         return if (shouldUpdate(existing, payload)) {
             val modified = transform(existing, payload, orderKeyMap)
@@ -270,15 +271,16 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     internal fun updateHeight(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         if (height != null) {
             when (val status = parser.asString(existing["status"])) {
                 "BEST_EFFORT_CANCELED" -> {
                     val goodTilBlock = parser.asInt(existing["goodTilBlock"])
-                    if (goodTilBlock != null && goodTilBlock != 0 && height >= goodTilBlock) {
+                    if (goodTilBlock != null && goodTilBlock != 0 && height.block >= goodTilBlock) {
                         val modified = existing.mutable();
                         modified["status"] = "CANCELED"
+                        modified["updatedAt"] = height.time
                         updateResource(modified)
                         return Pair(modified, true)
                     }
