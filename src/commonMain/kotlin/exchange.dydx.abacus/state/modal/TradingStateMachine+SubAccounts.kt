@@ -8,6 +8,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
@@ -30,7 +31,7 @@ internal fun TradingStateMachine.receivedSubaccounts(
 }
 
 internal fun TradingStateMachine.updateHeight(
-    height: Int,
+    height: BlockAndTime,
 ): StateResponse {
     val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(wallet, height)
     return if (updated) {

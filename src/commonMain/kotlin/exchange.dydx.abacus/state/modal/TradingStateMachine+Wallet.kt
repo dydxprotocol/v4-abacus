@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.modal
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
@@ -12,7 +13,7 @@ import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.receivedSubaccountSubscribed(
     payload: Map<String, Any>,
-    height: Int?,
+    height: BlockAndTime?,
 ): StateChanges {
     this.wallet = walletProcessor.subscribed(wallet, payload, height)
     val changes = iMutableListOf<Changes>()
@@ -31,7 +32,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
 internal fun TradingStateMachine.receivedAccountsChanges(
     payload: Map<String, Any>,
     info: SocketInfo,
-    height: Int?,
+    height: BlockAndTime?,
 ): StateChanges {
     this.wallet = walletProcessor.channel_data(wallet, payload, info, height)
     val changes = iMutableListOf<Changes>()
@@ -65,7 +66,7 @@ internal fun TradingStateMachine.receivedAccountsChanges(
 internal fun TradingStateMachine.receivedBatchAccountsChanges(
     payload: List<Any>,
     info: SocketInfo,
-    height: Int?
+    height: BlockAndTime?
 ): StateChanges {
     var changes = iListOf<Changes>()
     var subaccountNumbers = iListOf<Int>()

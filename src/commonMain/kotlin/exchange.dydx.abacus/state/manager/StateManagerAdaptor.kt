@@ -1581,7 +1581,7 @@ open class StateManagerAdaptor(
         return httpCode in 200..299
     }
 
-    open fun height(): Int? {
+    open fun height(): BlockAndTime? {
         return null
     }
 
