@@ -47,6 +47,7 @@ class AbacusMockData {
         "test",
         "test",
         "test",
+        "dYdX-api",
         "dYdX Chain",
         "dYdX-logo.png",
         false,
