@@ -36,6 +36,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         } else null
     }
     val chainId = environment.dydxChainId
+    val squidIntegratorId = environment.squidIntegratorId
     val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidRoute()
@@ -47,7 +48,8 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         chainId != null &&
         dydxTokenDemon != null &&
         url != null &&
-        sourceAddress != null
+        sourceAddress != null &&
+        squidIntegratorId != null
     ) {
         val params: IMap<String, String> = iMapOf(
             "fromChain" to fromChain,
@@ -62,7 +64,10 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         )
 
         val oldState = stateMachine.state
-        get(url, params, null) { _, response, httpCode ->
+        val header = iMapOf(
+            "x-integrator-id" to squidIntegratorId,
+        )
+        get(url, params, header) { _, response, httpCode ->
             if (success(httpCode) && response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
@@ -84,6 +89,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
         } else null
     }
     val chainId = environment.dydxChainId
+    val squidIntegratorId = environment.squidIntegratorId
     val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
     val url = "https://testnet.v2.api.squidrouter.com/v2/route" // configs.squidRoute()
@@ -95,7 +101,8 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
         chainId != null &&
         dydxTokenDemon != null &&
         url != null &&
-        sourceAddress != null
+        sourceAddress != null &&
+        squidIntegratorId != null
     ) {
         val body: Map<String, Any> = mapOf(
             "fromChain" to fromChain,
@@ -114,7 +121,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
         )
         val oldState = stateMachine.state
         val header = iMapOf(
-            "x-integrator-id" to "dYdX-api",
+            "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
         post(url, header, body.toJsonPrettyPrint()) { response, httpCode ->
@@ -184,6 +191,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: B
         null
     }
     val chainId = environment.dydxChainId
+    val squidIntegratorId = environment.squidIntegratorId
     val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidRoute()
@@ -197,7 +205,8 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: B
         chainId != null &&
         dydxTokenDemon != null &&
         url != null &&
-        fromAddress != null
+        fromAddress != null &&
+        squidIntegratorId != null
     ) {
         val params: IMap<String, String> = iMapOf<String, String>(
             "fromChain" to chainId,
@@ -213,7 +222,10 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: B
         )
 
         val oldState = stateMachine.state
-        get(url, params, null) { _, response, httpCode ->
+        val header = iMapOf(
+            "x-integrator-id" to squidIntegratorId,
+        )
+        get(url, params, header) { _, response, httpCode ->
             if (success(httpCode) && response != null) {
                 update(stateMachine.squidRoute(response, subaccountNumber), oldState)
             }
@@ -232,9 +244,13 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
         "toChainId" to toChainId,
     ).filterNotNull()
     val url = configs.squidStatus()
-    if (url != null) {
+    val squidIntegratorId = environment.squidIntegratorId
+    if (url != null && squidIntegratorId != null) {
         val oldState = stateMachine.state
-        get(url, params, null) { _, response, httpCode ->
+        val header = iMapOf(
+            "x-integrator-id" to squidIntegratorId,
+        )
+        get(url, params, header) { _, response, httpCode ->
             if (response != null) {
                 update(stateMachine.squidStatus(response, hash), oldState)
             }

@@ -603,8 +603,10 @@ class V4StateManagerAdaptor(
     private fun retrieveTransferChains() {
         val oldState = stateMachine.state
         val url = configs.squidChains()
-        if (url != null) {
-            get(url, null, null) { _, response, httpCode ->
+        val squidIntegratorId = environment.squidIntegratorId
+        if (url != null && squidIntegratorId != null) {
+            val header = iMapOf("x-integrator-id" to squidIntegratorId)
+            get(url, null, header) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidChains(response), oldState)
                 }
@@ -615,8 +617,9 @@ class V4StateManagerAdaptor(
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
         val url = "https://testnet.v2.api.squidrouter.com/v2/sdk-info" //  configs.squidChains()
-        val header = iMapOf("x-integrator-id" to "dYdX-api")
-        if (url != null) {
+        val squidIntegratorId = environment.squidIntegratorId
+        if (url != null && squidIntegratorId != null) {
+            val header = iMapOf("x-integrator-id" to squidIntegratorId)
             get(url, null, header) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
@@ -628,8 +631,10 @@ class V4StateManagerAdaptor(
     private fun retrieveTransferTokens() {
         val oldState = stateMachine.state
         val url = configs.squidToken()
-        if (url != null) {
-            get(url, null, null) { _, response, httpCode ->
+        val squidIntegratorId = environment.squidIntegratorId
+        if (url != null && squidIntegratorId != null) {
+            val header = iMapOf("x-integrator-id" to squidIntegratorId)
+            get(url, null, header) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidTokens(response), oldState)
                 }

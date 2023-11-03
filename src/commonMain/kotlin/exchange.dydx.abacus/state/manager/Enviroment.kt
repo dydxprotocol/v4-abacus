@@ -301,6 +301,7 @@ open class Environment(
     val name: String?,
     val ethereumChainId: String,
     val dydxChainId: String?,
+    val squidIntegratorId: String?,
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
@@ -314,6 +315,7 @@ class V4Environment(
     name: String?,
     ethereumChainId: String,
     dydxChainId: String?,
+    squidIntegratorId: String?,
     val chainName: String?,
     val chainLogo: String?,
     isMainNet: Boolean,
@@ -327,6 +329,7 @@ class V4Environment(
     name,
     ethereumChainId,
     dydxChainId,
+    squidIntegratorId,
     isMainNet,
     endpoints,
     links,
@@ -344,6 +347,7 @@ class V4Environment(
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
             val dydxChainId = parser.asString(data["dydxChainId"])
+            val squidIntegratorId = parser.asString(data["squidIntegratorId"])
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
@@ -365,6 +369,7 @@ class V4Environment(
                 name,
                 ethereumChainId,
                 dydxChainId,
+                squidIntegratorId,
                 chainName,
                 "$deploymentUri$chainLogo",
                 isMainNet,
