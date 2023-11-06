@@ -196,7 +196,6 @@ internal class SubaccountTransformer {
         parser: ParserProtocol,
         period: String
     ): Map<String, Any> {
-        val nullDelta = if (delta != null) mapOf("size" to 0.0) else null
         val modified = mutableMapOf<String, Any>()
         val deltaMarketId = parser.asString(delta?.get("marketId"))
         for ((marketId, value) in positions) {
@@ -204,7 +203,7 @@ internal class SubaccountTransformer {
             if (position != null) {
                 val modifiedPosition = applyDeltaToPosition(
                     position,
-                    if (deltaMarketId == marketId) delta else nullDelta,
+                    if (deltaMarketId == marketId) delta else null,
                     parser,
                     period
                 )
