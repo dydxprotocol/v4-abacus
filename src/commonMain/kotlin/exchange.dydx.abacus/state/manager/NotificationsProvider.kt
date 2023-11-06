@@ -161,6 +161,7 @@ class NotificationsProvider(
             "AVERAGE_PRICE" to averagePriceText,
             "ORDER_TYPE" to orderType,
             "ORDER_TYPE_TEXT" to orderTypeText,
+            "ORDER_STATUS" to order.status.rawValue,
         ).filterValues { it != null } as Map<String, String>).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
@@ -430,6 +431,7 @@ class NotificationsProvider(
                 "TOTAL_FILLED" to totalFilled,
                 "ORDER_TYPE" to orderType,
                 "ORDER_TYPE_TEXT" to orderTypeText,
+                "ORDER_STATUS" to order.status.rawValue,
             ).filterValues { it != null } as Map<String, String>).toIMap()
             val paramsAsJson = jsonEncoder.encode(params)
 
