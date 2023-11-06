@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.changes
 
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
+import kollections.iListOf
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -43,4 +44,7 @@ data class StateChanges(
     val markets: IList<String>? = null,
     val subaccountNumbers: IList<Int>? = null
 ) {
+    companion object {
+        val noChange = StateChanges(iListOf<Changes>())
+    }
 }

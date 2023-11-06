@@ -43,7 +43,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 
 class V4StateManagerAdaptor(
@@ -333,7 +332,7 @@ class V4StateManagerAdaptor(
             val oldState = stateMachine.state
             update(stateMachine.onChainRewardsParams(rewardsParams), oldState)
 
-            val json = Json.parseToJsonElement(rewardsParams).jsonObject.toMap()
+            val json = parser.decodeJsonObject(rewardsParams)
             val marketId = parser.asString(parser.value(json, "params.marketId"))
             val params = iMapOf("marketId" to marketId)
             val paramsInJson = jsonEncoder.encode(params)
@@ -470,8 +469,8 @@ class V4StateManagerAdaptor(
                     response = {
                         "url": "https://...",
                      */
-                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
-                        val node = parser.asString(map["url"])
+                        val map = parser.decodeJsonObject(result)
+                        val node = parser.asString(map?.get("url"))
                         ioImplementations.threading?.async(ThreadingType.abacus) {
                             callback(node)
                         }
@@ -524,9 +523,13 @@ class V4StateManagerAdaptor(
             ) { response ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (response != null) {
-                        val json = Json.parseToJsonElement(response).jsonObject.toIMap()
+                        val json = parser.decodeJsonObject(response)
                         ioImplementations.threading?.async(ThreadingType.main) {
-                            callback(json["error"] == null)
+                            if (json != null) {
+                                callback(json["error"] == null)
+                            } else {
+                                callback(false)
+                            }
                         }
                     } else {
                         ioImplementations.threading?.async(ThreadingType.main) {
@@ -552,8 +555,8 @@ class V4StateManagerAdaptor(
                     response = {
                         "url": "https://...",
                      */
-                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
-                        val url = parser.asString(map["url"])
+                        val map = parser.decodeJsonObject(result)
+                        val url = parser.asString(map?.get("url"))
                         val config = endpointUrls.firstOrNull { it.api == url }
                         ioImplementations.threading?.async(ThreadingType.abacus) {
                             callback(config)
@@ -580,10 +583,14 @@ class V4StateManagerAdaptor(
             indexerState.requestTime = Clock.System.now()
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    val height = parser.asInt(json["height"])
-                    val time = parser.asDatetime(json["time"])
-                    indexerState.updateHeight(height, time)
+                    val json = parser.decodeJsonObject(response)
+                    if (json != null) {
+                        val height = parser.asInt(json["height"])
+                        val time = parser.asDatetime(json["time"])
+                        indexerState.updateHeight(height, time)
+                    } else {
+                        indexerState.updateHeight(null, null)
+                    }
                 } else {
                     indexerState.updateHeight(null, null)
                 }
@@ -642,8 +649,8 @@ class V4StateManagerAdaptor(
     }
 
     private fun parseHeight(response: String) {
-        val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-        if (json["error"] != null) {
+        val json = parser.decodeJsonObject(response)
+        if (json != null && json["error"] != null) {
             validatorState.updateHeight(null, null)
             firstBlockAndTime = null
         } else {
@@ -930,9 +937,8 @@ class V4StateManagerAdaptor(
         amount: Double,
         submitTimeInMilliseconds: Double
     ): ParsingError? {
-        val result =
-            Json.parseToJsonElement(response).jsonObject.toIMap()
-        val status = parser.asInt(result["status"])
+        val result = parser.decodeJsonObject(response)
+        val status = parser.asInt(result?.get("status"))
         return if (status == 202) {
             this.ioImplementations.threading?.async(ThreadingType.abacus) {
                 this.faucetRecords.add(
@@ -947,7 +953,7 @@ class V4StateManagerAdaptor(
         } else if (status != null) {
             V4TransactionErrors.error(null, "API error: $status")
         } else {
-            val resultError = parser.asMap(result.get("error"))
+            val resultError = parser.asMap(result?.get("error"))
             val message = parser.asString(resultError?.get("message"))
             V4TransactionErrors.error(null, message ?: "Unknown error")
         }
@@ -984,14 +990,18 @@ class V4StateManagerAdaptor(
         return if (response == null) {
             V4TransactionErrors.error(null, "Unknown error")
         } else {
-            val result = Json.parseToJsonElement(response).jsonObject.toIMap()
-            val error = parser.asMap(result["error"])
-            if (error != null) {
-                val message = parser.asString(error["message"])
-                val code = parser.asInt(error["code"])
-                return V4TransactionErrors.error(code, message)
+            val result = parser.decodeJsonObject(response)
+            if (result != null) {
+                val error = parser.asMap(result["error"])
+                if (error != null) {
+                    val message = parser.asString(error["message"])
+                    val code = parser.asInt(error["code"])
+                    return V4TransactionErrors.error(code, message)
+                } else {
+                    null
+                }
             } else {
-                null
+                return V4TransactionErrors.error(null, "unknown error")
             }
         }
     }

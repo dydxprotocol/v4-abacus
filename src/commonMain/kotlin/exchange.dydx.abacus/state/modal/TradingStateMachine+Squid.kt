@@ -7,27 +7,40 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.squidChains(payload: String): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    input = squidProcessor.receivedChains(input, json)
-    return StateChanges(iListOf(Changes.input))
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        input = squidProcessor.receivedChains(input, json)
+        StateChanges(iListOf(Changes.input))
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.squidTokens(payload: String): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    input = squidProcessor.receivedTokens(input, json)
-    return StateChanges(iListOf(Changes.input))
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        input = squidProcessor.receivedTokens(input, json)
+        StateChanges(iListOf(Changes.input))
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    input = squidProcessor.receivedV2SdkInfo(input, json)
-    return StateChanges(iListOf(Changes.input))
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        input = squidProcessor.receivedV2SdkInfo(input, json)
+        StateChanges(iListOf(Changes.input))
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.squidRoute(payload: String, subaccountNumber: Int): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    input = squidProcessor.receivedRoute(input, json)
-    return StateChanges(iListOf(Changes.input, Changes.subaccount), subaccountNumbers = iListOf(subaccountNumber))
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        input = squidProcessor.receivedRoute(input, json)
+        StateChanges(
+            iListOf(Changes.input, Changes.subaccount),
+            subaccountNumbers = iListOf(subaccountNumber)
+        )
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.squidStatus(payload: String, transactionId: String?): StateChanges? {

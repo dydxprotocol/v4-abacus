@@ -382,7 +382,7 @@ class AsyncAbacusStateManager(
             ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val parser = Parser()
-                    val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+                    val json = parser.decodeJsonObject(response)
                     if (parseEnvironments(json, parser, uiImplementations.localizer)) {
                         writeEnvironmentsToLocalFile(response)
                     }
@@ -398,7 +398,7 @@ class AsyncAbacusStateManager(
             environmentsFile
         )?.let { response ->
             val parser = Parser()
-            val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+            val json = parser.decodeJsonObject(response)
             parseEnvironments(json, parser, uiImplementations.localizer)
         }
     }
@@ -409,7 +409,7 @@ class AsyncAbacusStateManager(
             environmentsFile,
         )?.let { response ->
             val parser = Parser()
-            val json = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+            val json = parser.decodeJsonObject(response)
             parseEnvironments(json, parser, uiImplementations.localizer)
         }
     }

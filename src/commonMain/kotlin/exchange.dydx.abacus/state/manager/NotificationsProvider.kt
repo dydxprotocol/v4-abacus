@@ -25,7 +25,6 @@ import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIMap
-import kotlinx.datetime.Clock
 
 class NotificationsProvider(
     private val uiImplementations: UIImplementations,

@@ -15,9 +15,6 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kollections.iListOf
-import kollections.toIMap
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
     when (appConfigs.squidVersion) {
@@ -150,11 +147,15 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(decimals: Int, callback: (
             return@transaction
         }
 
-        val result = Json.parseToJsonElement(response).jsonObject.toIMap()
-        val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
-        val amount = parser.asDecimal(amountMap?.get("amount"))
-        val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-        callback(usdcAmount)
+        val result = parser.decodeJsonObject(response)
+        if (result != null) {
+            val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+            val amount = parser.asDecimal(amountMap?.get("amount"))
+            val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+            callback(usdcAmount)
+        } else {
+            callback(null)
+        }
     }
 }
 
@@ -171,11 +172,15 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(decimals: Int, ca
             return@transaction
         }
 
-        val result = Json.parseToJsonElement(response).jsonObject.toIMap()
-        val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
-        val amount = parser.asDecimal(amountMap?.get("amount"))
-        val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-        callback(tokenAmount)
+        val result = parser.decodeJsonObject(response)
+        if (result != null) {
+            val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+            val amount = parser.asDecimal(amountMap?.get("amount"))
+            val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+            callback(tokenAmount)
+        } else {
+            callback(null)
+        }
     }
 }
 

@@ -3,12 +3,14 @@ package exchange.dydx.abacus.state.modal
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.historicalPnl(payload: String, subaccountNumber: Int): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedHistoricalPnls(json, subaccountNumber)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedHistoricalPnls(json, subaccountNumber)
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.receivedHistoricalPnls(payload: Map<String, Any>, subaccountNumber: Int): StateChanges {
