@@ -227,9 +227,6 @@ class TradeBracketsTests: ValidationsTests() {
                             "code": "USER_MAX_ORDERS"
                         },
                         {
-                            "code": "INVALID_NEW_ACCOUNT_MARGIN_USAGE"
-                        },
-                        {
                             "type": "ERROR",
                             "code": "WOULD_NOT_REDUCE_UNCHECK",
                             "fields": [

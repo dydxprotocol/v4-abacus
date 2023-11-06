@@ -5,6 +5,7 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.BaseInputValidator
@@ -43,8 +44,9 @@ internal class TradeInputDataValidator(
         trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>? {
-        return validateTradeInput(subaccount, market, configs, trade)
+        return validateTradeInput(subaccount, market, configs, trade, environment)
     }
 
     private fun validateTradeInput(
@@ -52,9 +54,10 @@ internal class TradeInputDataValidator(
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
         trade: Map<String, Any>,
+        environment: V4Environment?,
     ): List<Any>? {
         val errors = mutableListOf<Any>()
-        validateOrder(trade, subaccount, configs)?.let {
+        validateOrder(trade, subaccount, configs, environment)?.let {
             /*
             USER_MAX_ORDERS
             */
@@ -94,6 +97,7 @@ internal class TradeInputDataValidator(
         trade: Map<String, Any>,
         subaccount: Map<String, Any>?,
         configs: Map<String, Any>?,
+        environment: V4Environment?,
     ): List<Any>? {
         /*
         USER_MAX_ORDERS
@@ -107,6 +111,8 @@ internal class TradeInputDataValidator(
             maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
         val numOrders = orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
 
+        val documentation = environment?.links?.documentation
+        val link = if (documentation != null) "$documentation/trading/other_limits" else null
         return if (numOrders >= equityTierLimit) {
             listOf(
                 error(
@@ -121,7 +127,9 @@ internal class TradeInputDataValidator(
                             "value" to equityTierLimit,
                             "format" to "string"
                         )
-                    )
+                    ),
+                    null,
+                    link
                 )
             )
         } else null

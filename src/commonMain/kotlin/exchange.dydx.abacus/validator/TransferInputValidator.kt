@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.transfer.DepositValidator
 import exchange.dydx.abacus.validator.transfer.TransferOutValidator
 
@@ -25,6 +26,7 @@ internal class TransferInputValidator(
         configs: Map<String, Any>?,
         transaction: Map<String, Any>,
         transactionType: String,
+        environment: V4Environment?,
     ): List<Any>? {
         if (transactionType == "transfer") {
             val errors = mutableListOf<Any>()
@@ -35,7 +37,8 @@ internal class TransferInputValidator(
                         wallet,
                         subaccount,
                         transaction,
-                        restricted
+                        restricted,
+                        environment,
                     )
                 if (validatorErrors != null) {
                     errors.addAll(validatorErrors)
