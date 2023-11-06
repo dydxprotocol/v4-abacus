@@ -196,14 +196,28 @@ internal class SubaccountTransformer {
         parser: ParserProtocol,
         period: String
     ): Map<String, Any> {
-        val modified = mutableMapOf<String, Any>()
         val deltaMarketId = parser.asString(delta?.get("marketId"))
+        val size = parser.asDouble(delta?.get("size"))
+        val nullDelta = if (deltaMarketId != null) {
+            // Trade input
+            if (delta != null) {
+                if (size != null) {
+                    mapOf("size" to 0.0)
+                } else {
+                    mapOf()
+                }
+            } else null
+        } else {
+            // Not a trade input. So we want the postOrder positions to be the same as the current positions
+            mapOf("size" to 0.0)
+        }
+        val modified = mutableMapOf<String, Any>()
         for ((marketId, value) in positions) {
             val position = parser.asNativeMap(value)
             if (position != null) {
                 val modifiedPosition = applyDeltaToPosition(
                     position,
-                    if (deltaMarketId == marketId) delta else null,
+                    if (deltaMarketId == marketId) delta else nullDelta,
                     parser,
                     period
                 )
