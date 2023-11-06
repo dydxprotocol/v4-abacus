@@ -35,7 +35,7 @@ internal class TradeInputValidator(
         transaction: Map<String, Any>,
         transactionType: String,
     ): List<Any>? {
-        if (transactionType == "trade") {
+        if (transactionType == "trade" || transactionType == "closePosition") {
             val marketId = parser.asString(transaction["marketId"]) ?: return null
             val change = change(parser, subaccount, transaction)
             val restricted = parser.asBool(user?.get("restricted")) ?: false
