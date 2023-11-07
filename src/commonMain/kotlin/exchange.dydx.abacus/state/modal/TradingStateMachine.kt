@@ -496,8 +496,10 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
-        val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-        return receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
+        val json = parser.decodeJsonObject(payload)
+        return if (json != null) {
+            receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
+        } else StateChanges.noChange
     }
 
     internal fun update(changes: StateChanges): StateChanges {

@@ -6,9 +6,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.onChainRewardsParams(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    val map = parser.asMap(json)
-    val params = parser.asMap(map?.get("params"))
+    val json = parser.decodeJsonObject(payload)
+    val params = parser.asMap(json?.get("params"))
     rewardsParams =
         if (params != null)
             rewardsProcessor.received(parser.asMap(rewardsParams), params)

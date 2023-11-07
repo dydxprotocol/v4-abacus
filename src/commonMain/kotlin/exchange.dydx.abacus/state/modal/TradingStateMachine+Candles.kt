@@ -8,8 +8,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.candles(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedCandles(json)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedCandles(json)
+    } else {
+        StateChanges(iListOf<Changes>())
+    }
 }
 
 private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): StateChanges {
@@ -35,8 +39,12 @@ private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): Stat
 }
 
 internal fun TradingStateMachine.sparklines(payload: String): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedSparklines(json)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedSparklines(json)
+    } else {
+        StateChanges.noChange
+    }
 }
 
 private fun TradingStateMachine.receivedSparklines(payload: Map<String, Any>): StateChanges {

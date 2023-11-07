@@ -729,8 +729,10 @@ open class StateManagerAdaptor(
     private fun processSocketResponse(message: String) {
         ioImplementations.threading?.async(ThreadingType.abacus) {
             try {
-                val json = Json.parseToJsonElement(message).jsonObject.toIMap()
-                socket(json)
+                val json = parser.decodeJsonObject(message)
+                if (json != null) {
+                    socket(json)
+                }
             } catch (_: Exception) {
 
             }
@@ -1213,8 +1215,8 @@ open class StateManagerAdaptor(
         if (url != null) {
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    val time = parser.asDatetime(json["time"])
+                    val json = parser.decodeJsonObject(response)
+                    val time = parser.asDatetime(json?.get("time"))
                     if (time != null) {
                         ServerTime.overWrite = time
                     }
@@ -1457,8 +1459,8 @@ open class StateManagerAdaptor(
         if (url != null && params != null) {
             get(url, params, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val fills = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    if (fills.size != 0) {
+                    val fills = parser.decodeJsonObject(response)?.toIMap()
+                    if (fills != null && fills.size != 0) {
                         update(stateMachine.receivedFills(fills, subaccountNumber), oldState)
                     }
                 }
@@ -1473,8 +1475,8 @@ open class StateManagerAdaptor(
         if (url != null && params != null) {
             get(url, params, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val tranfers = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    if (tranfers.size != 0) {
+                    val tranfers = parser.decodeJsonObject(response)
+                    if (tranfers != null && tranfers.size != 0) {
                         update(stateMachine.receivedTransfers(tranfers, subaccountNumber), oldState)
                     }
                 }
@@ -2162,9 +2164,13 @@ open class StateManagerAdaptor(
                 null,
                 callback = { _, response, httpCode ->
                     if (success(httpCode) && response != null) {
-                        val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
-                        val restricted = parser.asBool(payload["restricted"]) ?: false
-                        callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                        val payload = parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val restricted = parser.asBool(payload["restricted"]) ?: false
+                            callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                        } else {
+                            callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                        }
                     } else {
                         if (httpCode == 403) {
                             // It could be 403 due to GEOBLOCKED
@@ -2180,7 +2186,7 @@ open class StateManagerAdaptor(
 
     internal fun restrictionReason(response: String?): UsageRestriction {
         return if (response != null) {
-            val json = Json.parseToJsonElement(response).jsonObject.toMap()
+            val json = parser.decodeJsonObject(response)
             val errors = parser.asList(parser.value(json, "errors"))
             val geoRestriciton = errors?.firstOrNull { error ->
                 val code = parser.asString(parser.value(error, "code"))
