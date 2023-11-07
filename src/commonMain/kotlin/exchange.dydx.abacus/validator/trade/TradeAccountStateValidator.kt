@@ -26,7 +26,8 @@ internal class TradeAccountStateValidator(
             val errors = mutableListOf<Any>()
             val marginError = validateSubaccountMarginUsage(
                 parser,
-                subaccount
+                subaccount,
+                change,
             )
             if (marginError != null) {
                 errors.add(marginError)
@@ -62,12 +63,28 @@ internal class TradeAccountStateValidator(
     private fun validateSubaccountMarginUsage(
         parser: ParserProtocol,
         subaccount: Map<String, Any>,
+        change: PositionChange,
     ): Map<String, Any>? {
         /*
-        USER_MAX_ORDERS
-        In v3, this error comes from backend. Holding off implementation for v4
+        INVALID_NEW_ACCOUNT_MARGIN_USAGE
          */
-        return null
+        return when (change) {
+            PositionChange.CLOSING, PositionChange.DECREASING -> null
+            else -> {
+                val equity = parser.asDouble(parser.value(subaccount, "equity.postOrder"))
+                val marginUsage = parser.asDouble(parser.value(subaccount, "marginUsage.postOrder"))
+                if (equity != null && (equity == Numeric.double.ZERO || marginUsage == null || marginUsage < Numeric.double.ZERO || marginUsage > Numeric.double.ONE)) {
+                    error(
+                        "ERROR",
+                        "INVALID_NEW_ACCOUNT_MARGIN_USAGE",
+                        listOf("size.size"),
+                        "APP.TRADE.MODIFY_SIZE_FIELD",
+                        "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
+                        "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE"
+                    )
+                } else null
+            }
+        }
     }
 
     private fun validateSubaccountOrders(
@@ -75,20 +92,10 @@ internal class TradeAccountStateValidator(
         subaccount: Map<String, Any>,
     ): Map<String, Any>? {
         /*
-        INVALID_NEW_ACCOUNT_MARGIN_USAGE
+        USER_MAX_ORDERS
+        In v3, this error comes from backend. Holding off implementation for v4
          */
-        val equity = parser.asDouble(parser.value(subaccount, "equity.postOrder"))
-        val marginUsage = parser.asDouble(parser.value(subaccount, "marginUsage.postOrder"))
-        return if (equity != null && (equity == Numeric.double.ZERO || marginUsage == null || marginUsage < Numeric.double.ZERO || marginUsage > Numeric.double.ONE)) {
-            error(
-                "ERROR",
-                "INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                listOf("size.size"),
-                "APP.TRADE.MODIFY_SIZE_FIELD",
-                "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE"
-            )
-        } else null
+        return null
     }
 
     private fun validateSubaccountCrossOrders(
@@ -99,7 +106,12 @@ internal class TradeAccountStateValidator(
         /*
         ORDER_CROSSES_OWN_ORDER
          */
-        return if (fillsExistingOrder(parser, trade, parser.asNativeMap(subaccount["orders"]))) error(
+        return if (fillsExistingOrder(
+                parser,
+                trade,
+                parser.asNativeMap(subaccount["orders"])
+            )
+        ) error(
             "ERROR",
             "ORDER_CROSSES_OWN_ORDER",
             listOf("size.size"),
