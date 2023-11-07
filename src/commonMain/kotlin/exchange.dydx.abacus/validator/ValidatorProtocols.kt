@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.state.manager.V4Environment
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -27,7 +28,8 @@ interface ValidatorProtocol {
         markets: Map<String, Any>?,
         configs: Map<String, Any>?,
         transaction: Map<String, Any>,
-        transactionType: String
+        transactionType: String,
+        environment: V4Environment?,
     ): List<Any>?
 }
 
@@ -38,7 +40,8 @@ interface TradeValidatorProtocol {
         configs: Map<String, Any>?,
         trade: Map<String, Any>,
         change: PositionChange,
-        restricted: Boolean
+        restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>?
 }
 
@@ -47,6 +50,7 @@ interface TransferValidatorProtocol {
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
-        restricted: Boolean
+        restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>?
 }
