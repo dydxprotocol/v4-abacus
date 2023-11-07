@@ -414,3 +414,42 @@ class V4Environment(
         }
     }
 }
+
+@JsExport
+class AppSettings(
+    val ios: AppSetting?,
+    val android: AppSetting?,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>,
+            parser: ParserProtocol,
+        ): AppSettings? {
+            val ios = AppSetting.parse(
+                parser.asMap(data["ios"]),
+                parser,
+            )
+            val android = AppSetting.parse(
+                parser.asMap(data["android"]),
+                parser,
+            )
+            return AppSettings(ios, android)
+        }
+    }
+}
+
+@JsExport
+class AppSetting (
+    val scheme: String?
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): AppSetting? {
+            if (data == null) return null
+            val scheme = parser.asString(data["scheme"])
+            return AppSetting(scheme)
+        }
+    }
+}
