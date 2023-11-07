@@ -2,6 +2,7 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -118,7 +119,8 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             }
         }
         parser.asString(transfer["transactionHash"])?.let {
-            resources["blockExplorerUrl"] = "https://testnet.mintscan.io/dydx-testnet/txs/${it}"
+            val mintscan = environment?.links?.mintscan?.replace("{tx_hash}", it)
+            resources.safeSet("blockExplorerUrl", mintscan)
         }
 
         transfer["resources"] = resources
