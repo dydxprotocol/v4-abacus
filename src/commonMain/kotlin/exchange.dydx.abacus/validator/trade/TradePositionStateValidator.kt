@@ -4,6 +4,7 @@ import abs
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
@@ -22,6 +23,7 @@ internal class TradePositionStateValidator(
         trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>? {
         val marketId = parser.asString(trade["marketId"])
         val position = if (marketId != null) parser.asNativeMap(

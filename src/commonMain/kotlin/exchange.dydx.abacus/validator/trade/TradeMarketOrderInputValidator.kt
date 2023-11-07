@@ -4,6 +4,7 @@ import abs
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -22,7 +23,8 @@ internal class TradeMarketOrderInputValidator(
         configs: Map<String, Any>?,
         trade: Map<String, Any>,
         change: PositionChange,
-        restricted: Boolean
+        restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>? {
         return if (parser.asString(trade["type"]) == "MARKET") {
             validateMarketOrder(

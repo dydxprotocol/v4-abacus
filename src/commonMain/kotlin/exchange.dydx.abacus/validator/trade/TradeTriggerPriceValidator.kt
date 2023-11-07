@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator.trade
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -37,6 +38,7 @@ internal class TradeTriggerPriceValidator(
         trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>? {
         val needsTriggerPrice =
             parser.asBool(parser.value(trade, "options.needsTriggerPrice")) ?: false
