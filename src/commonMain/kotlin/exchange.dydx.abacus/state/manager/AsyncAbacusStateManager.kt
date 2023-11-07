@@ -31,8 +31,6 @@ import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
 
@@ -198,6 +196,11 @@ class AsyncAbacusStateManager(
     val dataNotification: DataNotificationProtocol? = null
 ) {
     private val environmentsFile = "/configs/env.json"
+
+    private var _appSettings: AppSettings? = null
+
+    val appSettings: AppSettings?
+        get() = _appSettings
 
     private var environments: IList<V4Environment> = iListOf()
         set(value) {
@@ -425,7 +428,6 @@ class AsyncAbacusStateManager(
         )
     }
 
-
     private fun parseEnvironments(items: IMap<String, Any>?, parser: ParserProtocol, localizer: LocalizerProtocol?): Boolean {
         val deployments = parser.asMap(items?.get("deployments")) ?: return false
         val target = parser.asMap(deployments[deployment]) ?: return false
@@ -455,6 +457,12 @@ class AsyncAbacusStateManager(
             if (targetDefault != null && this.environmentId == null) {
                 this.environmentId = targetDefault
             }
+
+            val apps = parser.asMap(items["apps"])
+            if (apps != null) {
+                this._appSettings = AppSettings.parse(apps, parser)
+            }
+
             return true
         } else {
             return false
