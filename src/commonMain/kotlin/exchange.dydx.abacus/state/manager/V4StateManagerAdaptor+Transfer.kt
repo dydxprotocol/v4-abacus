@@ -64,8 +64,8 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, httpCode ->
-            if (success(httpCode) && response != null) {
+        get(url, params, header) { _, response, _ ->
+            if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
@@ -121,8 +121,8 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { response, httpCode ->
-            if (success(httpCode) && response != null) {
+        post(url, header, body.toJsonPrettyPrint()) { response, _ ->
+            if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
@@ -230,8 +230,8 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(decimals: Int, gas: B
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, httpCode ->
-            if (success(httpCode) && response != null) {
+        get(url, params, header) { _, response, _ ->
+            if (response != null) {
                 update(stateMachine.squidRoute(response, subaccountNumber), oldState)
             }
         }
