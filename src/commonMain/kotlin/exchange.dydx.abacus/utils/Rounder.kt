@@ -19,9 +19,25 @@ class Rounder {
     companion object {
         private val positive = 0.5.toBigDecimal(null, Numeric.decimal.mode)
         private val negative = -0.5.toBigDecimal(null, Numeric.decimal.mode)
-        fun quickRound(number: Double, stepSize: Double, stepSizeDecimals: Int): Double {
+
+        private val cache = mutableMapOf<Double, Int>()
+
+        fun numberOfDecimals(stepSize: Double): Int {
+            val cached = cache[stepSize]
+            return if (cached != null) {
+                cached
+            } else {
+                val stepSizeDecimals = stepSize.numberOfDecimals()
+                cache[stepSize] = stepSizeDecimals
+                return  stepSizeDecimals
+            }
+        }
+
+        fun quickRound(number: Double, stepSize: Double): Double {
+            val stepSizeDecimals = numberOfDecimals(stepSize)
             val negative = number < 0.0
             val multiplier = (number.abs() / stepSize).roundToInt()
+
             val absValue = if (stepSizeDecimals > 0) {
                 val multiplierString = multiplier.toString()
                 val length = multiplierString.length

@@ -144,9 +144,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         try {
             data.satisfies(json, parser)
         } catch (e: Throwable) {
-            println("Internal state match failed...")
-            println("  Actual State: ${data.toJsonPrettyPrint()}")
-            println("  Expected State: ${json.toJsonPrettyPrint()}")
+//            println("Internal state match failed...")
+//            println("  Actual State: ${data.toJsonPrettyPrint()}")
+//            println("  Expected State: ${json.toJsonPrettyPrint()}")
             throw e
         }
     }

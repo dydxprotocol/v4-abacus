@@ -364,13 +364,13 @@ open class V4TradeInputTests : V4BaseTests() {
 
         test(
             {
-                perp.trade("1", TradeInputField.usdcSize, 0)
+                perp.trade("0.5", TradeInputField.usdcSize, 0)
             }, """
             {
                 "input": {
                     "trade": {
                         "size": {
-                            "usdcSize": 1.0,
+                            "usdcSize": 0.5,
                             "size": 0.0
                         }
                     },
