@@ -129,6 +129,8 @@ class V4SquidTests : V4BaseTests() {
         }, null, {
             val errors = it.state?.input?.transfer?.errors!!
             assertNotNull(errors)
+
+            assertEquals(it.state?.input?.transfer?.errorMessage, "toChain: dydxprotocol-testnet-1 unsupported chain id")
         })
     }
 
