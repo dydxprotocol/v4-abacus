@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.AnalyticsEvent
@@ -1738,7 +1739,11 @@ open class StateManagerAdaptor(
         val reduceOnly = trade.reduceOnly
         val postOnly = trade.postOnly
 
-        val timeInForce = trade.timeInForce ?: "IOC"
+        val timeInForce = when (trade.type) {
+            OrderType.market -> "FOK"
+            else -> trade.timeInForce ?: "FOK"
+        }
+
         val execution = trade.execution ?: "Default"
         val goodTilTimeInSeconds = ((if (timeInForce == "GTT") {
             val timeInterval =
