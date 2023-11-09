@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.*
 import kollections.JsExport
 import kotlinx.serialization.Serializable
+import numberOfDecimals
 import kotlin.math.abs
 import kotlin.math.pow
 
@@ -483,7 +484,6 @@ internal class TradeInputCalculator(
                 var filled = false
                 val marketOrderOrderBook = mutableListOf<Map<String, Any>>()
 
-                val stepSizeDecimal = parser.asDouble(stepSize)!!
                 orderbookLoop@ for (i in 0 until orderbook.size) {
                     val entry = orderbook[i]
                     val entryPrice = parser.asDouble(entry["price"])
@@ -499,9 +499,9 @@ internal class TradeInputCalculator(
                             matchedUsdcSize = desiredUsdcSize - usdcSizeTotal
                             matchedSize = matchedUsdcSize / entryPrice
                             matchedSize =
-                                Rounder.round(
+                                Rounder.quickRound(
                                     matchedSize,
-                                    stepSizeDecimal
+                                    stepSize,
                                 )
                             matchedUsdcSize = matchedSize * entryPrice
                         }
@@ -554,7 +554,7 @@ internal class TradeInputCalculator(
         stepSize: Double,
     ): Double {
         val desiredTotal = sizeTotal + desiredSize
-        val rounded = Rounder.round(desiredTotal, stepSize)
+        val rounded = Rounder.quickRound(desiredTotal, stepSize)
         return rounded - sizeTotal
     }
 
@@ -625,14 +625,14 @@ internal class TradeInputCalculator(
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
                     val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
-                    sizeTotal = Rounder.round(sizeTotal + rounded, stepSize)
+                    sizeTotal = Rounder.quickRound(sizeTotal + rounded, stepSize)
                     usdcSizeTotal += rounded * MP
                     worstPrice = entryPrice
                     filled = true
                     marketOrderOrderBook.add(matchingOrderbookEntry(entry, rounded))
                 } else {
                     val rounded = this.rounded(sizeTotal, entrySize, stepSize)
-                    sizeTotal = Rounder.round(sizeTotal + rounded, stepSize)
+                    sizeTotal = Rounder.quickRound(sizeTotal + rounded, stepSize)
                     usdcSizeTotal += rounded * MP
                     /*
                     new(AE) = AE + X * (OR - MP) - abs(X) * MP * FR
@@ -1231,9 +1231,10 @@ internal class TradeInputCalculator(
                         parser.asDouble(market?.get("oraclePrice"))  // if no indexPrice(v4), use oraclePrice
                     val priceDiff =
                         slippage(worstPrice, oraclePrice, parser.asString(trade["side"]))
+                    val slippageStepSize = 0.00001
                     val indexSlippage =
-                        if (priceDiff != null && oraclePrice != null && oraclePrice > Numeric.double.ZERO) Rounder.round(
-                            priceDiff / oraclePrice, 0.00001
+                        if (priceDiff != null && oraclePrice != null && oraclePrice > Numeric.double.ZERO) Rounder.quickRound(
+                            priceDiff / oraclePrice, slippageStepSize
                         ) else null
                     /*
                     indexSlippage can be negative. For example, it is OK to buy below index price
@@ -1267,10 +1268,11 @@ internal class TradeInputCalculator(
                     val feeRate = parser.asDouble(parser.value(user, "takerFeeRate"))
                     val bestPrice = marketOrderBestPrice(marketOrder)
                     val worstPrice = marketOrderWorstPrice(marketOrder)
+                    val slippageStepSize = 0.00001
                     val slippage =
-                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) Rounder.round(
+                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) Rounder.quickRound(
                             (worstPrice - bestPrice).abs() / bestPrice,
-                            0.00001
+                            slippageStepSize,
                         ) else null
 
                     val triggerPrice =
