@@ -517,7 +517,7 @@ class V3PerpTests : V3BaseTests() {
                                         "side": "BUY",
                                         "price": 1656.2,
                                         "size": 0.01,
-                                        "liquidation": true,
+                                        "type": "LIQUIDATED",
                                         "createdAt": "2022-08-01T16:58:12.989Z"
                                     }
                                 ]
@@ -544,7 +544,6 @@ class V3PerpTests : V3BaseTests() {
                                         "side": "SELL",
                                         "price": 1645.7,
                                         "size": 24.243,
-                                        "liquidation": false,
                                         "createdAt": "2022-08-01T17:05:28.592Z"
                                     }
                                 ]
