@@ -551,7 +551,8 @@ data class TransferInput(
     val summary: TransferInputSummary?,
     val resources: TransferInputResources?,
     val requestPayload: TransferInputRequestPayload?,
-    val errors: String?
+    val errors: String?,
+    val errorMessage: String?
 ) {
     companion object {
         internal fun create(
@@ -624,6 +625,15 @@ data class TransferInput(
 
                 val errors = parser.asString(route?.get("errors"))
 
+                val errorMessage: String? =
+                    if (errors != null) {
+                        val errorArray = parser.decodeJsonArray(errors)
+                        val firstError = parser.asMap(errorArray?.first())
+                        parser.asString(firstError?.get("message"))
+                    } else {
+                        null
+                    }
+
                 return if (existing?.type !== type ||
                     existing?.size !== size ||
                     existing?.fastSpeed != fastSpeed ||
@@ -637,7 +647,8 @@ data class TransferInput(
                     existing.summary !== summary ||
                     existing.resources !== resources ||
                     existing.requestPayload !== requestPayload ||
-                    existing.errors != errors
+                    existing.errors != errors ||
+                    existing.errorMessage != errorMessage
                 ) {
                     TransferInput(
                         type,
@@ -654,6 +665,7 @@ data class TransferInput(
                         resources,
                         requestPayload,
                         errors,
+                        errorMessage,
                     )
                 } else {
                     existing
