@@ -1102,7 +1102,7 @@ open class StateManagerAdaptor(
 
             configs.marketOrderbookChannel() -> {
                 stateMachine.receivedBatchOrderbookChanges(
-                    market,
+                    id,
                     content,
                     subaccountNumber ?: 0
                 )
