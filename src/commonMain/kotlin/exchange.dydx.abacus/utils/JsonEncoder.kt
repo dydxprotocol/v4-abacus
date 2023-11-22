@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.utils
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -41,29 +42,33 @@ class JsonEncoder {
             text.append("}")
             return text.toString()
         }
-        val string = string(element)
+        val string = element as? String
         if (string != null) {
             return Json.encodeToString(string)
         }
-        val bool = boolean(element)
+        val bool = element as? Boolean
         if (bool != null) {
             return Json.encodeToString(bool)
         }
-        val int = int(element)
-        if (int != null) {
-            return Json.encodeToString(int)
-        }
-        val long = long(element)
+        val long = element as? Long
         if (long != null) {
             return Json.encodeToString(long)
         }
-        val double = double(element)
+        val double = element as? Double
         if (double != null) {
             return Json.encodeToString(double)
         }
-        val float = float(element)
+        val float = element as? Float
         if (float != null) {
             return Json.encodeToString(float)
+        }
+        val bigDecimal = element as? BigDecimal
+        if (bigDecimal != null) {
+            return Json.encodeToString(bigDecimal)
+        }
+        val int = element as? Int
+        if (int != null) {
+            return Json.encodeToString(int)
         }
         val datetime = element as? Instant
         if (datetime != null) {
