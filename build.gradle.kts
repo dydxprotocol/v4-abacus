@@ -30,7 +30,7 @@ plugins {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.0.28"
+version = "1.0.30"
 
 repositories {
     google()
