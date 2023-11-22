@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.UsageRestriction
-import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -13,7 +12,6 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.TransferInputField
@@ -29,15 +27,9 @@ import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
 import exchange.dydx.abacus.state.modal.updateHeight
 import exchange.dydx.abacus.state.modal.squidV2SdkInfo
-import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.JsonEncoder
-import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.isAddressValid
-import exchange.dydx.abacus.utils.safeSet
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -831,7 +823,7 @@ class V4StateManagerAdaptor(
             "timeInForce" to payload.timeInForce,
             "triggerPrice" to payload.triggerPrice,
             "type" to payload.type,
-        ) as IMap<String, Any>
+        ) as IMap<String, Any>?
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
@@ -862,7 +854,7 @@ class V4StateManagerAdaptor(
         val payload = closePositionPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
-        val analyticsPayload = iMapOf(
+         val analyticsPayload = iMapOf(
             "clientId" to clientId,
             "currentHeight" to payload.currentHeight,
             "execution" to payload.execution,
@@ -878,7 +870,7 @@ class V4StateManagerAdaptor(
             "timeInForce" to payload.timeInForce,
             "triggerPrice" to payload.triggerPrice,
             "type" to payload.type,
-        ) as IMap<String, Any>
+        ) as IMap<String, Any>?
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
