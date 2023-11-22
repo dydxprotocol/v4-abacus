@@ -155,6 +155,7 @@ class V4SquidTests : V4BaseTests() {
             assertNotNull(status.axelarTransactionUrl)
             assertEquals(status.routeStatuses?.first()?.status, "success")
             assertEquals(status.routeStatuses?.last()?.status, "success")
+            assertNotNull(status.squidTransactionStatus)
         })
     }
 
