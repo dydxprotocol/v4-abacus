@@ -802,28 +802,18 @@ class V4StateManagerAdaptor(
         }
     }
 
+    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
+
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
-        val analyticsPayload = iMapOf(
-            "clientId" to clientId,
-            "currentHeight" to payload.currentHeight,
-            "execution" to payload.execution,
-            "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
-            "isClosePosition" to false,
-            "marketId" to payload.marketId,
-            "postOnly" to payload.postOnly,
-            "price" to payload.price,
-            "reduceOnly" to payload.reduceOnly,
-            "side" to payload.side,
-            "size" to payload.size,
-            "subaccountNumber" to payload.subaccountNumber,
-            "timeInForce" to payload.timeInForce,
-            "triggerPrice" to payload.triggerPrice,
-            "type" to payload.type,
-        ) as IMap<String, Any>?
+
+        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+            payload,
+            false
+        )
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
@@ -854,23 +844,10 @@ class V4StateManagerAdaptor(
         val payload = closePositionPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
-         val analyticsPayload = iMapOf(
-            "clientId" to clientId,
-            "currentHeight" to payload.currentHeight,
-            "execution" to payload.execution,
-            "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
-            "isClosePosition" to true,
-            "marketId" to payload.marketId,
-            "postOnly" to payload.postOnly,
-            "price" to payload.price,
-            "reduceOnly" to payload.reduceOnly,
-            "side" to payload.side,
-            "size" to payload.size,
-            "subaccountNumber" to payload.subaccountNumber,
-            "timeInForce" to payload.timeInForce,
-            "triggerPrice" to payload.triggerPrice,
-            "type" to payload.type,
-        ) as IMap<String, Any>?
+         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+            payload,
+            true
+         )
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
