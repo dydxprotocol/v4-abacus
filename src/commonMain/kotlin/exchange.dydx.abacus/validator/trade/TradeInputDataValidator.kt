@@ -111,9 +111,13 @@ internal class TradeInputDataValidator(
             maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
         val numOrders = orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
 
+        // Equity tier limit is not applicable for `MARKET` orders and `LIMIT` orders with FOK or IOC time in force
+        val isEquityTierLimitApplicable = orderType != "MARKET" &&
+            !(orderType == "LIMIT" && (timeInForce == "FOK" || timeInForce == "IOC"))
+
         val documentation = environment?.links?.documentation
         val link = if (documentation != null) "$documentation/trading/other_limits" else null
-        return if (numOrders >= equityTierLimit) {
+        return if (numOrders >= equityTierLimit && isEquityTierLimitApplicable) {
             listOf(
                 error(
                     "ERROR",
