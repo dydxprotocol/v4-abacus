@@ -104,6 +104,25 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return modified
     }
 
+    internal fun receivedRouteV2(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        var modified = mutableMapOf<String, Any>()
+        existing?.let {
+            modified = it.mutable()
+        }
+
+        val processor = SquidRouteV2Processor(parser)
+        modified.safeSet("transfer.route", processor.received(null, payload) as MutableMap<String, Any>)
+        if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
+            val value = parser.value(modified, "transfer.route.toAmountUSD")
+            modified.safeSet("transfer.size.usdcSize", value)
+        }
+
+        return modified
+    }
+
     internal fun receivedStatus(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,

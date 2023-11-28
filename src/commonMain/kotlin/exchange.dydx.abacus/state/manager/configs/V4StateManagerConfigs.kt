@@ -88,6 +88,19 @@ class V4StateManagerConfigs(
         return "$squid$path"
     }
 
+    fun squidV2Assets(): String? {
+        if (environment.isMainNet) {
+            return "https://v2.api.squidrouter.com/v2/sdk-info"
+        } else {
+            return "https://testnet.v2.api.squidrouter.com/v2/sdk-info"
+        }
+    }
+
+    fun squidV2Route(): String? {
+        return "https://testnet.v2.api.squidrouter.com/v2/route"
+    }
+
+
     fun squidV2ApiInfo(): String? {
         // TODO: Implement
         return null
