@@ -224,9 +224,6 @@ class TradeBracketsTests: ValidationsTests() {
                             "code": "NO_EQUITY_DEPOSIT_FIRST"
                         },
                         {
-                            "code": "USER_MAX_ORDERS"
-                        },
-                        {
                             "type": "ERROR",
                             "code": "WOULD_NOT_REDUCE_UNCHECK",
                             "fields": [

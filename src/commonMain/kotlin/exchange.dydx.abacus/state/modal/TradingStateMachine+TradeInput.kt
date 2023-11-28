@@ -194,7 +194,7 @@ fun TradingStateMachine.trade(
                 TradeInputField.usdcSize.rawValue,
                 TradeInputField.leverage.rawValue,
                 -> {
-                    sizeChanged = (parser.asDouble(data) != parser.asDouble(trade[typeText]))
+                    sizeChanged = (parser.asDouble(data) != parser.asDouble(parser.value(trade, typeText)))
                     trade.safeSet(typeText, parser.asDouble(data))
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),

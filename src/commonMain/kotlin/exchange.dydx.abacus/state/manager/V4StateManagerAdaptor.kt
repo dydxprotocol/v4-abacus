@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.UsageRestriction
-import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -13,7 +12,6 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.modal.TransferInputField
@@ -29,15 +27,9 @@ import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
 import exchange.dydx.abacus.state.modal.updateHeight
 import exchange.dydx.abacus.state.modal.squidV2SdkInfo
-import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.JsonEncoder
-import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
-import exchange.dydx.abacus.utils.isAddressValid
-import exchange.dydx.abacus.utils.safeSet
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -242,8 +234,11 @@ class V4StateManagerAdaptor(
                     retrieveTransferChains()
                     retrieveTransferTokens()
                 }
-                AppConfigs.SquidVersion.V2 -> {
+                AppConfigs.SquidVersion.V2,
+                AppConfigs.SquidVersion.V2DepositOnly,
+                AppConfigs.SquidVersion.V2WithdrawalOnly -> {
                     retrieveTransferAssets()
+                    retrieveCctpChainIds()
                 }
             }
 
@@ -622,7 +617,7 @@ class V4StateManagerAdaptor(
 
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
-        val url = "https://testnet.v2.api.squidrouter.com/v2/sdk-info" //  configs.squidChains()
+        val url = configs.squidV2Assets()
         val squidIntegratorId = environment.squidIntegratorId
         if (url != null && squidIntegratorId != null) {
             val header = iMapOf("x-integrator-id" to squidIntegratorId)
@@ -810,11 +805,18 @@ class V4StateManagerAdaptor(
         }
     }
 
+    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
+
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
+
+        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+            payload,
+            false
+        )
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
@@ -822,7 +824,7 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    null,
+                    analyticsPayload,
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -845,6 +847,10 @@ class V4StateManagerAdaptor(
         val payload = closePositionPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
+         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+            payload,
+            true
+         )
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
@@ -852,7 +858,7 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    null,
+                    analyticsPayload,
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -1036,9 +1042,9 @@ class V4StateManagerAdaptor(
                 if (usdcSize > Numeric.double.ZERO) {
                     simulateWithdrawal(decimals) { gasFee ->
                         if (gasFee != null) {
-                            retrieveWithdrawalRoute(decimals, gasFee)
+                            retrieveWithdrawalRoute(state, decimals, gasFee)
                         } else {
-                            retrieveWithdrawalRoute(decimals, Numeric.decimal.ZERO)
+                            retrieveWithdrawalRoute(state, decimals, Numeric.decimal.ZERO)
                         }
                     }
                 }

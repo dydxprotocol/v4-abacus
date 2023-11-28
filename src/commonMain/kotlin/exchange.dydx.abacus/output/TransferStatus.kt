@@ -15,7 +15,8 @@ class TransferStatus(
     val fromChainStatus: TransferChainStatus?,
     val toChainStatus: TransferChainStatus?,
     var routeStatuses: IList<TransferRouteStatus>?,
-    val error: String?
+    val error: String?,
+    val squidTransactionStatus: String?,
 ) {
     companion object {
         internal fun create(
@@ -60,6 +61,8 @@ class TransferStatus(
                 }
             }
 
+            val squidTransactionStatus = parser.asString(data?.get("squidTransactionStatus"))
+
             return if (existing == null ||
                 existing.status != status ||
                 existing.gasStatus != gasStatus ||
@@ -67,9 +70,10 @@ class TransferStatus(
                 existing.fromChainStatus != fromChainStatus ||
                 existing.toChainStatus != toChainStatus ||
                 existing.routeStatuses != routeStatuses ||
-                existing.error != error
+                existing.error != error ||
+                existing.squidTransactionStatus != squidTransactionStatus
             ) {
-                TransferStatus(status, gasStatus, axelarTransactionUrl, fromChainStatus, toChainStatus, routeStatuses, error)
+                TransferStatus(status, gasStatus, axelarTransactionUrl, fromChainStatus, toChainStatus, routeStatuses, error, squidTransactionStatus)
             } else {
                 existing
             }

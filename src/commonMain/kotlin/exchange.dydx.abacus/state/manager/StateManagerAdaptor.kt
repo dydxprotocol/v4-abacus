@@ -1102,7 +1102,7 @@ open class StateManagerAdaptor(
 
             configs.marketOrderbookChannel() -> {
                 stateMachine.receivedBatchOrderbookChanges(
-                    market,
+                    id,
                     content,
                     subaccountNumber ?: 0
                 )
@@ -1132,8 +1132,8 @@ open class StateManagerAdaptor(
 
     fun get(
         url: String,
-        params: Map<String, String>?,
-        headers: Map<String, String>?,
+        params: Map<String, String>? = null,
+        headers: Map<String, String>? = null,
         callback: (url: String, response: String?, code: Int) -> Unit,
     ) {
         val fullUrl = fullUrl(url, params)
@@ -1143,7 +1143,7 @@ open class StateManagerAdaptor(
 
     private fun fullUrl(
         url: String,
-        params: Map<String, String>?
+        params: Map<String, String>?,
     ): String {
         return if (params != null) {
             val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }

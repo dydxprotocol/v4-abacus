@@ -4,8 +4,10 @@ import exchange.dydx.abacus.state.modal.TransferInputField
 import exchange.dydx.abacus.tests.extensions.loadv4MarketsSubscribed
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidRoute
+import exchange.dydx.abacus.state.modal.squidRouteV2
 import exchange.dydx.abacus.state.modal.squidStatus
 import exchange.dydx.abacus.state.modal.squidTokens
+import exchange.dydx.abacus.state.modal.squidV2SdkInfo
 import exchange.dydx.abacus.state.modal.transfer
 import exchange.dydx.abacus.utils.IMap
 import kotlin.test.Test
@@ -72,6 +74,40 @@ class V4SquidTests : V4BaseTests() {
             assertTrue(it.state?.input?.transfer?.depositOptions == null)
         })
     }
+
+    @Test
+    fun testSquidRouteV2() {
+        setup()
+
+        perp.transfer("DEPOSIT", TransferInputField.type, 0)
+
+        var stateChange = perp.squidV2SdkInfo(mock.squidV2AssetsMock.payload)
+        assertNotNull(stateChange)
+
+        stateChange = perp.squidRouteV2(mock.squidV2RouteMock.payload, 0)
+        assertNotNull(stateChange)
+
+        test({
+            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+        }, null, {
+            val summary = it.state?.input?.transfer?.summary!!
+            assertNotNull(summary)
+            assertTrue { summary.slippage!!.toInt() == 0 }
+            assertTrue { summary.exchangeRate!! > 0 }
+            assertTrue { summary.estimatedRouteDuration!! > 0 }
+            assertTrue { summary.gasFee!! > 0 }
+            //assertTrue { summary.bridgeFee!! > 0 }
+            assertNotNull(it.state?.input?.transfer?.requestPayload)
+            assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
+        })
+
+        test({
+            perp.transfer("0", TransferInputField.size, 0)
+        }, null, {
+            assertNull(it.state?.input?.transfer?.requestPayload)
+        })
+    }
+
 
     @Test
     fun testSquidRoute() {
@@ -155,6 +191,7 @@ class V4SquidTests : V4BaseTests() {
             assertNotNull(status.axelarTransactionUrl)
             assertEquals(status.routeStatuses?.first()?.status, "success")
             assertEquals(status.routeStatuses?.last()?.status, "success")
+            assertNotNull(status.squidTransactionStatus)
         })
     }
 
