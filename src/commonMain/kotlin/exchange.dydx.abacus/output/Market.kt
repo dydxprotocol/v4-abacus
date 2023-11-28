@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
@@ -550,7 +551,7 @@ data class MarketTrade(
     val side: OrderSide,
     val size: Double,
     val price: Double,
-    val liquidation: Boolean,
+    val type: OrderType? = null,
     val createdAtMilliseconds: Double,
     val resources: MarketTradeResources,
 ) {
@@ -568,7 +569,7 @@ data class MarketTrade(
                 val price = parser.asDouble(data["price"])
                 val side =
                     if (parser.asString(data["side"]) == "SELL") OrderSide.sell else OrderSide.buy
-                val liquidation = parser.asBool(data["liquidation"]) ?: false
+                val type = OrderType.invoke(parser.asString(data["type"]))
                 val createdAtMilliseconds =
                     parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 val resources = parser.asMap(data["resources"])?.let {
@@ -580,7 +581,7 @@ data class MarketTrade(
                         existing?.size != size ||
                         existing.side !== side ||
                         existing.price != price ||
-                        existing.liquidation != liquidation ||
+                        existing.type != type ||
                         existing.createdAtMilliseconds != createdAtMilliseconds ||
                         existing.resources !== resources
                     ) {
@@ -589,7 +590,7 @@ data class MarketTrade(
                             side,
                             size,
                             price,
-                            liquidation,
+                            type,
                             createdAtMilliseconds,
                             resources
                         )

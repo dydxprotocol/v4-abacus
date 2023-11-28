@@ -7,7 +7,8 @@ internal class TradeProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val tradeKeyMap = mapOf(
         "string" to mapOf(
             "id" to "id",
-            "side" to "side"
+            "side" to "side",
+            "type" to "type",
         ),
         "double" to mapOf(
             "size" to "size",
@@ -16,9 +17,6 @@ internal class TradeProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "datetime" to mapOf(
             "createdAt" to "createdAt"
         ),
-        "bool" to mapOf(
-            "liquidation" to "liquidation"
-        )
     )
 
     private val sideStringKeys = mapOf(
@@ -28,6 +26,15 @@ internal class TradeProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     override fun received(existing: Map<String, Any>?, payload: Map<String, Any>): Map<String, Any> {
         val trade = transform(existing, payload, tradeKeyMap)
+
+        val type = parser.asString(payload["type"])
+        if (type == null) {
+            val liquidation = parser.asBool(payload["liquidation"])
+            if (liquidation == true) {
+                trade["type"] = "LIQUIDATED"
+            }
+        }
+
         val resources = mutableMapOf<String, Any>()
 
         (parser.asString(payload["side"])).let {
