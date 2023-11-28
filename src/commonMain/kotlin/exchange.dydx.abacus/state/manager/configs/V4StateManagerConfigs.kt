@@ -96,6 +96,14 @@ class V4StateManagerConfigs(
         return "$squidV2Host/v2/route"
     }
 
+    fun nobleChainId(): String? {
+        return if (environment.isMainNet) "noble-1" else "grand-1"
+    }
+
+    fun nobleDenom(): String? {
+        return "uusdc"
+    }
+
     private val squidV2Host: String
         get() {
             return if (environment.isMainNet) {

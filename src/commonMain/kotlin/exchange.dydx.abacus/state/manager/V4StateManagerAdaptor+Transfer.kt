@@ -127,6 +127,8 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
     val fromAmountString = parser.asString(fromAmount)
     val nobleAddress = accountAddress?.toNobleAddress()
     val url = configs.squidV2Route()
+    val toChain = configs.nobleChainId()
+    val toToken = configs.nobleDenom()
     if (fromChain != null &&
         fromToken != null &&
         fromAmount != null && fromAmount > 0 &&
@@ -136,15 +138,17 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
         dydxTokenDemon != null &&
         url != null &&
         sourceAddress != null &&
-        squidIntegratorId != null
+        squidIntegratorId != null &&
+        toChain != null &&
+        toToken != null
     ) {
         val body: Map<String, Any> = mapOf(
             "fromChain" to fromChain,
             "fromToken" to fromToken,
             "fromAddress" to sourceAddress.toString(),
             "fromAmount" to fromAmountString,
-            "toChain" to "grand-1", //chainId,
-            "toToken" to "uusdc", // dydxTokenDemon,
+            "toChain" to toChain,
+            "toToken" to toToken,
             "toAddress" to nobleAddress,
             "quoteOnly" to false,
             "enableBoost" to true,
@@ -311,6 +315,8 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidV2Route()
     val fromAddress = accountAddress?.toNobleAddress()
+    val fromChain = configs.nobleChainId()
+    val fromToken = configs.nobleDenom()
     if (toChain != null &&
         toToken != null &&
         toAddress != null &&
@@ -321,11 +327,13 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
         dydxTokenDemon != null &&
         url != null &&
         fromAddress != null &&
-        squidIntegratorId != null
+        squidIntegratorId != null &&
+        fromChain != null &&
+        fromToken != null
     ) {
         val body: IMap<String, Any> = iMapOf(
-            "fromChain" to "grand-1", // chainId,
-            "fromToken" to "uusdc", // dydxTokenDemon,
+            "fromChain" to fromChain,
+            "fromToken" to fromToken,
             "fromAmount" to fromAmountString,
             "fromAddress" to fromAddress,
             "toChain" to toChain,
