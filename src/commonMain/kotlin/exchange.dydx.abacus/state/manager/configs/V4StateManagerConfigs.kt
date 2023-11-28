@@ -89,20 +89,19 @@ class V4StateManagerConfigs(
     }
 
     fun squidV2Assets(): String? {
-        if (environment.isMainNet) {
-            return "https://v2.api.squidrouter.com/v2/sdk-info"
-        } else {
-            return "https://testnet.v2.api.squidrouter.com/v2/sdk-info"
-        }
+        return "$squidV2Host/v2/sdk-info"
     }
 
     fun squidV2Route(): String? {
-        return "https://testnet.v2.api.squidrouter.com/v2/route"
+        return "$squidV2Host/v2/route"
     }
 
-
-    fun squidV2ApiInfo(): String? {
-        // TODO: Implement
-        return null
-    }
+    private val squidV2Host: String
+        get() {
+            return if (environment.isMainNet) {
+                "https://v2.api.squidrouter.com"
+            } else {
+                "https://testnet.v2.api.squidrouter.com"
+            }
+        }
 }
