@@ -16,6 +16,7 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
+import exchange.dydx.abacus.utils.toNobleAddress
 import kollections.iListOf
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
@@ -124,12 +125,13 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
     val squidIntegratorId = environment.squidIntegratorId
     val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
+    val nobleAddress = accountAddress?.toNobleAddress()
     val url = configs.squidV2Route()
     if (fromChain != null &&
         fromToken != null &&
         fromAmount != null && fromAmount > 0 &&
         fromAmountString != null &&
-        accountAddress != null &&
+        nobleAddress != null &&
         chainId != null &&
         dydxTokenDemon != null &&
         url != null &&
@@ -143,7 +145,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "fromAmount" to fromAmountString,
             "toChain" to "grand-1", //chainId,
             "toToken" to "uusdc", // dydxTokenDemon,
-            "toAddress" to "noble1zqnudqmjrgh9m3ec9yztkrn4ttx7ys64p87kkx", //accountAddress.toString(),
+            "toAddress" to nobleAddress,
             "quoteOnly" to false,
             "enableBoost" to true,
             "slippage" to 1,
@@ -308,7 +310,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
     val dydxTokenDemon = environment.tokens["usdc"]?.denom
     val fromAmountString = parser.asString(fromAmount)
     val url = configs.squidV2Route()
-    val fromAddress = accountAddress
+    val fromAddress = accountAddress?.toNobleAddress()
     if (toChain != null &&
         toToken != null &&
         toAddress != null &&
@@ -325,7 +327,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             "fromChain" to "grand-1", // chainId,
             "fromToken" to "uusdc", // dydxTokenDemon,
             "fromAmount" to fromAmountString,
-            "fromAddress" to "noble1zqnudqmjrgh9m3ec9yztkrn4ttx7ys64p87kkx", //fromAddress,
+            "fromAddress" to fromAddress,
             "toChain" to toChain,
             "toToken" to toToken,
             "toAddress" to toAddress,
