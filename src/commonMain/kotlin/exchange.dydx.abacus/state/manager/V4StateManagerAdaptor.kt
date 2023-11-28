@@ -234,8 +234,11 @@ class V4StateManagerAdaptor(
                     retrieveTransferChains()
                     retrieveTransferTokens()
                 }
-                AppConfigs.SquidVersion.V2 -> {
+                AppConfigs.SquidVersion.V2,
+                AppConfigs.SquidVersion.V2DepositOnly,
+                AppConfigs.SquidVersion.V2WithdrawalOnly -> {
                     retrieveTransferAssets()
+                    retrieveCctpChainIds()
                 }
             }
 
@@ -614,7 +617,7 @@ class V4StateManagerAdaptor(
 
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
-        val url = "https://testnet.v2.api.squidrouter.com/v2/sdk-info" //  configs.squidChains()
+        val url = configs.squidV2Assets()
         val squidIntegratorId = environment.squidIntegratorId
         if (url != null && squidIntegratorId != null) {
             val header = iMapOf("x-integrator-id" to squidIntegratorId)
@@ -1039,9 +1042,9 @@ class V4StateManagerAdaptor(
                 if (usdcSize > Numeric.double.ZERO) {
                     simulateWithdrawal(decimals) { gasFee ->
                         if (gasFee != null) {
-                            retrieveWithdrawalRoute(decimals, gasFee)
+                            retrieveWithdrawalRoute(state, decimals, gasFee)
                         } else {
-                            retrieveWithdrawalRoute(decimals, Numeric.decimal.ZERO)
+                            retrieveWithdrawalRoute(state, decimals, Numeric.decimal.ZERO)
                         }
                     }
                 }

@@ -43,6 +43,18 @@ internal fun TradingStateMachine.squidRoute(payload: String, subaccountNumber: I
     } else StateChanges.noChange
 }
 
+internal fun TradingStateMachine.squidRouteV2(payload: String, subaccountNumber: Int): StateChanges? {
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        input = squidProcessor.receivedRouteV2(input, json)
+        StateChanges(
+            iListOf(Changes.input, Changes.subaccount),
+            subaccountNumbers = iListOf(subaccountNumber)
+        )
+    } else StateChanges.noChange
+}
+
+
 internal fun TradingStateMachine.squidStatus(payload: String, transactionId: String?): StateChanges? {
     val json = Json.parseToJsonElement(payload).jsonObject.toMap()
     transferStatuses = squidProcessor.receivedStatus(transferStatuses, json, transactionId)

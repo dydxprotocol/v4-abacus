@@ -30,7 +30,7 @@ plugins {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.0.30"
+version = "1.0.31"
 
 repositories {
     google()
@@ -116,7 +116,6 @@ kotlin {
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
                 implementation("tz.co.asoft:kollections-interoperable:2.0.16")
-
             }
         }
         val commonTest by getting {

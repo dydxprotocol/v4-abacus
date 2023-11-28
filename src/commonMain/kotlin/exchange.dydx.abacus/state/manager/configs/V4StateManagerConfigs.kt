@@ -88,8 +88,28 @@ class V4StateManagerConfigs(
         return "$squid$path"
     }
 
-    fun squidV2ApiInfo(): String? {
-        // TODO: Implement
-        return null
+    fun squidV2Assets(): String? {
+        return "$squidV2Host/v2/sdk-info"
     }
+
+    fun squidV2Route(): String? {
+        return "$squidV2Host/v2/route"
+    }
+
+    fun nobleChainId(): String? {
+        return if (environment.isMainNet) "noble-1" else "grand-1"
+    }
+
+    fun nobleDenom(): String? {
+        return "uusdc"
+    }
+
+    private val squidV2Host: String
+        get() {
+            return if (environment.isMainNet) {
+                "https://v2.api.squidrouter.com"
+            } else {
+                "https://testnet.v2.api.squidrouter.com"
+            }
+        }
 }
