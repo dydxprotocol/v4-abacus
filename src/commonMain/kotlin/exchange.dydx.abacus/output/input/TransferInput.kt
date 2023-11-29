@@ -376,7 +376,12 @@ data class TransferInputRequestPayload(
     val gasLimit: String?,
     val gasPrice: String?,
     val maxFeePerGas: String?,
-    val maxPriorityFeePerGas: String?
+    val maxPriorityFeePerGas: String?,
+    val fromChainId: String?,
+    val toChainId: String?,
+    val fromAddress: String?,
+    val toAddress: String?,
+    val isV2Route: Boolean?
 ) {
     companion object {
         internal fun create(
@@ -395,6 +400,11 @@ data class TransferInputRequestPayload(
                 val gasPrice = parser.asString(data["gasPrice"])
                 val maxFeePerGas = parser.asString(data["maxFeePerGas"])
                 val maxPriorityFeePerGas = parser.asString(data["maxPriorityFeePerGas"])
+                val fromChainId = parser.asString(data["fromChainId"])
+                val toChainId = parser.asString(data["toChainId"])
+                val fromAddress = parser.asString(data["fromAddress"])
+                val toAddress = parser.asString(data["toAddress"])
+                val isV2Route = parser.asBool(data["isV2Route"])
 
                 return if (
                     existing?.routeType != routeType ||
@@ -404,7 +414,12 @@ data class TransferInputRequestPayload(
                     existing?.gasLimit != gasLimit ||
                     existing?.gasPrice != gasPrice ||
                     existing?.maxFeePerGas != maxFeePerGas ||
-                    existing?.maxPriorityFeePerGas != maxPriorityFeePerGas
+                    existing?.maxPriorityFeePerGas != maxPriorityFeePerGas ||
+                    existing?.fromChainId != fromChainId ||
+                    existing?.toChainId != toChainId ||
+                    existing?.fromAddress != fromAddress ||
+                    existing?.toAddress != toAddress ||
+                    existing?.isV2Route != isV2Route
                 ) {
                     TransferInputRequestPayload(
                         routeType,
@@ -414,7 +429,12 @@ data class TransferInputRequestPayload(
                         gasLimit,
                         gasPrice,
                         maxFeePerGas,
-                        maxPriorityFeePerGas
+                        maxPriorityFeePerGas,
+                        fromChainId,
+                        toChainId,
+                        fromAddress,
+                        toAddress,
+                        isV2Route
                     )
                 } else {
                     existing
@@ -437,7 +457,7 @@ data class TransferInputSummary(
     val estimatedRouteDuration: Double?,
     val bridgeFee: Double?,
     val gasFee: Double?,
-    val toAmount: String?
+    val toAmount: String?,
 ) {
     companion object {
         internal fun create(
@@ -477,7 +497,7 @@ data class TransferInputSummary(
                         estimatedRouteDuration,
                         bridgeFee,
                         gasFee,
-                        toAmount
+                        toAmount,
                     )
                 } else {
                     existing

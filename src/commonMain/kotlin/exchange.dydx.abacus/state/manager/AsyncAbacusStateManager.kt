@@ -518,8 +518,8 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?) {
-        adaptor?.transferStatus(hash, fromChainId, toChainId)
+    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
+        adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {

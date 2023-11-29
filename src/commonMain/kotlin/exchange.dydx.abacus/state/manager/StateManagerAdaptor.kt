@@ -1688,6 +1688,7 @@ open class StateManagerAdaptor(
         hash: String,
         fromChainId: String? = null,
         toChainId: String? = null,
+        isCctp: Boolean
     ) {
 
     }
