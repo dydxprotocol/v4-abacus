@@ -70,6 +70,11 @@ class V4StateManagerConfigs(
         return "$squid$path"
     }
 
+    fun squidV2Status(): String? {
+        val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
+        return "$squidV2Host$path"
+    }
+
     fun squidRoute(): String? {
         val squid = environment.endpoints.squid ?: return null
         val path = parser.asString(parser.value(configs, "paths.0xsquid.route"))

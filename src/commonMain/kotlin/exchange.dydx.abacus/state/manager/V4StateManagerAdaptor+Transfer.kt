@@ -29,6 +29,10 @@ private data class CctpChainTokenInfo(
         transferInput?.chain == chainId && transferInput.token == tokenAddress
 }
 
+val TransferInput.isCctp: Boolean
+    get() =
+        cctpChainIds?.any { it.isCctpEnabled(this) } ?: false
+
 private var cctpChainIds: List<CctpChainTokenInfo>? = null
 
 internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
@@ -51,7 +55,7 @@ internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
 }
 
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
-    val isCctp = cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
+    val isCctp = state?.input?.transfer?.isCctp ?: false
     when (appConfigs.squidVersion) {
         AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(state)
         AppConfigs.SquidVersion.V2, AppConfigs.SquidVersion.V2DepositOnly ->
@@ -369,13 +373,15 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     hash: String,
     fromChainId: String?,
     toChainId: String?,
+    isCctp: Boolean,
 ) {
     val params: IMap<String, String> = iMapOf(
         "transactionId" to hash,
         "fromChainId" to fromChainId,
         "toChainId" to toChainId,
+        "bridgeType" to if (isCctp) "cctp" else null,
     ).filterNotNull()
-    val url = configs.squidStatus()
+    val url = if (isCctp) configs.squidV2Status() else configs.squidStatus()
     val squidIntegratorId = environment.squidIntegratorId
     if (url != null && squidIntegratorId != null) {
         val oldState = stateMachine.state

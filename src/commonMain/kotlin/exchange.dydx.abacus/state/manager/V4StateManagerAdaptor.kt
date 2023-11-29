@@ -1088,10 +1088,15 @@ class V4StateManagerAdaptor(
         }
     }
 
-    override fun transferStatus(hash: String, fromChainId: String?, toChainId: String?) {
-        super.transferStatus(hash, fromChainId, toChainId)
+    override fun transferStatus(
+        hash: String,
+        fromChainId: String?,
+        toChainId: String?,
+        isCctp: Boolean
+    ) {
+        super.transferStatus(hash, fromChainId, toChainId, isCctp)
 
-        fetchTransferStatus(hash, fromChainId, toChainId)
+        fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
     override fun trackingParams(interval: Double): IMap<String, Any> {
