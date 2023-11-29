@@ -602,10 +602,13 @@ enum class OrderType(val rawValue: String) {
     takeProfitLimit("TAKE_PROFIT"),
     trailingStop("TRAILING_STOP"),
     liquidated("LIQUIDATED"),
-    liquidation("LIQUIDATION");
+    liquidation("LIQUIDATION"),
+    offsetting("OFFSETTING"),
+    deleveraged("DELEVERAGED"),
+    ;
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             OrderType.values().firstOrNull { it.rawValue == rawValue }
     }
 }

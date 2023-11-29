@@ -1569,8 +1569,8 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             )
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size")
             assertEquals(
-                parser.asBool(data["liquidation"]) ?: false,
-                obj.liquidation,
+                parser.asString(data["type"]),
+                obj.type?.rawValue,
                 "$trace.liquidation"
             )
             assertEquals(
