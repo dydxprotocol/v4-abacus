@@ -571,6 +571,7 @@ data class TransferInput(
     val summary: TransferInputSummary?,
     val resources: TransferInputResources?,
     val requestPayload: TransferInputRequestPayload?,
+    val cctp: Boolean,
     val errors: String?,
     val errorMessage: String?
 ) {
@@ -654,6 +655,8 @@ data class TransferInput(
                         null
                     }
 
+                val cctp = parser.asBool(route?.get("isCctp")) ?: false
+
                 return if (existing?.type !== type ||
                     existing?.size !== size ||
                     existing?.fastSpeed != fastSpeed ||
@@ -684,6 +687,7 @@ data class TransferInput(
                         summary,
                         resources,
                         requestPayload,
+                        cctp,
                         errors,
                         errorMessage,
                     )
