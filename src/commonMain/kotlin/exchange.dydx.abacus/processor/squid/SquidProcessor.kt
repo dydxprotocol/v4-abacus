@@ -115,7 +115,6 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
         val processor = SquidRouteV2Processor(parser)
         modified.safeSet("transfer.route", processor.received(null, payload) as MutableMap<String, Any>)
-        modified.safeSet("transfer.route.isCctp", true)
         if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
             val value = parser.value(modified, "transfer.route.toAmountUSD")
             modified.safeSet("transfer.size.usdcSize", value)
