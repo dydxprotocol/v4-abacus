@@ -2,12 +2,10 @@ package exchange.dydx.abacus.state.manager
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.input.TransferInput
-import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.modal.onChainAccountBalances
+import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.modal.squidRoute
 import exchange.dydx.abacus.state.modal.squidRouteV2
 import exchange.dydx.abacus.state.modal.squidStatus
@@ -23,19 +21,6 @@ import kollections.iListOf
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
-private data class CctpChainTokenInfo(
-    val chainId: String,
-    val tokenAddress: String,
-) {
-    fun isCctpEnabled(transferInput: TransferInput?) =
-        transferInput?.chain == chainId && transferInput.token == tokenAddress
-}
-
-val TransferInput.isCctp: Boolean
-    get() =
-        cctpChainIds?.any { it.isCctpEnabled(this) } ?: false
-
-private var cctpChainIds: List<CctpChainTokenInfo>? = null
 
 internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
     val url = "$deploymentUri/configs/cctp.json"

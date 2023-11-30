@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -573,8 +574,11 @@ data class TransferInput(
     val requestPayload: TransferInputRequestPayload?,
     val cctp: Boolean,
     val errors: String?,
-    val errorMessage: String?
+    val errorMessage: String?,
 ) {
+    val isCctp: Boolean
+        get() = cctpChainIds?.any { it.isCctpEnabled(this) } ?: false
+
     companion object {
         internal fun create(
             existing: TransferInput?,
