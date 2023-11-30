@@ -58,6 +58,7 @@ class AbacusMockData {
             null,
             null,
             null,
+            null,
         ),
         null,
         WalletConnection(

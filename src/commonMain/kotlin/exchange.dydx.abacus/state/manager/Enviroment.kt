@@ -31,6 +31,7 @@ data class EnvironmentEndpoints(
     val validators: IList<String>?,
     val faucet: String?,
     val squid: String?,
+    val nobleValidator: String?,
 ) {
     companion object {
         fun parse(
@@ -45,7 +46,8 @@ data class EnvironmentEndpoints(
             }?.toIList() ?: return null
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
-            return EnvironmentEndpoints(indexers, validators, faucet, squid)
+            val nobleValidator = parser.asString(data["nobleValidator"])
+            return EnvironmentEndpoints(indexers, validators, faucet, squid, nobleValidator)
         }
     }
 }

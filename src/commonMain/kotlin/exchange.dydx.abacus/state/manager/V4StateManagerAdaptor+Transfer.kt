@@ -3,9 +3,11 @@ package exchange.dydx.abacus.state.manager
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferInput
+import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.squidRoute
 import exchange.dydx.abacus.state.modal.squidRouteV2
 import exchange.dydx.abacus.state.modal.squidStatus
@@ -404,5 +406,47 @@ internal fun V4StateManagerAdaptor.receiveTransferGas(gas: BigDecimal?) {
         val modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
         modified.safeSet("transfer.fee", gas)
         update(StateChanges(iListOf(Changes.input)), oldState)
+    }
+}
+
+internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
+    val url = configs.squidRoute()
+    val fromChain = configs.nobleChainId()
+    val fromToken = configs.nobleDenom()
+    val nobleAddress = accountAddress?.toNobleAddress()
+    val chainId = environment.dydxChainId
+    val squidIntegratorId = environment.squidIntegratorId
+    val dydxTokenDemon = environment.tokens["usdc"]?.denom
+    if (url != null &&
+        fromChain != null &&
+        fromToken != null &&
+        nobleAddress != null &&
+        chainId != null &&
+        dydxTokenDemon != null &&
+        squidIntegratorId != null
+        ) {
+        val params: Map<String, String> = mapOf(
+            "fromChain" to fromChain,
+            "fromToken" to fromToken,
+            "fromAddress" to nobleAddress,
+            "fromAmount" to amount.toPlainString(),
+            "toChain" to chainId,
+            "toToken" to dydxTokenDemon,
+            "toAddress" to accountAddress.toString(),
+            "slippage" to "1",
+            "enableForecall" to "false",
+        )
+        val header = iMapOf(
+            "x-integrator-id" to squidIntegratorId,
+        )
+        get(url, params, header) { _, response, _ ->
+            if (response != null) {
+                val json = parser.decodeJsonObject(response)
+                val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
+                if (ibcPayload != null) {
+                    transaction(TransactionType.SendNobleIBC, ibcPayload) {}
+                }
+            }
+        }
     }
 }

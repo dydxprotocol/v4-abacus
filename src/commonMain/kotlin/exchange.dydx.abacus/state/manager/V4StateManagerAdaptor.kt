@@ -105,6 +105,15 @@ class V4StateManagerAdaptor(
             }
         }
 
+    private val nobleBalancePollingDuration = 10.0
+    private var nobleBalancesTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
     private var firstBlockAndTime: BlockAndTime? = null
 
     private var restRetryTimers: MutableMap<String, LocalTimerProtocol> = mutableMapOf()
@@ -277,6 +286,7 @@ class V4StateManagerAdaptor(
             }
             if (accountAddress != null) {
                 pollAccountBalances()
+                pollNobleBalance()
             }
 
             val timer = ioImplementations.timer ?: CoroutineTimer.instance
@@ -376,6 +386,7 @@ class V4StateManagerAdaptor(
                 retrieveSubaccounts()
                 if (validatorConnected) {
                     pollAccountBalances()
+                    pollNobleBalance()
                 }
             }
         } else {
@@ -406,6 +417,30 @@ class V4StateManagerAdaptor(
         getOnChain(QueryType.GetDelegations, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainDelegations(response), oldState)
+        }
+    }
+
+    private fun pollNobleBalance() {
+        val timer = ioImplementations.timer ?: CoroutineTimer.instance
+        nobleBalancesTimer = timer.schedule(0.0, nobleBalancePollingDuration) {
+            if (validatorConnected && accountAddress != null) {
+                checkNobleBalance()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun checkNobleBalance() {
+        getOnChain(QueryType.GetNobleBalance, "") { response ->
+            val balance = parser.decodeJsonObject(response)
+            if (balance != null ) {
+                val amount = parser.asDecimal(balance["amount"])
+                if (amount != null && amount > 5000) {
+                    transferNobleBalance(amount)
+                }
+            }
         }
     }
 
@@ -497,6 +532,7 @@ class V4StateManagerAdaptor(
         val usdcGasDenom = usdcToken.gasDenom
         val chainTokenDenom = chainToken.denom
         val chainTokenDecimals = chainToken.decimals
+        val nobleValidator = environment.endpoints.nobleValidator
 
         val params = mutableMapOf<String, Any>()
         params["indexerUrl"] = indexerUrl
@@ -504,6 +540,7 @@ class V4StateManagerAdaptor(
         params["validatorUrl"] = validatorUrl
         params["chainId"] = chainId
         params.safeSet("faucetUrl", faucetUrl)
+        params.safeSet("nobleValidator", nobleValidator)
 
         params.safeSet("USDC_DENOM", usdcDenom)
         params.safeSet("USDC_DECIMALS", usdcDecimals)

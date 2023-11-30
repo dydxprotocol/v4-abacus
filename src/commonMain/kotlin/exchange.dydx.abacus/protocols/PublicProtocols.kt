@@ -141,7 +141,8 @@ enum class QueryType(val rawValue: String) {
     GetAccountBalances("getAccountBalances"),
     GetMarketPrice("getMarketPrice"),
     GetDelegations("getDelegatorDelegations"),
-    RewardsParams("getRewardsParams");
+    RewardsParams("getRewardsParams"),
+    GetNobleBalance("getNobleBalance");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -158,7 +159,8 @@ enum class TransactionType(val rawValue: String) {
     SubaccountTransfer("subaccountTransfer"),
     Faucet("faucet"),
     simulateWithdraw("simulateWithdraw"),
-    simulateTransferNativeToken("simulateTransferNativeToken");
+    simulateTransferNativeToken("simulateTransferNativeToken"),
+    SendNobleIBC("sendNobleIBC");
 
     companion object {
         operator fun invoke(rawValue: String) =
