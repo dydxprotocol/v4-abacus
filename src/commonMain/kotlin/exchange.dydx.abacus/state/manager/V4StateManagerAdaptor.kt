@@ -544,7 +544,7 @@ class V4StateManagerAdaptor(
         params["validatorUrl"] = validatorUrl
         params["chainId"] = chainId
         params.safeSet("faucetUrl", faucetUrl)
-        params.safeSet("nobleValidatorUrl", nobleValidator)
+        params.safeSet("nobleValidator", nobleValidator)
 
         params.safeSet("USDC_DENOM", usdcDenom)
         params.safeSet("USDC_DECIMALS", usdcDecimals)
