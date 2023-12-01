@@ -9,6 +9,7 @@ import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.modal.squidRoute
 import exchange.dydx.abacus.state.modal.squidRouteV2
 import exchange.dydx.abacus.state.modal.squidStatus
+import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.filterNotNull
@@ -91,13 +92,15 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, _ ->
+        get(url, params, header) { _, response, code ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRoute(response, subaccountNumber), oldState)
                 }
+            } else {
+                DebugLogger.error("retrieveDepositRouteV1 error, code: $code")
             }
         }
     }
@@ -153,13 +156,15 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { response, _ ->
+        post(url, header, body.toJsonPrettyPrint()) { response, code ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRouteV2(response, subaccountNumber), oldState)
                 }
+            } else {
+                DebugLogger.error("retrieveDepositRouteV2 error, code: $code")
             }
         }
     }
@@ -175,6 +180,7 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(decimals: Int, callback: (
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
+            DebugLogger.error("simulateWithdrawal error: $error")
             callback(null)
             return@transaction
         }
@@ -200,6 +206,7 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(decimals: Int, ca
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
+            DebugLogger.error("simulateTransferNativeToken error: $error")
             callback(null)
             return@transaction
         }
@@ -344,13 +351,15 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { response, _ ->
+        post(url, header, body.toJsonPrettyPrint()) { response, code ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRouteV2(response, subaccountNumber), oldState)
                 }
+            } else {
+                DebugLogger.error("retrieveWithdrawalRouteV2 error, code: $code")
             }
         }
     }
@@ -378,6 +387,8 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
         get(url, params, header) { _, response, httpCode ->
             if (response != null) {
                 update(stateMachine.squidStatus(response, hash), oldState)
+            } else {
+                DebugLogger.error("fetchTransferStatus error, code: $httpCode")
             }
         }
     }
@@ -424,13 +435,20 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, _ ->
+        get(url, params, header) { _, response, code ->
             if (response != null) {
                 val json = parser.decodeJsonObject(response)
                 val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
-                    transaction(TransactionType.SendNobleIBC, ibcPayload) {}
+                    transaction(TransactionType.SendNobleIBC, ibcPayload) {
+                        val error = parseTransactionResponse(it)
+                        if (error != null) {
+                            DebugLogger.error("transferNobleBalance error: $error")
+                        }
+                    }
                 }
+            } else {
+                DebugLogger.error("transferNobleBalance error, code: $code")
             }
         }
     }
