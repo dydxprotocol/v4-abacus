@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.modal.ClosePositionInputField
 import exchange.dydx.abacus.state.modal.TradeInputField
 import exchange.dydx.abacus.state.modal.TransferInputField
 import exchange.dydx.abacus.utils.CoroutineTimer
+import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.IList
@@ -35,16 +36,20 @@ import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
 
 @JsExport
-class AppConfigs(val subscribeToCandles: Boolean, val loadRemote: Boolean = true) {
+class AppConfigs(
+    val subscribeToCandles: Boolean,
+    val loadRemote: Boolean = true,
+    val enableLogger: Boolean = false,
+) {
     enum class SquidVersion {
         V1, V2, V2DepositOnly, V2WithdrawalOnly,
     }
     var squidVersion: SquidVersion = SquidVersion.V1
 
     companion object {
-        val forApp = AppConfigs(true, true)
-        val forAppDebug = AppConfigs(true, false)
-        val forWeb = AppConfigs(false, true)
+        val forApp = AppConfigs(subscribeToCandles = true, loadRemote = true)
+        val forAppDebug = AppConfigs(subscribeToCandles = true, loadRemote = false, enableLogger = true)
+        val forWeb = AppConfigs(subscribeToCandles = false, loadRemote = true)
     }
 }
 
@@ -195,6 +200,12 @@ class AsyncAbacusStateManager(
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
 ) {
+    init {
+        if (appConfigs.enableLogger) {
+            DebugLogger.enable()
+        }
+    }
+
     private val environmentsFile = "/configs/env.json"
 
     private var _appSettings: AppSettings? = null
