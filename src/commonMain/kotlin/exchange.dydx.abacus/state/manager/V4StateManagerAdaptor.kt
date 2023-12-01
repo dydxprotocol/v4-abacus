@@ -30,11 +30,13 @@ import exchange.dydx.abacus.state.modal.squidV2SdkInfo
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.iMapOf
+import io.ktor.util.logging.Logger
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.math.log
 import kotlin.math.max
 
 class V4StateManagerAdaptor(
@@ -439,6 +441,8 @@ class V4StateManagerAdaptor(
                 val amount = parser.asDecimal(balance["amount"])
                 if (amount != null && amount > 5000) {
                     transferNobleBalance(amount)
+                } else if (balance["error"] != null) {
+                   DebugLogger.error("Error checking noble balance: $response")
                 }
             }
         }
@@ -540,7 +544,7 @@ class V4StateManagerAdaptor(
         params["validatorUrl"] = validatorUrl
         params["chainId"] = chainId
         params.safeSet("faucetUrl", faucetUrl)
-        params.safeSet("nobleValidator", nobleValidator)
+        params.safeSet("nobleValidatorUrl", nobleValidator)
 
         params.safeSet("USDC_DENOM", usdcDenom)
         params.safeSet("USDC_DECIMALS", usdcDecimals)
