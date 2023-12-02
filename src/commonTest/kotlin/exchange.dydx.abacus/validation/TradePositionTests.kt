@@ -51,8 +51,7 @@ class TradePositionTests: ValidationsTests() {
         }, null)
 
         /*
-        This test would throw an Flip Position error when reduceOnly is supported,
-        reduceOnly support is disabled for now
+        This test would throw an Flip Position error when reduceOnly is supported
          */
         test(
             {
@@ -68,7 +67,12 @@ class TradePositionTests: ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "IOC"
                         },
-                        "errors": null
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "ORDER_WOULD_FLIP_POSITION"
+                            }
+                        ]
                     }
                 }
             """

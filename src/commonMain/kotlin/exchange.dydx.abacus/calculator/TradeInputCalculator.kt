@@ -2,10 +2,15 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.*
+import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
+import exchange.dydx.abacus.utils.Rounder
+import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.mutableMapOf
+import exchange.dydx.abacus.utils.reduceOnlySupported
+import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kotlinx.serialization.Serializable
-import numberOfDecimals
 import kotlin.math.abs
 import kotlin.math.pow
 
@@ -717,26 +722,24 @@ internal class TradeInputCalculator(
                 ), reduceOnlyField()
             )
 
-            "STOP_MARKET", "TAKE_PROFIT_MARKET" -> fieldList(
+            "STOP_MARKET", "TAKE_PROFIT_MARKET" ->
                 listOf(
                     sizeField(),
                     triggerPriceField(),
                     goodTilField(),
                     executionField(false)
-                ), reduceOnlyField()
-            )
+                )
 
             "LIMIT" -> {
                 when (timeInForce) {
-                    "GTT" -> fieldList(
+                    "GTT" ->
                         listOf(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
                             goodTilField(),
                             postOnlyField()
-                        ), reduceOnlyField()
-                    )
+                        )
 
                     else -> fieldList(
                         listOf(
@@ -748,24 +751,22 @@ internal class TradeInputCalculator(
                 }
             }
 
-            "STOP_LIMIT", "TAKE_PROFIT" -> fieldList(
+            "STOP_LIMIT", "TAKE_PROFIT" ->
                 listOf(
                     sizeField(),
                     limitPriceField(),
                     triggerPriceField(),
                     goodTilField(),
                     executionField(true),
-                ), reduceOnlyField()
-            )
+                )
 
-            "TRAILING_STOP" -> fieldList(
+            "TRAILING_STOP" ->
                 listOf(
                     sizeField(),
                     trailingPercentField(),
                     goodTilField(),
                     executionField(false),
-                ), reduceOnlyField()
-            )
+                )
 
             else -> null
         }
