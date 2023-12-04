@@ -27,7 +27,7 @@ internal fun TradingStateMachine.receivedAccount(
     payload: Map<String, Any>
 ): StateChanges {
     this.wallet = walletProcessor.receivedAccount(wallet, payload)
-    return StateChanges(iListOf(Changes.subaccount))
+    return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
 
 internal fun TradingStateMachine.updateHeight(

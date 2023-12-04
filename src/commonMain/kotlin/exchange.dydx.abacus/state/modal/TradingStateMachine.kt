@@ -480,6 +480,7 @@ open class TradingStateMachine(
             iListOf(
                 Changes.wallet,
                 Changes.subaccount,
+                Changes.tradingRewards,
                 Changes.historicalPnl,
                 Changes.fills,
                 Changes.transfers,
@@ -557,6 +558,7 @@ open class TradingStateMachine(
                 Changes.historicalFundings,
                 Changes.accountBalances,
                 Changes.subaccount,
+                Changes.tradingRewards,
                 Changes.historicalPnl,
                 Changes.fills,
                 Changes.transfers,

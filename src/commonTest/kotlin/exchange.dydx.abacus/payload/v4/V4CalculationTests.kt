@@ -60,6 +60,9 @@ class V4CalculationTests : V4BaseTests() {
                 {
                     "wallet": {
                         "account": {
+                            "tradingRewards": {
+                                "total": "2800.8"
+                            },
                             "subaccounts": {
                                 "0": {
                                     "equity": {

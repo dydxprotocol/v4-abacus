@@ -2221,6 +2221,7 @@ internal class AccountsChannelMock {
 
     internal val v4_accounts_received_for_calculation = """
         {
+         "totalTradingRewards": "2800.8",
         	"subaccounts": [{
                  "address":"cosmos1jtpspgllck9z4ghkqhupum35q55xt99sg3guxn",
                  "subaccountNumber":0,

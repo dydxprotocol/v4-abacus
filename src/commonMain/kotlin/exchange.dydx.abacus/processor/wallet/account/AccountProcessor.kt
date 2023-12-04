@@ -890,11 +890,27 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
     }
 }
 
+private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+    fun receivedTotalTradingRewards(
+        existing: Map<String, Any>?,
+        payload: Any?,
+    ): Map<String, Any>? {
+        val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
+        val totalTradingRewards = parser.asString(payload)
+        if (totalTradingRewards != null) {
+            modified.safeSet("total", totalTradingRewards)
+        }
+
+        return modified
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val subaccountsProcessor = V4SubaccountsProcessor(parser)
     private val balancesProcessor = V4AccountBalancesProcessor(parser)
     private val delegationsProcessor = V4AccountDelegationsProcessor(parser)
+    private val tradingRewardsProcessor = V4AccountTradingRewardsProcessor(parser)
 
     internal fun receivedAccountBalances(
         existing: Map<String, Any>?,
@@ -924,8 +940,12 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
-        val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(subaccounts, parser.asList(payload?.get("subaccounts")))
-        modified.safeSet("subaccounts", modifiedSubaccounts)
+        val modifiedsubaccounts = subaccountsProcessor.receivedSubaccounts(subaccounts, parser.asList(payload?.get("subaccounts")))
+        modified.safeSet("subaccounts", modifiedsubaccounts)
+
+        val tradingRewards = parser.asNativeMap(parser.value(existing, "tradingRewards"))
+        val modifiedTradingRewards = tradingRewardsProcessor.receivedTotalTradingRewards(tradingRewards, payload?.get("totalTradingRewards"))
+        modified.safeSet("tradingRewards", modifiedTradingRewards)
         return modified
     }
 
