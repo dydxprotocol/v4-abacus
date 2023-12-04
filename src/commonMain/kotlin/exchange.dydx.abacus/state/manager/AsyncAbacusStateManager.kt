@@ -32,6 +32,7 @@ import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
 
@@ -124,9 +125,7 @@ internal class NetworkState() {
 
     internal var time: Instant? = null
 
-    /*
-    requestTime and requestId are only here to keep old V4ApiAdatpor to compile. Remove after we retire V4ApiAdaptor
-     */
+    internal var prevousRequestTime: Instant? = null
     internal var requestTime: Instant? = null
 
     internal fun updateHeight(height: Int?, heightTime: Instant?) {

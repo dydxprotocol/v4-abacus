@@ -19,25 +19,33 @@ import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.onChainDelegations
 import exchange.dydx.abacus.state.modal.onChainEquityTiers
 import exchange.dydx.abacus.state.modal.onChainFeeTiers
-import exchange.dydx.abacus.state.modal.onChainRewardsParams
 import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
+import exchange.dydx.abacus.state.modal.onChainRewardsParams
 import exchange.dydx.abacus.state.modal.onChainUserFeeTier
 import exchange.dydx.abacus.state.modal.onChainUserStats
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidTokens
-import exchange.dydx.abacus.state.modal.updateHeight
 import exchange.dydx.abacus.state.modal.squidV2SdkInfo
-import exchange.dydx.abacus.utils.*
+import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.CoroutineTimer
+import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
-import io.ktor.util.logging.Logger
+import exchange.dydx.abacus.utils.isAddressValid
+import exchange.dydx.abacus.utils.mutableMapOf
+import exchange.dydx.abacus.utils.safeSet
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.math.log
 import kotlin.math.max
+import kotlin.time.Duration.Companion.seconds
 
 class V4StateManagerAdaptor(
     deploymentUri: String,
@@ -245,6 +253,7 @@ class V4StateManagerAdaptor(
                     retrieveTransferChains()
                     retrieveTransferTokens()
                 }
+
                 AppConfigs.SquidVersion.V2,
                 AppConfigs.SquidVersion.V2DepositOnly,
                 AppConfigs.SquidVersion.V2WithdrawalOnly -> {
@@ -437,12 +446,12 @@ class V4StateManagerAdaptor(
     private fun checkNobleBalance() {
         getOnChain(QueryType.GetNobleBalance, "") { response ->
             val balance = parser.decodeJsonObject(response)
-            if (balance != null ) {
+            if (balance != null) {
                 val amount = parser.asDecimal(balance["amount"])
                 if (amount != null && amount > 5000) {
                     transferNobleBalance(amount)
                 } else if (balance["error"] != null) {
-                   DebugLogger.error("Error checking noble balance: $response")
+                    DebugLogger.error("Error checking noble balance: $response")
                 }
             }
         }
@@ -616,6 +625,7 @@ class V4StateManagerAdaptor(
     private fun retrieveIndexerHeight() {
         val url = configs.publicApiUrl("height")
         if (url != null) {
+            indexerState.prevousRequestTime = indexerState.requestTime
             indexerState.requestTime = Clock.System.now()
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
@@ -717,6 +727,35 @@ class V4StateManagerAdaptor(
         }
     }
 
+    private fun delayedInRequestTime(networkState: NetworkState): Boolean {
+        val now = Clock.System.now()
+        val time = networkState.requestTime
+        return if (time != null) {
+            val gap = now - time
+            if (gap > 4.seconds) {
+                // If request (time) was sent more than 4 seconds ago
+                // The app was probably in background
+                true
+            } else {
+                val previousTime = networkState.prevousRequestTime
+                if (previousTime != null) {
+                    val gap = time - previousTime
+                    // If request (time) was sent more than 15 seconds after
+                    // previous request (previousTime)
+                    // The app was probably in background
+                    gap > (heightPollingDuration * 1.5).seconds
+                } else false
+            }
+        } else false
+    }
+
+    private fun delayedStatus(
+        indexerState: NetworkState,
+        validatorState: NetworkState,
+    ): Boolean {
+        return delayedInRequestTime(indexerState) || delayedInRequestTime(validatorState)
+    }
+
     private fun apiState(
         apiState: ApiState?,
         indexerState: NetworkState,
@@ -725,6 +764,8 @@ class V4StateManagerAdaptor(
         var status = apiState?.status ?: ApiStatus.UNKNOWN
         var haltedBlock = apiState?.haltedBlock
         var blockDiff: Int? = null
+
+        val delayedStatus = delayedStatus(indexerState, validatorState)
         when (validatorState.status) {
             NetworkStatus.NORMAL -> {
                 when (indexerState.status) {
@@ -780,14 +821,16 @@ class V4StateManagerAdaptor(
             }
         }
         if (status == ApiStatus.NORMAL) {
-            val indexerBlock = indexerState.blockAndTime?.block
-            val validatorBlock = validatorState.blockAndTime?.block
-            if (indexerBlock != null && validatorBlock != null) {
-                val diff = validatorBlock - indexerBlock
-                if (diff > MAX_NUM_BLOCK_DELAY) {
-                    status = ApiStatus.INDEXER_TRAILING
-                    blockDiff = diff
-                    haltedBlock = null
+            if (!delayedStatus) {
+                val indexerBlock = indexerState.blockAndTime?.block
+                val validatorBlock = validatorState.blockAndTime?.block
+                if (indexerBlock != null && validatorBlock != null) {
+                    val diff = validatorBlock - indexerBlock
+                    if (diff > MAX_NUM_BLOCK_DELAY) {
+                        status = ApiStatus.INDEXER_TRAILING
+                        blockDiff = diff
+                        haltedBlock = null
+                    }
                 }
             }
         }
@@ -888,10 +931,10 @@ class V4StateManagerAdaptor(
         val payload = closePositionPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
-         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
             payload,
             true
-         )
+        )
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
@@ -1079,7 +1122,8 @@ class V4StateManagerAdaptor(
             ) {
                 val decimals = environment.tokens["usdc"]?.decimals ?: 6
 
-                val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
+                val usdcSize =
+                    parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                 if (usdcSize > Numeric.double.ZERO) {
                     simulateWithdrawal(decimals) { gasFee ->
                         if (gasFee != null) {
@@ -1103,7 +1147,8 @@ class V4StateManagerAdaptor(
                 if (token == "usdc") {
                     val decimals = environment.tokens[token]?.decimals ?: 6
 
-                    val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
+                    val usdcSize =
+                        parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                     if (usdcSize > Numeric.double.ZERO) {
                         simulateWithdrawal(decimals) { gasFee ->
                             receiveTransferGas(gasFee)
@@ -1115,7 +1160,8 @@ class V4StateManagerAdaptor(
                     val decimals = environment.tokens[token]?.decimals ?: 18
 
                     val address = state.input.transfer.address
-                    val tokenSize = parser.asDouble(state.input.transfer.size?.size) ?: Numeric.double.ZERO
+                    val tokenSize =
+                        parser.asDouble(state.input.transfer.size?.size) ?: Numeric.double.ZERO
                     if (tokenSize > Numeric.double.ZERO && address.isAddressValid()
                     ) {
                         simulateTransferNativeToken(decimals) { gasFee ->
