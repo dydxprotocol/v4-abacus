@@ -123,10 +123,10 @@ data class HumanReadablePlaceOrderPayload(
     val price: Double,
     val triggerPrice: Double?,
     val size: Double,
-    val reduceOnly: Boolean,
-    val postOnly: Boolean,
-    val timeInForce: String,
-    val execution: String,
+    val reduceOnly: Boolean?,
+    val postOnly: Boolean?,
+    val timeInForce: String?,
+    val execution: String?,
     val goodTilTimeInSeconds: Int?,
     val marketInfo: PlaceOrderMarketInfo? = null,
     val currentHeight: Int? = null,
@@ -1737,20 +1737,26 @@ open class StateManagerAdaptor(
         val triggerPrice = trade.price?.triggerPrice
 
         val size = summary.size ?: throw Exception("size is null")
-        val reduceOnly = trade.reduceOnly
-        val postOnly = trade.postOnly
+        val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null
+        val postOnly = if (trade.options?.needsPostOnly == true) trade.postOnly else null
 
-        val timeInForce = when (trade.type) {
-            OrderType.market -> "FOK"
-            else -> trade.timeInForce ?: "FOK"
-        }
+        val timeInForce = if (trade.options?.timeInForceOptions != null) {
+            when (trade.type) {
+                OrderType.market -> "FOK"
+                else -> trade.timeInForce ?: "FOK"
+            }
+        } else null
 
-        val execution = trade.execution ?: "Default"
-        val goodTilTimeInSeconds = ((if (timeInForce == "GTT") {
+        val execution = if (trade.options?.executionOptions != null) {
+            trade.execution ?: "Default"
+        } else null
+
+        val goodTilTimeInSeconds = ((if (trade.options?.executionOptions != null && timeInForce == "GTT") {
             val timeInterval =
                 GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
             timeInterval / 1.seconds
         } else null))?.toInt()
+
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
         return HumanReadablePlaceOrderPayload(
