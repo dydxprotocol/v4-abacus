@@ -605,6 +605,7 @@ enum class OrderType(val rawValue: String) {
     liquidation("LIQUIDATION"),
     offsetting("OFFSETTING"),
     deleveraged("DELEVERAGED"),
+    finalSettlement("FINAL_SETTLEMENT"),
     ;
 
     companion object {
