@@ -125,7 +125,7 @@ internal class NetworkState() {
 
     internal var time: Instant? = null
 
-    internal var prevousRequestTime: Instant? = null
+    internal var previousRequestTime: Instant? = null
     internal var requestTime: Instant? = null
 
     internal fun updateHeight(height: Int?, heightTime: Instant?) {

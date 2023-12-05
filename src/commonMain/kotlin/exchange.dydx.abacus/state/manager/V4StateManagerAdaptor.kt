@@ -625,7 +625,7 @@ class V4StateManagerAdaptor(
     private fun retrieveIndexerHeight() {
         val url = configs.publicApiUrl("height")
         if (url != null) {
-            indexerState.prevousRequestTime = indexerState.requestTime
+            indexerState.previousRequestTime = indexerState.requestTime
             indexerState.requestTime = Clock.System.now()
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
@@ -737,7 +737,7 @@ class V4StateManagerAdaptor(
                 // The app was probably in background
                 true
             } else {
-                val previousTime = networkState.prevousRequestTime
+                val previousTime = networkState.previousRequestTime
                 if (previousTime != null) {
                     val gap = time - previousTime
                     // If request (time) was sent more than 15 seconds after
