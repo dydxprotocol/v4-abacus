@@ -898,9 +898,8 @@ private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BasePro
         val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
         val totalTradingRewards = parser.asDouble(payload)
         if (totalTradingRewards != null) {
-            modified.safeSet("totalAmount", totalTradingRewards)
+            modified.safeSet("total", totalTradingRewards)
         }
-
         return modified
     }
 }
@@ -940,8 +939,8 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
-        val modifiedsubaccounts = subaccountsProcessor.receivedSubaccounts(subaccounts, parser.asList(payload?.get("subaccounts")))
-        modified.safeSet("subaccounts", modifiedsubaccounts)
+        val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(subaccounts, parser.asList(payload?.get("subaccounts")))
+        modified.safeSet("subaccounts", modifiedSubaccounts)
 
         val tradingRewards = parser.asNativeMap(parser.value(existing, "tradingRewards"))
         val modifiedTradingRewards = tradingRewardsProcessor.receivedTotalTradingRewards(tradingRewards, payload?.get("totalTradingRewards"))

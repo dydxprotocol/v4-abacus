@@ -1170,6 +1170,7 @@ internal class AccountsChannelMock {
 
     internal val v4accountsReceived = """
         {
+            "totalTradingRewards": "2800.8",
         	"subaccounts": [{
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
         		"subaccountNumber": 0,
@@ -1263,6 +1264,7 @@ internal class AccountsChannelMock {
 
     internal val v4accountsReceivedWithPositions = """
         {
+            "totalTradingRewards": "2800.8",
         	"subaccounts": [{
         		"address": "cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
         		"subaccountNumber": 0,
@@ -2221,8 +2223,8 @@ internal class AccountsChannelMock {
 
     internal val v4_accounts_received_for_calculation = """
         {
-         "totalTradingRewards": "2800.8",
-        	"subaccounts": [{
+            "totalTradingRewards": "2800.8",
+            "subaccounts": [{
                  "address":"cosmos1jtpspgllck9z4ghkqhupum35q55xt99sg3guxn",
                  "subaccountNumber":0,
                  "openPerpetualPositions":{
