@@ -896,7 +896,7 @@ private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BasePro
         payload: Any?,
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf<String, Any>()
-        val totalTradingRewards = parser.asString(payload)
+        val totalTradingRewards = parser.asDouble(payload)
         if (totalTradingRewards != null) {
             modified.safeSet("total", totalTradingRewards)
         }
