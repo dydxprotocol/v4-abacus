@@ -16,18 +16,18 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 
-internal fun TradingStateMachine.subaccounts(payload: String): StateChanges {
-    val json = parser.asList(parser.asMap(Json.parseToJsonElement(payload))?.get("subaccounts"))
+internal fun TradingStateMachine.account(payload: String): StateChanges {
+    val json = parser.asMap(Json.parseToJsonElement(payload))
     return if (json != null) {
-        receivedSubaccounts(json)
+        receivedAccount(json)
     } else StateChanges(iListOf<Changes>(), null, null)
 }
 
-internal fun TradingStateMachine.receivedSubaccounts(
-    payload: List<Any>
+internal fun TradingStateMachine.receivedAccount(
+    payload: Map<String, Any>
 ): StateChanges {
-    this.wallet = walletProcessor.receivedSubaccounts(wallet, payload)
-    return StateChanges(iListOf(Changes.subaccount))
+    this.wallet = walletProcessor.receivedAccount(wallet, payload)
+    return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
 
 internal fun TradingStateMachine.updateHeight(
