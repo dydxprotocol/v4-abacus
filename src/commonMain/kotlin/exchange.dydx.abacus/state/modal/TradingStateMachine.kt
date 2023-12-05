@@ -448,7 +448,7 @@ open class TradingStateMachine(
                 else if (url.path.contains("/v3/candles/") || url.path.contains("/v4/candles/"))
                     changes = candles(payload)
                 else if (url.path.contains("/v4/addresses/"))
-                    changes = subaccounts(payload)
+                    changes = account(payload)
                 else
                     error = ParsingError(
                         ParsingErrorType.UnhandledEndpoint,

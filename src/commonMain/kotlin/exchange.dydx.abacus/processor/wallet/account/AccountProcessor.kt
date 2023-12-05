@@ -918,14 +918,14 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
-    internal fun receivedSubaccounts(
+    internal fun receivedAccount(
         existing: Map<String, Any>?,
-        payload: List<Any>?,
+        payload: Map<String, Any>?,
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
-        val modifiedsubaccounts = subaccountsProcessor.receivedSubaccounts(subaccounts, payload)
-        modified.safeSet("subaccounts", modifiedsubaccounts)
+        val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(subaccounts, parser.asList(payload?.get("subaccounts")))
+        modified.safeSet("subaccounts", modifiedSubaccounts)
         return modified
     }
 

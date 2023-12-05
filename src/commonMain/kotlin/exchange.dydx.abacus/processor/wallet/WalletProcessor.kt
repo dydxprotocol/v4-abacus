@@ -56,12 +56,12 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
-    internal fun receivedSubaccounts(
+    internal fun receivedAccount(
         existing: Map<String, Any>?,
-        payload: List<Any>?,
+        payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedSubaccounts(parser.asNativeMap(existing), payload as? List<Any>)
+            v4accountProcessor.receivedAccount(parser.asNativeMap(existing), payload as? Map<String, Any>?)
         }
     }
 

@@ -52,7 +52,7 @@ import exchange.dydx.abacus.state.modal.receivedTradesChanges
 import exchange.dydx.abacus.state.modal.receivedTransfers
 import exchange.dydx.abacus.state.modal.setOrderbookGrouping
 import exchange.dydx.abacus.state.modal.sparklines
-import exchange.dydx.abacus.state.modal.subaccounts
+import exchange.dydx.abacus.state.modal.account
 import exchange.dydx.abacus.state.modal.trade
 import exchange.dydx.abacus.state.modal.tradeInMarket
 import exchange.dydx.abacus.state.modal.transfer
@@ -504,7 +504,7 @@ open class StateManagerAdaptor(
             }
             if (accountAddress != null) {
                 screenAccountAddress()
-                retrieveSubaccounts()
+                retrieveAccount()
             }
             if (subaccount != null) {
                 retrieveSubaccountFills()
@@ -1384,18 +1384,18 @@ open class StateManagerAdaptor(
     }
 
 
-    open fun retrieveSubaccounts() {
+    open fun retrieveAccount() {
         val oldState = stateMachine.state
-        val url = subaccountsUrl()
+        val url = accountUrl()
         if (url != null) {
             get(url, null, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    update(stateMachine.subaccounts(response), oldState)
+                    update(stateMachine.account(response), oldState)
                     updateConnectedSubaccountNumber()
                 } else {
                     subaccountsTimer =
                         ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
-                            retrieveSubaccounts()
+                            retrieveAccount()
                             false
                         }
                 }
@@ -1403,7 +1403,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun subaccountsUrl(): String? {
+    open fun accountUrl(): String? {
         return null
     }
 
