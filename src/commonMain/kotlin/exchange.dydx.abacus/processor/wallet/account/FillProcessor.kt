@@ -50,6 +50,7 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "LIQUIDATION" to "APP.TRADE.LIQUIDATION",
         "DELEVERAGED" to "APP.TRADE.DELEVERAGED",
         "OFFSETTING" to "APP.TRADE.OFFSETTING",
+        "FINAL_SETTLEMENT" to "APP.TRADE.FINAL_SETTLEMENT",
     )
 
     private val sideIconMap = mapOf(
