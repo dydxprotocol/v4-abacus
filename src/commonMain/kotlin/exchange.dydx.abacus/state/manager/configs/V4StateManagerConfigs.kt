@@ -23,13 +23,13 @@ class V4StateManagerConfigs(
                          "historical-funding":"/v4/historicalFunding",
                          "historical-pnl":"/v4/historical-pnl",
                          "sparklines":"/v4/sparklines",
-                         "subaccounts":"/v4/addresses",
+                         "account":"/v4/addresses",
                          "time":"/v4/time",
                          "screen":"/v4/screen",
                          "height":"/v4/height"
                       },
                       "private":{
-                         "subaccounts":"/v4/addresses",
+                         "account":"/v4/addresses",
                          "fills":"/v4/fills",
                          "historical-pnl":"/v4/historical-pnl",
                          "transfers":"/v4/transfers"

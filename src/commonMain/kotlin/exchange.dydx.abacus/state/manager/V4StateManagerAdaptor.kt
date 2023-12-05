@@ -216,8 +216,8 @@ class V4StateManagerAdaptor(
         } else 0
     }
 
-    override fun subaccountsUrl(): String? {
-        val url = configs.privateApiUrl("subaccounts")
+    override fun accountUrl(): String? {
+        val url = configs.privateApiUrl("account")
         return if (accountAddress != null && url != null) {
             "$url/$accountAddress"
         } else null
@@ -385,7 +385,7 @@ class V4StateManagerAdaptor(
                 screenSourceAddress()
             }
             if (readyToConnect) {
-                retrieveSubaccounts()
+                retrieveAccount()
                 if (validatorConnected) {
                     pollAccountBalances()
                     pollNobleBalance()
