@@ -22,6 +22,7 @@ enum class Changes(val rawValue: String) {
 
     accountBalances("accountBalances"),
     subaccount("subaccount"),
+    tradingRewards("tradingRewards"),
     historicalPnl("historicalPnl"),
     fills("fills"),
     transfers("transfers"),
