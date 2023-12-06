@@ -630,12 +630,14 @@ data class OrderbookLine(
     val price: Double,
     val offset: Int = 0,
     val depth: Double?,
+    val depthCost: Double,
 ) {
     companion object {
         internal fun create(
             existing: OrderbookLine?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            previousDepthCost: Double? = null,
         ): OrderbookLine? {
             DebugLogger.log("creating Orderbook Line\n")
             data?.let {
@@ -644,12 +646,14 @@ data class OrderbookLine(
                 val offset = parser.asInt(data["offset"]) ?: 0
                 val depth = parser.asDouble(data["depth"])
                 if (size != null && price != null && size != 0.0) {
+                    val depthCost = (previousDepthCost ?: 0.0) + size * price
                     return if (existing?.size != size ||
                         existing.price != price ||
                         existing.offset != offset ||
-                        existing.depth != depth
+                        existing.depth != depth ||
+                        existing.depthCost != depthCost
                     ) {
-                        OrderbookLine(size, price, offset ?: 0, depth)
+                        OrderbookLine(size, price, offset ?: 0, depth, depthCost)
                     } else {
                         existing
                     }
@@ -746,11 +750,13 @@ data class MarketOrderbook(
             ascending: Boolean,
         ): IList<OrderbookLine>? {
             return if (data != null) {
+                var depthCost: Double = 0.0
                 val lines = iMutableListOf<OrderbookLine>()
                 for (item in data) {
-                    val line = OrderbookLine.create(null, parser, parser.asMap(item))
+                    val line = OrderbookLine.create(null, parser, parser.asMap(item), depthCost)
                     if (line != null) {
                         lines.add(line)
+                        depthCost = line.depthCost ?: 0.0
                     }
                 }
                 lines
