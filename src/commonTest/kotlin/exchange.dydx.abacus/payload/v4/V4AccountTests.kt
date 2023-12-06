@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.modal.onChainAccountBalances
 import exchange.dydx.abacus.state.modal.onChainDelegations
 import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.state.modal.historicalTradingRewards
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
@@ -59,6 +60,8 @@ class V4AccountTests : V4BaseTests() {
         testUserFeeTier()
 
         testUserStats()
+
+        testAccountHistoricalTradingRewards()
     }
 
     private fun testSubaccountsReceived() {
@@ -1037,6 +1040,47 @@ class V4AccountTests : V4BaseTests() {
                                 "dv4tnt": {
                                      "denom": "dv4tnt",
                                      "amount": "2001000"
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+    }
+
+    @Test
+    fun testAccountHistoricalTradingRewards() {
+        test(
+            {
+                val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.weeklyCall, "WEEKLY")
+                perp.update(changes)
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "tradingRewards": {
+                                "historical": {
+                                     "WEEKLY": [
+                                        {
+                                            "amount": 124.03,
+                                            "startedAt": "2023-11-26T00:00:01.188Z",
+                                            "startedAtHeight": 100000,
+                                            "endedAt": "2023-12-02T23:59:58.888Z",
+                                            "endedAtHeight": 2725535,
+                                            "period": "WEEKLY"
+                                         },
+                                        {
+                                            "amount": 1.0,
+                                            "startedAt": "2023-12-03T00:00:01.188Z",
+                                            "startedAtHeight": 2725536,
+                                            "period": "WEEKLY"
+                                         }
+                                     ]
                                 }
                             }
                         }
