@@ -1106,7 +1106,7 @@ class V4AccountTests : V4BaseTests() {
                             "tradingRewards": {
                                 "historical": {
                                      "WEEKLY": [
-                                        {
+                                        {   
                                             "period": "WEEKLY"
                                          },
                                          {
@@ -1114,19 +1114,19 @@ class V4AccountTests : V4BaseTests() {
                                          }
                                      ],
                                      "MONTHLY": [
-                                        {
-                                           "amount": 1.00,
-                                           "startedAt": "2023-12-01T00:00:01.188Z",
-                                           "startedAtHeight": 2725536,
-                                           "period": "MONTHLY"
+                                        {   
+                                            "amount": 1.00,
+                                            "startedAt": "2023-12-01T00:00:01.188Z",
+                                            "startedAtHeight": 2725536,
+                                            "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 124.03,
-                                           "startedAt": "2023-11-01T00:00:01.188Z",
-                                           "startedAtHeight": 100000,
-                                           "endedAt": "2023-11-30T23:59:58.888Z",
-                                           "endedAtHeight": 2725535,
-                                           "period": "MONTHLY"
+                                            "startedAt": "2023-11-01T00:00:01.188Z",
+                                            "startedAtHeight": 100000,
+                                            "endedAt": "2023-11-30T23:59:58.888Z",
+                                            "endedAtHeight": 2725535,
+                                            "period": "MONTHLY"
                                         }
                                       ]
                                 }
@@ -1162,18 +1162,18 @@ class V4AccountTests : V4BaseTests() {
                                      ],
                                      "MONTHLY": [
                                         {
-                                           "amount": 1.00,
-                                           "startedAt": "2023-12-01T00:00:01.188Z",
-                                           "startedAtHeight": 2725536,
-                                           "period": "MONTHLY"
+                                            "amount": 1.00,
+                                            "startedAt": "2023-12-01T00:00:01.188Z",
+                                            "startedAtHeight": 2725536,
+                                            "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 124.03,
-                                           "startedAt": "2023-11-01T00:00:01.188Z",
-                                           "startedAtHeight": 100000,
-                                           "endedAt": "2023-11-30T23:59:58.888Z",
-                                           "endedAtHeight": 2725535,
-                                           "period": "MONTHLY"
+                                            "startedAt": "2023-11-01T00:00:01.188Z",
+                                            "startedAtHeight": 100000,
+                                            "endedAt": "2023-11-30T23:59:58.888Z",
+                                            "endedAtHeight": 2725535,
+                                            "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 100.0,
