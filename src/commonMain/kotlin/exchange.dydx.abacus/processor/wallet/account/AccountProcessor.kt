@@ -891,6 +891,8 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
 }
 
 private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+    private val historicalTradingRewardsProcessor = HistoricalTradingRewardsProcessor(parser = parser)
+
     fun receivedTotalTradingRewards(
         existing: Map<String, Any>?,
         payload: Any?,
@@ -901,6 +903,13 @@ private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BasePro
             modified.safeSet("total", totalTradingRewards)
         }
         return modified
+    }
+
+    fun recievedHistoricalTradingRewards( 
+        existing: List<Any>?,
+        payload: List<Any>?,
+    ): List<Any>? {
+        return if (payload != null) historicalTradingRewardsProcessor.received(existing, payload) else null
     }
 }
 
@@ -930,6 +939,18 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val delegations = parser.asNativeMap(parser.value(existing, "stakingBalances"))
         val modifiedDelegations = delegationsProcessor.received(delegations, payload)
         modified.safeSet("stakingBalances", modifiedDelegations)
+        return modified
+    }
+
+    internal fun receivedHistoricalTradingRewards(
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+        period: String?,
+    ): Map<String, Any>? {
+        val modified = existing?.mutable() ?: mutableMapOf()
+        val historicalTradingRewards = parser.asNativeList(parser.value(existing, "tradingRewards.historical.$period"))
+        val modifiedHistoricalTradingRewards = tradingRewardsProcessor.recievedHistoricalTradingRewards(historicalTradingRewards, payload)
+        modified.safeSet("tradingRewards.historical.$period", modifiedHistoricalTradingRewards)
         return modified
     }
 

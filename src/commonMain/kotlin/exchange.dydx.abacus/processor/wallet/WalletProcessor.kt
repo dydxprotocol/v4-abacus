@@ -110,6 +110,20 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
+    internal fun receivedHistoricalTradingRewards(
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+        period: String?,
+    ): Map<String, Any>? {
+        return receivedObject(existing, "account", payload) { existing, payload ->
+            v4accountProcessor.receivedHistoricalTradingRewards(
+                parser.asNativeMap(existing),
+                payload as? List<Any>,
+                period as? String,
+            )
+        }
+    }
+
     internal fun receivedUser(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
