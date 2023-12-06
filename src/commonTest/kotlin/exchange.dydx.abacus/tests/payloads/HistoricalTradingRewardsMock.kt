@@ -42,6 +42,21 @@ internal class HistoricalTradingRewardsMock {
         ]
       }
     """.trimIndent()
+
+    internal val monthlySecondCall = """
+    {
+        "rewards": [
+          {
+             "tradingRewards": "100.0",
+             "startedAt": "2023-10-01T00:00:01.188Z",
+             "startedAtHeight": "1000",
+             "endedAt": "2023-10-31T23:59:58.888Z",
+             "endedAtHeight": "99999",
+             "period": "MONTHLY"
+          }
+        ]
+      }
+    """.trimIndent()
     
     internal val empty = """
         {

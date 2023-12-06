@@ -13,7 +13,7 @@ internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseP
         payload: List<Any>,
     ): List<Any>? {
         val history = mutableListOf<Any>()
-        for (item in payload.reversed()) {
+        for (item in payload) {
             parser.asNativeMap(item)?.let {
                 history.add(itemProcessor.received(null, it))
             }
@@ -23,7 +23,7 @@ internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseP
             existing,
             history,
             "startedAt",
-            true
+            false
         )
     }
 }
