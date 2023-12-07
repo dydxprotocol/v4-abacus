@@ -437,10 +437,6 @@ open class TradingStateMachine(
                 changes = transfers(payload, subaccountNumber)
             }
 
-            "/v4/historicalTradingRewards" -> {
-                changes = historicalTradingRewards(payload, period?: "WEEKLY")
-            }
-
             "/configs/markets.json" -> {
                 if (deploymentUri != null) {
                     changes = configurations(payload, subaccountNumber, deploymentUri)
