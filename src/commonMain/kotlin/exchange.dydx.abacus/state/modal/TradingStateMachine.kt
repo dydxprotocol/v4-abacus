@@ -1006,10 +1006,10 @@ open class TradingStateMachine(
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
-                    Account(account.balances, account.stakingBalances, subaccounts)
+                    Account(account.balances, account.stakingBalances, subaccounts, account.tradingRewards)
                 }
             }
-            if (changes.changes.contains(Changes.accountBalances)) {
+            if (changes.changes.contains(Changes.accountBalances) || changes.changes.contains(Changes.tradingRewards)) {
                 account = Account.create(account, parser, accountData, tokensInfo, localizer)
             }
         } else {
