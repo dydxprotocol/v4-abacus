@@ -77,10 +77,6 @@ class NotificationsProvider(
             // Cache the fills
             val fills = mutableMapOf<String, IMutableList<SubaccountFill>>()
             val fillsList = iMutableListOf<SubaccountFill>()
-//            val liquidated = iMutableListOf<SubaccountFill>()
-//            val offsetting = iMutableListOf<SubaccountFill>()
-//            val deleveraged = iMutableListOf<SubaccountFill>()
-//            val finalSettlement = iMutableListOf<SubaccountFill>()
 
             for (fill in subaccountFills) {
                 val orderId = fill.orderId
