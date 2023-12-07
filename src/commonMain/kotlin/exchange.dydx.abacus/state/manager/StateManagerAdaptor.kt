@@ -1413,7 +1413,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun retrieveAccountHistoricalTradingRewards(period: String? = "WEEKLY", previousUrl: String? = null) {
+    open fun retrieveAccountHistoricalTradingRewards(period: String = "WEEKLY", previousUrl: String? = null) {
         val oldState = stateMachine.state
         var url = historicalTradingRewardsUrl() ?: return
         val params = historicalTradingRewardsParams(period)
