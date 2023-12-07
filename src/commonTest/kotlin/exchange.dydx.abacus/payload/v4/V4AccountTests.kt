@@ -1094,9 +1094,14 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.monthlyCall, "MONTHLY")
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
+                perp.rest(
+                    AbUrl.fromString("$testRestUrl/v4/historicalTradingRewards?period=MONTHLY"),
+                    mock.historicalTradingRewards.monthlyCall,
+                    0,
+                    null,
+                    null,
+                    "MONTHLY"
+                )
             },
             """
                 {

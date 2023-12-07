@@ -514,6 +514,7 @@ open class StateManagerAdaptor(
             if (accountAddress != null) {
                 screenAccountAddress()
                 retrieveAccount()
+                retrieveAccountHistoricalTradingRewards()
             }
             if (subaccount != null) {
                 retrieveSubaccountFills()
@@ -1412,7 +1413,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun retrieveAccountHistoricalTradingRewards(period: String, previousUrl: String? = null) {
+    open fun retrieveAccountHistoricalTradingRewards(period: String? = "WEEKLY", previousUrl: String? = null) {
         val oldState = stateMachine.state
         var url = historicalTradingRewardsUrl() ?: return
         val params = historicalTradingRewardsParams(period)

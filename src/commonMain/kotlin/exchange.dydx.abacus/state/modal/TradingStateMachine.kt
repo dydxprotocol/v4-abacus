@@ -395,7 +395,8 @@ open class TradingStateMachine(
         payload: String,
         subaccountNumber: Int,
         height: Int?,
-        deploymentUri: String? = null
+        deploymentUri: String? = null,
+        period: String? = null,
     ): StateResponse {
         /*
         For backward compatibility only
@@ -434,6 +435,10 @@ open class TradingStateMachine(
                     parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                         ?: 0
                 changes = transfers(payload, subaccountNumber)
+            }
+
+            "/v4/historicalTradingRewards" -> {
+                changes = historicalTradingRewards(payload, period?: "WEEKLY")
             }
 
             "/configs/markets.json" -> {
