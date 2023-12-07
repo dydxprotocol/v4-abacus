@@ -395,7 +395,8 @@ open class TradingStateMachine(
         payload: String,
         subaccountNumber: Int,
         height: Int?,
-        deploymentUri: String? = null
+        deploymentUri: String? = null,
+        period: String? = null,
     ): StateResponse {
         /*
         For backward compatibility only

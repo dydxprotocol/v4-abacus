@@ -235,6 +235,18 @@ class V4StateManagerAdaptor(
         return configs.publicApiUrl("screen")
     }
 
+    override fun historicalTradingRewardsUrl(): String? {
+        return configs.privateApiUrl("historicalTradingRewards")
+    }
+
+    override fun historicalTradingRewardsParams(period: String): IMap<String, String>? {
+        val accountAddress = accountAddress
+        return if (accountAddress != null) iMapOf(
+            "address" to accountAddress,
+            "period" to "$period",
+        ) else null
+    }
+
     override fun subaccountParams(): IMap<String, String>? {
         val accountAddress = accountAddress
         val subaccountNumber = subaccountNumber

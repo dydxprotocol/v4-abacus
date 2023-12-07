@@ -70,6 +70,20 @@ enum class HistoricalPnlPeriod(val rawValue: String) {
 
 @JsExport
 @Serializable
+enum class HistoricaTradingRewardsPeriod(val rawValue: String) {
+    DAILY("DAILY"),
+    WEEKLY("WEEKLY"),
+    MONTHLY("MONTHLY"),
+    BLOCK("BLOCK");
+
+    companion object {
+        operator fun invoke(rawValue: String) = 
+        HistoricaTradingRewardsPeriod.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
 enum class CandlesPeriod(val rawValue: String) {
     Period1m("1m"),
     Period5m("5m"),
@@ -261,6 +275,7 @@ class AsyncAbacusStateManager(
                 value?.sourceAddress = sourceAddress
                 value?.subaccountNumber = subaccountNumber
                 value?.orderbookGrouping = orderbookGrouping
+                value?.historicalTradingRewardPeriod = historicalTradingRewardPeriod
                 value?.historicalPnlPeriod = historicalPnlPeriod
                 value?.candlesResolution = candlesResolution
                 value?.readyToConnect = readyToConnect
@@ -323,6 +338,14 @@ class AsyncAbacusStateManager(
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.historicalPnlPeriod = field
+            }
+        }
+    
+    var historicalTradingRewardPeriod: HistoricaTradingRewardsPeriod = HistoricaTradingRewardsPeriod.WEEKLY
+        set(value) {
+            field = value
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                adaptor?.historicalTradingRewardPeriod = field
             }
         }
 
