@@ -56,6 +56,7 @@ import exchange.dydx.abacus.state.modal.account
 import exchange.dydx.abacus.state.modal.trade
 import exchange.dydx.abacus.state.modal.tradeInMarket
 import exchange.dydx.abacus.state.modal.transfer
+import exchange.dydx.abacus.state.modal.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
@@ -394,6 +395,14 @@ open class StateManagerAdaptor(
                 val oldValue = field
                 field = value
                 didSetMarket(market, oldValue)
+            }
+        }
+
+    var historicalTradingRewardPeriod: HistoricaTradingRewardsPeriod = HistoricaTradingRewardsPeriod.WEEKLY
+        internal set(value) {
+            if (field != value) {
+                field = value
+                didSetHistoricalTradingRewardsPeriod(value as String)
             }
         }
 
@@ -1403,11 +1412,55 @@ open class StateManagerAdaptor(
         }
     }
 
+    open fun retrieveAccountHistoricalTradingRewards(period: String, previousUrl: String? = null) {
+        val oldState = stateMachine.state
+        var url = historicalTradingRewardsUrl() ?: return
+        val params = historicalTradingRewardsParams(period)
+        val historicalTradingRewardsInPeriod = parser.asNativeList(
+            parser.value(
+                stateMachine.data,
+                "wallet.account.tradingRewards.historical.$period"
+            )
+        )?.mutable()
+
+        retrieveTimed(
+            url,
+            historicalTradingRewardsInPeriod,
+            "startedAt",
+            0.days,
+            180.days,
+            "startedBeforeOrAt",
+            null,
+            params,
+            previousUrl
+        ) {
+            url, response, httpCode ->
+            if (success(httpCode) && !response.isNullOrEmpty()) {
+                val historicalTradingRewards = parser.decodeJsonObject(response)?.toIMap()
+                if (historicalTradingRewards != null) {
+                    val changes = stateMachine.receivedHistoricalTradingRewards(historicalTradingRewards, period)
+                    update(changes, oldState)
+                    if (changes.changes.contains(Changes.tradingRewards)) {
+                        retrieveAccountHistoricalTradingRewards(period, url)
+                    }
+                }
+            }
+        }
+    }
+
     open fun accountUrl(): String? {
         return null
     }
 
     open fun screenUrl(): String? {
+        return null
+    }
+
+    open fun historicalTradingRewardsUrl(): String? {
+        return null
+    }
+
+    internal open fun historicalTradingRewardsParams(period: String): IMap<String, String>? {
         return null
     }
 
@@ -1603,6 +1656,10 @@ open class StateManagerAdaptor(
 
     internal open fun didSetCandlesResolution(oldValue: String) {
         retrieveMarketCandles()
+    }
+
+    fun didSetHistoricalTradingRewardsPeriod(period: String) {
+        retrieveAccountHistoricalTradingRewards(period)
     }
 
     fun didSetHistoricalPnlPeriod() {
