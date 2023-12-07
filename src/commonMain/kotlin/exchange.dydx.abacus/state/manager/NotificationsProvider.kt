@@ -76,7 +76,7 @@ class NotificationsProvider(
             }
             // Cache the fills
             val fills = mutableMapOf<String, IMutableList<SubaccountFill>>()
-            val liquidated = iMutableListOf<SubaccountFill>()
+            val fillsList = iMutableListOf<SubaccountFill>()
 
             for (fill in subaccountFills) {
                 val orderId = fill.orderId
@@ -88,9 +88,7 @@ class NotificationsProvider(
                         fills[orderId] = fillsForOrder
                     }
                 } else {
-                    if (fill.type == OrderType.liquidated) {
-                        liquidated.add(fill)
-                    }
+                    fillsList.add(fill)
                 }
             }
 
@@ -105,12 +103,12 @@ class NotificationsProvider(
                 )
             }
 
-            for (fill in liquidated) {
+            for (fill in fillsList) {
                 val fillId = fill.id
                 val notificationId = "fill:$fillId"
                 notifications.typedSafeSet(
                     notificationId,
-                    createLiquidationNotification(stateMachine, fill)
+                    createNotificationForFill(stateMachine, fill)
                 )
             }
         }
@@ -241,7 +239,7 @@ class NotificationsProvider(
         }
     }
 
-    private fun createLiquidationNotification(
+    private fun createNotificationForFill(
         stateMachine: TradingStateMachine,
         fill: SubaccountFill,
     ): Notification? {
@@ -267,10 +265,29 @@ class NotificationsProvider(
         ).filterValues { it != null } as Map<String, String>).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
-        val title =
-            uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE") ?: return null
-        val text =
-            uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.BODY", paramsAsJson)
+        var title: String? = null
+        var text: String? = null
+
+        when (fill.type) {
+            OrderType.deleveraged -> {
+                title = uiImplementations.localizer?.localize("NOTIFICATIONS.DELEVERAGED.TITLE") ?: return null
+                text = uiImplementations.localizer?.localize("NOTIFICATIONS.DELEVERAGED.BODY", paramsAsJson)
+            }
+            OrderType.finalSettlement -> {
+                title = uiImplementations.localizer?.localize("NOTIFICATIONS.FINAL_SETTLEMENT.TITLE") ?: return null
+                text = uiImplementations.localizer?.localize("NOTIFICATIONS.FINAL_SETTLEMENT.BODY", paramsAsJson)
+            }
+            OrderType.liquidation -> {
+                title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE") ?: return null
+                text =  uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.BODY", paramsAsJson)
+
+            }
+            OrderType.offsetting -> {
+                title = uiImplementations.localizer?.localize("NOTIFICATIONS.OFFSETTING.TITLE") ?: return null
+                text = uiImplementations.localizer?.localize("NOTIFICATIONS.OFFSETTING.BODY", paramsAsJson)
+            }
+            else -> return null
+        }
 
         val notificationId = "fill:$fillId"
         return Notification(
