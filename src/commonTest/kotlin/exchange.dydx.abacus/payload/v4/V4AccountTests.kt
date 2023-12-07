@@ -1053,6 +1053,7 @@ class V4AccountTests : V4BaseTests() {
 
     @Test
     fun testAccountHistoricalTradingRewards() {
+        setup()
         test(
             {
                 val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.weeklyCall, "WEEKLY")

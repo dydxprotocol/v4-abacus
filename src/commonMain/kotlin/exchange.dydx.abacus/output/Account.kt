@@ -1368,7 +1368,6 @@ data class HistoricalTradingReward(
     val startedAtHeight: Double,
     val endedAtMilliseconds: Double?,
     val endedAtHeight: Double?,
-    val period: String
 ) {
     companion object {
         internal fun create(
@@ -1382,15 +1381,13 @@ data class HistoricalTradingReward(
                 val startedAtHeight = parser.asDouble(data["startedAtHeight"])
                 val endedAtMilliseconds = parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble()
                 val endedAtHeight = parser.asDouble(data["endedAtHeight"])
-                val period = parser.asString(data["period"])
 
-                if (amount != null && startedAtMilliseconds != null && startedAtHeight != null && period != null) {
+                if (amount != null && startedAtMilliseconds != null && startedAtHeight != null) {
                     return if (existing?.amount != amount || 
                         existing.startedAtMilliseconds != startedAtMilliseconds || 
                         existing.startedAtHeight != startedAtHeight ||
                         existing.endedAtMilliseconds != endedAtMilliseconds || 
-                        existing.endedAtHeight != endedAtHeight || 
-                        existing.period != period
+                        existing.endedAtHeight != endedAtHeight
                     ) {
                         HistoricalTradingReward(
                             amount,
@@ -1398,7 +1395,6 @@ data class HistoricalTradingReward(
                             startedAtHeight,
                             endedAtMilliseconds,
                             endedAtHeight,
-                            period
                         )
                     } else {
                         existing

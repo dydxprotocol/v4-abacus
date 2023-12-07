@@ -851,11 +851,6 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.endedAtHeight,
                 "$trace.endedAtHeight"
             )
-            assertEquals(
-                parser.asString(data["period"]),
-                obj.period,
-                "$trace.period"
-            )
         } else {
             assertNull(obj)
         }
