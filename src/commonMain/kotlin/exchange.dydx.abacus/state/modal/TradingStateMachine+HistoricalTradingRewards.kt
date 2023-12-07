@@ -4,7 +4,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
 
-internal fun TradingStateMachine.historicalTradingRewards(payload: String, period: String): StateChanges {
+fun TradingStateMachine.historicalTradingRewards(payload: String, period: String): StateChanges {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         receivedHistoricalTradingRewards(json, period)

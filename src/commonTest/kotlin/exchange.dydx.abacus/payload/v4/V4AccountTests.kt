@@ -1092,7 +1092,6 @@ class V4AccountTests : V4BaseTests() {
             }
         )
 
-        setup()
         test(
             {
                 val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.monthlyCall, "MONTHLY")
@@ -1139,7 +1138,6 @@ class V4AccountTests : V4BaseTests() {
             }
         )
 
-        setup()
         test(
             {
                 val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.monthlySecondCall, "MONTHLY")

@@ -15,6 +15,7 @@ import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
 import kollections.iMapOf
 import kollections.iMutableMapOf
+import kollections.iListOf
 import kollections.toIList
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -1359,6 +1360,94 @@ data class AccountBalance(
     }
 }
 
+@JsExport
+@Serializable
+data class HistoricalTradingReward(
+    val amount: Double,
+    val startedAtMilliseconds: Double,
+    val startedAtHeight: Double,
+    val endedAtMilliseconds: Double?,
+    val endedAtHeight: Double?,
+) {
+    companion object {
+        internal fun create(
+            existing: HistoricalTradingReward?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): HistoricalTradingReward? {
+            data?.let {
+                val amount = parser.asDouble(data["amount"])
+                val startedAtMilliseconds = parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
+                val startedAtHeight = parser.asDouble(data["startedAtHeight"])
+                val endedAtMilliseconds = parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble()
+                val endedAtHeight = parser.asDouble(data["endedAtHeight"])
+
+                if (amount != null && startedAtMilliseconds != null && startedAtHeight != null) {
+                    return if (existing?.amount != amount || 
+                        existing.startedAtMilliseconds != startedAtMilliseconds || 
+                        existing.startedAtHeight != startedAtHeight ||
+                        existing.endedAtMilliseconds != endedAtMilliseconds || 
+                        existing.endedAtHeight != endedAtHeight
+                    ) {
+                        HistoricalTradingReward(
+                            amount,
+                            startedAtMilliseconds,
+                            startedAtHeight,
+                            endedAtMilliseconds,
+                            endedAtHeight,
+                        )
+                    } else {
+                        existing
+                    }
+                }
+            }
+            DebugLogger.debug("HistoricalTradingReward not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class TradingRewards(
+    val total: Double?,
+    val historical: Map<String, List<HistoricalTradingReward>>?
+) {
+    companion object {
+        internal fun create(
+            existing: TradingRewards?,
+            parser: ParserProtocol,
+            data: Map<String, Any>?
+        ): TradingRewards? {
+            DebugLogger.log("creating TradingRewards\n")
+            data?.let {
+                val total = parser.asDouble(data["total"])
+                val historical = parser.asMap(data["historical"])?.
+                mapValues {
+                    parser.asList(it.value)?.map { rewardData ->
+                        HistoricalTradingReward.create(null, parser, parser.asMap(rewardData))
+                    }?.filterNotNull()?.toIList() ?: iListOf()
+                }
+
+                if (total != null || historical != null) {
+                    return if (existing?.total != total || 
+                        existing?.historical != historical
+                    ) {
+                        TradingRewards(
+                            total,
+                            historical
+                        )
+                    } else {
+                        existing
+                    }
+                }
+            }
+            DebugLogger.debug("TradingRewards not valid")
+            return null
+        }
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
@@ -1366,6 +1455,7 @@ data class Account(
     var balances: IMap<String, AccountBalance>?,
     var stakingBalances: IMap<String, AccountBalance>?,
     var subaccounts: IMap<String, Subaccount>?,
+    var tradingRewards: TradingRewards?,
 ) {
     companion object {
         internal fun create(
@@ -1420,6 +1510,11 @@ data class Account(
                 }
             }
 
+            val tradingRewardsData = parser.asMap(data["tradingRewards"])
+            val tradingRewards = if (tradingRewardsData != null) {
+                TradingRewards.create(existing?.tradingRewards, parser, tradingRewardsData)
+            } else null
+
             val subaccounts: IMutableMap<String, Subaccount> =
                 iMutableMapOf()
 
@@ -1439,7 +1534,7 @@ data class Account(
                 }
             }
 
-            return Account(balances, stakingBalances, subaccounts)
+            return Account(balances, stakingBalances, subaccounts, tradingRewards)
         }
 
         private fun findTokenInfo(tokensInfo: Map<String, TokenInfo>, denom: String): TokenInfo? {
