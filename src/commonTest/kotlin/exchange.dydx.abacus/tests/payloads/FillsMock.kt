@@ -1410,6 +1410,12 @@ internal class FillsMock {
                         "createdAtHeight": "77486",
                         "ticker": "ETH-USD"
                     }
+                ],
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "height": "2501"
+                    }
                 ]
             }
         }

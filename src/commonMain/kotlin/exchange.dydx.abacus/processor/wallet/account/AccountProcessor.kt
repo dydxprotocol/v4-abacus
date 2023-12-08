@@ -937,7 +937,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
-        val modified = existing?.mutable() ?: mutableMapOf()
+        var modified = existing?.mutable() ?: mutableMapOf()
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
         val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(
             subaccounts,
@@ -951,6 +951,14 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             payload?.get("totalTradingRewards")
         )
         modified.safeSet("tradingRewards", modifiedTradingRewards)
+
+
+        /* block trading rewards are only sent in subaccounts.0 channel */
+        val tradingRewardsPayload =
+            parser.asNativeList(parser.value(payload, "subaccounts.0.tradingRewards"))
+        if (tradingRewardsPayload != null) {
+            modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
+        }
         return modified
     }
 
@@ -968,7 +976,8 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
 
             /* block trading rewards are only sent in subaccounts.0 channel */
-            val tradingRewardsPayload = parser.asNativeList(content["tradingRewards"])
+            val tradingRewardsPayload =
+                parser.asNativeList(parser.value(content, "tradingRewards"))
             if (tradingRewardsPayload != null) {
                 modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
             }
@@ -1007,12 +1016,12 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         payload: List<Any>,
     ): MutableMap<String, Any> {
         val modified = existing.mutable()
-        val blockRewards = parser.asNativeList(parser.value(existing, "blockRewards"))
+        val blockRewards = parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
         val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingRewards(
             blockRewards,
             payload
         )
-        modified.safeSet("blockRewards", modifiedTradingRewards)
+        modified.safeSet("tradingRewards.blockRewards", modifiedTradingRewards)
         return modified
     }
 

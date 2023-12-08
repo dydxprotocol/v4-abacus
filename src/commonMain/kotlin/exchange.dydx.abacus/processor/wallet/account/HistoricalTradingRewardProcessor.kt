@@ -31,7 +31,7 @@ internal class HistoricalTradingRewardProcessor(parser: ParserProtocol) : BasePr
             "createdAt" to "createdAt"
         ),
         "double" to mapOf(
-            "tradingRewards" to "amount",
+            "tradingReward" to "tradingReward",
         ),
         "int" to mapOf(
             "height" to "createdAtHeight",

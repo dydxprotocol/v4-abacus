@@ -107,7 +107,17 @@ class V4AccountTests : V4BaseTests() {
                     "wallet": {
                         "account": {
                             "tradingRewards": {
-                                "total": 2800.8
+                                "total": 2800.8,
+                                "blockRewards": [
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2500"
+                                    },
+                                    {
+                                        "tradingReward": "0.02",
+                                        "createdAtHeight": "2422"
+                                    }
+                                ]
                             },
                             "subaccounts": {
                                 "0": {
@@ -426,6 +436,22 @@ class V4AccountTests : V4BaseTests() {
                 {
                     "wallet": {
                         "account": {
+                            "tradingRewards": {
+                                "blockRewards": [
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2500"
+                                    },
+                                    {
+                                        "tradingReward": "0.02",
+                                        "createdAtHeight": "2422"
+                                    },
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2501"
+                                    }
+                                ]
+                            },
                             "subaccounts": {
                                 "0": {
                                     "equity": {

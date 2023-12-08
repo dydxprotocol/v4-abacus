@@ -1782,7 +1782,17 @@ internal class AccountsChannelMock {
                     "reduceOnly":false,
                     "goodTilBlock":"5837"
                  }
-              ]
+              ],
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "height": "2500"
+                    },
+                    {
+                        "tradingReward": "0.02",
+                        "height": "2422"
+                    }
+                ]
            }
         }
     """.trimIndent()
@@ -1811,7 +1821,13 @@ internal class AccountsChannelMock {
                     "size":"9.97458676",
                     "maxSize":"9.97458676"
                  }
-              ]
+              ],
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "height": "2501"
+                    }
+                ]
            }
         }
     """.trimIndent()
@@ -2250,8 +2266,18 @@ internal class AccountsChannelMock {
                        "assetId":"0"
                     }
                 },
-        		"marginEnabled": true
-        	}]
+        		"marginEnabled": true,
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "height": "2500"
+                    },
+                    {
+                        "tradingReward": "0.02",
+                        "height": "2422"
+                    }
+                ]
+            }]
         }
     """.trimIndent()
 
@@ -2290,7 +2316,13 @@ internal class AccountsChannelMock {
                        "assetId":"0"
                     }
                 },
-                 "marginEnabled":true
+                 "marginEnabled":true,
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "height": "2501"
+                    }
+                ]
               }
            }
         }
