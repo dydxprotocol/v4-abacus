@@ -183,7 +183,6 @@
 		15A46B32EBC892483620A52F24AFC350 /* ECB.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ECB.swift; path = Sources/CryptoSwift/BlockMode/ECB.swift; sourceTree = "<group>"; };
 		161A656240E3B4B64ECE6858B65DC977 /* Pods-abacus.ios-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-abacus.ios-dummy.m"; sourceTree = "<group>"; };
 		186DE576AF9B0EC2149708CD77D2BC1F /* Shifts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Shifts.swift; path = Sources/CryptoSwift/CS_BigInt/Shifts.swift; sourceTree = "<group>"; };
-		18AD58FF9452C719E07E75C68F463197 /* abacus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = abacus.debug.xcconfig; sourceTree = "<group>"; };
 		1B6D2B0A7ACC4ACD9BC9FA5D52199C08 /* Cipher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Cipher.swift; path = Sources/CryptoSwift/Cipher.swift; sourceTree = "<group>"; };
 		1C5732A96CD4AA2A534F0887522F1C39 /* CryptoSwift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = CryptoSwift.debug.xcconfig; sourceTree = "<group>"; };
 		1CF2318F38D1207A2F8BF92B7B8A294E /* Array+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Array+Extension.swift"; path = "Sources/CryptoSwift/Array+Extension.swift"; sourceTree = "<group>"; };
@@ -222,7 +221,6 @@
 		5E828917FF2AA3CC6B23ECF8A598B684 /* CryptoSwift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = CryptoSwift.release.xcconfig; sourceTree = "<group>"; };
 		61300E9B71B8A176D5EAA3B605958848 /* AES.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AES.swift; path = Sources/CryptoSwift/AES.swift; sourceTree = "<group>"; };
 		64F91D24D56FF58C2F34255BCC0CA8D2 /* Strideable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Strideable.swift; path = Sources/CryptoSwift/CS_BigInt/Strideable.swift; sourceTree = "<group>"; };
-		676E1890C9700A3A84C72C7B944DF207 /* abacus.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = abacus.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		6793D5A483FC322067B570388A6B3706 /* ISO78164Padding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ISO78164Padding.swift; path = Sources/CryptoSwift/ISO78164Padding.swift; sourceTree = "<group>"; };
 		6904BFCC87FB786B28D1207D0AB43B33 /* Scrypt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Scrypt.swift; path = Sources/CryptoSwift/Scrypt.swift; sourceTree = "<group>"; };
 		6A3143416A23313EEA6BA63B1040BDE9 /* ASN1.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ASN1.swift; path = Sources/CryptoSwift/ASN1/ASN1.swift; sourceTree = "<group>"; };
@@ -243,7 +241,6 @@
 		82E21560551522E26DA29FC2711C8B79 /* UInt64+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "UInt64+Extension.swift"; path = "Sources/CryptoSwift/UInt64+Extension.swift"; sourceTree = "<group>"; };
 		8401ED14FF39BBF39217A88493885CA8 /* BlockDecryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockDecryptor.swift; path = Sources/CryptoSwift/BlockDecryptor.swift; sourceTree = "<group>"; };
 		8829F5E52FB40D40BE9F6752C2C053EE /* Pods-abacus.ios-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-abacus.ios-umbrella.h"; sourceTree = "<group>"; };
-		89410D0A4EEF5C7783289BFFA8C65132 /* abacus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = abacus.release.xcconfig; sourceTree = "<group>"; };
 		8A57B68075D5163750469D071E976128 /* BlockCipher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockCipher.swift; path = Sources/CryptoSwift/BlockCipher.swift; sourceTree = "<group>"; };
 		8D06FF8AD7D871B54C7ACCBAC7006F7A /* Pods-abacus.iosTests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-abacus.iosTests-umbrella.h"; sourceTree = "<group>"; };
 		8D306C05CD4B555FB15107F16BC703AB /* Codable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Codable.swift; path = Sources/CryptoSwift/CS_BigInt/Codable.swift; sourceTree = "<group>"; };
@@ -299,7 +296,6 @@
 		E595AD44CC42D6071C4AE6FF94574E3E /* Bitwise Ops.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Bitwise Ops.swift"; path = "Sources/CryptoSwift/CS_BigInt/Bitwise Ops.swift"; sourceTree = "<group>"; };
 		E64FF95343A43E9FD11A590F1CCB375E /* CryptoSwift-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "CryptoSwift-prefix.pch"; sourceTree = "<group>"; };
 		E7D1F2F85B2B5D9DBCE3CD1629F37B12 /* Authenticator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Authenticator.swift; path = Sources/CryptoSwift/Authenticator.swift; sourceTree = "<group>"; };
-		E84ED7F0DA01628D38C57BFA8C0A2885 /* Abacus.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Abacus.framework; path = build/cocoapods/framework/Abacus.framework; sourceTree = "<group>"; };
 		E86F49595E9BDFBFA2F248DF23D6940E /* Pods-abacus.ios.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-abacus.ios.modulemap"; sourceTree = "<group>"; };
 		E8C491607FDEEACF4F90CE02524CDBF3 /* Prime Test.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Prime Test.swift"; path = "Sources/CryptoSwift/CS_BigInt/Prime Test.swift"; sourceTree = "<group>"; };
 		EBE2877F7E8A200D74C4E18847B81123 /* CompactMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompactMap.swift; path = Sources/CryptoSwift/CompactMap.swift; sourceTree = "<group>"; };
@@ -380,16 +376,6 @@
 			path = "integration/iOS/Pods/Target Support Files/abacus";
 			sourceTree = "<group>";
 		};
-		76A3B71FC16F03C932D838CB3EBF74A1 /* Pod */ = {
-			isa = PBXGroup;
-			children = (
-				676E1890C9700A3A84C72C7B944DF207 /* abacus.podspec */,
-			);
-			name = Pod;
-			sourceTree = "<group>";
-		};
-=======
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 		77BFA6027665EBACC42B94A7C2372871 /* Pods-abacus.iosTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -416,8 +402,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-<<<<<<< HEAD
-=======
 		8C61F33543ADD6CAD21A0CF0AA823AAF /* Pod */ = {
 			isa = PBXGroup;
 			children = (
@@ -426,7 +410,6 @@
 			name = Pod;
 			sourceTree = "<group>";
 		};
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 		915C28C583640C124E56AE6BB9F0DAB2 /* CryptoSwift */ = {
 			isa = PBXGroup;
 			children = (
@@ -572,20 +555,6 @@
 			name = "Targets Support Files";
 			sourceTree = "<group>";
 		};
-<<<<<<< HEAD
-		BB0D37B984AC21D51D35F563098A09F4 /* abacus */ = {
-			isa = PBXGroup;
-			children = (
-				F223BCFEB610D86D0439F551571306C9 /* Frameworks */,
-				76A3B71FC16F03C932D838CB3EBF74A1 /* Pod */,
-				F5ABF3A663095C6FAD156352681853E7 /* Support Files */,
-			);
-			name = abacus;
-			path = "/Users/johnhuang/v4-abacus";
-			sourceTree = "<absolute>";
-		};
-=======
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 		CF1408CF629C7361332E53B88F7BD30C = {
 			isa = PBXGroup;
 			children = (
@@ -629,34 +598,14 @@
 			path = "../Target Support Files/CryptoSwift";
 			sourceTree = "<group>";
 		};
-<<<<<<< HEAD
-		F223BCFEB610D86D0439F551571306C9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				E84ED7F0DA01628D38C57BFA8C0A2885 /* Abacus.framework */,
-=======
 		FED2887D0E5091C4759D8D8ADFF59C66 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				741487B600AA498D6CA5F665C3E8FB41 /* Abacus.framework */,
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-<<<<<<< HEAD
-		F5ABF3A663095C6FAD156352681853E7 /* Support Files */ = {
-			isa = PBXGroup;
-			children = (
-				18AD58FF9452C719E07E75C68F463197 /* abacus.debug.xcconfig */,
-				89410D0A4EEF5C7783289BFFA8C65132 /* abacus.release.xcconfig */,
-			);
-			name = "Support Files";
-			path = "integration/iOS/Pods/Target Support Files/abacus";
-			sourceTree = "<group>";
-		};
-=======
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1009,11 +958,7 @@
 		};
 		22B0388248EDA44270493DDECC58CF78 /* Release */ = {
 			isa = XCBuildConfiguration;
-<<<<<<< HEAD
-			baseConfigurationReference = 89410D0A4EEF5C7783289BFFA8C65132 /* abacus.release.xcconfig */;
-=======
 			baseConfigurationReference = 1E1F36967D766BC17B1215E06682912E /* abacus.release.xcconfig */;
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1103,11 +1048,7 @@
 		};
 		5B331F72A7F4402311EBC4A06282E60D /* Debug */ = {
 			isa = XCBuildConfiguration;
-<<<<<<< HEAD
-			baseConfigurationReference = 18AD58FF9452C719E07E75C68F463197 /* abacus.debug.xcconfig */;
-=======
 			baseConfigurationReference = 7387438C7495F77B43770D7B6FC19DEA /* abacus.debug.xcconfig */;
->>>>>>> 3b59ac4 (Handle CCTP withdraw)
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
