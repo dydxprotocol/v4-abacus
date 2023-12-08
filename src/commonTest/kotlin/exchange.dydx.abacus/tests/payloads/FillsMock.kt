@@ -1414,7 +1414,8 @@ internal class FillsMock {
                 "tradingRewards": [
                     {
                         "tradingReward": "0.01",
-                        "height": "2501"
+                        "createdAtHeight": "2501",
+                        "createdAt": "2023-08-09T20:11:00.000Z"
                     }
                 ]
             }

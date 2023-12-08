@@ -1785,12 +1785,14 @@ internal class AccountsChannelMock {
               ],
                 "tradingRewards": [
                     {
-                        "tradingReward": "0.01",
-                        "height": "2500"
+                        "tradingReward": "0.02",
+                        "createdAtHeight": "2422",
+                        "createdAt": "2023-08-09T20:00:00.000Z"
                     },
                     {
-                        "tradingReward": "0.02",
-                        "height": "2422"
+                        "tradingReward": "0.01",
+                        "createdAtHeight": "2500",
+                        "createdAt": "2023-08-09T20:01:00.000Z"
                     }
                 ]
            }
@@ -1825,7 +1827,8 @@ internal class AccountsChannelMock {
                 "tradingRewards": [
                     {
                         "tradingReward": "0.01",
-                        "height": "2501"
+                        "createdAtHeight": "2501",
+                        "createdAt": "2023-08-09T20:11:00.000Z"
                     }
                 ]
            }
@@ -2269,12 +2272,14 @@ internal class AccountsChannelMock {
         		"marginEnabled": true,
                 "tradingRewards": [
                     {
-                        "tradingReward": "0.01",
-                        "height": "2500"
+                        "tradingReward": "0.02",
+                        "createdAtHeight": "2422",
+                        "createdAt": "2023-08-09T20:00:00.000Z"
                     },
                     {
-                        "tradingReward": "0.02",
-                        "height": "2422"
+                        "tradingReward": "0.01",
+                        "createdAtHeight": "2500",
+                        "createdAt": "2023-08-09T20:10:00.000Z"
                     }
                 ]
             }]
@@ -2320,7 +2325,8 @@ internal class AccountsChannelMock {
                 "tradingRewards": [
                     {
                         "tradingReward": "0.01",
-                        "height": "2501"
+                        "createdAtHeight": "2501",
+                        "createdAt": "2023-08-09T20:11:00.000Z"
                     }
                 ]
               }

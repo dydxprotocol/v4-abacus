@@ -110,12 +110,12 @@ class V4AccountTests : V4BaseTests() {
                                 "total": 2800.8,
                                 "blockRewards": [
                                     {
-                                        "tradingReward": "0.01",
-                                        "createdAtHeight": "2500"
-                                    },
-                                    {
                                         "tradingReward": "0.02",
                                         "createdAtHeight": "2422"
+                                    },
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2500"
                                     }
                                 ]
                             },
@@ -439,12 +439,12 @@ class V4AccountTests : V4BaseTests() {
                             "tradingRewards": {
                                 "blockRewards": [
                                     {
-                                        "tradingReward": "0.01",
-                                        "createdAtHeight": "2500"
-                                    },
-                                    {
                                         "tradingReward": "0.02",
                                         "createdAtHeight": "2422"
+                                    },
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2500"
                                     },
                                     {
                                         "tradingReward": "0.01",
