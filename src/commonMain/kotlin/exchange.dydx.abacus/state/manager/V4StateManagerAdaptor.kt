@@ -461,7 +461,21 @@ class V4StateManagerAdaptor(
             if (balance != null) {
                 val amount = parser.asDecimal(balance["amount"])
                 if (amount != null && amount > 5000) {
-                    transferNobleBalance(amount)
+                    if (isCctpWithdraw) {
+                        transaction(TransactionType.CctpWithdraw, cctpWithdrawPayload) {hash ->
+                            val error = parseTransactionResponse(hash)
+                            if (error != null) {
+                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                cctpWithdrawCallback?.let { it -> send(error, it, hash) }
+                            } else {
+                                cctpWithdrawCallback?.let { it -> send(null, it, hash) }
+                            }
+                            clearCctpWithdraw()
+                        }
+                        isCctpWithdraw = false
+                    } else {
+                        transferNobleBalance(amount)
+                    }
                 } else if (balance["error"] != null) {
                     DebugLogger.error("Error checking noble balance: $response")
                 }
@@ -1021,6 +1035,27 @@ class V4StateManagerAdaptor(
         }
     }
 
+    override fun commitCCTPWithdraw(callback: TransactionCallback) {
+        val state = stateMachine.state
+        if (state?.input?.transfer?.type == TransferType.withdrawal) {
+            val decimals = environment.tokens["usdc"]?.decimals ?: 6
+
+            val usdcSize =
+                parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
+            if (usdcSize > Numeric.double.ZERO) {
+                simulateWithdrawal(decimals) { gasFee ->
+                    if (gasFee != null) {
+                        cctpToNoble(state, decimals, gasFee, callback)
+                    } else {
+                        cctpToNoble(state, decimals, Numeric.decimal.ZERO, callback)
+                    }
+                }
+            }
+        } else {
+            send(V4TransactionErrors.error(null, "Invalid transfer type"), callback)
+        }
+    }
+
     override fun faucet(amount: Double, callback: TransactionCallback) {
         val payload = faucetPayload(subaccountNumber, amount)
         val string = Json.encodeToString(payload)
@@ -1108,7 +1143,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun send(error: ParsingError?, callback: TransactionCallback, data: Any? = null) {
+    internal fun send(error: ParsingError?, callback: TransactionCallback, data: Any? = null) {
         ioImplementations.threading?.async(ThreadingType.main) {
             if (error != null) {
                 callback(false, error, data)

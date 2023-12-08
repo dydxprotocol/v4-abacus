@@ -2,7 +2,10 @@ package exchange.dydx.abacus.state.manager
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
@@ -449,6 +452,96 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                 }
             } else {
                 DebugLogger.error("transferNobleBalance error, code: $code")
+            }
+        }
+    }
+}
+
+internal var isCctpWithdraw: Boolean = false
+internal var cctpWithdrawPayload: String? = null
+internal var cctpWithdrawCallback: TransactionCallback? = null
+
+internal fun clearCctpWithdraw() {
+    isCctpWithdraw = false
+    cctpWithdrawPayload = null
+    cctpWithdrawCallback = null
+}
+internal fun V4StateManagerAdaptor.cctpToNoble(
+    state: PerpetualState?,
+    decimals: Int,
+    gas: BigDecimal,
+    callback: TransactionCallback
+) {
+    val url = configs.squidRoute()
+    val nobleChain = configs.nobleChainId()
+    val nobleToken = configs.nobleDenom()
+    val nobleAddress = accountAddress?.toNobleAddress()
+    val chainId = environment.dydxChainId
+    val squidIntegratorId = environment.squidIntegratorId
+    val dydxTokenDemon = environment.tokens["usdc"]?.denom
+    val usdcSize = parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
+    val fromAmount = if (usdcSize != null && usdcSize > gas) {
+        ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+    } else {
+        null
+    }
+    val fromAmountString = parser.asString(fromAmount)
+    cctpWithdrawPayload = state?.input?.transfer?.requestPayload?.data
+    cctpWithdrawCallback = callback
+
+    if (url != null &&
+        nobleChain != null &&
+        nobleToken != null &&
+        nobleAddress != null &&
+        chainId != null &&
+        dydxTokenDemon != null &&
+        squidIntegratorId != null &&
+        fromAmountString != null && fromAmount != null &&  fromAmount > 0
+    ) {
+        val params: Map<String, String> = mapOf(
+            "toChain" to nobleChain,
+            "toToken" to nobleToken,
+            "toAddress" to nobleAddress,
+            "fromAmount" to fromAmountString,
+            "fromChain" to chainId,
+            "fromToken" to dydxTokenDemon,
+            "fromAddress" to accountAddress.toString(),
+            "slippage" to "1",
+            "enableForecall" to "false",
+        )
+        val header = iMapOf(
+            "x-integrator-id" to squidIntegratorId,
+        )
+        get(url, params, header) { _, response, code ->
+            if (response != null) {
+                isCctpWithdraw = true
+                val json = parser.decodeJsonObject(response)
+                val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
+                if (ibcPayload != null) {
+                    val payload = jsonEncoder.encode(
+                        mapOf(
+                            "subaccountNumber" to connectedSubaccountNumber,
+                            "amount" to state?.input?.transfer?.size?.usdcSize,
+                            "ibcPayload" to ibcPayload,
+                        )
+                    )
+                    transaction(TransactionType.WithdrawToNobleIBC, payload) {
+                        val error = parseTransactionResponse(it)
+                        if (error != null) {
+                            DebugLogger.error("transferNobleBalance error: $error")
+                            send(error, callback)
+                            clearCctpWithdraw()
+                        }
+                    }
+                }
+            } else {
+                DebugLogger.error("transferNobleBalance error, code: $code")
+                val error = ParsingError(
+                    ParsingErrorType.MissingContent,
+                    "Missing squid response"
+                )
+                send(error, callback)
+                clearCctpWithdraw()
             }
         }
     }

@@ -175,6 +175,13 @@ data class HumanReadableWithdrawPayload(
     val amount: String,
 )
 
+@Serializable
+data class HumanReadableWithdrawIBCPayload(
+    val subaccountNumber: Int,
+    val amount: String,
+    val ibcPayload: String,
+)
+
 @JsExport
 @Serializable
 data class HumanReadableTransferPayload(
@@ -1766,6 +1773,10 @@ open class StateManagerAdaptor(
     }
 
     internal open fun commitTransfer(callback: TransactionCallback) {
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+    }
+
+    internal open fun commitCCTPWithdraw(callback: TransactionCallback) {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
