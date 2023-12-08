@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.processor.wallet
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.wallet.account.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
+import exchange.dydx.abacus.processor.wallet.account.deprecated.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
@@ -171,7 +171,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedHistoricalPnls(
+            v4accountProcessor.receivedHistoricalPnls(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber
@@ -185,7 +185,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedFills(
+            v4accountProcessor.receivedFills(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber
@@ -199,7 +199,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedTransfers(
+            v4accountProcessor.receivedTransfers(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber
