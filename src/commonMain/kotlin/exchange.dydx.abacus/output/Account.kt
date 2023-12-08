@@ -17,6 +17,7 @@ import kollections.iMapOf
 import kollections.iMutableMapOf
 import kollections.iListOf
 import kollections.toIList
+import kollections.toIMap
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -1411,7 +1412,7 @@ data class HistoricalTradingReward(
 @Serializable
 data class TradingRewards(
     val total: Double?,
-    val historical: Map<String, List<HistoricalTradingReward>>?
+    val historical: IMap<String, IList<HistoricalTradingReward>>?
 ) {
     companion object {
         internal fun create(
@@ -1427,7 +1428,7 @@ data class TradingRewards(
                     parser.asList(it.value)?.map { rewardData ->
                         HistoricalTradingReward.create(null, parser, parser.asMap(rewardData))
                     }?.filterNotNull()?.toIList() ?: iListOf()
-                }
+                }?.toIMap()
 
                 if (total != null || historical != null) {
                     return if (existing?.total != total || 
