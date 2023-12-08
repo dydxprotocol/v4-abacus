@@ -612,6 +612,15 @@ class AsyncAbacusStateManager(
         }
     }
 
+    fun commitCCTPWithdraw(callback: TransactionCallback) {
+        try {
+            adaptor?.commitCCTPWithdraw(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
     fun faucet(amount: Double, callback: TransactionCallback) {
         try {
             adaptor?.faucet(amount, callback)
