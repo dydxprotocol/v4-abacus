@@ -837,19 +837,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.startedAt"
             )
             assertEquals(
-                parser.asDouble(data["startedAtHeight"]),
-                obj.startedAtHeight,
-                "$trace.startedAtHeight"
-            )
-            assertEquals(
                 parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble(),
                 obj.endedAtMilliseconds,
                 "$trace.endedAt"
-            )
-            assertEquals(
-                parser.asDouble(data["endedAtHeight"]),
-                obj.endedAtHeight,
-                "$trace.endedAtHeight"
             )
         } else {
             assertNull(obj)

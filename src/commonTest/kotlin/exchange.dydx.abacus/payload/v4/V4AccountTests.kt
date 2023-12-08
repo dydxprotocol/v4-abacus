@@ -1070,15 +1070,12 @@ class V4AccountTests : V4BaseTests() {
                                         {
                                             "amount": 1.0,
                                             "startedAt": "2023-12-03T00:00:01.188Z",
-                                            "startedAtHeight": 2725536,
                                             "period": "WEEKLY"
                                          },
                                          {
                                             "amount": 124.03,
                                             "startedAt": "2023-11-26T00:00:01.188Z",
-                                            "startedAtHeight": 100000,
                                             "endedAt": "2023-12-02T23:59:58.888Z",
-                                            "endedAtHeight": 2725535,
                                             "period": "WEEKLY"
                                          }
                                      ]
@@ -1116,15 +1113,12 @@ class V4AccountTests : V4BaseTests() {
                                         {   
                                             "amount": 1.00,
                                             "startedAt": "2023-12-01T00:00:01.188Z",
-                                            "startedAtHeight": 2725536,
                                             "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 124.03,
                                             "startedAt": "2023-11-01T00:00:01.188Z",
-                                            "startedAtHeight": 100000,
                                             "endedAt": "2023-11-30T23:59:58.888Z",
-                                            "endedAtHeight": 2725535,
                                             "period": "MONTHLY"
                                         }
                                       ]
@@ -1162,23 +1156,18 @@ class V4AccountTests : V4BaseTests() {
                                         {
                                             "amount": 1.00,
                                             "startedAt": "2023-12-01T00:00:01.188Z",
-                                            "startedAtHeight": 2725536,
                                             "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 124.03,
                                             "startedAt": "2023-11-01T00:00:01.188Z",
-                                            "startedAtHeight": 100000,
                                             "endedAt": "2023-11-30T23:59:58.888Z",
-                                            "endedAtHeight": 2725535,
                                             "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 100.0,
                                             "startedAt": "2023-10-01T00:00:01.188Z",
-                                            "startedAtHeight": 1000,
                                             "endedAt": "2023-10-31T23:59:58.888Z",
-                                            "endedAtHeight": 99999,
                                             "period": "MONTHLY"
                                          }
                                       ]
