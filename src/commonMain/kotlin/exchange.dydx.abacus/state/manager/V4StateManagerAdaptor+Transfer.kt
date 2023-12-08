@@ -148,7 +148,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "toToken" to toToken,
             "toAddress" to nobleAddress,
             "quoteOnly" to false,
-            "enableBoost" to true,
+            "enableBoost" to false,
             "slippage" to 1,
             "slippageConfig" to iMapOf<String, Any>(
                 "autoMode" to 1
@@ -341,7 +341,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             "toToken" to toToken,
             "toAddress" to toAddress,
             "quoteOnly" to false,
-            "enableBoost" to true,
+            "enableBoost" to false,
             "slippage" to 1,
             "slippageConfig" to iMapOf<String, Any>(
                 "autoMode" to 1
@@ -457,15 +457,13 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
     }
 }
 
-internal var isCctpWithdraw: Boolean = false
-internal var cctpWithdrawPayload: String? = null
-internal var cctpWithdrawCallback: TransactionCallback? = null
+data class CctpWithdrawState(
+    val payload: String?,
+    val callback: TransactionCallback?,
+)
 
-internal fun clearCctpWithdraw() {
-    isCctpWithdraw = false
-    cctpWithdrawPayload = null
-    cctpWithdrawCallback = null
-}
+internal var pendingCctpWithdraw: CctpWithdrawState? = null
+
 internal fun V4StateManagerAdaptor.cctpToNoble(
     state: PerpetualState?,
     decimals: Int,
@@ -486,8 +484,6 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
         null
     }
     val fromAmountString = parser.asString(fromAmount)
-    cctpWithdrawPayload = state?.input?.transfer?.requestPayload?.data
-    cctpWithdrawCallback = callback
 
     if (url != null &&
         nobleChain != null &&
@@ -514,7 +510,6 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
         )
         get(url, params, header) { _, response, code ->
             if (response != null) {
-                isCctpWithdraw = true
                 val json = parser.decodeJsonObject(response)
                 val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
@@ -530,9 +525,20 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         if (error != null) {
                             DebugLogger.error("transferNobleBalance error: $error")
                             send(error, callback)
-                            clearCctpWithdraw()
+                        } else {
+                            pendingCctpWithdraw = CctpWithdrawState(
+                                state?.input?.transfer?.requestPayload?.data,
+                                callback
+                            )
                         }
                     }
+                } else {
+                    DebugLogger.error("transferNobleBalance error, code: $code")
+                    val error = ParsingError(
+                        ParsingErrorType.MissingContent,
+                        "Missing squid response"
+                    )
+                    send(error, callback)
                 }
             } else {
                 DebugLogger.error("transferNobleBalance error, code: $code")
@@ -541,8 +547,13 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     "Missing squid response"
                 )
                 send(error, callback)
-                clearCctpWithdraw()
             }
         }
+    } else {
+        val error = ParsingError(
+            ParsingErrorType.MissingRequiredData,
+            "Missing required data for cctp withdraw"
+        )
+        send(error, callback)
     }
 }

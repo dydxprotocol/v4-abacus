@@ -461,19 +461,19 @@ class V4StateManagerAdaptor(
             if (balance != null) {
                 val amount = parser.asDecimal(balance["amount"])
                 if (amount != null && amount > 5000) {
-                    if (isCctpWithdraw) {
-                        transaction(TransactionType.CctpWithdraw, cctpWithdrawPayload) {hash ->
+                    pendingCctpWithdraw?.let { withdrawState ->
+                        val callback = withdrawState.callback
+                        pendingCctpWithdraw = null
+                        transaction(TransactionType.CctpWithdraw, withdrawState.payload) {hash ->
                             val error = parseTransactionResponse(hash)
                             if (error != null) {
                                 DebugLogger.error("TransactionType.CctpWithdraw error: $error")
-                                cctpWithdrawCallback?.let { it -> send(error, it, hash) }
+                                callback?.let { it -> send(error, it, hash) }
                             } else {
-                                cctpWithdrawCallback?.let { it -> send(null, it, hash) }
+                                callback?.let { it -> send(null, it, hash) }
                             }
-                            clearCctpWithdraw()
                         }
-                        isCctpWithdraw = false
-                    } else {
+                    } ?: run {
                         transferNobleBalance(amount)
                     }
                 } else if (balance["error"] != null) {
