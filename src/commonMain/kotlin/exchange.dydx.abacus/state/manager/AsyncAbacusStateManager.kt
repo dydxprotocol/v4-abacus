@@ -204,6 +204,12 @@ data class ApiState(
 }
 
 @JsExport
+enum class ApiData {
+    HISTORICAL_PNLS,
+    HISTORICAL_TRADING_REWARDS,
+}
+
+@JsExport
 class AsyncAbacusStateManager(
     val deploymentUri: String,
     val deployment: String, // MAINNET, TESTNET, DEV
@@ -553,6 +559,10 @@ class AsyncAbacusStateManager(
 
     fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
         adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
+    }
+
+    fun refresh(data: ApiData) {
+        adaptor?.refresh(data)
     }
 
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
