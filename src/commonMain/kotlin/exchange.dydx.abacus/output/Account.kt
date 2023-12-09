@@ -1365,8 +1365,8 @@ data class AccountBalance(
 @Serializable
 data class HistoricalTradingReward(
     val amount: Double,
-    val startedAtMilliseconds: Double,
-    val endedAtMilliseconds: Double?,
+    val startedAt: Instant,
+    val endedAt: Instant?,
 ) {
     companion object {
         internal fun create(
@@ -1376,18 +1376,18 @@ data class HistoricalTradingReward(
         ): HistoricalTradingReward? {
             data?.let {
                 val amount = parser.asDouble(data["amount"])
-                val startedAtMilliseconds = parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
-                val endedAtMilliseconds = parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble()
-
-                if (amount != null && startedAtMilliseconds != null) {
+                val startedAt = parser.asDatetime(data["startedAt"])
+                val endedAt = parser.asDatetime(data["endedAt"])
+                
+                if (amount != null && startedAt != null) {
                     return if (existing?.amount != amount || 
-                        existing.startedAtMilliseconds != startedAtMilliseconds || 
-                        existing.endedAtMilliseconds != endedAtMilliseconds
+                        existing.startedAt != startedAt || 
+                        existing.endedAt != endedAt
                     ) {
                         HistoricalTradingReward(
                             amount,
-                            startedAtMilliseconds,
-                            endedAtMilliseconds
+                            startedAt,
+                            endedAt
                         )
                     } else {
                         existing
