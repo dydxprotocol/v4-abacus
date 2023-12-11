@@ -1832,7 +1832,7 @@ open class StateManagerAdaptor(
             trade.execution ?: "Default"
         } else null
 
-        val goodTilTimeInSeconds = ((if (trade.options?.executionOptions != null && timeInForce == "GTT") {
+        val goodTilTimeInSeconds = ((if (trade.options?.timeInForceOptions != null && timeInForce == "GTT") {
             val timeInterval =
                 GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
             timeInterval / 1.seconds
