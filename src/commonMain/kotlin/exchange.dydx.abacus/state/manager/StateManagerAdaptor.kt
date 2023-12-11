@@ -2,18 +2,17 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
-import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -29,6 +28,7 @@ import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
 import exchange.dydx.abacus.state.modal.TradeInputField
 import exchange.dydx.abacus.state.modal.TradingStateMachine
 import exchange.dydx.abacus.state.modal.TransferInputField
+import exchange.dydx.abacus.state.modal.account
 import exchange.dydx.abacus.state.modal.candles
 import exchange.dydx.abacus.state.modal.closePosition
 import exchange.dydx.abacus.state.modal.findOrder
@@ -43,6 +43,7 @@ import exchange.dydx.abacus.state.modal.receivedBatchedTradesChanges
 import exchange.dydx.abacus.state.modal.receivedCandles
 import exchange.dydx.abacus.state.modal.receivedCandlesChanges
 import exchange.dydx.abacus.state.modal.receivedFills
+import exchange.dydx.abacus.state.modal.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.state.modal.receivedMarkets
 import exchange.dydx.abacus.state.modal.receivedMarketsChanges
 import exchange.dydx.abacus.state.modal.receivedOrderbook
@@ -52,11 +53,9 @@ import exchange.dydx.abacus.state.modal.receivedTradesChanges
 import exchange.dydx.abacus.state.modal.receivedTransfers
 import exchange.dydx.abacus.state.modal.setOrderbookGrouping
 import exchange.dydx.abacus.state.modal.sparklines
-import exchange.dydx.abacus.state.modal.account
 import exchange.dydx.abacus.state.modal.trade
 import exchange.dydx.abacus.state.modal.tradeInMarket
 import exchange.dydx.abacus.state.modal.transfer
-import exchange.dydx.abacus.state.modal.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
@@ -86,7 +85,6 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -405,7 +403,8 @@ open class StateManagerAdaptor(
             }
         }
 
-    var historicalTradingRewardPeriod: HistoricaTradingRewardsPeriod = HistoricaTradingRewardsPeriod.WEEKLY
+    var historicalTradingRewardPeriod: HistoricaTradingRewardsPeriod =
+        HistoricaTradingRewardsPeriod.WEEKLY
         internal set(value) {
             if (field != value) {
                 field = value
@@ -413,11 +412,31 @@ open class StateManagerAdaptor(
             }
         }
 
-    var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period1d
+    var historicalPnlPeriod: HistoricalPnlPeriod
+        get() {
+            return when (stateMachine.historicalPnlDays) {
+                1 -> HistoricalPnlPeriod.Period1d
+                7 -> HistoricalPnlPeriod.Period7d
+                30 -> HistoricalPnlPeriod.Period30d
+                90 -> HistoricalPnlPeriod.Period90d
+                else -> HistoricalPnlPeriod.Period1d
+            }
+        }
         internal set(value) {
-            if (field != value) {
-                field = value
-                didSetHistoricalPnlPeriod()
+            if (historicalPnlPeriod != value) {
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    when (value) {
+                        HistoricalPnlPeriod.Period1d -> stateMachine.historicalPnlDays = 1
+                        HistoricalPnlPeriod.Period7d -> stateMachine.historicalPnlDays = 7
+                        HistoricalPnlPeriod.Period30d -> stateMachine.historicalPnlDays = 30
+                        HistoricalPnlPeriod.Period90d -> stateMachine.historicalPnlDays = 90
+                    }
+                    didSetHistoricalPnlPeriod()
+
+                    val changes = StateChanges(iListOf(Changes.historicalPnl))
+                    val oldState = stateMachine.state
+                    update(changes, oldState)
+                }
             }
         }
 
@@ -1420,7 +1439,10 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun retrieveAccountHistoricalTradingRewards(period: String = "WEEKLY", previousUrl: String? = null) {
+    open fun retrieveAccountHistoricalTradingRewards(
+        period: String = "WEEKLY",
+        previousUrl: String? = null
+    ) {
         val oldState = stateMachine.state
         var url = historicalTradingRewardAggregationsUrl() ?: return
         val params = historicalTradingRewardAggregationsParams(period)
@@ -1441,12 +1463,14 @@ open class StateManagerAdaptor(
             null,
             params,
             previousUrl
-        ) {
-            url, response, httpCode ->
+        ) { url, response, httpCode ->
             if (success(httpCode) && !response.isNullOrEmpty()) {
                 val historicalTradingRewards = parser.decodeJsonObject(response)?.toIMap()
                 if (historicalTradingRewards != null) {
-                    val changes = stateMachine.receivedHistoricalTradingRewards(historicalTradingRewards, period)
+                    val changes = stateMachine.receivedHistoricalTradingRewards(
+                        historicalTradingRewards,
+                        period
+                    )
                     update(changes, oldState)
                     if (changes.changes.contains(Changes.tradingRewards)) {
                         retrieveAccountHistoricalTradingRewards(period, url)
