@@ -1444,8 +1444,8 @@ open class StateManagerAdaptor(
         previousUrl: String? = null
     ) {
         val oldState = stateMachine.state
-        var url = historicalTradingRewardsUrl() ?: return
-        val params = historicalTradingRewardsParams(period)
+        var url = historicalTradingRewardAggregationsUrl() ?: return
+        val params = historicalTradingRewardAggregationsParams(period)
         val historicalTradingRewardsInPeriod = parser.asNativeList(
             parser.value(
                 stateMachine.data,
@@ -1488,11 +1488,11 @@ open class StateManagerAdaptor(
         return null
     }
 
-    open fun historicalTradingRewardsUrl(): String? {
+    open fun historicalTradingRewardAggregationsUrl(): String? {
         return null
     }
 
-    internal open fun historicalTradingRewardsParams(period: String): IMap<String, String>? {
+    internal open fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String>? {
         return null
     }
 
