@@ -1782,7 +1782,19 @@ internal class AccountsChannelMock {
                     "reduceOnly":false,
                     "goodTilBlock":"5837"
                  }
-              ]
+              ],
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.02",
+                        "createdAtHeight": "2422",
+                        "createdAt": "2023-08-09T20:00:00.000Z"
+                    },
+                    {
+                        "tradingReward": "0.01",
+                        "createdAtHeight": "2500",
+                        "createdAt": "2023-08-09T20:01:00.000Z"
+                    }
+                ]
            }
         }
     """.trimIndent()
@@ -1811,7 +1823,14 @@ internal class AccountsChannelMock {
                     "size":"9.97458676",
                     "maxSize":"9.97458676"
                  }
-              ]
+              ],
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "createdAtHeight": "2501",
+                        "createdAt": "2023-08-09T20:11:00.000Z"
+                    }
+                ]
            }
         }
     """.trimIndent()
@@ -2250,8 +2269,20 @@ internal class AccountsChannelMock {
                        "assetId":"0"
                     }
                 },
-        		"marginEnabled": true
-        	}]
+        		"marginEnabled": true,
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.02",
+                        "createdAtHeight": "2422",
+                        "createdAt": "2023-08-09T20:00:00.000Z"
+                    },
+                    {
+                        "tradingReward": "0.01",
+                        "createdAtHeight": "2500",
+                        "createdAt": "2023-08-09T20:10:00.000Z"
+                    }
+                ]
+            }]
         }
     """.trimIndent()
 
@@ -2290,7 +2321,14 @@ internal class AccountsChannelMock {
                        "assetId":"0"
                     }
                 },
-                 "marginEnabled":true
+                 "marginEnabled":true,
+                "tradingRewards": [
+                    {
+                        "tradingReward": "0.01",
+                        "createdAtHeight": "2501",
+                        "createdAt": "2023-08-09T20:11:00.000Z"
+                    }
+                ]
               }
            }
         }

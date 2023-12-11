@@ -1720,6 +1720,18 @@ open class StateManagerAdaptor(
         }
     }
 
+    internal fun refresh(data: ApiData) {
+        when (data) {
+            ApiData.HISTORICAL_PNLS -> {
+                retrieveSubaccountHistoricalPnls()
+            }
+
+            ApiData.HISTORICAL_TRADING_REWARDS -> {
+                retrieveAccountHistoricalTradingRewards()
+            }
+        }
+    }
+
     fun trade(
         data: String?,
         type: TradeInputField?,
