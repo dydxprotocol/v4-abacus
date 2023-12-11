@@ -1839,7 +1839,7 @@ open class StateManagerAdaptor(
         val type = trade.type?.rawValue ?: throw Exception("type is null")
         val side = trade.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
-        val triggerPrice = trade.price?.triggerPrice
+        val triggerPrice = if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
         val size = summary.size ?: throw Exception("size is null")
         val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null
@@ -1856,12 +1856,11 @@ open class StateManagerAdaptor(
             trade.execution ?: "Default"
         } else null
 
-        val goodTilTimeInSeconds =
-            ((if (trade.options?.executionOptions != null && timeInForce == "GTT") {
-                val timeInterval =
-                    GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
-                timeInterval / 1.seconds
-            } else null))?.toInt()
+        val goodTilTimeInSeconds = ((if (trade.options?.timeInForceOptions != null && timeInForce == "GTT") {
+            val timeInterval =
+                GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
+            timeInterval / 1.seconds
+        } else null))?.toInt()
 
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
