@@ -1815,7 +1815,7 @@ open class StateManagerAdaptor(
         val type = trade.type?.rawValue ?: throw Exception("type is null")
         val side = trade.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
-        val triggerPrice = trade.price?.triggerPrice
+        val triggerPrice = if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
         val size = summary.size ?: throw Exception("size is null")
         val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null
