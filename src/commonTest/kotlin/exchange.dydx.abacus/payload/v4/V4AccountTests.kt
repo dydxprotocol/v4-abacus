@@ -860,10 +860,10 @@ class V4AccountTests : V4BaseTests() {
                 val localizer = BaseTests.testLocalizer(ioImplementations)
                 val uiImplementations = BaseTests.testUIImplementations(localizer)
                 val notificationsProvider =
-                    NotificationsProvider(uiImplementations, Parser(), JsonEncoder())
+                    NotificationsProvider(uiImplementations, environment = mock.v4Environment, Parser(), JsonEncoder())
                 val notifications = notificationsProvider.buildNotifications(perp, 0)
                 assertEquals(
-                    4,
+                    7,
                     notifications.size
                 )
                 val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
