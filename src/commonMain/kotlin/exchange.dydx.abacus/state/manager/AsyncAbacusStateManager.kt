@@ -204,6 +204,12 @@ data class ApiState(
 }
 
 @JsExport
+enum class ApiData {
+    HISTORICAL_PNLS,
+    HISTORICAL_TRADING_REWARDS,
+}
+
+@JsExport
 class AsyncAbacusStateManager(
     val deploymentUri: String,
     val deployment: String, // MAINNET, TESTNET, DEV
@@ -555,6 +561,10 @@ class AsyncAbacusStateManager(
         adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
+    fun refresh(data: ApiData) {
+        adaptor?.refresh(data)
+    }
+
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
         return adaptor?.placeOrderPayload()
     }
@@ -606,6 +616,15 @@ class AsyncAbacusStateManager(
     fun commitTransfer(callback: TransactionCallback) {
         try {
             adaptor?.commitTransfer(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
+    fun commitCCTPWithdraw(callback: TransactionCallback) {
+        try {
+            adaptor?.commitCCTPWithdraw(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
