@@ -25,6 +25,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.transfers)
     changes.add(Changes.fundingPayments)
     changes.add(Changes.historicalPnl)
+    changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
@@ -59,6 +60,9 @@ internal fun TradingStateMachine.receivedAccountsChanges(
     }
     if (payload["fundingPayments"] != null) {
         changes.add(Changes.fundingPayments)
+    }
+    if (payload["tradingRewards"] != null) {
+        changes.add(Changes.tradingRewards)
     }
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }

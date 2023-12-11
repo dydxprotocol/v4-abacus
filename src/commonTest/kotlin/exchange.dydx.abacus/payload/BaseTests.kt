@@ -8,6 +8,7 @@ import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.BlockReward
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
 import exchange.dydx.abacus.output.FeeTier
@@ -801,88 +802,14 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         // Not needed for v4
     }
 
-    private fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
+    open internal fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
         if (data != null) {
             assertNotNull(obj)
-            verifyTradingRewardsState(
-                parser.asNativeMap(data["tradingRewards"]),
-                obj.tradingRewards,
-                "$trace.tradingRewards"
-            )
             verifyAccountSubaccountsState(
                 parser.asNativeMap(data["subaccounts"]),
                 obj.subaccounts,
                 "$trace.subaccounts"
             )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyHistoricalTradingRewardState(
-        data: Map<String, Any>?,
-        obj: HistoricalTradingReward?,
-        trace: String,
-    ) {
-        if (data != null) {
-            assertNotNull(obj)
-            assertEquals(
-                parser.asDouble(data["amount"]),
-                obj.amount,
-                "$trace.amount"
-            )
-            assertEquals(
-                parser.asDatetime(data["startedAt"]),
-                obj.startedAt,
-                "$trace.startedAt"
-            )
-            assertEquals(
-                parser.asDatetime(data["endedAt"]),
-                obj.endedAt,
-                "$trace.endedAt"
-            )
-        } else {
-            assertNull(obj)
-        }
-    }
-
-    private fun verifyTradingRewardsState(
-        data: Map<String, Any>?,
-        obj: TradingRewards?,
-        trace: String,
-    ) {
-        if (data != null) {
-            val totalData = parser.asDouble(data["total"])
-            val historicalData = parser.asNativeMap(data["historical"])
-
-            if (totalData != null) {
-                assertNotNull(obj?.total)
-                assertEquals(totalData, obj?.total, "$trace.total")
-            }
-
-            if (historicalData != null) {
-                assertNotNull(obj?.historical)
-                for ((period, rewardsData) in historicalData) {
-                    val rewardsListObj = obj?.historical?.get(period)
-                    val rewardsListData = parser.asList(rewardsData)
-
-                    assertNotNull(rewardsListObj)
-                    assertEquals(
-                        rewardsListData?.size,
-                        rewardsListObj?.size,
-                        "$trace.historical.$period.size $doesntMatchText"
-                    )
-
-                    for (i in rewardsListObj.indices) {
-                        verifyHistoricalTradingRewardState(
-                            parser.asNativeMap(rewardsListData?.get(i)),
-                            rewardsListObj[i],
-                            "$trace.historical.$period.$i"
-                        )
-                    }
-                    
-                }
-            }
         } else {
             assertNull(obj)
         }
