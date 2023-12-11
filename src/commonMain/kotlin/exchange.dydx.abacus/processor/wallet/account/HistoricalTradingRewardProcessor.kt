@@ -19,11 +19,6 @@ internal class HistoricalTradingRewardProcessor(parser: ParserProtocol) : BasePr
         "double" to mapOf(
             "tradingRewards" to "amount",
         ),
-        "int" to mapOf(
-            "startedAtHeight" to "startedAtHeight",
-            "endedAtHeight" to "endedAtHeight",
-            "height" to "height"
-        )
     )
 
     private val blockTradingRewardKeyMap = mapOf(

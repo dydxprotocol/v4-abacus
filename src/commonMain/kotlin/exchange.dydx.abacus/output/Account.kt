@@ -1365,10 +1365,8 @@ data class AccountBalance(
 @Serializable
 data class HistoricalTradingReward(
     val amount: Double,
-    val startedAtMilliseconds: Double,
-    val startedAtHeight: Double,
-    val endedAtMilliseconds: Double?,
-    val endedAtHeight: Double?,
+    val startedAt: Instant,
+    val endedAt: Instant?,
 ) {
     companion object {
         internal fun create(
@@ -1378,24 +1376,18 @@ data class HistoricalTradingReward(
         ): HistoricalTradingReward? {
             data?.let {
                 val amount = parser.asDouble(data["amount"])
-                val startedAtMilliseconds = parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
-                val startedAtHeight = parser.asDouble(data["startedAtHeight"])
-                val endedAtMilliseconds = parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble()
-                val endedAtHeight = parser.asDouble(data["endedAtHeight"])
-
-                if (amount != null && startedAtMilliseconds != null && startedAtHeight != null) {
+                val startedAt = parser.asDatetime(data["startedAt"])
+                val endedAt = parser.asDatetime(data["endedAt"])
+                
+                if (amount != null && startedAt != null) {
                     return if (existing?.amount != amount || 
-                        existing.startedAtMilliseconds != startedAtMilliseconds || 
-                        existing.startedAtHeight != startedAtHeight ||
-                        existing.endedAtMilliseconds != endedAtMilliseconds || 
-                        existing.endedAtHeight != endedAtHeight
+                        existing.startedAt != startedAt || 
+                        existing.endedAt != endedAt
                     ) {
                         HistoricalTradingReward(
                             amount,
-                            startedAtMilliseconds,
-                            startedAtHeight,
-                            endedAtMilliseconds,
-                            endedAtHeight,
+                            startedAt,
+                            endedAt
                         )
                     } else {
                         existing
