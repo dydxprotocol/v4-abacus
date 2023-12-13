@@ -11,18 +11,27 @@ import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
-import kollections.iListOf
 import kollections.iMapOf
+import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
-import kollections.toIMap
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
+import kotlin.time.Duration.Companion.days
 
 @JsExport
 @Serializable
@@ -1368,9 +1377,24 @@ data class AccountBalance(
 @Serializable
 data class HistoricalTradingReward(
     val amount: Double,
-    val startedAt: Instant,
-    val endedAt: Instant?,
+    val startedAtInMilliseconds: Double,
+    val endedAtInMilliseconds: Double?,
 ) {
+    internal val startedAt: Instant
+        get() = Instant.fromEpochMilliseconds(startedAtInMilliseconds.toLong())
+    internal val endedAt: Instant?
+        get() = endedAtInMilliseconds?.let { Instant.fromEpochMilliseconds(it.toLong()) }
+
+    constructor(
+        amount: Double,
+        startedAt: Instant,
+        endedAt: Instant?,
+    ) : this(
+        amount,
+        startedAt.toEpochMilliseconds().toDouble(),
+        endedAt?.toEpochMilliseconds()?.toDouble()
+    )
+
     companion object {
         internal fun create(
             existing: HistoricalTradingReward?,
@@ -1379,18 +1403,20 @@ data class HistoricalTradingReward(
         ): HistoricalTradingReward? {
             data?.let {
                 val amount = parser.asDouble(data["amount"])
-                val startedAt = parser.asDatetime(data["startedAt"])
-                val endedAt = parser.asDatetime(data["endedAt"])
+                val startedAtInMilliseconds =
+                    parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
+                val endedAtInMilliseconds =
+                    parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble()
 
-                if (amount != null && startedAt != null) {
+                if (amount != null && startedAtInMilliseconds != null) {
                     return if (existing?.amount != amount ||
-                        existing.startedAt != startedAt ||
-                        existing.endedAt != endedAt
+                        existing.startedAtInMilliseconds != startedAtInMilliseconds ||
+                        existing.endedAtInMilliseconds != endedAtInMilliseconds
                     ) {
                         HistoricalTradingReward(
                             amount,
-                            startedAt,
-                            endedAt
+                            startedAtInMilliseconds,
+                            endedAtInMilliseconds
                         )
                     } else {
                         existing
@@ -1446,6 +1472,45 @@ data class BlockReward(
 
 @JsExport
 @Serializable
+data class DatePeriod(
+    val start: Instant,
+    val end: Instant,
+)
+
+internal fun Instant.nextMonth(): Instant {
+    val localTime: LocalDateTime = this.toLocalDateTime(TimeZone.UTC)
+    var month = localTime.month
+    var year = localTime.year
+    var monthNumber = month.number
+    monthNumber++
+    if (monthNumber >= 12) {
+        month = Month.JANUARY
+        year += 1
+    } else {
+        month = Month(monthNumber)
+    }
+    val nextMonth = LocalDateTime(year, month, 1, 0, 0, 0)
+    return nextMonth.toInstant(TimeZone.UTC)
+}
+
+internal fun Instant.previousMonth(): Instant {
+    val localTime: LocalDateTime = this.toLocalDateTime(TimeZone.UTC)
+    var month = localTime.month
+    var year = localTime.year
+    var monthNumber = month.number
+    monthNumber--
+    if (monthNumber <= 0) {
+        month = Month.DECEMBER
+        year -= 1
+    } else {
+        month = Month(monthNumber)
+    }
+    val previousMonth = LocalDateTime(year, month, 1, 0, 0, 0)
+    return previousMonth.toInstant(TimeZone.UTC)
+}
+
+@JsExport
+@Serializable
 data class TradingRewards(
     val total: Double?,
     val blockRewards: IList<BlockReward>?,
@@ -1460,11 +1525,11 @@ data class TradingRewards(
             DebugLogger.log("creating TradingRewards\n")
             data?.let {
                 val total = parser.asDouble(data["total"])
-                val historical = parser.asMap(data["historical"])?.mapValues {
-                    parser.asList(it.value)?.map { rewardData ->
-                        HistoricalTradingReward.create(null, parser, parser.asMap(rewardData))
-                    }?.filterNotNull()?.toIList() ?: iListOf()
-                }?.toIMap()
+                val historical = createHistoricalTradingRewards(
+                    existing?.historical,
+                    parser.asMap(data["historical"]),
+                    parser
+                )
 
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
@@ -1487,6 +1552,210 @@ data class TradingRewards(
             }
             DebugLogger.debug("TradingRewards not valid")
             return null
+        }
+
+        private fun createHistoricalTradingRewards(
+            existing: IMap<String, IList<HistoricalTradingReward>>?,
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): IMap<String, IList<HistoricalTradingReward>> {
+            val objs = iMutableMapOf<String, IList<HistoricalTradingReward>>()
+            val periods = setOf("WEEKLY", "DAILY", "MONTHLY")
+            for (period in periods) {
+                val periodObjs = existing?.get(period)
+                val periodData = parser.asList(data?.get(period))
+                val rewards =
+                    createHistoricalTradingRewardsPerPeriod(periodObjs, periodData, parser, period)
+                objs[period] = rewards
+            }
+            return objs
+        }
+
+        private fun createHistoricalTradingRewardsPerPeriod(
+            objs: IList<HistoricalTradingReward>?,
+            data: List<Any>?,
+            parser: ParserProtocol,
+            period: String,
+        ): IList<HistoricalTradingReward> {
+            val result = iMutableListOf<HistoricalTradingReward>()
+            if (data != null) {
+                var objIndex = 0
+                var dataIndex = 0
+                var lastStart: Double? = null
+                while (objIndex < (objs?.size ?: 0) && dataIndex < data.size) {
+                    val obj = objs!![objIndex]
+                    val item = parser.asMap(data[dataIndex])
+                    val itemStart =
+                        parser.asDatetime(item?.get("startedAt"))?.toEpochMilliseconds()?.toDouble()
+                    if (item != null && itemStart != null) {
+                        val objStart = obj.startedAtInMilliseconds
+                        val comparison = ParsingHelper.compare(objStart, itemStart, true)
+                        when {
+                            (comparison == ComparisonOrder.ascending) -> {
+                                // item is newer than obj
+                                val synced = HistoricalTradingReward.create(null, parser, item)
+                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                result.add(synced)
+                                dataIndex++
+                                lastStart = synced.startedAtInMilliseconds
+                            }
+
+                            (comparison == ComparisonOrder.descending) -> {
+                                // item is older than obj
+                                addHistoricalTradingRewards(result, obj, period, lastStart)
+                                result.add(obj)
+                                objIndex++
+                                lastStart = obj.startedAtInMilliseconds
+                            }
+
+                            else -> {
+                                val synced = HistoricalTradingReward.create(obj, parser, item)
+                                addHistoricalTradingRewards(result, obj, period, lastStart)
+                                result.add(synced!!)
+                                objIndex++
+                                dataIndex++
+                                lastStart = synced.startedAtInMilliseconds
+                            }
+                        }
+                    } else {
+                        dataIndex++
+                    }
+                }
+                while (objIndex < objs!!.size) {
+                    val obj = objs[objIndex]
+                    addHistoricalTradingRewards(result, obj, period, lastStart)
+                    result.add(obj)
+                    objIndex++
+                    lastStart = obj.startedAtInMilliseconds
+                }
+                while (dataIndex < data.size) {
+                    val item = parser.asMap(data[dataIndex])
+                    val itemStart =
+                        parser.asDatetime(item?.get("startedAt"))?.toEpochMilliseconds()?.toDouble()
+                    if (item != null && itemStart != null) {
+                        val synced = HistoricalTradingReward.create(null, parser, item)
+                        addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                        result.add(synced)
+                        dataIndex++
+                        lastStart = synced.startedAtInMilliseconds
+                    }
+                }
+            } else {
+                result.add(currentPeriodPlaceHolder(period))
+            }
+            return result
+        }
+
+        private fun currentPeriodPlaceHolder(period: String): HistoricalTradingReward {
+            val now = Clock.System.now()
+            val thisPeriod = when (period) {
+                "DAILY" -> today(now)
+                "WEEKLY" -> thisWeek(now)
+                "MONTHLY" -> thisMonth(now)
+                else -> today(now)
+            }
+            return HistoricalTradingReward(
+                0.0,
+                thisPeriod.start.toEpochMilliseconds().toDouble(),
+                thisPeriod.end.toEpochMilliseconds().toDouble()
+            )
+        }
+
+        private fun previousPlaceHolder(
+            period: String,
+            lastStartTime: Instant
+        ): HistoricalTradingReward {
+            return when (period) {
+                "DAILY" -> HistoricalTradingReward(
+                    0.0,
+                    lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
+                    lastStartTime.toEpochMilliseconds().toDouble()
+                )
+
+                "WEEKLY" -> HistoricalTradingReward(
+                    0.0,
+                    lastStartTime.minus(7.days).toEpochMilliseconds().toDouble(),
+                    lastStartTime.toEpochMilliseconds().toDouble()
+                )
+
+                "MONTHLY" -> HistoricalTradingReward(
+                    0.0,
+                    lastStartTime.previousMonth().toEpochMilliseconds().toDouble(),
+                    lastStartTime.toEpochMilliseconds().toDouble()
+                )
+
+                else -> HistoricalTradingReward(
+                    0.0,
+                    lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
+                    lastStartTime.toEpochMilliseconds().toDouble()
+                )
+            }
+        }
+
+        private fun addHistoricalTradingRewards(
+            result: IMutableList<HistoricalTradingReward>,
+            obj: HistoricalTradingReward,
+            period: String,
+            lastStart: Double?,
+        ): Double {
+            var lastStartTime: Instant = if (lastStart == null) {
+                val thisPeriod = currentPeriodPlaceHolder(period)
+                if (obj.startedAtInMilliseconds < thisPeriod.startedAtInMilliseconds) {
+                    result.add(thisPeriod)
+                }
+                Instant.fromEpochMilliseconds(thisPeriod.startedAtInMilliseconds.toLong())
+            } else {
+                Instant.fromEpochMilliseconds(lastStart.toLong())
+            }
+            while (obj.startedAtInMilliseconds < lastStartTime.toEpochMilliseconds().toDouble()) {
+                val previous = previousPlaceHolder(period, lastStartTime)
+                if (obj.startedAtInMilliseconds < previous.startedAtInMilliseconds) {
+                    result.add(previous)
+                    lastStartTime =
+                        Instant.fromEpochMilliseconds(previous.startedAtInMilliseconds.toLong())
+                } else {
+                    break
+                }
+            }
+            return lastStartTime.toEpochMilliseconds().toDouble()
+        }
+
+        private fun today(now: Instant): DatePeriod {
+            val zoned: LocalDateTime = now.toLocalDateTime(TimeZone.UTC)
+            val utc = LocalDateTime(zoned.year, zoned.month, zoned.dayOfMonth, 0, 0, 0)
+            val start = utc.toInstant(TimeZone.UTC)
+            val end = start.plus(1.days)
+            return DatePeriod(start, end)
+        }
+
+        private fun thisWeek(now: Instant): DatePeriod {
+            val zoned: LocalDateTime = now.toLocalDateTime(TimeZone.UTC)
+            val utc = LocalDateTime(zoned.year, zoned.month, zoned.dayOfMonth, 0, 0, 0)
+            val today = utc.toInstant(TimeZone.UTC)
+            val dayOfWeek = utc.dayOfWeek
+            val start = when (dayOfWeek) {
+                DayOfWeek.SUNDAY -> today
+                DayOfWeek.MONDAY -> today.minus(1.days)
+                DayOfWeek.TUESDAY -> today.minus(2.days)
+                DayOfWeek.WEDNESDAY -> today.minus(3.days)
+                DayOfWeek.THURSDAY -> today.minus(4.days)
+                DayOfWeek.FRIDAY -> today.minus(5.days)
+                DayOfWeek.SATURDAY -> today.minus(6.days)
+                else -> {
+                    DebugLogger.debug("Invalid day of week")
+                    today
+                }
+            }
+            val end = start.plus(7.days)
+            return DatePeriod(start, end)
+        }
+
+        private fun thisMonth(now: Instant): DatePeriod {
+            val zoned: LocalDateTime = now.toLocalDateTime(TimeZone.UTC)
+            val utc = LocalDateTime(zoned.year, zoned.month, 1, 0, 0, 0)
+            val start = utc.toInstant(TimeZone.UTC)
+            val end = start.nextMonth()
+            return DatePeriod(start, end)
         }
     }
 }
