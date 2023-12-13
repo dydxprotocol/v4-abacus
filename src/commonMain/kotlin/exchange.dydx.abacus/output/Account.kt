@@ -1,6 +1,9 @@
 package exchange.dydx.abacus.output
 
-import exchange.dydx.abacus.output.input.*
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderStatus
+import exchange.dydx.abacus.output.input.OrderTimeInForce
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -13,9 +16,9 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
+import kollections.iListOf
 import kollections.iMapOf
 import kollections.iMutableMapOf
-import kollections.iListOf
 import kollections.toIList
 import kollections.toIMap
 import kotlinx.datetime.Instant
@@ -1378,10 +1381,10 @@ data class HistoricalTradingReward(
                 val amount = parser.asDouble(data["amount"])
                 val startedAt = parser.asDatetime(data["startedAt"])
                 val endedAt = parser.asDatetime(data["endedAt"])
-                
+
                 if (amount != null && startedAt != null) {
-                    return if (existing?.amount != amount || 
-                        existing.startedAt != startedAt || 
+                    return if (existing?.amount != amount ||
+                        existing.startedAt != startedAt ||
                         existing.endedAt != endedAt
                     ) {
                         HistoricalTradingReward(
@@ -1400,10 +1403,52 @@ data class HistoricalTradingReward(
     }
 }
 
+
+@JsExport
+@Serializable
+data class BlockReward(
+    val tradingReward: Double,
+    val createdAtMilliseconds: Double,
+    val createdAtHeight: Int,
+) {
+    companion object {
+        internal fun create(
+            existing: BlockReward?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): BlockReward? {
+            data?.let {
+                val tradingReward = parser.asDouble(data["tradingReward"])
+                val createdAtMilliseconds =
+                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
+                val createdAtHeight = parser.asInt(data["createdAtHeight"])
+
+                if (tradingReward != null && createdAtMilliseconds != null && createdAtHeight != null) {
+                    return if (existing?.tradingReward != tradingReward ||
+                        existing.createdAtMilliseconds != createdAtMilliseconds ||
+                        existing.createdAtHeight != createdAtHeight
+                    ) {
+                        BlockReward(
+                            tradingReward,
+                            createdAtMilliseconds,
+                            createdAtHeight
+                        )
+                    } else {
+                        existing
+                    }
+                }
+            }
+            DebugLogger.debug("BlockReward not valid")
+            return null
+        }
+    }
+}
+
 @JsExport
 @Serializable
 data class TradingRewards(
     val total: Double?,
+    val blockRewards: IList<BlockReward>?,
     val historical: IMap<String, IList<HistoricalTradingReward>>?
 ) {
     companion object {
@@ -1415,19 +1460,24 @@ data class TradingRewards(
             DebugLogger.log("creating TradingRewards\n")
             data?.let {
                 val total = parser.asDouble(data["total"])
-                val historical = parser.asMap(data["historical"])?.
-                mapValues {
+                val historical = parser.asMap(data["historical"])?.mapValues {
                     parser.asList(it.value)?.map { rewardData ->
                         HistoricalTradingReward.create(null, parser, parser.asMap(rewardData))
                     }?.filterNotNull()?.toIList() ?: iListOf()
                 }?.toIMap()
 
+                val blockRewards = parser.asList(data["blockRewards"])?.map {
+                    BlockReward.create(null, parser, parser.asMap(it))
+                }?.filterNotNull()?.toIList()
+
                 if (total != null || historical != null) {
-                    return if (existing?.total != total || 
+                    return if (existing?.total != total ||
+                        existing?.blockRewards != blockRewards ||
                         existing?.historical != historical
                     ) {
                         TradingRewards(
                             total,
+                            blockRewards,
                             historical
                         )
                     } else {
