@@ -17,10 +17,12 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.JsExport
+import kollections.iListOf
 import kollections.iMapOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
@@ -1403,20 +1405,18 @@ data class HistoricalTradingReward(
         ): HistoricalTradingReward? {
             data?.let {
                 val amount = parser.asDouble(data["amount"])
-                val startedAtInMilliseconds =
-                    parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
-                val endedAtInMilliseconds =
-                    parser.asDatetime(data["endedAt"])?.toEpochMilliseconds()?.toDouble()
+                val startedAt = parser.asDatetime(data["startedAt"])
+                val endedAt = parser.asDatetime(data["endedAt"])
 
-                if (amount != null && startedAtInMilliseconds != null) {
+                if (amount != null && startedAt != null) {
                     return if (existing?.amount != amount ||
-                        existing.startedAtInMilliseconds != startedAtInMilliseconds ||
-                        existing.endedAtInMilliseconds != endedAtInMilliseconds
+                        existing.startedAt != startedAt ||
+                        existing.endedAt != endedAt
                     ) {
                         HistoricalTradingReward(
                             amount,
-                            startedAtInMilliseconds,
-                            endedAtInMilliseconds
+                            startedAt,
+                            endedAt
                         )
                     } else {
                         existing
@@ -1525,11 +1525,11 @@ data class TradingRewards(
             DebugLogger.log("creating TradingRewards\n")
             data?.let {
                 val total = parser.asDouble(data["total"])
-                val historical = createHistoricalTradingRewards(
-                    existing?.historical,
-                    parser.asMap(data["historical"]),
-                    parser
-                )
+                val historical = parser.asMap(data["historical"])?.mapValues {
+                    parser.asList(it.value)?.map { rewardData ->
+                        HistoricalTradingReward.create(null, parser, parser.asMap(rewardData))
+                    }?.filterNotNull()?.toIList() ?: iListOf()
+                }?.toIMap()
 
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
