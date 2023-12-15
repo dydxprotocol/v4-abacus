@@ -1387,17 +1387,19 @@ data class HistoricalTradingReward(
     internal val endedAt: Instant?
         get() = endedAtInMilliseconds?.let { Instant.fromEpochMilliseconds(it.toLong()) }
 
-    constructor(
-        amount: Double,
-        startedAt: Instant,
-        endedAt: Instant?,
-    ) : this(
-        amount,
-        startedAt.toEpochMilliseconds().toDouble(),
-        endedAt?.toEpochMilliseconds()?.toDouble()
-    )
-
     companion object {
+        internal fun create(
+            amount: Double,
+            startedAt: Instant,
+            endedAt: Instant?,
+        ) : HistoricalTradingReward {
+            return HistoricalTradingReward(
+                amount,
+                startedAt.toEpochMilliseconds().toDouble(),
+                endedAt?.toEpochMilliseconds()?.toDouble()
+            )
+        }
+
         internal fun create(
             existing: HistoricalTradingReward?,
             parser: ParserProtocol,
@@ -1413,7 +1415,7 @@ data class HistoricalTradingReward(
                         existing.startedAt != startedAt ||
                         existing.endedAt != endedAt
                     ) {
-                        HistoricalTradingReward(
+                        create(
                             amount,
                             startedAt,
                             endedAt
