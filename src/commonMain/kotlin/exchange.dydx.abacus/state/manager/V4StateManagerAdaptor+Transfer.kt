@@ -21,6 +21,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import exchange.dydx.abacus.utils.toNobleAddress
+import io.ktor.util.encodeBase64
 import kollections.iListOf
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
@@ -517,7 +518,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         mapOf(
                             "subaccountNumber" to connectedSubaccountNumber,
                             "amount" to state?.input?.transfer?.size?.usdcSize,
-                            "ibcPayload" to ibcPayload,
+                            "ibcPayload" to ibcPayload.encodeBase64(),
                         )
                     )
                     transaction(TransactionType.WithdrawToNobleIBC, payload) {
