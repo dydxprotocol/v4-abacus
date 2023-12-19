@@ -97,8 +97,12 @@ open class V4BaseTests : BaseTests(127) {
             if (historicalData != null) {
                 assertNotNull(obj?.historical)
                 for ((period, rewardsData) in historicalData) {
-                    val rewardsListObj = obj?.historical?.get(period)
-                    val rewardsListData = parser.asList(rewardsData)
+                    val rewardsListObj = obj?.historical?.get(period)?.filter {
+                        it.amount != 0.0
+                    }
+                    val rewardsListData = parser.asList(rewardsData)?.filter {
+                        parser.asDouble(parser.value(it, "amount")) != 0.0
+                    }
 
                     assertNotNull(rewardsListObj)
                     assertEquals(

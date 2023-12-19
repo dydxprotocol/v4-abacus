@@ -245,7 +245,7 @@ open class StateManagerAdaptor(
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
     private val notificationsProvider =
-        NotificationsProvider(uiImplementations, parser, jsonEncoder)
+        NotificationsProvider(uiImplementations, environment, parser, jsonEncoder)
 
     private var subaccountsTimer: LocalTimerProtocol? = null
         set(value) {
