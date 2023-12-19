@@ -1050,6 +1050,8 @@ class V4StateManagerAdaptor(
                         cctpToNoble(state, decimals, Numeric.decimal.ZERO, callback)
                     }
                 }
+            } else {
+                send(V4TransactionErrors.error(null, "Invalid usdcSize"), callback)
             }
         } else {
             send(V4TransactionErrors.error(null, "Invalid transfer type"), callback)
