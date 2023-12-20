@@ -13,12 +13,12 @@ class V4DocumentationTests {
             {
                 "tradingRewardsFAQs": [
                     {
-                        "questionStringKey": "APP.TRADING_REWARDS.FAQ_WHO_IS_ELIGIBLE_QUESTION",
-                        "answerStringKey": "APP.TRADING_REWARDS.FAQ_WHO_IS_ELIGIBLE_ANSWER"
+                        "questionLocalizationKey": "APP.TRADING_REWARDS.FAQ_WHO_IS_ELIGIBLE_QUESTION",
+                        "answerLocalizationKey": "APP.TRADING_REWARDS.FAQ_WHO_IS_ELIGIBLE_ANSWER"
                     },
                     {
-                        "questionStringKey": "APP.TRADING_REWARDS.FAQ_HOW_DO_TRADING_REWARDS_WORK_QUESTION",
-                        "answerStringKey": "APP.TRADING_REWARDS.FAQ_HOW_DO_TRADING_REWARDS_WORK_ANSWER"
+                        "questionLocalizationKey": "APP.TRADING_REWARDS.FAQ_HOW_DO_TRADING_REWARDS_WORK_QUESTION",
+                        "answerLocalizationKey": "APP.TRADING_REWARDS.FAQ_HOW_DO_TRADING_REWARDS_WORK_ANSWER"
                     }
                 ]
             }
@@ -34,8 +34,8 @@ class V4DocumentationTests {
 
         assertEquals(expectedFAQs.size, decodedDocumentation.tradingRewardsFAQs.size)
         for (i in expectedFAQs.indices) {
-            assertEquals(expectedFAQs[i].questionStringKey, decodedDocumentation.tradingRewardsFAQs[i].questionStringKey)
-            assertEquals(expectedFAQs[i].answerStringKey, decodedDocumentation.tradingRewardsFAQs[i].answerStringKey)
+            assertEquals(expectedFAQs[i].questionLocalizationKey, decodedDocumentation.tradingRewardsFAQs[i].questionLocalizationKey)
+            assertEquals(expectedFAQs[i].answerLocalizationKey, decodedDocumentation.tradingRewardsFAQs[i].answerLocalizationKey)
         }
     }
 }

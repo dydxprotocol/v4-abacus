@@ -15,6 +15,6 @@ data class Documentation(
 @JsExport
 @Serializable
 data class FAQ(
-    val questionStringKey: String,
-    val answerStringKey: String
+    val questionLocalizationKey: String,
+    val answerLocalizationKey: String
 )
