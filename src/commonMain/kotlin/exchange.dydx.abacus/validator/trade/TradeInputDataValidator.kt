@@ -136,7 +136,7 @@ internal class TradeInputDataValidator(
                         null,
                         null,
                         "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
-                        "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_EQUITY_TIER",
+                        "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_CURRENT_EQUITY_TIER",
                         mapOf(
                             "EQUITY" to mapOf(
                                 "value" to nextLevelRequiredTotalNetCollateralUSD,
