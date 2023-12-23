@@ -173,7 +173,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 summary.safeSet("toAmount", toAmount)
 
                 val aggregatePriceImpact = parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
-                summary.safeSet("aggregatePriceImpact", aggregatePriceImpact)
+                summary.safeSet("aggregatePriceImpact", if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null)
             }
 
             "WITHDRAWAL" -> {
@@ -210,7 +210,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 summary.safeSet("toAmount", toAmount)
 
                 val aggregatePriceImpact = parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
-                summary.safeSet("aggregatePriceImpact", aggregatePriceImpact)
+                summary.safeSet("aggregatePriceImpact", if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null)
             }
 
             "TRANSFER_OUT" -> {
