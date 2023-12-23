@@ -16,7 +16,9 @@ internal class SquidRouteV2Processor(parser: ParserProtocol) : BaseProcessor(par
             "route.estimate.aggregateSlippage" to "slippage",
             "route.estimate.exchangeRate" to "exchangeRate",
             "route.estimate.estimatedRouteDuration" to "estimatedRouteDuration",
+            "route.estimate.toAmount" to "toAmount",
             "route.estimate.toAmountMin" to "toAmountMin",
+            "route.estimate.toAmountUSDC" to "toAmountUSDC",
             "route.estimate.aggregatePriceImpact" to "aggregatePriceImpact",
             "errors" to "errors",
         )
@@ -29,16 +31,25 @@ internal class SquidRouteV2Processor(parser: ParserProtocol) : BaseProcessor(par
         val modified = transform(existing, payload, keyMap)
         val payloadProcessor = SquidRouteV2PayloadProcessor(parser)
         modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
+
         val toAmount = parser.asLong(parser.value(payload, "route.estimate.toAmount"))
         val decimals = parser.asLong(parser.value(payload, "route.estimate.toToken.decimals"))
         if (toAmount != null && decimals != null) {
-            modified.safeSet("toAmountUSD", toAmount / 10.0.pow(decimals.toDouble()))
+            modified.safeSet("toAmount", toAmount / 10.0.pow(decimals.toDouble()))
         }
+
+        val toAmountUSD = parser.asLong(parser.value(payload, "route.estimate.toAmountUSD"))
+        val udscDecimals = 6
+        if (toAmountUSD != null) {
+            modified.safeSet("toAmountUSD", toAmountUSD / 10.0.pow(udscDecimals.toDouble()))
+        }
+
         val gasFee = parser.asDouble(parser.value(modified, "gasFee"))
         val gasFeeAmount = parser.asDouble(parser.value(modified, "gasFeeAmount"))
         if (gasFee == null && gasFeeAmount != null) {
             modified.safeSet("gasFee", gasFeeAmount / QUANTUM_MULTIPLIER)
         }
+
         val bridgeFee = parser.asDouble(parser.value(modified, "bridgeFee"))
         val bridgeFeeAmount = parser.asDouble(parser.value(modified, "bridgeFeeAmount"))
         if (bridgeFee == null && bridgeFeeAmount != null) {
