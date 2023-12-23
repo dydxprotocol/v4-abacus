@@ -18,6 +18,7 @@ internal class SquidRouteV2Processor(parser: ParserProtocol) : BaseProcessor(par
             "route.estimate.estimatedRouteDuration" to "estimatedRouteDuration",
             "route.estimate.toAmountMin" to "toAmountMin",
             "route.estimate.toAmount" to "toAmount",
+            "route.estimate.aggregatePriceImpact" to "aggregatePriceImpact",
             "errors" to "errors",
         )
     )
