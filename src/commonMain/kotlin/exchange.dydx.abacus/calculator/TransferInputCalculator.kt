@@ -174,7 +174,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 summary.safeSet("toAmountMin", toAmountMin)
 
                 val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
-                summary.safeSet("toAmountUSDC", toAmountUSDC)
+                summary.safeSet("toAmountUSDC", toAmountUSDC ?: toAmount)
 
                 val aggregatePriceImpact =
                     parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
