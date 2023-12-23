@@ -4,7 +4,6 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kotlin.math.pow
 
 internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private var chains: List<Any>? = null
@@ -131,13 +130,9 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     private fun usdcAmount(data: Map<String, Any>): Double? {
-        return parser.asDouble(parser.value(data, "transfer.route.toAmountUSD")) ?: run {
-            val toAmount = parser.asLong(parser.value(data, "transfer.route.toAmount"))
-            val decimals = 6
-            if (toAmount != null) {
-                toAmount.toDouble() / 10.0.pow(decimals.toDouble())
-            } else null
-        }
+        return parser.asDouble(parser.value(data, "transfer.route.toAmountUSD")) ?: parser.asDouble(
+            parser.value(data, "transfer.route.toAmount")
+        )
     }
 
     internal fun receivedStatus(

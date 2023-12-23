@@ -167,13 +167,13 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
                 summary.safeSet("gasFee", gasFee)
 
-                val toAmount = parser.asString(parser.value(transfer, "route.toAmount"))
+                val toAmount = parser.asDouble(parser.value(transfer, "route.toAmount"))
                 summary.safeSet("toAmount", toAmount)
 
-                val toAmountMin = parser.asString(parser.value(transfer, "route.toAmountMin"))
+                val toAmountMin = parser.asDouble(parser.value(transfer, "route.toAmountMin"))
                 summary.safeSet("toAmountMin", toAmountMin)
 
-                val toAmountUSDC = parser.asString(parser.value(transfer, "route.toAmountUSDC"))
+                val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
                 summary.safeSet("toAmountUSDC", toAmountUSDC)
 
                 val aggregatePriceImpact =
@@ -212,13 +212,13 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
                 summary.safeSet("gasFee", gasFee)
 
-                val toAmountMin = parser.asString(parser.value(transfer, "route.toAmountMin"))
+                val toAmountMin = parser.asDouble(parser.value(transfer, "route.toAmountMin"))
                 summary.safeSet("toAmountMin", toAmountMin)
 
-                val toAmount = parser.asString(parser.value(transfer, "route.toAmount"))
+                val toAmount = parser.asDouble(parser.value(transfer, "route.toAmount"))
                 summary.safeSet("toAmount", toAmount)
 
-                val toAmountUSDC = parser.asString(parser.value(transfer, "route.toAmountUSDC"))
+                val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
                 summary.safeSet("toAmountUSDC", toAmountUSDC)
 
                 val aggregatePriceImpact =

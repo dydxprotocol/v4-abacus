@@ -3,6 +3,7 @@ package exchange.dydx.abacus.processor.squid
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.safeSet
+import kotlin.math.pow
 
 internal class SquidRouteProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val keyMap = mapOf(
@@ -35,6 +36,23 @@ internal class SquidRouteProcessor(parser: ParserProtocol) : BaseProcessor(parse
         }
 
         val modified = transform(existing, payload, keyMap)
+
+        val decimals = parser.asLong(parser.value(payload, "params.toToken.decimals"))
+        val toAmount = parser.asLong(parser.value(payload, "route.estimate.toAmount"))
+        if (toAmount != null && decimals != null) {
+            modified.safeSet("toAmount", toAmount / 10.0.pow(decimals.toDouble()))
+        }
+        val toAmountMin = parser.asLong(parser.value(payload, "route.estimate.toAmountMin"))
+        if (toAmountMin != null && decimals != null) {
+            modified.safeSet("toAmountMin", toAmountMin / 10.0.pow(decimals.toDouble()))
+        }
+
+        val toAmountUSD = parser.asLong(parser.value(payload, "route.estimate.toAmountUSD"))
+        val udscDecimals = 6
+        if (toAmountUSD != null) {
+            modified.safeSet("toAmountUSD", toAmountUSD / 10.0.pow(udscDecimals.toDouble()))
+        }
+
         val payloadProcessor = SquidRoutePayloadProcessor(parser)
         modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
         modified.safeSet("bridgeFee", bridgeFees)

@@ -32,10 +32,14 @@ internal class SquidRouteV2Processor(parser: ParserProtocol) : BaseProcessor(par
         val payloadProcessor = SquidRouteV2PayloadProcessor(parser)
         modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
 
-        val toAmount = parser.asLong(parser.value(payload, "route.estimate.toAmount"))
         val decimals = parser.asLong(parser.value(payload, "route.estimate.toToken.decimals"))
+        val toAmount = parser.asLong(parser.value(payload, "route.estimate.toAmount"))
         if (toAmount != null && decimals != null) {
             modified.safeSet("toAmount", toAmount / 10.0.pow(decimals.toDouble()))
+        }
+        val toAmountMin = parser.asLong(parser.value(payload, "route.estimate.toAmountMin"))
+        if (toAmountMin != null && decimals != null) {
+            modified.safeSet("toAmountMin", toAmountMin / 10.0.pow(decimals.toDouble()))
         }
 
         val toAmountUSD = parser.asLong(parser.value(payload, "route.estimate.toAmountUSD"))
