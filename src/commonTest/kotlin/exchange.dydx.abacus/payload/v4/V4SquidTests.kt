@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.tests.extensions.loadv4MarketsSubscribed
 import exchange.dydx.abacus.state.modal.squidChains
 import exchange.dydx.abacus.state.modal.squidRoute
 import exchange.dydx.abacus.state.modal.squidRouteV2
@@ -9,7 +8,6 @@ import exchange.dydx.abacus.state.modal.squidStatus
 import exchange.dydx.abacus.state.modal.squidTokens
 import exchange.dydx.abacus.state.modal.squidV2SdkInfo
 import exchange.dydx.abacus.state.modal.transfer
-import exchange.dydx.abacus.utils.IMap
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -166,7 +164,10 @@ class V4SquidTests : V4BaseTests() {
             val errors = it.state?.input?.transfer?.errors!!
             assertNotNull(errors)
 
-            assertEquals(it.state?.input?.transfer?.errorMessage, "toChain: dydxprotocol-testnet-1 unsupported chain id")
+            assertEquals(
+                it.state?.input?.transfer?.errorMessage,
+                "toChain: dydxprotocol-testnet-1 unsupported chain id"
+            )
         })
     }
 

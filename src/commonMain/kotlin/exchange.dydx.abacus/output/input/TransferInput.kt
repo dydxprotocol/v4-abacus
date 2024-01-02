@@ -458,7 +458,9 @@ data class TransferInputSummary(
     val estimatedRouteDuration: Double?,
     val bridgeFee: Double?,
     val gasFee: Double?,
-    val toAmount: String?,
+    val toAmount: Double?,
+    val toAmountMin: Double?,
+    val toAmountUSDC: Double?,
     val aggregatePriceImpact: Double?,
 ) {
     companion object {
@@ -478,7 +480,9 @@ data class TransferInputSummary(
                 val estimatedRouteDuration = parser.asDouble(data["estimatedRouteDuration"])
                 val bridgeFee = parser.asDouble(data["bridgeFee"])
                 val gasFee = parser.asDouble(data["gasFee"])
-                val toAmount = parser.asString(data["toAmount"])
+                val toAmount = parser.asDouble(data["toAmount"])
+                val toAmountMin = parser.asDouble(data["toAmountMin"])
+                val toAmountUSDC = parser.asDouble(data["toAmountUSDC"])
                 val aggregatePriceImpact = parser.asDouble(data["aggregatePriceImpact"])
 
                 return if (existing?.usdcSize != usdcSize ||
@@ -490,6 +494,8 @@ data class TransferInputSummary(
                     existing.bridgeFee != bridgeFee ||
                     existing.gasFee != gasFee ||
                     existing.toAmount != toAmount ||
+                    existing.toAmountMin != toAmountMin ||
+                    existing.toAmountUSDC != toAmountUSDC ||
                     existing.aggregatePriceImpact != aggregatePriceImpact
                 ) {
                     TransferInputSummary(
@@ -502,6 +508,8 @@ data class TransferInputSummary(
                         bridgeFee,
                         gasFee,
                         toAmount,
+                        toAmountMin,
+                        toAmountUSDC,
                         aggregatePriceImpact,
                     )
                 } else {
