@@ -130,9 +130,11 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     private fun usdcAmount(data: Map<String, Any>): Double? {
-        return parser.asDouble(parser.value(data, "transfer.route.toAmountUSD")) ?: parser.asDouble(
-            parser.value(data, "transfer.route.toAmount")
-        )
+        var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
+        toAmountUSD = toAmountUSD?.replace(",", "")
+        var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
+        toAmount = toAmount?.replace(",", "")
+        return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
     }
 
     internal fun receivedStatus(
