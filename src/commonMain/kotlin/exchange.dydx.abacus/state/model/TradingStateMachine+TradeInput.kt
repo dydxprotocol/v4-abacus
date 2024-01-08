@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator

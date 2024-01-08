@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.state.modal.ClosePositionInputField
-import exchange.dydx.abacus.state.modal.closePosition
+import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test

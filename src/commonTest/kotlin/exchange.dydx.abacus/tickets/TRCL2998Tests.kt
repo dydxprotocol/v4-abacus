@@ -2,8 +2,7 @@ package exchange.dydx.abacus.tickets
 
 import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.modal.tradeInMarket
-import exchange.dydx.abacus.tests.extensions.loadMarkets
+import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
 class TRCL2998Tests: V4BaseTests() {

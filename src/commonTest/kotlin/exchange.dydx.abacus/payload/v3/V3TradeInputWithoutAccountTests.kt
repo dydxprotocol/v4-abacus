@@ -1,12 +1,11 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadAccounts
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
-import kotlinx.datetime.Clock
 import kotlin.test.Test
 
 class V3TradeInputWithoutAccountTests: V3BaseTests() {

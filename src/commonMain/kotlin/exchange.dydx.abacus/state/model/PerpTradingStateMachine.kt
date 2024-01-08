@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.state.manager.V4Environment

@@ -9,9 +9,9 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.state.modal.squidRoute
-import exchange.dydx.abacus.state.modal.squidRouteV2
-import exchange.dydx.abacus.state.modal.squidStatus
+import exchange.dydx.abacus.state.model.squidRoute
+import exchange.dydx.abacus.state.model.squidRouteV2
+import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
