@@ -3,7 +3,7 @@ package exchange.dydx.abacus.tests.extensions
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.adaptors.NetworkParam
-import exchange.dydx.abacus.state.modal.TradingStateMachine
+import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.ServerTime
 import kotlinx.datetime.Instant

@@ -11,7 +11,7 @@ import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.modal.TradingStateMachine
+import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
@@ -26,7 +26,6 @@ import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIMap
-import kotlinx.datetime.Instant
 
 class NotificationsProvider(
     private val uiImplementations: UIImplementations,
