@@ -60,7 +60,7 @@ internal fun TradingStateMachine.receivedAccountsChanges(
     if (payload["fundingPayments"] != null) {
         changes.add(Changes.fundingPayments)
     }
-    if (payload["tradingRewards"] != null) {
+    if (payload["tradingReward"] != null) {
         changes.add(Changes.tradingRewards)
     }
     return StateChanges(changes, null, iListOf(subaccountNumber))

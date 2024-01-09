@@ -840,11 +840,11 @@ private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BasePro
         ) else null
     }
 
-    fun recievedBlockTradingRewards(
+    fun recievedBlockTradingReward(
         existing: List<Any>?,
-        payload: List<Any>?,
+        payload: Any?,
     ): List<Any>? {
-        return if (payload != null) historicalTradingRewardsProcessor.receivedBlockTradingRewards(
+        return if (payload != null) historicalTradingRewardsProcessor.receivedBlockTradingReward(
             existing,
             payload
         ) else null
@@ -977,7 +977,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
             /* block trading rewards are only sent in subaccounts.0 channel */
             val tradingRewardsPayload =
-                parser.asNativeList(parser.value(content, "tradingRewards"))
+                parser.value(content, "tradingReward")
             if (tradingRewardsPayload != null) {
                 modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
             }
@@ -1003,7 +1003,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
 
             /* block trading rewards are only sent in subaccounts.0 channel */
-            val tradingRewardsPayload = parser.asNativeList(content["tradingRewards"])
+            val tradingRewardsPayload = content["tradingReward"]
             if (tradingRewardsPayload != null) {
                 modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
             }
@@ -1013,11 +1013,11 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
     private fun receivedBlockTradingRewards(
         existing: Map<String, Any>,
-        payload: List<Any>,
+        payload: Any,
     ): MutableMap<String, Any> {
         val modified = existing.mutable()
         val blockRewards = parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
-        val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingRewards(
+        val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingReward(
             blockRewards,
             payload
         )
