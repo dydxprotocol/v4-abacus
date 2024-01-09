@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.modal.*
+import exchange.dydx.abacus.state.model.*
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import kotlin.test.Test
 

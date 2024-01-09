@@ -8,7 +8,6 @@ import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
-import exchange.dydx.abacus.output.BlockReward
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
 import exchange.dydx.abacus.output.FeeTier
@@ -35,8 +34,6 @@ import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.User
 import exchange.dydx.abacus.output.Wallet
-import exchange.dydx.abacus.output.TradingRewards
-import exchange.dydx.abacus.output.HistoricalTradingReward
 import exchange.dydx.abacus.output.input.ClosePositionInput
 import exchange.dydx.abacus.output.input.ClosePositionInputSize
 import exchange.dydx.abacus.output.input.Input
@@ -55,8 +52,8 @@ import exchange.dydx.abacus.output.input.TradeInputSummary
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
-import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
-import exchange.dydx.abacus.state.modal.TradingStateMachine
+import exchange.dydx.abacus.state.model.PerpTradingStateMachine
+import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Numeric
@@ -64,7 +61,6 @@ import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
-import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement

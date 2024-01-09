@@ -1,19 +1,14 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
-import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import kollections.iListOf
-import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 
 
 internal fun TradingStateMachine.account(payload: String): StateChanges {

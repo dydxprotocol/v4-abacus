@@ -1,10 +1,8 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.historicalFundings(payload: String): StateChanges {
     val json = parser.decodeJsonObject(payload)

@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.payload
 
 import exchange.dydx.abacus.payload.v3.V3BaseTests
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
 class TradeInputOptionsTests : V3BaseTests() {
