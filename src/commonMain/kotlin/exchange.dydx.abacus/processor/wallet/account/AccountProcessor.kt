@@ -952,12 +952,14 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         )
         modified.safeSet("tradingRewards", modifiedTradingRewards)
 
-
+        val test = parser.value(payload, "subaccounts.0.tradingRewards")
         /* block trading rewards are only sent in subaccounts.0 channel */
         val tradingRewardsPayload =
             parser.asNativeList(parser.value(payload, "subaccounts.0.tradingRewards"))
         if (tradingRewardsPayload != null) {
-            modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
+            for (item in tradingRewardsPayload) {
+                modified = receivedBlockTradingReward(modified, item)
+            }
         }
         return modified
     }
@@ -979,7 +981,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val tradingRewardsPayload =
                 parser.value(content, "tradingReward")
             if (tradingRewardsPayload != null) {
-                modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
+                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
             }
 
             return modified
@@ -1005,13 +1007,13 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             /* block trading rewards are only sent in subaccounts.0 channel */
             val tradingRewardsPayload = content["tradingReward"]
             if (tradingRewardsPayload != null) {
-                modified = receivedBlockTradingRewards(modified, tradingRewardsPayload)
+                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
             }
             return modified
         } else existing
     }
 
-    private fun receivedBlockTradingRewards(
+    private fun receivedBlockTradingReward(
         existing: Map<String, Any>,
         payload: Any,
     ): MutableMap<String, Any> {
