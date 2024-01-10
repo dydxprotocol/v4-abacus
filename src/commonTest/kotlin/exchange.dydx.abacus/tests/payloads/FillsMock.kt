@@ -1411,13 +1411,11 @@ internal class FillsMock {
                         "ticker": "ETH-USD"
                     }
                 ],
-                "tradingRewards": [
-                    {
-                        "tradingReward": "0.01",
-                        "createdAtHeight": "2501",
-                        "createdAt": "2023-08-09T20:11:00.000Z"
-                    }
-                ]
+                "tradingReward": {
+                    "tradingReward": "0.01",
+                    "createdAtHeight": "2501",
+                    "createdAt": "2023-08-09T20:11:00.000Z"
+                }
             }
         }
     """.trimIndent()

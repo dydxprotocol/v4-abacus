@@ -27,15 +27,13 @@ internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseP
         )
     }
 
-    fun receivedBlockTradingRewards(
+    fun receivedBlockTradingReward(
         existing: List<Any>?,
-        payload: List<Any>,
+        payload: Any,
     ): List<Any>? {
         val modified = existing?.toMutableList() ?: mutableListOf()
-        for (item in payload) {
-            parser.asNativeMap(item)?.let {
-                modified.add(itemProcessor.receivedBlockTradingReward(null, it))
-            }
+        parser.asNativeMap(payload)?.let {
+            modified.add(itemProcessor.receivedBlockTradingReward(null, it))
         }
         return modified
     }
