@@ -37,14 +37,14 @@ internal class SquidRouteProcessor(parser: ParserProtocol) : BaseProcessor(parse
 
         val modified = transform(existing, payload, keyMap)
 
-        val decimals = parser.asLong(parser.value(payload, "params.toToken.decimals"))
+        val decimals = parser.asDouble(parser.value(payload, "route.params.toToken.decimals"))
         val toAmount = parser.asLong(parser.value(payload, "route.estimate.toAmount"))
         if (toAmount != null && decimals != null) {
-            modified.safeSet("toAmount", toAmount / 10.0.pow(decimals.toDouble()))
+            modified.safeSet("toAmount", toAmount / 10.0.pow(decimals))
         }
         val toAmountMin = parser.asLong(parser.value(payload, "route.estimate.toAmountMin"))
         if (toAmountMin != null && decimals != null) {
-            modified.safeSet("toAmountMin", toAmountMin / 10.0.pow(decimals.toDouble()))
+            modified.safeSet("toAmountMin", toAmountMin / 10.0.pow(decimals))
         }
 
         val toAmountUSD = parser.asLong(parser.value(payload, "route.estimate.toAmountUSD"))
