@@ -71,8 +71,7 @@ enum class HistoricalPnlPeriod(val rawValue: String) {
 enum class HistoricaTradingRewardsPeriod(val rawValue: String) {
     DAILY("DAILY"),
     WEEKLY("WEEKLY"),
-    MONTHLY("MONTHLY"),
-    BLOCK("BLOCK");
+    MONTHLY("MONTHLY");
 
     companion object {
         operator fun invoke(rawValue: String) = 
