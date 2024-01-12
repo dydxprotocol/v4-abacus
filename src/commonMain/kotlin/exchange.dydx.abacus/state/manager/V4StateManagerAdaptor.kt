@@ -148,7 +148,7 @@ class V4StateManagerAdaptor(
         }
 
 
-    private val MAX_NUM_BLOCK_DELAY = 10
+    private val MAX_NUM_BLOCK_DELAY = 15
 
     private var lastValidatorCallTime: Instant? = null
 
@@ -315,8 +315,7 @@ class V4StateManagerAdaptor(
             val timer = ioImplementations.timer ?: CoroutineTimer.instance
             heightTimer = timer.schedule(0.0, heightPollingDuration) {
                 if (readyToConnect) {
-                    retrieveIndexerHeight()
-                    retrieveValidatorHeight()
+                    retrieveHeights()
                     true
                 } else {
                     false
@@ -324,6 +323,15 @@ class V4StateManagerAdaptor(
             }
         } else {
             reconnectChain()
+        }
+    }
+
+    private fun retrieveHeights() {
+        // serialize height retrieval. Get indexer height first, then validator height
+        // If indexer height is not available, then validator height is not available
+        // indexer height no longer triggers api state change
+        retrieveIndexerHeight() {
+            retrieveValidatorHeight()
         }
     }
 
@@ -648,7 +656,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveIndexerHeight() {
+    private fun retrieveIndexerHeight(callback: (()-> Unit)? = null) {
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.previousRequestTime = indexerState.requestTime
@@ -666,7 +674,10 @@ class V4StateManagerAdaptor(
                 } else {
                     indexerState.updateHeight(null, null)
                 }
-                updateApiState()
+                callback?.invoke()
+                /*
+                Indexer height no longer triggers api state change
+                 */
             }
         }
     }
