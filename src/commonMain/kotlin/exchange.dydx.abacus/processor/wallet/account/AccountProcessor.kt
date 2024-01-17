@@ -839,6 +839,16 @@ private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BasePro
             payload
         ) else null
     }
+
+    fun recievedBlockTradingReward(
+        existing: List<Any>?,
+        payload: Any?,
+    ): List<Any>? {
+        return if (payload != null) historicalTradingRewardsProcessor.receivedBlockTradingReward(
+            existing,
+            payload
+        ) else null
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -927,7 +937,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
-        val modified = existing?.mutable() ?: mutableMapOf()
+        var modified = existing?.mutable() ?: mutableMapOf()
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
         val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(
             subaccounts,
@@ -941,6 +951,16 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             payload?.get("totalTradingRewards")
         )
         modified.safeSet("tradingRewards", modifiedTradingRewards)
+
+        val test = parser.value(payload, "subaccounts.0.tradingRewards")
+        /* block trading rewards are only sent in subaccounts.0 channel */
+        val tradingRewardsPayload =
+            parser.asNativeList(parser.value(payload, "subaccounts.0.tradingRewards"))
+        if (tradingRewardsPayload != null) {
+            for (item in tradingRewardsPayload) {
+                modified = receivedBlockTradingReward(modified, item)
+            }
+        }
         return modified
     }
 
@@ -951,11 +971,19 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
         return if (subaccountNumber != null) {
-            val modified = existing?.mutable() ?: mutableMapOf()
+            var modified = existing?.mutable() ?: mutableMapOf()
             val subaccount =
                 parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
             val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
+
+            /* block trading rewards are only sent in subaccounts.0 channel */
+            val tradingRewardsPayload =
+                parser.value(content, "tradingReward")
+            if (tradingRewardsPayload != null) {
+                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+            }
+
             return modified
         } else existing
     }
@@ -970,13 +998,33 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             ?: subaccountNumberFromInfo(info)
 
         return if (subaccountNumber != null) {
-            val modified = existing?.toMutableMap() ?: mutableMapOf()
+            var modified = existing?.toMutableMap() ?: mutableMapOf()
             val subaccount =
                 parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
             val modifiedsubaccount = subaccountsProcessor.channel_data(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
+
+            /* block trading rewards are only sent in subaccounts.0 channel */
+            val tradingRewardsPayload = content["tradingReward"]
+            if (tradingRewardsPayload != null) {
+                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+            }
             return modified
         } else existing
+    }
+
+    private fun receivedBlockTradingReward(
+        existing: Map<String, Any>,
+        payload: Any,
+    ): MutableMap<String, Any> {
+        val modified = existing.mutable()
+        val blockRewards = parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
+        val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingReward(
+            blockRewards,
+            payload
+        )
+        modified.safeSet("tradingRewards.blockRewards", modifiedTradingRewards)
+        return modified
     }
 
     internal fun updateHeight(

@@ -9,9 +9,9 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.state.modal.squidRoute
-import exchange.dydx.abacus.state.modal.squidRouteV2
-import exchange.dydx.abacus.state.modal.squidStatus
+import exchange.dydx.abacus.state.model.squidRoute
+import exchange.dydx.abacus.state.model.squidRouteV2
+import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Numeric
@@ -21,6 +21,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import exchange.dydx.abacus.utils.toNobleAddress
+import io.ktor.util.encodeBase64
 import kollections.iListOf
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
@@ -517,7 +518,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         mapOf(
                             "subaccountNumber" to connectedSubaccountNumber,
                             "amount" to state?.input?.transfer?.size?.usdcSize,
-                            "ibcPayload" to ibcPayload,
+                            "ibcPayload" to ibcPayload.encodeBase64(),
                         )
                     )
                     transaction(TransactionType.WithdrawToNobleIBC, payload) {

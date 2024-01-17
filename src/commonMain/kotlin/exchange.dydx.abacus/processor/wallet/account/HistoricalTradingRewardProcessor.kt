@@ -19,10 +19,18 @@ internal class HistoricalTradingRewardProcessor(parser: ParserProtocol) : BasePr
         "double" to mapOf(
             "tradingRewards" to "amount",
         ),
+    )
+
+    private val blockTradingRewardKeyMap = mapOf(
+        "datetime" to mapOf(
+            "createdAt" to "createdAt"
+        ),
+        "double" to mapOf(
+            "tradingReward" to "tradingReward",
+        ),
         "int" to mapOf(
-            "startedAtHeight" to "startedAtHeight",
-            "endedAtHeight" to "endedAtHeight",
-            "height" to "height"
+            "height" to "createdAtHeight",
+            "createdAtHeight" to "createdAtHeight"
         )
     )
 
@@ -31,5 +39,17 @@ internal class HistoricalTradingRewardProcessor(parser: ParserProtocol) : BasePr
         payload: Map<String, Any>
     ): Map<String, Any> {
         return transform(existing, payload, tradingRewardKeyMap)
+    }
+
+    fun receivedBlockTradingReward(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any> {
+        /*
+        To be revised
+        Spec uses height, and FE needs both height and createdAt timestamp
+        To have constant naming, proposed to use createdAtHeight and createdAt
+         */
+        return transform(existing, payload, blockTradingRewardKeyMap)
     }
 }

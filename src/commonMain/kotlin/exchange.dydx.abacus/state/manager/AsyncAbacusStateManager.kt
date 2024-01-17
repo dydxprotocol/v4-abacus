@@ -1,11 +1,10 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileLocation
-import exchange.dydx.abacus.protocols.LocalizerProtocol
-import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -14,15 +13,14 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
-import exchange.dydx.abacus.state.modal.ClosePositionInputField
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.TransferInputField
+import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
@@ -32,9 +30,9 @@ import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
+import kotlinx.serialization.json.Json
 
 @JsExport
 class AppConfigs(
@@ -73,8 +71,7 @@ enum class HistoricalPnlPeriod(val rawValue: String) {
 enum class HistoricaTradingRewardsPeriod(val rawValue: String) {
     DAILY("DAILY"),
     WEEKLY("WEEKLY"),
-    MONTHLY("MONTHLY"),
-    BLOCK("BLOCK");
+    MONTHLY("MONTHLY");
 
     companion object {
         operator fun invoke(rawValue: String) = 
@@ -204,6 +201,27 @@ data class ApiState(
 }
 
 @JsExport
+enum class ApiData {
+    HISTORICAL_PNLS,
+    HISTORICAL_TRADING_REWARDS,
+}
+
+@JsExport
+enum class ConfigFile(val rawValue: String) {
+    DOCUMENTATION("DOCUMENTATION") {
+        override val path: String
+            get() = "/configs/documentation.json"
+    },
+    ENV("ENV") {
+        override val path: String
+            get() = "/configs/env.json"
+    };
+
+    abstract val path: String
+}
+
+
+@JsExport
 class AsyncAbacusStateManager(
     val deploymentUri: String,
     val deployment: String, // MAINNET, TESTNET, DEV
@@ -219,7 +237,8 @@ class AsyncAbacusStateManager(
         }
     }
 
-    private val environmentsFile = "/configs/env.json"
+    private val environmentsFile = ConfigFile.ENV
+    private val documentationFile = ConfigFile.DOCUMENTATION
 
     private var _appSettings: AppSettings? = null
 
@@ -264,6 +283,8 @@ class AsyncAbacusStateManager(
     val environment: V4Environment?
         get() = _environment
 
+    var documentation: Documentation? = null
+        private set
 
     var adaptor: StateManagerAdaptor? = null
         private set(value) {
@@ -408,45 +429,52 @@ class AsyncAbacusStateManager(
         if (stateNotification === null && dataNotification === null) {
             throw Error("Either stateNotification or dataNotification need to be set")
         }
-        loadEnvironments()
+        ConfigFile.values().forEach {
+            load(it)
+        }
     }
 
-    private fun loadEnvironments() {
+    private fun load(configFile: ConfigFile) {
+        val path = configFile.path
         if (appConfigs.loadRemote) {
-            loadEnvironmentsFromLocalFile()
-            val environmentsUrl = "$deploymentUri$environmentsFile"
-            ioImplementations.rest?.get(environmentsUrl, null, callback = { response, httpCode ->
+            loadFromRemoteConfigFile(configFile)
+            val configFileUrl = "$deploymentUri$path"
+            ioImplementations.rest?.get(configFileUrl, null, callback = { response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val parser = Parser()
-                    val json = parser.decodeJsonObject(response)
-                    if (parseEnvironments(json, parser, uiImplementations.localizer)) {
-                        writeEnvironmentsToLocalFile(response)
+                    if (parse(response, configFile)) {
+                        writeToLocalFile(response, path)
                     }
                 }
             })
         } else {
-            loadEnvironmentsFromBundledLocalFile()
+            loadFromBundledLocalConfigFile(configFile)
         }
     }
 
-    private fun loadEnvironmentsFromLocalFile() {
+    private fun loadFromRemoteConfigFile(configFile: ConfigFile) {
         ioImplementations.fileSystem?.readCachedTextFile(
-            environmentsFile
-        )?.let { response ->
-            val parser = Parser()
-            val json = parser.decodeJsonObject(response)
-            parseEnvironments(json, parser, uiImplementations.localizer)
+            configFile.path
+        )?.let {
+            parse(it, configFile)
         }
     }
 
-    private fun loadEnvironmentsFromBundledLocalFile() {
+    private fun loadFromBundledLocalConfigFile(configFile: ConfigFile) {
         ioImplementations.fileSystem?.readTextFile(
             FileLocation.AppBundle,
-            environmentsFile,
-        )?.let { response ->
-            val parser = Parser()
-            val json = parser.decodeJsonObject(response)
-            parseEnvironments(json, parser, uiImplementations.localizer)
+            configFile.path,
+        )?.let {
+            parse(it, configFile)
+        }
+    }
+
+    private fun parse(response: String, configFile: ConfigFile): Boolean {
+        return when (configFile) {
+            ConfigFile.DOCUMENTATION -> {
+                parseDocumentation(response)
+                return true
+            }
+            ConfigFile.ENV -> parseEnvironments(response)
         }
     }
 
@@ -454,14 +482,20 @@ class AsyncAbacusStateManager(
         return httpCode in 200..299
     }
 
-    private fun writeEnvironmentsToLocalFile(response: String) {
+    private fun writeToLocalFile(response: String, file: String) {
         ioImplementations.fileSystem?.writeTextFile(
-            environmentsFile,
+            file,
             response
         )
     }
 
-    private fun parseEnvironments(items: IMap<String, Any>?, parser: ParserProtocol, localizer: LocalizerProtocol?): Boolean {
+    private fun parseDocumentation(response: String) {
+        this.documentation = Json.decodeFromString<Documentation>(response)
+    }
+
+    private fun parseEnvironments(response: String): Boolean {
+        val parser = Parser()
+        val items = parser.decodeJsonObject(response)
         val deployments = parser.asMap(items?.get("deployments")) ?: return false
         val target = parser.asMap(deployments[deployment]) ?: return false
         val targetEnvironments = parser.asList(target["environments"]) ?: return false
@@ -472,7 +506,7 @@ class AsyncAbacusStateManager(
             val parsedEnvironments = mutableMapOf<String, V4Environment>()
             for ((key, value) in environmentsData) {
                 val data = parser.asMap(value) ?: continue
-                val environment = V4Environment.parse(key, data, parser, deploymentUri, localizer) ?: continue
+                val environment = V4Environment.parse(key, data, parser, deploymentUri, uiImplementations.localizer) ?: continue
                 parsedEnvironments[environment.id] = environment
             }
             if (parsedEnvironments.isEmpty()) {
@@ -553,6 +587,10 @@ class AsyncAbacusStateManager(
 
     fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
         adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
+    }
+
+    fun refresh(data: ApiData) {
+        adaptor?.refresh(data)
     }
 
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {

@@ -5,10 +5,10 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.NotificationsProvider
-import exchange.dydx.abacus.state.modal.onChainAccountBalances
-import exchange.dydx.abacus.state.modal.onChainDelegations
-import exchange.dydx.abacus.state.modal.updateHeight
-import exchange.dydx.abacus.state.modal.historicalTradingRewards
+import exchange.dydx.abacus.state.model.historicalTradingRewards
+import exchange.dydx.abacus.state.model.onChainAccountBalances
+import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
@@ -107,7 +107,13 @@ class V4AccountTests : V4BaseTests() {
                     "wallet": {
                         "account": {
                             "tradingRewards": {
-                                "total": 2800.8
+                                "total": 2800.8,
+                                "blockRewards": [
+                                    {
+                                        "tradingReward": "0.02",
+                                        "createdAtHeight": "2422"
+                                    }
+                                ]
                             },
                             "subaccounts": {
                                 "0": {
@@ -426,6 +432,18 @@ class V4AccountTests : V4BaseTests() {
                 {
                     "wallet": {
                         "account": {
+                            "tradingRewards": {
+                                "blockRewards": [
+                                    {
+                                        "tradingReward": "0.02",
+                                        "createdAtHeight": "2422"
+                                    },
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2501"
+                                    }
+                                ]
+                            },
                             "subaccounts": {
                                 "0": {
                                     "equity": {
@@ -834,10 +852,15 @@ class V4AccountTests : V4BaseTests() {
                 val localizer = BaseTests.testLocalizer(ioImplementations)
                 val uiImplementations = BaseTests.testUIImplementations(localizer)
                 val notificationsProvider =
-                    NotificationsProvider(uiImplementations, Parser(), JsonEncoder())
+                    NotificationsProvider(
+                        uiImplementations,
+                        environment = mock.v4Environment,
+                        Parser(),
+                        JsonEncoder()
+                    )
                 val notifications = notificationsProvider.buildNotifications(perp, 0)
                 assertEquals(
-                    4,
+                    6,
                     notifications.size
                 )
                 val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
@@ -1056,7 +1079,10 @@ class V4AccountTests : V4BaseTests() {
         setup()
         test(
             {
-                val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.weeklyCall, "WEEKLY")
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.weeklyCall,
+                    "WEEKLY"
+                )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
             },
@@ -1069,16 +1095,13 @@ class V4AccountTests : V4BaseTests() {
                                      "WEEKLY": [
                                         {
                                             "amount": 1.0,
-                                            "startedAt": "2023-12-03T00:00:01.188Z",
-                                            "startedAtHeight": 2725536,
+                                            "startedAt": "2023-12-03T00:00:00.000Z",
                                             "period": "WEEKLY"
                                          },
                                          {
                                             "amount": 124.03,
-                                            "startedAt": "2023-11-26T00:00:01.188Z",
-                                            "startedAtHeight": 100000,
-                                            "endedAt": "2023-12-02T23:59:58.888Z",
-                                            "endedAtHeight": 2725535,
+                                            "startedAt": "2023-11-26T00:00:00.000Z",
+                                            "endedAt": "2023-12-03T00:00:00.000Z",
                                             "period": "WEEKLY"
                                          }
                                      ]
@@ -1094,7 +1117,10 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.monthlyCall, "MONTHLY")
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.monthlyCall,
+                    "MONTHLY"
+                )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
             },
@@ -1115,16 +1141,13 @@ class V4AccountTests : V4BaseTests() {
                                      "MONTHLY": [
                                         {   
                                             "amount": 1.00,
-                                            "startedAt": "2023-12-01T00:00:01.188Z",
-                                            "startedAtHeight": 2725536,
+                                            "startedAt": "2023-12-01T00:00:00.000Z",
                                             "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 124.03,
-                                            "startedAt": "2023-11-01T00:00:01.188Z",
-                                            "startedAtHeight": 100000,
-                                            "endedAt": "2023-11-30T23:59:58.888Z",
-                                            "endedAtHeight": 2725535,
+                                            "startedAt": "2023-11-01T00:00:00.000Z",
+                                            "endedAt": "2023-12-01T00:00:00.000Z",
                                             "period": "MONTHLY"
                                         }
                                       ]
@@ -1140,7 +1163,10 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                val changes = perp.historicalTradingRewards(mock.historicalTradingRewards.monthlySecondCall, "MONTHLY")
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.monthlySecondCall,
+                    "MONTHLY"
+                )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
             },
@@ -1161,24 +1187,19 @@ class V4AccountTests : V4BaseTests() {
                                      "MONTHLY": [
                                         {
                                             "amount": 1.00,
-                                            "startedAt": "2023-12-01T00:00:01.188Z",
-                                            "startedAtHeight": 2725536,
+                                            "startedAt": "2023-12-01T00:00:00.000Z",
                                             "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 124.03,
-                                            "startedAt": "2023-11-01T00:00:01.188Z",
-                                            "startedAtHeight": 100000,
-                                            "endedAt": "2023-11-30T23:59:58.888Z",
-                                            "endedAtHeight": 2725535,
+                                            "startedAt": "2023-11-01T00:00:00.000Z",
+                                            "endedAt": "2023-12-01T00:00:00.000Z",
                                             "period": "MONTHLY"
                                         },
                                         {
                                             "amount": 100.0,
-                                            "startedAt": "2023-10-01T00:00:01.188Z",
-                                            "startedAtHeight": 1000,
-                                            "endedAt": "2023-10-31T23:59:58.888Z",
-                                            "endedAtHeight": 99999,
+                                            "startedAt": "2023-09-01T00:00:00.000Z",
+                                            "endedAt": "2023-10-01T00:00:00.000Z",
                                             "period": "MONTHLY"
                                          }
                                       ]
