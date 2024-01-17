@@ -1241,7 +1241,6 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             (parser.asInt(parser.value(data, "configs.tickSize"))) != null &&
             (parser.asDouble(parser.value(data, "configs.initialMarginFraction"))) != null &&
             (parser.asDouble(parser.value(data, "configs.maintenanceMarginFraction"))) != null &&
-            (parser.asInt(parser.value(data, "configs.basePositionNotional"))) != null &&
             (parser.asInt(parser.value(data, "configs.v4.clobPairId"))) != null &&
             (parser.asInt(parser.value(data, "configs.v4.atomicResolution"))) != null &&
             (parser.asInt(parser.value(data, "configs.v4.stepBaseQuantums"))) != null &&

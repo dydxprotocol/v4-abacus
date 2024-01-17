@@ -146,7 +146,7 @@ data class MarketConfigs(
                 parser.asDouble(data["incrementalInitialMarginFraction"])
             val incrementalPositionSize = parser.asDouble(data["incrementalPositionSize"])
             val maxPositionSize = parser.asDouble(data["maxPositionSize"])
-            val basePositionNotional = parser.asDouble(data["basePositionNotional"]) ?: return null
+            val basePositionNotional = parser.asDouble(data["basePositionNotional"])
             val baselinePositionSize = parser.asDouble(data["baselinePositionSize"])
             val candleOptions = CandleOption.create(
                 existing?.candleOptions,

@@ -661,29 +661,29 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "openPositions": {
                                         "ETH-USD": {
                                             "adjustedImf": {
-                                                "current": 0.2739,
-                                                "postOrder": 0.2739
+                                                "current": 0.05,
+                                                "postOrder": 0.05
                                             },
                                             "adjustedMmf": {
-                                                "current": 0.1643,
-                                                "postOrder": 0.1643
+                                                "current": 0.03,
+                                                "postOrder": 0.03
                                             },
                                             "liquidationPrice": {
-                                                "current": 2511.47,
-                                                "postOrder": 2484.31
+                                                "current": 2838.98,
+                                                "postOrder": 2829.27
                                             }
                                         },
                                         "BTC-USD": {
                                             "adjustedImf": {
                                                 "current": 0.05,
-                                                "postOrder": 0.1581
+                                                "postOrder": 0.05
                                             },
                                             "adjustedMmf": {
                                                 "current": 0.03,
-                                                "postOrder": 0.0949
+                                                "postOrder": 0.03
                                             },
                                             "liquidationPrice": {
-                                                "postOrder": 57353.80
+                                                "postOrder": 64878.0
                                             }
                                         }
                                     }

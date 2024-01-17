@@ -237,18 +237,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         initialMarginFraction: Double,
         notional: Double,
     ): Double {
-        val basePositionNotional =
-            parser.asDouble(configs?.get("basePositionNotional")) ?: Numeric.double.ZERO
-        return if (basePositionNotional == Numeric.double.ZERO) {
-            initialMarginFraction
-        } else if (notional < basePositionNotional) {
-            initialMarginFraction
-        } else {
-            val ratio = notional / basePositionNotional
-            val adjusted: Double = parser.asDouble(initialMarginFraction)!! * sqrt(ratio)
-            val min: Double = arrayOf(Numeric.double.ONE, adjusted).min()
-            parser.asDouble(min) ?: initialMarginFraction
-        }
+        return initialMarginFraction
     }
 
     private fun calculateSubaccountEquity(
