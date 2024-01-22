@@ -836,32 +836,6 @@ internal class TradeInputCalculator(
             )
         } else null
     }
-//
-//    private fun reducedOnlyFieldWithTimeInForce(trade: Map<String, Any>): Map<String, Any>? {
-//        val timeInForce = parser.asString(
-//            parser.value(
-//                trade,
-//                "timeInForce"
-//            )
-//        )
-//        return when (timeInForce) {
-//            "FOK", "IOC" -> reduceOnlyField()
-//            else -> null
-//        }
-//    }
-//
-//    private fun reducedOnlyFieldWithExecution(trade: Map<String, Any>): Map<String, Any>? {
-//        val execution = parser.asString(
-//            parser.value(
-//                trade,
-//                "execution"
-//            )
-//        )
-//        return when (execution) {
-//            "FOK", "IOC" -> reduceOnlyField()
-//            else -> null
-//        }
-//    }
 
     private fun postOnlyField(): Map<String, Any> {
         return mapOf(
