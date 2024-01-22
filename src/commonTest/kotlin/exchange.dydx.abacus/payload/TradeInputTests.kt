@@ -1746,7 +1746,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": true,
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "needsBrackets": false
                             }
@@ -1847,7 +1847,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": true,
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "needsBrackets": false
                             }
