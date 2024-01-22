@@ -471,7 +471,6 @@ class V4StateManagerAdaptor(
                 if (amount != null && amount > 5000) {
                     pendingCctpWithdraw?.let { withdrawState ->
                         val callback = withdrawState.callback
-                        pendingCctpWithdraw = null
                         transaction(TransactionType.CctpWithdraw, withdrawState.payload) {hash ->
                             val error = parseTransactionResponse(hash)
                             if (error != null) {
@@ -480,6 +479,7 @@ class V4StateManagerAdaptor(
                             } else {
                                 callback?.let { it -> send(null, it, hash) }
                             }
+                            pendingCctpWithdraw = null
                         }
                     } ?: run {
                         transferNobleBalance(amount)

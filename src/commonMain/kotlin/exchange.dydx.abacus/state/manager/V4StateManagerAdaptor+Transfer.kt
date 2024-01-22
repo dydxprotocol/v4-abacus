@@ -444,9 +444,11 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                 val json = parser.decodeJsonObject(response)
                 val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
+println(ibcPayload)
                     transaction(TransactionType.SendNobleIBC, ibcPayload) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
+                            println("transferNobleBalance error: $error")
                             DebugLogger.error("transferNobleBalance error: $error")
                         }
                     }
@@ -524,7 +526,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     transaction(TransactionType.WithdrawToNobleIBC, payload) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
-                            DebugLogger.error("transferNobleBalance error: $error")
+                            DebugLogger.error("withdrawToNobleIBC error: $error")
                             send(error, callback)
                         } else {
                             pendingCctpWithdraw = CctpWithdrawState(
@@ -534,7 +536,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         }
                     }
                 } else {
-                    DebugLogger.error("transferNobleBalance error, code: $code")
+                    DebugLogger.error("cctpToNoble error, code: $code")
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
                         "Missing squid response"
@@ -542,7 +544,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     send(error, callback)
                 }
             } else {
-                DebugLogger.error("transferNobleBalance error, code: $code")
+                DebugLogger.error("cctpToNoble error, code: $code")
                 val error = ParsingError(
                     ParsingErrorType.MissingContent,
                     "Missing squid response"
