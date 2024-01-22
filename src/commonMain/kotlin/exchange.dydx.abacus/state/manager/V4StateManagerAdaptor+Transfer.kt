@@ -464,6 +464,7 @@ data class CctpWithdrawState(
 )
 
 internal var pendingCctpWithdraw: CctpWithdrawState? = null
+internal var processingCctpWithdraw = false
 
 internal fun V4StateManagerAdaptor.cctpToNoble(
     state: PerpetualState?,
@@ -524,7 +525,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     transaction(TransactionType.WithdrawToNobleIBC, payload) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
-                            DebugLogger.error("transferNobleBalance error: $error")
+                            DebugLogger.error("withdrawToNobleIBC error: $error")
                             send(error, callback)
                         } else {
                             pendingCctpWithdraw = CctpWithdrawState(
@@ -534,7 +535,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         }
                     }
                 } else {
-                    DebugLogger.error("transferNobleBalance error, code: $code")
+                    DebugLogger.error("cctpToNoble error, code: $code")
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
                         "Missing squid response"
@@ -542,7 +543,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     send(error, callback)
                 }
             } else {
-                DebugLogger.error("transferNobleBalance error, code: $code")
+                DebugLogger.error("cctpToNoble error, code: $code")
                 val error = ParsingError(
                     ParsingErrorType.MissingContent,
                     "Missing squid response"
