@@ -50,6 +50,13 @@ data class SelectionOption(
     }
 }
 
+@JsExport
+@Serializable
+data class Tooltip(
+    val titleStringKey: String,
+    val bodyStringKey: String,
+)
+
 
 @JsExport
 @Serializable
@@ -69,7 +76,8 @@ data class TradeInputOptions(
     val timeInForceOptions: IList<SelectionOption>?,
     val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
-    val reduceOnlyPromptStringKey: String?
+    val reduceOnlyTooltip: Tooltip?,
+    val postOnlyTooltip: Tooltip?,
 ) {
     companion object {
         private val typeOptionsArray =
@@ -170,7 +178,8 @@ data class TradeInputOptions(
                 val needsReduceOnly = parser.asBool(data["needsReduceOnly"]) ?: false
                 val needsPostOnly = parser.asBool(data["needsPostOnly"]) ?: false
                 val needsBrackets = parser.asBool(data["needsBrackets"]) ?: false
-                val reduceOnlyPromptStringKey = parser.asString(data["reduceOnlyPromptStringKey"])
+                val reduceOnlyTooltip = buildToolTip(parser.asString(data["reduceOnlyPromptStringKey"]))
+                val postOnlyOnlyTooltip = buildToolTip(parser.asString(data["postOnlyPromptStringKey"]))
 
                 var timeInForceOptions: IMutableList<SelectionOption>? = null
                 parser.asList(data["timeInForceOptions"])?.let { data ->
@@ -217,7 +226,7 @@ data class TradeInputOptions(
                     existing.needsBrackets != needsBrackets ||
                     existing.timeInForceOptions != timeInForceOptionsArray ||
                     existing.executionOptions != executionOptionsArray ||
-                    existing.reduceOnlyPromptStringKey != reduceOnlyPromptStringKey
+                    existing.reduceOnlyTooltip != reduceOnlyTooltip
                 ) {
                     val typeOptions = typeOptionsV4Array
 
@@ -237,7 +246,8 @@ data class TradeInputOptions(
                         timeInForceOptionsArray,
                         goodTilUnitOptionsArray,
                         executionOptionsArray,
-                        reduceOnlyPromptStringKey,
+                        reduceOnlyTooltip,
+                        postOnlyOnlyTooltip,
                     )
                 } else {
                     existing
@@ -245,6 +255,14 @@ data class TradeInputOptions(
             }
             DebugLogger.debug("Trade Input Options not valid")
             return null
+        }
+
+        fun buildToolTip(stringKey: String?): Tooltip? {
+            return if (stringKey != null) {
+                Tooltip("$stringKey.TITLE", "$stringKey.BODY")
+            } else {
+                null
+            }
         }
     }
 }

@@ -618,9 +618,32 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 "$trace.needsTriggerPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["reduceOnlyPromptStringKey"]),
-                obj.reduceOnlyPromptStringKey,
-                "$trace.reduceOnlyPromptStringKey $doesntMatchText"
+                parser.asString(data["reduceOnlyPromptStringKey"])?.let {
+                    "$it.TITLE"
+                },
+                obj.reduceOnlyTooltip?.titleStringKey,
+                "$trace.reduceOnlyPromptStringKey title $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["reduceOnlyPromptStringKey"])?.let {
+                    "$it.BODY"
+                },
+                obj.reduceOnlyTooltip?.bodyStringKey,
+                "$trace.reduceOnlyPromptStringKey body $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["postOnlyPromptStringKey"])?.let {
+                    "$it.TITLE"
+                },
+                obj.postOnlyTooltip?.titleStringKey,
+                "$trace.postOnlyPromptStringKey title $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["postOnlyPromptStringKey"])?.let {
+                    "$it.BODY"
+                },
+                obj.postOnlyTooltip?.bodyStringKey,
+                "$trace.postOnlyPromptStringKey body $doesntMatchText"
             )
             verifyInputTradeInputOptionsExecutionOptionsState(
                 parser.asList(data["executionOptions"]),

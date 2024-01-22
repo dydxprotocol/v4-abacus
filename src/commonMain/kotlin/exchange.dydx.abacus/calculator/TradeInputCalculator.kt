@@ -1018,6 +1018,11 @@ internal class TradeInputCalculator(
             } else {
                 options.safeSet("reduceOnlyPromptStringKey", reduceOnlyPromptFromTrade(trade))
             }
+            if (parser.asBool(options["needsPostOnly"]) == true) {
+                options.safeSet("postOnlyPromptStringKey", null)
+            } else {
+                options.safeSet("postOnlyPromptStringKey", postOnlyPromptFromTrade(trade))
+            }
             return options
         }
         return null
@@ -1041,9 +1046,19 @@ internal class TradeInputCalculator(
         trade: Map<String, Any>,
     ): String? {
         return when (parser.asString(trade["type"])) {
-            "LIMIT" -> "APP.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
+            "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
 
-            "STOP_LIMIT", "TAKE_PROFIT" -> "APP.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+            "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+
+            else -> return null
+        }
+    }
+
+    private fun postOnlyPromptFromTrade(
+        trade: Map<String, Any>,
+    ): String? {
+        return when (parser.asString(trade["type"])) {
+            "LIMIT" -> "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
 
             else -> return null
         }

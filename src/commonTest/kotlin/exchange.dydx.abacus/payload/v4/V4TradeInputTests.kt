@@ -825,7 +825,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -847,7 +848,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": false,
                                 "needsPostOnly": true,
-                                "reduceOnlyPromptStringKey": "APP.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK",
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -868,7 +870,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
                             }
                         }
                     }
@@ -889,7 +892,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
                             }
                         }
                     }
@@ -913,7 +917,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": false,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": "APP.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -934,7 +939,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -955,7 +961,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -977,7 +984,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": false,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": "APP.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1001,7 +1009,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": false,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": "APP.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1022,7 +1031,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1043,7 +1053,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1065,7 +1076,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": false,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": "APP.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1089,7 +1101,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1110,7 +1123,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1133,7 +1147,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
@@ -1154,7 +1169,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "options": {
                                 "needsReduceOnly": true,
                                 "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
                             }
                         }
                     }
