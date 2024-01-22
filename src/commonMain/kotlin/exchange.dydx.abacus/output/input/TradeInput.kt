@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.output.input
 
-import exchange.dydx.abacus.output.*
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -70,6 +69,7 @@ data class TradeInputOptions(
     val timeInForceOptions: IList<SelectionOption>?,
     val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
+    val reduceOnlyPromptStringKey: String?
 ) {
     companion object {
         private val typeOptionsArray =
@@ -170,6 +170,7 @@ data class TradeInputOptions(
                 val needsReduceOnly = parser.asBool(data["needsReduceOnly"]) ?: false
                 val needsPostOnly = parser.asBool(data["needsPostOnly"]) ?: false
                 val needsBrackets = parser.asBool(data["needsBrackets"]) ?: false
+                val reduceOnlyPromptStringKey = parser.asString(data["reduceOnlyPromptStringKey"])
 
                 var timeInForceOptions: IMutableList<SelectionOption>? = null
                 parser.asList(data["timeInForceOptions"])?.let { data ->
@@ -215,7 +216,8 @@ data class TradeInputOptions(
                     existing.needsPostOnly != needsPostOnly ||
                     existing.needsBrackets != needsBrackets ||
                     existing.timeInForceOptions != timeInForceOptionsArray ||
-                    existing.executionOptions != executionOptionsArray
+                    existing.executionOptions != executionOptionsArray ||
+                    existing.reduceOnlyPromptStringKey != reduceOnlyPromptStringKey
                 ) {
                     val typeOptions = typeOptionsV4Array
 
@@ -234,7 +236,8 @@ data class TradeInputOptions(
                         sideOptionsArray,
                         timeInForceOptionsArray,
                         goodTilUnitOptionsArray,
-                        executionOptionsArray
+                        executionOptionsArray,
+                        reduceOnlyPromptStringKey,
                     )
                 } else {
                     existing

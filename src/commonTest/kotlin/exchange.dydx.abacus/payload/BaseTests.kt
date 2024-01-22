@@ -347,6 +347,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.bracket,
                 "$trace.bracket"
             )
+
         } else {
             assertNull(obj, "$trace should be null")
         }
@@ -615,6 +616,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asBool(data["needsTriggerPrice"]) ?: false,
                 obj.needsTriggerPrice,
                 "$trace.needsTriggerPrice $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["reduceOnlyPromptStringKey"]),
+                obj.reduceOnlyPromptStringKey,
+                "$trace.reduceOnlyPromptStringKey $doesntMatchText"
             )
             verifyInputTradeInputOptionsExecutionOptionsState(
                 parser.asList(data["executionOptions"]),

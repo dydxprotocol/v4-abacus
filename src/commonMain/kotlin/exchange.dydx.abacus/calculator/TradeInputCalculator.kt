@@ -701,7 +701,7 @@ internal class TradeInputCalculator(
         val modified = defaultOptions(trade, position, market)
         val fields = requiredFields(modified)
         modified.safeSet("fields", fields)
-        modified.safeSet("options", calculatedOptionsFromFields(fields, position, market))
+        modified.safeSet("options", calculatedOptionsFromFields(fields, trade, position, market))
         modified.safeSet(
             "summary",
             summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type)
@@ -712,7 +712,6 @@ internal class TradeInputCalculator(
 
     private fun requiredFields(trade: Map<String, Any>): List<Any>? {
         val type = parser.asString(trade["type"])
-        val timeInForce = parser.asString(trade["timeInForce"])
         return when (type) {
             "MARKET" -> fieldList(
                 listOf(
@@ -722,15 +721,8 @@ internal class TradeInputCalculator(
                 ), reduceOnlyField()
             )
 
-            "STOP_MARKET", "TAKE_PROFIT_MARKET" ->
-                listOf(
-                    sizeField(),
-                    triggerPriceField(),
-                    goodTilField(),
-                    executionField(false)
-                )
-
             "LIMIT" -> {
+                val timeInForce = parser.asString(trade["timeInForce"])
                 when (timeInForce) {
                     "GTT" ->
                         listOf(
@@ -751,14 +743,31 @@ internal class TradeInputCalculator(
                 }
             }
 
-            "STOP_LIMIT", "TAKE_PROFIT" ->
+            "STOP_LIMIT", "TAKE_PROFIT" -> {
+                val execution = parser.asString(trade["execution"])
+                fieldList(
+                    listOf(
+                        sizeField(),
+                        limitPriceField(),
+                        triggerPriceField(),
+                        goodTilField(),
+                        executionField(true),
+                    ),
+                    when (execution) {
+                        "FOK", "IOC" -> reduceOnlyField()
+                        else -> null
+                    }
+                )
+            }
+
+            "STOP_MARKET", "TAKE_PROFIT_MARKET" -> fieldList(
                 listOf(
                     sizeField(),
-                    limitPriceField(),
                     triggerPriceField(),
                     goodTilField(),
-                    executionField(true),
-                )
+                    executionField(false)
+                ), reduceOnlyField()
+            )
 
             "TRAILING_STOP" ->
                 listOf(
@@ -827,32 +836,32 @@ internal class TradeInputCalculator(
             )
         } else null
     }
-
-    private fun reducedOnlyFieldWithTimeInForce(trade: Map<String, Any>): Map<String, Any>? {
-        val timeInForce = parser.asString(
-            parser.value(
-                trade,
-                "timeInForce"
-            )
-        )
-        return when (timeInForce) {
-            "FOK", "IOC" -> reduceOnlyField()
-            else -> null
-        }
-    }
-
-    private fun reducedOnlyFieldWithExecution(trade: Map<String, Any>): Map<String, Any>? {
-        val execution = parser.asString(
-            parser.value(
-                trade,
-                "execution"
-            )
-        )
-        return when (execution) {
-            "FOK", "IOC" -> reduceOnlyField()
-            else -> null
-        }
-    }
+//
+//    private fun reducedOnlyFieldWithTimeInForce(trade: Map<String, Any>): Map<String, Any>? {
+//        val timeInForce = parser.asString(
+//            parser.value(
+//                trade,
+//                "timeInForce"
+//            )
+//        )
+//        return when (timeInForce) {
+//            "FOK", "IOC" -> reduceOnlyField()
+//            else -> null
+//        }
+//    }
+//
+//    private fun reducedOnlyFieldWithExecution(trade: Map<String, Any>): Map<String, Any>? {
+//        val execution = parser.asString(
+//            parser.value(
+//                trade,
+//                "execution"
+//            )
+//        )
+//        return when (execution) {
+//            "FOK", "IOC" -> reduceOnlyField()
+//            else -> null
+//        }
+//    }
 
     private fun postOnlyField(): Map<String, Any> {
         return mapOf(
@@ -947,16 +956,16 @@ internal class TradeInputCalculator(
         )
     }
 
-    private fun executionField(conditionalLimit: Boolean): Map<String, Any> {
+    private fun executionField(includesDefaultAndPostOnly: Boolean): Map<String, Any> {
         return mapOf(
             "field" to "execution",
             "type" to "string",
             "options" to
-                    if (conditionalLimit) listOf(
+                    if (includesDefaultAndPostOnly) listOf(
                         executionDefault,
-                        executionPostOnly,
                         executionIOC,
                         executionFOK,
+                        executionPostOnly,
                     ) else listOf(
                         executionIOC,
                         executionFOK,
@@ -966,6 +975,7 @@ internal class TradeInputCalculator(
 
     private fun calculatedOptionsFromFields(
         fields: List<Any>?,
+        trade: Map<String, Any>,
         position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): Map<String, Any>? {
@@ -1015,10 +1025,12 @@ internal class TradeInputCalculator(
                             options.safeSet("needsExecution", true)
                         }
 
-                        "reduceOnly" -> options["needsReduceOnly"] = true
+                        "reduceOnly" -> {
+                            options["needsReduceOnly"] = true
+                        }
+
                         "postOnly" -> options["needsPostOnly"] = true
                         "brackets" -> options["needsBrackets"] = true
-
                     }
                 }
             }
@@ -1026,6 +1038,11 @@ internal class TradeInputCalculator(
                 options.safeSet("maxLeverage", maxLeverageFromPosition(position, market))
             } else {
                 options.safeSet("maxLeverage", null)
+            }
+            if (parser.asBool(options["needsReduceOnly"]) == true) {
+                options.safeSet("reduceOnlyPromptStringKey", null)
+            } else {
+                options.safeSet("reduceOnlyPromptStringKey", reduceOnlyPromptFromTrade(trade))
             }
             return options
         }
@@ -1046,13 +1063,25 @@ internal class TradeInputCalculator(
         }
     }
 
+    private fun reduceOnlyPromptFromTrade(
+        trade: Map<String, Any>,
+    ): String? {
+        return when (parser.asString(trade["type"])) {
+            "LIMIT" -> "APP.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
+
+            "STOP_LIMIT", "TAKE_PROFIT" -> "APP.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+
+            else -> return null
+        }
+    }
+
     private fun calculatedOptions(
         trade: Map<String, Any>,
         position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): Map<String, Any>? {
         val fields = requiredFields(trade)
-        return calculatedOptionsFromFields(fields, position, market)
+        return calculatedOptionsFromFields(fields, trade, position, market)
     }
 
     private fun defaultOptions(
