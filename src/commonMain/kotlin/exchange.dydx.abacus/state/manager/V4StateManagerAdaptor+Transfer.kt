@@ -444,11 +444,9 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                 val json = parser.decodeJsonObject(response)
                 val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
-println(ibcPayload)
                     transaction(TransactionType.SendNobleIBC, ibcPayload) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
-                            println("transferNobleBalance error: $error")
                             DebugLogger.error("transferNobleBalance error: $error")
                         }
                     }
@@ -466,6 +464,7 @@ data class CctpWithdrawState(
 )
 
 internal var pendingCctpWithdraw: CctpWithdrawState? = null
+internal var processingCctpWithdraw = false
 
 internal fun V4StateManagerAdaptor.cctpToNoble(
     state: PerpetualState?,
