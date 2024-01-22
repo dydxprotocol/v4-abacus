@@ -32,7 +32,8 @@ class V4StateManagerConfigs(
                          "account":"/v4/addresses",
                          "fills":"/v4/fills",
                          "historical-pnl":"/v4/historical-pnl",
-                         "transfers":"/v4/transfers"
+                         "transfers":"/v4/transfers",
+                         "historicalTradingRewardAggregations":"/v4/historicalTradingRewardAggregations"
                       },
                       "faucet":{
                          "faucet":"/faucet/tokens"

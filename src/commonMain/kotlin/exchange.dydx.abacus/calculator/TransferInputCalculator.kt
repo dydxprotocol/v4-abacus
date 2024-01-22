@@ -149,7 +149,8 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val exchangeRate = parser.asDouble(parser.value(transfer, "route.exchangeRate"))
                 summary.safeSet("exchangeRate", exchangeRate)
 
-                val estimatedRouteDuration = parser.asDouble(parser.value(transfer, "route.estimatedRouteDuration"))
+                val estimatedRouteDuration =
+                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDuration"))
                 summary.safeSet("estimatedRouteDuration", estimatedRouteDuration)
 
                 if (usdcSize != null) {
@@ -165,6 +166,22 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
 
                 val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
                 summary.safeSet("gasFee", gasFee)
+
+                val toAmount = parser.asDouble(parser.value(transfer, "route.toAmount"))
+                summary.safeSet("toAmount", toAmount)
+
+                val toAmountMin = parser.asDouble(parser.value(transfer, "route.toAmountMin"))
+                summary.safeSet("toAmountMin", toAmountMin)
+
+                val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
+                summary.safeSet("toAmountUSDC", toAmountUSDC ?: toAmountMin)
+
+                val aggregatePriceImpact =
+                    parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
+                summary.safeSet(
+                    "aggregatePriceImpact",
+                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
+                )
             }
 
             "WITHDRAWAL" -> {
@@ -185,7 +202,8 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val exchangeRate = parser.asDouble(parser.value(transfer, "route.exchangeRate"))
                 summary.safeSet("exchangeRate", exchangeRate)
 
-                val estimatedRouteDuration = parser.asDouble(parser.value(transfer, "route.estimatedRouteDuration"))
+                val estimatedRouteDuration =
+                    parser.asDouble(parser.value(transfer, "route.estimatedRouteDuration"))
                 summary.safeSet("estimatedRouteDuration", estimatedRouteDuration)
 
                 val bridgeFee = parser.asDouble(parser.value(transfer, "route.bridgeFee"))
@@ -194,8 +212,21 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 val gasFee = parser.asDouble(parser.value(transfer, "route.gasFee"))
                 summary.safeSet("gasFee", gasFee)
 
-                val toAmount = parser.asString(parser.value(transfer, "route.toAmountMin"))
+                val toAmountMin = parser.asDouble(parser.value(transfer, "route.toAmountMin"))
+                summary.safeSet("toAmountMin", toAmountMin)
+
+                val toAmount = parser.asDouble(parser.value(transfer, "route.toAmount"))
                 summary.safeSet("toAmount", toAmount)
+
+                val toAmountUSDC = parser.asDouble(parser.value(transfer, "route.toAmountUSDC"))
+                summary.safeSet("toAmountUSDC", toAmountUSDC)
+
+                val aggregatePriceImpact =
+                    parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
+                summary.safeSet(
+                    "aggregatePriceImpact",
+                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
+                )
             }
 
             "TRANSFER_OUT" -> {

@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
@@ -9,7 +9,6 @@ import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.receivedSubaccountSubscribed(
     payload: Map<String, Any>,
@@ -61,7 +60,7 @@ internal fun TradingStateMachine.receivedAccountsChanges(
     if (payload["fundingPayments"] != null) {
         changes.add(Changes.fundingPayments)
     }
-    if (payload["tradingRewards"] != null) {
+    if (payload["tradingReward"] != null) {
         changes.add(Changes.tradingRewards)
     }
     return StateChanges(changes, null, iListOf(subaccountNumber))

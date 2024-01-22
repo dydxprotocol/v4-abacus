@@ -1,13 +1,12 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadv4Accounts
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 open class V4TradeInputTests : V4BaseTests() {
     @Test
@@ -28,6 +27,8 @@ open class V4TradeInputTests : V4BaseTests() {
         testAdjustedMarginFraction()
 
         testConditional()
+
+        testReduceOnly()
     }
 
     override fun setup() {
@@ -662,29 +663,29 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "openPositions": {
                                         "ETH-USD": {
                                             "adjustedImf": {
-                                                "current": 0.2739,
-                                                "postOrder": 0.2739
+                                                "current": 0.05,
+                                                "postOrder": 0.05
                                             },
                                             "adjustedMmf": {
-                                                "current": 0.1643,
-                                                "postOrder": 0.1643
+                                                "current": 0.03,
+                                                "postOrder": 0.03
                                             },
                                             "liquidationPrice": {
-                                                "current": 2511.47,
-                                                "postOrder": 2484.31
+                                                "current": 2838.98,
+                                                "postOrder": 2829.27
                                             }
                                         },
                                         "BTC-USD": {
                                             "adjustedImf": {
                                                 "current": 0.05,
-                                                "postOrder": 0.1581
+                                                "postOrder": 0.05
                                             },
                                             "adjustedMmf": {
                                                 "current": 0.03,
-                                                "postOrder": 0.0949
+                                                "postOrder": 0.03
                                             },
                                             "liquidationPrice": {
-                                                "postOrder": 57353.80
+                                                "postOrder": 64878.0
                                             }
                                         }
                                     }
@@ -714,9 +715,10 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("900.0", TradeInputField.limitPrice, 0)
         }, null)
 
-        test({
-            perp.trade("1000.0", TradeInputField.triggerPrice, 0)
-        }, """
+        test(
+            {
+                perp.trade("1000.0", TradeInputField.triggerPrice, 0)
+            }, """
             {
                 "input": {
                     "trade": {
@@ -727,7 +729,8 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         test(
             {
@@ -803,6 +806,376 @@ open class V4TradeInputTests : V4BaseTests() {
                 }
             }
         """.trimIndent()
+        )
+
+    }
+
+
+    fun testReduceOnly() {
+        test(
+            {
+                perp.trade("MARKET", TradeInputField.type, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "MARKET",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("LIMIT", TradeInputField.type, 0)
+        test(
+            {
+                perp.trade("GTT", TradeInputField.timeInForceType, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "options": {
+                                "needsReduceOnly": false,
+                                "needsPostOnly": true,
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK",
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.timeInForceType, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("FOK", TradeInputField.timeInForceType, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+
+        test(
+            {
+                perp.trade("DEFAULT", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "options": {
+                                "needsReduceOnly": false,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("FOK", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        test(
+            {
+                perp.trade("POST_ONLY", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "options": {
+                                "needsReduceOnly": false,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+
+        test(
+            {
+                perp.trade("DEFAULT", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "options": {
+                                "needsReduceOnly": false,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("FOK", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        test(
+            {
+                perp.trade("POST_ONLY", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "options": {
+                                "needsReduceOnly": false,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK",
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("FOK", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+
+        test(
+            {
+                perp.trade("IOC", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("FOK", TradeInputField.execution, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "options": {
+                                "needsReduceOnly": true,
+                                "needsPostOnly": false,
+                                "reduceOnlyPromptStringKey": null,
+                                "postOnlyPromptStringKey": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
         )
 
     }

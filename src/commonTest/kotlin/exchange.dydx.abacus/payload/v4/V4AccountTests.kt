@@ -5,10 +5,10 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.NotificationsProvider
-import exchange.dydx.abacus.state.modal.historicalTradingRewards
-import exchange.dydx.abacus.state.modal.onChainAccountBalances
-import exchange.dydx.abacus.state.modal.onChainDelegations
-import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.state.model.historicalTradingRewards
+import exchange.dydx.abacus.state.model.onChainAccountBalances
+import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
@@ -112,10 +112,6 @@ class V4AccountTests : V4BaseTests() {
                                     {
                                         "tradingReward": "0.02",
                                         "createdAtHeight": "2422"
-                                    },
-                                    {
-                                        "tradingReward": "0.01",
-                                        "createdAtHeight": "2500"
                                     }
                                 ]
                             },
@@ -441,10 +437,6 @@ class V4AccountTests : V4BaseTests() {
                                     {
                                         "tradingReward": "0.02",
                                         "createdAtHeight": "2422"
-                                    },
-                                    {
-                                        "tradingReward": "0.01",
-                                        "createdAtHeight": "2500"
                                     },
                                     {
                                         "tradingReward": "0.01",
@@ -868,7 +860,7 @@ class V4AccountTests : V4BaseTests() {
                     )
                 val notifications = notificationsProvider.buildNotifications(perp, 0)
                 assertEquals(
-                    7,
+                    6,
                     notifications.size
                 )
                 val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]

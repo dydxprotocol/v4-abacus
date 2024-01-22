@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.payload
 
 import exchange.dydx.abacus.payload.v3.V3BaseTests
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadSimpleAccounts
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
@@ -1746,7 +1746,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": true,
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "needsBrackets": false
                             }
@@ -1847,7 +1847,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": true,
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "needsBrackets": false
                             }

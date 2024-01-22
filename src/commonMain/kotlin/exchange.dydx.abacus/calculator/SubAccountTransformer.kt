@@ -118,7 +118,7 @@ internal class SubaccountTransformer {
                     "usdcSize" to usdcSize,
                     "feeRate" to feeRate,
                     "fee" to fee,
-                    "reduceOnly" to (parser.asBool(order["postOnly"]) ?: false)
+                    "reduceOnly" to (parser.asBool(order["reduceOnly"]) ?: false)
                 )
             }
         }

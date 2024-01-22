@@ -8,7 +8,6 @@ import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
-import exchange.dydx.abacus.output.BlockReward
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
 import exchange.dydx.abacus.output.FeeTier
@@ -35,8 +34,6 @@ import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.User
 import exchange.dydx.abacus.output.Wallet
-import exchange.dydx.abacus.output.TradingRewards
-import exchange.dydx.abacus.output.HistoricalTradingReward
 import exchange.dydx.abacus.output.input.ClosePositionInput
 import exchange.dydx.abacus.output.input.ClosePositionInputSize
 import exchange.dydx.abacus.output.input.Input
@@ -55,8 +52,8 @@ import exchange.dydx.abacus.output.input.TradeInputSummary
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
-import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
-import exchange.dydx.abacus.state.modal.TradingStateMachine
+import exchange.dydx.abacus.state.model.PerpTradingStateMachine
+import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Numeric
@@ -64,7 +61,6 @@ import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
-import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -351,6 +347,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.bracket,
                 "$trace.bracket"
             )
+
         } else {
             assertNull(obj, "$trace should be null")
         }
@@ -619,6 +616,34 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asBool(data["needsTriggerPrice"]) ?: false,
                 obj.needsTriggerPrice,
                 "$trace.needsTriggerPrice $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["reduceOnlyPromptStringKey"])?.let {
+                    "$it.TITLE"
+                },
+                obj.reduceOnlyTooltip?.titleStringKey,
+                "$trace.reduceOnlyPromptStringKey title $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["reduceOnlyPromptStringKey"])?.let {
+                    "$it.BODY"
+                },
+                obj.reduceOnlyTooltip?.bodyStringKey,
+                "$trace.reduceOnlyPromptStringKey body $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["postOnlyPromptStringKey"])?.let {
+                    "$it.TITLE"
+                },
+                obj.postOnlyTooltip?.titleStringKey,
+                "$trace.postOnlyPromptStringKey title $doesntMatchText"
+            )
+            assertEquals(
+                parser.asString(data["postOnlyPromptStringKey"])?.let {
+                    "$it.BODY"
+                },
+                obj.postOnlyTooltip?.bodyStringKey,
+                "$trace.postOnlyPromptStringKey body $doesntMatchText"
             )
             verifyInputTradeInputOptionsExecutionOptionsState(
                 parser.asList(data["executionOptions"]),
@@ -1245,7 +1270,6 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             (parser.asInt(parser.value(data, "configs.tickSize"))) != null &&
             (parser.asDouble(parser.value(data, "configs.initialMarginFraction"))) != null &&
             (parser.asDouble(parser.value(data, "configs.maintenanceMarginFraction"))) != null &&
-            (parser.asInt(parser.value(data, "configs.basePositionNotional"))) != null &&
             (parser.asInt(parser.value(data, "configs.v4.clobPairId"))) != null &&
             (parser.asInt(parser.value(data, "configs.v4.atomicResolution"))) != null &&
             (parser.asInt(parser.value(data, "configs.v4.stepBaseQuantums"))) != null &&

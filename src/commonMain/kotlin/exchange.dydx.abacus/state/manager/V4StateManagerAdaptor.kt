@@ -14,19 +14,19 @@ import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
-import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.state.modal.onChainAccountBalances
-import exchange.dydx.abacus.state.modal.onChainDelegations
-import exchange.dydx.abacus.state.modal.onChainEquityTiers
-import exchange.dydx.abacus.state.modal.onChainFeeTiers
-import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
-import exchange.dydx.abacus.state.modal.onChainRewardsParams
-import exchange.dydx.abacus.state.modal.onChainUserFeeTier
-import exchange.dydx.abacus.state.modal.onChainUserStats
-import exchange.dydx.abacus.state.modal.squidChains
-import exchange.dydx.abacus.state.modal.squidTokens
-import exchange.dydx.abacus.state.modal.squidV2SdkInfo
-import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.onChainAccountBalances
+import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.onChainEquityTiers
+import exchange.dydx.abacus.state.model.onChainFeeTiers
+import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
+import exchange.dydx.abacus.state.model.onChainRewardsParams
+import exchange.dydx.abacus.state.model.onChainUserFeeTier
+import exchange.dydx.abacus.state.model.onChainUserStats
+import exchange.dydx.abacus.state.model.squidChains
+import exchange.dydx.abacus.state.model.squidTokens
+import exchange.dydx.abacus.state.model.squidV2SdkInfo
+import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
@@ -148,7 +148,7 @@ class V4StateManagerAdaptor(
         }
 
 
-    private val MAX_NUM_BLOCK_DELAY = 10
+    private val MAX_NUM_BLOCK_DELAY = 15
 
     private var lastValidatorCallTime: Instant? = null
 
@@ -315,8 +315,7 @@ class V4StateManagerAdaptor(
             val timer = ioImplementations.timer ?: CoroutineTimer.instance
             heightTimer = timer.schedule(0.0, heightPollingDuration) {
                 if (readyToConnect) {
-                    retrieveIndexerHeight()
-                    retrieveValidatorHeight()
+                    retrieveHeights()
                     true
                 } else {
                     false
@@ -324,6 +323,15 @@ class V4StateManagerAdaptor(
             }
         } else {
             reconnectChain()
+        }
+    }
+
+    private fun retrieveHeights() {
+        // serialize height retrieval. Get indexer height first, then validator height
+        // If indexer height is not available, then validator height is not available
+        // indexer height no longer triggers api state change
+        retrieveIndexerHeight() {
+            retrieveValidatorHeight()
         }
     }
 
@@ -648,7 +656,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveIndexerHeight() {
+    private fun retrieveIndexerHeight(callback: (()-> Unit)? = null) {
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.previousRequestTime = indexerState.requestTime
@@ -666,7 +674,10 @@ class V4StateManagerAdaptor(
                 } else {
                     indexerState.updateHeight(null, null)
                 }
-                updateApiState()
+                callback?.invoke()
+                /*
+                Indexer height no longer triggers api state change
+                 */
             }
         }
     }

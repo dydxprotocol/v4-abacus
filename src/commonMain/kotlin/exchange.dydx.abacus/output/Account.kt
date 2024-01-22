@@ -1537,7 +1537,7 @@ data class TradingRewards(
                     BlockReward.create(null, parser, parser.asMap(it))
                 }?.filterNotNull()?.toIList()
 
-                if (total != null || historical != null) {
+                if (total != null || historical != null || blockRewards != null) {
                     return if (existing?.total != total ||
                         existing?.blockRewards != blockRewards ||
                         existing?.historical != historical

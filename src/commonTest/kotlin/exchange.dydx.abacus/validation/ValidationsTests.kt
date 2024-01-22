@@ -2,7 +2,7 @@ package exchange.dydx.abacus.validation
 
 import exchange.dydx.abacus.payload.v3.V3BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.modal.trade
+import exchange.dydx.abacus.state.model.trade
 
 open class ValidationsTests : V3BaseTests() {
     override fun setup() {

@@ -7,7 +7,7 @@ import exchange.dydx.abacus.output.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
+import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
