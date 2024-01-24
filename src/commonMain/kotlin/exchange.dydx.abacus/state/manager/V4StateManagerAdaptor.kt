@@ -236,15 +236,14 @@ class V4StateManagerAdaptor(
     }
 
     override fun historicalTradingRewardAggregationsUrl(): String? {
-        return configs.privateApiUrl("historicalTradingRewardAggregations")
+        val url = configs.privateApiUrl("historicalTradingRewardAggregations")
+        return if (accountAddress != null && url != null) {
+            "$url/$accountAddress"
+        } else null
     }
 
     override fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String>? {
-        val accountAddress = accountAddress
-        return if (accountAddress != null) iMapOf(
-            "address" to accountAddress,
-            "period" to "$period",
-        ) else null
+        return iMapOf("period" to "$period")
     }
 
     override fun subaccountParams(): IMap<String, String>? {
