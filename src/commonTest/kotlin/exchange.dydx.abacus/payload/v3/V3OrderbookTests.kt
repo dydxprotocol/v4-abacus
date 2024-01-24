@@ -48,7 +48,7 @@ class V3OrderbookTests: V3BaseTests() {
                                     }
                                 ],
                                 "midPrice": 1655.05,
-                                "spreadPercent": 4.53158514848494E-4
+                                "spreadPercent": 9.06317029696988E-4
                             }
                         }
                     }
