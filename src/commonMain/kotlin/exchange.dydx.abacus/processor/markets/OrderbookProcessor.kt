@@ -355,7 +355,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         if (firstAsk != null && firstBid != null) {
             val firstAskPrice = firstAsk
             val midPrice = (firstAskPrice + firstBid) / 2.0
-            val spread = firstAskPrice.minus(midPrice)
+            val spread = firstAskPrice.minus(firstBid)
             val spreadPercent = spread / midPrice
             modified.safeSet("midPrice", midPrice)
             modified.safeSet("spreadPercent", spreadPercent)
