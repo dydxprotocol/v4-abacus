@@ -17,7 +17,7 @@ internal class HistoricalTradingRewardProcessor(parser: ParserProtocol) : BasePr
             "endedAt" to "endedAt"
         ),
         "double" to mapOf(
-            "tradingRewards" to "amount",
+            "tradingReward" to "amount",
         ),
     )
 

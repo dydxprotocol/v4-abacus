@@ -1460,7 +1460,7 @@ open class StateManagerAdaptor(
             "startedAt",
             0.days,
             180.days,
-            "startedBeforeOrAt",
+            "endedAt",
             null,
             params,
             previousUrl
