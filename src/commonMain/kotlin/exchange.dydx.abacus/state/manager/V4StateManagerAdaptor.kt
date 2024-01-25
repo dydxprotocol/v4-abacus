@@ -273,6 +273,7 @@ class V4StateManagerAdaptor(
                 }
             }
 
+            retrieveDepositExchanges()
             bestEffortConnectChain()
         } else {
             validatorConnected = false

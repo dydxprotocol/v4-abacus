@@ -21,6 +21,7 @@ enum class TransferInputField(val rawValue: String) {
     size("size.size"),
     usdcFee("fee"),
 
+    exchange("exchange"),
     chain("chain"),
     token("token"),
     address("address"),
@@ -154,6 +155,17 @@ fun TradingStateMachine.transfer(
                         iListOf(subaccountNumber)
                     )
                 }
+                TransferInputField.exchange.rawValue -> {
+                    val exchange = parser.asString(data)
+                    if (exchange != null) {
+                        updateTransferExchangeType(transfer, exchange)
+                    }
+                    changes = StateChanges(
+                        iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+                        null,
+                        iListOf(subaccountNumber)
+                    )
+                }
                 else -> {}
             }
         } else {
@@ -211,6 +223,26 @@ private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<S
             squidProcessor.tokenResources(chainType)
         )
     }
+    transfer.safeSet("exchange", null)
+    transfer.safeSet("size.size", null)
+    transfer.safeSet("route", null)
+    transfer.safeSet("requestPayload", null)
+}
+
+private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<String, Any>, exchange: String) {
+    if (transfer["type"] != "TRANSFER_OUT") {
+        transfer.safeSet(
+            "depositOptions.assets",
+            null
+        )
+        transfer.safeSet(
+            "withdrawalOptions.assets",
+            null
+        )
+        transfer.safeSet("token", null)
+    }
+    transfer.safeSet("exchange", exchange)
+    transfer.safeSet("chain", null)
     transfer.safeSet("size.size", null)
     transfer.safeSet("route", null)
     transfer.safeSet("requestPayload", null)
