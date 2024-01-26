@@ -1009,7 +1009,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": false,
-                                "needsReduceOnly": true,
+                                "needsReduceOnly": false,
                                 "needsPostOnly": false,
                                 "needsBrackets": true
                             }
@@ -1092,7 +1092,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": false,
-                                "needsReduceOnly": true,
+                                "needsReduceOnly": false,
                                 "needsPostOnly": false,
                                 "needsBrackets": true
                             }
@@ -1746,7 +1746,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": true,
-                                "needsReduceOnly": true,
+                                "needsReduceOnly": false,
                                 "needsPostOnly": false,
                                 "needsBrackets": false
                             }
@@ -1847,7 +1847,7 @@ class TradeInputTests : V3BaseTests() {
                                 "needsLimitPrice": false,
                                 "needsTrailingPercent": false,
                                 "needsGoodUntil": true,
-                                "needsReduceOnly": true,
+                                "needsReduceOnly": false,
                                 "needsPostOnly": false,
                                 "needsBrackets": false
                             }

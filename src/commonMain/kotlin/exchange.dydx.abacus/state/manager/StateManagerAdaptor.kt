@@ -69,6 +69,7 @@ import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.reduceOnlySupported
 import exchange.dydx.abacus.utils.values
 import kollections.JsExport
 import kollections.iListOf
@@ -1908,7 +1909,7 @@ open class StateManagerAdaptor(
         val size = summary.size ?: throw Exception("size is null")
         val timeInForce = "IOC"
         val execution = "Default"
-        val reduceOnly = false  // TODO, change to true when protocol supports it
+        val reduceOnly = reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
         return HumanReadablePlaceOrderPayload(
