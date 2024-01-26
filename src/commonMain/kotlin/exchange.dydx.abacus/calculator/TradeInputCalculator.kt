@@ -698,10 +698,11 @@ internal class TradeInputCalculator(
                 "openPositions.$marketId"
             )
         ) else null
-        val modified = defaultOptions(trade, position, market)
-        val fields = requiredFields(modified)
+        var modified = trade.mutable()
+        val fields = requiredFields(trade)
         modified.safeSet("fields", fields)
         modified.safeSet("options", calculatedOptionsFromFields(fields, trade, position, market))
+        modified = defaultOptions(modified, position, market)
         modified.safeSet(
             "summary",
             summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type)
