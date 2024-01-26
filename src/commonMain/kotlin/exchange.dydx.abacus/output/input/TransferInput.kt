@@ -2,6 +2,7 @@ package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -21,6 +22,7 @@ data class DepositInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val needsFastSpeed: Boolean?,
+    val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
 ) {
@@ -65,6 +67,16 @@ data class DepositInputOptions(
                     }
                 }
 
+                var exchanges: IMutableList<SelectionOption>? = null
+                exchangeList?.let { data ->
+                    exchanges = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        val selection = SelectionOption(item.name, item.label, item.label, item.icon)
+                        exchanges?.add(selection)
+                    }
+                }
+
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
                     existing?.needsFastSpeed != needsFastSpeed ||
@@ -75,6 +87,7 @@ data class DepositInputOptions(
                         needsSize,
                         needsAddress,
                         needsFastSpeed,
+                        exchanges,
                         chains,
                         assets
                     )
@@ -94,6 +107,7 @@ data class WithdrawalInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val needsFastSpeed: Boolean?,
+    val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
 ) {
@@ -136,6 +150,8 @@ data class WithdrawalInputOptions(
                         }
                     }
                 }
+                var exchanges: IMutableList<SelectionOption>? = null
+
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
                     existing?.needsFastSpeed != needsFastSpeed ||
@@ -146,6 +162,7 @@ data class WithdrawalInputOptions(
                         needsSize,
                         needsAddress,
                         needsFastSpeed,
+                        exchanges,
                         chains,
                         assets
                     )
@@ -575,6 +592,7 @@ data class TransferInput(
     val size: TransferInputSize?,
     val fastSpeed: Boolean,
     val fee: Double?,
+    val exchange: String?,
     val chain: String?,
     val token: String?,
     val address: String?,
@@ -608,6 +626,7 @@ data class TransferInput(
                     TransferInputSize.create(existing?.size, parser, parser.asMap(data["size"]))
                 val fastSpeed = parser.asBool(data["fastSpeed"]) ?: false
                 val fee = parser.asDouble(data["fee"])
+                val exchange = parser.asString(data["exchange"])
                 val chain = parser.asString(data["chain"])
                 val token = parser.asString(data["token"])
                 val address = parser.asString(data["address"])
@@ -674,6 +693,7 @@ data class TransferInput(
                     existing?.size !== size ||
                     existing?.fastSpeed != fastSpeed ||
                     existing.fee != fee ||
+                    existing.exchange != exchange ||
                     existing.chain != chain ||
                     existing.token != token ||
                     existing.address != address ||
@@ -691,6 +711,7 @@ data class TransferInput(
                         size,
                         fastSpeed,
                         fee,
+                        exchange,
                         chain,
                         token,
                         address,

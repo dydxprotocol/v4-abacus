@@ -9,6 +9,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
@@ -42,6 +43,27 @@ internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
                }
             }
             cctpChainIds = chainIds
+        }
+    }
+}
+
+internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
+    val url = "$deploymentUri/configs/exchanges.json"
+    get(url) { _, response, _ ->
+        if (response != null) {
+            var exchanges = mutableListOf<ExchangeInfo>()
+            val exchangeInfos: List<JsonElement>? = parser.decodeJsonArray(response)?.toList() as? List<JsonElement>
+            for (exchange in exchangeInfos ?: emptyList()) {
+                val exchangeInfo = exchange.jsonObject
+                val name = parser.asString(exchangeInfo["name"])
+                val label = parser.asString(exchangeInfo["label"])
+                val icon = parser.asString(exchangeInfo["icon"])
+                val depositType = parser.asString(exchangeInfo["depositType"])
+                if (name != null && label != null && icon != null && depositType != null) {
+                    exchanges.add(ExchangeInfo(name, label, icon, depositType))
+                }
+            }
+            exchangeList = exchanges
         }
     }
 }
