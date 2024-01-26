@@ -1045,13 +1045,15 @@ internal class TradeInputCalculator(
     private fun reduceOnlyPromptFromTrade(
         trade: Map<String, Any>,
     ): String? {
-        return when (parser.asString(trade["type"])) {
-            "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
+        return if (reduceOnlySupported) {
+            when (parser.asString(trade["type"])) {
+                "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
 
-            "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
 
-            else -> return null
-        }
+                else -> return null
+            }
+        } else null
     }
 
     private fun postOnlyPromptFromTrade(

@@ -41,7 +41,7 @@ class V3ClosePositionTests : V3BaseTests() {
                     "closePosition": {
                         "type": "MARKET",
                         "side": "SELL",
-                        "reduceOnly": true
+                        "reduceOnly": false
                     }
                 }
             }
@@ -64,7 +64,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "size": 2.3392E+1,
                             "usdcSize": 38684.3479
                         },
-                        "reduceOnly": true,
+                        "reduceOnly": false,
                         "summary": {
                             "price": 1653.74,
                             "size": 23.392,
@@ -114,7 +114,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "size": 15,
                             "usdcSize": 24812.3719
                         },
-                        "reduceOnly": true,
+                        "reduceOnly": false,
                         "summary": {
                             "price": 1654.16,
                             "size": 15.0,
@@ -170,7 +170,7 @@ class V3ClosePositionTests : V3BaseTests() {
                     "closePosition": {
                         "type": "MARKET",
                         "side": "BUY",
-                        "reduceOnly": true
+                        "reduceOnly": false
                     }
                 }
             }
@@ -192,7 +192,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "input": "size.percent",
                             "size": 2.6544E+1
                         },
-                        "reduceOnly": true
+                        "reduceOnly": false
                     }
                 },
                 "wallet": {
@@ -236,7 +236,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "size": 15,
                             "usdcSize": 24835.5
                         },
-                        "reduceOnly": true,
+                        "reduceOnly": false,
                         "summary": {
                             "price": 1655.7,
                             "size": 15.0,

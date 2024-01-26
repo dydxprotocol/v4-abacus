@@ -67,6 +67,22 @@ class TradePositionTests: ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "IOC"
                         },
+                        "errors": null
+                    }
+                }
+            """
+                /*
+
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "side": "SELL",
+                            "marketId": "ETH-USD",
+                            "timeInForce": "IOC"
+                        },
                         "errors": [
                             {
                                 "type": "ERROR",
@@ -76,28 +92,7 @@ class TradePositionTests: ValidationsTests() {
                     }
                 }
             """
-//            """
-//                {
-//                    "input": {
-//                        "current": "trade",
-//                        "trade": {
-//                            "type": "LIMIT",
-//                            "side": "SELL",
-//                            "marketId": "ETH-USD",
-//                            "timeInForce": "IOC"
-//                        },
-//                        "errors": [
-//                            {
-//                                "type": "ERROR",
-//                                "code": "ORDER_WOULD_FLIP_POSITION",
-//                                "fields": [
-//                                    "size.size"
-//                                ]
-//                            }
-//                        ]
-//                    }
-//                }
-//            """
+                 */
                 .trimIndent()
         )
 
