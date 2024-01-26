@@ -409,7 +409,7 @@ open class StateManagerAdaptor(
         internal set(value) {
             if (field != value) {
                 field = value
-                didSetHistoricalTradingRewardsPeriod(value as String)
+                didSetHistoricalTradingRewardsPeriod(value.name)
             }
         }
 
@@ -585,6 +585,7 @@ open class StateManagerAdaptor(
 
         subaccountsTimer = null
         screenAccountAddress()
+        retrieveAccountHistoricalTradingRewards()
     }
 
     private fun didSetAccountAddressRestriction(accountAddressRestriction: Restriction?) {

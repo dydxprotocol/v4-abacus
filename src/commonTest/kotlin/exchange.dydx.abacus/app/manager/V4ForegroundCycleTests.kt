@@ -425,8 +425,7 @@ class V4ForegroundCycleTests {
 
         stateManager.setAddresses(null, testAddress)
 
-        println(testRest?.requests?.toString())
-        assertEquals(13, testRest?.requests?.size)
+        assertEquals(12, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
             testRest?.requests?.get(11)
@@ -459,10 +458,10 @@ class V4ForegroundCycleTests {
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
         stateManager.setAddresses(null, secondAddress)
 
-        assertEquals(14, testRest?.requests?.size)
+        assertEquals(13, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
-            testRest?.requests?.get(13)
+            testRest?.requests?.get(12)
         )
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
