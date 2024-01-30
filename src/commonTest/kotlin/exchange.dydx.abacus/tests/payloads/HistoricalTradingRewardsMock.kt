@@ -19,6 +19,29 @@ internal class HistoricalTradingRewardsMock {
       }
     """.trimIndent()
 
+    internal val dailyCall = """
+    {
+        "rewards": [
+          {
+            "tradingReward": "0.184633506816819606",
+            "startedAt": "2024-01-29T00:00:00.000Z",
+            "startedAtHeight": "133964",
+            "endedAt": "2024-01-30T00:00:00.000Z",
+            "endedAtHeight": "197601",
+            "period": "DAILY"
+          },
+          {
+            "tradingReward": "0.631910345674096029",
+            "startedAt": "2024-01-27T00:00:00.000Z",
+            "startedAtHeight": "2",
+            "endedAt": "2024-01-28T00:00:00.000Z",
+            "endedAtHeight": "68968",
+            "period": "DAILY"
+          }
+        ]
+      }
+    """.trimIndent()
+
     internal val monthlyCall = """
     {
         "rewards": [

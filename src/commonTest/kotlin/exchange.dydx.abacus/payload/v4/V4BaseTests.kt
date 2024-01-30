@@ -97,17 +97,23 @@ open class V4BaseTests : BaseTests(127) {
             if (historicalData != null) {
                 assertNotNull(obj?.historical)
                 for ((period, rewardsData) in historicalData) {
-                    val rewardsListObj = obj?.historical?.get(period)?.filter {
+                    val rewardsListObjOrig = obj?.historical?.get(period)
+                    val rewardsListDataOrig = parser.asList(rewardsData)
+
+                    assert(rewardsListObjOrig?.size ?: 0 >= rewardsListDataOrig?.size ?: 0)
+
+                    val rewardsListObj = rewardsListObjOrig?.filter {
                         it.amount != 0.0
                     }
-                    val rewardsListData = parser.asList(rewardsData)?.filter {
+                    val rewardsListData = rewardsListDataOrig?.filter {
                         parser.asDouble(parser.value(it, "amount")) != 0.0
                     }
 
                     assertNotNull(rewardsListObj)
                     assertEquals(
-                        rewardsListData?.size,
-                        rewardsListObj?.size,
+                        (rewardsListData?.size ?: 0).toDouble(),
+                        (rewardsListObj?.size ?: 0).toDouble(),
+                        0.0,
                         "$trace.historical.$period.size $doesntMatchText"
                     )
 
@@ -171,11 +177,15 @@ open class V4BaseTests : BaseTests(127) {
                 obj.startedAt,
                 "$trace.startedAt"
             )
-            assertEquals(
-                parser.asDatetime(data["endedAt"]),
-                obj.endedAt,
-                "$trace.endedAt"
-            )
+            assertNotNull(obj.endedAt)
+            if (parser.asDatetime(data["endedAt"]) != null) {
+                assertEquals(
+                    parser.asDatetime(data["endedAt"]),
+                    obj.endedAt,
+                    "$trace.endedAt"
+                )
+            }
+
         } else {
             assertNull(obj)
         }
