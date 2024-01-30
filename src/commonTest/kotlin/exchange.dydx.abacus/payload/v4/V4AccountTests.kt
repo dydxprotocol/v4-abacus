@@ -33,33 +33,33 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testAccountsOnce() {
-        // var time = ServerTime.now()
-        // testSubaccountsReceived()
-        // time = perp.log("Accounts Received", time)
+        var time = ServerTime.now()
+        testSubaccountsReceived()
+        time = perp.log("Accounts Received", time)
 
-        // testSubaccountFillsReceived()
-        // time = perp.log("Fills Received", time)
+        testSubaccountFillsReceived()
+        time = perp.log("Fills Received", time)
 
-        // testSubaccountSubscribed()
-        // time = perp.log("Accounts Subscribed", time)
+        testSubaccountSubscribed()
+        time = perp.log("Accounts Subscribed", time)
 
-        // testSubaccountTransfersReceived()
-        // time = perp.log("Transfers Received", time)
+        testSubaccountTransfersReceived()
+        time = perp.log("Transfers Received", time)
 
-        // testSubaccountFillsChannelData()
+        testSubaccountFillsChannelData()
 
-        // testSubaccountChanged()
-        // time = perp.log("Accounts Changed", time)
+        testSubaccountChanged()
+        time = perp.log("Accounts Changed", time)
 
-        // testBatchedSubaccountChanged()
+        testBatchedSubaccountChanged()
 
-        // testEquityTiers()
+        testEquityTiers()
 
-        // testFeeTiers()
+        testFeeTiers()
 
-        // testUserFeeTier()
+        testUserFeeTier()
 
-        // testUserStats()
+        testUserStats()
 
         testAccountHistoricalTradingRewards()
     }
