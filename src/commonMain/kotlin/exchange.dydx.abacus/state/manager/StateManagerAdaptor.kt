@@ -404,8 +404,8 @@ open class StateManagerAdaptor(
             }
         }
 
-    var historicalTradingRewardPeriod: HistoricaTradingRewardsPeriod =
-        HistoricaTradingRewardsPeriod.WEEKLY
+    var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
+        HistoricalTradingRewardsPeriod.WEEKLY
         internal set(value) {
             if (field != value) {
                 field = value
