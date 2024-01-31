@@ -16,6 +16,7 @@ import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
+import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMapOf
@@ -1380,30 +1381,31 @@ data class AccountBalance(
 data class HistoricalTradingReward(
     val amount: Double,
     val startedAtInMilliseconds: Double,
-    val endedAtInMilliseconds: Double?,
+    val endedAtInMilliseconds: Double,
 ) {
     internal val startedAt: Instant
         get() = Instant.fromEpochMilliseconds(startedAtInMilliseconds.toLong())
-    internal val endedAt: Instant?
-        get() = endedAtInMilliseconds?.let { Instant.fromEpochMilliseconds(it.toLong()) }
+    internal val endedAt: Instant
+        get() = Instant.fromEpochMilliseconds(endedAtInMilliseconds.toLong())
 
     companion object {
         internal fun create(
             amount: Double,
             startedAt: Instant,
-            endedAt: Instant?,
+            endedAt: Instant,
         ) : HistoricalTradingReward {
             return HistoricalTradingReward(
                 amount,
                 startedAt.toEpochMilliseconds().toDouble(),
-                endedAt?.toEpochMilliseconds()?.toDouble()
+                endedAt.toEpochMilliseconds().toDouble()
             )
         }
 
         internal fun create(
             existing: HistoricalTradingReward?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>,
+            period: String,
         ): HistoricalTradingReward? {
             data?.let {
                 val amount = parser.asDouble(data["amount"])
@@ -1418,7 +1420,7 @@ data class HistoricalTradingReward(
                         create(
                             amount,
                             startedAt,
-                            endedAt
+                            endedAt ?: getEndedAt(startedAt, period)
                         )
                     } else {
                         existing
@@ -1427,6 +1429,15 @@ data class HistoricalTradingReward(
             }
             DebugLogger.debug("HistoricalTradingReward not valid")
             return null
+        }
+
+        private fun getEndedAt(startedAt: Instant, period: String): Instant {
+            return when (period) {
+                "DAILY" -> startedAt.plus(1.days)
+                "WEEKLY" -> startedAt.plus(7.days)
+                "MONTHLY" -> startedAt.nextMonth()
+                else -> startedAt.plus(1.days)
+            }
         }
     }
 }
@@ -1527,29 +1538,26 @@ data class TradingRewards(
             DebugLogger.log("creating TradingRewards\n")
             data?.let {
                 val total = parser.asDouble(data["total"])
-                val historical = parser.asMap(data["historical"])?.mapValues {
-                    parser.asList(it.value)?.map { rewardData ->
-                        HistoricalTradingReward.create(null, parser, parser.asMap(rewardData))
-                    }?.filterNotNull()?.toIList() ?: iListOf()
-                }?.toIMap()
-
+                val historical = createHistoricalTradingRewards(
+                    existing?.historical,
+                    parser.asMap(data["historical"]),
+                    parser
+                )
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
                 }?.filterNotNull()?.toIList()
-
-                if (total != null || historical != null || blockRewards != null) {
-                    return if (existing?.total != total ||
-                        existing?.blockRewards != blockRewards ||
-                        existing?.historical != historical
-                    ) {
-                        TradingRewards(
-                            total,
-                            blockRewards,
-                            historical
-                        )
-                    } else {
-                        existing
-                    }
+    
+                return if (existing?.total != total ||
+                    existing?.blockRewards != blockRewards ||
+                    existing?.historical != historical
+                ) {
+                    TradingRewards(
+                        total,
+                        blockRewards,
+                        historical
+                    )
+                } else {
+                    existing
                 }
             }
             DebugLogger.debug("TradingRewards not valid")
@@ -1568,7 +1576,7 @@ data class TradingRewards(
                 val periodData = parser.asList(data?.get(period))
                 val rewards =
                     createHistoricalTradingRewardsPerPeriod(periodObjs, periodData, parser, period)
-                objs[period] = rewards
+                objs.typedSafeSet(period, rewards)
             }
             return objs
         }
@@ -1595,7 +1603,7 @@ data class TradingRewards(
                         when {
                             (comparison == ComparisonOrder.ascending) -> {
                                 // item is newer than obj
-                                val synced = HistoricalTradingReward.create(null, parser, item)
+                                val synced = HistoricalTradingReward.create(null, parser, item, period)
                                 addHistoricalTradingRewards(result, synced!!, period, lastStart)
                                 result.add(synced)
                                 dataIndex++
@@ -1611,7 +1619,7 @@ data class TradingRewards(
                             }
 
                             else -> {
-                                val synced = HistoricalTradingReward.create(obj, parser, item)
+                                val synced = HistoricalTradingReward.create(obj, parser, item, period)
                                 addHistoricalTradingRewards(result, obj, period, lastStart)
                                 result.add(synced!!)
                                 objIndex++
@@ -1623,19 +1631,21 @@ data class TradingRewards(
                         dataIndex++
                     }
                 }
-                while (objIndex < objs!!.size) {
-                    val obj = objs[objIndex]
-                    addHistoricalTradingRewards(result, obj, period, lastStart)
-                    result.add(obj)
-                    objIndex++
-                    lastStart = obj.startedAtInMilliseconds
+                if (objs != null) {
+                    while (objIndex < objs.size) {
+                        val obj = objs[objIndex]
+                        addHistoricalTradingRewards(result, obj, period, lastStart)
+                        result.add(obj)
+                        objIndex++
+                        lastStart = obj.startedAtInMilliseconds
+                    }
                 }
                 while (dataIndex < data.size) {
                     val item = parser.asMap(data[dataIndex])
                     val itemStart =
                         parser.asDatetime(item?.get("startedAt"))?.toEpochMilliseconds()?.toDouble()
                     if (item != null && itemStart != null) {
-                        val synced = HistoricalTradingReward.create(null, parser, item)
+                        val synced = HistoricalTradingReward.create(null, parser, item, period)
                         addHistoricalTradingRewards(result, synced!!, period, lastStart)
                         result.add(synced)
                         dataIndex++
@@ -1736,13 +1746,13 @@ data class TradingRewards(
             val today = utc.toInstant(TimeZone.UTC)
             val dayOfWeek = utc.dayOfWeek
             val start = when (dayOfWeek) {
-                DayOfWeek.SUNDAY -> today
-                DayOfWeek.MONDAY -> today.minus(1.days)
-                DayOfWeek.TUESDAY -> today.minus(2.days)
-                DayOfWeek.WEDNESDAY -> today.minus(3.days)
-                DayOfWeek.THURSDAY -> today.minus(4.days)
-                DayOfWeek.FRIDAY -> today.minus(5.days)
-                DayOfWeek.SATURDAY -> today.minus(6.days)
+                DayOfWeek.MONDAY -> today
+                DayOfWeek.TUESDAY -> today.minus(1.days)
+                DayOfWeek.WEDNESDAY -> today.minus(2.days)
+                DayOfWeek.THURSDAY -> today.minus(3.days)
+                DayOfWeek.FRIDAY -> today.minus(4.days)
+                DayOfWeek.SATURDAY -> today.minus(5.days)
+                DayOfWeek.SUNDAY -> today.minus(6.days)
                 else -> {
                     DebugLogger.debug("Invalid day of week")
                     today

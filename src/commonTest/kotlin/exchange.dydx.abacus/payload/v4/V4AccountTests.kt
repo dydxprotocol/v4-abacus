@@ -1118,6 +1118,53 @@ class V4AccountTests : V4BaseTests() {
         test(
             {
                 val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.dailyCall,
+                    "DAILY"
+                )
+                perp.update(changes)
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "tradingRewards": {
+                                "historical": {
+                                    "WEEKLY": [
+                                        {   
+                                            "period": "WEEKLY"
+                                         },
+                                         {
+                                            "period": "WEEKLY"
+                                         }
+                                    ],
+                                     "DAILY": [
+                                        {
+                                            "amount": 0.184633506816819606,
+                                            "startedAt": "2024-01-29T00:00:00.000Z",
+                                            "endedAt": "2024-01-30T00:00:00.000Z",
+                                            "period": "DAILY"
+                                          },
+                                          {
+                                            "amount": 0.631910345674096029,
+                                            "startedAt": "2024-01-27T00:00:00.000Z",
+                                            "endedAt": "2024-01-28T00:00:00.000Z",
+                                            "period": "DAILY"
+                                          }
+                                     ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+
+        test(
+            {
+                val changes = perp.historicalTradingRewards(
                     mock.historicalTradingRewards.monthlyCall,
                     "MONTHLY"
                 )
@@ -1136,6 +1183,14 @@ class V4AccountTests : V4BaseTests() {
                                          },
                                          {
                                             "period": "WEEKLY"
+                                         }
+                                     ],
+                                     "DAILY": [
+                                        {   
+                                            "period": "DAILY"
+                                         },
+                                         {
+                                            "period": "DAILY"
                                          }
                                      ],
                                      "MONTHLY": [
