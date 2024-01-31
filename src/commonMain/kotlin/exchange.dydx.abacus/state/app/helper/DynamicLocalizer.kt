@@ -258,6 +258,9 @@ class DynamicLocalizer(
                 // Not a valid language
                 callback(false, null)
             }
+        } else {
+            // Not a valid language
+            callback(false, null)
         }
     }
 
