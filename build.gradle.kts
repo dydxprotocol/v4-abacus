@@ -2,14 +2,14 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 buildscript {
-    val agp_version by extra("8.2.2")
+    val agp_version by extra("7.2.2")
     repositories {
         //gradlePluginPortal()
         //google()
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
         classpath("com.android.tools.build:gradle:$agp_version")
     }
 }
@@ -22,11 +22,11 @@ allprojects {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.9.22"
-    kotlin("native.cocoapods") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("multiplatform") version "1.9.10"
+    kotlin("native.cocoapods") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
-    id("dev.petuska.npm.publish") version "3.4.2"
+    id("dev.petuska.npm.publish") version "3.1.0"
 }
 
 group = "exchange.dydx.abacus"
@@ -99,8 +99,8 @@ kotlin {
 
 
     sourceSets {
-        val ktorVersion = "2.3.7"
-        val napierVersion = "2.7.1"
+        val ktorVersion = "2.1.1"
+        val napierVersion = "2.6.1"
         all {
             languageSettings.apply {
                 optIn("kotlin.js.ExperimentalJsExport")
@@ -109,13 +109,13 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
                 implementation("io.github.aakira:napier:$napierVersion")
-                implementation("co.touchlab:stately-common:2.0.6")
+                implementation("co.touchlab:stately-common:1.2.0")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
-                implementation("com.ionspin.kotlin:bignum:0.3.9")
-                implementation("tz.co.asoft:kollections-interoperable:2.0.18")
+                implementation("com.ionspin.kotlin:bignum:0.3.8")
+                implementation("tz.co.asoft:kollections-interoperable:2.0.16")
             }
         }
         val commonTest by getting {

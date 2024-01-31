@@ -29,6 +29,7 @@ open class V4TradeInputTests : V4BaseTests() {
         testConditional()
 
         testReduceOnly()
+        testExecution()
     }
 
     override fun setup() {
@@ -1167,6 +1168,806 @@ open class V4TradeInputTests : V4BaseTests() {
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
                             }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+    }
+
+
+    private fun testExecution() {
+        testExecutionStopLimit()
+        testExecutionStopMarket()
+        testExecutionTakeProfit()
+        testExecutionTakeProfitMarket()
+    }
+
+    private fun testExecutionStopLimit() {
+        testExecutionStopLimitToStopMarket()
+        testExecutionStopLimitToTakeProfit()
+        testExecutionStopLimitToTakeProfitMarket()
+    }
+
+    private fun testExecutionStopLimitToStopMarket() {
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("DEFAULT", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("POST_ONLY", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionStopLimitToTakeProfit() {
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("DEFAULT", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "DEFAULT"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("POST_ONLY", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "POST_ONLY"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionStopLimitToTakeProfitMarket() {
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("DEFAULT", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        perp.trade("POST_ONLY", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+
+    private fun testExecutionStopMarket() {
+        testExecutionStopMarketToStopLimit()
+        testExecutionStopMarketToTakeProfit()
+        testExecutionStopMarketToTakeProfitMarket()
+    }
+
+    private fun testExecutionStopMarketToStopLimit() {
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionStopMarketToTakeProfit() {
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionStopMarketToTakeProfitMarket() {
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("STOP_MARKET", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+    }
+
+
+
+    private fun testExecutionTakeProfit() {
+        testExecutionTakeProfitToStopMarket()
+        testExecutionTakeProfitToStopLimit()
+        testExecutionTakeProfitToTakeProfitMarket()
+    }
+
+    private fun testExecutionTakeProfitToStopMarket() {
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("DEFAULT", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("POST_ONLY", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionTakeProfitToStopLimit() {
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("DEFAULT", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "DEFAULT"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("POST_ONLY", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "POST_ONLY"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionTakeProfitToTakeProfitMarket() {
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("DEFAULT", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+        perp.trade("POST_ONLY", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+
+    private fun testExecutionTakeProfitMarket() {
+        testExecutionTakeProfitMarketToStopLimit()
+        testExecutionTakeProfitMarketToTakeProfit()
+        testExecutionTakeProfitMarketToStopMarket()
+    }
+
+    private fun testExecutionTakeProfitMarketToStopLimit() {
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_LIMIT",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionTakeProfitMarketToTakeProfit() {
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "TAKE_PROFIT",
+                            "execution": "FOK"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+    }
+
+    private fun testExecutionTakeProfitMarketToStopMarket() {
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+        perp.trade("IOC", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "IOC"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
+        perp.trade("FOK", TradeInputField.execution, 0)
+        test(
+            {
+                perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                // should change to IOC
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "STOP_MARKET",
+                            "execution": "FOK"
                         }
                     }
                 }
