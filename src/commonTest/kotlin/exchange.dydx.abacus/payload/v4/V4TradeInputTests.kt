@@ -824,7 +824,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "MARKET",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -868,7 +868,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "LIMIT",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
@@ -890,7 +890,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "LIMIT",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
@@ -936,7 +936,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_LIMIT",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -958,7 +958,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_LIMIT",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -1026,7 +1026,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -1048,7 +1048,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -1095,7 +1095,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_MARKET",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -1117,7 +1117,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_MARKET",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -1141,7 +1141,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT_MARKET",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null
@@ -1163,7 +1163,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT_MARKET",
                             "options": {
-                                "needsReduceOnly": false,
+                                "needsReduceOnly": true,
                                 "needsPostOnly": false,
                                 "reduceOnlyPromptStringKey": null,
                                 "postOnlyPromptStringKey": null

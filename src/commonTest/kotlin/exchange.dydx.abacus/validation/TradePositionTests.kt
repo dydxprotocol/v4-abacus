@@ -7,7 +7,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class TradePositionTests: ValidationsTests() {
+class TradePositionTests : ValidationsTests() {
     @Test
     fun testDataFeed() {
         setup()
@@ -67,32 +67,25 @@ class TradePositionTests: ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "IOC"
                         },
-                        "errors": null
-                    }
-                }
-            """
-                /*
-
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "LIMIT",
-                            "side": "SELL",
-                            "marketId": "ETH-USD",
-                            "timeInForce": "IOC"
-                        },
                         "errors": [
                             {
                                 "type": "ERROR",
-                                "code": "ORDER_WOULD_FLIP_POSITION"
+                                "code": "ORDER_WOULD_FLIP_POSITION",
+                                "fields":[
+                                    "size.size"
+                                ],
+                                "resources": {
+                                    "title": {
+                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
+                                    }, 
+                                    "text":{
+                                    }
+                                }
                             }
                         ]
                     }
                 }
             """
-                 */
                 .trimIndent()
         )
 
