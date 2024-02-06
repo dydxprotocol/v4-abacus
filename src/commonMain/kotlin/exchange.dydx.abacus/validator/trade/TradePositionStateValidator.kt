@@ -234,13 +234,19 @@ internal class TradePositionStateValidator(
         ORDER_WOULD_FLIP_POSITION
          */
         val needsReduceOnly = parser.asBool(parser.value(trade, "options.needsReduceOnly")) ?: false
-        return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true && change == PositionChange.CROSSING) error(
-            "ERROR",
-            "ORDER_WOULD_FLIP_POSITION",
-            listOf("size.size"),
-            "APP.TRADE.MODIFY_SIZE_FIELD",
-            "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
-            "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION"
-        ) else null
+        return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true) {
+            when (change) {
+                PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING -> error(
+                    "ERROR",
+                    "ORDER_WOULD_FLIP_POSITION",
+                    listOf("size.size"),
+                    "APP.TRADE.MODIFY_SIZE_FIELD",
+                    "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
+                    "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION"
+                )
+
+                else -> null
+            }
+        } else null
     }
 }

@@ -112,6 +112,77 @@ class TradePositionTests : ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "IOC"
                         },
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "ORDER_WOULD_FLIP_POSITION",
+                                "fields":[
+                                    "size.size"
+                                ],
+                                "resources": {
+                                    "title": {
+                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
+                                    }, 
+                                    "text":{
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        test(
+            {
+                perp.trade("SELL", TradeInputField.side, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "side": "SELL",
+                            "marketId": "ETH-USD",
+                            "timeInForce": "IOC"
+                        },
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "ORDER_WOULD_FLIP_POSITION",
+                                "fields":[
+                                    "size.size"
+                                ],
+                                "resources": {
+                                    "title": {
+                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
+                                    }, 
+                                    "text":{
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("100", TradeInputField.size, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "side": "SELL",
+                            "marketId": "ETH-USD",
+                            "timeInForce": "IOC"
+                        },
                         "errors": null
                     }
                 }
