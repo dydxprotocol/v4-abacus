@@ -20,6 +20,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.TokenInfo
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.validator.InputValidator
 import kollections.JsExport
@@ -67,6 +68,9 @@ open class TradingStateMachine(
 
     internal val tokensInfo: Map<String, TokenInfo>
         get() = environment?.tokens!!
+    
+    internal val featureFlags: EnvironmentFeatureFlags
+        get() = environment?.featureFlags!!
 
     internal var groupingMultiplier: Int
         get() = marketsProcessor.groupingMultiplier
@@ -594,7 +598,7 @@ open class TradingStateMachine(
         val input = this.input?.mutable()
         val trade = parser.asNativeMap(input?.get(tag))
         val inputType = parser.asString(parser.value(trade, "size.input"))
-        val calculator = TradeInputCalculator(parser, calculation)
+        val calculator = TradeInputCalculator(parser, calculation, featureFlags)
         val params = mutableMapOf<String, Any>()
         params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("account", account)

@@ -7,7 +7,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.reduceOnlySupported
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
@@ -51,7 +50,7 @@ fun TradingStateMachine.closePosition(
                 trade["marketId"] = data!!
                 trade.safeSet("size", null)
                 trade["type"] = "MARKET"
-                trade["reduceOnly"] = reduceOnlySupported
+                trade["reduceOnly"] = featureFlags.reduceOnlySupported
 
                 val positionSize =
                     parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
