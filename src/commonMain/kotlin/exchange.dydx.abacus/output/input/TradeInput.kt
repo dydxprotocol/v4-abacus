@@ -4,7 +4,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMutableList
-import exchange.dydx.abacus.utils.reduceOnlySupported
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf

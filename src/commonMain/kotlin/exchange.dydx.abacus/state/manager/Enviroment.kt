@@ -91,6 +91,24 @@ data class EnvironmentLinks(
 }
 
 @JsExport
+data class EnvironmentFeatureFlags(
+    val reduceOnlySupported: Boolean,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): EnvironmentFeatureFlags {
+            val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
+            
+            return EnvironmentFeatureFlags(
+                reduceOnlySupported,
+            )
+        }
+    }
+}
+
+@JsExport
 data class TokenInfo(
     val name: String,
     val denom: String,
@@ -308,7 +326,8 @@ open class Environment(
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
     val walletConnection: WalletConnection?,
-    val apps: AppsRequirements?
+    val apps: AppsRequirements?,
+    val featureFlags: EnvironmentFeatureFlags,
 )
 
 @JsExport
@@ -326,6 +345,7 @@ class V4Environment(
     walletConnection: WalletConnection?,
     apps: AppsRequirements?,
     val tokens: IMap<String, TokenInfo>,
+    featureFlags: EnvironmentFeatureFlags,
 ) : Environment(
     id,
     name,
@@ -337,6 +357,7 @@ class V4Environment(
     links,
     walletConnection,
     apps,
+    featureFlags
 ) {
     companion object {
         fun parse(
@@ -365,6 +386,7 @@ class V4Environment(
             )
             val apps = AppsRequirements.parse(data, parser, localizer)
             val tokens = parseTokens(parser.asMap(data["tokens"]), parser, deploymentUri)
+            val featureFlags = EnvironmentFeatureFlags.parse(parser.asMap(data["featureFlags"]), parser)
 
             return V4Environment(
                 id,
@@ -379,7 +401,8 @@ class V4Environment(
                 links,
                 walletConnection,
                 apps,
-                tokens
+                tokens,
+                featureFlags
             )
         }
 

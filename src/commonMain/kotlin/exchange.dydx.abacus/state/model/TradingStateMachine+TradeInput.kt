@@ -115,7 +115,7 @@ internal fun TradingStateMachine.initiateTrade(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    val calculator = TradeInputCalculator(parser, TradeCalculation.trade)
+    val calculator = TradeInputCalculator(parser, TradeCalculation.trade, featureFlags)
     val params = mutableMapOf<String, Any>()
     params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
     params.safeSet("account", account)
@@ -138,7 +138,7 @@ internal fun TradingStateMachine.inititiateClosePosition(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
+    val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition, featureFlags)
     val params = mutableMapOf<String, Any>()
     params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
     params.safeSet("account", account)

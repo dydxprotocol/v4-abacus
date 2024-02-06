@@ -10,6 +10,7 @@ import exchange.dydx.abacus.state.manager.WalletConnectV1
 import exchange.dydx.abacus.state.manager.WalletConnectV2
 import exchange.dydx.abacus.state.manager.WalletConnection
 import exchange.dydx.abacus.state.manager.WalletSegue
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import kollections.JsExport
 import kollections.iMapOf
 import kollections.toIMap
@@ -97,6 +98,9 @@ class AbacusMockData {
                 "uusdc",
                 "/currencies/usdc.png"
             ),
-        ).toIMap()
+        ).toIMap(),
+        EnvironmentFeatureFlags(
+            true,
+        )
     )
 }
