@@ -77,6 +77,9 @@ class EnvironmentsMock {
                        "callbackUrl":"/walletsegue"
                     },
                     "images":"/wallets/"
+                 },
+                 "featureFlags":{
+                     "reduceOnlySupported":true
                  }
               },
               "dydxprotocol-testnet":{
@@ -138,7 +141,10 @@ class EnvironmentsMock {
                        "callbackUrl":"/walletsegue"
                     },
                     "images":"/wallets/"
-                 }
+                 },
+                 "featureFlags":{
+                     "reduceOnlySupported":false
+                  }
               }
            }
         }

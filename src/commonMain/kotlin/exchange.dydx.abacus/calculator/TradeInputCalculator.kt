@@ -7,8 +7,8 @@ import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
-import exchange.dydx.abacus.utils.reduceOnlySupported
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -29,6 +29,7 @@ enum class TradeCalculation(val rawValue: String) {
 internal class TradeInputCalculator(
     val parser: ParserProtocol,
     private val calculation: TradeCalculation,
+    val featureFlags: EnvironmentFeatureFlags,
 ) {
     private val accountTransformer = AccountTransformer()
 
@@ -829,7 +830,7 @@ internal class TradeInputCalculator(
     }
 
     private fun reduceOnlyField(): Map<String, Any>? {
-        return if (reduceOnlySupported) {
+        return if (featureFlags.reduceOnlySupported) {
             mapOf(
                 "field" to "reduceOnly",
                 "type" to "bool",
@@ -1046,7 +1047,7 @@ internal class TradeInputCalculator(
     private fun reduceOnlyPromptFromTrade(
         trade: Map<String, Any>,
     ): String? {
-        return if (reduceOnlySupported) {
+        return if (featureFlags.reduceOnlySupported) {
             when (parser.asString(trade["type"])) {
                 "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
 
