@@ -366,6 +366,9 @@ class V4Environment(
             parser: ParserProtocol,
             deploymentUri: String,
             localizer: LocalizerProtocol?,
+            tokensData: Map<String, Any>?,
+            linksData: Map<String, Any>?,
+            walletsData: Map<String, Any>?,
         ): V4Environment? {
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
@@ -375,17 +378,18 @@ class V4Environment(
             val chainLogo = parser.asString(data["chainLogo"])
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
             val endpoints =
-                EnvironmentEndpoints.parse(parser.asMap(data["endpoints"]) ?: return null, parser)
+                EnvironmentEndpoints.parse(parser.asNativeMap(data["endpoints"]) ?: return null, parser)
                     ?: return null
-            val links = EnvironmentLinks.parse(parser.asMap(data["links"]) ?: return null, parser)
+            val links = EnvironmentLinks.parse(linksData ?: parser.asNativeMap(data["links"]) ?: return null, parser)
             val walletConnection = WalletConnection.parse(
-                parser.asMap(data["walletConnection"])
-                    ?: parser.asMap(data["wallets"]),
+                walletsData
+                    ?: parser.asNativeMap(data["walletConnection"])
+                    ?: parser.asNativeMap(data["wallets"]),
                 parser,
                 deploymentUri
             )
             val apps = AppsRequirements.parse(data, parser, localizer)
-            val tokens = parseTokens(parser.asMap(data["tokens"]), parser, deploymentUri)
+            val tokens = parseTokens(tokensData ?: parser.asNativeMap(data["tokens"]), parser, deploymentUri)
             val featureFlags = EnvironmentFeatureFlags.parse(parser.asMap(data["featureFlags"]), parser)
 
             return V4Environment(
@@ -407,7 +411,7 @@ class V4Environment(
         }
 
         private fun parseTokens(
-            item: IMap<String, Any>?,
+            item: Map<String, Any>?,
             parser: ParserProtocol,
             deploymentUri: String,
         ): IMap<String, TokenInfo> {
