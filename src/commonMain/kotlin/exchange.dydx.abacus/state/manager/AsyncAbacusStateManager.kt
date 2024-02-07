@@ -35,6 +35,15 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 
 @JsExport
+data class MarketConfigs(
+    val retrieveCandles: Boolean,
+    val retrieveHistoricalFundings: Boolean,
+    val subscribeToOrderbook: Boolean,
+    val subscribeToTrades: Boolean,
+    val subscribeToCandles: Boolean,
+)
+
+@JsExport
 class AppConfigs(
     val subscribeToCandles: Boolean,
     val loadRemote: Boolean = true,
