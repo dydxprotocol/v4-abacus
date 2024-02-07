@@ -2,17 +2,17 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
-import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -23,38 +23,39 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
-import exchange.dydx.abacus.state.modal.ClosePositionInputField
-import exchange.dydx.abacus.state.modal.PerpTradingStateMachine
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.TradingStateMachine
-import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.state.modal.candles
-import exchange.dydx.abacus.state.modal.closePosition
-import exchange.dydx.abacus.state.modal.findOrder
-import exchange.dydx.abacus.state.modal.historicalFundings
-import exchange.dydx.abacus.state.modal.historicalPnl
-import exchange.dydx.abacus.state.modal.orderCanceled
-import exchange.dydx.abacus.state.modal.receivedAccountsChanges
-import exchange.dydx.abacus.state.modal.receivedBatchOrderbookChanges
-import exchange.dydx.abacus.state.modal.receivedBatchedCandlesChanges
-import exchange.dydx.abacus.state.modal.receivedBatchedMarketsChanges
-import exchange.dydx.abacus.state.modal.receivedBatchedTradesChanges
-import exchange.dydx.abacus.state.modal.receivedCandles
-import exchange.dydx.abacus.state.modal.receivedCandlesChanges
-import exchange.dydx.abacus.state.modal.receivedFills
-import exchange.dydx.abacus.state.modal.receivedMarkets
-import exchange.dydx.abacus.state.modal.receivedMarketsChanges
-import exchange.dydx.abacus.state.modal.receivedOrderbook
-import exchange.dydx.abacus.state.modal.receivedSubaccountSubscribed
-import exchange.dydx.abacus.state.modal.receivedTrades
-import exchange.dydx.abacus.state.modal.receivedTradesChanges
-import exchange.dydx.abacus.state.modal.receivedTransfers
-import exchange.dydx.abacus.state.modal.setOrderbookGrouping
-import exchange.dydx.abacus.state.modal.sparklines
-import exchange.dydx.abacus.state.modal.subaccounts
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
-import exchange.dydx.abacus.state.modal.transfer
+import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.state.model.PerpTradingStateMachine
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.account
+import exchange.dydx.abacus.state.model.candles
+import exchange.dydx.abacus.state.model.closePosition
+import exchange.dydx.abacus.state.model.findOrder
+import exchange.dydx.abacus.state.model.historicalFundings
+import exchange.dydx.abacus.state.model.historicalPnl
+import exchange.dydx.abacus.state.model.orderCanceled
+import exchange.dydx.abacus.state.model.receivedAccountsChanges
+import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
+import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
+import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
+import exchange.dydx.abacus.state.model.receivedBatchedTradesChanges
+import exchange.dydx.abacus.state.model.receivedCandles
+import exchange.dydx.abacus.state.model.receivedCandlesChanges
+import exchange.dydx.abacus.state.model.receivedFills
+import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
+import exchange.dydx.abacus.state.model.receivedMarkets
+import exchange.dydx.abacus.state.model.receivedMarketsChanges
+import exchange.dydx.abacus.state.model.receivedOrderbook
+import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedTrades
+import exchange.dydx.abacus.state.model.receivedTradesChanges
+import exchange.dydx.abacus.state.model.receivedTransfers
+import exchange.dydx.abacus.state.model.setOrderbookGrouping
+import exchange.dydx.abacus.state.model.sparklines
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
+import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
@@ -79,15 +80,20 @@ import kollections.toIMap
 import kollections.toISet
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 import kotlin.time.times
+import kotlin.time.toDuration
 
 @JsExport
 internal data class Subaccount(
@@ -116,10 +122,10 @@ data class HumanReadablePlaceOrderPayload(
     val price: Double,
     val triggerPrice: Double?,
     val size: Double,
-    val reduceOnly: Boolean,
-    val postOnly: Boolean,
-    val timeInForce: String,
-    val execution: String,
+    val reduceOnly: Boolean?,
+    val postOnly: Boolean?,
+    val timeInForce: String?,
+    val execution: String?,
     val goodTilTimeInSeconds: Int?,
     val marketInfo: PlaceOrderMarketInfo? = null,
     val currentHeight: Int? = null,
@@ -165,6 +171,13 @@ data class HumanReadableDepositPayload(
 data class HumanReadableWithdrawPayload(
     val subaccountNumber: Int,
     val amount: String,
+)
+
+@Serializable
+data class HumanReadableWithdrawIBCPayload(
+    val subaccountNumber: Int,
+    val amount: String,
+    val ibcPayload: String,
 )
 
 @JsExport
@@ -232,7 +245,7 @@ open class StateManagerAdaptor(
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
     private val notificationsProvider =
-        NotificationsProvider(uiImplementations, parser, jsonEncoder)
+        NotificationsProvider(uiImplementations, environment, parser, jsonEncoder)
 
     private var subaccountsTimer: LocalTimerProtocol? = null
         set(value) {
@@ -301,6 +314,14 @@ open class StateManagerAdaptor(
     private val addressContinuousMonitoringDuration = 60.0 * 60.0
 
     private var sourceAddressTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private var historicalFundingTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
                 field?.cancel()
@@ -382,11 +403,40 @@ open class StateManagerAdaptor(
             }
         }
 
-    var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period1d
+    var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
+        HistoricalTradingRewardsPeriod.WEEKLY
         internal set(value) {
             if (field != value) {
                 field = value
-                didSetHistoricalPnlPeriod()
+                didSetHistoricalTradingRewardsPeriod(value.name)
+            }
+        }
+
+    var historicalPnlPeriod: HistoricalPnlPeriod
+        get() {
+            return when (stateMachine.historicalPnlDays) {
+                1 -> HistoricalPnlPeriod.Period1d
+                7 -> HistoricalPnlPeriod.Period7d
+                30 -> HistoricalPnlPeriod.Period30d
+                90 -> HistoricalPnlPeriod.Period90d
+                else -> HistoricalPnlPeriod.Period1d
+            }
+        }
+        internal set(value) {
+            if (historicalPnlPeriod != value) {
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    when (value) {
+                        HistoricalPnlPeriod.Period1d -> stateMachine.historicalPnlDays = 1
+                        HistoricalPnlPeriod.Period7d -> stateMachine.historicalPnlDays = 7
+                        HistoricalPnlPeriod.Period30d -> stateMachine.historicalPnlDays = 30
+                        HistoricalPnlPeriod.Period90d -> stateMachine.historicalPnlDays = 90
+                    }
+                    didSetHistoricalPnlPeriod()
+
+                    val changes = StateChanges(iListOf(Changes.historicalPnl))
+                    val oldState = stateMachine.state
+                    update(changes, oldState)
+                }
             }
         }
 
@@ -489,7 +539,8 @@ open class StateManagerAdaptor(
             }
             if (accountAddress != null) {
                 screenAccountAddress()
-                retrieveSubaccounts()
+                retrieveAccount()
+                retrieveAccountHistoricalTradingRewards()
             }
             if (subaccount != null) {
                 retrieveSubaccountFills()
@@ -533,6 +584,7 @@ open class StateManagerAdaptor(
 
         subaccountsTimer = null
         screenAccountAddress()
+        retrieveAccountHistoricalTradingRewards()
     }
 
     private fun didSetAccountAddressRestriction(accountAddressRestriction: Restriction?) {
@@ -715,8 +767,10 @@ open class StateManagerAdaptor(
     private fun processSocketResponse(message: String) {
         ioImplementations.threading?.async(ThreadingType.abacus) {
             try {
-                val json = Json.parseToJsonElement(message).jsonObject.toIMap()
-                socket(json)
+                val json = parser.decodeJsonObject(message)
+                if (json != null) {
+                    socket(json)
+                }
             } catch (_: Exception) {
 
             }
@@ -1085,7 +1139,7 @@ open class StateManagerAdaptor(
 
             configs.marketOrderbookChannel() -> {
                 stateMachine.receivedBatchOrderbookChanges(
-                    market,
+                    id,
                     content,
                     subaccountNumber ?: 0
                 )
@@ -1115,8 +1169,8 @@ open class StateManagerAdaptor(
 
     fun get(
         url: String,
-        params: Map<String, String>?,
-        headers: Map<String, String>?,
+        params: Map<String, String>? = null,
+        headers: Map<String, String>? = null,
         callback: (url: String, response: String?, code: Int) -> Unit,
     ) {
         val fullUrl = fullUrl(url, params)
@@ -1126,7 +1180,7 @@ open class StateManagerAdaptor(
 
     private fun fullUrl(
         url: String,
-        params: Map<String, String>?
+        params: Map<String, String>?,
     ): String {
         return if (params != null) {
             val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }
@@ -1199,8 +1253,8 @@ open class StateManagerAdaptor(
         if (url != null) {
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    val time = parser.asDatetime(json["time"])
+                    val json = parser.decodeJsonObject(response)
+                    val time = parser.asDatetime(json?.get("time"))
                     if (time != null) {
                         ServerTime.overWrite = time
                     }
@@ -1311,6 +1365,7 @@ open class StateManagerAdaptor(
     }
 
     private fun retrieveMarketHistoricalFundings() {
+        historicalFundingTimer = null
         val oldState = stateMachine.state
         val url = configs.publicApiUrl("historical-funding") ?: return
         val market = market ?: return
@@ -1318,21 +1373,66 @@ open class StateManagerAdaptor(
             if (success(httpCode) && response != null) {
                 update(stateMachine.historicalFundings(response), oldState)
             }
+            ioImplementations.threading?.async(ThreadingType.main) {
+                val nextHour = calculateNextFundingAt()
+                val delay = nextHour - ServerTime.now()
+                this.historicalFundingTimer = ioImplementations.timer?.schedule(
+                    // Give 30 seconds past the hour to make sure the funding is available
+                    (delay + 30.seconds).inWholeSeconds.toDouble(),
+                    null
+                ) {
+                    retrieveMarketHistoricalFundings()
+                    false
+                }
+            }
         })
     }
 
-    open fun retrieveSubaccounts() {
+    private fun calculateNextFundingAt(): Instant {
+        return nextHour()
+        // Can use nextMinute() for testing
+        // return nextMinute()
+    }
+
+    private fun nextHour(): Instant {
+        val now: Instant = ServerTime.now()
+        val time = now.toLocalDateTime(TimeZone.UTC)
+        val minute = time.minute
+        val second = time.second
+        val nanosecond = time.nanosecond
+        val duration =
+            nanosecond.toDuration(DurationUnit.NANOSECONDS) +
+                    second.toDuration(DurationUnit.SECONDS) +
+                    minute.toDuration(DurationUnit.MINUTES)
+
+        return now.minus(duration).plus(1.hours)
+    }
+
+    private fun nextMinute(): Instant {
+        val now: Instant = ServerTime.now()
+        val time = now.toLocalDateTime(TimeZone.UTC)
+        val second = time.second
+        val nanosecond = time.nanosecond
+        val duration =
+            nanosecond.toDuration(DurationUnit.NANOSECONDS) +
+                    second.toDuration(DurationUnit.SECONDS)
+
+        return now.minus(duration).plus(1.minutes)
+    }
+
+
+    open fun retrieveAccount() {
         val oldState = stateMachine.state
-        val url = subaccountsUrl()
+        val url = accountUrl()
         if (url != null) {
             get(url, null, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    update(stateMachine.subaccounts(response), oldState)
+                    update(stateMachine.account(response), oldState)
                     updateConnectedSubaccountNumber()
                 } else {
                     subaccountsTimer =
                         ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
-                            retrieveSubaccounts()
+                            retrieveAccount()
                             false
                         }
                 }
@@ -1340,11 +1440,60 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun subaccountsUrl(): String? {
+    open fun retrieveAccountHistoricalTradingRewards(
+        period: String = "WEEKLY",
+        previousUrl: String? = null
+    ) {
+        val oldState = stateMachine.state
+        var url = historicalTradingRewardAggregationsUrl() ?: return
+        val params = historicalTradingRewardAggregationsParams(period)
+        val historicalTradingRewardsInPeriod = parser.asNativeList(
+            parser.value(
+                stateMachine.data,
+                "wallet.account.tradingRewards.historical.$period"
+            )
+        )?.mutable()
+
+        retrieveTimed(
+            url,
+            historicalTradingRewardsInPeriod,
+            "startedAt",
+            0.days,
+            180.days,
+            "endedAt",
+            null,
+            params,
+            previousUrl
+        ) { url, response, httpCode ->
+            if (success(httpCode) && !response.isNullOrEmpty()) {
+                val historicalTradingRewards = parser.decodeJsonObject(response)?.toIMap()
+                if (historicalTradingRewards != null) {
+                    val changes = stateMachine.receivedHistoricalTradingRewards(
+                        historicalTradingRewards,
+                        period
+                    )
+                    update(changes, oldState)
+                    if (changes.changes.contains(Changes.tradingRewards)) {
+                        retrieveAccountHistoricalTradingRewards(period, url)
+                    }
+                }
+            }
+        }
+    }
+
+    open fun accountUrl(): String? {
         return null
     }
 
     open fun screenUrl(): String? {
+        return null
+    }
+
+    open fun historicalTradingRewardAggregationsUrl(): String? {
+        return null
+    }
+
+    internal open fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String>? {
         return null
     }
 
@@ -1397,8 +1546,8 @@ open class StateManagerAdaptor(
         if (url != null && params != null) {
             get(url, params, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val fills = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    if (fills.size != 0) {
+                    val fills = parser.decodeJsonObject(response)?.toIMap()
+                    if (fills != null && fills.size != 0) {
                         update(stateMachine.receivedFills(fills, subaccountNumber), oldState)
                     }
                 }
@@ -1413,8 +1562,8 @@ open class StateManagerAdaptor(
         if (url != null && params != null) {
             get(url, params, null, callback = { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val tranfers = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    if (tranfers.size != 0) {
+                    val tranfers = parser.decodeJsonObject(response)
+                    if (tranfers != null && tranfers.size != 0) {
                         update(stateMachine.receivedTransfers(tranfers, subaccountNumber), oldState)
                     }
                 }
@@ -1521,7 +1670,7 @@ open class StateManagerAdaptor(
         return httpCode in 200..299
     }
 
-    open fun height(): Int? {
+    open fun height(): BlockAndTime? {
         return null
     }
 
@@ -1540,6 +1689,10 @@ open class StateManagerAdaptor(
 
     internal open fun didSetCandlesResolution(oldValue: String) {
         retrieveMarketCandles()
+    }
+
+    fun didSetHistoricalTradingRewardsPeriod(period: String) {
+        retrieveAccountHistoricalTradingRewards(period)
     }
 
     fun didSetHistoricalPnlPeriod() {
@@ -1565,6 +1718,18 @@ open class StateManagerAdaptor(
             }
             retrieveMarketHistoricalFundings()
             retrieveMarketCandles()
+        }
+    }
+
+    internal fun refresh(data: ApiData) {
+        when (data) {
+            ApiData.HISTORICAL_PNLS -> {
+                retrieveSubaccountHistoricalPnls()
+            }
+
+            ApiData.HISTORICAL_TRADING_REWARDS -> {
+                retrieveAccountHistoricalTradingRewards()
+            }
         }
     }
 
@@ -1630,6 +1795,7 @@ open class StateManagerAdaptor(
         hash: String,
         fromChainId: String? = null,
         toChainId: String? = null,
+        isCctp: Boolean
     ) {
 
     }
@@ -1649,6 +1815,10 @@ open class StateManagerAdaptor(
     }
 
     internal open fun commitTransfer(callback: TransactionCallback) {
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+    }
+
+    internal open fun commitCCTPWithdraw(callback: TransactionCallback) {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
@@ -1675,19 +1845,29 @@ open class StateManagerAdaptor(
         val type = trade.type?.rawValue ?: throw Exception("type is null")
         val side = trade.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
-        val triggerPrice = trade.price?.triggerPrice
+        val triggerPrice = if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
         val size = summary.size ?: throw Exception("size is null")
-        val reduceOnly = trade.reduceOnly
-        val postOnly = trade.postOnly
+        val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null
+        val postOnly = if (trade.options?.needsPostOnly == true) trade.postOnly else null
 
-        val timeInForce = trade.timeInForce ?: "IOC"
-        val execution = trade.execution ?: "Default"
-        val goodTilTimeInSeconds = ((if (timeInForce == "GTT") {
+        val timeInForce = if (trade.options?.timeInForceOptions != null) {
+            when (trade.type) {
+                OrderType.market -> "FOK"
+                else -> trade.timeInForce ?: "FOK"
+            }
+        } else null
+
+        val execution = if (trade.options?.executionOptions != null) {
+            trade.execution ?: "Default"
+        } else null
+
+        val goodTilTimeInSeconds = ((if (trade.options?.goodTilUnitOptions != null) {
             val timeInterval =
                 GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
             timeInterval / 1.seconds
         } else null))?.toInt()
+
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
         return HumanReadablePlaceOrderPayload(
@@ -1734,7 +1914,7 @@ open class StateManagerAdaptor(
         val size = summary.size ?: throw Exception("size is null")
         val timeInForce = "IOC"
         val execution = "Default"
-        val reduceOnly = false  // TODO, change to true when protocol supports it
+        val reduceOnly = environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
         return HumanReadablePlaceOrderPayload(
@@ -2107,9 +2287,13 @@ open class StateManagerAdaptor(
                 null,
                 callback = { _, response, httpCode ->
                     if (success(httpCode) && response != null) {
-                        val payload = Json.parseToJsonElement(response).jsonObject.toIMap()
-                        val restricted = parser.asBool(payload["restricted"]) ?: false
-                        callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                        val payload = parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val restricted = parser.asBool(payload["restricted"]) ?: false
+                            callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                        } else {
+                            callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                        }
                     } else {
                         if (httpCode == 403) {
                             // It could be 403 due to GEOBLOCKED
@@ -2125,7 +2309,7 @@ open class StateManagerAdaptor(
 
     internal fun restrictionReason(response: String?): UsageRestriction {
         return if (response != null) {
-            val json = Json.parseToJsonElement(response).jsonObject.toMap()
+            val json = parser.decodeJsonObject(response)
             val errors = parser.asList(parser.value(json, "errors"))
             val geoRestriciton = errors?.firstOrNull { error ->
                 val code = parser.asString(parser.value(error, "code"))

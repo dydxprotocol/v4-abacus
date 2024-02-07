@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.output.input
 
-import exchange.dydx.abacus.output.*
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -51,6 +50,13 @@ data class SelectionOption(
     }
 }
 
+@JsExport
+@Serializable
+data class Tooltip(
+    val titleStringKey: String,
+    val bodyStringKey: String,
+)
+
 
 @JsExport
 @Serializable
@@ -70,6 +76,8 @@ data class TradeInputOptions(
     val timeInForceOptions: IList<SelectionOption>?,
     val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
+    val reduceOnlyTooltip: Tooltip?,
+    val postOnlyTooltip: Tooltip?,
 ) {
     companion object {
         private val typeOptionsArray =
@@ -170,6 +178,8 @@ data class TradeInputOptions(
                 val needsReduceOnly = parser.asBool(data["needsReduceOnly"]) ?: false
                 val needsPostOnly = parser.asBool(data["needsPostOnly"]) ?: false
                 val needsBrackets = parser.asBool(data["needsBrackets"]) ?: false
+                val reduceOnlyTooltip = buildToolTip(parser.asString(data["reduceOnlyPromptStringKey"]))
+                val postOnlyOnlyTooltip = buildToolTip(parser.asString(data["postOnlyPromptStringKey"]))
 
                 var timeInForceOptions: IMutableList<SelectionOption>? = null
                 parser.asList(data["timeInForceOptions"])?.let { data ->
@@ -215,7 +225,8 @@ data class TradeInputOptions(
                     existing.needsPostOnly != needsPostOnly ||
                     existing.needsBrackets != needsBrackets ||
                     existing.timeInForceOptions != timeInForceOptionsArray ||
-                    existing.executionOptions != executionOptionsArray
+                    existing.executionOptions != executionOptionsArray ||
+                    existing.reduceOnlyTooltip != reduceOnlyTooltip
                 ) {
                     val typeOptions = typeOptionsV4Array
 
@@ -234,7 +245,9 @@ data class TradeInputOptions(
                         sideOptionsArray,
                         timeInForceOptionsArray,
                         goodTilUnitOptionsArray,
-                        executionOptionsArray
+                        executionOptionsArray,
+                        reduceOnlyTooltip,
+                        postOnlyOnlyTooltip,
                     )
                 } else {
                     existing
@@ -242,6 +255,14 @@ data class TradeInputOptions(
             }
             DebugLogger.debug("Trade Input Options not valid")
             return null
+        }
+
+        fun buildToolTip(stringKey: String?): Tooltip? {
+            return if (stringKey != null) {
+                Tooltip("$stringKey.TITLE", "$stringKey.BODY")
+            } else {
+                null
+            }
         }
     }
 }
@@ -602,10 +623,14 @@ enum class OrderType(val rawValue: String) {
     takeProfitLimit("TAKE_PROFIT"),
     trailingStop("TRAILING_STOP"),
     liquidated("LIQUIDATED"),
-    liquidation("LIQUIDATION");
+    liquidation("LIQUIDATION"),
+    offsetting("OFFSETTING"),
+    deleveraged("DELEVERAGED"),
+    finalSettlement("FINAL_SETTLEMENT"),
+    ;
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             OrderType.values().firstOrNull { it.rawValue == rawValue }
     }
 }

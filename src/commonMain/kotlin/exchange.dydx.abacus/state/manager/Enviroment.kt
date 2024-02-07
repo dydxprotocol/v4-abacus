@@ -31,6 +31,7 @@ data class EnvironmentEndpoints(
     val validators: IList<String>?,
     val faucet: String?,
     val squid: String?,
+    val nobleValidator: String?,
 ) {
     companion object {
         fun parse(
@@ -45,7 +46,8 @@ data class EnvironmentEndpoints(
             }?.toIList() ?: return null
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
-            return EnvironmentEndpoints(indexers, validators, faucet, squid)
+            val nobleValidator = parser.asString(data["nobleValidator"])
+            return EnvironmentEndpoints(indexers, validators, faucet, squid, nobleValidator)
         }
     }
 }
@@ -83,6 +85,24 @@ data class EnvironmentLinks(
                 feedback,
                 blogs,
                 help
+            )
+        }
+    }
+}
+
+@JsExport
+data class EnvironmentFeatureFlags(
+    val reduceOnlySupported: Boolean,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): EnvironmentFeatureFlags {
+            val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
+            
+            return EnvironmentFeatureFlags(
+                reduceOnlySupported,
             )
         }
     }
@@ -301,11 +321,13 @@ open class Environment(
     val name: String?,
     val ethereumChainId: String,
     val dydxChainId: String?,
+    val squidIntegratorId: String?,
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
     val walletConnection: WalletConnection?,
-    val apps: AppsRequirements?
+    val apps: AppsRequirements?,
+    val featureFlags: EnvironmentFeatureFlags,
 )
 
 @JsExport
@@ -314,6 +336,7 @@ class V4Environment(
     name: String?,
     ethereumChainId: String,
     dydxChainId: String?,
+    squidIntegratorId: String?,
     val chainName: String?,
     val chainLogo: String?,
     isMainNet: Boolean,
@@ -322,16 +345,19 @@ class V4Environment(
     walletConnection: WalletConnection?,
     apps: AppsRequirements?,
     val tokens: IMap<String, TokenInfo>,
+    featureFlags: EnvironmentFeatureFlags,
 ) : Environment(
     id,
     name,
     ethereumChainId,
     dydxChainId,
+    squidIntegratorId,
     isMainNet,
     endpoints,
     links,
     walletConnection,
     apps,
+    featureFlags
 ) {
     companion object {
         fun parse(
@@ -344,6 +370,7 @@ class V4Environment(
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
             val dydxChainId = parser.asString(data["dydxChainId"])
+            val squidIntegratorId = parser.asString(data["squidIntegratorId"])
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
@@ -359,12 +386,14 @@ class V4Environment(
             )
             val apps = AppsRequirements.parse(data, parser, localizer)
             val tokens = parseTokens(parser.asMap(data["tokens"]), parser, deploymentUri)
+            val featureFlags = EnvironmentFeatureFlags.parse(parser.asMap(data["featureFlags"]), parser)
 
             return V4Environment(
                 id,
                 name,
                 ethereumChainId,
                 dydxChainId,
+                squidIntegratorId,
                 chainName,
                 "$deploymentUri$chainLogo",
                 isMainNet,
@@ -372,7 +401,8 @@ class V4Environment(
                 links,
                 walletConnection,
                 apps,
-                tokens
+                tokens,
+                featureFlags
             )
         }
 
@@ -406,6 +436,45 @@ class V4Environment(
             }
 
             return tokens
+        }
+    }
+}
+
+@JsExport
+class AppSettings(
+    val ios: AppSetting?,
+    val android: AppSetting?,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>,
+            parser: ParserProtocol,
+        ): AppSettings? {
+            val ios = AppSetting.parse(
+                parser.asMap(data["ios"]),
+                parser,
+            )
+            val android = AppSetting.parse(
+                parser.asMap(data["android"]),
+                parser,
+            )
+            return AppSettings(ios, android)
+        }
+    }
+}
+
+@JsExport
+class AppSetting (
+    val scheme: String?
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): AppSetting? {
+            if (data == null) return null
+            val scheme = parser.asString(data["scheme"])
+            return AppSetting(scheme)
         }
     }
 }

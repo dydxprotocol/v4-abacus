@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.payload
 
 import exchange.dydx.abacus.payload.v3.V3BaseTests
-import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.state.modal.transfer
+import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test

@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
@@ -20,6 +22,7 @@ data class DepositInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val needsFastSpeed: Boolean?,
+    val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
 ) {
@@ -64,6 +67,16 @@ data class DepositInputOptions(
                     }
                 }
 
+                var exchanges: IMutableList<SelectionOption>? = null
+                exchangeList?.let { data ->
+                    exchanges = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        val selection = SelectionOption(item.name, item.label, item.label, item.icon)
+                        exchanges?.add(selection)
+                    }
+                }
+
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
                     existing?.needsFastSpeed != needsFastSpeed ||
@@ -74,6 +87,7 @@ data class DepositInputOptions(
                         needsSize,
                         needsAddress,
                         needsFastSpeed,
+                        exchanges,
                         chains,
                         assets
                     )
@@ -93,6 +107,7 @@ data class WithdrawalInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val needsFastSpeed: Boolean?,
+    val exchanges: IList<SelectionOption>?,
     val chains: IList<SelectionOption>?,
     val assets: IList<SelectionOption>?
 ) {
@@ -135,6 +150,8 @@ data class WithdrawalInputOptions(
                         }
                     }
                 }
+                var exchanges: IMutableList<SelectionOption>? = null
+
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
                     existing?.needsFastSpeed != needsFastSpeed ||
@@ -145,6 +162,7 @@ data class WithdrawalInputOptions(
                         needsSize,
                         needsAddress,
                         needsFastSpeed,
+                        exchanges,
                         chains,
                         assets
                     )
@@ -376,7 +394,12 @@ data class TransferInputRequestPayload(
     val gasLimit: String?,
     val gasPrice: String?,
     val maxFeePerGas: String?,
-    val maxPriorityFeePerGas: String?
+    val maxPriorityFeePerGas: String?,
+    val fromChainId: String?,
+    val toChainId: String?,
+    val fromAddress: String?,
+    val toAddress: String?,
+    val isV2Route: Boolean?
 ) {
     companion object {
         internal fun create(
@@ -395,6 +418,11 @@ data class TransferInputRequestPayload(
                 val gasPrice = parser.asString(data["gasPrice"])
                 val maxFeePerGas = parser.asString(data["maxFeePerGas"])
                 val maxPriorityFeePerGas = parser.asString(data["maxPriorityFeePerGas"])
+                val fromChainId = parser.asString(data["fromChainId"])
+                val toChainId = parser.asString(data["toChainId"])
+                val fromAddress = parser.asString(data["fromAddress"])
+                val toAddress = parser.asString(data["toAddress"])
+                val isV2Route = parser.asBool(data["isV2Route"])
 
                 return if (
                     existing?.routeType != routeType ||
@@ -404,7 +432,12 @@ data class TransferInputRequestPayload(
                     existing?.gasLimit != gasLimit ||
                     existing?.gasPrice != gasPrice ||
                     existing?.maxFeePerGas != maxFeePerGas ||
-                    existing?.maxPriorityFeePerGas != maxPriorityFeePerGas
+                    existing?.maxPriorityFeePerGas != maxPriorityFeePerGas ||
+                    existing?.fromChainId != fromChainId ||
+                    existing?.toChainId != toChainId ||
+                    existing?.fromAddress != fromAddress ||
+                    existing?.toAddress != toAddress ||
+                    existing?.isV2Route != isV2Route
                 ) {
                     TransferInputRequestPayload(
                         routeType,
@@ -414,7 +447,12 @@ data class TransferInputRequestPayload(
                         gasLimit,
                         gasPrice,
                         maxFeePerGas,
-                        maxPriorityFeePerGas
+                        maxPriorityFeePerGas,
+                        fromChainId,
+                        toChainId,
+                        fromAddress,
+                        toAddress,
+                        isV2Route
                     )
                 } else {
                     existing
@@ -437,7 +475,10 @@ data class TransferInputSummary(
     val estimatedRouteDuration: Double?,
     val bridgeFee: Double?,
     val gasFee: Double?,
-    val toAmount: String?
+    val toAmount: Double?,
+    val toAmountMin: Double?,
+    val toAmountUSDC: Double?,
+    val aggregatePriceImpact: Double?,
 ) {
     companion object {
         internal fun create(
@@ -456,7 +497,10 @@ data class TransferInputSummary(
                 val estimatedRouteDuration = parser.asDouble(data["estimatedRouteDuration"])
                 val bridgeFee = parser.asDouble(data["bridgeFee"])
                 val gasFee = parser.asDouble(data["gasFee"])
-                val toAmount = parser.asString(data["toAmount"])
+                val toAmount = parser.asDouble(data["toAmount"])
+                val toAmountMin = parser.asDouble(data["toAmountMin"])
+                val toAmountUSDC = parser.asDouble(data["toAmountUSDC"])
+                val aggregatePriceImpact = parser.asDouble(data["aggregatePriceImpact"])
 
                 return if (existing?.usdcSize != usdcSize ||
                     existing?.fee != fee ||
@@ -466,7 +510,10 @@ data class TransferInputSummary(
                     existing.estimatedRouteDuration != estimatedRouteDuration ||
                     existing.bridgeFee != bridgeFee ||
                     existing.gasFee != gasFee ||
-                    existing.toAmount != toAmount
+                    existing.toAmount != toAmount ||
+                    existing.toAmountMin != toAmountMin ||
+                    existing.toAmountUSDC != toAmountUSDC ||
+                    existing.aggregatePriceImpact != aggregatePriceImpact
                 ) {
                     TransferInputSummary(
                         usdcSize,
@@ -477,7 +524,10 @@ data class TransferInputSummary(
                         estimatedRouteDuration,
                         bridgeFee,
                         gasFee,
-                        toAmount
+                        toAmount,
+                        toAmountMin,
+                        toAmountUSDC,
+                        aggregatePriceImpact,
                     )
                 } else {
                     existing
@@ -542,6 +592,7 @@ data class TransferInput(
     val size: TransferInputSize?,
     val fastSpeed: Boolean,
     val fee: Double?,
+    val exchange: String?,
     val chain: String?,
     val token: String?,
     val address: String?,
@@ -551,8 +602,12 @@ data class TransferInput(
     val summary: TransferInputSummary?,
     val resources: TransferInputResources?,
     val requestPayload: TransferInputRequestPayload?,
-    val errors: String?
+    val errors: String?,
+    val errorMessage: String?,
 ) {
+    val isCctp: Boolean
+        get() = cctpChainIds?.any { it.isCctpEnabled(this) } ?: false
+
     companion object {
         internal fun create(
             existing: TransferInput?,
@@ -571,6 +626,7 @@ data class TransferInput(
                     TransferInputSize.create(existing?.size, parser, parser.asMap(data["size"]))
                 val fastSpeed = parser.asBool(data["fastSpeed"]) ?: false
                 val fee = parser.asDouble(data["fee"])
+                val exchange = parser.asString(data["exchange"])
                 val chain = parser.asString(data["chain"])
                 val token = parser.asString(data["token"])
                 val address = parser.asString(data["address"])
@@ -624,10 +680,20 @@ data class TransferInput(
 
                 val errors = parser.asString(route?.get("errors"))
 
+                val errorMessage: String? =
+                    if (errors != null) {
+                        val errorArray = parser.decodeJsonArray(errors)
+                        val firstError = parser.asMap(errorArray?.first())
+                        parser.asString(firstError?.get("message"))
+                    } else {
+                        null
+                    }
+
                 return if (existing?.type !== type ||
                     existing?.size !== size ||
                     existing?.fastSpeed != fastSpeed ||
                     existing.fee != fee ||
+                    existing.exchange != exchange ||
                     existing.chain != chain ||
                     existing.token != token ||
                     existing.address != address ||
@@ -637,13 +703,15 @@ data class TransferInput(
                     existing.summary !== summary ||
                     existing.resources !== resources ||
                     existing.requestPayload !== requestPayload ||
-                    existing.errors != errors
+                    existing.errors != errors ||
+                    existing.errorMessage != errorMessage
                 ) {
                     TransferInput(
                         type,
                         size,
                         fastSpeed,
                         fee,
+                        exchange,
                         chain,
                         token,
                         address,
@@ -654,6 +722,7 @@ data class TransferInput(
                         resources,
                         requestPayload,
                         errors,
+                        errorMessage,
                     )
                 } else {
                     existing

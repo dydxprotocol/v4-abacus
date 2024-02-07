@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.modify
 
 internal class InputValidator(
@@ -86,7 +87,8 @@ internal class InputValidator(
         subaccount: Map<String, Any>?,
         markets: Map<String, Any>?,
         input: Map<String, Any>?,
-        configs: Map<String, Any>?
+        configs: Map<String, Any>?,
+        environment: V4Environment?,
     ): Map<String, Any>? {
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
@@ -98,7 +100,8 @@ internal class InputValidator(
                 markets,
                 configs,
                 transaction,
-                transactionType
+                transactionType,
+                environment,
             ))
             if (errors != input["errors"]) {
                 input.modify("errors", errors)
@@ -117,7 +120,8 @@ internal class InputValidator(
         markets: Map<String, Any>?,
         configs: Map<String, Any>?,
         transaction: Map<String, Any>,
-        transactionType: String
+        transactionType: String,
+        environment: V4Environment?,
     ): List<Any>? {
         val validators = validatorsFor(transactionType)
         return if (validators != null) {
@@ -131,7 +135,8 @@ internal class InputValidator(
                         markets,
                         configs,
                         transaction,
-                        transactionType
+                        transactionType,
+                        environment
                     )
                 if (validatorErrors != null) {
                     result.addAll(validatorErrors)

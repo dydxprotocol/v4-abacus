@@ -1,13 +1,13 @@
 package exchange.dydx.abacus.validation
 
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class TradePositionTests: ValidationsTests() {
+class TradePositionTests : ValidationsTests() {
     @Test
     fun testDataFeed() {
         setup()
@@ -51,8 +51,7 @@ class TradePositionTests: ValidationsTests() {
         }, null)
 
         /*
-        This test would throw an Flip Position error when reduceOnly is supported,
-        reduceOnly support is disabled for now
+        This test would throw an Flip Position error when reduceOnly is supported
          */
         test(
             {
@@ -68,32 +67,25 @@ class TradePositionTests: ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "IOC"
                         },
-                        "errors": null
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "ORDER_WOULD_FLIP_POSITION",
+                                "fields":[
+                                    "size.size"
+                                ],
+                                "resources": {
+                                    "title": {
+                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
+                                    }, 
+                                    "text":{
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             """
-//            """
-//                {
-//                    "input": {
-//                        "current": "trade",
-//                        "trade": {
-//                            "type": "LIMIT",
-//                            "side": "SELL",
-//                            "marketId": "ETH-USD",
-//                            "timeInForce": "IOC"
-//                        },
-//                        "errors": [
-//                            {
-//                                "type": "ERROR",
-//                                "code": "ORDER_WOULD_FLIP_POSITION",
-//                                "fields": [
-//                                    "size.size"
-//                                ]
-//                            }
-//                        ]
-//                    }
-//                }
-//            """
                 .trimIndent()
         )
 
@@ -117,6 +109,77 @@ class TradePositionTests: ValidationsTests() {
                         "trade": {
                             "type": "LIMIT",
                             "side": "BUY",
+                            "marketId": "ETH-USD",
+                            "timeInForce": "IOC"
+                        },
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "ORDER_WOULD_FLIP_POSITION",
+                                "fields":[
+                                    "size.size"
+                                ],
+                                "resources": {
+                                    "title": {
+                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
+                                    }, 
+                                    "text":{
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
+
+
+        test(
+            {
+                perp.trade("SELL", TradeInputField.side, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "side": "SELL",
+                            "marketId": "ETH-USD",
+                            "timeInForce": "IOC"
+                        },
+                        "errors": [
+                            {
+                                "type": "ERROR",
+                                "code": "ORDER_WOULD_FLIP_POSITION",
+                                "fields":[
+                                    "size.size"
+                                ],
+                                "resources": {
+                                    "title": {
+                                        "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
+                                    }, 
+                                    "text":{
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            """.trimIndent()
+        )
+
+        test(
+            {
+                perp.trade("100", TradeInputField.size, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "side": "SELL",
                             "marketId": "ETH-USD",
                             "timeInForce": "IOC"
                         },

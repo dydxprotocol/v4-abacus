@@ -1,18 +1,18 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 
 internal fun TradingStateMachine.receivedSubaccountSubscribed(
     payload: Map<String, Any>,
-    height: Int?,
+    height: BlockAndTime?,
 ): StateChanges {
     this.wallet = walletProcessor.subscribed(wallet, payload, height)
     val changes = iMutableListOf<Changes>()
@@ -24,6 +24,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.transfers)
     changes.add(Changes.fundingPayments)
     changes.add(Changes.historicalPnl)
+    changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
@@ -31,7 +32,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
 internal fun TradingStateMachine.receivedAccountsChanges(
     payload: Map<String, Any>,
     info: SocketInfo,
-    height: Int?,
+    height: BlockAndTime?,
 ): StateChanges {
     this.wallet = walletProcessor.channel_data(wallet, payload, info, height)
     val changes = iMutableListOf<Changes>()
@@ -59,13 +60,16 @@ internal fun TradingStateMachine.receivedAccountsChanges(
     if (payload["fundingPayments"] != null) {
         changes.add(Changes.fundingPayments)
     }
+    if (payload["tradingReward"] != null) {
+        changes.add(Changes.tradingRewards)
+    }
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
 
 internal fun TradingStateMachine.receivedBatchAccountsChanges(
     payload: List<Any>,
     info: SocketInfo,
-    height: Int?
+    height: BlockAndTime?
 ): StateChanges {
     var changes = iListOf<Changes>()
     var subaccountNumbers = iListOf<Int>()
@@ -83,8 +87,10 @@ internal fun TradingStateMachine.receivedBatchAccountsChanges(
 }
 
 internal fun TradingStateMachine.user(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedUser(json)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedUser(json)
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.receivedUser(payload: Map<String, Any>): StateChanges {
@@ -93,8 +99,10 @@ internal fun TradingStateMachine.receivedUser(payload: Map<String, Any>): StateC
 }
 
 internal fun TradingStateMachine.onChainUserFeeTier(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedOnChainUserFeeTier(json)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedOnChainUserFeeTier(json)
+    } else StateChanges.noChange
 }
 
 private fun TradingStateMachine.receivedOnChainUserFeeTier(payload: Map<String, Any>): StateChanges {
@@ -103,14 +111,18 @@ private fun TradingStateMachine.receivedOnChainUserFeeTier(payload: Map<String, 
 }
 
 internal fun TradingStateMachine.onChainUserStats(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    this.wallet = walletProcessor.receivedOnChainUserStats(wallet, json)
-    return StateChanges(iListOf(Changes.wallet), null)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        this.wallet = walletProcessor.receivedOnChainUserStats(wallet, json)
+        StateChanges(iListOf(Changes.wallet), null)
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.fills(payload: String, subaccountNumber: Int): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedFills(json, subaccountNumber)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedFills(json, subaccountNumber)
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.receivedFills(
@@ -125,8 +137,10 @@ internal fun TradingStateMachine.receivedFills(
 }
 
 internal fun TradingStateMachine.transfers(payload: String, subaccountNumber: Int): StateChanges {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    return receivedTransfers(json, subaccountNumber)
+    val json = parser.decodeJsonObject(payload)
+    return if (json != null) {
+        receivedTransfers(json, subaccountNumber)
+    } else StateChanges.noChange
 }
 
 internal fun TradingStateMachine.receivedTransfers(
@@ -171,10 +185,9 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
 }
 
 internal fun TradingStateMachine.onChainDelegations(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload)
+    val response = parser.decodeJsonObject(payload)
     return try {
-        val response = json.jsonObject.toMap()
-        val delegations = response["delegationResponses"]?.let {
+        val delegations = response?.get("delegationResponses")?.let {
             parser.asList(it)
         } ?: iListOf()
         this.wallet = walletProcessor.receivedDelegations(wallet, delegations)

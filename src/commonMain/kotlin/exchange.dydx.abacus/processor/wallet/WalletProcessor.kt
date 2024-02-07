@@ -1,11 +1,12 @@
 package exchange.dydx.abacus.processor.wallet
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.wallet.account.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
+import exchange.dydx.abacus.processor.wallet.account.deprecated.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -17,7 +18,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     internal fun subscribed(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         return receivedObject(
             existing,
@@ -38,7 +39,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         info: SocketInfo,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         return receivedObject(
             existing,
@@ -55,18 +56,18 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
-    internal fun receivedSubaccounts(
+    internal fun receivedAccount(
         existing: Map<String, Any>?,
-        payload: List<Any>?,
+        payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedSubaccounts(parser.asNativeMap(existing), payload as? List<Any>)
+            v4accountProcessor.receivedAccount(parser.asNativeMap(existing), payload as? Map<String, Any>?)
         }
     }
 
     internal fun updateHeight(
         existing: Map<String, Any>?,
-        height: Int?,
+        height: BlockAndTime?,
     ): Triple<Map<String, Any>?, Boolean, List<Int>?> {
         if (existing != null) {
             val account = parser.asNativeMap(existing["account"])
@@ -105,6 +106,20 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             v4accountProcessor.receivedDelegations(
                 parser.asNativeMap(existing),
                 payload as? List<Any>
+            )
+        }
+    }
+
+    internal fun receivedHistoricalTradingRewards(
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+        period: String?,
+    ): Map<String, Any>? {
+        return receivedObject(existing, "account", payload) { existing, payload ->
+            v4accountProcessor.receivedHistoricalTradingRewards(
+                parser.asNativeMap(existing),
+                payload as? List<Any>,
+                period as? String,
             )
         }
     }
@@ -156,7 +171,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedHistoricalPnls(
+            v4accountProcessor.receivedHistoricalPnls(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber
@@ -170,7 +185,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedFills(
+            v4accountProcessor.receivedFills(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber
@@ -184,7 +199,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v3accountProcessor.receivedTransfers(
+            v4accountProcessor.receivedTransfers(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber
@@ -195,7 +210,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     internal fun received(
         existing: Map<String, Any>,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         val account = parser.asNativeMap(existing["account"])
         if (account != null) {

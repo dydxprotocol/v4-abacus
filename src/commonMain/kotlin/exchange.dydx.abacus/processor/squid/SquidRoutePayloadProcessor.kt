@@ -14,7 +14,11 @@ internal class SquidRoutePayloadProcessor(parser: ParserProtocol) : BaseProcesso
             "route.transactionRequest.gasPrice" to "gasPrice",
             "route.transactionRequest.gasLimit" to "gasLimit",
             "route.transactionRequest.maxFeePerGas" to "maxFeePerGas",
-            "route.transactionRequest.maxPriorityFeePerGas" to "maxPriorityFeePerGas"
+            "route.transactionRequest.maxPriorityFeePerGas" to "maxPriorityFeePerGas",
+            "route.params.fromToken.chainId" to "fromChainId",
+            "route.params.fromToken.address" to "fromAddress",
+            "route.params.toToken.chainId" to "toChainId",
+            "route.params.toToken.address" to "toAddress",
         )
     )
 

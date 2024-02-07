@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 
 internal class AccountInputValidator(
     localizer: LocalizerProtocol?,
@@ -17,6 +18,7 @@ internal class AccountInputValidator(
         configs: Map<String, Any>?,
         transaction: Map<String, Any>,
         transactionType: String,
+        environment: V4Environment?,
     ): List<Any>? {
         val error = missingWallet(parser, wallet) ?: missingAccount(parser, wallet) ?: checkEquity(
             parser,

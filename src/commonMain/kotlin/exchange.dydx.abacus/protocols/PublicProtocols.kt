@@ -141,7 +141,8 @@ enum class QueryType(val rawValue: String) {
     GetAccountBalances("getAccountBalances"),
     GetMarketPrice("getMarketPrice"),
     GetDelegations("getDelegatorDelegations"),
-    RewardsParams("getRewardsParams");
+    RewardsParams("getRewardsParams"),
+    GetNobleBalance("getNobleBalance");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -158,7 +159,10 @@ enum class TransactionType(val rawValue: String) {
     SubaccountTransfer("subaccountTransfer"),
     Faucet("faucet"),
     simulateWithdraw("simulateWithdraw"),
-    simulateTransferNativeToken("simulateTransferNativeToken");
+    simulateTransferNativeToken("simulateTransferNativeToken"),
+    SendNobleIBC("sendNobleIBC"),
+    WithdrawToNobleIBC("withdrawToNobleIBC"),
+    CctpWithdraw("cctpWithdraw");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -198,6 +202,10 @@ interface DYDXChainTransactionsProtocol {
 enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
+
+    // Transactions
+    TradePlaceOrder("TradePlaceOrder"),
+    TradeCancelOrder("TradeCancelOrder"),
 
     // Transfers
     TransferFaucetConfirmed("TransferFaucetConfirmed"),
@@ -295,14 +303,14 @@ fun FileSystemProtocol.readCachedTextFile(
     path: String,
 ): String? {
     var data = this.readTextFile(FileLocation.AppDocs, path)
-    if (data == null) {
+    return if (data == null) {
         data = this.readTextFile(FileLocation.AppBundle, path)
         if (data != null) {
             this.writeTextFile(path, data)
         }
-        return data
+        data
     } else {
-        return data
+        data
     }
 }
 

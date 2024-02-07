@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.UsageRestriction
-import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -13,38 +12,40 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
-import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.state.modal.onChainAccountBalances
-import exchange.dydx.abacus.state.modal.onChainDelegations
-import exchange.dydx.abacus.state.modal.onChainEquityTiers
-import exchange.dydx.abacus.state.modal.onChainFeeTiers
-import exchange.dydx.abacus.state.modal.onChainRewardsParams
-import exchange.dydx.abacus.state.modal.onChainRewardTokenPrice
-import exchange.dydx.abacus.state.modal.onChainUserFeeTier
-import exchange.dydx.abacus.state.modal.onChainUserStats
-import exchange.dydx.abacus.state.modal.orderCanceled
-import exchange.dydx.abacus.state.modal.squidChains
-import exchange.dydx.abacus.state.modal.squidTokens
-import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.onChainAccountBalances
+import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.onChainEquityTiers
+import exchange.dydx.abacus.state.model.onChainFeeTiers
+import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
+import exchange.dydx.abacus.state.model.onChainRewardsParams
+import exchange.dydx.abacus.state.model.onChainUserFeeTier
+import exchange.dydx.abacus.state.model.onChainUserStats
+import exchange.dydx.abacus.state.model.squidChains
+import exchange.dydx.abacus.state.model.squidTokens
+import exchange.dydx.abacus.state.model.squidV2SdkInfo
+import exchange.dydx.abacus.state.model.updateHeight
+import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
+import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
-import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
+import kotlin.time.Duration.Companion.seconds
 
 class V4StateManagerAdaptor(
     deploymentUri: String,
@@ -114,6 +115,15 @@ class V4StateManagerAdaptor(
             }
         }
 
+    private val nobleBalancePollingDuration = 10.0
+    private var nobleBalancesTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
     private var firstBlockAndTime: BlockAndTime? = null
 
     private var restRetryTimers: MutableMap<String, LocalTimerProtocol> = mutableMapOf()
@@ -138,7 +148,7 @@ class V4StateManagerAdaptor(
         }
 
 
-    private val MAX_NUM_BLOCK_DELAY = 10
+    private val MAX_NUM_BLOCK_DELAY = 15
 
     private var lastValidatorCallTime: Instant? = null
 
@@ -214,8 +224,8 @@ class V4StateManagerAdaptor(
         } else 0
     }
 
-    override fun subaccountsUrl(): String? {
-        val url = configs.privateApiUrl("subaccounts")
+    override fun accountUrl(): String? {
+        val url = configs.privateApiUrl("account")
         return if (accountAddress != null && url != null) {
             "$url/$accountAddress"
         } else null
@@ -223,6 +233,17 @@ class V4StateManagerAdaptor(
 
     override fun screenUrl(): String? {
         return configs.publicApiUrl("screen")
+    }
+
+    override fun historicalTradingRewardAggregationsUrl(): String? {
+        val url = configs.privateApiUrl("historicalTradingRewardAggregations")
+        return if (accountAddress != null && url != null) {
+            "$url/$accountAddress"
+        } else null
+    }
+
+    override fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String>? {
+        return iMapOf("period" to "$period")
     }
 
     override fun subaccountParams(): IMap<String, String>? {
@@ -238,9 +259,21 @@ class V4StateManagerAdaptor(
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
-            retrieveTransferChains()
-            retrieveTransferTokens()
+            when (appConfigs.squidVersion) {
+                AppConfigs.SquidVersion.V1 -> {
+                    retrieveTransferChains()
+                    retrieveTransferTokens()
+                }
 
+                AppConfigs.SquidVersion.V2,
+                AppConfigs.SquidVersion.V2DepositOnly,
+                AppConfigs.SquidVersion.V2WithdrawalOnly -> {
+                    retrieveTransferAssets()
+                    retrieveCctpChainIds()
+                }
+            }
+
+            retrieveDepositExchanges()
             bestEffortConnectChain()
         } else {
             validatorConnected = false
@@ -276,13 +309,13 @@ class V4StateManagerAdaptor(
             }
             if (accountAddress != null) {
                 pollAccountBalances()
+                pollNobleBalance()
             }
 
             val timer = ioImplementations.timer ?: CoroutineTimer.instance
             heightTimer = timer.schedule(0.0, heightPollingDuration) {
                 if (readyToConnect) {
-                    retrieveIndexerHeight()
-                    retrieveValidatorHeight()
+                    retrieveHeights()
                     true
                 } else {
                     false
@@ -290,6 +323,15 @@ class V4StateManagerAdaptor(
             }
         } else {
             reconnectChain()
+        }
+    }
+
+    private fun retrieveHeights() {
+        // serialize height retrieval. Get indexer height first, then validator height
+        // If indexer height is not available, then validator height is not available
+        // indexer height no longer triggers api state change
+        retrieveIndexerHeight() {
+            retrieveValidatorHeight()
         }
     }
 
@@ -326,7 +368,7 @@ class V4StateManagerAdaptor(
             val oldState = stateMachine.state
             update(stateMachine.onChainRewardsParams(rewardsParams), oldState)
 
-            val json = Json.parseToJsonElement(rewardsParams).jsonObject.toMap()
+            val json = parser.decodeJsonObject(rewardsParams)
             val marketId = parser.asString(parser.value(json, "params.marketId"))
             val params = iMapOf("marketId" to marketId)
             val paramsInJson = jsonEncoder.encode(params)
@@ -372,9 +414,10 @@ class V4StateManagerAdaptor(
                 screenSourceAddress()
             }
             if (readyToConnect) {
-                retrieveSubaccounts()
+                retrieveAccount()
                 if (validatorConnected) {
                     pollAccountBalances()
+                    pollNobleBalance()
                 }
             }
         } else {
@@ -405,6 +448,51 @@ class V4StateManagerAdaptor(
         getOnChain(QueryType.GetDelegations, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainDelegations(response), oldState)
+        }
+    }
+
+    private fun pollNobleBalance() {
+        val timer = ioImplementations.timer ?: CoroutineTimer.instance
+        nobleBalancesTimer = timer.schedule(0.0, nobleBalancePollingDuration) {
+            if (validatorConnected && accountAddress != null) {
+                checkNobleBalance()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun checkNobleBalance() {
+        getOnChain(QueryType.GetNobleBalance, "") { response ->
+            val balance = parser.decodeJsonObject(response)
+            if (balance != null) {
+                val amount = parser.asDecimal(balance["amount"])
+                if (amount != null && amount > 5000) {
+                    if (processingCctpWithdraw) {
+                        return@getOnChain
+                    }
+                    pendingCctpWithdraw?.let { walletState ->
+                        processingCctpWithdraw = true
+                        val callback = walletState.callback
+                        transaction(TransactionType.CctpWithdraw, walletState.payload) { hash ->
+                            val error = parseTransactionResponse(hash)
+                            if (error != null) {
+                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                callback?.let { it -> send(error, it, hash) }
+                            } else {
+                                callback?.let { it -> send(null, it, hash) }
+                            }
+                            pendingCctpWithdraw = null
+                            processingCctpWithdraw = false
+                        }
+                    } ?: run {
+                        transferNobleBalance(amount)
+                    }
+                } else if (balance["error"] != null) {
+                    DebugLogger.error("Error checking noble balance: $response")
+                }
+            }
         }
     }
 
@@ -463,8 +551,8 @@ class V4StateManagerAdaptor(
                     response = {
                         "url": "https://...",
                      */
-                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
-                        val node = parser.asString(map["url"])
+                        val map = parser.decodeJsonObject(result)
+                        val node = parser.asString(map?.get("url"))
                         ioImplementations.threading?.async(ThreadingType.abacus) {
                             callback(node)
                         }
@@ -496,6 +584,7 @@ class V4StateManagerAdaptor(
         val usdcGasDenom = usdcToken.gasDenom
         val chainTokenDenom = chainToken.denom
         val chainTokenDecimals = chainToken.decimals
+        val nobleValidator = environment.endpoints.nobleValidator
 
         val params = mutableMapOf<String, Any>()
         params["indexerUrl"] = indexerUrl
@@ -503,6 +592,7 @@ class V4StateManagerAdaptor(
         params["validatorUrl"] = validatorUrl
         params["chainId"] = chainId
         params.safeSet("faucetUrl", faucetUrl)
+        params.safeSet("nobleValidatorUrl", nobleValidator)
 
         params.safeSet("USDC_DENOM", usdcDenom)
         params.safeSet("USDC_DECIMALS", usdcDecimals)
@@ -517,9 +607,13 @@ class V4StateManagerAdaptor(
             ) { response ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (response != null) {
-                        val json = Json.parseToJsonElement(response).jsonObject.toIMap()
+                        val json = parser.decodeJsonObject(response)
                         ioImplementations.threading?.async(ThreadingType.main) {
-                            callback(json["error"] == null)
+                            if (json != null) {
+                                callback(json["error"] == null)
+                            } else {
+                                callback(false)
+                            }
                         }
                     } else {
                         ioImplementations.threading?.async(ThreadingType.main) {
@@ -545,8 +639,8 @@ class V4StateManagerAdaptor(
                     response = {
                         "url": "https://...",
                      */
-                        val map = Json.parseToJsonElement(result).jsonObject.toIMap()
-                        val url = parser.asString(map["url"])
+                        val map = parser.decodeJsonObject(result)
+                        val url = parser.asString(map?.get("url"))
                         val config = endpointUrls.firstOrNull { it.api == url }
                         ioImplementations.threading?.async(ThreadingType.abacus) {
                             callback(config)
@@ -567,20 +661,28 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveIndexerHeight() {
+    private fun retrieveIndexerHeight(callback: (()-> Unit)? = null) {
         val url = configs.publicApiUrl("height")
         if (url != null) {
+            indexerState.previousRequestTime = indexerState.requestTime
             indexerState.requestTime = Clock.System.now()
             get(url, null, null) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
-                    val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-                    val height = parser.asInt(json["height"])
-                    val time = parser.asDatetime(json["time"])
-                    indexerState.updateHeight(height, time)
+                    val json = parser.decodeJsonObject(response)
+                    if (json != null) {
+                        val height = parser.asInt(json["height"])
+                        val time = parser.asDatetime(json["time"])
+                        indexerState.updateHeight(height, time)
+                    } else {
+                        indexerState.updateHeight(null, null)
+                    }
                 } else {
                     indexerState.updateHeight(null, null)
                 }
-                updateApiState()
+                callback?.invoke()
+                /*
+                Indexer height no longer triggers api state change
+                 */
             }
         }
     }
@@ -595,10 +697,26 @@ class V4StateManagerAdaptor(
     private fun retrieveTransferChains() {
         val oldState = stateMachine.state
         val url = configs.squidChains()
-        if (url != null) {
-            get(url, null, null) { _, response, httpCode ->
+        val squidIntegratorId = environment.squidIntegratorId
+        if (url != null && squidIntegratorId != null) {
+            val header = iMapOf("x-integrator-id" to squidIntegratorId)
+            get(url, null, header) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidChains(response), oldState)
+                }
+            }
+        }
+    }
+
+    private fun retrieveTransferAssets() {
+        val oldState = stateMachine.state
+        val url = configs.squidV2Assets()
+        val squidIntegratorId = environment.squidIntegratorId
+        if (url != null && squidIntegratorId != null) {
+            val header = iMapOf("x-integrator-id" to squidIntegratorId)
+            get(url, null, header) { _, response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    update(stateMachine.squidV2SdkInfo(response), oldState)
                 }
             }
         }
@@ -607,8 +725,10 @@ class V4StateManagerAdaptor(
     private fun retrieveTransferTokens() {
         val oldState = stateMachine.state
         val url = configs.squidToken()
-        if (url != null) {
-            get(url, null, null) { _, response, httpCode ->
+        val squidIntegratorId = environment.squidIntegratorId
+        if (url != null && squidIntegratorId != null) {
+            val header = iMapOf("x-integrator-id" to squidIntegratorId)
+            get(url, null, header) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidTokens(response), oldState)
                 }
@@ -617,8 +737,8 @@ class V4StateManagerAdaptor(
     }
 
     private fun parseHeight(response: String) {
-        val json = Json.parseToJsonElement(response).jsonObject.toIMap()
-        if (json["error"] != null) {
+        val json = parser.decodeJsonObject(response)
+        if (json != null && json["error"] != null) {
             validatorState.updateHeight(null, null)
             firstBlockAndTime = null
         } else {
@@ -630,8 +750,8 @@ class V4StateManagerAdaptor(
             if (firstBlockAndTime == null) {
                 firstBlockAndTime = validatorState.blockAndTime
             }
-            if (height != null) {
-                val stateResponse = stateMachine.updateHeight(height)
+            if (height != null && time != null) {
+                val stateResponse = stateMachine.updateHeight(BlockAndTime(height, time))
                 ioImplementations.threading?.async(ThreadingType.main) {
                     stateNotification?.stateChanged(
                         stateResponse.state,
@@ -649,6 +769,35 @@ class V4StateManagerAdaptor(
         }
     }
 
+    private fun delayedInRequestTime(networkState: NetworkState): Boolean {
+        val now = Clock.System.now()
+        val time = networkState.requestTime
+        return if (time != null) {
+            val gap = now - time
+            if (gap > 4.seconds) {
+                // If request (time) was sent more than 4 seconds ago
+                // The app was probably in background
+                true
+            } else {
+                val previousTime = networkState.previousRequestTime
+                if (previousTime != null) {
+                    val gap = time - previousTime
+                    // If request (time) was sent more than 15 seconds after
+                    // previous request (previousTime)
+                    // The app was probably in background
+                    gap > (heightPollingDuration * 1.5).seconds
+                } else false
+            }
+        } else false
+    }
+
+    private fun delayedStatus(
+        indexerState: NetworkState,
+        validatorState: NetworkState,
+    ): Boolean {
+        return delayedInRequestTime(indexerState) || delayedInRequestTime(validatorState)
+    }
+
     private fun apiState(
         apiState: ApiState?,
         indexerState: NetworkState,
@@ -657,6 +806,8 @@ class V4StateManagerAdaptor(
         var status = apiState?.status ?: ApiStatus.UNKNOWN
         var haltedBlock = apiState?.haltedBlock
         var blockDiff: Int? = null
+
+        val delayedStatus = delayedStatus(indexerState, validatorState)
         when (validatorState.status) {
             NetworkStatus.NORMAL -> {
                 when (indexerState.status) {
@@ -712,14 +863,16 @@ class V4StateManagerAdaptor(
             }
         }
         if (status == ApiStatus.NORMAL) {
-            val indexerBlock = indexerState.blockAndTime?.block
-            val validatorBlock = validatorState.blockAndTime?.block
-            if (indexerBlock != null && validatorBlock != null) {
-                val diff = validatorBlock - indexerBlock
-                if (diff > MAX_NUM_BLOCK_DELAY) {
-                    status = ApiStatus.INDEXER_TRAILING
-                    blockDiff = diff
-                    haltedBlock = null
+            if (!delayedStatus) {
+                val indexerBlock = indexerState.blockAndTime?.block
+                val validatorBlock = validatorState.blockAndTime?.block
+                if (indexerBlock != null && validatorBlock != null) {
+                    val diff = validatorBlock - indexerBlock
+                    if (diff > MAX_NUM_BLOCK_DELAY) {
+                        status = ApiStatus.INDEXER_TRAILING
+                        blockDiff = diff
+                        haltedBlock = null
+                    }
                 }
             }
         }
@@ -778,16 +931,27 @@ class V4StateManagerAdaptor(
         }
     }
 
+    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
+
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
+        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+            payload,
+            false
+        )
+
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
+                tracking(
+                    AnalyticsEvent.TradePlaceOrder.rawValue,
+                    analyticsPayload,
+                )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
@@ -809,11 +973,19 @@ class V4StateManagerAdaptor(
         val payload = closePositionPayload()
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
+        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+            payload,
+            true
+        )
 
         lastOrderClientId = null
         transaction(TransactionType.PlaceOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
+                tracking(
+                    AnalyticsEvent.TradePlaceOrder.rawValue,
+                    analyticsPayload,
+                )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
@@ -879,6 +1051,29 @@ class V4StateManagerAdaptor(
         }
     }
 
+    override fun commitCCTPWithdraw(callback: TransactionCallback) {
+        val state = stateMachine.state
+        if (state?.input?.transfer?.type == TransferType.withdrawal) {
+            val decimals = environment.tokens["usdc"]?.decimals ?: 6
+
+            val usdcSize =
+                parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
+            if (usdcSize > Numeric.double.ZERO) {
+                simulateWithdrawal(decimals) { gasFee ->
+                    if (gasFee != null) {
+                        cctpToNoble(state, decimals, gasFee, callback)
+                    } else {
+                        cctpToNoble(state, decimals, Numeric.decimal.ZERO, callback)
+                    }
+                }
+            } else {
+                send(V4TransactionErrors.error(null, "Invalid usdcSize"), callback)
+            }
+        } else {
+            send(V4TransactionErrors.error(null, "Invalid transfer type"), callback)
+        }
+    }
+
     override fun faucet(amount: Double, callback: TransactionCallback) {
         val payload = faucetPayload(subaccountNumber, amount)
         val string = Json.encodeToString(payload)
@@ -897,9 +1092,8 @@ class V4StateManagerAdaptor(
         amount: Double,
         submitTimeInMilliseconds: Double
     ): ParsingError? {
-        val result =
-            Json.parseToJsonElement(response).jsonObject.toIMap()
-        val status = parser.asInt(result["status"])
+        val result = parser.decodeJsonObject(response)
+        val status = parser.asInt(result?.get("status"))
         return if (status == 202) {
             this.ioImplementations.threading?.async(ThreadingType.abacus) {
                 this.faucetRecords.add(
@@ -914,7 +1108,7 @@ class V4StateManagerAdaptor(
         } else if (status != null) {
             V4TransactionErrors.error(null, "API error: $status")
         } else {
-            val resultError = parser.asMap(result.get("error"))
+            val resultError = parser.asMap(result?.get("error"))
             val message = parser.asString(resultError?.get("message"))
             V4TransactionErrors.error(null, message ?: "Unknown error")
         }
@@ -928,6 +1122,10 @@ class V4StateManagerAdaptor(
         transaction(TransactionType.CancelOrder, string) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
+                tracking(
+                    AnalyticsEvent.TradeCancelOrder.rawValue,
+                    null,
+                )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
                     this.cancelOrderRecords.add(
@@ -947,19 +1145,23 @@ class V4StateManagerAdaptor(
         return if (response == null) {
             V4TransactionErrors.error(null, "Unknown error")
         } else {
-            val result = Json.parseToJsonElement(response).jsonObject.toIMap()
-            val error = parser.asMap(result["error"])
-            if (error != null) {
-                val message = parser.asString(error["message"])
-                val code = parser.asInt(error["code"])
-                return V4TransactionErrors.error(code, message)
+            val result = parser.decodeJsonObject(response)
+            if (result != null) {
+                val error = parser.asMap(result["error"])
+                if (error != null) {
+                    val message = parser.asString(error["message"])
+                    val code = parser.asInt(error["code"])
+                    return V4TransactionErrors.error(code, message)
+                } else {
+                    null
+                }
             } else {
-                null
+                return V4TransactionErrors.error(null, "unknown error")
             }
         }
     }
 
-    private fun send(error: ParsingError?, callback: TransactionCallback, data: Any? = null) {
+    internal fun send(error: ParsingError?, callback: TransactionCallback, data: Any? = null) {
         ioImplementations.threading?.async(ThreadingType.main) {
             if (error != null) {
                 callback(false, error, data)
@@ -985,13 +1187,14 @@ class V4StateManagerAdaptor(
             ) {
                 val decimals = environment.tokens["usdc"]?.decimals ?: 6
 
-                val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
+                val usdcSize =
+                    parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                 if (usdcSize > Numeric.double.ZERO) {
                     simulateWithdrawal(decimals) { gasFee ->
                         if (gasFee != null) {
-                            retrieveWithdrawalRoute(decimals, gasFee)
+                            retrieveWithdrawalRoute(state, decimals, gasFee)
                         } else {
-                            retrieveWithdrawalRoute(decimals, Numeric.decimal.ZERO)
+                            retrieveWithdrawalRoute(state, decimals, Numeric.decimal.ZERO)
                         }
                     }
                 }
@@ -1009,7 +1212,8 @@ class V4StateManagerAdaptor(
                 if (token == "usdc") {
                     val decimals = environment.tokens[token]?.decimals ?: 6
 
-                    val usdcSize = parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
+                    val usdcSize =
+                        parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
                     if (usdcSize > Numeric.double.ZERO) {
                         simulateWithdrawal(decimals) { gasFee ->
                             receiveTransferGas(gasFee)
@@ -1021,7 +1225,8 @@ class V4StateManagerAdaptor(
                     val decimals = environment.tokens[token]?.decimals ?: 18
 
                     val address = state.input.transfer.address
-                    val tokenSize = parser.asDouble(state.input.transfer.size?.size) ?: Numeric.double.ZERO
+                    val tokenSize =
+                        parser.asDouble(state.input.transfer.size?.size) ?: Numeric.double.ZERO
                     if (tokenSize > Numeric.double.ZERO && address.isAddressValid()
                     ) {
                         simulateTransferNativeToken(decimals) { gasFee ->
@@ -1035,10 +1240,15 @@ class V4StateManagerAdaptor(
         }
     }
 
-    override fun transferStatus(hash: String, fromChainId: String?, toChainId: String?) {
-        super.transferStatus(hash, fromChainId, toChainId)
+    override fun transferStatus(
+        hash: String,
+        fromChainId: String?,
+        toChainId: String?,
+        isCctp: Boolean
+    ) {
+        super.transferStatus(hash, fromChainId, toChainId, isCctp)
 
-        fetchTransferStatus(hash, fromChainId, toChainId)
+        fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
     override fun trackingParams(interval: Double): IMap<String, Any> {

@@ -2,6 +2,7 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.typedSafeSet
 
@@ -11,7 +12,7 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     internal fun received(
         existing: Map<String, Any>?,
         payload: List<Any>?,
-        height: Int?
+        height: BlockAndTime?
     ): Map<String, Any>? {
         return if (payload != null) {
             val orders = existing?.mutable() ?: mutableMapOf<String, Any>()
@@ -34,7 +35,7 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     internal fun updateHeight(
         existing: Map<String, Any>,
-        height: Int?
+        height: BlockAndTime?
     ): Pair<Map<String, Any>, Boolean> {
         var updated = false
         val modified = existing.mutable()

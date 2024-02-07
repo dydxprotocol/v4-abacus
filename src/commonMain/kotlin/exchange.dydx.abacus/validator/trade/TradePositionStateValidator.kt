@@ -4,6 +4,7 @@ import abs
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
@@ -22,6 +23,7 @@ internal class TradePositionStateValidator(
         trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>? {
         val marketId = parser.asString(trade["marketId"])
         val position = if (marketId != null) parser.asNativeMap(
@@ -232,13 +234,19 @@ internal class TradePositionStateValidator(
         ORDER_WOULD_FLIP_POSITION
          */
         val needsReduceOnly = parser.asBool(parser.value(trade, "options.needsReduceOnly")) ?: false
-        return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true && change == PositionChange.CROSSING) error(
-            "ERROR",
-            "ORDER_WOULD_FLIP_POSITION",
-            listOf("size.size"),
-            "APP.TRADE.MODIFY_SIZE_FIELD",
-            "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
-            "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION"
-        ) else null
+        return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true) {
+            when (change) {
+                PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING -> error(
+                    "ERROR",
+                    "ORDER_WOULD_FLIP_POSITION",
+                    listOf("size.size"),
+                    "APP.TRADE.MODIFY_SIZE_FIELD",
+                    "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
+                    "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION"
+                )
+
+                else -> null
+            }
+        } else null
     }
 }

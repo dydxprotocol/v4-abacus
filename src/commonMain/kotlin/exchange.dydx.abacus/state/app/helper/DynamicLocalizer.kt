@@ -13,13 +13,7 @@ import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutableMapOf
-import kollections.iListOf
-import kollections.iMutableListOf
-import kollections.toIList
-import kollections.toIMutableMap
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 
 data class Language(val code: String, val name: String, val path: String?)
 
@@ -31,11 +25,11 @@ class DynamicLocalizer(
     private val loadLocalOnly: Boolean = false,
 ) : AbacusLocalizerProtocol {
     private val parser = Parser()
-    private var _languages: IList<Language> = iListOf()
+    private var _languages: List<Language> = listOf()
         set(value) {
             if (field != value) {
                 field = value
-                val languages = iMutableListOf<SelectionOption>()
+                val languages = mutableListOf<SelectionOption>()
                 val languagesMap = mutableMapOf<String, Language>()
                 for (item in value) {
                     languages.add(SelectionOption(item.code, item.name, null, null))
@@ -46,13 +40,13 @@ class DynamicLocalizer(
             }
         }
 
-    private var _languagesMap: IMap<String, Language> = iMapOf()
+    private var _languagesMap: Map<String, Language> = mapOf()
         set(value) {
             field = value
             matchLanguage()
         }
 
-    override var languages: List<SelectionOption> = iListOf()
+    override var languages: List<SelectionOption> = listOf()
         private set
 
     private var _loadingLanguage: String? = null
@@ -67,7 +61,7 @@ class DynamicLocalizer(
 
     // For all languages
     // language -> path -> data
-    private var languagesData: IMap<String, IMap<String, IMap<String, Any>>> = iMapOf()
+    private var languagesData: Map<String, Map<String, Map<String, Any>>> = mapOf()
         set(value) {
             field = value
             updateLanguageData()
@@ -75,7 +69,7 @@ class DynamicLocalizer(
 
     // For selected language
     // path -> data
-    private var languageData: IMap<String, IMap<String, Any>>? = null
+    private var languageData: Map<String, Map<String, Any>>? = null
 
     init {
         val languagePath = "/localization/languages.json"
@@ -88,8 +82,8 @@ class DynamicLocalizer(
                 ioImplementations.fileSystem?.readCachedTextFile(filePath)
             }
             if (result != null) {
-                val list = Json.parseToJsonElement(result).jsonArray.toIList()
-                if (list.size != 0) {
+                val list = parser.decodeJsonArray(result)
+                if (list != null && list.size != 0) {
                     _languages = parseLanguages(list)
                 }
             }
@@ -99,8 +93,8 @@ class DynamicLocalizer(
             val url = "$endpoint$languagePath"
             ioImplementations.rest?.get(url, null) { response, code ->
                 if (code in 200..299 && response != null) {
-                    val list = Json.parseToJsonElement(response).jsonArray.toIList()
-                    if (list.size != 0) {
+                    val list = parser.decodeJsonArray(response)
+                    if (list != null && list.size != 0) {
                         ioImplementations.threading?.async(ThreadingType.main) {
                             _languages = parseLanguages(list)
                             ioImplementations.fileSystem?.writeTextFile(filePath, response)
@@ -111,8 +105,8 @@ class DynamicLocalizer(
         }
     }
 
-    private fun parseLanguages(items: IList<Any>): IList<Language> {
-        val languages = iMutableListOf<Language>()
+    private fun parseLanguages(items: List<Any>): List<Language> {
+        val languages = mutableListOf<Language>()
         for (item in items) {
             val map = parser.asMap(item)
             if (map != null) {
@@ -144,14 +138,14 @@ class DynamicLocalizer(
         }
     }
 
-    private fun loadLocalLanguage(language: String): IMap<String, IMap<String, Any>>? {
+    private fun loadLocalLanguage(language: String): Map<String, Map<String, Any>>? {
         val files = filePaths(language).map { "$path/$it" }
         return loadLocalLanguageFiles(files)
     }
 
-    private fun filePaths(language: String): IList<String> {
+    private fun filePaths(language: String): List<String> {
         val languageCode = _languagesMap[language]?.path ?: language
-        return iListOf(
+        return listOf(
             "localization/$languageCode/app.json",
             "localization/$languageCode/tooltips.json",
             "localizations_native/$languageCode/app.json",
@@ -160,8 +154,8 @@ class DynamicLocalizer(
     }
 
 
-    private fun loadLocalLanguageFiles(filePaths: IList<String>): IMap<String, IMap<String, Any>>? {
-        val result = mutableMapOf<String, IMap<String, Any>>()
+    private fun loadLocalLanguageFiles(filePaths: List<String>): Map<String, Map<String, Any>>? {
+        val result = mutableMapOf<String, Map<String, Any>>()
         for (filePath in filePaths) {
             val data = loadLocalLanguageFile(filePath)
             if (data != null) {
@@ -171,14 +165,14 @@ class DynamicLocalizer(
         return if (result.size > 0) result else null
     }
 
-    private fun loadLocalLanguageFile(filePath: String): IMap<String, Any>? {
+    private fun loadLocalLanguageFile(filePath: String): Map<String, Any>? {
         val result = if (loadLocalOnly) {
             ioImplementations.fileSystem?.readTextFile(FileLocation.AppBundle, filePath)
         } else {
             ioImplementations.fileSystem?.readCachedTextFile(filePath)
         }
         if (result != null) {
-            return parser.asMap(Json.parseToJsonElement(result).jsonObject)
+            return parser.decodeJsonObject(result)
         }
         return null
     }
@@ -194,7 +188,7 @@ class DynamicLocalizer(
             ioImplementations.rest?.get(url, null) { response, code ->
                 ioImplementations.threading?.async(ThreadingType.main) {
                     if (code in 200..299 && response != null) {
-                        val data = parser.asMap(Json.parseToJsonElement(response).jsonObject)
+                        val data = parser.decodeJsonObject(response)
                         if (data != null && data.size != 0) {
                             mergeLanguageData(data, file, language)
                         }
@@ -209,12 +203,12 @@ class DynamicLocalizer(
     }
 
     private fun mergeLanguageData(
-        data: IMap<String, Any>,
+        data: Map<String, Any>,
         filePath: String,
         language: String,
     ) {
-        val modified = languagesData.toIMutableMap()
-        val languageData = modified[language]?.toIMutableMap() ?: mutableMapOf()
+        val modified = languagesData.toMutableMap()
+        val languageData = modified[language]?.toMutableMap() ?: mutableMapOf()
         languageData[filePath] = data
         modified[language] = languageData
         languagesData = modified
@@ -243,7 +237,7 @@ class DynamicLocalizer(
                     if (languageData != null) {
                         // If the language is loaded from file system
                         // It's OK to use the localizer. Refresh in the background
-                        val modified = languagesData.toIMutableMap()
+                        val modified = languagesData.toMutableMap()
                         modified[language] = languageData
                         languagesData = modified
                         this.language = language
@@ -264,6 +258,9 @@ class DynamicLocalizer(
                 // Not a valid language
                 callback(false, null)
             }
+        } else {
+            // Not a valid language
+            callback(false, null)
         }
     }
 
@@ -295,8 +292,8 @@ class DynamicLocalizer(
 
     private fun localize(
         path: String,
-        params: IMap<String, Any>?,
-        data: IMap<String, Any>,
+        params: Map<String, Any>?,
+        data: Map<String, Any>,
     ): String? {
         val value = parser.value(data, path)
         return if (value != null) {

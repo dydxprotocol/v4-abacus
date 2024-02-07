@@ -23,16 +23,17 @@ class V4StateManagerConfigs(
                          "historical-funding":"/v4/historicalFunding",
                          "historical-pnl":"/v4/historical-pnl",
                          "sparklines":"/v4/sparklines",
-                         "subaccounts":"/v4/addresses",
+                         "account":"/v4/addresses",
                          "time":"/v4/time",
                          "screen":"/v4/screen",
                          "height":"/v4/height"
                       },
                       "private":{
-                         "subaccounts":"/v4/addresses",
+                         "account":"/v4/addresses",
                          "fills":"/v4/fills",
                          "historical-pnl":"/v4/historical-pnl",
-                         "transfers":"/v4/transfers"
+                         "transfers":"/v4/transfers",
+                         "historicalTradingRewardAggregations":"/v4/historicalTradingRewardAggregations"
                       },
                       "faucet":{
                          "faucet":"/faucet/tokens"
@@ -70,6 +71,11 @@ class V4StateManagerConfigs(
         return "$squid$path"
     }
 
+    fun squidV2Status(): String? {
+        val path = parser.asString(parser.value(configs, "paths.0xsquid.status"))
+        return "$squidV2Host$path"
+    }
+
     fun squidRoute(): String? {
         val squid = environment.endpoints.squid ?: return null
         val path = parser.asString(parser.value(configs, "paths.0xsquid.route"))
@@ -87,4 +93,29 @@ class V4StateManagerConfigs(
         val path = parser.asString(parser.value(configs, "paths.0xsquid.tokens"))
         return "$squid$path"
     }
+
+    fun squidV2Assets(): String? {
+        return "$squidV2Host/v2/sdk-info"
+    }
+
+    fun squidV2Route(): String? {
+        return "$squidV2Host/v2/route"
+    }
+
+    fun nobleChainId(): String? {
+        return if (environment.isMainNet) "noble-1" else "grand-1"
+    }
+
+    fun nobleDenom(): String? {
+        return "uusdc"
+    }
+
+    private val squidV2Host: String
+        get() {
+            return if (environment.isMainNet) {
+                "https://v2.api.squidrouter.com"
+            } else {
+                "https://testnet.v2.api.squidrouter.com"
+            }
+        }
 }

@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
@@ -7,7 +7,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.reduceOnlySupported
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
@@ -55,7 +54,7 @@ fun TradingStateMachine.closePosition(
                     }
                 }
                 trade["type"] = "MARKET"
-                trade["reduceOnly"] = reduceOnlySupported
+                trade["reduceOnly"] = featureFlags.reduceOnlySupported
 
                 val positionSize =
                     parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO

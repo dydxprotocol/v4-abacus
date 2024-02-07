@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.base
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
@@ -131,7 +132,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     internal open fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Map<String, Any>? {
         return received(existing, payload)
     }
@@ -146,7 +147,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
     internal open fun received(
         existing: List<Any>?,
         payload: List<Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): List<Any>? {
         return existing
     }
@@ -160,14 +161,14 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
 
     internal open fun received(
         existing: List<Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<List<Any>, Boolean> {
         return Pair(existing, false)
     }
 
     internal open fun received(
         existing: Map<String, Any>,
-        height: Int?,
+        height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         return Pair(existing, false)
     }

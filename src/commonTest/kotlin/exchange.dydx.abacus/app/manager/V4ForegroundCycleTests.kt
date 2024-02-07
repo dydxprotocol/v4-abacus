@@ -84,9 +84,9 @@ class V4ForegroundCycleTests {
             "WebSocket should be connected to correct url"
         )
         assertEquals(
-            5,
+            7,
             testRest?.requests?.size,
-            "Should have queued 4 requests"
+            "Should have queued 7 requests"
         )
         assertContains(
             testRest?.requests?.toTypedArray()!!,
@@ -193,20 +193,20 @@ class V4ForegroundCycleTests {
         )
 
         assertEquals(
-            8,
+            10,
             testRest?.requests?.size,
-            "Should have queued 8 REST requests"
+            "Should have queued 10 REST requests"
         )
 
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-            testRest?.requests?.get(6),
+            testRest?.requests?.get(8),
             "Request to historical funding endpoint should be present"
         )
 
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
-            testRest?.requests?.get(7),
+            testRest?.requests?.get(9),
             "Request to candles endpoint should be present"
         )
 
@@ -262,20 +262,20 @@ class V4ForegroundCycleTests {
         )
 
         assertEquals(
-            10,
+            12,
             testRest?.requests?.size,
-            "Should have queued 10 REST requests"
+            "Should have queued 12 REST requests"
         )
 
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD",
-            testRest?.requests?.get(8),
+            testRest?.requests?.get(10),
             "Request to historical funding endpoint should be present"
         )
 
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY",
-            testRest?.requests?.get(9),
+            testRest?.requests?.get(11),
             "Request to candles endpoint should be present"
         )
     }
@@ -298,14 +298,14 @@ class V4ForegroundCycleTests {
         /* Only getting historical funding rate once for now */
 
         assertEquals(
-            8,
+            10,
             testRest?.requests?.size,
-            "Should have queued 6 REST requests"
+            "Should have queued 10 REST requests"
         )
 
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-            testRest?.requests?.get(6),
+            testRest?.requests?.get(8),
             "Request to historical funding endpoint should be present"
         )
     }
@@ -353,10 +353,10 @@ class V4ForegroundCycleTests {
         val testAddress = "0xsecondaryFakeAddress"
         stateManager.setAddresses(null, testAddress)
 
-        assertEquals(7, testRest?.requests?.size)
+        assertEquals(10, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
-            testRest?.requests?.get(6)
+            testRest?.requests?.get(9)
         )
     }
 
@@ -375,14 +375,14 @@ class V4ForegroundCycleTests {
 
         stateManager.setAddresses(null, testAddress)
 
-        assertEquals(10, testRest?.requests?.size)
+        assertEquals(13, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(7)
+            testRest?.requests?.get(10)
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(9)
+            testRest?.requests?.get(12)
         )
 
         assertEquals(2, testWebSocket?.messages?.size)
@@ -425,14 +425,14 @@ class V4ForegroundCycleTests {
 
         stateManager.setAddresses(null, testAddress)
 
-        assertEquals(11, testRest?.requests?.size)
+        assertEquals(14, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(9)
+            testRest?.requests?.get(12)
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            testRest?.requests?.get(10)
+            testRest?.requests?.get(13)
         )
     }
 
@@ -458,10 +458,10 @@ class V4ForegroundCycleTests {
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
         stateManager.setAddresses(null, secondAddress)
 
-        assertEquals(12, testRest?.requests?.size)
+        assertEquals(16, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
-            testRest?.requests?.get(11)
+            testRest?.requests?.get(15)
         )
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
@@ -491,7 +491,7 @@ class V4ForegroundCycleTests {
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
         stateManager.setAddresses(null, null)
 
-        assertEquals(10, testRest?.requests?.size)
+        assertEquals(13, testRest?.requests?.size)
         assertEquals(3, testWebSocket?.messages?.size)
         assertEquals(
             """

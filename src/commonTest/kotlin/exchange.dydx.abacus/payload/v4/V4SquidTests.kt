@@ -1,13 +1,13 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.state.modal.TransferInputField
-import exchange.dydx.abacus.tests.extensions.loadv4MarketsSubscribed
-import exchange.dydx.abacus.state.modal.squidChains
-import exchange.dydx.abacus.state.modal.squidRoute
-import exchange.dydx.abacus.state.modal.squidStatus
-import exchange.dydx.abacus.state.modal.squidTokens
-import exchange.dydx.abacus.state.modal.transfer
-import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.squidChains
+import exchange.dydx.abacus.state.model.squidRoute
+import exchange.dydx.abacus.state.model.squidRouteV2
+import exchange.dydx.abacus.state.model.squidStatus
+import exchange.dydx.abacus.state.model.squidTokens
+import exchange.dydx.abacus.state.model.squidV2SdkInfo
+import exchange.dydx.abacus.state.model.transfer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -74,6 +74,40 @@ class V4SquidTests : V4BaseTests() {
     }
 
     @Test
+    fun testSquidRouteV2() {
+        setup()
+
+        perp.transfer("DEPOSIT", TransferInputField.type, 0)
+
+        var stateChange = perp.squidV2SdkInfo(mock.squidV2AssetsMock.payload)
+        assertNotNull(stateChange)
+
+        stateChange = perp.squidRouteV2(mock.squidV2RouteMock.payload, 0)
+        assertNotNull(stateChange)
+
+        test({
+            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+        }, null, {
+            val summary = it.state?.input?.transfer?.summary!!
+            assertNotNull(summary)
+            assertTrue { summary.slippage!!.toInt() == 0 }
+            assertTrue { summary.exchangeRate!! > 0 }
+            assertTrue { summary.estimatedRouteDuration!! > 0 }
+            assertTrue { summary.gasFee!! > 0 }
+            //assertTrue { summary.bridgeFee!! > 0 }
+            assertNotNull(it.state?.input?.transfer?.requestPayload)
+            assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
+        })
+
+        test({
+            perp.transfer("0", TransferInputField.size, 0)
+        }, null, {
+            assertNull(it.state?.input?.transfer?.requestPayload)
+        })
+    }
+
+
+    @Test
     fun testSquidRoute() {
         setup()
 
@@ -129,6 +163,11 @@ class V4SquidTests : V4BaseTests() {
         }, null, {
             val errors = it.state?.input?.transfer?.errors!!
             assertNotNull(errors)
+
+            assertEquals(
+                it.state?.input?.transfer?.errorMessage,
+                "toChain: dydxprotocol-testnet-1 unsupported chain id"
+            )
         })
     }
 
@@ -153,6 +192,7 @@ class V4SquidTests : V4BaseTests() {
             assertNotNull(status.axelarTransactionUrl)
             assertEquals(status.routeStatuses?.first()?.status, "success")
             assertEquals(status.routeStatuses?.last()?.status, "success")
+            assertNotNull(status.squidTransactionStatus)
         })
     }
 

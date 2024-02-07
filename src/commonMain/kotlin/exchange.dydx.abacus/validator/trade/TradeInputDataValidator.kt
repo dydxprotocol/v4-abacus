@@ -1,12 +1,12 @@
 package exchange.dydx.abacus.validator.trade
 
 import abs
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
-import exchange.dydx.abacus.utils.*
-import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.GoodTil
+import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -28,6 +28,13 @@ LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_LOWER
 
  */
 
+internal data class EquityTier(
+    val requiredTotalNetCollateralUSD: Double,
+    val maxOrders: Int,
+) {
+    var nextLevelRequiredTotalNetCollateralUSD: Double? = null
+}
+
 internal class TradeInputDataValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
@@ -43,8 +50,9 @@ internal class TradeInputDataValidator(
         trade: Map<String, Any>,
         change: PositionChange,
         restricted: Boolean,
+        environment: V4Environment?,
     ): List<Any>? {
-        return validateTradeInput(subaccount, market, configs, trade)
+        return validateTradeInput(subaccount, market, configs, trade, environment)
     }
 
     private fun validateTradeInput(
@@ -52,9 +60,10 @@ internal class TradeInputDataValidator(
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
         trade: Map<String, Any>,
+        environment: V4Environment?,
     ): List<Any>? {
         val errors = mutableListOf<Any>()
-        validateOrder(trade, subaccount, configs)?.let {
+        validateOrder(trade, subaccount, configs, environment)?.let {
             /*
             USER_MAX_ORDERS
             */
@@ -94,70 +103,112 @@ internal class TradeInputDataValidator(
         trade: Map<String, Any>,
         subaccount: Map<String, Any>?,
         configs: Map<String, Any>?,
+        environment: V4Environment?,
     ): List<Any>? {
         /*
         USER_MAX_ORDERS
         */
+        val fallbackMaxNumOrders = MAX_NUM_OPEN_UNTRIGGERED_ORDERS
         val orderType = parser.asString(trade["type"])
         val timeInForce = parser.asString(trade["timeInForce"])
 
         if (orderType == null || timeInForce == null) return null
 
-        val equityTierLimit =
-            maxOrdersForEquityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
+        val equityTier =
+            equityTier(isStatefulOrder(orderType, timeInForce), subaccount, configs)
+        val equityTierLimit = equityTier?.maxOrders ?: fallbackMaxNumOrders
+        val nextLevelRequiredTotalNetCollateralUSD =
+            equityTier?.nextLevelRequiredTotalNetCollateralUSD
         val numOrders = orderCount(isStatefulOrder(orderType, timeInForce), subaccount)
 
-        return if (numOrders >= equityTierLimit) {
+        // Equity tier limit is not applicable for `MARKET` orders and `LIMIT` orders with FOK or IOC time in force
+        val isEquityTierLimitApplicable = orderType != "MARKET" &&
+                !(orderType == "LIMIT" && (timeInForce == "FOK" || timeInForce == "IOC"))
+
+        val documentation = environment?.links?.documentation
+        val link = if (documentation != null) "$documentation/trading/other_limits" else null
+        return if (numOrders >= equityTierLimit && isEquityTierLimitApplicable) {
             listOf(
-                error(
-                    "ERROR",
-                    "USER_MAX_ORDERS",
-                    null,
-                    null,
-                    "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
-                    "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_EQUITY_TIER",
-                    mapOf(
-                        "LIMIT" to mapOf(
-                            "value" to equityTierLimit,
-                            "format" to "string"
-                        )
+                if (nextLevelRequiredTotalNetCollateralUSD != null) {
+                    error(
+                        "ERROR",
+                        "USER_MAX_ORDERS",
+                        null,
+                        null,
+                        "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
+                        "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_CURRENT_EQUITY_TIER",
+                        mapOf(
+                            "EQUITY" to mapOf(
+                                "value" to nextLevelRequiredTotalNetCollateralUSD,
+                                "format" to "price"
+                            ),
+                            "LIMIT" to mapOf(
+                                "value" to equityTierLimit,
+                                "format" to "string"
+                            )
+                        ),
+                        null,
+                        link
                     )
-                )
+                } else {
+                    error(
+                        "ERROR",
+                        "USER_MAX_ORDERS",
+                        null,
+                        null,
+                        "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
+                        "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_TOP_EQUITY_TIER",
+                        mapOf(
+                            "LIMIT" to mapOf(
+                                "value" to equityTierLimit,
+                                "format" to "string"
+                            )
+                        ),
+                        null,
+                        link
+                    )
+                }
             )
         } else null
     }
 
-    private fun maxOrdersForEquityTier(
+    private fun equityTier(
         isStatefulOrder: Boolean,
         subaccount: Map<String, Any>?,
         configs: Map<String, Any>?
-    ): Int {
+    ): EquityTier? {
         /*
          USER_MAX_ORDERS according to Equity Tier
          */
-        val fallbackMaxNumOrders = MAX_NUM_OPEN_UNTRIGGERED_ORDERS
-        var maxNumOrders: Int = 0
+        var equityTier: EquityTier? = null
         val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current")) ?: 0.0
         val equityTierKey: String =
             if (isStatefulOrder) "statefulOrderEquityTiers" else "shortTermOrderEquityTiers"
         parser.asNativeMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
             parser.asNativeList(equityTiers[equityTierKey])?.let { tiers ->
-                if (tiers.size == 0) return fallbackMaxNumOrders
+                if (tiers.isEmpty()) return null
                 for (tier in tiers) {
                     parser.asNativeMap(tier)?.let { item ->
                         val requiredTotalNetCollateralUSD =
                             parser.asDouble(item["requiredTotalNetCollateralUSD"]) ?: 0.0
                         if (requiredTotalNetCollateralUSD <= equity) {
-                            maxNumOrders = parser.asInt(item["maxOrders"]) ?: 0
+                            val maxNumOrders = parser.asInt(item["maxOrders"]) ?: 0
+                            equityTier = EquityTier(
+                                requiredTotalNetCollateralUSD,
+                                maxNumOrders
+                            )
+                        } else if (equityTier?.nextLevelRequiredTotalNetCollateralUSD == null) {
+                            equityTier?.nextLevelRequiredTotalNetCollateralUSD =
+                                requiredTotalNetCollateralUSD
                         }
                     }
                 }
             }
         } ?: run {
-            return fallbackMaxNumOrders
+            return null
         }
 
-        return maxNumOrders
+        return equityTier
     }
 
     private fun orderCount(
@@ -178,7 +229,8 @@ internal class TradeInputDataValidator(
                             !isCurrentOrderStateful && (timeInForce == "IOC" || timeInForce == "FOK")
                         if (!isShortTermAndRequiresImmediateExecution &&
                             (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED" || status == "PARTIALLY_FILLED") &&
-                            (isCurrentOrderStateful == shouldCountStatefulOrders)) {
+                            (isCurrentOrderStateful == shouldCountStatefulOrders)
+                        ) {
                             count += 1
                         }
                     }

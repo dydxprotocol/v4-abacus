@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.payload
 
 import exchange.dydx.abacus.payload.v3.V3BaseTests
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
 class TradeInputOptionsTests : V3BaseTests() {
@@ -71,7 +71,7 @@ class TradeInputOptionsTests : V3BaseTests() {
                             "needsTriggerPrice": false,
                             "needsLimitPrice": false,
                             "needsTrailingPercent": false,
-                            "needsReduceOnly": false,
+                            "needsReduceOnly": true,
                             "needsPostOnly": false,
                             "needsBrackets": true,
                             "needsTimeInForce": false,
@@ -148,7 +148,7 @@ class TradeInputOptionsTests : V3BaseTests() {
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,
-                            "needsReduceOnly": false,
+                            "needsReduceOnly": true,
                             "needsPostOnly": false,
                             "needsBrackets": false,
                             "needsTimeInForce": true,
@@ -160,12 +160,12 @@ class TradeInputOptionsTests : V3BaseTests() {
                                     "stringKey": "APP.TRADE.GOOD_TIL_TIME"
                                 },
                                 {
-                                    "type": "FOK",
-                                    "stringKey": "APP.TRADE.FILL_OR_KILL"
-                                },
-                                {
                                     "type": "IOC",
                                     "stringKey": "APP.TRADE.IMMEDIATE_OR_CANCEL"
+                                },
+                                {
+                                    "type": "FOK",
+                                    "stringKey": "APP.TRADE.FILL_OR_KILL"
                                 }
                             ]
                         }
@@ -188,7 +188,7 @@ class TradeInputOptionsTests : V3BaseTests() {
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,
-                            "needsReduceOnly": false,
+                            "needsReduceOnly": true,
                             "needsPostOnly": false,
                             "needsBrackets": false,
                             "needsTimeInForce": true,

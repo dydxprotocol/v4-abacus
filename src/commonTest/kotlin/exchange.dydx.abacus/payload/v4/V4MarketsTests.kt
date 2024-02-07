@@ -426,7 +426,7 @@ class V4MarketsTests : V4BaseTests() {
                                     "side": "SELL",
                                     "size": 9.5E-4,
                                     "price": 1255.98,
-                                    "liquidation": false,
+                                    "type": null,
                                     "createdAt": "2022-12-12T02:28:09.282Z",
                                     "resources": {
                                     }

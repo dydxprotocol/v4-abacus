@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.trade.TradeAccountStateValidator
 import exchange.dydx.abacus.validator.trade.TradeBracketOrdersValidator
@@ -34,8 +35,9 @@ internal class TradeInputValidator(
         configs: Map<String, Any>?,
         transaction: Map<String, Any>,
         transactionType: String,
+        environment: V4Environment?,
     ): List<Any>? {
-        if (transactionType == "trade") {
+        if (transactionType == "trade" || transactionType == "closePosition") {
             val marketId = parser.asString(transaction["marketId"]) ?: return null
             val change = change(parser, subaccount, transaction)
             val restricted = parser.asBool(user?.get("restricted")) ?: false
@@ -62,7 +64,8 @@ internal class TradeInputValidator(
                         configs,
                         transaction,
                         change,
-                        restricted
+                        restricted,
+                        environment,
                     )
                 if (validatorErrors != null) {
                     errors.addAll(validatorErrors)

@@ -39,12 +39,14 @@ internal open class BaseInputValidator(
         textStringKey: String,
         textParams: Map<String, Any>? = null,
         action: String? = null,
+        link: String? = null,
     ): Map<String, Any> {
         return mapOf(
             "type" to type,
             "code" to errorCode,
             "fields" to fields,
             "action" to action,
+            "link" to link,
             "resources" to mapOf(
                 "title" to listOfNotNull(
                     localize(titleStringKey, null)?.let { "localized" to it } ?: run { null },

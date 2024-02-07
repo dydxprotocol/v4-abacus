@@ -24,6 +24,7 @@ class EnvironmentsMock {
                  "name":"v4 Staging",
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
+                 "squidIntegratorId": "dYdX-api",
                  "isMainNet":false,
                  "tokens":{
                     "chain": {
@@ -76,12 +77,16 @@ class EnvironmentsMock {
                        "callbackUrl":"/walletsegue"
                     },
                     "images":"/wallets/"
+                 },
+                 "featureFlags":{
+                     "reduceOnlySupported":true
                  }
               },
               "dydxprotocol-testnet":{
                  "name":"v4 Public Testnet",
                  "ethereumChainId":"5",
                  "dydxChainId":"dydx-testnet-3",
+                 "squidIntegratorId": "dYdX-api",
                  "isMainNet":false,
                  "tokens":{
                     "chain": {
@@ -136,7 +141,10 @@ class EnvironmentsMock {
                        "callbackUrl":"/walletsegue"
                     },
                     "images":"/wallets/"
-                 }
+                 },
+                 "featureFlags":{
+                     "reduceOnlySupported":false
+                  }
               }
            }
         }

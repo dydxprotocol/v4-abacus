@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 
 internal class FieldsInputValidator(
     localizer: LocalizerProtocol?,
@@ -18,6 +19,7 @@ internal class FieldsInputValidator(
         configs: Map<String, Any>?,
         transaction: Map<String, Any>,
         transactionType: String,
+        environment: V4Environment?,
     ): List<Any>? {
         parser.asNativeList(transaction["fields"])?.let { fields ->
             val errors = mutableListOf<Any>()

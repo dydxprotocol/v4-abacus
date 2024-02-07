@@ -3,10 +3,12 @@ package exchange.dydx.abacus.payload.v4
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.NotificationsProvider
-import exchange.dydx.abacus.state.modal.onChainAccountBalances
-import exchange.dydx.abacus.state.modal.onChainDelegations
-import exchange.dydx.abacus.state.modal.updateHeight
+import exchange.dydx.abacus.state.model.historicalTradingRewards
+import exchange.dydx.abacus.state.model.onChainAccountBalances
+import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
@@ -14,6 +16,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
+import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -57,6 +60,8 @@ class V4AccountTests : V4BaseTests() {
         testUserFeeTier()
 
         testUserStats()
+
+        testAccountHistoricalTradingRewards()
     }
 
     private fun testSubaccountsReceived() {
@@ -68,6 +73,9 @@ class V4AccountTests : V4BaseTests() {
             {
                 "wallet": {
                     "account": {
+                        "tradingRewards": {
+                            "total": 2800.8
+                        },
                         "subaccounts": {
                             "0": {
                                 "equity": {
@@ -98,6 +106,15 @@ class V4AccountTests : V4BaseTests() {
                 {
                     "wallet": {
                         "account": {
+                            "tradingRewards": {
+                                "total": 2800.8,
+                                "blockRewards": [
+                                    {
+                                        "tradingReward": "0.02",
+                                        "createdAtHeight": "2422"
+                                    }
+                                ]
+                            },
                             "subaccounts": {
                                 "0": {
                                     "equity": {
@@ -415,6 +432,18 @@ class V4AccountTests : V4BaseTests() {
                 {
                     "wallet": {
                         "account": {
+                            "tradingRewards": {
+                                "blockRewards": [
+                                    {
+                                        "tradingReward": "0.02",
+                                        "createdAtHeight": "2422"
+                                    },
+                                    {
+                                        "tradingReward": "0.01",
+                                        "createdAtHeight": "2501"
+                                    }
+                                ]
+                            },
                             "subaccounts": {
                                 "0": {
                                     "equity": {
@@ -657,7 +686,12 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_best_effort_cancelled, 0, 16940)
+                perp.socket(
+                    testWsUrl,
+                    mock.accountsChannel.v4_best_effort_cancelled,
+                    0,
+                    BlockAndTime(16940, Clock.System.now())
+                )
             },
             """
                 {
@@ -681,7 +715,12 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_best_effort_cancelled, 0, 16960)
+                perp.socket(
+                    testWsUrl,
+                    mock.accountsChannel.v4_best_effort_cancelled,
+                    0,
+                    BlockAndTime(16960, Clock.System.now())
+                )
             },
             """
                 {
@@ -706,7 +745,7 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                perp.updateHeight(16960)
+                perp.updateHeight(BlockAndTime(16960, Clock.System.now()))
             },
             """
                 {
@@ -733,7 +772,12 @@ class V4AccountTests : V4BaseTests() {
     private fun testBatchedSubaccountChanged() {
         test(
             {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_batched, 0, 16960)
+                perp.socket(
+                    testWsUrl,
+                    mock.accountsChannel.v4_batched,
+                    0,
+                    BlockAndTime(16960, Clock.System.now())
+                )
             },
             """
                 {
@@ -774,7 +818,12 @@ class V4AccountTests : V4BaseTests() {
 
         test(
             {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_position_closed, 0, 16961)
+                perp.socket(
+                    testWsUrl,
+                    mock.accountsChannel.v4_position_closed,
+                    0,
+                    BlockAndTime(16961, Clock.System.now())
+                )
             },
             """
                 {
@@ -803,10 +852,15 @@ class V4AccountTests : V4BaseTests() {
                 val localizer = BaseTests.testLocalizer(ioImplementations)
                 val uiImplementations = BaseTests.testUIImplementations(localizer)
                 val notificationsProvider =
-                    NotificationsProvider(uiImplementations, Parser(), JsonEncoder())
+                    NotificationsProvider(
+                        uiImplementations,
+                        environment = mock.v4Environment,
+                        Parser(),
+                        JsonEncoder()
+                    )
                 val notifications = notificationsProvider.buildNotifications(perp, 0)
                 assertEquals(
-                    4,
+                    6,
                     notifications.size
                 )
                 val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
@@ -1009,6 +1063,201 @@ class V4AccountTests : V4BaseTests() {
                                 "dv4tnt": {
                                      "denom": "dv4tnt",
                                      "amount": "2001000"
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+    }
+
+    @Test
+    fun testAccountHistoricalTradingRewards() {
+        setup()
+        test(
+            {
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.weeklyCall,
+                    "WEEKLY"
+                )
+                perp.update(changes)
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "tradingRewards": {
+                                "historical": {
+                                     "WEEKLY": [
+                                        {
+                                            "amount": 1.0,
+                                            "startedAt": "2023-12-03T00:00:00.000Z",
+                                            "period": "WEEKLY"
+                                         },
+                                         {
+                                            "amount": 124.03,
+                                            "startedAt": "2023-11-26T00:00:00.000Z",
+                                            "endedAt": "2023-12-03T00:00:00.000Z",
+                                            "period": "WEEKLY"
+                                         }
+                                     ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+
+        test(
+            {
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.dailyCall,
+                    "DAILY"
+                )
+                perp.update(changes)
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "tradingRewards": {
+                                "historical": {
+                                    "WEEKLY": [
+                                        {   
+                                            "period": "WEEKLY"
+                                         },
+                                         {
+                                            "period": "WEEKLY"
+                                         }
+                                    ],
+                                     "DAILY": [
+                                        {
+                                            "amount": 0.184633506816819606,
+                                            "startedAt": "2024-01-29T00:00:00.000Z",
+                                            "endedAt": "2024-01-30T00:00:00.000Z",
+                                            "period": "DAILY"
+                                          },
+                                          {
+                                            "amount": 0.631910345674096029,
+                                            "startedAt": "2024-01-27T00:00:00.000Z",
+                                            "endedAt": "2024-01-28T00:00:00.000Z",
+                                            "period": "DAILY"
+                                          }
+                                     ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+
+        test(
+            {
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.monthlyCall,
+                    "MONTHLY"
+                )
+                perp.update(changes)
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "tradingRewards": {
+                                "historical": {
+                                     "WEEKLY": [
+                                        {   
+                                            "period": "WEEKLY"
+                                         },
+                                         {
+                                            "period": "WEEKLY"
+                                         }
+                                     ],
+                                     "DAILY": [
+                                        {   
+                                            "period": "DAILY"
+                                         },
+                                         {
+                                            "period": "DAILY"
+                                         }
+                                     ],
+                                     "MONTHLY": [
+                                        {   
+                                            "amount": 1.00,
+                                            "startedAt": "2023-12-01T00:00:00.000Z",
+                                            "period": "MONTHLY"
+                                        },
+                                        {
+                                            "amount": 124.03,
+                                            "startedAt": "2023-11-01T00:00:00.000Z",
+                                            "endedAt": "2023-12-01T00:00:00.000Z",
+                                            "period": "MONTHLY"
+                                        }
+                                      ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+            }
+        )
+
+        test(
+            {
+                val changes = perp.historicalTradingRewards(
+                    mock.historicalTradingRewards.monthlySecondCall,
+                    "MONTHLY"
+                )
+                perp.update(changes)
+                return@test StateResponse(perp.state, changes)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "tradingRewards": {
+                                "historical": {
+                                     "WEEKLY": [
+                                        {
+                                            "period": "WEEKLY"
+                                         },
+                                         {
+                                            "period": "WEEKLY"
+                                         }
+                                     ],
+                                     "MONTHLY": [
+                                        {
+                                            "amount": 1.00,
+                                            "startedAt": "2023-12-01T00:00:00.000Z",
+                                            "period": "MONTHLY"
+                                        },
+                                        {
+                                            "amount": 124.03,
+                                            "startedAt": "2023-11-01T00:00:00.000Z",
+                                            "endedAt": "2023-12-01T00:00:00.000Z",
+                                            "period": "MONTHLY"
+                                        },
+                                        {
+                                            "amount": 100.0,
+                                            "startedAt": "2023-09-01T00:00:00.000Z",
+                                            "endedAt": "2023-10-01T00:00:00.000Z",
+                                            "period": "MONTHLY"
+                                         }
+                                      ]
                                 }
                             }
                         }

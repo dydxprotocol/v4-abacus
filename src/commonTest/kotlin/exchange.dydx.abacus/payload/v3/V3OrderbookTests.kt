@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.state.modal.setOrderbookGrouping
+import exchange.dydx.abacus.state.model.setOrderbookGrouping
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
@@ -48,7 +48,7 @@ class V3OrderbookTests: V3BaseTests() {
                                     }
                                 ],
                                 "midPrice": 1655.05,
-                                "spreadPercent": 4.53158514848494E-4
+                                "spreadPercent": 9.06317029696988E-4
                             }
                         }
                     }

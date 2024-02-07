@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.validation
 
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.modal.TradeInputField
-import exchange.dydx.abacus.state.modal.trade
-import exchange.dydx.abacus.state.modal.tradeInMarket
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
@@ -222,12 +222,6 @@ class TradeBracketsTests: ValidationsTests() {
                     "errors": [
                         {
                             "code": "NO_EQUITY_DEPOSIT_FIRST"
-                        },
-                        {
-                            "code": "USER_MAX_ORDERS"
-                        },
-                        {
-                            "code": "INVALID_NEW_ACCOUNT_MARGIN_USAGE"
                         },
                         {
                             "type": "ERROR",

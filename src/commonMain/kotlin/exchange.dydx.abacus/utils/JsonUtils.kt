@@ -31,3 +31,7 @@ fun Map<*, *>.toJsonPrettyPrint(): String {
 
     return prettyJson.encodeToString(toJsonObject())
 }
+
+fun Map<*, *>.toJson(): String {
+    return Json.encodeToString(toJsonObject())
+}

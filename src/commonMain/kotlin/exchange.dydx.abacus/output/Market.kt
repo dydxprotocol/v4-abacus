@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
@@ -145,7 +146,7 @@ data class MarketConfigs(
                 parser.asDouble(data["incrementalInitialMarginFraction"])
             val incrementalPositionSize = parser.asDouble(data["incrementalPositionSize"])
             val maxPositionSize = parser.asDouble(data["maxPositionSize"])
-            val basePositionNotional = parser.asDouble(data["basePositionNotional"]) ?: return null
+            val basePositionNotional = parser.asDouble(data["basePositionNotional"])
             val baselinePositionSize = parser.asDouble(data["baselinePositionSize"])
             val candleOptions = CandleOption.create(
                 existing?.candleOptions,
@@ -550,7 +551,7 @@ data class MarketTrade(
     val side: OrderSide,
     val size: Double,
     val price: Double,
-    val liquidation: Boolean,
+    val type: OrderType? = null,
     val createdAtMilliseconds: Double,
     val resources: MarketTradeResources,
 ) {
@@ -568,7 +569,7 @@ data class MarketTrade(
                 val price = parser.asDouble(data["price"])
                 val side =
                     if (parser.asString(data["side"]) == "SELL") OrderSide.sell else OrderSide.buy
-                val liquidation = parser.asBool(data["liquidation"]) ?: false
+                val type = OrderType.invoke(parser.asString(data["type"]))
                 val createdAtMilliseconds =
                     parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
                 val resources = parser.asMap(data["resources"])?.let {
@@ -580,7 +581,7 @@ data class MarketTrade(
                         existing?.size != size ||
                         existing.side !== side ||
                         existing.price != price ||
-                        existing.liquidation != liquidation ||
+                        existing.type != type ||
                         existing.createdAtMilliseconds != createdAtMilliseconds ||
                         existing.resources !== resources
                     ) {
@@ -589,7 +590,7 @@ data class MarketTrade(
                             side,
                             size,
                             price,
-                            liquidation,
+                            type,
                             createdAtMilliseconds,
                             resources
                         )
@@ -629,12 +630,14 @@ data class OrderbookLine(
     val price: Double,
     val offset: Int = 0,
     val depth: Double?,
+    val depthCost: Double,
 ) {
     companion object {
         internal fun create(
             existing: OrderbookLine?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            previousDepthCost: Double? = null,
         ): OrderbookLine? {
             DebugLogger.log("creating Orderbook Line\n")
             data?.let {
@@ -643,12 +646,14 @@ data class OrderbookLine(
                 val offset = parser.asInt(data["offset"]) ?: 0
                 val depth = parser.asDouble(data["depth"])
                 if (size != null && price != null && size != 0.0) {
+                    val depthCost = (previousDepthCost ?: 0.0) + size * price
                     return if (existing?.size != size ||
                         existing.price != price ||
                         existing.offset != offset ||
-                        existing.depth != depth
+                        existing.depth != depth ||
+                        existing.depthCost != depthCost
                     ) {
-                        OrderbookLine(size, price, offset ?: 0, depth)
+                        OrderbookLine(size, price, offset ?: 0, depth, depthCost)
                     } else {
                         existing
                     }
@@ -745,11 +750,13 @@ data class MarketOrderbook(
             ascending: Boolean,
         ): IList<OrderbookLine>? {
             return if (data != null) {
+                var depthCost: Double = 0.0
                 val lines = iMutableListOf<OrderbookLine>()
                 for (item in data) {
-                    val line = OrderbookLine.create(null, parser, parser.asMap(item))
+                    val line = OrderbookLine.create(null, parser, parser.asMap(item), depthCost)
                     if (line != null) {
                         lines.add(line)
+                        depthCost = line.depthCost ?: 0.0
                     }
                 }
                 lines

@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.*
 import exchange.dydx.abacus.output.*
@@ -18,7 +18,9 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.TokenInfo
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.validator.InputValidator
 import kollections.JsExport
@@ -66,6 +68,9 @@ open class TradingStateMachine(
 
     internal val tokensInfo: Map<String, TokenInfo>
         get() = environment?.tokens!!
+    
+    internal val featureFlags: EnvironmentFeatureFlags
+        get() = environment?.featureFlags!!
 
     internal var groupingMultiplier: Int
         get() = marketsProcessor.groupingMultiplier
@@ -181,7 +186,7 @@ open class TradingStateMachine(
         url: AbUrl,
         jsonString: String,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): StateResponse {
         val errors = iMutableListOf<ParsingError>()
         val json =
@@ -208,7 +213,7 @@ open class TradingStateMachine(
         url: AbUrl,
         payload: Map<String, Any>,
         subaccountNumber: Int,
-        height: Int?,
+        height: BlockAndTime?,
     ): StateResponse {
         var changes: StateChanges? = null
         val type = parser.asString(payload["type"])
@@ -394,7 +399,8 @@ open class TradingStateMachine(
         payload: String,
         subaccountNumber: Int,
         height: Int?,
-        deploymentUri: String? = null
+        deploymentUri: String? = null,
+        period: String? = null,
     ): StateResponse {
         /*
         For backward compatibility only
@@ -447,7 +453,7 @@ open class TradingStateMachine(
                 else if (url.path.contains("/v3/candles/") || url.path.contains("/v4/candles/"))
                     changes = candles(payload)
                 else if (url.path.contains("/v4/addresses/"))
-                    changes = subaccounts(payload)
+                    changes = account(payload)
                 else
                     error = ParsingError(
                         ParsingErrorType.UnhandledEndpoint,
@@ -479,6 +485,7 @@ open class TradingStateMachine(
             iListOf(
                 Changes.wallet,
                 Changes.subaccount,
+                Changes.tradingRewards,
                 Changes.historicalPnl,
                 Changes.fills,
                 Changes.transfers,
@@ -495,8 +502,10 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
-        val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-        return receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
+        val json = parser.decodeJsonObject(payload)
+        return if (json != null) {
+            receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
+        } else StateChanges.noChange
     }
 
     internal fun update(changes: StateChanges): StateChanges {
@@ -516,7 +525,8 @@ open class TradingStateMachine(
                 subaccount,
                 parser.asNativeMap(this.marketsSummary?.get("markets")),
                 this.input,
-                this.configs
+                this.configs,
+                this.environment,
             )
 
             when (this.input?.get("current")) {
@@ -553,6 +563,7 @@ open class TradingStateMachine(
                 Changes.historicalFundings,
                 Changes.accountBalances,
                 Changes.subaccount,
+                Changes.tradingRewards,
                 Changes.historicalPnl,
                 Changes.fills,
                 Changes.transfers,
@@ -587,7 +598,7 @@ open class TradingStateMachine(
         val input = this.input?.mutable()
         val trade = parser.asNativeMap(input?.get(tag))
         val inputType = parser.asString(parser.value(trade, "size.input"))
-        val calculator = TradeInputCalculator(parser, calculation)
+        val calculator = TradeInputCalculator(parser, calculation, featureFlags)
         val params = mutableMapOf<String, Any>()
         params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("account", account)
@@ -1000,10 +1011,10 @@ open class TradingStateMachine(
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
-                    Account(account.balances, account.stakingBalances, subaccounts)
+                    Account(account.balances, account.stakingBalances, subaccounts, account.tradingRewards)
                 }
             }
-            if (changes.changes.contains(Changes.accountBalances)) {
+            if (changes.changes.contains(Changes.accountBalances) || changes.changes.contains(Changes.tradingRewards)) {
                 account = Account.create(account, parser, accountData, tokensInfo, localizer)
             }
         } else {
@@ -1086,7 +1097,8 @@ open class TradingStateMachine(
                     subaccount,
                     parser.asNativeMap(this.marketsSummary?.get("markets")),
                     this.input,
-                    this.configs
+                    this.configs,
+                    this.environment,
                 )
                 this.input?.let {
                     input = Input.create(input, parser, it, environment)
@@ -1228,7 +1240,7 @@ open class TradingStateMachine(
         return modifiedInput
     }
 
-    fun received(subaccountNumber: Int, height: Int?): StateResponse {
+    fun received(subaccountNumber: Int, height: BlockAndTime?): StateResponse {
         val wallet = wallet
         if (wallet != null) {
             val (modifiedWallet, updated) = walletProcessor.received(

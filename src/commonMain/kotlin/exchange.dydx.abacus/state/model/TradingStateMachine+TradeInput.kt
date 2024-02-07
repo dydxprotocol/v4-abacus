@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
@@ -115,7 +115,7 @@ internal fun TradingStateMachine.initiateTrade(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    val calculator = TradeInputCalculator(parser, TradeCalculation.trade)
+    val calculator = TradeInputCalculator(parser, TradeCalculation.trade, featureFlags)
     val params = mutableMapOf<String, Any>()
     params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
     params.safeSet("account", account)
@@ -138,7 +138,7 @@ internal fun TradingStateMachine.inititiateClosePosition(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
+    val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition, featureFlags)
     val params = mutableMapOf<String, Any>()
     params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
     params.safeSet("account", account)
@@ -194,7 +194,7 @@ fun TradingStateMachine.trade(
                 TradeInputField.usdcSize.rawValue,
                 TradeInputField.leverage.rawValue,
                 -> {
-                    sizeChanged = (parser.asDouble(data) != parser.asDouble(trade[typeText]))
+                    sizeChanged = (parser.asDouble(data) != parser.asDouble(parser.value(trade, typeText)))
                     trade.safeSet(typeText, parser.asDouble(data))
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),

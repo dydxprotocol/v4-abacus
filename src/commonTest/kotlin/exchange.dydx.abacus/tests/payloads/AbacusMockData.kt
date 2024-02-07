@@ -10,6 +10,7 @@ import exchange.dydx.abacus.state.manager.WalletConnectV1
 import exchange.dydx.abacus.state.manager.WalletConnectV2
 import exchange.dydx.abacus.state.manager.WalletConnection
 import exchange.dydx.abacus.state.manager.WalletSegue
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import kollections.JsExport
 import kollections.iMapOf
 import kollections.toIMap
@@ -19,6 +20,7 @@ class AbacusMockData {
     internal val socketUrl = AbUrl("api.dydx.exchange", path = "/v3/ws", scheme = "wss")
     internal val environments = EnvironmentsMock()
     internal val accountsChannel = AccountsChannelMock()
+    internal val historicalTradingRewards = HistoricalTradingRewardsMock()
     internal val fillsChannel = FillsMock()
     internal val transfersMock = TransfersMock()
     internal val user = UserMock()
@@ -40,6 +42,8 @@ class AbacusMockData {
     internal val squidTokensMock = SquidTokensMock()
     internal val squidRouteMock = SquidRouteMock()
     internal val squidStatusMock = SquidStatusMock()
+    internal val squidV2AssetsMock = SquidV2AssetsMock()
+    internal val squidV2RouteMock = SquidV2RouteMock()
     internal val localizationMock = LocalizationMock()
     internal val v4OnChainMock = V4OnChainMock()
     internal val v4Environment = V4Environment(
@@ -47,10 +51,12 @@ class AbacusMockData {
         "test",
         "test",
         "test",
+        "dYdX-api",
         "dYdX Chain",
         "dYdX-logo.png",
         false,
         EnvironmentEndpoints(
+            null,
             null,
             null,
             null,
@@ -92,6 +98,9 @@ class AbacusMockData {
                 "uusdc",
                 "/currencies/usdc.png"
             ),
-        ).toIMap()
+        ).toIMap(),
+        EnvironmentFeatureFlags(
+            true,
+        )
     )
 }

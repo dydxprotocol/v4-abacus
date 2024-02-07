@@ -1,36 +1,32 @@
-package exchange.dydx.abacus.state.modal
+package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
-import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import kollections.iListOf
-import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 
 
-internal fun TradingStateMachine.subaccounts(payload: String): StateChanges {
-    val json = parser.asList(parser.asMap(Json.parseToJsonElement(payload))?.get("subaccounts"))
+internal fun TradingStateMachine.account(payload: String): StateChanges {
+    val json = parser.asMap(Json.parseToJsonElement(payload))
     return if (json != null) {
-        receivedSubaccounts(json)
+        receivedAccount(json)
     } else StateChanges(iListOf<Changes>(), null, null)
 }
 
-internal fun TradingStateMachine.receivedSubaccounts(
-    payload: List<Any>
+internal fun TradingStateMachine.receivedAccount(
+    payload: Map<String, Any>
 ): StateChanges {
-    this.wallet = walletProcessor.receivedSubaccounts(wallet, payload)
-    return StateChanges(iListOf(Changes.subaccount))
+    this.wallet = walletProcessor.receivedAccount(wallet, payload)
+    return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
 
 internal fun TradingStateMachine.updateHeight(
-    height: Int,
+    height: BlockAndTime,
 ): StateResponse {
     val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(wallet, height)
     return if (updated) {
