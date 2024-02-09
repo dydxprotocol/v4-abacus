@@ -86,6 +86,13 @@ class EnvironmentsMock {
                  },
                  "featureFlags":{
                      "reduceOnlySupported":true
+                 },
+                 "governance": {
+                    "newMarketProposal": {
+                       "initialDepositAmount": 10000000,
+                       "delayBlocks": 900,
+                       "newMarketsMethodology": "https://docs.google.com/spreadsheets/d/1zjkV9R7R_7KMItuzqzvKGwefSBRfE-ZNAx1LH55OcqY/edit?usp=sharing"
+                    }
                  }
               },
               "dydxprotocol-testnet":{
@@ -111,7 +118,14 @@ class EnvironmentsMock {
                  },
                  "featureFlags":{
                      "reduceOnlySupported":false
-                  }
+                  },
+                 "governance": {
+                    "newMarketProposal": {
+                       "initialDepositAmount": 10000000,
+                       "delayBlocks": 900,
+                       "newMarketsMethodology": "https://docs.google.com/spreadsheets/d/1zjkV9R7R_7KMItuzqzvKGwefSBRfE-ZNAx1LH55OcqY/edit?usp=sharing"
+                    }
+                 }
               }
            }
         }

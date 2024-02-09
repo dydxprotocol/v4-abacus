@@ -504,6 +504,7 @@ class AsyncAbacusStateManager(
         val tokensData = parser.asNativeMap(items?.get("tokens"))
         val linksData = parser.asNativeMap(items?.get("links"))
         val walletsData = parser.asNativeMap(items?.get("wallets"))
+        val governanceData = parser.asNativeMap(items?.get("governance"))
 
         if (items != null) {
             val environmentsData = parser.asMap(items["environments"]) ?: return false
@@ -520,6 +521,7 @@ class AsyncAbacusStateManager(
                     parser.asNativeMap(tokensData?.get(dydxChainId)),
                     parser.asNativeMap(linksData?.get(dydxChainId)),
                     parser.asNativeMap(walletsData?.get(dydxChainId)),
+                    parser.asNativeMap(governanceData?.get(dydxChainId)),
                 ) ?: continue
                 parsedEnvironments[environment.id] = environment
             }

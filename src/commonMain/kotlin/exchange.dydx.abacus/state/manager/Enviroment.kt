@@ -67,7 +67,7 @@ data class EnvironmentLinks(
         fun parse(
             data: Map<String, Any>,
             parser: ParserProtocol,
-        ): EnvironmentLinks? {
+        ): EnvironmentLinks {
             val tos = parser.asString(data["tos"])
             val privacy = parser.asString(data["privacy"])
             val mintscan = parser.asString(data["mintscan"])
@@ -103,6 +103,48 @@ data class EnvironmentFeatureFlags(
             
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
+            )
+        }
+    }
+}
+
+@JsExport
+data class EnvironmentGovernanceNewMarketProposal(
+    val initialDepositAmount: Int,
+    val delayBlocks: Int,
+    val newMarketsMethodology: String,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): EnvironmentGovernanceNewMarketProposal? {
+            val initialDepositAmount = parser.asInt(data?.get("initialDepositAmount")) ?: return null
+            val delayBlocks = parser.asInt(data?.get("delayBlocks")) ?: return null
+            val newMarketsMethodology = parser.asString(data?.get("newMarketsMethodology")) ?: return null
+
+            return EnvironmentGovernanceNewMarketProposal(
+                initialDepositAmount,
+                delayBlocks,
+                newMarketsMethodology,
+            )
+        }
+    }
+}
+@JsExport
+data class EnvironmentGovernance(
+    val newMarketProposal: EnvironmentGovernanceNewMarketProposal,
+) {
+    companion object {
+        fun parse(
+            data: Map<String, Any>?,
+            parser: ParserProtocol,
+        ): EnvironmentGovernance? {
+            val newMarketsMethodologyData = parser.asMap(data?.get("newMarketsMethodology")) ?: return null
+            val newMarketsMethodology = EnvironmentGovernanceNewMarketProposal.parse(newMarketsMethodologyData, parser) ?: return null
+
+            return EnvironmentGovernance(
+                newMarketsMethodology,
             )
         }
     }
@@ -271,7 +313,7 @@ class AppsRequirements(
             data: Map<String, Any>,
             parser: ParserProtocol,
             localizer: LocalizerProtocol?
-        ): AppsRequirements? {
+        ): AppsRequirements {
             val ios = AppRequirements.parse(
                 parser.asMap(data["ios"]),
                 parser,
@@ -327,6 +369,7 @@ open class Environment(
     val links: EnvironmentLinks?,
     val walletConnection: WalletConnection?,
     val apps: AppsRequirements?,
+    val governance: EnvironmentGovernance?,
     val featureFlags: EnvironmentFeatureFlags,
 )
 
@@ -345,6 +388,7 @@ class V4Environment(
     walletConnection: WalletConnection?,
     apps: AppsRequirements?,
     val tokens: IMap<String, TokenInfo>,
+    governance: EnvironmentGovernance?,
     featureFlags: EnvironmentFeatureFlags,
 ) : Environment(
     id,
@@ -357,7 +401,8 @@ class V4Environment(
     links,
     walletConnection,
     apps,
-    featureFlags
+    governance,
+    featureFlags,
 ) {
     companion object {
         fun parse(
@@ -369,6 +414,7 @@ class V4Environment(
             tokensData: Map<String, Any>?,
             linksData: Map<String, Any>?,
             walletsData: Map<String, Any>?,
+            governanceData: Map<String, Any>?,
         ): V4Environment? {
             val name = parser.asString(data["name"])
             val ethereumChainId = parser.asString(data["ethereumChainId"]) ?: return null
@@ -390,6 +436,8 @@ class V4Environment(
             )
             val apps = AppsRequirements.parse(data, parser, localizer)
             val tokens = parseTokens(tokensData ?: parser.asNativeMap(data["tokens"]), parser, deploymentUri)
+            val governance = EnvironmentGovernance.parse(governanceData ?: parser.asNativeMap(data["governance"]) ?: return null, parser)
+
             val featureFlags = EnvironmentFeatureFlags.parse(parser.asMap(data["featureFlags"]), parser)
 
             return V4Environment(
@@ -406,7 +454,8 @@ class V4Environment(
                 walletConnection,
                 apps,
                 tokens,
-                featureFlags
+                governance,
+                featureFlags,
             )
         }
 
@@ -453,7 +502,7 @@ class AppSettings(
         fun parse(
             data: Map<String, Any>,
             parser: ParserProtocol,
-        ): AppSettings? {
+        ): AppSettings {
             val ios = AppSetting.parse(
                 parser.asMap(data["ios"]),
                 parser,
