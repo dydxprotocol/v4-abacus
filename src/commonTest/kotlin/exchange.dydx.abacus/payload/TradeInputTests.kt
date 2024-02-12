@@ -1858,31 +1858,31 @@ class TradeInputTests : V3BaseTests() {
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "postOrder": 183023.15
+                                        "postOrder": 206977.09
                                     },
                                     "freeCollateral": {
-                                        "postOrder": 165375.97
+                                        "postOrder": 188132.21
                                     },
                                     "quoteBalance": {
                                         "postOrder": -64198.03
                                     },
                                     "notionalTotal": {
-                                        "postOrder": 247399.27
+                                        "postOrder": 271353.21
                                     },
                                     "valueTotal": {
-                                        "postOrder": 247221.18
+                                        "postOrder": 271175.12
                                     },
                                     "initialRiskTotal": {
-                                        "postOrder": 17647.18
+                                        "postOrder": 18844.87
                                     },
                                     "leverage": {
-                                        "postOrder": 1.35
+                                        "postOrder": 1.31
                                     },
                                     "marginUsage": {
-                                        "postOrder": 0.0964
+                                        "postOrder": 0.091
                                     },
                                     "buyingPower": {
-                                        "postOrder": 3307519.48
+                                        "postOrder": 3762644.3
                                     },
                                     "openPositions": {
                                         "ETH-USD": {
