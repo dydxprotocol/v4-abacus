@@ -99,8 +99,9 @@ class AbacusMockData {
                 "/currencies/usdc.png"
             ),
         ).toIMap(),
+        null,
         EnvironmentFeatureFlags(
             true,
-        )
+        ),
     )
 }
