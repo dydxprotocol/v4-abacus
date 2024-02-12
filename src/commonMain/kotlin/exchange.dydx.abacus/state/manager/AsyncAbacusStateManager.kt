@@ -501,12 +501,28 @@ class AsyncAbacusStateManager(
         val targetEnvironments = parser.asList(target["environments"]) ?: return false
         val targetDefault = parser.asString(target["default"])
 
+        val tokensData = parser.asNativeMap(items?.get("tokens"))
+        val linksData = parser.asNativeMap(items?.get("links"))
+        val walletsData = parser.asNativeMap(items?.get("wallets"))
+        val governanceData = parser.asNativeMap(items?.get("governance"))
+
         if (items != null) {
             val environmentsData = parser.asMap(items["environments"]) ?: return false
             val parsedEnvironments = mutableMapOf<String, V4Environment>()
             for ((key, value) in environmentsData) {
                 val data = parser.asMap(value) ?: continue
-                val environment = V4Environment.parse(key, data, parser, deploymentUri, uiImplementations.localizer) ?: continue
+                val dydxChainId = parser.asString(data["dydxChainId"]) ?: continue
+                val environment = V4Environment.parse(
+                    key,
+                    data,
+                    parser,
+                    deploymentUri,
+                    uiImplementations.localizer,
+                    parser.asNativeMap(tokensData?.get(dydxChainId)),
+                    parser.asNativeMap(linksData?.get(dydxChainId)),
+                    parser.asNativeMap(walletsData?.get(dydxChainId)),
+                    parser.asNativeMap(governanceData?.get(dydxChainId)),
+                ) ?: continue
                 parsedEnvironments[environment.id] = environment
             }
             if (parsedEnvironments.isEmpty()) {
