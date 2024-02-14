@@ -230,16 +230,22 @@ private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<S
 }
 
 private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<String, Any>, exchange: String) {
+    val exchangeDestinationChainId = squidProcessor.exchangeDestinationChainId
+    val tokenOptions = squidProcessor.tokenOptions(exchangeDestinationChainId)
     if (transfer["type"] != "TRANSFER_OUT") {
         transfer.safeSet(
             "depositOptions.assets",
-            null
+            tokenOptions
         )
         transfer.safeSet(
             "withdrawalOptions.assets",
-            null
+            tokenOptions
         )
-        transfer.safeSet("token", null)
+        transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
+        transfer.safeSet(
+            "resources.tokenResources",
+            squidProcessor.tokenResources(exchangeDestinationChainId)
+        )
     }
     transfer.safeSet("exchange", exchange)
     transfer.safeSet("chain", null)
