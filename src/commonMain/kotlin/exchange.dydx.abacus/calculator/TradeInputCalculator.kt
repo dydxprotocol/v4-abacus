@@ -1561,7 +1561,7 @@ internal class TradeInputCalculator(
         )
 
     private val executionDefault: Map<String, Any>
-        get() = mapOf("type" to "DEFAULT", "stringKey" to "APP.GENERAL.DEFAULT")
+        get() = mapOf("type" to "DEFAULT", "stringKey" to "APP.TRADE.GOOD_TIL_DATE")
     private val executionPostOnly: Map<String, Any>
         get() = mapOf("type" to "POST_ONLY", "stringKey" to "APP.TRADE.POST_ONLY")
     private val executionFOK: Map<String, Any>
