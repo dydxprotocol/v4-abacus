@@ -214,7 +214,7 @@ enum class ConfigFile(val rawValue: String) {
     },
     ENV("ENV") {
         override val path: String
-            get() = "/configs/env.json"
+            get() = "/configs/v1/env.json"
     };
 
     abstract val path: String
