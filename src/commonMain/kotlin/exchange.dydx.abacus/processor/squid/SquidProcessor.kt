@@ -2,6 +2,7 @@ package exchange.dydx.abacus.processor.squid
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.ExchangeInfo
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -9,6 +10,7 @@ import exchange.dydx.abacus.utils.safeSet
 internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private var chains: List<Any>? = null
     private var tokens: List<Any>? = null
+    var exchangeDestinationChainId: String? = null
 
     internal fun receivedChains(
         existing: Map<String, Any>?,

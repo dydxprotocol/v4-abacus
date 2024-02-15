@@ -1159,26 +1159,27 @@ open class TradingStateMachine(
     }
 
     private fun priceOverwrite(markets: Map<String, Any>): Map<String, Any>? {
-        if (parser.asString(input?.get("current")) == "trade") {
-            val trade = parser.asNativeMap(input?.get("trade"))
-            when (parser.asString(trade?.get("type"))) {
-                "LIMIT", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
-                    val price = parser.asDouble(parser.value(trade, "summary.price"))
-                    val marketId = parser.asString(trade?.get("marketId"))
-                    if (marketId != null && price != null) {
-                        val market = parser.asNativeMap(markets[marketId])
-                        val oraclePrice =
-                            parser.asDouble(market?.get("oraclePrice"))
-                        if (oraclePrice != null) {
-                            val side = parser.asString(trade?.get("side"))
-                            if ((side == "BUY" && price < oraclePrice) || (side == "SELL" && price > oraclePrice)) {
-                                return iMapOf(marketId to price)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // TODO(@aforaleka): Uncomment when protocol can match collateralization check at limit price
+        // if (parser.asString(input?.get("current")) == "trade") {
+        //     val trade = parser.asNativeMap(input?.get("trade"))
+        //     when (parser.asString(trade?.get("type"))) {
+        //         "LIMIT", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
+        //             val price = parser.asDouble(parser.value(trade, "summary.price"))
+        //             val marketId = parser.asString(trade?.get("marketId"))
+        //             if (marketId != null && price != null) {
+        //                 val market = parser.asNativeMap(markets[marketId])
+        //                 val oraclePrice =
+        //                     parser.asDouble(market?.get("oraclePrice"))
+        //                 if (oraclePrice != null) {
+        //                     val side = parser.asString(trade?.get("side"))
+        //                     if ((side == "BUY" && price < oraclePrice) || (side == "SELL" && price > oraclePrice)) {
+        //                         return iMapOf(marketId to price)
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         return null
     }
 

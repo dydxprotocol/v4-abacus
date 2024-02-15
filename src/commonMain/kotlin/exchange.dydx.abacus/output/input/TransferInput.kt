@@ -150,7 +150,16 @@ data class WithdrawalInputOptions(
                         }
                     }
                 }
+
                 var exchanges: IMutableList<SelectionOption>? = null
+                exchangeList?.let { data ->
+                    exchanges = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        val selection = SelectionOption(item.name, item.label, item.label, item.icon)
+                        exchanges?.add(selection)
+                    }
+                }
 
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
