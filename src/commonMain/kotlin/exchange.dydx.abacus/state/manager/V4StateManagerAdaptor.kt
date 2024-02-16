@@ -933,8 +933,6 @@ class V4StateManagerAdaptor(
         }
     }
 
-    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
-
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
@@ -1126,7 +1124,7 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    null,
+                    analyticsUtils.formatCancelOrderPayload(payload)
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
