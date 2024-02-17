@@ -3,6 +3,12 @@ package exchange.dydx.abacus.payload.v4
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.BlockReward
 import exchange.dydx.abacus.output.HistoricalTradingReward
+import exchange.dydx.abacus.output.LaunchIncentive
+import exchange.dydx.abacus.output.LaunchIncentivePoint
+import exchange.dydx.abacus.output.LaunchIncentivePoints
+import exchange.dydx.abacus.output.LaunchIncentiveSeason
+import exchange.dydx.abacus.output.LaunchIncentiveSeasons
+import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
@@ -14,6 +20,7 @@ import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 
 open class V4BaseTests : BaseTests(127) {
@@ -50,6 +57,66 @@ open class V4BaseTests : BaseTests(127) {
         loadSubaccounts()
     }
 
+
+    override fun verifyState(state: PerpetualState?) {
+        super.verifyState(state)
+        verifyLaunchIncentiveState(
+            parser.asNativeMap(perp.launchIncentive),
+            state?.launchIncentive,
+            "account"
+        )
+    }
+
+    private fun verifyLaunchIncentiveState(data: Map<String, Any>?, obj: LaunchIncentive?, trace: String) {
+        if (data != null) {
+            assertNotNull(obj)
+
+            verifyLaunchIncentiveSeasonsState(
+                parser.asNativeList(data["seasons"]),
+                obj.seasons,
+                "$trace.seasons"
+            )
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyLaunchIncentiveSeasonsState(data: List<Any>?, obj: LaunchIncentiveSeasons?, trace: String) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(data.size, obj.seasons.size, "$trace.size $doesntMatchText")
+
+            for (i in data.indices) {
+                verifyLaunchIncentiveSeasonState(
+                    parser.asNativeMap(data[i]),
+                    obj.seasons[i],
+                    "$trace.$i"
+                )
+            }
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyLaunchIncentiveSeasonState(data: Map<String, Any>?, obj: LaunchIncentiveSeason?, trace: String) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(
+                parser.asString(data["label"]),
+                obj.label,
+                "$trace.label"
+            )
+            assertEquals(
+                parser.asDouble(data["startTimestamp"])?.let { it * 1000.0 },
+                obj.startTimeInMilliseconds,
+                "$trace.startTimeInMilliseconds"
+            )
+        } else {
+            assertNull(obj)
+        }
+    }
+
+
     override fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
         super.verifyAccountState(data, obj, trace)
         if (data != null) {
@@ -57,6 +124,55 @@ open class V4BaseTests : BaseTests(127) {
                 parser.asNativeMap(data["tradingRewards"]),
                 obj!!.tradingRewards,
                 "$trace.tradingRewards"
+            )
+            verifyLaunchIncentivePointsState(
+                parser.asNativeMap(data["launchIncentivePoints"]),
+                obj.launchIncentivePoints,
+                "$trace.launchIncentivePoints"
+            )
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyLaunchIncentivePointsState(
+        data: Map<String, Any>?,
+        obj: LaunchIncentivePoints?,
+        trace: String,
+    ) {
+        assertEquals(data?.keys, obj?.points?.keys, "$trace.keys")
+        if (data != null) {
+            assertNotNull(obj)
+            for ((key, value) in data) {
+                val pointData = parser.asNativeMap(value)
+                val pointObj = obj.points[key]
+                verifyLaunchIncentivePointState(
+                    pointData,
+                    pointObj,
+                    "$trace.$key"
+                )
+            }
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyLaunchIncentivePointState(
+        data: Map<String, Any>?,
+        obj: LaunchIncentivePoint?,
+        trace: String,
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(
+                parser.asDouble(data["incentivePoints"]),
+                obj.incentivePoints,
+                "$trace.incentivePoints"
+            )
+            assertEquals(
+                parser.asDouble(data["marketMakingIncentivePoints"]),
+                obj.marketMakingIncentivePoints,
+                "$trace.marketMakingIncentivePoints"
             )
         } else {
             assertNull(obj)
@@ -88,7 +204,7 @@ open class V4BaseTests : BaseTests(127) {
                 )
                 for (i in blockRewards.indices) {
                     verifyBlockRewardState(
-                        parser.asNativeMap(blockRewardsData?.get(i)),
+                        parser.asNativeMap(blockRewardsData.get(i)),
                         blockRewards[i],
                         "$trace.blockRewards.$i"
                     )
@@ -100,7 +216,9 @@ open class V4BaseTests : BaseTests(127) {
                     val rewardsListObjOrig = obj?.historical?.get(period)
                     val rewardsListDataOrig = parser.asList(rewardsData)
 
-                    assert(rewardsListObjOrig?.size ?: 0 >= rewardsListDataOrig?.size ?: 0)
+                    assertTrue {
+                        (rewardsListObjOrig?.size ?: 0) >= (rewardsListDataOrig?.size ?: 0)
+                    }
 
                     val rewardsListObj = rewardsListObjOrig?.filter {
                         it.amount != 0.0
@@ -112,7 +230,7 @@ open class V4BaseTests : BaseTests(127) {
                     assertNotNull(rewardsListObj)
                     assertEquals(
                         (rewardsListData?.size ?: 0).toDouble(),
-                        (rewardsListObj?.size ?: 0).toDouble(),
+                        (rewardsListObj.size ?: 0).toDouble(),
                         0.0,
                         "$trace.historical.$period.size $doesntMatchText"
                     )

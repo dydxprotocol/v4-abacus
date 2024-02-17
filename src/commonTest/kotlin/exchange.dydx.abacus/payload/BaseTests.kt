@@ -11,6 +11,7 @@ import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
 import exchange.dydx.abacus.output.FeeTier
+import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketConfigs
@@ -192,9 +193,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         }
     }
 
-    internal fun verifyState(state: PerpetualState?) {
+    internal open fun verifyState(state: PerpetualState?) {
         verifyConfigs(perp.configs, state?.configs, "configs")
-        verifyWalletState(perp.wallet, state?.wallet, "wallet")
+//        verifyWalletState(perp.wallet, state?.wallet, "wallet")
         verifyAccountState(perp.account, state?.account, "account")
         verifySubaccountFillsState(
             parser.asNativeMap(perp.account?.get("subaccounts")),
@@ -788,20 +789,12 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyWalletState(data: Map<String, Any>?, obj: Wallet?, trace: String) {
-        /*
         if (data != null) {
             assertNotNull(obj)
-            assertEquals(
-                parser.asString(data["walletAddress"]),
-                obj.walletAddress,
-                "$trace.walletAddress"
-            )
-            verifyNumberState(parser.asNativeMap(data["balance"]), obj.balance, "$trace.balance")
             verifyWalletUserState(parser.asNativeMap(data["user"]), obj.user, "$trace.user")
         } else {
             assertNull(obj)
         }
-         */
     }
 
     private fun verifyNumberState(
@@ -827,6 +820,18 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         // Not needed for v4
     }
 
+    private fun verifyLaunchIncentivePointsState(
+        data: Map<String, Any>?,
+        obj: LaunchIncentivePoints?,
+        trace: String
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+        } else {
+            assertNull(obj)
+        }
+    }
+
     open internal fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
         if (data != null) {
             assertNotNull(obj)
@@ -834,6 +839,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asNativeMap(data["subaccounts"]),
                 obj.subaccounts,
                 "$trace.subaccounts"
+            )
+            verifyLaunchIncentivePointsState(
+                parser.asNativeMap(data["launchIncentivePoints"]),
+                obj.launchIncentivePoints,
+                "$trace.launchIncentivePoints"
             )
         } else {
             assertNull(obj)

@@ -30,6 +30,8 @@ enum class Changes(val rawValue: String) {
     transferStatuses("transferStatuses"),
     input("input"),
     restriction("restriction"),
+
+    launchIncentive("launchIncentive"),
     ;
 
     companion object {

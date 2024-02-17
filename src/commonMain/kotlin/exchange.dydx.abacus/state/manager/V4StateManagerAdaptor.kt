@@ -15,6 +15,8 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.launchIncentivePoints
+import exchange.dydx.abacus.state.model.launchIncentiveSeasons
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
 import exchange.dydx.abacus.state.model.onChainEquityTiers
@@ -277,6 +279,7 @@ class V4StateManagerAdaptor(
 
             retrieveDepositExchanges()
             bestEffortConnectChain()
+            retrieveLaunchIncentiveSeasons()
         } else {
             validatorConnected = false
             heightTimer = null
@@ -417,6 +420,7 @@ class V4StateManagerAdaptor(
             }
             if (readyToConnect) {
                 retrieveAccount()
+                retrieveLaunchIncentivePoints()
                 if (validatorConnected) {
                     pollAccountBalances()
                     pollNobleBalance()
@@ -1387,6 +1391,38 @@ class V4StateManagerAdaptor(
                     } else {
                         latestBlockAndTime.block + (lapsedTime.inWholeMilliseconds / averageMillisecondsPerBlock).toInt()
                     }
+                }
+            }
+        }
+    }
+
+    private fun retrieveLaunchIncentiveSeasons() {
+        val url = configs.launchIncentiveUrl("graphql")
+        if (url != null) {
+            val requestBody = "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
+            post(url, iMapOf(
+                "content-type" to "application/json",
+                "protocol" to "dydx-v4",
+            ), requestBody) { _, response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    val oldState = stateMachine.state
+                    update(stateMachine.launchIncentiveSeasons(response), oldState)
+                }
+            }
+        }
+    }
+
+    private fun retrieveLaunchIncentivePoints() {
+        val season = stateMachine.state?.launchIncentive?.currentSeason ?: return
+        val url = configs.launchIncentiveUrl("points")
+        val address = accountAddress
+        if (url != null && address != null) {
+            get("${url}/${address}", iMapOf(
+                "n" to season,
+            ), null) { _, response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    val oldState = stateMachine.state
+                    update(stateMachine.launchIncentivePoints(season, response), oldState)
                 }
             }
         }

@@ -1236,14 +1236,14 @@ open class StateManagerAdaptor(
         url: String,
         headers: IMap<String, String>?,
         body: String?,
-        callback: (String?, Int) -> Unit,
+        callback: (String, String?, Int) -> Unit,
     ) {
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.rest?.post(url, headers, body) { response, httpCode ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
-                    callback(response, httpCode)
+                    callback(url, response, httpCode)
                 }
-                callback(response, httpCode)
+                callback(url, response, httpCode)
             }
         }
     }
@@ -2366,6 +2366,7 @@ open class StateManagerAdaptor(
             state?.availableSubaccountNumbers ?: iListOf(),
             state?.transferStatuses,
             restriction,
+            state?.launchIncentive,
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
