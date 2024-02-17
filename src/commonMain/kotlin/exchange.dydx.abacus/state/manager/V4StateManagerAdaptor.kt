@@ -1407,6 +1407,8 @@ class V4StateManagerAdaptor(
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)
+
+                    retrieveLaunchIncentivePoints()
                 }
             }
         }
