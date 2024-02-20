@@ -44,6 +44,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
@@ -931,8 +933,6 @@ class V4StateManagerAdaptor(
         }
     }
 
-    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
-
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
@@ -1124,7 +1124,7 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    null,
+                    analyticsUtils.formatCancelOrderPayload(payload)
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -1183,6 +1183,7 @@ class V4StateManagerAdaptor(
             if (type == TransferInputField.usdcSize ||
                 type == TransferInputField.address ||
                 type == TransferInputField.chain ||
+                type == TransferInputField.exchange ||
                 type == TransferInputField.token
             ) {
                 val decimals = environment.tokens["usdc"]?.decimals ?: 6

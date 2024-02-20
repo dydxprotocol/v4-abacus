@@ -109,7 +109,7 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "ETH-USD": {
                                         "valueTotal": {
                                             "current": 0.0,
-                                            "postOrder": 0.2
+                                            "postOrder": 300.0
                                         }
                                     }
                                 }
@@ -167,7 +167,7 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "ETH-USD": {
                                         "valueTotal": {
                                             "current": 0.0,
-                                            "postOrder": -2000.0
+                                            "postOrder": -300.0
                                         }
                                     }
                                 }

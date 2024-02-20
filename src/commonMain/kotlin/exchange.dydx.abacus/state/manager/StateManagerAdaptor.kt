@@ -56,6 +56,7 @@ import exchange.dydx.abacus.state.model.sparklines
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.model.transfer
+import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
@@ -2176,11 +2177,14 @@ open class StateManagerAdaptor(
         parseOrdersToMatchPlaceOrdersAndCancelOrders()
     }
 
+    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
+
     private fun parseOrdersToMatchPlaceOrdersAndCancelOrders() {
         if (placeOrderRecords.isNotEmpty() || cancelOrderRecords.isNotEmpty()) {
             val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return
             val orders = subaccount.orders ?: return
             for (order in orders) {
+                val orderAnalyticsPayload = analyticsUtils.formatOrder(order)
                 val placeOrderRecord = placeOrderRecords.firstOrNull {
                     it.clientId == order.clientId
                 }
@@ -2189,7 +2193,9 @@ open class StateManagerAdaptor(
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
-                        trackingParams(interval)
+                        ParsingHelper.merge(
+                            trackingParams(interval), orderAnalyticsPayload
+                        )?.toIMap()
                     )
                     placeOrderRecords.remove(placeOrderRecord)
                     break
@@ -2202,7 +2208,9 @@ open class StateManagerAdaptor(
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
-                        trackingParams(interval)
+                        ParsingHelper.merge(
+                            trackingParams(interval), orderAnalyticsPayload
+                        )?.toIMap()
                     )
                     cancelOrderRecords.remove(cancelOrderRecord)
                     break
