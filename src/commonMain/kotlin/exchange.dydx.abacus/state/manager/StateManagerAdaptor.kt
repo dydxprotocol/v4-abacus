@@ -1754,7 +1754,12 @@ open class StateManagerAdaptor(
         type: ClosePositionInputField,
     ) {
         ioImplementations.threading?.async(ThreadingType.abacus) {
-            val stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
+            val currentMarket = parser.asString(parser.value(stateMachine.input, "closePosition.marketId"))
+            var stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
+            if (type == ClosePositionInputField.market && currentMarket != data) {
+                val nextResponse = stateMachine.closePosition("1", ClosePositionInputField.percent, subaccountNumber)
+                stateResponse = nextResponse.merge(stateResponse)
+            }
             ioImplementations.threading?.async(ThreadingType.main) {
                 stateNotification?.stateChanged(
                     stateResponse.state,
