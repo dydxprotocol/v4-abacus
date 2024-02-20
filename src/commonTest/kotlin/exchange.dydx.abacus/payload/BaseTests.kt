@@ -11,6 +11,7 @@ import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
 import exchange.dydx.abacus.output.FeeTier
+import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketConfigs
@@ -192,7 +193,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         }
     }
 
-    internal fun verifyState(state: PerpetualState?) {
+    internal open fun verifyState(state: PerpetualState?) {
         verifyConfigs(perp.configs, state?.configs, "configs")
         verifyWalletState(perp.wallet, state?.wallet, "wallet")
         verifyAccountState(perp.account, state?.account, "account")
@@ -827,6 +828,18 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         // Not needed for v4
     }
 
+    private fun verifyLaunchIncentivePointsState(
+        data: Map<String, Any>?,
+        obj: LaunchIncentivePoints?,
+        trace: String
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+        } else {
+            assertNull(obj)
+        }
+    }
+
     open internal fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
         if (data != null) {
             assertNotNull(obj)
@@ -834,6 +847,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asNativeMap(data["subaccounts"]),
                 obj.subaccounts,
                 "$trace.subaccounts"
+            )
+            verifyLaunchIncentivePointsState(
+                parser.asNativeMap(data["launchIncentivePoints"]),
+                obj.launchIncentivePoints,
+                "$trace.launchIncentivePoints"
             )
         } else {
             assertNull(obj)

@@ -46,6 +46,10 @@ class V4StateManagerConfigs(
                       },
                       "configs":{
                          "markets":"/configs/markets.json"
+                      },
+                      "launchIncentive":{
+                         "graphql":"/query/ccar-perpetuals",
+                         "points":"/query/api/dydx/points"
                       }
                    },
                    "socket":"/v4/ws",
@@ -118,4 +122,14 @@ class V4StateManagerConfigs(
                 "https://testnet.v2.api.squidrouter.com"
             }
         }
+
+    fun launchIncentivePath(type: String): String? {
+        return parser.asString(parser.value(configs, "paths.launchIncentive.$type"))
+    }
+
+    fun launchIncentiveUrl(type: String): String? {
+        val api = environment.links?.launchIncentive ?: return null
+        val path = launchIncentivePath(type) ?: return null
+        return "$api$path"
+    }
 }

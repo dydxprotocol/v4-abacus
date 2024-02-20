@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.wallet
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.wallet.account.LaunchIncentivePointsProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
 import exchange.dydx.abacus.processor.wallet.account.deprecated.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
@@ -253,5 +254,22 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         super.accountAddressChanged()
         v3accountProcessor.accountAddress = accountAddress
         v4accountProcessor.accountAddress = accountAddress
+    }
+
+    internal fun receivedLaunchIncentivePoint(
+        existing: Map<String, Any>,
+        season: String,
+        payload: Any,
+    ): Map<String, Any> {
+        val account = parser.asNativeMap(existing["account"]) ?: mapOf()
+        val modifiedAccount = v4accountProcessor.receivedLaunchIncentivePoint(
+            account,
+            season,
+            payload
+        )
+
+        val modified = existing.mutable()
+        modified.safeSet("account", modifiedAccount)
+        return modified
     }
 }

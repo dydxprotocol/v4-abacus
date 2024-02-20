@@ -857,6 +857,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     private val balancesProcessor = V4AccountBalancesProcessor(parser)
     private val delegationsProcessor = V4AccountDelegationsProcessor(parser)
     private val tradingRewardsProcessor = V4AccountTradingRewardsProcessor(parser)
+    private var launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
 
     internal fun receivedAccountBalances(
         existing: Map<String, Any>?,
@@ -1097,5 +1098,21 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     override fun accountAddressChanged() {
         super.accountAddressChanged()
         subaccountsProcessor.accountAddress = accountAddress
+    }
+
+    internal fun receivedLaunchIncentivePoint(
+        existing: Map<String, Any>,
+        season: String,
+        payload: Any,
+    ): Map<String, Any> {
+        /*
+        launchIncentive.{season}...
+         */
+        val data = parser.asNativeMap(payload) ?: return existing
+        val modified = existing.mutable()
+        val points = launchIncentivePointsProcessor.received(season, parser.asNativeMap(existing["launchIncentivePoints"]), data)
+
+        modified.safeSet("launchIncentivePoints", points)
+        return modified
     }
 }
