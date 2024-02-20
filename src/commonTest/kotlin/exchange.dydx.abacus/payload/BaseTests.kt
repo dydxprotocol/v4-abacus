@@ -195,7 +195,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
 
     internal open fun verifyState(state: PerpetualState?) {
         verifyConfigs(perp.configs, state?.configs, "configs")
-//        verifyWalletState(perp.wallet, state?.wallet, "wallet")
+        verifyWalletState(perp.wallet, state?.wallet, "wallet")
         verifyAccountState(perp.account, state?.account, "account")
         verifySubaccountFillsState(
             parser.asNativeMap(perp.account?.get("subaccounts")),
@@ -789,12 +789,20 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyWalletState(data: Map<String, Any>?, obj: Wallet?, trace: String) {
+        /*
         if (data != null) {
             assertNotNull(obj)
+            assertEquals(
+                parser.asString(data["walletAddress"]),
+                obj.walletAddress,
+                "$trace.walletAddress"
+            )
+            verifyNumberState(parser.asNativeMap(data["balance"]), obj.balance, "$trace.balance")
             verifyWalletUserState(parser.asNativeMap(data["user"]), obj.user, "$trace.user")
         } else {
             assertNull(obj)
         }
+         */
     }
 
     private fun verifyNumberState(
