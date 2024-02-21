@@ -5,7 +5,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
-class TRCL2998Tests: V4BaseTests() {
+internal open class TRCL2998Tests: V4BaseTests() {
     private val marketsMock = """
         {
            "type":"subscribed",

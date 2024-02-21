@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.changes
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
 import kollections.iListOf
+import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -30,6 +31,8 @@ enum class Changes(val rawValue: String) {
     transferStatuses("transferStatuses"),
     input("input"),
     restriction("restriction"),
+
+    launchIncentive("launchIncentive"),
     ;
 
     companion object {
@@ -47,5 +50,20 @@ data class StateChanges(
 ) {
     companion object {
         val noChange = StateChanges(iListOf<Changes>())
+    }
+
+    fun merge(earlierChanges: StateChanges): StateChanges {
+        val mergedChanges = this.changes.toSet().union(earlierChanges.changes.toSet()).toIList()
+        val mergedMarkets = this.markets?.toSet()?.union(earlierChanges.markets?.toSet() ?: setOf())
+            ?.toIList() ?: earlierChanges.markets
+        val mergedSubaccountNumbers =
+            this.subaccountNumbers?.toSet()
+                ?.union(earlierChanges.subaccountNumbers?.toSet() ?: setOf())
+                ?.toIList() ?: earlierChanges.subaccountNumbers
+        return StateChanges(
+            changes = mergedChanges,
+            markets = mergedMarkets,
+            subaccountNumbers = mergedSubaccountNumbers
+        )
     }
 }

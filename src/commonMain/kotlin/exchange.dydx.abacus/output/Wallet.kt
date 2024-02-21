@@ -5,6 +5,7 @@ import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
+import kollections.iMutableMapOf
 import kotlinx.serialization.Serializable
 
 
@@ -87,6 +88,82 @@ data class User(
     }
 }
 
+@JsExport
+@Serializable
+data class LaunchIncentivePoint(
+    val incentivePoints: Double,
+    val marketMakingIncentivePoints: Double
+) {
+    companion object {
+        internal fun create(
+            existing: LaunchIncentivePoint?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): LaunchIncentivePoint? {
+            DebugLogger.log("creating LaunchIncentivePoint\n")
+
+            data?.let {
+                val incentivePoints = parser.asDouble(data["incentivePoints"])
+                val marketMakingIncentivePoints = parser.asDouble(data["marketMakingIncentivePoints"])
+                if (incentivePoints != null && marketMakingIncentivePoints != null) {
+                    return if (existing?.incentivePoints != incentivePoints ||
+                        existing.marketMakingIncentivePoints != marketMakingIncentivePoints
+                    ) {
+                        LaunchIncentivePoint(
+                            incentivePoints,
+                            marketMakingIncentivePoints
+                        )
+                    } else {
+                        existing
+                    }
+                }
+            }
+            DebugLogger.debug("LaunchIncentivePoint not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class LaunchIncentivePoints(
+    val points: IMap<String, LaunchIncentivePoint>,
+) {
+    companion object {
+        internal fun create(
+            existing: LaunchIncentivePoints?,
+            parser: ParserProtocol,
+            data: Map<String, Any>?
+        ): LaunchIncentivePoints? {
+            DebugLogger.log("creating LaunchIncentivePoints\n")
+
+            var diff = false
+            val points = iMutableMapOf<String, LaunchIncentivePoint>()
+            data?.let {
+                for ((key, value) in data) {
+                    val existingPoint = existing?.points?.get(key)
+                    val point = LaunchIncentivePoint.create(
+                        existingPoint,
+                        parser,
+                        parser.asMap(value)
+                    )
+                    if (existingPoint != point) {
+                        diff = true
+                        if (point != null) {
+                            points.set(key, point)
+                        }
+                    }
+                }
+            }
+            return if (diff) {
+                return LaunchIncentivePoints(points)
+            } else {
+                return existing
+            }
+        }
+    }
+}
+
 /*
 ethereumeAddress is passed in from client. All other fields
 are filled when socket v3_accounts channel is subscribed
@@ -95,7 +172,7 @@ are filled when socket v3_accounts channel is subscribed
 @Serializable
 data class Wallet(
     val walletAddress: String?,
-    val user: User?
+    val user: User?,
 ) {
     companion object {
         internal fun create(
@@ -113,7 +190,7 @@ data class Wallet(
                 }
                 val wallet = Wallet(
                     walletAddress,
-                    user
+                    user,
                 )
                 return wallet
             }

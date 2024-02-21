@@ -18,12 +18,10 @@ import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
-import kollections.iListOf
 import kollections.iMapOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
-import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
@@ -1393,7 +1391,7 @@ data class HistoricalTradingReward(
             amount: Double,
             startedAt: Instant,
             endedAt: Instant,
-        ) : HistoricalTradingReward {
+        ): HistoricalTradingReward {
             return HistoricalTradingReward(
                 amount,
                 startedAt.toEpochMilliseconds().toDouble(),
@@ -1546,7 +1544,7 @@ data class TradingRewards(
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
                 }?.filterNotNull()?.toIList()
-    
+
                 return if (existing?.total != total ||
                     existing?.blockRewards != blockRewards ||
                     existing?.historical != historical
@@ -1603,7 +1601,8 @@ data class TradingRewards(
                         when {
                             (comparison == ComparisonOrder.ascending) -> {
                                 // item is newer than obj
-                                val synced = HistoricalTradingReward.create(null, parser, item, period)
+                                val synced =
+                                    HistoricalTradingReward.create(null, parser, item, period)
                                 addHistoricalTradingRewards(result, synced!!, period, lastStart)
                                 result.add(synced)
                                 dataIndex++
@@ -1619,7 +1618,8 @@ data class TradingRewards(
                             }
 
                             else -> {
-                                val synced = HistoricalTradingReward.create(obj, parser, item, period)
+                                val synced =
+                                    HistoricalTradingReward.create(obj, parser, item, period)
                                 addHistoricalTradingRewards(result, obj, period, lastStart)
                                 result.add(synced!!)
                                 objIndex++
@@ -1780,6 +1780,7 @@ data class Account(
     var stakingBalances: IMap<String, AccountBalance>?,
     var subaccounts: IMap<String, Subaccount>?,
     var tradingRewards: TradingRewards?,
+    val launchIncentivePoints: LaunchIncentivePoints?,
 ) {
     companion object {
         internal fun create(
@@ -1839,6 +1840,10 @@ data class Account(
                 TradingRewards.create(existing?.tradingRewards, parser, tradingRewardsData)
             } else null
 
+            val launchIncentivePoints = (parser.asMap(data["launchIncentivePoints"]))?.let {
+                LaunchIncentivePoints.create(existing?.launchIncentivePoints, parser, it)
+            }
+
             val subaccounts: IMutableMap<String, Subaccount> =
                 iMutableMapOf()
 
@@ -1858,7 +1863,13 @@ data class Account(
                 }
             }
 
-            return Account(balances, stakingBalances, subaccounts, tradingRewards)
+            return Account(
+                balances,
+                stakingBalances,
+                subaccounts,
+                tradingRewards,
+                launchIncentivePoints
+            )
         }
 
         private fun findTokenInfo(tokensInfo: Map<String, TokenInfo>, denom: String): TokenInfo? {

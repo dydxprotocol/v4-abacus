@@ -45,6 +45,7 @@ class AbacusMockData {
     internal val squidV2AssetsMock = SquidV2AssetsMock()
     internal val squidV2RouteMock = SquidV2RouteMock()
     internal val localizationMock = LocalizationMock()
+    internal val launchIncentiveMock = LaunchIncentiveMock()
     internal val v4OnChainMock = V4OnChainMock()
     internal val v4Environment = V4Environment(
         "test",
@@ -99,8 +100,9 @@ class AbacusMockData {
                 "/currencies/usdc.png"
             ),
         ).toIMap(),
+        null,
         EnvironmentFeatureFlags(
             true,
-        )
+        ),
     )
 }

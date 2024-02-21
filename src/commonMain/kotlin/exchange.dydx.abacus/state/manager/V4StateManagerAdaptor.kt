@@ -15,6 +15,8 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.launchIncentivePoints
+import exchange.dydx.abacus.state.model.launchIncentiveSeasons
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
 import exchange.dydx.abacus.state.model.onChainEquityTiers
@@ -44,6 +46,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
@@ -275,6 +279,7 @@ class V4StateManagerAdaptor(
 
             retrieveDepositExchanges()
             bestEffortConnectChain()
+            retrieveLaunchIncentiveSeasons()
         } else {
             validatorConnected = false
             heightTimer = null
@@ -415,6 +420,7 @@ class V4StateManagerAdaptor(
             }
             if (readyToConnect) {
                 retrieveAccount()
+                retrieveLaunchIncentivePoints()
                 if (validatorConnected) {
                     pollAccountBalances()
                     pollNobleBalance()
@@ -931,8 +937,6 @@ class V4StateManagerAdaptor(
         }
     }
 
-    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
-
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload()
@@ -1124,7 +1128,7 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    null,
+                    analyticsUtils.formatCancelOrderPayload(payload)
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -1183,6 +1187,7 @@ class V4StateManagerAdaptor(
             if (type == TransferInputField.usdcSize ||
                 type == TransferInputField.address ||
                 type == TransferInputField.chain ||
+                type == TransferInputField.exchange ||
                 type == TransferInputField.token
             ) {
                 val decimals = environment.tokens["usdc"]?.decimals ?: 6
@@ -1384,6 +1389,40 @@ class V4StateManagerAdaptor(
                     } else {
                         latestBlockAndTime.block + (lapsedTime.inWholeMilliseconds / averageMillisecondsPerBlock).toInt()
                     }
+                }
+            }
+        }
+    }
+
+    private fun retrieveLaunchIncentiveSeasons() {
+        val url = configs.launchIncentiveUrl("graphql")
+        if (url != null) {
+            val requestBody = "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
+            post(url, iMapOf(
+                "content-type" to "application/json",
+                "protocol" to "dydx-v4",
+            ), requestBody) { _, response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    val oldState = stateMachine.state
+                    update(stateMachine.launchIncentiveSeasons(response), oldState)
+
+                    retrieveLaunchIncentivePoints()
+                }
+            }
+        }
+    }
+
+    private fun retrieveLaunchIncentivePoints() {
+        val season = stateMachine.state?.launchIncentive?.currentSeason ?: return
+        val url = configs.launchIncentiveUrl("points")
+        val address = accountAddress
+        if (url != null && address != null) {
+            get("${url}/${address}", iMapOf(
+                "n" to season,
+            ), null) { _, response, httpCode ->
+                if (success(httpCode) && response != null) {
+                    val oldState = stateMachine.state
+                    update(stateMachine.launchIncentivePoints(season, response), oldState)
                 }
             }
         }

@@ -33,14 +33,15 @@ internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
     get(url) { _, response, _ ->
         if (response != null) {
             var chainIds = mutableListOf<CctpChainTokenInfo>()
-            val chains: List<JsonElement>? = parser.decodeJsonArray(response)?.toList() as? List<JsonElement>
+            val chains: List<JsonElement>? =
+                parser.decodeJsonArray(response)?.toList() as? List<JsonElement>
             for (chain in chains ?: emptyList()) {
                 val chainInfo = chain.jsonObject
                 val chainId = parser.asString(chainInfo["chainId"])
                 val tokenAddress = parser.asString(chainInfo["tokenAddress"])
-                 if (chainId != null && tokenAddress != null) {
-                   chainIds.add(CctpChainTokenInfo(chainId, tokenAddress))
-               }
+                if (chainId != null && tokenAddress != null) {
+                    chainIds.add(CctpChainTokenInfo(chainId, tokenAddress))
+                }
             }
             cctpChainIds = chainIds
         }
@@ -52,7 +53,8 @@ internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
     get(url) { _, response, _ ->
         if (response != null) {
             var exchanges = mutableListOf<ExchangeInfo>()
-            val exchangeInfos: List<JsonElement>? = parser.decodeJsonArray(response)?.toList() as? List<JsonElement>
+            val exchangeInfos: List<JsonElement>? =
+                parser.decodeJsonArray(response)?.toList() as? List<JsonElement>
             for (exchange in exchangeInfos ?: emptyList()) {
                 val exchangeInfo = exchange.jsonObject
                 val name = parser.asString(exchangeInfo["name"])
@@ -64,6 +66,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
                 }
             }
             exchangeList = exchanges
+            stateMachine.squidProcessor.exchangeDestinationChainId = configs.nobleChainId()
         }
     }
 }
@@ -71,7 +74,10 @@ internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
     val isCctp = state?.input?.transfer?.isCctp ?: false
     when (appConfigs.squidVersion) {
-        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(state)
+        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
+            state
+        )
+
         AppConfigs.SquidVersion.V2, AppConfigs.SquidVersion.V2DepositOnly ->
             if (isCctp) retrieveDepositRouteV2(state) else retrieveDepositRouteV1(state)
     }
@@ -182,7 +188,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { response, code ->
+        post(url, header, body.toJsonPrettyPrint()) { url, response, code ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
@@ -197,7 +203,10 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
 }
 
 
-internal fun V4StateManagerAdaptor.simulateWithdrawal(decimals: Int, callback: (BigDecimal?) -> Unit) {
+internal fun V4StateManagerAdaptor.simulateWithdrawal(
+    decimals: Int,
+    callback: (BigDecimal?) -> Unit
+) {
     val payload = withdrawPayloadJson()
 
     transaction(
@@ -223,7 +232,10 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(decimals: Int, callback: (
     }
 }
 
-internal fun V4StateManagerAdaptor.simulateTransferNativeToken(decimals: Int, callback: (BigDecimal?) -> Unit) {
+internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
+    decimals: Int,
+    callback: (BigDecimal?) -> Unit
+) {
     val payload = transferNativeTokenPayloadJson()
 
     transaction(
@@ -255,10 +267,74 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(
     gas: BigDecimal,
 ) {
     val isCctp = cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
+    val isExchange = state?.input?.transfer?.exchange != null
     when (appConfigs.squidVersion) {
-        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(state, decimals, gas)
+        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+            state,
+            decimals,
+            gas
+        )
+
         AppConfigs.SquidVersion.V2, AppConfigs.SquidVersion.V2WithdrawalOnly ->
-            if (isCctp) retrieveWithdrawalRouteV2(state, decimals, gas) else retrieveWithdrawalRouteV1(state, decimals, gas)
+            if (isCctp) retrieveWithdrawalRouteV2(state, decimals, gas)
+            else if (isExchange) retrieveWithdrawalRouteNoble(state, decimals, gas)
+            else retrieveWithdrawalRouteV1(state, decimals, gas)
+    }
+}
+
+internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteNoble(
+    state: PerpetualState?,
+    decimals: Int,
+    gas: BigDecimal,
+) {
+    val nobleChain = configs.nobleChainId()
+    val nobleToken = configs.nobleDenom()
+    val toAddress = state?.input?.transfer?.address
+    val usdcSize = parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
+    val fromAmount = if (usdcSize != null && usdcSize > gas) {
+        ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+    } else {
+        null
+    }
+    val chainId = environment.dydxChainId
+    val squidIntegratorId = environment.squidIntegratorId
+    val dydxTokenDemon = environment.tokens["usdc"]?.denom
+    val fromAmountString = parser.asString(fromAmount)
+    val url = configs.squidRoute()
+    val fromAddress = accountAddress
+    if (nobleChain != null &&
+        nobleToken != null &&
+        toAddress != null &&
+        fromAmount != null && fromAmount > 0 &&
+        fromAmountString != null &&
+        accountAddress != null &&
+        chainId != null &&
+        dydxTokenDemon != null &&
+        url != null &&
+        fromAddress != null &&
+        squidIntegratorId != null
+    ) {
+        val params: IMap<String, String> = iMapOf(
+            "fromChain" to chainId,
+            "fromToken" to dydxTokenDemon,
+            "fromAmount" to fromAmountString,
+            "fromAddress" to fromAddress,
+            "toChain" to nobleChain,
+            "toToken" to nobleToken,
+            "toAddress" to toAddress,
+            "slippage" to "1",
+            "enableForecall" to "false",
+        )
+
+        val oldState = stateMachine.state
+        val header = iMapOf(
+            "x-integrator-id" to squidIntegratorId,
+        )
+        get(url, params, header) { _, response, _ ->
+            if (response != null) {
+                update(stateMachine.squidRoute(response, subaccountNumber), oldState)
+            }
+        }
     }
 }
 
@@ -266,7 +342,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV1(
     state: PerpetualState?,
     decimals: Int,
     gas: BigDecimal,
-){
+) {
     val toChain = state?.input?.transfer?.chain
     val toToken = state?.input?.transfer?.token
     val toAddress = state?.input?.transfer?.address
@@ -369,15 +445,15 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             "slippageConfig" to iMapOf<String, Any>(
                 "autoMode" to 1
             ),
-           // "enableForecall" to "false",
-           // "cosmosSignerAddress" to accountAddress.toString(),
+            // "enableForecall" to "false",
+            // "cosmosSignerAddress" to accountAddress.toString(),
         )
         val oldState = stateMachine.state
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { response, code ->
+        post(url, header, body.toJsonPrettyPrint()) { url, response, code ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
@@ -446,7 +522,7 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
         chainId != null &&
         dydxTokenDemon != null &&
         squidIntegratorId != null
-        ) {
+    ) {
         val params: Map<String, String> = mapOf(
             "fromChain" to fromChain,
             "fromToken" to fromToken,
@@ -464,7 +540,8 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
         get(url, params, header) { _, response, code ->
             if (response != null) {
                 val json = parser.decodeJsonObject(response)
-                val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
+                val ibcPayload =
+                    parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
                     transaction(TransactionType.SendNobleIBC, ibcPayload) {
                         val error = parseTransactionResponse(it)
@@ -516,7 +593,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
         chainId != null &&
         dydxTokenDemon != null &&
         squidIntegratorId != null &&
-        fromAmountString != null && fromAmount != null &&  fromAmount > 0
+        fromAmountString != null && fromAmount != null && fromAmount > 0
     ) {
         val params: Map<String, String> = mapOf(
             "toChain" to nobleChain,
@@ -535,7 +612,8 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
         get(url, params, header) { _, response, code ->
             if (response != null) {
                 val json = parser.decodeJsonObject(response)
-                val ibcPayload = parser.asString(parser.value(json, "route.transactionRequest.data"))
+                val ibcPayload =
+                    parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
                     val payload = jsonEncoder.encode(
                         mapOf(

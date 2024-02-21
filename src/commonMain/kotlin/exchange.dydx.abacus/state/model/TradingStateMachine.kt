@@ -1,27 +1,61 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.calculator.*
-import exchange.dydx.abacus.output.*
+import exchange.dydx.abacus.calculator.AccountCalculator
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.MarketCalculator
+import exchange.dydx.abacus.calculator.TradeCalculation
+import exchange.dydx.abacus.calculator.TradeInputCalculator
+import exchange.dydx.abacus.calculator.TransferInputCalculator
+import exchange.dydx.abacus.output.Account
+import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.Configs
+import exchange.dydx.abacus.output.LaunchIncentive
+import exchange.dydx.abacus.output.MarketCandles
+import exchange.dydx.abacus.output.MarketHistoricalFunding
+import exchange.dydx.abacus.output.MarketOrderbook
+import exchange.dydx.abacus.output.MarketTrade
+import exchange.dydx.abacus.output.PerpetualMarketSummary
+import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Subaccount
+import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.SubaccountFundingPayment
+import exchange.dydx.abacus.output.SubaccountHistoricalPNL
+import exchange.dydx.abacus.output.SubaccountTransfer
+import exchange.dydx.abacus.output.TransferStatus
+import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.output.input.ReceiptLine
+import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
+import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
-import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.responses.*
-import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
+import exchange.dydx.abacus.responses.ParsingException
+import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
-import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
-import exchange.dydx.abacus.utils.*
+import exchange.dydx.abacus.state.manager.TokenInfo
+import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.ServerTime
+import exchange.dydx.abacus.utils.iMapOf
+import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.mutableMapOf
+import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
 import kollections.JsExport
 import kollections.iListOf
@@ -56,6 +90,7 @@ open class TradingStateMachine(
     internal val configsProcessor = ConfigsProcessor(parser)
     internal val squidProcessor = SquidProcessor(parser)
     internal val rewardsProcessor = RewardsProcessor(parser)
+    internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser)
@@ -68,7 +103,7 @@ open class TradingStateMachine(
 
     internal val tokensInfo: Map<String, TokenInfo>
         get() = environment?.tokens!!
-    
+
     internal val featureFlags: EnvironmentFeatureFlags
         get() = environment?.featureFlags!!
 
@@ -175,6 +210,18 @@ open class TradingStateMachine(
             modified.safeSet("rewardsParams", value)
             this.data = if (modified.size != 0) modified else null
         }
+
+
+    internal var launchIncentive: Map<String, Any>?
+        get() {
+            return parser.asNativeMap(data?.get("launchIncentive"))
+        }
+        set(value) {
+            val modified = data?.mutable() ?: mutableMapOf()
+            modified.safeSet("launchIncentive", value)
+            this.data = if (modified.size != 0) modified else null
+        }
+
 
     var state: PerpetualState? = null
 
@@ -572,6 +619,7 @@ open class TradingStateMachine(
                 Changes.configs,
                 Changes.transferStatuses,
                 Changes.orderbook,
+                Changes.launchIncentive,
                 -> true
 
                 Changes.wallet -> state?.wallet != wallet
@@ -880,6 +928,7 @@ open class TradingStateMachine(
         var input = state?.input
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
         val restriction = state?.restriction
+        var launchIncentive = state?.launchIncentive
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asNativeMap(data?.get("markets"))?.let {
@@ -1011,10 +1060,19 @@ open class TradingStateMachine(
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
-                    Account(account.balances, account.stakingBalances, subaccounts, account.tradingRewards)
+                    Account(
+                        account.balances,
+                        account.stakingBalances,
+                        subaccounts,
+                        account.tradingRewards,
+                        account.launchIncentivePoints
+                    )
                 }
             }
-            if (changes.changes.contains(Changes.accountBalances) || changes.changes.contains(Changes.tradingRewards)) {
+            if (changes.changes.contains(Changes.accountBalances) || changes.changes.contains(
+                    Changes.tradingRewards
+                )
+            ) {
                 account = Account.create(account, parser, accountData, tokensInfo, localizer)
             }
         } else {
@@ -1120,6 +1178,13 @@ open class TradingStateMachine(
                 }
             }
         }
+        if (changes.changes.contains(Changes.launchIncentive)) {
+            this.launchIncentive?.let {
+                launchIncentive = LaunchIncentive.create(launchIncentive, parser, it)
+            } ?: run {
+                launchIncentive = null
+            }
+        }
         return PerpetualState(
             assets,
             marketsSummary,
@@ -1138,6 +1203,7 @@ open class TradingStateMachine(
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
             transferStatuses,
             restriction,
+            launchIncentive,
         )
     }
 
@@ -1159,26 +1225,27 @@ open class TradingStateMachine(
     }
 
     private fun priceOverwrite(markets: Map<String, Any>): Map<String, Any>? {
-        if (parser.asString(input?.get("current")) == "trade") {
-            val trade = parser.asNativeMap(input?.get("trade"))
-            when (parser.asString(trade?.get("type"))) {
-                "LIMIT", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
-                    val price = parser.asDouble(parser.value(trade, "summary.price"))
-                    val marketId = parser.asString(trade?.get("marketId"))
-                    if (marketId != null && price != null) {
-                        val market = parser.asNativeMap(markets[marketId])
-                        val oraclePrice =
-                            parser.asDouble(market?.get("oraclePrice"))
-                        if (oraclePrice != null) {
-                            val side = parser.asString(trade?.get("side"))
-                            if ((side == "BUY" && price < oraclePrice) || (side == "SELL" && price > oraclePrice)) {
-                                return iMapOf(marketId to price)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // TODO(@aforaleka): Uncomment when protocol can match collateralization check at limit price
+        // if (parser.asString(input?.get("current")) == "trade") {
+        //     val trade = parser.asNativeMap(input?.get("trade"))
+        //     when (parser.asString(trade?.get("type"))) {
+        //         "LIMIT", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
+        //             val price = parser.asDouble(parser.value(trade, "summary.price"))
+        //             val marketId = parser.asString(trade?.get("marketId"))
+        //             if (marketId != null && price != null) {
+        //                 val market = parser.asNativeMap(markets[marketId])
+        //                 val oraclePrice =
+        //                     parser.asDouble(market?.get("oraclePrice"))
+        //                 if (oraclePrice != null) {
+        //                     val side = parser.asString(trade?.get("side"))
+        //                     if ((side == "BUY" && price < oraclePrice) || (side == "SELL" && price > oraclePrice)) {
+        //                         return iMapOf(marketId to price)
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         return null
     }
 
@@ -1321,5 +1388,13 @@ open class TradingStateMachine(
 
         val errors = if (error != null) iListOf(error) else null
         return StateResponse(state, changes, errors)
+    }
+
+    fun updateResponse(changes: StateChanges?): StateResponse {
+        if (changes != null) {
+            update(changes)
+        }
+
+        return StateResponse(state, changes, null)
     }
 }
