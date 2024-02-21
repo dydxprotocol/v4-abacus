@@ -201,7 +201,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": 68257.22,
-                                    "postOrder": 24308.31
+                                    "postOrder": 21717.8
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -251,7 +251,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": 68257.22,
-                                    "postOrder": 43421.72
+                                    "postOrder": 41957.82
                                 },
                                 "openPositions": {
                                     "ETH-USD": {

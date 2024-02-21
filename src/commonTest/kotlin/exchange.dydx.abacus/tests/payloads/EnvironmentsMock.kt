@@ -86,7 +86,8 @@ class EnvironmentsMock {
                     "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":true
+                     "reduceOnlySupported":true,
+                     "usePessimisticCollateralCheck":false
                  },
                  "governance": {
                     "newMarketProposal": {
@@ -118,7 +119,8 @@ class EnvironmentsMock {
                     "faucet":"https://faucet.v4testnet.dydx.exchange"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":false
+                     "reduceOnlySupported":false,
+                     "usePessimisticCollateralCheck":true
                   },
                  "governance": {
                     "newMarketProposal": {
