@@ -115,14 +115,14 @@ class V4RestrictionsTests {
             stateManager.adaptor?.stateMachine?.state?.restriction?.restriction,
             "Expected user restriction"
         )
-        assertEquals(10, testRest?.requests?.size)
+        assertEquals(12, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-            testRest?.requests?.get(7)
+            testRest?.requests?.get(8)
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-            testRest?.requests?.get(9)
+            testRest?.requests?.get(10)
         )
 
 
