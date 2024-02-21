@@ -40,7 +40,8 @@ class EnvironmentsMock {
                     "mintscan":"https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
                     "documentation":"https://v4-teacher.vercel.app/",
                     "community":"https://discord.com/invite/dydx",
-                    "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
+                    "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform",
+                    "launchIncentive":"https://dydx.exchange/v4-launch-incentive"
                }
            },
            "wallets": {
