@@ -25,17 +25,22 @@ Delta object
  */
 
 internal class SubaccountTransformer {
-    private fun pessimisticCollateralCheckPrice(
+    private fun executionPrice(
         oraclePrice: Double?,
         limitPrice: Double?,
         isBuying: Boolean,
+        usePessimisticPrice: Boolean,
     ): Double? {
-        oraclePrice?.let { oraclePrice ->
-            limitPrice?.let { limitPrice ->
-                return if (isBuying) max(oraclePrice, limitPrice) else min(oraclePrice, limitPrice)
+        if (usePessimisticPrice) {
+            oraclePrice?.let { oraclePrice ->
+                limitPrice?.let { limitPrice ->
+                    return if (isBuying)
+                        max(oraclePrice, limitPrice)
+                    else min(oraclePrice, limitPrice)
+                }
             }
         }
-        return null
+        return limitPrice
     }
 
     private fun deltaFromTrade(
@@ -52,17 +57,14 @@ internal class SubaccountTransformer {
                     val multiplier =
                         (if (side == "BUY") Numeric.double.NEGATIVE else Numeric.double.POSITIVE)
                     val originalPrice = parser.asDouble(summary["price"])
-                    val price = if (usePessimisticCollateralCheck)
-                        { market?.let {
-                            parser.asDouble(market["oraclePrice"])?.let { oraclePrice ->
-                                pessimisticCollateralCheckPrice(
-                                    oraclePrice,
-                                    parser.asDouble(summary["price"]),
-                                    side == "BUY"
-                                )
-                            }
-                        } ?: originalPrice
-                    } else originalPrice
+                    val price = market?.let {
+                        executionPrice(
+                            parser.asDouble(market["oraclePrice"]),
+                            originalPrice,
+                            side == "BUY",
+                            usePessimisticCollateralCheck
+                        )
+                    } ?: originalPrice
                     val size = (parser.asDouble(summary["size"])
                         ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
                     val usdcSize = (price ?: Numeric.double.ZERO) * (parser.asDouble(summary["size"])
