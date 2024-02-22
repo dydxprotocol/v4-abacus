@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.app.manager
 
+import ApiState
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountOrder
@@ -16,7 +17,6 @@ import exchange.dydx.abacus.protocols.TimerProtocol
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList

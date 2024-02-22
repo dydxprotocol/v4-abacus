@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.base
 
+import BlockAndTime
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable

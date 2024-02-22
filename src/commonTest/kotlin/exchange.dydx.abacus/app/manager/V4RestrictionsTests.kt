@@ -2,16 +2,13 @@ package exchange.dydx.abacus.app.manager
 
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
+import exchange.dydx.abacus.state.manager.utils.AppConfigs
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
-import exchange.dydx.abacus.utils.values
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class V4RestrictionsTests {
     val mock = AbacusMockData()

@@ -13,6 +13,17 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
+import exchange.dydx.abacus.state.manager.utils.ApiData
+import exchange.dydx.abacus.state.manager.utils.AppConfigs
+import exchange.dydx.abacus.state.manager.utils.ConfigFile
+import exchange.dydx.abacus.state.manager.utils.HistoricalPnlPeriod
+import exchange.dydx.abacus.state.manager.utils.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.utils.OrderbookGrouping
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -24,201 +35,12 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
-import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.Threading
 import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kotlinx.serialization.Serializable
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-
-@JsExport
-class AppConfigs(
-    val subscribeToCandles: Boolean,
-    val loadRemote: Boolean = true,
-    val enableLogger: Boolean = false,
-) {
-    enum class SquidVersion {
-        V1, V2, V2DepositOnly, V2WithdrawalOnly,
-    }
-    var squidVersion: SquidVersion = SquidVersion.V1
-
-    companion object {
-        val forApp = AppConfigs(subscribeToCandles = true, loadRemote = true)
-        val forAppDebug = AppConfigs(subscribeToCandles = true, loadRemote = false, enableLogger = true)
-        val forWeb = AppConfigs(subscribeToCandles = false, loadRemote = true)
-    }
-}
-
-@JsExport
-@Serializable
-enum class HistoricalPnlPeriod(val rawValue: String) {
-    Period1d("1d"),
-    Period7d("7d"),
-    Period30d("30d"),
-    Period90d("90d");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            HistoricalPnlPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class HistoricalTradingRewardsPeriod(val rawValue: String) {
-    DAILY("DAILY"),
-    WEEKLY("WEEKLY"),
-    MONTHLY("MONTHLY");
-
-    companion object {
-        operator fun invoke(rawValue: String) = 
-        HistoricalTradingRewardsPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class CandlesPeriod(val rawValue: String) {
-    Period1m("1m"),
-    Period5m("5m"),
-    Period15m("15m"),
-    Period30m("30m"),
-    Period1h("1h"),
-    Period4h("4h"),
-    Period1d("1d");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            CandlesPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class OrderbookGrouping(val rawValue: Int) {
-    none(1),
-    x10(10),
-    x100(100),
-    x1000(1000);
-
-    companion object {
-        operator fun invoke(rawValue: Int) =
-            OrderbookGrouping.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class NetworkStatus(val rawValue: String) {
-    UNKNOWN("UNKNOWN"),
-    UNREACHABLE("UNREACHABLE"),
-    HALTED("HALTED"),
-    NORMAL("NORMAL");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            NetworkStatus.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-public class BlockAndTime(val block: Int, val time: Instant)
-
-internal class NetworkState() {
-    var status: NetworkStatus = NetworkStatus.UNKNOWN
-        private set
-    var blockAndTime: BlockAndTime? = null
-        private set
-    private var sameBlockCount: Int = 0
-    private var failCount: Int = 0
-
-    internal var time: Instant? = null
-
-    internal var previousRequestTime: Instant? = null
-    internal var requestTime: Instant? = null
-
-    internal fun updateHeight(height: Int?, heightTime: Instant?) {
-        time = ServerTime.now()
-        if (height != null && heightTime != null) {
-            failCount = 0
-            if (blockAndTime?.block != height) {
-                blockAndTime = BlockAndTime(height, heightTime)
-                sameBlockCount = 0
-            } else {
-                sameBlockCount += 1
-            }
-        } else {
-            failCount += 1
-        }
-        updateStatus()
-    }
-
-    private fun updateStatus() {
-        val time = time
-        status = if (time != null) {
-            if (failCount >= 3)
-                NetworkStatus.UNREACHABLE
-            else if (sameBlockCount >= 6)
-                NetworkStatus.HALTED
-            else if (blockAndTime != null)
-                NetworkStatus.NORMAL
-            else
-                NetworkStatus.UNKNOWN
-        } else NetworkStatus.UNKNOWN
-    }
-}
-
-@JsExport
-@Serializable
-enum class ApiStatus(val rawValue: String) {
-    UNKNOWN("UNKNOWN"),
-    VALIDATOR_DOWN("VALIDATOR_DOWN"),
-    VALIDATOR_HALTED("VALIDATOR_HALTED"),
-    INDEXER_DOWN("INDEXER_DOWN"),
-    INDEXER_HALTED("INDEXER_HALTED"),
-    INDEXER_TRAILING("INDEXER_TRAILING"),
-    NORMAL("NORMAL");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            ApiStatus.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-data class ApiState(
-    val status: ApiStatus?,
-    val height: Int?,
-    val haltedBlock: Int?,
-    val trailingBlocks: Int?
-) {
-    fun abnormalState(): Boolean {
-        return status == ApiStatus.INDEXER_DOWN || status == ApiStatus.INDEXER_HALTED || status == ApiStatus.VALIDATOR_DOWN || status == ApiStatus.VALIDATOR_HALTED
-    }
-}
-
-@JsExport
-enum class ApiData {
-    HISTORICAL_PNLS,
-    HISTORICAL_TRADING_REWARDS,
-}
-
-@JsExport
-enum class ConfigFile(val rawValue: String) {
-    DOCUMENTATION("DOCUMENTATION") {
-        override val path: String
-            get() = "/configs/documentation.json"
-    },
-    ENV("ENV") {
-        override val path: String
-            get() = "/configs/v1/env.json"
-    };
-
-    abstract val path: String
-}
 
 
 @JsExport
@@ -361,8 +183,9 @@ class AsyncAbacusStateManager(
                 adaptor?.historicalPnlPeriod = field
             }
         }
-    
-    var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod = HistoricalTradingRewardsPeriod.WEEKLY
+
+    var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
+        HistoricalTradingRewardsPeriod.WEEKLY
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -474,6 +297,7 @@ class AsyncAbacusStateManager(
                 parseDocumentation(response)
                 return true
             }
+
             ConfigFile.ENV -> parseEnvironments(response)
         }
     }

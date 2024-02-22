@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.protocols
 
+import ApiState
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.MarketCandle
@@ -21,7 +22,6 @@ import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport

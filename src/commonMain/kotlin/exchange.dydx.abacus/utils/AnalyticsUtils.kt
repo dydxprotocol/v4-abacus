@@ -1,10 +1,8 @@
 package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.state.manager.CancelOrderRecord
-import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
-import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
-import exchange.dydx.abacus.state.manager.PlaceOrderRecord
+import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
 
 class AnalyticsUtils {
     /**

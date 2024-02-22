@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import BlockAndTime
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -23,6 +24,23 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.manager.utils.ApiData
+import exchange.dydx.abacus.state.manager.utils.AppConfigs
+import exchange.dydx.abacus.state.manager.utils.CancelOrderRecord
+import exchange.dydx.abacus.state.manager.utils.FaucetRecord
+import exchange.dydx.abacus.state.manager.utils.HistoricalPnlPeriod
+import exchange.dydx.abacus.state.manager.utils.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableFaucetPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableTransferPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.utils.OrderbookGrouping
+import exchange.dydx.abacus.state.manager.utils.PlaceOrderMarketInfo
+import exchange.dydx.abacus.state.manager.utils.PlaceOrderRecord
+import exchange.dydx.abacus.state.manager.utils.Subaccount
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -83,7 +101,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -95,118 +112,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.times
 import kotlin.time.toDuration
-
-@JsExport
-internal data class Subaccount(
-    val address: String,
-    val subaccountNumber: Int,
-)
-
-@JsExport
-@Serializable
-data class PlaceOrderMarketInfo(
-    val clobPairId: Int,
-    val atomicResolution: Int,
-    val stepBaseQuantums: Int,
-    val quantumConversionExponent: Int,
-    val subticksPerTick: Int,
-)
-
-@JsExport
-@Serializable
-data class HumanReadablePlaceOrderPayload(
-    val subaccountNumber: Int,
-    val marketId: String,
-    val clientId: Int,
-    val type: String,
-    val side: String,
-    val price: Double,
-    val triggerPrice: Double?,
-    val size: Double,
-    val reduceOnly: Boolean?,
-    val postOnly: Boolean?,
-    val timeInForce: String?,
-    val execution: String?,
-    val goodTilTimeInSeconds: Int?,
-    val marketInfo: PlaceOrderMarketInfo? = null,
-    val currentHeight: Int? = null,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableCancelOrderPayload(
-    val subaccountNumber: Int,
-    val orderId: String,
-    val clientId: Int,
-    val orderFlags: Int,
-    val clobPairId: Int,
-    val goodTilBlock: Int?,
-    val goodTilBlockTime: Int?,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableSubaccountTransferPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-    val destinationAddress: String,
-    val destinationSubaccountNumber: Int,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableFaucetPayload(
-    val subaccountNumber: Int,
-    val amount: Double,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableDepositPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableWithdrawPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-)
-
-@Serializable
-data class HumanReadableWithdrawIBCPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-    val ibcPayload: String,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableTransferPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-    val recipient: String,
-)
-
-data class FaucetRecord(
-    val subaccountNumber: Int,
-    val amount: Double,
-    val timestampInMilliseconds: Double,
-)
-
-data class PlaceOrderRecord(
-    val subaccountNumber: Int,
-    val clientId: Int,
-    val timestampInMilliseconds: Double,
-)
-
-data class CancelOrderRecord(
-    val subaccountNumber: Int,
-    val clientId: Int,
-    val timestampInMilliseconds: Double,
-)
-
 
 @JsExport
 open class StateManagerAdaptor(
@@ -1754,10 +1659,15 @@ open class StateManagerAdaptor(
         type: ClosePositionInputField,
     ) {
         ioImplementations.threading?.async(ThreadingType.abacus) {
-            val currentMarket = parser.asString(parser.value(stateMachine.input, "closePosition.marketId"))
+            val currentMarket =
+                parser.asString(parser.value(stateMachine.input, "closePosition.marketId"))
             var stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
             if (type == ClosePositionInputField.market && currentMarket != data) {
-                val nextResponse = stateMachine.closePosition("1", ClosePositionInputField.percent, subaccountNumber)
+                val nextResponse = stateMachine.closePosition(
+                    "1",
+                    ClosePositionInputField.percent,
+                    subaccountNumber
+                )
                 stateResponse = nextResponse.merge(stateResponse)
             }
             ioImplementations.threading?.async(ThreadingType.main) {
@@ -1846,7 +1756,8 @@ open class StateManagerAdaptor(
         val type = trade.type?.rawValue ?: throw Exception("type is null")
         val side = trade.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
-        val triggerPrice = if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
+        val triggerPrice =
+            if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
         val size = summary.size ?: throw Exception("size is null")
         val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null

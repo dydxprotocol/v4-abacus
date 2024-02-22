@@ -1,11 +1,9 @@
 package exchange.dydx.abacus.app.manager
 
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.state.manager.ApiStatus
-import exchange.dydx.abacus.state.manager.AppConfigs
-import exchange.dydx.abacus.state.manager.NetworkStatus
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
+import exchange.dydx.abacus.state.manager.utils.AppConfigs
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
 import kotlin.test.Test

@@ -1,11 +1,11 @@
 package exchange.dydx.abacus.state.model
 
+import BlockAndTime
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.BlockAndTime
 import kollections.iListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
