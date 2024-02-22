@@ -40,7 +40,8 @@ class EnvironmentsMock {
                     "mintscan":"https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
                     "documentation":"https://v4-teacher.vercel.app/",
                     "community":"https://discord.com/invite/dydx",
-                    "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform"
+                    "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform",
+                    "launchIncentive":"https://dydx.exchange/v4-launch-incentive"
                }
            },
            "wallets": {
@@ -85,7 +86,8 @@ class EnvironmentsMock {
                     "0xsquid":"https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":true
+                     "reduceOnlySupported":true,
+                     "usePessimisticCollateralCheck":false
                  },
                  "governance": {
                     "newMarketProposal": {
@@ -117,7 +119,8 @@ class EnvironmentsMock {
                     "faucet":"https://faucet.v4testnet.dydx.exchange"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":false
+                     "reduceOnlySupported":false,
+                     "usePessimisticCollateralCheck":true
                   },
                  "governance": {
                     "newMarketProposal": {

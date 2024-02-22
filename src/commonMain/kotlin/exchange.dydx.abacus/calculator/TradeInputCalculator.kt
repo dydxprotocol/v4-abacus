@@ -98,8 +98,10 @@ internal class TradeInputCalculator(
                     account,
                     subaccountNumber,
                     trade,
+                    market,
                     parser,
-                    "postOrder"
+                    "postOrder",
+                    featureFlags.usePessimisticCollateralCheck
                 )
             )
             modified

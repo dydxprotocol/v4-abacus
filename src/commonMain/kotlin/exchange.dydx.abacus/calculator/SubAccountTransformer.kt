@@ -7,6 +7,8 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import kotlin.math.max
+import kotlin.math.min
 
 /*
 Transform position and account
@@ -23,9 +25,29 @@ Delta object
  */
 
 internal class SubaccountTransformer {
+    private fun executionPrice(
+        oraclePrice: Double?,
+        limitPrice: Double?,
+        isBuying: Boolean,
+        usePessimisticPrice: Boolean,
+    ): Double? {
+        if (usePessimisticPrice) {
+            oraclePrice?.let { oraclePrice ->
+                limitPrice?.let { limitPrice ->
+                    return if (isBuying)
+                        max(oraclePrice, limitPrice)
+                    else min(oraclePrice, limitPrice)
+                }
+            }
+        }
+        return limitPrice
+    }
+
     private fun deltaFromTrade(
         parser: ParserProtocol,
-        trade: Map<String, Any>
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+        usePessimisticCollateralCheck: Boolean,
     ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
         val side = parser.asString(trade["side"])
@@ -34,11 +56,19 @@ internal class SubaccountTransformer {
                 if (parser.asBool(summary["filled"]) == true) {
                     val multiplier =
                         (if (side == "BUY") Numeric.double.NEGATIVE else Numeric.double.POSITIVE)
-                    val price = parser.asDouble(summary["price"])
+                    val originalPrice = parser.asDouble(summary["price"])
+                    val price = market?.let {
+                        executionPrice(
+                            parser.asDouble(market["oraclePrice"]),
+                            originalPrice,
+                            side == "BUY",
+                            usePessimisticCollateralCheck
+                        )
+                    } ?: originalPrice
                     val size = (parser.asDouble(summary["size"])
                         ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
-                    val usdcSize =
-                        (parser.asDouble(summary["usdcSize"]) ?: Numeric.double.ZERO) * multiplier
+                    val usdcSize = (price ?: Numeric.double.ZERO) * (parser.asDouble(summary["size"])
+                        ?: Numeric.double.ZERO) * multiplier
                     val fee = (parser.asDouble(summary["fee"])
                         ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
                     val feeRate = parser.asDouble(summary["feeRate"]) ?: Numeric.double.ZERO
@@ -148,11 +178,13 @@ internal class SubaccountTransformer {
     internal fun applyTradeToSubaccount(
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
+        market: Map<String, Any>?,
         parser: ParserProtocol,
-        period: String
+        period: String,
+        usePessimisticCollateralCheck: Boolean
     ): Map<String, Any>? {
         if (subaccount != null) {
-            val delta = deltaFromTrade(parser, trade)
+            val delta = deltaFromTrade(parser, trade, market, usePessimisticCollateralCheck)
             return applyDeltaToSubaccount(subaccount, delta, parser, period)
         }
         return subaccount

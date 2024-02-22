@@ -103,6 +103,7 @@ class AbacusMockData {
         null,
         EnvironmentFeatureFlags(
             true,
+            true,
         ),
     )
 }

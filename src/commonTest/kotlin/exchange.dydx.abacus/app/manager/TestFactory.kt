@@ -176,6 +176,27 @@ class TestRest() : RestProtocol {
                 ]
             """.trimIndent()
         )
+        setResponse(
+            "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+            """
+                {
+                   "data":{
+                      "tradingSeasons":[
+                         {
+                            "startTimestamp":1701177710,
+                            "label":"1",
+                            "__typename":"TradingSeason"
+                         },
+                         {
+                            "startTimestamp":1704384000,
+                            "label":"2",
+                            "__typename":"TradingSeason"
+                         }
+                      ]
+                   }
+                }
+            """.trimIndent()
+        )
     }
 
     override fun get(
@@ -211,6 +232,19 @@ class TestRest() : RestProtocol {
         callback: (response: String?, httpCode: Int) -> Unit,
     ) {
         requests.add(url)
+
+        val response = responses[url]
+        if (response != null) {
+            responses.remove(url)
+            val code = parser.asInt(response)
+            if (code != null) {
+                callback(null, code)
+            } else {
+                callback(response, 200)
+            }
+        } else {
+            callback(null, 404)
+        }
     }
 
     override fun put(

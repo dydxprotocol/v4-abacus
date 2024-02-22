@@ -96,6 +96,7 @@ data class EnvironmentLinks(
 @JsExport
 data class EnvironmentFeatureFlags(
     val reduceOnlySupported: Boolean,
+    val usePessimisticCollateralCheck: Boolean,
 ) {
     companion object {
         fun parse(
@@ -103,9 +104,11 @@ data class EnvironmentFeatureFlags(
             parser: ParserProtocol,
         ): EnvironmentFeatureFlags {
             val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
+            val usePessimisticCollateralCheck = parser.asBool(data?.get("usePessimisticCollateralCheck")) ?: false
             
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
+                usePessimisticCollateralCheck,
             )
         }
     }
