@@ -1,0 +1,243 @@
+package exchange.dydx.abacus.state.manager.supervisor
+
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
+import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.manager.MarketConfigs
+import exchange.dydx.abacus.state.manager.supervisor.NetworkHelper
+import exchange.dydx.abacus.state.manager.OrderbookGrouping
+import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.candles
+import exchange.dydx.abacus.state.model.historicalFundings
+import exchange.dydx.abacus.state.model.setOrderbookGrouping
+import exchange.dydx.abacus.utils.ServerTime
+import exchange.dydx.abacus.utils.iMapOf
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
+
+
+internal class MarketSupervisor(
+    stateMachine: TradingStateMachine,
+    helper: NetworkHelper,
+    private val configs: MarketConfigs,
+    private val marketId: String
+) : NetworkSupervisor(stateMachine, helper) {
+    internal var candlesResolution: String = "1DAY"
+        internal set(value) {
+            if (field != value) {
+                val oldValue = field
+                field = value
+                didSetCandlesResolution(oldValue)
+            }
+        }
+
+    internal var orderbookGrouping: OrderbookGrouping = OrderbookGrouping.none
+        internal set(value) {
+            if (field != value) {
+                field = value
+                didSetOrderbookGrouping()
+            }
+        }
+
+    private var historicalFundingTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+
+    internal fun didSetCandlesResolution(oldValue: String) {
+        retrieveCandles()
+
+        if (socketConnected) {
+            candlesChannelSubscription(oldValue, false)
+            candlesChannelSubscription(candlesResolution, true)
+        }
+    }
+
+    override fun didSetIndexerConnected(indexerConnected: Boolean) {
+        if (indexerConnected) {
+            if (configs.retrieveCandles) {
+                retrieveCandles()
+            }
+            if (configs.retrieveHistoricalFundings) {
+                retrieveHistoricalFundings()
+            }
+        }
+    }
+
+    override fun didSetSocketConnected(socketConnected: Boolean) {
+        if (configs.subscribeToOrderbook) {
+            orderbookChannelSubscription(socketConnected)
+        }
+        if (configs.subscribeToTrades) {
+            tradesChannelSubscription(socketConnected)
+        }
+        if (configs.subscribeToCandles) {
+            candlesChannelSubscription(candlesResolution, socketConnected)
+        }
+    }
+
+    private fun retrieveCandles() {
+        val marketId = marketId ?: return
+        val url = helper.configs.publicApiUrl("candles") ?: return
+        val candleResolution = candlesResolution
+        val resolutionDuration =
+            candleOptionDuration(stateMachine, marketId, candleResolution) ?: return
+        val maxDuration = resolutionDuration * 365
+        val marketCandles = helper.parser.asList(
+            helper.parser.value(
+                stateMachine.data,
+                "markets.markets.$marketId.candles.$candleResolution"
+            )
+        )
+
+        return helper.retrieveTimed(
+            "$url/$marketId",
+            marketCandles,
+            "startedAt",
+            resolutionDuration,
+            maxDuration,
+            "toISO",
+            "fromISO",
+            mapOf(
+                "resolution" to candleResolution
+            ),
+            null,
+        ) { url, response, httpCode ->
+            val oldState = stateMachine.state
+            if (helper.success(httpCode) && response != null) {
+                val changes = stateMachine.candles(response)
+                update(changes, oldState)
+                if (changes.changes.contains(Changes.candles)) {
+                    retrieveCandles()
+                }
+            }
+        }
+    }
+
+
+    private fun candleOptionDuration(
+        stateMachine: TradingStateMachine?,
+        market: String,
+        candleResolution: String,
+    ): Duration? {
+        val options =
+            stateMachine?.state?.marketsSummary?.markets?.get(market)?.configs?.candleOptions
+        val option = options?.firstOrNull {
+            it.value == candleResolution
+        }
+        return option?.seconds?.seconds
+    }
+
+
+    private fun retrieveHistoricalFundings() {
+        historicalFundingTimer = null
+        val oldState = stateMachine.state
+        val url = helper.configs.publicApiUrl("historical-funding") ?: return
+        val marketId = marketId ?: return
+        helper.get("$url/$marketId", null, null, callback = { _, response, httpCode ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.historicalFundings(response), oldState)
+            }
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                val nextHour = calculateNextFundingAt()
+                val delay = nextHour - ServerTime.now()
+                this.historicalFundingTimer = helper.ioImplementations.timer?.schedule(
+                    // Give 30 seconds past the hour to make sure the funding is available
+                    (delay + 30.seconds).inWholeSeconds.toDouble(),
+                    null
+                ) {
+                    retrieveHistoricalFundings()
+                    false
+                }
+            }
+        })
+    }
+
+    private fun calculateNextFundingAt(): Instant {
+        return nextHour()
+        // Can use nextMinute() for testing
+        // return nextMinute()
+    }
+
+    private fun nextHour(): Instant {
+        val now: Instant = ServerTime.now()
+        val time = now.toLocalDateTime(TimeZone.UTC)
+        val minute = time.minute
+        val second = time.second
+        val nanosecond = time.nanosecond
+        val duration =
+            nanosecond.toDuration(DurationUnit.NANOSECONDS) +
+                    second.toDuration(DurationUnit.SECONDS) +
+                    minute.toDuration(DurationUnit.MINUTES)
+
+        return now.minus(duration).plus(1.hours)
+    }
+
+    fun didSetOrderbookGrouping() {
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse =
+                stateMachine.setOrderbookGrouping(marketId, orderbookGrouping.rawValue)
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
+    @Throws(Exception::class)
+    private fun orderbookChannelSubscription(subscribe: Boolean = true) {
+        val channel =
+            helper.configs.marketOrderbookChannel() ?: throw Exception("orderbook channel is null")
+        helper.socket(
+            helper.socketAction(subscribe), channel,
+            if (subscribe && shouldBatchMarketOrderbookChannelData())
+                iMapOf("id" to marketId, "batched" to "true")
+            else
+                iMapOf("id" to marketId)
+        )
+    }
+
+    open fun shouldBatchMarketOrderbookChannelData(): Boolean {
+        return true
+    }
+
+    @Throws(Exception::class)
+    private fun tradesChannelSubscription(subscribe: Boolean = true) {
+        val channel =
+            helper.configs.marketTradesChannel() ?: throw Exception("trades channel is null")
+        helper.socket(
+            helper.socketAction(subscribe), channel,
+            if (subscribe && shouldBatchMarketTradesChannelData())
+                iMapOf("id" to marketId, "batched" to "true")
+            else
+                iMapOf("id" to marketId)
+        )
+    }
+
+    open fun shouldBatchMarketTradesChannelData(): Boolean {
+        return false
+    }
+
+    @Throws(Exception::class)
+    fun candlesChannelSubscription(resolution: String, subscribe: Boolean = true) {
+        val channel = helper.configs.candlesChannel() ?: throw Exception("candlesChannel is null")
+        helper.socket(
+            helper.socketAction(subscribe),
+            channel,
+            iMapOf("id" to "$marketId/$resolution", "batched" to "true")
+        )
+    }
+
+}
