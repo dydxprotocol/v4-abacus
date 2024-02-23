@@ -1,7 +1,8 @@
 package exchange.dydx.abacus.tests.payloads
 
 class EnvironmentsMock {
-    internal val environments = """
+   internal val environments =
+         """
         {
            "deployments":{
               "MAINNET":null,
@@ -119,7 +120,7 @@ class EnvironmentsMock {
                     "faucet":"https://faucet.v4testnet.dydx.exchange"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":false,
+                     "reduceOnlySupported":true,
                      "usePessimisticCollateralCheck":true
                   },
                  "governance": {

@@ -62,16 +62,17 @@ import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
-import kotlinx.datetime.Instant
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
+import kotlinx.datetime.Instant
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 
 internal typealias LoadingFunction = () -> StateResponse
+
 internal typealias VerificationFunction = (response: StateResponse) -> Unit
 
 open class BaseTests(private val maxSubaccountNumber: Int) {
@@ -85,22 +86,22 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     companion object {
         fun testIOImplementations(): IOImplementations {
             return IOImplementations(
-                rest = TestRest(),
-                webSocket = TestWebSocket(),
-                chain = TestChain(),
-                tracking = null,
-                threading = TestThreading(),
-                timer = TestTimer(),
-                fileSystem = TestFileSystem(),
+                    rest = TestRest(),
+                    webSocket = TestWebSocket(),
+                    chain = TestChain(),
+                    tracking = null,
+                    threading = TestThreading(),
+                    timer = TestTimer(),
+                    fileSystem = TestFileSystem(),
             )
         }
 
         fun testLocalizer(ioImplementations: IOImplementations): LocalizerProtocol {
             return DynamicLocalizer(
-                ioImplementations,
-                "en",
-                "/config",
-                "https://dydx-v4-shared-resources.vercel.app/config",
+                    ioImplementations,
+                    "en",
+                    "/config",
+                    "https://dydx-v4-shared-resources.vercel.app/config",
             )
         }
 
@@ -112,10 +113,10 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     internal open fun createState(): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
-            mock.v4Environment,
-            testLocalizer(ioImplementations),
-            null,
-            maxSubaccountNumber,
+                mock.v4Environment,
+                testLocalizer(ioImplementations),
+                null,
+                maxSubaccountNumber,
         )
     }
 
@@ -133,8 +134,7 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         return parser.asNativeMap(Json.parseToJsonElement(text))
     }
 
-    internal open fun setup() {
-    }
+    internal open fun setup() {}
 
     internal fun test(perp: TradingStateMachine, expected: String) {
         val json = parser.asNativeMap(Json.parseToJsonElement(expected))
@@ -144,9 +144,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         try {
             data.satisfies(json, parser)
         } catch (e: Throwable) {
-//            println("Internal state match failed...")
-//            println("  Actual State: ${data.toJsonPrettyPrint()}")
-//            println("  Expected State: ${json.toJsonPrettyPrint()}")
+            //            println("Internal state match failed...")
+            //            println("  Actual State: ${data.toJsonPrettyPrint()}")
+            //            println("  Expected State: ${json.toJsonPrettyPrint()}")
             throw e
         }
     }
@@ -179,15 +179,15 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             val numeric = parser.asDouble(value)
             if (numeric != null) {
                 assertEquals(
-                    numeric,
-                    parser.asDouble(parser.value(obj, key)),
-                    "$key $value not matching"
+                        numeric,
+                        parser.asDouble(parser.value(obj, key)),
+                        "$key $value not matching"
                 )
             } else {
                 assertEquals(
-                    parser.asString(value),
-                    parser.asString(parser.value(obj, key)),
-                    "$key $value not matching"
+                        parser.asString(value),
+                        parser.asString(parser.value(obj, key)),
+                        "$key $value not matching"
                 )
             }
         }
@@ -198,52 +198,47 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         verifyWalletState(perp.wallet, state?.wallet, "wallet")
         verifyAccountState(perp.account, state?.account, "account")
         verifySubaccountFillsState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.fills,
-            "fills"
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.fills,
+                "fills"
         )
         verifySubaccountTransfersState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.transfers,
-            "transfers"
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.transfers,
+                "transfers"
         )
         verifySubaccountFundingPaymentsState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.fundingPayments,
-            "fundingPayments"
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.fundingPayments,
+                "fundingPayments"
         )
         verifySubaccountHistoricalPNLsState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.historicalPnl,
-            ServerTime.now() - perp.historicalPnlDays.days,
-            "historicalPnl"
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.historicalPnl,
+                ServerTime.now() - perp.historicalPnlDays.days,
+                "historicalPnl"
         )
         verifyAssetsState(perp.assets, state?.assets, "assets")
-        verifyMarketsState(
-            perp.marketsSummary,
-            perp.assets,
-            state?.marketsSummary,
-            "markets"
-        )
+        verifyMarketsState(perp.marketsSummary, perp.assets, state?.marketsSummary, "markets")
         verifyMarketsHistoricalFundingsState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.historicalFundings,
-            "historicalFundings"
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.historicalFundings,
+                "historicalFundings"
         )
         verifyMarketsTradesState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.trades,
-            "trades"
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.trades,
+                "trades"
         )
         verifyMarketsCandlesState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.candles,
-            "candles"
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.candles,
+                "candles"
         )
         verifyMarketsOrderbookState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.orderbooks,
-            "orderbooks"
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.orderbooks,
+                "orderbooks"
         )
         verifyInputState(perp.input, state?.input, "input")
     }
@@ -255,25 +250,24 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             when (obj.current?.rawValue) {
                 "trade" -> {
                     verifyInputTradeState(
-                        parser.asNativeMap(data["trade"]),
-                        obj.trade,
-                        "$trace.trade"
+                            parser.asNativeMap(data["trade"]),
+                            obj.trade,
+                            "$trace.trade"
                     )
                 }
-
                 "closePosition" -> {
                     verifyInputClosePositionState(
-                        parser.asNativeMap(data["closePosition"]),
-                        obj.closePosition,
-                        "$trace.closePosition"
+                            parser.asNativeMap(data["closePosition"]),
+                            obj.closePosition,
+                            "$trace.closePosition"
                     )
                 }
             }
 
             verifyInputReceiptLinesState(
-                parser.asList(data["receiptLines"]),
-                obj.receiptLines,
-                "$trace.receiptLines"
+                    parser.asList(data["receiptLines"]),
+                    obj.receiptLines,
+                    "$trace.receiptLines"
             )
         } else {
             assertNull(obj)
@@ -284,102 +278,101 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         if (data != null) {
             assertNotNull(obj, "$trace should not be null")
             assertEquals(
-                parser.asString(data["type"]),
-                obj.type?.rawValue,
-                "$trace.type $doesntMatchText"
+                    parser.asString(data["type"]),
+                    obj.type?.rawValue,
+                    "$trace.type $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["side"]),
-                obj.side?.rawValue,
-                "$trace.side $doesntMatchText"
+                    parser.asString(data["side"]),
+                    obj.side?.rawValue,
+                    "$trace.side $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["marketId"]),
-                obj.marketId,
-                "$trace.marketId $doesntMatchText"
+                    parser.asString(data["marketId"]),
+                    obj.marketId,
+                    "$trace.marketId $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["execution"]),
-                obj.execution,
-                "$trace.execution $doesntMatchText"
+                    parser.asString(data["execution"]),
+                    obj.execution,
+                    "$trace.execution $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["timeInForce"]),
-                obj.timeInForce,
-                "$trace.timeInForce $doesntMatchText"
+                    parser.asString(data["timeInForce"]),
+                    obj.timeInForce,
+                    "$trace.timeInForce $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["postOnly"]) ?: false,
-                obj.postOnly,
-                "$trace.postOnly $doesntMatchText"
+                    parser.asBool(data["postOnly"]) ?: false,
+                    obj.postOnly,
+                    "$trace.postOnly $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["reduceOnly"]) ?: false,
-                obj.reduceOnly,
-                "$trace.reduceOnly $doesntMatchText"
+                    parser.asBool(data["reduceOnly"]) ?: false,
+                    obj.reduceOnly,
+                    "$trace.reduceOnly $doesntMatchText"
             )
             verifyInputTradeInputSizeState(
-                parser.asNativeMap(data["size"]),
-                obj.size,
-                "$trace.size"
+                    parser.asNativeMap(data["size"]),
+                    obj.size,
+                    "$trace.size"
             )
             verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodTil"]),
-                obj.goodTil,
-                "$trace.goodTil"
+                    parser.asNativeMap(data["goodTil"]),
+                    obj.goodTil,
+                    "$trace.goodTil"
             )
             verifyInputTradeInputMarketOrderState(
-                parser.asNativeMap(data["marketOrder"]),
-                obj.marketOrder,
-                "$trace.marketOrder"
+                    parser.asNativeMap(data["marketOrder"]),
+                    obj.marketOrder,
+                    "$trace.marketOrder"
             )
             verifyInputTradeInputOptionsState(
-                parser.asNativeMap(data["options"]),
-                obj.options,
-                "$trace.options"
+                    parser.asNativeMap(data["options"]),
+                    obj.options,
+                    "$trace.options"
             )
             verifyInputTradeInputSummaryState(
-                parser.asNativeMap(data["summary"]),
-                obj.summary,
-                "$trace.summary"
+                    parser.asNativeMap(data["summary"]),
+                    obj.summary,
+                    "$trace.summary"
             )
             verifyInputTradeInputBracketState(
-                parser.asNativeMap(data["bracket"]),
-                obj.bracket,
-                "$trace.bracket"
+                    parser.asNativeMap(data["bracket"]),
+                    obj.bracket,
+                    "$trace.bracket"
             )
-
         } else {
             assertNull(obj, "$trace should be null")
         }
     }
 
     private fun verifyInputClosePositionState(
-        data: Map<String, Any>?,
-        obj: ClosePositionInput?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: ClosePositionInput?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj, "$trace should not be null")
             assertEquals(
-                parser.asString(data["marketId"]),
-                obj.marketId,
-                "$trace.marketId $doesntMatchText"
+                    parser.asString(data["marketId"]),
+                    obj.marketId,
+                    "$trace.marketId $doesntMatchText"
             )
             verifyInputClosePositionInputSizeState(
-                parser.asNativeMap(data["size"]),
-                obj.size,
-                "$trace.size"
+                    parser.asNativeMap(data["size"]),
+                    obj.size,
+                    "$trace.size"
             )
             verifyInputTradeInputMarketOrderState(
-                parser.asNativeMap(data["marketOrder"]),
-                obj.marketOrder,
-                "$trace.marketOrder"
+                    parser.asNativeMap(data["marketOrder"]),
+                    obj.marketOrder,
+                    "$trace.marketOrder"
             )
             verifyInputTradeInputSummaryState(
-                parser.asNativeMap(data["summary"]),
-                obj.summary,
-                "$trace.summary"
+                    parser.asNativeMap(data["summary"]),
+                    obj.summary,
+                    "$trace.summary"
             )
         } else {
             assertNull(obj, "$trace should be null")
@@ -387,34 +380,33 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputClosePositionInputSizeState(
-        data: Map<String, Any>?,
-        obj: ClosePositionInputSize?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: ClosePositionInputSize?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["input"]), obj.input, "$trace.input $doesntMatchText")
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
             assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText"
+                    parser.asDouble(data["usdcSize"]),
+                    obj.usdcSize,
+                    "$trace.usdcSize $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["percent"]),
-                obj.percent,
-                "$trace.percent $doesntMatchText"
+                    parser.asDouble(data["percent"]),
+                    obj.percent,
+                    "$trace.percent $doesntMatchText"
             )
-
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyInputReceiptLinesState(
-        data: List<Any>?,
-        obj: List<ReceiptLine>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<ReceiptLine>?,
+            trace: String,
     ) {
         assertEquals(data?.size, obj?.size)
         val size = data?.size
@@ -428,51 +420,50 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputSizeState(
-        data: Map<String, Any>?,
-        obj: TradeInputSize?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputSize?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["input"]), obj.input, "$trace.input $doesntMatchText")
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
             assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText"
+                    parser.asDouble(data["usdcSize"]),
+                    obj.usdcSize,
+                    "$trace.usdcSize $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["leverage"]),
-                obj.leverage,
-                "$trace.leverage $doesntMatchText"
+                    parser.asDouble(data["leverage"]),
+                    obj.leverage,
+                    "$trace.leverage $doesntMatchText"
             )
-
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyInputTradeInputPriceState(
-        data: Map<String, Any>?,
-        obj: TradeInputPrice?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputPrice?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asDouble(data["limitPrice"]),
-                obj.limitPrice,
-                "$trace.limitPrice $doesntMatchText"
+                    parser.asDouble(data["limitPrice"]),
+                    obj.limitPrice,
+                    "$trace.limitPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["triggerPrice"]),
-                obj.triggerPrice,
-                "$trace.triggerPrice $doesntMatchText"
+                    parser.asDouble(data["triggerPrice"]),
+                    obj.triggerPrice,
+                    "$trace.triggerPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["trailingPercent"]),
-                obj.trailingPercent,
-                "$trace.trailingPercent $doesntMatchText"
+                    parser.asDouble(data["trailingPercent"]),
+                    obj.trailingPercent,
+                    "$trace.trailingPercent $doesntMatchText"
             )
         } else {
             assertNull(obj)
@@ -480,63 +471,61 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputGoodUntilState(
-        data: Map<String, Any>?,
-        obj: TradeInputGoodUntil?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputGoodUntil?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["unit"]), obj.unit, "$trace.unit $doesntMatchText")
             assertEquals(
-                parser.asDouble(data["duration"]),
-                obj.duration,
-                "$trace.duration $doesntMatchText"
+                    parser.asDouble(data["duration"]),
+                    obj.duration,
+                    "$trace.duration $doesntMatchText"
             )
-
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyInputTradeInputMarketOrderState(
-        data: Map<String, Any>?,
-        obj: TradeInputMarketOrder?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputMarketOrder?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
             assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price $doesntMatchText")
             assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText"
+                    parser.asDouble(data["usdcSize"]),
+                    obj.usdcSize,
+                    "$trace.usdcSize $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["worstPrice"]),
-                obj.worstPrice,
-                "$trace.worstPrice $doesntMatchText"
+                    parser.asDouble(data["worstPrice"]),
+                    obj.worstPrice,
+                    "$trace.worstPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["filled"]) ?: false,
-                obj.filled,
-                "$trace.filled $doesntMatchText"
+                    parser.asBool(data["filled"]) ?: false,
+                    obj.filled,
+                    "$trace.filled $doesntMatchText"
             )
             verifyInputTradeInputMarketOrderOrderbookUsageState(
-                parser.asList(data["orderbook"]),
-                obj.orderbook,
-                "$trace.orderbook"
+                    parser.asList(data["orderbook"]),
+                    obj.orderbook,
+                    "$trace.orderbook"
             )
-
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyInputTradeInputMarketOrderOrderbookUsageState(
-        data: List<Any>?,
-        obj: List<OrderbookUsage>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<OrderbookUsage>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -552,109 +541,100 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputMarketOrderOrderbookUsageLineState(
-        data: Map<String, Any>?,
-        obj: OrderbookUsage?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: OrderbookUsage?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
             assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price $doesntMatchText")
-
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyInputTradeInputOptionsState(
-        data: Map<String, Any>?,
-        obj: TradeInputOptions?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputOptions?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asBool(data["needsSize"]) ?: false,
-                obj.needsSize,
-                "$trace.needsSize $doesntMatchText"
+                    parser.asBool(data["needsSize"]) ?: false,
+                    obj.needsSize,
+                    "$trace.needsSize $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsLeverage"]) ?: false,
-                obj.needsLeverage,
-                "$trace.needsLeverage $doesntMatchText"
+                    parser.asBool(data["needsLeverage"]) ?: false,
+                    obj.needsLeverage,
+                    "$trace.needsLeverage $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsBrackets"]) ?: false,
-                obj.needsBrackets,
-                "$trace.needsBrackets $doesntMatchText"
+                    parser.asBool(data["needsBrackets"]) ?: false,
+                    obj.needsBrackets,
+                    "$trace.needsBrackets $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsGoodUntil"]) ?: false,
-                obj.needsGoodUntil,
-                "$trace.needsGoodUntil $doesntMatchText"
+                    parser.asBool(data["needsGoodUntil"]) ?: false,
+                    obj.needsGoodUntil,
+                    "$trace.needsGoodUntil $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsLimitPrice"]) ?: false,
-                obj.needsLimitPrice,
-                "$trace.needsLimitPrice $doesntMatchText"
+                    parser.asBool(data["needsLimitPrice"]) ?: false,
+                    obj.needsLimitPrice,
+                    "$trace.needsLimitPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsPostOnly"]) ?: false,
-                obj.needsPostOnly,
-                "$trace.needsPostOnly $doesntMatchText"
+                    parser.asBool(data["needsPostOnly"]) ?: false,
+                    obj.needsPostOnly,
+                    "$trace.needsPostOnly $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsReduceOnly"]) ?: false,
-                obj.needsReduceOnly,
-                "$trace.needsReduceOnly $doesntMatchText"
+                    parser.asBool(data["needsReduceOnly"]) ?: false,
+                    obj.needsReduceOnly,
+                    "$trace.needsReduceOnly $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsTrailingPercent"]) ?: false,
-                obj.needsTrailingPercent,
-                "$trace.needsTrailingPercent $doesntMatchText"
+                    parser.asBool(data["needsTrailingPercent"]) ?: false,
+                    obj.needsTrailingPercent,
+                    "$trace.needsTrailingPercent $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["needsTriggerPrice"]) ?: false,
-                obj.needsTriggerPrice,
-                "$trace.needsTriggerPrice $doesntMatchText"
+                    parser.asBool(data["needsTriggerPrice"]) ?: false,
+                    obj.needsTriggerPrice,
+                    "$trace.needsTriggerPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["reduceOnlyPromptStringKey"])?.let {
-                    "$it.TITLE"
-                },
-                obj.reduceOnlyTooltip?.titleStringKey,
-                "$trace.reduceOnlyPromptStringKey title $doesntMatchText"
+                    parser.asString(data["reduceOnlyPromptStringKey"])?.let { "$it.TITLE" },
+                    obj.reduceOnlyTooltip?.titleStringKey,
+                    "$trace.reduceOnlyPromptStringKey title $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["reduceOnlyPromptStringKey"])?.let {
-                    "$it.BODY"
-                },
-                obj.reduceOnlyTooltip?.bodyStringKey,
-                "$trace.reduceOnlyPromptStringKey body $doesntMatchText"
+                    parser.asString(data["reduceOnlyPromptStringKey"])?.let { "$it.BODY" },
+                    obj.reduceOnlyTooltip?.bodyStringKey,
+                    "$trace.reduceOnlyPromptStringKey body $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["postOnlyPromptStringKey"])?.let {
-                    "$it.TITLE"
-                },
-                obj.postOnlyTooltip?.titleStringKey,
-                "$trace.postOnlyPromptStringKey title $doesntMatchText"
+                    parser.asString(data["postOnlyPromptStringKey"])?.let { "$it.TITLE" },
+                    obj.postOnlyTooltip?.titleStringKey,
+                    "$trace.postOnlyPromptStringKey title $doesntMatchText"
             )
             assertEquals(
-                parser.asString(data["postOnlyPromptStringKey"])?.let {
-                    "$it.BODY"
-                },
-                obj.postOnlyTooltip?.bodyStringKey,
-                "$trace.postOnlyPromptStringKey body $doesntMatchText"
+                    parser.asString(data["postOnlyPromptStringKey"])?.let { "$it.BODY" },
+                    obj.postOnlyTooltip?.bodyStringKey,
+                    "$trace.postOnlyPromptStringKey body $doesntMatchText"
             )
             verifyInputTradeInputOptionsExecutionOptionsState(
-                parser.asList(data["executionOptions"]),
-                obj.executionOptions,
-                "$trace.executionOptions"
+                    parser.asList(data["executionOptions"]),
+                    obj.executionOptions,
+                    "$trace.executionOptions"
             )
             verifyInputTradeInputOptionsExecutionOptionsState(
-                parser.asList(data["timeInForceOptions"]),
-                obj.timeInForceOptions,
-                "$trace.timeInForceOptions"
+                    parser.asList(data["timeInForceOptions"]),
+                    obj.timeInForceOptions,
+                    "$trace.timeInForceOptions"
             )
         } else {
             assertNull(obj)
@@ -662,9 +642,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputOptionsExecutionOptionsState(
-        data: List<Any>?,
-        obj: List<SelectionOption>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<SelectionOption>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -679,19 +659,18 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         }
     }
 
-
     private fun verifySelectionOptionState(
-        data: Map<String, Any>?,
-        obj: SelectionOption?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SelectionOption?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["type"]), obj.type, "$trace.type $doesntMatchText")
             assertEquals(
-                parser.asString(data["stringKey"]),
-                obj.stringKey,
-                "$trace.stringKey $doesntMatchText"
+                    parser.asString(data["stringKey"]),
+                    obj.stringKey,
+                    "$trace.stringKey $doesntMatchText"
             )
         } else {
             assertNull(obj)
@@ -699,29 +678,29 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputSummaryState(
-        data: Map<String, Any>?,
-        obj: TradeInputSummary?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputSummary?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asBool(data["filled"]) ?: false,
-                obj.filled,
-                "$trace.filled $doesntMatchText"
+                    parser.asBool(data["filled"]) ?: false,
+                    obj.filled,
+                    "$trace.filled $doesntMatchText"
             )
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size $doesntMatchText")
             assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price $doesntMatchText")
             assertEquals(parser.asDouble(data["fee"]), obj.fee, "$trace.fee $doesntMatchText")
             assertEquals(
-                parser.asDouble(data["slippage"]),
-                obj.slippage,
-                "$trace.slippage $doesntMatchText"
+                    parser.asDouble(data["slippage"]),
+                    obj.slippage,
+                    "$trace.slippage $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["usdcSize"]),
-                obj.usdcSize,
-                "$trace.usdcSize $doesntMatchText"
+                    parser.asDouble(data["usdcSize"]),
+                    obj.usdcSize,
+                    "$trace.usdcSize $doesntMatchText"
             )
             assertEquals(parser.asDouble(data["total"]), obj.total, "$trace.total $doesntMatchText")
         } else {
@@ -730,31 +709,31 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputBracketState(
-        data: Map<String, Any>?,
-        obj: TradeInputBracket?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputBracket?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asString(data["execution"]),
-                obj.execution,
-                "$trace.execution $doesntMatchText"
+                    parser.asString(data["execution"]),
+                    obj.execution,
+                    "$trace.execution $doesntMatchText"
             )
             verifyInputTradeInputGoodUntilState(
-                parser.asNativeMap(data["goodTil"]),
-                obj.goodTil,
-                "$trace.goodTil"
+                    parser.asNativeMap(data["goodTil"]),
+                    obj.goodTil,
+                    "$trace.goodTil"
             )
             verifyInputTradeInputBracketTriggerState(
-                parser.asNativeMap(data["stopLoss"]),
-                obj.stopLoss,
-                "$trace.stopLoss"
+                    parser.asNativeMap(data["stopLoss"]),
+                    obj.stopLoss,
+                    "$trace.stopLoss"
             )
             verifyInputTradeInputBracketTriggerState(
-                parser.asNativeMap(data["takeProfit"]),
-                obj.takeProfit,
-                "$trace.takeProfit"
+                    parser.asNativeMap(data["takeProfit"]),
+                    obj.takeProfit,
+                    "$trace.takeProfit"
             )
         } else {
             assertNull(obj)
@@ -762,26 +741,26 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyInputTradeInputBracketTriggerState(
-        data: Map<String, Any>?,
-        obj: TradeInputBracketSide?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeInputBracketSide?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asDouble(data["triggerPrice"]),
-                obj.triggerPrice,
-                "$trace.triggerPrice $doesntMatchText"
+                    parser.asDouble(data["triggerPrice"]),
+                    obj.triggerPrice,
+                    "$trace.triggerPrice $doesntMatchText"
             )
             assertEquals(
-                parser.asDouble(data["percent"]),
-                obj.percent,
-                "$trace.percent $doesntMatchText"
+                    parser.asDouble(data["percent"]),
+                    obj.percent,
+                    "$trace.percent $doesntMatchText"
             )
             assertEquals(
-                parser.asBool(data["reduceOnly"]) ?: false,
-                obj.reduceOnly,
-                "$trace.reduceOnly $doesntMatchText"
+                    parser.asBool(data["reduceOnly"]) ?: false,
+                    obj.reduceOnly,
+                    "$trace.reduceOnly $doesntMatchText"
             )
         } else {
             assertNull(obj)
@@ -806,18 +785,18 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyNumberState(
-        data: Map<String, Any>?,
-        obj: TradeStatesWithStringValues?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeStatesWithStringValues?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["current"]), obj.current, "$trace.current")
             assertEquals(parser.asString(data["postOrder"]), obj.postOrder, "$trace.postOrder")
             assertEquals(
-                parser.asString(data["postAllOrders"]),
-                obj.postAllOrders,
-                "$trace.postAllOrders"
+                    parser.asString(data["postAllOrders"]),
+                    obj.postAllOrders,
+                    "$trace.postAllOrders"
             )
         } else {
             assertNull(obj)
@@ -829,9 +808,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyLaunchIncentivePointsState(
-        data: Map<String, Any>?,
-        obj: LaunchIncentivePoints?,
-        trace: String
+            data: Map<String, Any>?,
+            obj: LaunchIncentivePoints?,
+            trace: String
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -844,14 +823,14 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         if (data != null) {
             assertNotNull(obj)
             verifyAccountSubaccountsState(
-                parser.asNativeMap(data["subaccounts"]),
-                obj.subaccounts,
-                "$trace.subaccounts"
+                    parser.asNativeMap(data["subaccounts"]),
+                    obj.subaccounts,
+                    "$trace.subaccounts"
             )
             verifyLaunchIncentivePointsState(
-                parser.asNativeMap(data["launchIncentivePoints"]),
-                obj.launchIncentivePoints,
-                "$trace.launchIncentivePoints"
+                    parser.asNativeMap(data["launchIncentivePoints"]),
+                    obj.launchIncentivePoints,
+                    "$trace.launchIncentivePoints"
             )
         } else {
             assertNull(obj)
@@ -859,9 +838,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyAccountSubaccountsState(
-        data: Map<String, Any>?,
-        obj: Map<String, Subaccount>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, Subaccount>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -870,87 +849,85 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 verifyAccountSubaccountState(parser.asNativeMap(itemData), obj[key], "$trace.$key")
             }
         } else {
-            assertTrue {
-                (obj == null || obj.size == 0)
-            }
+            assertTrue { (obj == null || obj.size == 0) }
         }
     }
 
     private fun verifyAccountSubaccountState(
-        data: Map<String, Any>?,
-        obj: Subaccount?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Subaccount?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asInt(data["subaccountNumber"]) ?: 0,
-                obj.subaccountNumber,
-                "$trace.subaccountNumber"
+                    parser.asInt(data["subaccountNumber"]) ?: 0,
+                    obj.subaccountNumber,
+                    "$trace.subaccountNumber"
             )
             assertEquals(
-                parser.asBool(data["marginEnabled"]) ?: true,
-                obj.marginEnabled,
-                "$trace.marginEnabled"
+                    parser.asBool(data["marginEnabled"]) ?: true,
+                    obj.marginEnabled,
+                    "$trace.marginEnabled"
             )
             assertEquals(parser.asDouble(data["pnl24h"]), obj.pnl24h, "$trace.pnl24h")
             assertEquals(
-                parser.asDouble(data["pnl24hPercent"]),
-                obj.pnl24hPercent,
-                "$trace.pnl24hPercent"
+                    parser.asDouble(data["pnl24hPercent"]),
+                    obj.pnl24hPercent,
+                    "$trace.pnl24hPercent"
             )
             assertEquals(parser.asDouble(data["pnlTotal"]), obj.pnlTotal, "$trace.pnlTotal")
             assertEquals(parser.asString(data["positionId"]), obj.positionId, "$trace.positionId")
             verifyDoubleValues(
-                parser.asNativeMap(data["adjustedImf"]),
-                obj.adjustedImf,
-                "$trace.adjustedImf"
+                    parser.asNativeMap(data["adjustedImf"]),
+                    obj.adjustedImf,
+                    "$trace.adjustedImf"
             )
             verifyDoubleValues(parser.asNativeMap(data["equity"]), obj.equity, "$trace.equity")
             verifyDoubleValues(
-                parser.asNativeMap(data["buyingPower"]),
-                obj.buyingPower,
-                "$trace.buyingPower"
+                    parser.asNativeMap(data["buyingPower"]),
+                    obj.buyingPower,
+                    "$trace.buyingPower"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["leverage"]),
-                obj.leverage,
-                "$trace.leverage"
+                    parser.asNativeMap(data["leverage"]),
+                    obj.leverage,
+                    "$trace.leverage"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["freeCollateral"]),
-                obj.freeCollateral,
-                "$trace.freeCollateral"
+                    parser.asNativeMap(data["freeCollateral"]),
+                    obj.freeCollateral,
+                    "$trace.freeCollateral"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["initialRiskTotal"]),
-                obj.initialRiskTotal,
-                "$trace.initialRiskTotal"
+                    parser.asNativeMap(data["initialRiskTotal"]),
+                    obj.initialRiskTotal,
+                    "$trace.initialRiskTotal"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["marginUsage"]),
-                obj.marginUsage,
-                "$trace.marginUsage"
+                    parser.asNativeMap(data["marginUsage"]),
+                    obj.marginUsage,
+                    "$trace.marginUsage"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["valueTotal"]),
-                obj.valueTotal,
-                "$trace.valueTotal"
+                    parser.asNativeMap(data["valueTotal"]),
+                    obj.valueTotal,
+                    "$trace.valueTotal"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["notionalTotal"]),
-                obj.notionalTotal,
-                "$trace.notionalTotal"
+                    parser.asNativeMap(data["notionalTotal"]),
+                    obj.notionalTotal,
+                    "$trace.notionalTotal"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["quoteBalance"]),
-                obj.quoteBalance,
-                "$trace.quoteBalance"
+                    parser.asNativeMap(data["quoteBalance"]),
+                    obj.quoteBalance,
+                    "$trace.quoteBalance"
             )
             verifyAccountSubaccountOpenPositions(
-                parser.asNativeMap(data["openPositions"]),
-                obj.openPositions,
-                "$trace.openPositions"
+                    parser.asNativeMap(data["openPositions"]),
+                    obj.openPositions,
+                    "$trace.openPositions"
             )
         } else {
             assertNull(obj)
@@ -958,23 +935,23 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyDoubleValues(
-        data: Map<String, Any>?,
-        obj: TradeStatesWithDoubleValues?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: TradeStatesWithDoubleValues?,
+            trace: String,
     ) {
         assertEquals(parser.asDouble(data?.get("current")), obj?.current, "$trace.current")
         assertEquals(parser.asDouble(data?.get("postOrder")), obj?.postOrder, "$trace.postOrder")
         assertEquals(
-            parser.asDouble(data?.get("postAllOrders")),
-            obj?.postAllOrders,
-            "$trace.postAllOrders"
+                parser.asDouble(data?.get("postAllOrders")),
+                obj?.postAllOrders,
+                "$trace.postAllOrders"
         )
     }
 
     private fun verifyAccountSubaccountOpenPositions(
-        data: Map<String, Any>?,
-        obj: List<SubaccountPosition>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: List<SubaccountPosition>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -982,9 +959,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             for (position in obj) {
                 val positionId = position.id
                 verifyAccountSubaccountOpenPosition(
-                    parser.asNativeMap(data[positionId]),
-                    position,
-                    "$trace.$positionId"
+                        parser.asNativeMap(data[positionId]),
+                        position,
+                        "$trace.$positionId"
                 )
             }
         } else {
@@ -993,9 +970,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyAccountSubaccountOpenPosition(
-        data: Map<String, Any>?,
-        obj: SubaccountPosition?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SubaccountPosition?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1004,85 +981,85 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asDouble(data["exitPrice"]), obj.exitPrice, "$trace.exitPrice")
             assertEquals(parser.asDouble(data["netFunding"]), obj.netFunding, "$trace.netFunding")
             assertEquals(
-                parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.closedAtMilliseconds,
-                "$trace.closedAt"
+                    parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.closedAtMilliseconds,
+                    "$trace.closedAt"
             )
             assertEquals(
-                parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.createdAtMilliseconds,
-                "$trace.createdAt"
+                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.createdAtMilliseconds,
+                    "$trace.createdAt"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["adjustedImf"]),
-                obj.adjustedImf,
-                "$trace.adjustedImf"
+                    parser.asNativeMap(data["adjustedImf"]),
+                    obj.adjustedImf,
+                    "$trace.adjustedImf"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["adjustedMmf"]),
-                obj.adjustedMmf,
-                "$trace.adjustedMmf"
+                    parser.asNativeMap(data["adjustedMmf"]),
+                    obj.adjustedMmf,
+                    "$trace.adjustedMmf"
             )
             verifyDoubleValues(parser.asNativeMap(data["size"]), obj.size, "$trace.size")
             verifyDoubleValues(
-                parser.asNativeMap(data["entryPrice"]),
-                obj.entryPrice,
-                "$trace.entryPrice"
+                    parser.asNativeMap(data["entryPrice"]),
+                    obj.entryPrice,
+                    "$trace.entryPrice"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["leverage"]),
-                obj.leverage,
-                "$trace.leverage"
+                    parser.asNativeMap(data["leverage"]),
+                    obj.leverage,
+                    "$trace.leverage"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["maxLeverage"]),
-                obj.maxLeverage,
-                "$trace.maxLeverage"
+                    parser.asNativeMap(data["maxLeverage"]),
+                    obj.maxLeverage,
+                    "$trace.maxLeverage"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["buyingPower"]),
-                obj.buyingPower,
-                "$trace.buyingPower"
+                    parser.asNativeMap(data["buyingPower"]),
+                    obj.buyingPower,
+                    "$trace.buyingPower"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["initialRiskTotal"]),
-                obj.initialRiskTotal,
-                "$trace.initialRiskTotal"
+                    parser.asNativeMap(data["initialRiskTotal"]),
+                    obj.initialRiskTotal,
+                    "$trace.initialRiskTotal"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["liquidationPrice"]),
-                obj.liquidationPrice,
-                "$trace.liquidationPrice"
+                    parser.asNativeMap(data["liquidationPrice"]),
+                    obj.liquidationPrice,
+                    "$trace.liquidationPrice"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["notionalTotal"]),
-                obj.notionalTotal,
-                "$trace.notionalTotal"
+                    parser.asNativeMap(data["notionalTotal"]),
+                    obj.notionalTotal,
+                    "$trace.notionalTotal"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["realizedPnl"]),
-                obj.realizedPnl,
-                "$trace.realizedPnl"
+                    parser.asNativeMap(data["realizedPnl"]),
+                    obj.realizedPnl,
+                    "$trace.realizedPnl"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["realizedPnlPercent"]),
-                obj.realizedPnlPercent,
-                "$trace.realizedPnlPercent"
+                    parser.asNativeMap(data["realizedPnlPercent"]),
+                    obj.realizedPnlPercent,
+                    "$trace.realizedPnlPercent"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["unrealizedPnl"]),
-                obj.unrealizedPnl,
-                "$trace.unrealizedPnl"
+                    parser.asNativeMap(data["unrealizedPnl"]),
+                    obj.unrealizedPnl,
+                    "$trace.unrealizedPnl"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["unrealizedPnlPercent"]),
-                obj.unrealizedPnlPercent,
-                "$trace.unrealizedPnlPercent"
+                    parser.asNativeMap(data["unrealizedPnlPercent"]),
+                    obj.unrealizedPnlPercent,
+                    "$trace.unrealizedPnlPercent"
             )
             verifyDoubleValues(
-                parser.asNativeMap(data["valueTotal"]),
-                obj.valueTotal,
-                "$trace.valueTotal"
+                    parser.asNativeMap(data["valueTotal"]),
+                    obj.valueTotal,
+                    "$trace.valueTotal"
             )
         } else {
             assertNull(obj)
@@ -1090,9 +1067,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyAccountSubaccountOrders(
-        data: Map<String, Any>?,
-        obj: List<SubaccountOrder>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: List<SubaccountOrder>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1100,9 +1077,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             for (order in obj) {
                 val orderId = order.id
                 verifyAccountSubaccountOrder(
-                    parser.asNativeMap(data[orderId]),
-                    order,
-                    "$trace.$orderId"
+                        parser.asNativeMap(data[orderId]),
+                        order,
+                        "$trace.$orderId"
                 )
             }
         } else {
@@ -1111,61 +1088,61 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyAccountSubaccountOrder(
-        data: Map<String, Any>?,
-        obj: SubaccountOrder?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SubaccountOrder?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
             assertEquals(parser.asString(data["marketId"]), obj.marketId, "$trace.marketId")
             assertEquals(
-                parser.asString(data["cancelReason"]),
-                obj.cancelReason,
-                "$trace.cancelReason"
+                    parser.asString(data["cancelReason"]),
+                    obj.cancelReason,
+                    "$trace.cancelReason"
             )
             assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price")
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size")
             assertEquals(
-                parser.asDouble(data["triggerPrice"]),
-                obj.triggerPrice,
-                "$trace.triggerPrice"
+                    parser.asDouble(data["triggerPrice"]),
+                    obj.triggerPrice,
+                    "$trace.triggerPrice"
             )
             assertEquals(parser.asBool(data["postOnly"]) ?: false, obj.postOnly, "$trace.postOnly")
             assertEquals(
-                parser.asBool(data["reduceOnly"]) ?: false,
-                obj.reduceOnly,
-                "$trace.reduceOnly"
+                    parser.asBool(data["reduceOnly"]) ?: false,
+                    obj.reduceOnly,
+                    "$trace.reduceOnly"
             )
             assertEquals(
-                parser.asDouble(data["remainingSize"]),
-                obj.remainingSize,
-                "$trace.remainingSize"
+                    parser.asDouble(data["remainingSize"]),
+                    obj.remainingSize,
+                    "$trace.remainingSize"
             )
             assertEquals(
-                parser.asDouble(data["totalFilled"]),
-                obj.totalFilled,
-                "$trace.totalFilled"
+                    parser.asDouble(data["totalFilled"]),
+                    obj.totalFilled,
+                    "$trace.totalFilled"
             )
             assertEquals(
-                parser.asDouble(data["trailingPercent"]),
-                obj.trailingPercent,
-                "$trace.trailingPercent"
+                    parser.asDouble(data["trailingPercent"]),
+                    obj.trailingPercent,
+                    "$trace.trailingPercent"
             )
             assertEquals(
-                parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.createdAtMilliseconds,
-                "$trace.createdAt"
+                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.createdAtMilliseconds,
+                    "$trace.createdAt"
             )
             assertEquals(
-                parser.asDatetime(data["expiresAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.expiresAtMilliseconds,
-                "$trace.expiresAt"
+                    parser.asDatetime(data["expiresAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.expiresAtMilliseconds,
+                    "$trace.expiresAt"
             )
             assertEquals(
-                parser.asDatetime(data["unfillableAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.unfillableAtMilliseconds,
-                "$trace.unfillableAt"
+                    parser.asDatetime(data["unfillableAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.unfillableAtMilliseconds,
+                    "$trace.unfillableAt"
             )
         } else {
             assertNull(obj)
@@ -1173,9 +1150,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     internal fun test(
-        load: LoadingFunction,
-        expected: String?,
-        moreVerification: VerificationFunction? = null,
+            load: LoadingFunction,
+            expected: String?,
+            moreVerification: VerificationFunction? = null,
     ): StateResponse {
         val response = load()
         if (doAsserts) {
@@ -1189,9 +1166,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyAssetsState(
-        data: Map<String, Any>?,
-        obj: Map<String, Asset>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, Asset>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
@@ -1203,64 +1180,52 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyAsset(
-        data: Map<String, Any>?,
-        obj: Asset?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Asset?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
-            assertEquals(
-                parser.asString(data.get("id")),
-                obj.id,
-                "$trace.id"
-            )
-            assertEquals(
-                parser.asString(data.get("name")),
-                obj.name,
-                "$trace.name"
-            )
+            assertEquals(parser.asString(data.get("id")), obj.id, "$trace.id")
+            assertEquals(parser.asString(data.get("name")), obj.name, "$trace.name")
             val tagsData = parser.asList(data["tags"])
             val tags = obj.tags
-            assertEquals(
-                tagsData?.size,
-                tags?.size,
-                "$trace.tags.size"
-            )
+            assertEquals(tagsData?.size, tags?.size, "$trace.tags.size")
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyMarketsState(
-        data: Map<String, Any>?,
-        assets: Map<String, Any>?,
-        obj: PerpetualMarketSummary?,
-        trace: String,
+            data: Map<String, Any>?,
+            assets: Map<String, Any>?,
+            obj: PerpetualMarketSummary?,
+            trace: String,
     ) {
         assertEquals(parser.asDouble(data?.get("trades24H")), obj?.trades24H, "$trace.trades24H")
         assertEquals(
-            parser.asDouble(data?.get("volume24HUSDC")),
-            obj?.volume24HUSDC,
-            "$trace.volume24HUSDC"
+                parser.asDouble(data?.get("volume24HUSDC")),
+                obj?.volume24HUSDC,
+                "$trace.volume24HUSDC"
         )
         assertEquals(
-            parser.asDouble(data?.get("openInterestUSDC")),
-            obj?.openInterestUSDC,
-            "$trace.openInterestUSDC"
+                parser.asDouble(data?.get("openInterestUSDC")),
+                obj?.openInterestUSDC,
+                "$trace.openInterestUSDC"
         )
         verifyMarkets(
-            parser.asNativeMap(data?.get("markets")),
-            assets,
-            obj?.markets,
-            "$trace.markets"
+                parser.asNativeMap(data?.get("markets")),
+                assets,
+                obj?.markets,
+                "$trace.markets"
         )
     }
 
     private fun verifyMarkets(
-        data: Map<String, Any>?,
-        assets: Map<String, Any>?,
-        obj: Map<String, PerpetualMarket>?,
-        trace: String,
+            data: Map<String, Any>?,
+            assets: Map<String, Any>?,
+            obj: Map<String, PerpetualMarket>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, marketData) in data) {
@@ -1272,27 +1237,32 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarket(
-        data: Map<String, Any>?,
-        assets: Map<String, Any>?,
-        obj: PerpetualMarket?,
-        trace: String
+            data: Map<String, Any>?,
+            assets: Map<String, Any>?,
+            obj: PerpetualMarket?,
+            trace: String
     ) {
         val assetId = parser.asString(data?.get("assetId"))
         val asset = if (assetId != null) parser.asNativeMap(assets?.get(assetId)) else null
         val name = asset?.get("name")
         if (data != null &&
-            data["id"] != null &&
-            (parser.asBool(parser.value(data, "status.canTrade")) == true ||
-                    parser.asBool(parser.value(data, "status.canReduce")) == true) &&
-            (parser.asInt(parser.value(data, "configs.stepSize"))) != null &&
-            (parser.asInt(parser.value(data, "configs.tickSize"))) != null &&
-            (parser.asDouble(parser.value(data, "configs.initialMarginFraction"))) != null &&
-            (parser.asDouble(parser.value(data, "configs.maintenanceMarginFraction"))) != null &&
-            (parser.asInt(parser.value(data, "configs.v4.clobPairId"))) != null &&
-            (parser.asInt(parser.value(data, "configs.v4.atomicResolution"))) != null &&
-            (parser.asInt(parser.value(data, "configs.v4.stepBaseQuantums"))) != null &&
-            (parser.asInt(parser.value(data, "configs.v4.quantumConversionExponent"))) != null &&
-            (parser.asInt(parser.value(data, "configs.v4.subticksPerTick"))) != null
+                        data["id"] != null &&
+                        (parser.asBool(parser.value(data, "status.canTrade")) == true ||
+                                parser.asBool(parser.value(data, "status.canReduce")) == true) &&
+                        (parser.asInt(parser.value(data, "configs.stepSize"))) != null &&
+                        (parser.asInt(parser.value(data, "configs.tickSize"))) != null &&
+                        (parser.asDouble(parser.value(data, "configs.initialMarginFraction"))) !=
+                                null &&
+                        (parser.asDouble(
+                                parser.value(data, "configs.maintenanceMarginFraction")
+                        )) != null &&
+                        (parser.asInt(parser.value(data, "configs.v4.clobPairId"))) != null &&
+                        (parser.asInt(parser.value(data, "configs.v4.atomicResolution"))) != null &&
+                        (parser.asInt(parser.value(data, "configs.v4.stepBaseQuantums"))) != null &&
+                        (parser.asInt(
+                                parser.value(data, "configs.v4.quantumConversionExponent")
+                        )) != null &&
+                        (parser.asInt(parser.value(data, "configs.v4.subticksPerTick"))) != null
         ) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
@@ -1300,25 +1270,25 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asString(data["market"]), obj.market, "$trace.market")
             assertEquals(parser.asDouble(data["marketCaps"]), obj.marketCaps, "$trace.marketCaps")
             assertEquals(
-                parser.asDouble(data["oraclePrice"]),
-                obj.oraclePrice,
-                "$trace.oraclePrice"
+                    parser.asDouble(data["oraclePrice"]),
+                    obj.oraclePrice,
+                    "$trace.oraclePrice"
             )
             assertEquals(
-                parser.asDouble(data["priceChange24H"]),
-                obj.priceChange24H,
-                "$trace.priceChange24H"
+                    parser.asDouble(data["priceChange24H"]),
+                    obj.priceChange24H,
+                    "$trace.priceChange24H"
             )
             assertEquals(
-                parser.asDouble(data["priceChange24HPercent"]),
-                obj.priceChange24HPercent,
-                "$trace.priceChange24HPercent"
+                    parser.asDouble(data["priceChange24HPercent"]),
+                    obj.priceChange24HPercent,
+                    "$trace.priceChange24HPercent"
             )
             verifyMarketConfigs(parser.asNativeMap(data["configs"]), obj.configs, "$trace.configs")
             verifyMarketPerpetual(
-                parser.asNativeMap(data["perpetual"]),
-                obj.perpetual,
-                "$trace.perpetual"
+                    parser.asNativeMap(data["perpetual"]),
+                    obj.perpetual,
+                    "$trace.perpetual"
             )
         } else {
             assertNull(obj)
@@ -1332,90 +1302,89 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asDouble(data["stepSize"]), obj.stepSize, "$trace.stepSize")
             assertEquals(parser.asDouble(data["tickSize"]), obj.tickSize, "$trace.tickSize")
             assertEquals(
-                parser.asDouble(data["displayStepSize"] ?: data["stepSize"]),
-                obj.displayStepSize,
-                "$trace.displayStepSize"
+                    parser.asDouble(data["displayStepSize"] ?: data["stepSize"]),
+                    obj.displayStepSize,
+                    "$trace.displayStepSize"
             )
             assertEquals(
-                parser.asDouble(data["displayTickSize"] ?: data["tickSize"]),
-                obj.displayTickSize,
-                "$trace.displayTickSize"
+                    parser.asDouble(data["displayTickSize"] ?: data["tickSize"]),
+                    obj.displayTickSize,
+                    "$trace.displayTickSize"
             )
             assertEquals(
-                parser.asDouble(data["baselinePositionSize"]),
-                obj.baselinePositionSize,
-                "$trace.baselinePositionSize"
+                    parser.asDouble(data["baselinePositionSize"]),
+                    obj.baselinePositionSize,
+                    "$trace.baselinePositionSize"
             )
             assertEquals(
-                parser.asDouble(data["maxPositionSize"]),
-                obj.maxPositionSize,
-                "$trace.maxPositionSize"
+                    parser.asDouble(data["maxPositionSize"]),
+                    obj.maxPositionSize,
+                    "$trace.maxPositionSize"
             )
             assertEquals(
-                parser.asDouble(data["minOrderSize"]),
-                obj.minOrderSize,
-                "$trace.minOrderSize"
+                    parser.asDouble(data["minOrderSize"]),
+                    obj.minOrderSize,
+                    "$trace.minOrderSize"
             )
             assertEquals(
-                parser.asDouble(data["incrementalInitialMarginFraction"]),
-                obj.incrementalInitialMarginFraction,
-                "$trace.incrementalInitialMarginFraction"
+                    parser.asDouble(data["incrementalInitialMarginFraction"]),
+                    obj.incrementalInitialMarginFraction,
+                    "$trace.incrementalInitialMarginFraction"
             )
             assertEquals(
-                parser.asDouble(data["incrementalPositionSize"]),
-                obj.incrementalPositionSize,
-                "$trace.incrementalPositionSize"
+                    parser.asDouble(data["incrementalPositionSize"]),
+                    obj.incrementalPositionSize,
+                    "$trace.incrementalPositionSize"
             )
             assertEquals(
-                parser.asDouble(data["initialMarginFraction"]),
-                obj.initialMarginFraction,
-                "$trace.initialMarginFraction"
+                    parser.asDouble(data["initialMarginFraction"]),
+                    obj.initialMarginFraction,
+                    "$trace.initialMarginFraction"
             )
             assertEquals(
-                parser.asDouble(data["maintenanceMarginFraction"]),
-                obj.maintenanceMarginFraction,
-                "$trace.maintenanceMarginFraction"
+                    parser.asDouble(data["maintenanceMarginFraction"]),
+                    obj.maintenanceMarginFraction,
+                    "$trace.maintenanceMarginFraction"
             )
             assertEquals(parser.asInt(data["largeSize"]), obj.largeSize, "$trace.largeSize")
-
         } else {
             assertNull(obj)
         }
     }
 
     private fun verifyMarketPerpetual(
-        data: Map<String, Any>?,
-        obj: MarketPerpetual?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: MarketPerpetual?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asDouble(data["openInterestUSDC"]),
-                obj.openInterestUSDC,
-                "$trace.openInterestUSDC"
+                    parser.asDouble(data["openInterestUSDC"]),
+                    obj.openInterestUSDC,
+                    "$trace.openInterestUSDC"
             )
             assertEquals(
-                parser.asDouble(data["volume24HUSDC"]),
-                obj.volume24HUSDC,
-                "$trace.volume24HUSDC"
+                    parser.asDouble(data["volume24HUSDC"]),
+                    obj.volume24HUSDC,
+                    "$trace.volume24HUSDC"
             )
             assertEquals(parser.asDouble(data["trades24H"]), obj.trades24H, "$trace.trades24H")
             assertEquals(parser.asDouble(data["volume24H"]), obj.volume24H, "$trace.volume24H")
             assertEquals(
-                parser.asDouble(data["nextFundingRate"]),
-                obj.nextFundingRate,
-                "$trace.nextFundingRate"
+                    parser.asDouble(data["nextFundingRate"]),
+                    obj.nextFundingRate,
+                    "$trace.nextFundingRate"
             )
             assertEquals(
-                parser.asDouble(data["openInterest"]),
-                obj.openInterest,
-                "$trace.openInterest"
+                    parser.asDouble(data["openInterest"]),
+                    obj.openInterest,
+                    "$trace.openInterest"
             )
             assertEquals(
-                parser.asDatetime(data["nextFundingAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.nextFundingAtMilliseconds,
-                "$trace.nextFundingAt"
+                    parser.asDatetime(data["nextFundingAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.nextFundingAtMilliseconds,
+                    "$trace.nextFundingAt"
             )
         } else {
             assertNull(obj)
@@ -1423,19 +1392,16 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsHistoricalFundingsState(
-        data: Map<String, Any>?,
-        obj: Map<String, List<MarketHistoricalFunding>>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, List<MarketHistoricalFunding>>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifyMarketsHistoricalFundingsArrayState(
-                    parser.asList(
-                        parser.value(
-                            itemData,
-                            "historicalFunding"
-                        )
-                    ), obj?.get(key), "$trace.$key"
+                        parser.asList(parser.value(itemData, "historicalFunding")),
+                        obj?.get(key),
+                        "$trace.$key"
                 )
             }
         } else {
@@ -1444,18 +1410,18 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsHistoricalFundingsArrayState(
-        data: List<Any>?,
-        obj: List<MarketHistoricalFunding>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<MarketHistoricalFunding>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(data.size, obj.size, "$trace.size")
             for (i in obj.indices) {
                 verifyMarketsHistoricalFundingState(
-                    parser.asNativeMap(data[i]),
-                    obj[i],
-                    "$trace.$i"
+                        parser.asNativeMap(data[i]),
+                        obj[i],
+                        "$trace.$i"
                 )
             }
         } else {
@@ -1464,9 +1430,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsHistoricalFundingState(
-        data: Map<String, Any>?,
-        obj: MarketHistoricalFunding?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: MarketHistoricalFunding?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1474,29 +1440,23 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price")
 
             assertEquals(
-                parser.asDatetime(data["effectiveAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.effectiveAtMilliseconds,
-                "$trace.effectiveAt"
+                    parser.asDatetime(data["effectiveAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.effectiveAtMilliseconds,
+                    "$trace.effectiveAt"
             )
         } else {
             assertNull(obj)
         }
     }
 
-
     private fun verifyMarketsCandlesState(
-        data: Map<String, Any>?,
-        obj: Map<String, MarketCandles>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, MarketCandles>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((marketKey, itemData) in data) {
-                val candleMap = parser.asNativeMap(
-                    parser.value(
-                        itemData,
-                        "candles"
-                    )
-                )
+                val candleMap = parser.asNativeMap(parser.value(itemData, "candles"))
                 val candles = obj?.get(marketKey)
                 if (candleMap != null) {
                     for ((resolutionKey, resolutionData) in candleMap) {
@@ -1504,7 +1464,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                         val candleArray = candles?.candles?.get(resolutionKey)
 
                         verifyMarketsCandlesArrayState(
-                            candlesData, candleArray, "$trace.$marketKey.$resolutionKey"
+                                candlesData,
+                                candleArray,
+                                "$trace.$marketKey.$resolutionKey"
                         )
                     }
                 }
@@ -1515,9 +1477,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsCandlesArrayState(
-        data: List<Any>?,
-        obj: List<MarketCandle>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<MarketCandle>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1531,16 +1493,16 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsCandleState(
-        data: Map<String, Any>?,
-        obj: MarketCandle?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: MarketCandle?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
-                parser.asDouble(data["baseTokenVolume"]),
-                obj.baseTokenVolume,
-                "$trace.baseTokenVolume"
+                    parser.asDouble(data["baseTokenVolume"]),
+                    obj.baseTokenVolume,
+                    "$trace.baseTokenVolume"
             )
             assertEquals(parser.asDouble(data["high"]), obj.high, "$trace.high")
             assertEquals(parser.asDouble(data["low"]), obj.low, "$trace.low")
@@ -1549,14 +1511,14 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asDouble(data["usdVolume"]), obj.usdVolume, "$trace.usdVolume")
 
             assertEquals(
-                parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.startedAtMilliseconds,
-                "$trace.startedAt"
+                    parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.startedAtMilliseconds,
+                    "$trace.startedAt"
             )
             assertEquals(
-                parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.updatedAtMilliseconds,
-                "$trace.updatedAt"
+                    parser.asDatetime(data["updatedAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.updatedAtMilliseconds,
+                    "$trace.updatedAt"
             )
         } else {
             assertNull(obj)
@@ -1564,19 +1526,16 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsTradesState(
-        data: Map<String, Any>?,
-        obj: Map<String, List<MarketTrade>>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, List<MarketTrade>>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifyMarketsTradesArrayState(
-                    parser.asList(
-                        parser.value(
-                            itemData,
-                            "trades"
-                        )
-                    ), obj?.get(key), "$trace.$key"
+                        parser.asList(parser.value(itemData, "trades")),
+                        obj?.get(key),
+                        "$trace.$key"
                 )
             }
         } else {
@@ -1585,9 +1544,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsTradesArrayState(
-        data: List<Any>?,
-        obj: List<MarketTrade>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<MarketTrade>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1601,27 +1560,19 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsTradeState(
-        data: Map<String, Any>?,
-        obj: MarketTrade?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: MarketTrade?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
-            assertEquals(
-                parser.asDouble(data["price"]),
-                obj.price,
-                "$trace.price"
-            )
+            assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price")
             assertEquals(parser.asDouble(data["size"]), obj.size, "$trace.size")
+            assertEquals(parser.asString(data["type"]), obj.type?.rawValue, "$trace.liquidation")
             assertEquals(
-                parser.asString(data["type"]),
-                obj.type?.rawValue,
-                "$trace.liquidation"
-            )
-            assertEquals(
-                parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.createdAtMilliseconds,
-                "$trace.createdAt"
+                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.createdAtMilliseconds,
+                    "$trace.createdAt"
             )
         } else {
             assertNull(obj)
@@ -1629,19 +1580,16 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketsOrderbookState(
-        data: Map<String, Any>?,
-        obj: Map<String, MarketOrderbook>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, MarketOrderbook>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifyMarketOrderbook(
-                    parser.asNativeMap(
-                        parser.value(
-                            itemData,
-                            "orderbook"
-                        )
-                    ), obj?.get(key), "$trace.$key"
+                        parser.asNativeMap(parser.value(itemData, "orderbook")),
+                        obj?.get(key),
+                        "$trace.$key"
                 )
             }
         } else {
@@ -1650,17 +1598,17 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketOrderbook(
-        data: Map<String, Any>?,
-        obj: MarketOrderbook?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: MarketOrderbook?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asDouble(data["midPrice"]), obj.midPrice, "$trace.midPrice")
             assertEquals(
-                parser.asDouble(data["spreadPercent"]),
-                obj.spreadPercent,
-                "$trace.spreadPercent"
+                    parser.asDouble(data["spreadPercent"]),
+                    obj.spreadPercent,
+                    "$trace.spreadPercent"
             )
             verifyMarketOrderbookSide(parser.asList(data["asks"]), obj.asks, "$trace.asks")
             verifyMarketOrderbookSide(parser.asList(data["bids"]), obj.bids, "$trace.bids")
@@ -1670,32 +1618,33 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyMarketOrderbookSide(
-        data: List<Any>?,
-        obj: List<OrderbookLine>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<OrderbookLine>?,
+            trace: String,
     ) {
-        val compacted = data?.mapNotNull { item ->
-            val lineItem = parser.asNativeMap(item)
-            val size = parser.asDouble(lineItem?.get("size"))
-            if (size != Numeric.double.ZERO) lineItem else null
-        }
+        val compacted =
+                data?.mapNotNull { item ->
+                    val lineItem = parser.asNativeMap(item)
+                    val size = parser.asDouble(lineItem?.get("size"))
+                    if (size != Numeric.double.ZERO) lineItem else null
+                }
 
         assertEquals(compacted?.size, obj?.size, "$trace.size")
         if (obj != null) {
             for (i in obj.indices) {
                 verifyMarketOrderbookLine(
-                    parser.asNativeMap(compacted?.get(i)),
-                    obj[i],
-                    "$trace.$i"
+                        parser.asNativeMap(compacted?.get(i)),
+                        obj[i],
+                        "$trace.$i"
                 )
             }
         }
     }
 
     private fun verifyMarketOrderbookLine(
-        data: Map<String, Any>?,
-        obj: OrderbookLine?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: OrderbookLine?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1709,46 +1658,46 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyConfigs(
-        data: Map<String, Any>?,
-        obj: Configs?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Configs?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             verifyConfigsNetwork(parser.asNativeMap(data["network"]), obj.network, "$trace.network")
             verifyConfigsFeeTiers(parser.asList(data["feeTiers"]), obj.feeTiers, "$trace.feeTiers")
             verifyConfigsFeeDiscounts(
-                parser.asList(data["feeDiscounts"]),
-                obj.feeDiscounts,
-                "$trace.feeDiscounts"
+                    parser.asList(data["feeDiscounts"]),
+                    obj.feeDiscounts,
+                    "$trace.feeDiscounts"
             )
         } else {
             assertNull(obj)
         }
-//        assertEquals(
-//            parser.asDouble(data?.get("volume24HUSDC")),
-//            obj?.volume24HUSDC,
-//            "$trace.volume24HUSDC"
-//        )
-//        assertEquals(
-//            parser.asDouble(data?.get("openInterestUSDC")),
-//            obj?.openInterestUSDC,
-//            "$trace.openInterestUSDC"
-//        )
-//        verifyMarkets(parser.asNativeMap(data?.get("markets")), obj?.markets, "$trace.markets")
+        //        assertEquals(
+        //            parser.asDouble(data?.get("volume24HUSDC")),
+        //            obj?.volume24HUSDC,
+        //            "$trace.volume24HUSDC"
+        //        )
+        //        assertEquals(
+        //            parser.asDouble(data?.get("openInterestUSDC")),
+        //            obj?.openInterestUSDC,
+        //            "$trace.openInterestUSDC"
+        //        )
+        //        verifyMarkets(parser.asNativeMap(data?.get("markets")), obj?.markets,
+        // "$trace.markets")
     }
 
     private fun verifyConfigsNetwork(
-        data: Map<String, Any>?,
-        obj: NetworkConfigs?,
-        trace: String,
-    ) {
-    }
+            data: Map<String, Any>?,
+            obj: NetworkConfigs?,
+            trace: String,
+    ) {}
 
     private fun verifyConfigsFeeTiers(
-        data: List<Any>?,
-        obj: List<FeeTier>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<FeeTier>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1762,9 +1711,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyConfigsFeeTier(
-        data: Map<String, Any>?,
-        obj: FeeTier?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: FeeTier?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1782,9 +1731,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyConfigsFeeDiscounts(
-        data: List<Any>?,
-        obj: List<FeeDiscount>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<FeeDiscount>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1798,9 +1747,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifyConfigsFeeDiscount(
-        data: Map<String, Any>?,
-        obj: FeeDiscount?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: FeeDiscount?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1815,16 +1764,16 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountFillsState(
-        data: Map<String, Any>?,
-        obj: Map<String, List<SubaccountFill>>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, List<SubaccountFill>>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifySubaccountFillsArrayState(
-                    parser.asList(parser.value(itemData, "fills")),
-                    obj?.get(key),
-                    "$trace.$key"
+                        parser.asList(parser.value(itemData, "fills")),
+                        obj?.get(key),
+                        "$trace.$key"
                 )
             }
         } else {
@@ -1833,9 +1782,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountFillsArrayState(
-        data: List<Any>?,
-        obj: List<SubaccountFill>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<SubaccountFill>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1849,9 +1798,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountFillState(
-        data: Map<String, Any>?,
-        obj: SubaccountFill?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SubaccountFill?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1862,30 +1811,26 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asDouble(data["fee"]), obj.fee, "$trace.fee")
             assertEquals(parser.asDouble(data["price"]), obj.price, "$trace.price")
             assertEquals(
-                parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.createdAtMilliseconds,
-                "$trace.createdAt"
+                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.createdAtMilliseconds,
+                    "$trace.createdAt"
             )
         } else {
             assertNull(obj)
         }
     }
 
-
     private fun verifySubaccountTransfersState(
-        data: Map<String, Any>?,
-        obj: Map<String, List<SubaccountTransfer>>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, List<SubaccountTransfer>>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifySubaccountTransfersArrayState(
-                    parser.asList(
-                        parser.value(
-                            itemData,
-                            "transfers"
-                        )
-                    ), obj?.get(key), "$trace.$key"
+                        parser.asList(parser.value(itemData, "transfers")),
+                        obj?.get(key),
+                        "$trace.$key"
                 )
             }
         } else {
@@ -1894,9 +1839,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountTransfersArrayState(
-        data: List<Any>?,
-        obj: List<SubaccountTransfer>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<SubaccountTransfer>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -1910,65 +1855,54 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountTransferState(
-        data: Map<String, Any>?,
-        obj: SubaccountTransfer?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SubaccountTransfer?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["id"]), obj.id, "$trace.id")
             assertEquals(
-                parser.asString(data["fromAddress"]),
-                obj.fromAddress,
-                "$trace.fromAddress"
+                    parser.asString(data["fromAddress"]),
+                    obj.fromAddress,
+                    "$trace.fromAddress"
             )
             assertEquals(parser.asString(data["toAddress"]), obj.toAddress, "$trace.toAddress")
+            assertEquals(parser.asString(data["asset"]), obj.asset, "$trace.asset")
+            assertEquals(parser.asDouble(data["amount"]), obj.amount, "$trace.amount")
             assertEquals(
-                parser.asString(data["asset"]),
-                obj.asset,
-                "$trace.asset"
+                    parser.asInt(data["updatedAtBlock"]),
+                    obj.updatedAtBlock,
+                    "$trace.updatedAtBlock"
             )
             assertEquals(
-                parser.asDouble(data["amount"]),
-                obj.amount,
-                "$trace.amount"
+                    parser.asString(data["transactionHash"]),
+                    obj.transactionHash,
+                    "$trace.transactionHash"
             )
             assertEquals(
-                parser.asInt(data["updatedAtBlock"]),
-                obj.updatedAtBlock,
-                "$trace.updatedAtBlock"
-            )
-            assertEquals(
-                parser.asString(data["transactionHash"]),
-                obj.transactionHash,
-                "$trace.transactionHash"
-            )
-            assertEquals(
-                (parser.asDatetime(data["confirmedAt"])
-                    ?: parser.asDatetime(data["createdAt"]))?.toEpochMilliseconds()?.toDouble(),
-                obj.updatedAtMilliseconds,
-                "$trace.updatedAt"
+                    (parser.asDatetime(data["confirmedAt"]) ?: parser.asDatetime(data["createdAt"]))
+                            ?.toEpochMilliseconds()
+                            ?.toDouble(),
+                    obj.updatedAtMilliseconds,
+                    "$trace.updatedAt"
             )
         } else {
             assertNull(obj)
         }
     }
 
-
     private fun verifySubaccountFundingPaymentsState(
-        data: Map<String, Any>?,
-        obj: Map<String, List<SubaccountFundingPayment>>?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, List<SubaccountFundingPayment>>?,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifySubaccountFundingPaymentsArraysArrayState(
-                    parser.asList(
-                        parser.value(
-                            itemData,
-                            "fundingPayments"
-                        )
-                    ), obj?.get(key), "$trace.$key"
+                        parser.asList(parser.value(itemData, "fundingPayments")),
+                        obj?.get(key),
+                        "$trace.$key"
                 )
             }
         } else {
@@ -1977,18 +1911,18 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountFundingPaymentsArraysArrayState(
-        data: List<Any>?,
-        obj: List<SubaccountFundingPayment>?,
-        trace: String,
+            data: List<Any>?,
+            obj: List<SubaccountFundingPayment>?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(data.size, obj.size, "$trace.size")
             for (i in obj.indices) {
                 verifySubaccountFundingPaymentState(
-                    parser.asNativeMap(data[i]),
-                    obj[i],
-                    "$trace.$i"
+                        parser.asNativeMap(data[i]),
+                        obj[i],
+                        "$trace.$i"
                 )
             }
         } else {
@@ -1997,9 +1931,9 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
     }
 
     private fun verifySubaccountFundingPaymentState(
-        data: Map<String, Any>?,
-        obj: SubaccountFundingPayment?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SubaccountFundingPayment?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
@@ -2008,87 +1942,84 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
             assertEquals(parser.asDouble(data["payment"]), obj.payment, "$trace.payment")
             assertEquals(parser.asDouble(data["rate"]), obj.rate, "$trace.rate")
             assertEquals(
-                parser.asDouble(data["positionSize"]),
-                obj.positionSize,
-                "$trace.positionSize"
+                    parser.asDouble(data["positionSize"]),
+                    obj.positionSize,
+                    "$trace.positionSize"
             )
             assertEquals(
-                parser.asDatetime(data["effectiveAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.effectiveAtMilliSeconds,
-                "$trace.effectiveAt"
+                    parser.asDatetime(data["effectiveAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.effectiveAtMilliSeconds,
+                    "$trace.effectiveAt"
             )
         } else {
             assertNull(obj)
         }
     }
 
-
     private fun verifySubaccountHistoricalPNLsState(
-        data: Map<String, Any>?,
-        obj: Map<String, List<SubaccountHistoricalPNL>>?,
-        startTime: Instant,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: Map<String, List<SubaccountHistoricalPNL>>?,
+            startTime: Instant,
+            trace: String,
     ) {
         if (data != null) {
             for ((key, itemData) in data) {
                 verifySubaccountHistoricalPNLsArraysArrayState(
-                    parser.asList(
-                        parser.value(
-                            itemData,
-                            "historicalPnl"
-                        )
-                    ), obj?.get(key), startTime, "$trace.$key"
+                        parser.asList(parser.value(itemData, "historicalPnl")),
+                        obj?.get(key),
+                        startTime,
+                        "$trace.$key"
                 )
             }
-        } else {
-        }
+        } else {}
     }
 
     private fun verifySubaccountHistoricalPNLsArraysArrayState(
-        data: List<Any>?,
-        obj: List<SubaccountHistoricalPNL>?,
-        startTime: Instant,
-        trace: String,
+            data: List<Any>?,
+            obj: List<SubaccountHistoricalPNL>?,
+            startTime: Instant,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
-            val filteredData = data.mapNotNull { item ->
-                val itemData = parser.asNativeMap(item)!!
-                val createdAt = parser.asDatetime(itemData["createdAt"])!!
-                if (createdAt >= startTime) item else null
-            }
+            val filteredData =
+                    data.mapNotNull { item ->
+                        val itemData = parser.asNativeMap(item)!!
+                        val createdAt = parser.asDatetime(itemData["createdAt"])!!
+                        if (createdAt >= startTime) item else null
+                    }
             assertEquals(filteredData.size, obj.size, "$trace.size")
             for (i in obj.indices) {
                 verifySubaccountHistoricalPNLState(
-                    parser.asNativeMap(filteredData[i]),
-                    obj[i],
-                    "$trace.$i"
+                        parser.asNativeMap(filteredData[i]),
+                        obj[i],
+                        "$trace.$i"
                 )
             }
         } else {
-//            assertNull(obj)
+            //            assertNull(obj)
         }
     }
 
     private fun verifySubaccountHistoricalPNLState(
-        data: Map<String, Any>?,
-        obj: SubaccountHistoricalPNL?,
-        trace: String,
+            data: Map<String, Any>?,
+            obj: SubaccountHistoricalPNL?,
+            trace: String,
     ) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asDouble(data["equity"]), obj.equity, "$trace.equity")
             assertEquals(parser.asDouble(data["totalPnl"]), obj.totalPnl, "$trace.totalPnl")
             assertEquals(
-                parser.asDouble(data["netTransfers"]),
-                obj.netTransfers,
-                "$trace.netTransfers"
+                    parser.asDouble(data["netTransfers"]),
+                    obj.netTransfers,
+                    "$trace.netTransfers"
             )
 
             assertEquals(
-                parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
-                obj.createdAtMilliseconds,
-                "$trace.createdAt"
+                    parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
+                    obj.createdAtMilliseconds,
+                    "$trace.createdAt"
             )
         } else {
             assertNull(obj)

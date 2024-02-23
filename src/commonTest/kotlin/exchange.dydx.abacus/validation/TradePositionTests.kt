@@ -22,42 +22,28 @@ class TradePositionTests : ValidationsTests() {
 
         var time = ServerTime.now()
         testPositions()
-        time = perp.log("Position Validation", time)
+        perp.log("Position Validation", time)
     }
 
     private fun testPositions() {
-        test({
-            perp.tradeInMarket("ETH-USD", 0)
-        }, null)
+        test({ perp.tradeInMarket("ETH-USD", 0) }, null)
 
-        test({
-            perp.trade("SELL", TradeInputField.side, 0)
-        }, null)
+        test({ perp.trade("SELL", TradeInputField.side, 0) }, null)
 
-        test({
-            perp.trade("LIMIT", TradeInputField.type, 0)
-        }, null)
+        test({ perp.trade("LIMIT", TradeInputField.type, 0) }, null)
 
-        test({
-            perp.trade("IOC", TradeInputField.timeInForceType, 0)
-        }, null)
+        test({ perp.trade("IOC", TradeInputField.timeInForceType, 0) }, null)
 
-        test({
-            perp.trade("true", TradeInputField.reduceOnly, 0)
-        }, null)
+        test({ perp.trade("true", TradeInputField.reduceOnly, 0) }, null)
 
-        test({
-            perp.trade("1050.0", TradeInputField.limitPrice, 0)
-        }, null)
+        test({ perp.trade("1050.0", TradeInputField.limitPrice, 0) }, null)
 
         /*
-        This test would throw an Flip Position error when reduceOnly is supported
+        This test would throw an Flip Position error because reduceOnly is enabled.
          */
         test(
-            {
-                perp.trade("110.0", TradeInputField.size, 0)
-            },
-            """
+                { perp.trade("110.0", TradeInputField.size, 0) },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -85,24 +71,16 @@ class TradePositionTests : ValidationsTests() {
                         ]
                     }
                 }
-            """
-                .trimIndent()
+            """.trimIndent()
         )
 
+        test({ perp.trade("BUY", TradeInputField.side, 0) }, null)
 
-        test({
-            perp.trade("BUY", TradeInputField.side, 0)
-        }, null)
-
-        test({
-            perp.trade("999.0", TradeInputField.limitPrice, 0)
-        }, null)
+        test({ perp.trade("999.0", TradeInputField.limitPrice, 0) }, null)
 
         test(
-            {
-                perp.trade("210.0", TradeInputField.size, 0)
-            },
-            """
+                { perp.trade("210.0", TradeInputField.size, 0) },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -133,12 +111,9 @@ class TradePositionTests : ValidationsTests() {
             """.trimIndent()
         )
 
-
         test(
-            {
-                perp.trade("SELL", TradeInputField.side, 0)
-            },
-            """
+                { perp.trade("SELL", TradeInputField.side, 0) },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -170,10 +145,8 @@ class TradePositionTests : ValidationsTests() {
         )
 
         test(
-            {
-                perp.trade("100", TradeInputField.size, 0)
-            },
-            """
+                { perp.trade("100", TradeInputField.size, 0) },
+                """
                 {
                     "input": {
                         "current": "trade",
