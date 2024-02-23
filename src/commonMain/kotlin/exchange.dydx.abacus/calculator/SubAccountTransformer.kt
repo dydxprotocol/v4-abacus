@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -25,15 +26,16 @@ Delta object
 
 internal class SubaccountTransformer {
     private fun executionPrice(
-            oraclePrice: Double?,
-            limitPrice: Double?,
-            isBuying: Boolean,
-            usePessimisticPrice: Boolean,
+        oraclePrice: Double?,
+        limitPrice: Double?,
+        isBuying: Boolean,
+        usePessimisticPrice: Boolean,
     ): Double? {
         if (usePessimisticPrice) {
             oraclePrice?.let { oraclePrice ->
                 limitPrice?.let { limitPrice ->
-                    return if (isBuying) max(oraclePrice, limitPrice)
+                    return if (isBuying)
+                        max(oraclePrice, limitPrice)
                     else min(oraclePrice, limitPrice)
                 }
             }
@@ -42,10 +44,10 @@ internal class SubaccountTransformer {
     }
 
     private fun deltaFromTrade(
-            parser: ParserProtocol,
-            trade: Map<String, Any>,
-            market: Map<String, Any>?,
-            usePessimisticCollateralCheck: Boolean,
+        parser: ParserProtocol,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+        usePessimisticCollateralCheck: Boolean,
     ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
         val side = parser.asString(trade["side"])
@@ -53,109 +55,100 @@ internal class SubaccountTransformer {
             parser.asNativeMap(trade["summary"])?.let { summary ->
                 if (parser.asBool(summary["filled"]) == true) {
                     val multiplier =
-                            (if (side == "BUY") Numeric.double.NEGATIVE
-                            else Numeric.double.POSITIVE)
+                        (if (side == "BUY") Numeric.double.NEGATIVE else Numeric.double.POSITIVE)
                     val originalPrice = parser.asDouble(summary["price"])
-                    val price =
-                            market?.let {
-                                executionPrice(
-                                        parser.asDouble(market["oraclePrice"]),
-                                        originalPrice,
-                                        side == "BUY",
-                                        usePessimisticCollateralCheck
-                                )
-                            }
-                                    ?: originalPrice
-                    val size =
-                            (parser.asDouble(summary["size"])
-                                    ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
-                    val usdcSize =
-                            (price
-                                    ?: Numeric.double.ZERO) *
-                                    (parser.asDouble(summary["size"]) ?: Numeric.double.ZERO) *
-                                    multiplier
-                    val fee =
-                            (parser.asDouble(summary["fee"])
-                                    ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
+                    val price = market?.let {
+                        executionPrice(
+                            parser.asDouble(market["oraclePrice"]),
+                            originalPrice,
+                            side == "BUY",
+                            usePessimisticCollateralCheck
+                        )
+                    } ?: originalPrice
+                    val size = (parser.asDouble(summary["size"])
+                        ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
+                    val usdcSize = (price ?: Numeric.double.ZERO) * (parser.asDouble(summary["size"])
+                        ?: Numeric.double.ZERO) * multiplier
+                    val fee = (parser.asDouble(summary["fee"])
+                        ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
                     val feeRate = parser.asDouble(summary["feeRate"]) ?: Numeric.double.ZERO
                     if (price != null && size != Numeric.double.ZERO) {
                         return mapOf(
-                                "marketId" to marketId,
-                                "size" to size,
-                                "price" to price,
-                                "usdcSize" to usdcSize,
-                                "fee" to fee,
-                                "feeRate" to feeRate,
-                                "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false)
+                            "marketId" to marketId,
+                            "size" to size,
+                            "price" to price,
+                            "usdcSize" to usdcSize,
+                            "fee" to fee,
+                            "feeRate" to feeRate,
+                            "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false)
                         )
                     }
                 }
             }
             return mapOf(
-                    "marketId" to marketId,
+                "marketId" to marketId,
             )
         }
         return null
     }
 
     private fun deltaFromTransfer(
-            parser: ParserProtocol,
-            transfer: Map<String, Any>
+        parser: ParserProtocol,
+        transfer: Map<String, Any>
     ): Map<String, Any>? {
         val type = parser.asString(transfer["type"])
         if (type != null) {
             val summary = parser.asMap(transfer["summary"])
             if (summary != null) {
                 val multiplier =
-                        (if (type == "DEPOSIT") Numeric.double.POSITIVE
-                        else Numeric.double.NEGATIVE)
+                    (if (type == "DEPOSIT") Numeric.double.POSITIVE else Numeric.double.NEGATIVE)
                 val usdcSize =
-                        (parser.asDouble(summary["usdcSize"]) ?: Numeric.double.ZERO) * multiplier
-                val fee =
-                        (parser.asDouble(summary["fee"])
-                                ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
-                return mapOf("usdcSize" to usdcSize, "fee" to fee)
+                    (parser.asDouble(summary["usdcSize"]) ?: Numeric.double.ZERO) * multiplier
+                val fee = (parser.asDouble(summary["fee"])
+                    ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
+                return mapOf(
+                    "usdcSize" to usdcSize,
+                    "fee" to fee
+                )
             }
         }
         return null
     }
 
     internal fun deltaFromOrder(
-            parser: ParserProtocol,
-            order: Map<String, Any>,
-            account: Map<String, Any>
+        parser: ParserProtocol,
+        order: Map<String, Any>,
+        account: Map<String, Any>
     ): Map<String, Any>? {
         if (parser.asString(order["status"]) == "OPEN") {
             val marketId = parser.asString(order["marketId"])
             val side = parser.asString(order["side"])
             val price = parser.asDouble(order["price"])
-            val multiplier = if (side == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+            val multiplier =
+                if (side == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
             val size =
-                    ((parser.asDouble(order["remainingSize"]) ?: parser.asDouble(order["size"]))
-                            ?: Numeric.double.ZERO) * multiplier
+                ((parser.asDouble(order["remainingSize"]) ?: parser.asDouble(order["size"]))
+                    ?: Numeric.double.ZERO) * multiplier
             if (marketId != null && price != null && size != Numeric.double.ZERO) {
                 val usdcSize = price * size * Numeric.double.NEGATIVE
-                val feeRate =
-                        parser.asDouble(
-                                parser.value(
-                                        account,
-                                        when (parser.asString(order["type"])) {
-                                            "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET" ->
-                                                    "user.takerFeeRate"
-                                            else -> "user.makerFeeRate"
-                                        }
-                                )
-                        )
-                                ?: Numeric.double.ZERO
+                val feeRate = parser.asDouble(
+                    parser.value(
+                        account,
+                        when (parser.asString(order["type"])) {
+                            "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> "user.takerFeeRate"
+                            else -> "user.makerFeeRate"
+                        }
+                    )
+                ) ?: Numeric.double.ZERO
                 val fee = usdcSize * feeRate
                 return mapOf(
-                        "marketId" to marketId,
-                        "size" to size,
-                        "price" to price,
-                        "usdcSize" to usdcSize,
-                        "feeRate" to feeRate,
-                        "fee" to fee,
-                        "reduceOnly" to (parser.asBool(order["reduceOnly"]) ?: false)
+                    "marketId" to marketId,
+                    "size" to size,
+                    "price" to price,
+                    "usdcSize" to usdcSize,
+                    "feeRate" to feeRate,
+                    "fee" to fee,
+                    "reduceOnly" to (parser.asBool(order["reduceOnly"]) ?: false)
                 )
             }
         }
@@ -163,11 +156,11 @@ internal class SubaccountTransformer {
     }
 
     internal fun applyTransferToWallet(
-            wallet: Map<String, Any>,
-            subaccountNumber: Int?,
-            transfer: Map<String, Any>,
-            parser: ParserProtocol,
-            period: String
+        wallet: Map<String, Any>,
+        subaccountNumber: Int?,
+        transfer: Map<String, Any>,
+        parser: ParserProtocol,
+        period: String
     ): Map<String, Any> {
         val delta = deltaFromTransfer(parser, transfer)
         return if (delta != null) {
@@ -183,12 +176,12 @@ internal class SubaccountTransformer {
     }
 
     internal fun applyTradeToSubaccount(
-            subaccount: Map<String, Any>?,
-            trade: Map<String, Any>,
-            market: Map<String, Any>?,
-            parser: ParserProtocol,
-            period: String,
-            usePessimisticCollateralCheck: Boolean
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+        parser: ParserProtocol,
+        period: String,
+        usePessimisticCollateralCheck: Boolean
     ): Map<String, Any>? {
         if (subaccount != null) {
             val delta = deltaFromTrade(parser, trade, market, usePessimisticCollateralCheck)
@@ -199,59 +192,67 @@ internal class SubaccountTransformer {
 
     private fun nullPosition(marketId: String): Map<String, Any> {
         return mapOf(
-                "id" to marketId,
-                "status" to "OPEN",
-                "id" to marketId,
-                "assetId" to ParsingHelper.asset(marketId)!!,
-                "side" to { "current" to "NONE" },
-                "size" to mapOf("current" to 0.0),
-                "entryPrice" to mapOf("current" to 0.0),
-                "realizedPnl" to mapOf("current" to 0.0),
-                "maxSize" to 0.0,
-                "netFunding" to 0.0,
-                "unrealizedPnl" to 0.0,
-                "resources" to
-                        mapOf(
-                                "sideStringKey" to mapOf("current" to "APP.GENERAL.NONE"),
-                                "indicator" to mapOf("current" to "none")
-                        )
+            "id" to marketId,
+            "status" to "OPEN",
+            "id" to marketId,
+            "assetId" to ParsingHelper.asset(marketId)!!,
+            "side" to {
+                "current" to "NONE"
+            },
+            "size" to mapOf(
+                "current" to 0.0
+            ),
+            "entryPrice" to mapOf(
+                "current" to 0.0
+            ),
+            "realizedPnl" to mapOf(
+                "current" to 0.0
+            ),
+            "maxSize" to 0.0,
+            "netFunding" to 0.0,
+            "unrealizedPnl" to 0.0,
+            "resources" to mapOf(
+                "sideStringKey" to mapOf(
+                    "current" to "APP.GENERAL.NONE"
+                ),
+                "indicator" to mapOf(
+                    "current" to "none"
+                )
+            )
         )
     }
 
     private fun applyDeltaToPositions(
-            positions: Map<String, Any>,
-            delta: Map<String, Any>?,
-            parser: ParserProtocol,
-            period: String
+        positions: Map<String, Any>,
+        delta: Map<String, Any>?,
+        parser: ParserProtocol,
+        period: String
     ): Map<String, Any> {
         val deltaMarketId = parser.asString(delta?.get("marketId"))
         val size = parser.asDouble(delta?.get("size"))
-        val nullDelta =
-                if (deltaMarketId != null) {
-                    // Trade input
-                    if (delta != null) {
-                        if (size != null) {
-                            mapOf("size" to 0.0)
-                        } else {
-                            mapOf()
-                        }
-                    } else null
-                } else {
-                    // Not a trade input. So we want the postOrder positions to be the same as the
-                    // current positions
+        val nullDelta = if (deltaMarketId != null) {
+            // Trade input
+            if (delta != null) {
+                if (size != null) {
                     mapOf("size" to 0.0)
+                } else {
+                    mapOf()
                 }
+            } else null
+        } else {
+            // Not a trade input. So we want the postOrder positions to be the same as the current positions
+            mapOf("size" to 0.0)
+        }
         val modified = mutableMapOf<String, Any>()
         for ((marketId, value) in positions) {
             val position = parser.asNativeMap(value)
             if (position != null) {
-                val modifiedPosition =
-                        applyDeltaToPosition(
-                                position,
-                                if (deltaMarketId == marketId) delta else nullDelta,
-                                parser,
-                                period
-                        )
+                val modifiedPosition = applyDeltaToPosition(
+                    position,
+                    if (deltaMarketId == marketId) delta else nullDelta,
+                    parser,
+                    period
+                )
                 if (deltaMarketId == marketId) {
                     modified[marketId] = modifiedPosition
                 } else if (parser.asDouble(parser.value(position, "size.current")) != null) {
@@ -262,15 +263,11 @@ internal class SubaccountTransformer {
         if (modified[deltaMarketId] == null && deltaMarketId != null) {
             // position didn't exists
             val position = nullPosition(deltaMarketId)
-            val modifiedDelta =
-                    if (delta != null)
-                            transformDelta(
-                                    delta,
-                                    parser.asDouble(parser.value(position, "size.current"))
-                                            ?: Numeric.double.ZERO,
-                                    parser
-                            )
-                    else null
+            val modifiedDelta = if (delta != null) transformDelta(
+                delta,
+                parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO,
+                parser
+            ) else null
             modified[deltaMarketId] = applyDeltaToPosition(position, modifiedDelta, parser, period)
         }
 
@@ -278,25 +275,22 @@ internal class SubaccountTransformer {
     }
 
     private fun applyDeltaToSubaccount(
-            subaccount: Map<String, Any>,
-            delta: Map<String, Any>?,
-            parser: ParserProtocol,
-            period: String
+        subaccount: Map<String, Any>,
+        delta: Map<String, Any>?,
+        parser: ParserProtocol,
+        period: String
     ): Map<String, Any> {
         val modified = subaccount.mutable()
 
         val deltaMarketId = parser.asString(delta?.get("marketId"))
-        val positions = parser.asNativeMap(subaccount["openPositions"])?.mutable() ?: mutableMapOf()
+        val positions =
+            parser.asNativeMap(subaccount["openPositions"])?.mutable() ?: mutableMapOf()
         val marketPosition = positions[deltaMarketId]
-        val modifiedDelta =
-                if (delta != null)
-                        transformDelta(
-                                delta,
-                                parser.asDouble(parser.value(marketPosition, "size.current"))
-                                        ?: Numeric.double.ZERO,
-                                parser
-                        )
-                else null
+        val modifiedDelta = if (delta != null) transformDelta(
+            delta,
+            parser.asDouble(parser.value(marketPosition, "size.current")) ?: Numeric.double.ZERO,
+            parser
+        ) else null
 
         val modifiedPositions = applyDeltaToPositions(positions, modifiedDelta, parser, period)
         modified["openPositions"] = modifiedPositions
@@ -304,15 +298,15 @@ internal class SubaccountTransformer {
         if (delta != null && usdcSize != Numeric.double.ZERO) {
             val fee = (parser.asDouble(modifiedDelta?.get("fee")) ?: Numeric.double.ZERO)
             val quoteBalance =
-                    parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
+                parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
             val quoteBalanceValue =
-                    (parser.asDouble(quoteBalance["current"])
-                            ?: Numeric.double.ZERO) + usdcSize + fee
+                (parser.asDouble(quoteBalance["current"])
+                    ?: Numeric.double.ZERO) + usdcSize + fee
             quoteBalance[period] = quoteBalanceValue
             modified["quoteBalance"] = quoteBalance
         } else {
             val quoteBalance =
-                    parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
+                parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
             quoteBalance.safeSet(period, null)
             modified["quoteBalance"] = quoteBalance
         }
@@ -320,41 +314,42 @@ internal class SubaccountTransformer {
     }
 
     private fun transformDelta(
-            delta: Map<String, Any>,
-            positionSize: Double,
-            parser: ParserProtocol
+        delta: Map<String, Any>,
+        positionSize: Double,
+        parser: ParserProtocol
     ): Map<String, Any> {
         val marketId = parser.asString(delta["marketId"])
         if (parser.asBool(delta["reduceOnly"]) == true && marketId != null) {
             val size = parser.asDouble(delta["size"]) ?: Numeric.double.ZERO
             val price = parser.asDouble(delta["price"]) ?: Numeric.double.ZERO
             val modifiedSize =
-                    if (positionSize > Numeric.double.ZERO && size < Numeric.double.ZERO) {
-                        maxOf(size, positionSize * Numeric.double.NEGATIVE)
-                    } else if (positionSize < Numeric.double.ZERO && size > Numeric.double.ZERO) {
-                        minOf(size, positionSize * Numeric.double.NEGATIVE)
-                    } else {
-                        Numeric.double.ZERO
-                    }
+                if (positionSize > Numeric.double.ZERO && size < Numeric.double.ZERO) {
+                    maxOf(size, positionSize * Numeric.double.NEGATIVE)
+                } else if (positionSize < Numeric.double.ZERO && size > Numeric.double.ZERO) {
+                    minOf(size, positionSize * Numeric.double.NEGATIVE)
+                } else {
+                    Numeric.double.ZERO
+                }
             val usdcSize = modifiedSize * price * Numeric.double.NEGATIVE
             val feeRate = parser.asDouble(delta["feeRate"]) ?: Numeric.double.ZERO
             val fee = (usdcSize * feeRate).abs() * Numeric.double.NEGATIVE
             return mapOf(
-                    "price" to price,
-                    "size" to size,
-                    "usdcSize" to usdcSize,
-                    "fee" to fee,
-                    "marketId" to marketId
+                "price" to price,
+                "size" to size,
+                "usdcSize" to usdcSize,
+                "fee" to fee,
+                "marketId" to marketId
             )
         }
         return delta
     }
 
+
     private fun applyDeltaToPosition(
-            position: Map<String, Any>,
-            delta: Map<String, Any>?,
-            parser: ParserProtocol,
-            period: String
+        position: Map<String, Any>,
+        delta: Map<String, Any>?,
+        parser: ParserProtocol,
+        period: String
     ): Map<String, Any> {
         val sizes = parser.asNativeMap(position["size"])
         val modifiedSize = sizes?.toMutableMap() ?: mutableMapOf()
@@ -370,7 +365,11 @@ internal class SubaccountTransformer {
         return modified
     }
 
-    private fun adjustDeltaSize(size: Double, deltaSize: Double, reduceOnly: Boolean): Double {
+    private fun adjustDeltaSize(
+        size: Double,
+        deltaSize: Double,
+        reduceOnly: Boolean
+    ): Double {
         return if (reduceOnly) {
             if (size > Numeric.double.ZERO && deltaSize < Numeric.double.ZERO) {
                 maxOf(deltaSize, size * Numeric.double.NEGATIVE)
