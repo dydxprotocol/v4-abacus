@@ -2,6 +2,7 @@ package exchange.dydx.abacus.processor.squid
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.manager.ExchangeInfo
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.mutable
@@ -202,8 +203,19 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     internal fun defaultTokenAddress(chainId: String?): String? {
-        val selectedToken = parser.asNativeMap(this.filteredTokens(chainId)?.firstOrNull())
-        return parser.asString(selectedToken?.get("address"))
+        return chainId?.let { cid ->
+            // Retrieve the list of filtered tokens for the given chainId
+            val filteredTokens = this.filteredTokens(cid)?.mapNotNull {
+                parser.asString(parser.asNativeMap(it)?.get("address"))
+            }.orEmpty()
+
+            // Find a matching CctpChainTokenInfo and check if its tokenAddress is in the filtered tokens
+            cctpChainIds?.firstOrNull { it.chainId == cid && filteredTokens.contains(it.tokenAddress) }?.tokenAddress
+                ?: run {
+                    // Fallback to the first token's address from the filtered list if no CctpChainTokenInfo match is found
+                    filteredTokens.firstOrNull()
+                }
+        }
     }
 
     internal fun chainResources(chainId: String?): Map<String, Any>? {
