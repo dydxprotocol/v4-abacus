@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.state.manager
 
-import BlockAndTime
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -24,23 +23,6 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
-import exchange.dydx.abacus.state.manager.utils.ApiData
-import exchange.dydx.abacus.state.manager.utils.AppConfigs
-import exchange.dydx.abacus.state.manager.utils.CancelOrderRecord
-import exchange.dydx.abacus.state.manager.utils.FaucetRecord
-import exchange.dydx.abacus.state.manager.utils.HistoricalPnlPeriod
-import exchange.dydx.abacus.state.manager.utils.HistoricalTradingRewardsPeriod
-import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableFaucetPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableSubaccountTransferPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableTransferPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
-import exchange.dydx.abacus.state.manager.utils.OrderbookGrouping
-import exchange.dydx.abacus.state.manager.utils.PlaceOrderMarketInfo
-import exchange.dydx.abacus.state.manager.utils.PlaceOrderRecord
-import exchange.dydx.abacus.state.manager.utils.Subaccount
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField

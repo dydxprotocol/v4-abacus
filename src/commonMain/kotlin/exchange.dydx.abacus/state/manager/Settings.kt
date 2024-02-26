@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.manager.utils
+package exchange.dydx.abacus.state.manager
 
 import kollections.JsExport
 import kotlinx.serialization.Serializable

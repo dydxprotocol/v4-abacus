@@ -1,3 +1,5 @@
+package exchange.dydx.abacus.state.manager
+
 import exchange.dydx.abacus.utils.ServerTime
 import kollections.JsExport
 import kotlinx.datetime.Instant
@@ -17,7 +19,7 @@ enum class NetworkStatus(val rawValue: String) {
     }
 }
 
-public class BlockAndTime(val block: Int, val time: Instant)
+class BlockAndTime(val block: Int, val time: Instant)
 
 internal class NetworkState() {
     var status: NetworkStatus = NetworkStatus.UNKNOWN

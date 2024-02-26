@@ -1,10 +1,10 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import BlockAndTime
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet

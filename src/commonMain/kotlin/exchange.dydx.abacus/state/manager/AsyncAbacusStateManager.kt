@@ -13,17 +13,6 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
-import exchange.dydx.abacus.state.manager.utils.ApiData
-import exchange.dydx.abacus.state.manager.utils.AppConfigs
-import exchange.dydx.abacus.state.manager.utils.ConfigFile
-import exchange.dydx.abacus.state.manager.utils.HistoricalPnlPeriod
-import exchange.dydx.abacus.state.manager.utils.HistoricalTradingRewardsPeriod
-import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableSubaccountTransferPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
-import exchange.dydx.abacus.state.manager.utils.OrderbookGrouping
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField

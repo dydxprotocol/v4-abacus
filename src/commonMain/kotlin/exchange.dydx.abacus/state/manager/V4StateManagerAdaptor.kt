@@ -1,8 +1,5 @@
 package exchange.dydx.abacus.state.manager
 
-import ApiState
-import BlockAndTime
-import NetworkState
 import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
@@ -17,13 +14,6 @@ import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
-import exchange.dydx.abacus.state.manager.utils.AppConfigs
-import exchange.dydx.abacus.state.manager.utils.CancelOrderRecord
-import exchange.dydx.abacus.state.manager.utils.FaucetRecord
-import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
-import exchange.dydx.abacus.state.manager.utils.PlaceOrderMarketInfo
-import exchange.dydx.abacus.state.manager.utils.PlaceOrderRecord
-import exchange.dydx.abacus.state.manager.utils.Subaccount
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.launchIncentiveSeasons
@@ -674,7 +664,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveIndexerHeight(callback: (()-> Unit)? = null) {
+    private fun retrieveIndexerHeight(callback: (() -> Unit)? = null) {
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.previousRequestTime = indexerState.requestTime
@@ -1404,11 +1394,14 @@ class V4StateManagerAdaptor(
     private fun retrieveLaunchIncentiveSeasons() {
         val url = configs.launchIncentiveUrl("graphql")
         if (url != null) {
-            val requestBody = "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
-            post(url, iMapOf(
-                "content-type" to "application/json",
-                "protocol" to "dydx-v4",
-            ), requestBody) { _, response, httpCode ->
+            val requestBody =
+                "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
+            post(
+                url, iMapOf(
+                    "content-type" to "application/json",
+                    "protocol" to "dydx-v4",
+                ), requestBody
+            ) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)
@@ -1424,9 +1417,11 @@ class V4StateManagerAdaptor(
         val url = configs.launchIncentiveUrl("points")
         val address = accountAddress
         if (url != null && address != null) {
-            get("${url}/${address}", iMapOf(
-                "n" to season,
-            ), null) { _, response, httpCode ->
+            get(
+                "${url}/${address}", iMapOf(
+                    "n" to season,
+                ), null
+            ) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentivePoints(season, response), oldState)

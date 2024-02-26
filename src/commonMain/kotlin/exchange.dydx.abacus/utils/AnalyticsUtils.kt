@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
-import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 
 class AnalyticsUtils {
     /**
@@ -10,7 +10,10 @@ class AnalyticsUtils {
      * @param payload HumanReadablePlaceOrderPayload
      * @param isClosePosition Boolean
      */
-    fun formatPlaceOrderPayload(payload: HumanReadablePlaceOrderPayload, isClosePosition: Boolean? = false): IMap<String, Any>? {
+    fun formatPlaceOrderPayload(
+        payload: HumanReadablePlaceOrderPayload,
+        isClosePosition: Boolean? = false
+    ): IMap<String, Any>? {
         return iMapOf(
             "clientId" to payload.clientId,
             "currentHeight" to payload.currentHeight,
@@ -43,7 +46,7 @@ class AnalyticsUtils {
             "clobPairId" to payload.clobPairId,
             "goodTilBlock" to payload.goodTilBlock,
             "goodTilBlockTime" to payload.goodTilBlockTime,
-        )  as IMap<String, Any>?
+        ) as IMap<String, Any>?
     }
 
     /**
