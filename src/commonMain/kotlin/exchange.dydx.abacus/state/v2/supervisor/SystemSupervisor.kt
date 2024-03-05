@@ -1,8 +1,7 @@
-package exchange.dydx.abacus.state.manager.supervisor
+package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
-import exchange.dydx.abacus.state.manager.SystemConfigs
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.launchIncentiveSeasons
 import exchange.dydx.abacus.state.model.onChainEquityTiers

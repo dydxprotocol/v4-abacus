@@ -1,7 +1,6 @@
-package exchange.dydx.abacus.state.manager.supervisor
+package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.state.changes.Changes
-import exchange.dydx.abacus.state.manager.SubaccountConfigs
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.receivedFills

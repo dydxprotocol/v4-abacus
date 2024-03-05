@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state.manager.supervisor
+package exchange.dydx.abacus.state.v2.supervisor
 
 import kollections.JsExport
 

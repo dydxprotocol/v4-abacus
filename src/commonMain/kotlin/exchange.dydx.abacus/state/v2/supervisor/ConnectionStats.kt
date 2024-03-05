@@ -1,14 +1,12 @@
-package exchange.dydx.abacus.state.manager.supervisor
+package exchange.dydx.abacus.state.v2.supervisor
 
+import ApiState
+import BlockAndTime
+import NetworkState
 import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.ThreadingType
-import exchange.dydx.abacus.state.manager.ApiState
-import exchange.dydx.abacus.state.manager.ApiStatus
-import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.IndexerURIs
-import exchange.dydx.abacus.state.manager.NetworkState
-import exchange.dydx.abacus.state.manager.NetworkStatus
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.IMap
