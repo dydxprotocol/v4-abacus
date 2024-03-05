@@ -30,7 +30,7 @@ plugins {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.4.13"
+version = "1.4.14"
 
 repositories {
     google()
@@ -125,12 +125,32 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
-        val jvmMain by getting
         val jvmTest by getting
         val jsMain by getting
         val jsTest by getting
-        val nativeMain by getting
         val nativeTest by getting
+
+        val androidMain by creating {
+            dependsOn(commonMain)
+        }
+        val nativeMain by getting {
+            dependsOn(androidMain)
+        }
+        val jvmMain by getting {
+            dependsOn(androidMain)
+        }
+        val iosMain by creating {
+            dependsOn(commonMain)
+        }
+        val iosArm64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosX64Main by getting {
+            dependsOn(iosMain)
+        }
+        val iosSimulatorArm64Main by getting {
+            dependsOn(iosMain)
+        }
     }
 
     tasks.wrapper {
