@@ -612,6 +612,7 @@ class V4StateManagerAdaptor(
         params.safeSet("USDC_GAS_DENOM", usdcGasDenom)
         params.safeSet("CHAINTOKEN_DENOM", chainTokenDenom)
         params.safeSet("CHAINTOKEN_DECIMALS", chainTokenDecimals)
+        params.safeSet("txnMemo", "dYdX Frontend (${SystemUtils.platform.rawValue})")
         val jsonString = JsonEncoder().encode(params) ?: return
 
         ioImplementations.threading?.async(ThreadingType.main) {
