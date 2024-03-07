@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
-import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.launchIncentiveSeasons
@@ -8,22 +7,16 @@ import exchange.dydx.abacus.state.model.onChainEquityTiers
 import exchange.dydx.abacus.state.model.onChainFeeTiers
 import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.model.onChainRewardsParams
-import exchange.dydx.abacus.state.model.sparklines
-import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 
 internal class SystemSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
+    analyticsUtils: AnalyticsUtils,
     internal val configs: SystemConfigs,
-    internal val accountAddress: String,
-) : NetworkSupervisor(stateMachine, helper) {
-
-    private var sparklinesTimer: LocalTimerProtocol? = null
-    private val sparklinesPollingDuration = 60.0
-
+) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
@@ -44,9 +37,6 @@ internal class SystemSupervisor(
         if (indexerConnected) {
             if (configs.retrieveServerTime) {
                 retrieveServerTime()
-            }
-            if (configs.retrieveSparklines) {
-                retrieveSparklines()
             }
         }
     }
@@ -104,40 +94,6 @@ internal class SystemSupervisor(
         }
     }
 
-    private fun retrieveSparklines() {
-        if (sparklinesTimer == null) {
-            val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-            sparklinesTimer = timer.schedule(0.0, sparklinesPollingDuration) {
-                if (indexerConnected) {
-                    getSparklines()
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-    }
-
-    private fun getSparklines() {
-        val url = helper.configs.publicApiUrl("sparklines")
-        if (url != null) {
-            helper.get(url, sparklinesParams(), null) { _, response, httpCode ->
-                if (helper.success(httpCode) && response != null) {
-                    parseSparklinesResponse(response)
-                }
-            }
-        }
-    }
-
-    private fun parseSparklinesResponse(response: String) {
-        val oldState = stateMachine.state
-        update(stateMachine.sparklines(response), oldState)
-    }
-
-    private fun sparklinesParams(): IMap<String, String> {
-        return iMapOf("timePeriod" to "ONE_DAY")
-    }
-
     private fun retrieveEquityTiers() {
         helper.getOnChain(QueryType.EquityTiers, null) { response ->
             val oldState = stateMachine.state
@@ -171,11 +127,14 @@ internal class SystemSupervisor(
     private fun retrieveLaunchIncentiveSeasons() {
         val url = helper.configs.launchIncentiveUrl("graphql")
         if (url != null) {
-            val requestBody = "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
-            helper.post(url, iMapOf(
-                "content-type" to "application/json",
-                "protocol" to "dydx-v4",
-            ), requestBody) { _, response, httpCode ->
+            val requestBody =
+                "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
+            helper.post(
+                url, iMapOf(
+                    "content-type" to "application/json",
+                    "protocol" to "dydx-v4",
+                ), requestBody
+            ) { _, response, httpCode ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)

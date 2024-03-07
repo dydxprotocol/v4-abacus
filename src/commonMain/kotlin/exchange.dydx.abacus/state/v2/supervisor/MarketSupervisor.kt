@@ -2,14 +2,32 @@ package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
+import exchange.dydx.abacus.responses.ParsingException
+import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
-import exchange.dydx.abacus.state.manager.MarketConfigs
-import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
-import exchange.dydx.abacus.state.manager.OrderbookGrouping
+import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.utils.OrderbookGrouping
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.candles
 import exchange.dydx.abacus.state.model.historicalFundings
+import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
+import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
+import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
+import exchange.dydx.abacus.state.model.receivedBatchedTradesChanges
+import exchange.dydx.abacus.state.model.receivedCandles
+import exchange.dydx.abacus.state.model.receivedCandlesChanges
+import exchange.dydx.abacus.state.model.receivedMarkets
+import exchange.dydx.abacus.state.model.receivedMarketsChanges
+import exchange.dydx.abacus.state.model.receivedOrderbook
+import exchange.dydx.abacus.state.model.receivedOrderbookChanges
+import exchange.dydx.abacus.state.model.receivedTrades
+import exchange.dydx.abacus.state.model.receivedTradesChanges
 import exchange.dydx.abacus.state.model.setOrderbookGrouping
+import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 import kotlinx.datetime.Instant
@@ -22,12 +40,14 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 
-internal class MarketSupervisor(
+internal open class MarketSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
+    analyticsUtils: AnalyticsUtils,
     private val configs: MarketConfigs,
-    private val marketId: String
-) : NetworkSupervisor(stateMachine, helper) {
+    internal val marketId: String
+) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
+
     internal var candlesResolution: String = "1DAY"
         internal set(value) {
             if (field != value) {
@@ -53,7 +73,6 @@ internal class MarketSupervisor(
             }
         }
 
-
     internal fun didSetCandlesResolution(oldValue: String) {
         retrieveCandles()
 
@@ -64,6 +83,7 @@ internal class MarketSupervisor(
     }
 
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
+        super.didSetIndexerConnected(indexerConnected)
         if (indexerConnected) {
             if (configs.retrieveCandles) {
                 retrieveCandles()
@@ -75,6 +95,7 @@ internal class MarketSupervisor(
     }
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
+        super.didSetSocketConnected(socketConnected)
         if (configs.subscribeToOrderbook) {
             orderbookChannelSubscription(socketConnected)
         }
@@ -226,7 +247,7 @@ internal class MarketSupervisor(
         )
     }
 
-    open fun shouldBatchMarketTradesChannelData(): Boolean {
+    internal open fun shouldBatchMarketTradesChannelData(): Boolean {
         return false
     }
 
@@ -240,4 +261,166 @@ internal class MarketSupervisor(
         )
     }
 
+    internal fun receiveMarketCandlesChannelSocketData(
+        info: SocketInfo,
+        resolution: String,
+        payload: IMap<String, Any>) {
+        val oldState = stateMachine.state
+        var changes: StateChanges? = null
+        try {
+            when (info.type) {
+                "subscribed" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedCandles(marketId, resolution, content)
+                }
+
+                "unsubscribed" -> {}
+
+                "channel_data" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedCandlesChanges(marketId, resolution, content)
+                }
+
+                "channel_batch_data" -> {
+                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedBatchedCandlesChanges(marketId, resolution, content)
+                }
+
+                else -> {
+                    throw ParsingException(
+                        ParsingErrorType.Unhandled,
+                        "Type [ ${info.type} ] is not handled"
+                    )
+                }
+            }
+            update(changes, oldState)
+        } catch (e: ParsingException) {
+            val error = ParsingError(
+                e.type,
+                e.message ?: "Unknown error",
+            )
+            emitError(error)
+        }
+    }
+
+    internal fun receiveMarketOrderbooksChannelSocketData(
+        info: SocketInfo,
+        payload: IMap<String, Any>,
+        subaccountNumber: Int?,
+    ) {
+        val oldState = stateMachine.state
+        var changes: StateChanges? = null
+        try {
+            when (info.type) {
+                "subscribed" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedOrderbook(marketId, content, subaccountNumber ?: 0)
+                }
+
+                "unsubscribed" -> {}
+
+                "channel_data" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedOrderbookChanges(marketId, content, subaccountNumber ?: 0)
+                }
+
+                "channel_batch_data" -> {
+                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedBatchOrderbookChanges(marketId, content, subaccountNumber ?: 0)
+                }
+
+                else -> {
+                    throw ParsingException(
+                        ParsingErrorType.Unhandled,
+                        "Type [ ${info.type} ] is not handled"
+                    )
+                }
+            }
+            update(changes, oldState)
+        } catch (e: ParsingException) {
+            val error = ParsingError(
+                e.type,
+                e.message ?: "Unknown error",
+            )
+            emitError(error)
+        }
+    }
+
+    internal fun receiveMarketTradesChannelSocketData(
+        info: SocketInfo,
+        payload: IMap<String, Any>,
+    ) {
+        val oldState = stateMachine.state
+        var changes: StateChanges? = null
+        try {
+            when (info.type) {
+                "subscribed" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedTrades(marketId, content)
+                }
+
+                "unsubscribed" -> {}
+
+                "channel_data" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedTradesChanges(marketId, content)
+                }
+
+                "channel_batch_data" -> {
+                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString()
+                        )
+                    changes = stateMachine.receivedBatchedTradesChanges(marketId, content)
+                }
+
+                else -> {
+                    throw ParsingException(
+                        ParsingErrorType.Unhandled,
+                        "Type [ ${info.type} ] is not handled"
+                    )
+                }
+            }
+            update(changes, oldState)
+        } catch (e: ParsingException) {
+            val error = ParsingError(
+                e.type,
+                e.message ?: "Unknown error",
+            )
+            emitError(error)
+        }
+    }
 }

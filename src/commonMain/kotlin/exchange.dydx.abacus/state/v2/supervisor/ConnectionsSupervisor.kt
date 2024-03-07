@@ -1,10 +1,12 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import NetworkState
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.state.manager.IndexerURIs
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.iMapOf
@@ -21,8 +23,9 @@ internal interface ConnectionDelegate {
 internal class ConnectionsSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
+    analyticsUtils: AnalyticsUtils,
     private val delegate: ConnectionDelegate,
-) : NetworkSupervisor(stateMachine, helper), ConnectionStatsDelegate {
+) : NetworkSupervisor(stateMachine, helper, analyticsUtils), ConnectionStatsDelegate {
     private val connectionStats = ConnectionStats(stateMachine, helper, this)
     override var validatorUrl: String? = null
         set(value) {
@@ -63,7 +66,13 @@ internal class ConnectionsSupervisor(
                 field = value
             }
         }
-    internal val serverPollingDuration = 10.0
+    private val serverPollingDuration = 10.0
+
+    internal val indexerState: NetworkState
+        get() = connectionStats.indexerState
+
+    internal val validatorState: NetworkState
+        get() = connectionStats.validatorState
 
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
@@ -75,15 +84,16 @@ internal class ConnectionsSupervisor(
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
         delegate.didConnectToIndexer(indexerConnected)
-    }
-
-    private fun didSetIndexerConfig() {
-        if (indexerConfig != null) {
+        if (indexerConnected) {
             connectSocket()
         } else {
             disconnectSocket()
             reconnectIndexer()
         }
+    }
+
+    private fun didSetIndexerConfig() {
+        indexerConnected = (indexerConfig != null)
     }
 
     private fun connectSocket() {
@@ -105,7 +115,6 @@ internal class ConnectionsSupervisor(
         helper.ioImplementations.webSocket?.disconnect()
         delegate.didConnectToSocket(false)
     }
-
 
     private fun reconnectIndexer() {
         if (readyToConnect) {
@@ -254,6 +263,9 @@ internal class ConnectionsSupervisor(
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
         delegate.didConnectToSocket(socketConnected)
+        if (readyToConnect) {
+            connectSocket()
+        }
     }
 
     private fun retrieveHeights() {
@@ -325,6 +337,41 @@ internal class ConnectionsSupervisor(
                     bestEffortConnectChain()
                 }
                 false
+            }
+        }
+    }
+
+    internal fun calculateCurrentHeight(): Int? {
+        val latestBlockAndTime =
+            connectionStats.validatorState.blockAndTime ?: connectionStats.indexerState.blockAndTime
+            ?: return null
+        val currentTime = Clock.System.now()
+        val lapsedTime = currentTime - latestBlockAndTime.time
+        return if (lapsedTime.inWholeMilliseconds <= 0L) {
+            // This should never happen unless the clock is wrong, then we don't want to estimate height
+            null
+        } else {
+            val firstBlockAndTime = connectionStats.firstBlockAndTime
+            if (firstBlockAndTime == null) {
+                // This should never happen, but just in case, assume 1.5s per block
+                null
+            } else {
+                val lapsedBlocks = latestBlockAndTime.block - firstBlockAndTime.block
+                if (lapsedBlocks <= 0) {
+                    // This should never happen
+                    null
+                } else {
+                    val betweenLastAndFirstBlockTime =
+                        latestBlockAndTime.time - firstBlockAndTime.time
+                    val averageMillisecondsPerBlock =
+                        betweenLastAndFirstBlockTime.inWholeMilliseconds / lapsedBlocks
+                    if (averageMillisecondsPerBlock <= 0L) {
+                        // This should never happen
+                        latestBlockAndTime.block
+                    } else {
+                        latestBlockAndTime.block + (lapsedTime.inWholeMilliseconds / averageMillisecondsPerBlock).toInt()
+                    }
+                }
             }
         }
     }

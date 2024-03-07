@@ -6,9 +6,10 @@ import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManager
-import exchange.dydx.abacus.state.v2.manager.V4StateManagerAdaptor
+import exchange.dydx.abacus.state.manager.setAddresses
+import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.state.manager.utils.AppConfigs
+import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -17,13 +18,13 @@ import kotlin.test.assertEquals
 class V4RestrictionsTests {
     val mock = AbacusMockData()
     private val testCosmoAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
-    private var stateManager: AsyncAbacusStateManager = resetStateManager()
+    private var stateManager: AsyncAbacusStateManagerV2 = resetStateManager()
     private var ioImplementations = stateManager.ioImplementations
     private var testRest = stateManager.ioImplementations.rest as? TestRest
     private var testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
     private var testChain = stateManager.ioImplementations.chain as? TestChain
     private var testState = stateManager.stateNotification as? TestState
-    private var v4Adapter = stateManager.adaptor as? V4StateManagerAdaptor
+    private var v4Adapter = stateManager.adaptor
 
     @BeforeTest
     fun reset() {
@@ -33,17 +34,17 @@ class V4RestrictionsTests {
         testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
         testChain = stateManager.ioImplementations.chain as? TestChain
         testState = stateManager.stateNotification as? TestState
-        v4Adapter = stateManager.adaptor as? V4StateManagerAdaptor
+        v4Adapter = stateManager.adaptor
     }
 
-    fun resetStateManager(): AsyncAbacusStateManager {
+    fun resetStateManager(): AsyncAbacusStateManagerV2 {
         val ioImplementations = BaseTests.testIOImplementations()
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
-        stateManager = AsyncAbacusStateManager(
+        stateManager = AsyncAbacusStateManagerV2(
             "https://api.examples.com",
             "DEV",
-            AppConfigs.forApp,
+            AppConfigsV2.forApp,
             ioImplementations,
             uiImplementations,
             TestState(),
@@ -53,23 +54,23 @@ class V4RestrictionsTests {
         return stateManager
     }
 
-    private fun setStateMachineReadyToConnect(stateManager: AsyncAbacusStateManager) {
+    private fun setStateMachineReadyToConnect(stateManager: AsyncAbacusStateManagerV2) {
         stateManager.readyToConnect = true
     }
 
-    private fun setStateMachineConnected(stateManager: AsyncAbacusStateManager) {
+    private fun setStateMachineConnected(stateManager: AsyncAbacusStateManagerV2) {
         setStateMachineReadyToConnect(stateManager)
         (ioImplementations.webSocket as? TestWebSocket)?.simulateConnected(true)
         (ioImplementations.webSocket as? TestWebSocket)?.simulateReceived(mock.connectionMock.connectedMessage)
     }
 
-    private fun setStateMachineConnectedWithMarkets(stateManager: AsyncAbacusStateManager) {
+    private fun setStateMachineConnectedWithMarkets(stateManager: AsyncAbacusStateManagerV2) {
         setStateMachineConnected(stateManager)
         (ioImplementations.webSocket as? TestWebSocket)?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
         stateManager.market = "ETH-USD"
     }
 
-    private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManager) {
+    private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManagerV2) {
         setStateMachineConnectedWithMarkets(stateManager)
         stateManager.setAddresses(null, testCosmoAddress)
     }

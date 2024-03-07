@@ -27,7 +27,7 @@ internal class ConnectionStats(
     private val delegate: ConnectionStatsDelegate,
 ) {
     internal val heightPollingDuration = 10.0
-    private var firstBlockAndTime: BlockAndTime? = null
+    internal var firstBlockAndTime: BlockAndTime? = null
     internal var lastIndexerCallTime: Instant? = null
     private var lastValidatorCallTime: Instant? = null
 

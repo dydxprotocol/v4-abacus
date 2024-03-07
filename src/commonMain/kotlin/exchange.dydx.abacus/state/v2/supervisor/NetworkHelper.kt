@@ -20,6 +20,7 @@ import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.ServerTime
+import exchange.dydx.abacus.utils.UIImplementations
 import kollections.iListOf
 import kollections.iSetOf
 import kollections.toIMap
@@ -33,6 +34,7 @@ import kotlin.time.times
 class NetworkHelper(
     internal val deploymentUri: String,
     internal val environment: V4Environment,
+    internal val uiImplementations: UIImplementations,
     internal val ioImplementations: IOImplementations,
     internal val configs: V4StateManagerConfigs,
     internal var stateNotification: StateNotificationProtocol?,

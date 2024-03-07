@@ -2,12 +2,18 @@ package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.IMap
+import kollections.iListOf
 
 internal open class NetworkSupervisor(
     internal val stateMachine: TradingStateMachine,
     internal val helper: NetworkHelper,
+    internal val analyticsUtils: AnalyticsUtils,
 ) {
     internal var retainerCount: Int = 1
         set(value) {
@@ -87,9 +93,59 @@ internal open class NetworkSupervisor(
                 helper.ioImplementations.threading?.async(ThreadingType.main) {
                     helper.updateStateChanges(stateMachine, realChanges, oldState)
                 }
-//                updateTracking(changes = realChanges!!)
-//                updateNotifications()
+                updateTracking(changes = realChanges!!)
+                updateNotifications()
             }
         }
+    }
+
+    internal fun tracking(eventName: String, params: IMap<String, Any>?) {
+        val paramsAsString = helper.jsonEncoder.encode(params)
+        helper.ioImplementations.threading?.async(ThreadingType.main) {
+            helper.ioImplementations.tracking?.log(eventName, paramsAsString)
+        }
+    }
+
+
+    internal open fun updateTracking(changes: StateChanges) {
+    }
+
+    internal open fun updateNotifications() {
+    }
+
+    internal fun emitError(error: ParsingError) {
+        helper.ioImplementations.threading?.async(ThreadingType.main) {
+            helper.stateNotification?.errorsEmitted(iListOf(error))
+            helper.dataNotification?.errorsEmitted(iListOf(error))
+        }
+    }
+
+    internal fun parseTransactionResponse(response: String?): ParsingError? {
+        return helper.parseTransactionResponse(response)
+    }
+}
+
+internal open class DynamicNetworkSupervisor(
+    stateMachine: TradingStateMachine,
+    helper: NetworkHelper,
+    analyticsUtils: AnalyticsUtils,
+) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
+
+    internal var retainCount: Int = 1
+
+    internal fun retain() {
+        retainCount++
+    }
+
+    internal fun release() {
+        retainCount--
+        if (retainerCount == 0) {
+            readyToConnect = false
+        }
+    }
+
+    internal fun forceRelease() {
+        retainCount = 0
+        readyToConnect = false
     }
 }

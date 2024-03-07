@@ -1,35 +1,58 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import BlockAndTime
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import exchange.dydx.abacus.output.Notification
+import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
+import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.manager.processingCctpWithdraw
+import exchange.dydx.abacus.state.manager.utils.ApiData
 import exchange.dydx.abacus.state.manager.utils.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
 import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
+import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.toNobleAddress
+import kollections.iListOf
+import kollections.iSetOf
 import kollections.toIMap
 import kotlin.time.Duration.Companion.days
 
 internal open class AccountSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
+    analyticsUtils: AnalyticsUtils,
     internal val configs: AccountConfigs,
     internal val accountAddress: String,
-) : NetworkSupervisor(stateMachine, helper) {
-    val subaccountSupervisors = mutableMapOf<Int, SubaccountSupervisor>()
+) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
+    val subaccounts = mutableMapOf<Int, SubaccountSupervisor>()
+    var onboarding: OnboardingSupervisor? = null
 
     private val accountBalancePollingDuration = 10.0
     private var accountBalancesTimer: LocalTimerProtocol? = null
@@ -67,36 +90,111 @@ internal open class AccountSupervisor(
             }
         }
 
+    var sourceAddress: String? = null
+        internal set(value) {
+            if (field != value) {
+                val oldValue = field
+                field = value
+                didSetSourceAddress(sourceAddress, oldValue)
+            }
+        }
+
+    private var sourceAddressRestriction: Restriction? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetSourceAddressRestriction(value)
+            }
+        }
+
+    internal var addressRestriction: UsageRestriction? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetAddressRestriction(value)
+            }
+        }
+
+    internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetRestriction(value)
+            }
+        }
+
+    private var accountAddressTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private var accountAddressRestriction: Restriction? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetAccountAddressRestriction(value)
+            }
+        }
+
+    private val addressRetryDuration = 10.0
+    private val addressContinuousMonitoringDuration = 60.0 * 60.0
+
+    private var sourceAddressTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    internal var subaccountNumber: Int = 0  // Desired subaccountNumber
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetSubaccountNumber()
+            }
+        }
+
+    private fun didSetSubaccountNumber() {
+        updateConnectedSubaccountNumber()
+    }
+
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
-        val subaccountSupervisor = subaccountSupervisors[subaccountNumber]
-        if (subaccountSupervisor == null) {
-            val subaccountConfigs = SubaccountSupervisor(
+        val subaccountSupervisor = subaccounts[subaccountNumber]
+        subaccountSupervisor?.retain() ?: run {
+            val newSubaccountSupervisor = SubaccountSupervisor(
                 stateMachine,
                 helper,
+                analyticsUtils,
                 configs.subaccountConfigs,
                 accountAddress,
                 subaccountNumber
             )
-            subaccountSupervisors[subaccountNumber] = subaccountConfigs
-        } else {
-            subaccountSupervisor.retainerCount++
+            newSubaccountSupervisor.readyToConnect = readyToConnect
+            newSubaccountSupervisor.indexerConnected = indexerConnected
+            newSubaccountSupervisor.socketConnected = socketConnected
+            newSubaccountSupervisor.validatorConnected = validatorConnected
+            subaccounts[subaccountNumber] = newSubaccountSupervisor
         }
     }
 
     internal fun unsubscribeFromSubaccount(subaccountNumber: Int) {
-        subaccountSupervisors[subaccountNumber]?.let {
-            it.retainerCount--
-            if (it.retainerCount == 0) {
-                subaccountSupervisors.remove(subaccountNumber)
-            }
+        val accountSupervisor = subaccounts[subaccountNumber] ?: return
+        accountSupervisor.release()
+        if (accountSupervisor.retainCount == 0) {
+            subaccounts.remove(subaccountNumber)
         }
     }
 
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
-        for ((_, subaccountSupervisor) in subaccountSupervisors) {
+        for ((_, subaccountSupervisor) in subaccounts) {
             subaccountSupervisor.readyToConnect = readyToConnect
         }
+        onboarding?.readyToConnect = readyToConnect
 
         if (readyToConnect) {
             if (configs.retrieveLaunchIncentivePoints) {
@@ -106,6 +204,12 @@ internal open class AccountSupervisor(
     }
 
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
+        super.didSetIndexerConnected(indexerConnected)
+        for ((_, subaccountSupervisor) in subaccounts) {
+            subaccountSupervisor.indexerConnected = indexerConnected
+        }
+        onboarding?.indexerConnected = indexerConnected
+
         if (indexerConnected) {
             if (configs.retrieveSubaccounts) {
                 retrieveSubaccounts()
@@ -118,6 +222,10 @@ internal open class AccountSupervisor(
 
     override fun didSetValidatorConnected(validatorConnected: Boolean) {
         super.didSetValidatorConnected(validatorConnected)
+        for ((_, subaccountSupervisor) in subaccounts) {
+            subaccountSupervisor.validatorConnected = validatorConnected
+        }
+        onboarding?.validatorConnected = validatorConnected
 
         if (validatorConnected) {
             if (configs.retrieveBalances) {
@@ -131,9 +239,10 @@ internal open class AccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        for ((_, subaccountSupervisor) in subaccountSupervisors) {
+        for ((_, subaccountSupervisor) in subaccounts) {
             subaccountSupervisor.socketConnected = socketConnected
         }
+        onboarding?.socketConnected = socketConnected
     }
 
     private fun retrieveSubaccounts() {
@@ -157,6 +266,9 @@ internal open class AccountSupervisor(
     open fun retrievedSubaccounts(response: String) {
         val oldState = stateMachine.state
         update(stateMachine.account(response), oldState)
+
+        // Automatically connect to the first subaccount if no subaccount is connected
+        updateConnectedSubaccountNumber()
     }
 
     private fun accountUrl(): String? {
@@ -253,11 +365,14 @@ internal open class AccountSupervisor(
         } else null
     }
 
-    private fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String>? {
+    private fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String> {
         return iMapOf("period" to period)
     }
 
-    private fun retrieveHistoricalTradingRewards(period: HistoricalTradingRewardsPeriod, previousUrl: String? = null) {
+    internal fun retrieveHistoricalTradingRewards(
+        period: HistoricalTradingRewardsPeriod,
+        previousUrl: String? = null
+    ) {
         val oldState = stateMachine.state
         val url = historicalTradingRewardAggregationsUrl() ?: return
         val params = historicalTradingRewardAggregationsParams(period.rawValue)
@@ -309,6 +424,26 @@ internal open class AccountSupervisor(
                     update(stateMachine.launchIncentivePoints(season, response), oldState)
                 }
             }
+        }
+    }
+
+    private fun updateConnectedSubaccountNumber() {
+        if (subaccountNumber != connectedSubaccountNumber) {
+            connectedSubaccountNumber = if (canConnectTo(subaccountNumber)) {
+                subaccountNumber
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun canConnectTo(subaccountNumber: Int): Boolean {
+        return stateMachine.state?.subaccount(subaccountNumber) != null
+    }
+
+    internal fun retrieveHistoricalPnls() {
+        for ((_, subaccount) in subaccounts) {
+            subaccount.retrieveHistoricalPnls()
         }
     }
 
@@ -366,50 +501,333 @@ internal open class AccountSupervisor(
             }
         }
     }
+
+    open fun screenSourceAddress() {
+        val address = sourceAddress
+        if (address != null) {
+            screen(address) { restriction ->
+                when (restriction) {
+                    Restriction.USER_RESTRICTED,
+                    Restriction.NO_RESTRICTION,
+                    Restriction.USER_RESTRICTION_UNKNOWN -> {
+                        sourceAddressRestriction = restriction
+                    }
+
+                    else -> {
+                        throw Exception("Unexpected restriction value")
+                    }
+                }
+                rerunAddressScreeningDelay(sourceAddressRestriction)?.let {
+                    val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+                    sourceAddressTimer = timer.schedule(it, it) {
+                        screenSourceAddress()
+                        true
+                    }
+                }
+            }
+        } else {
+            sourceAddressRestriction = Restriction.NO_RESTRICTION
+        }
+    }
+
+
+    private fun didSetAccountAddressRestriction(accountAddressRestriction: Restriction?) {
+        updateAddressRestriction()
+    }
+
+
+    open fun screenAccountAddress() {
+        val address = accountAddress
+        screen(address) { restriction ->
+            when (restriction) {
+                Restriction.USER_RESTRICTED,
+                Restriction.NO_RESTRICTION,
+                Restriction.USER_RESTRICTION_UNKNOWN -> {
+                    accountAddressRestriction = restriction
+                }
+
+                else -> {
+                    throw Exception("Unexpected restriction value")
+                }
+            }
+            rerunAddressScreeningDelay(accountAddressRestriction)?.let {
+                val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+                accountAddressTimer = timer.schedule(it, it) {
+                    screenAccountAddress()
+                    true
+                }
+            }
+        }
+    }
+
+    private fun rerunAddressScreeningDelay(restriction: Restriction?): Double? {
+        return when (restriction) {
+            Restriction.NO_RESTRICTION -> addressContinuousMonitoringDuration
+            Restriction.USER_RESTRICTION_UNKNOWN -> addressRetryDuration
+            else -> null
+        }
+    }
+
+    open fun screen(address: String, callback: ((Restriction) -> Unit)) {
+        val url = screenUrl()
+        if (url != null) {
+            helper.get(
+                url,
+                mapOf("address" to address),
+                null,
+                callback = { _, response, httpCode ->
+                    if (helper.success(httpCode) && response != null) {
+                        val payload = helper.parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val restricted = helper.parser.asBool(payload["restricted"]) ?: false
+                            callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                        } else {
+                            callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                        }
+                    } else {
+                        if (httpCode == 403) {
+                            // It could be 403 due to GEOBLOCKED
+                            val usageRestriction = restrictionReason(response)
+                            callback(usageRestriction.restriction)
+                        } else {
+                            callback(Restriction.USER_RESTRICTION_UNKNOWN)
+                        }
+                    }
+                })
+        }
+    }
+
+    private fun screenUrl(): String? {
+        return helper.configs.publicApiUrl("screen")
+    }
+
+    internal fun restrictionReason(response: String?): UsageRestriction {
+        return if (response != null) {
+            val json = helper.parser.decodeJsonObject(response)
+            val errors = helper.parser.asList(helper.parser.value(json, "errors"))
+            val geoRestriciton = errors?.firstOrNull { error ->
+                val code = helper.parser.asString(helper.parser.value(error, "code"))
+                code?.contains("GEOBLOCKED") == true
+            }
+
+            if (geoRestriciton !== null)
+                UsageRestriction.http403Restriction
+            else
+                UsageRestriction.userRestriction
+        } else UsageRestriction.http403Restriction
+    }
+
+    private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
+        sourceAddressTimer = null
+        sourceAddressRestriction = null
+        screenSourceAddress()
+        onboarding = sourceAddress?.let {
+            val newOnboarding = OnboardingSupervisor(
+                stateMachine,
+                helper,
+                analyticsUtils,
+                configs.onboardingConfigs,
+                accountAddress,
+                it,
+            )
+            newOnboarding.readyToConnect = readyToConnect
+            newOnboarding.indexerConnected = indexerConnected
+            newOnboarding.socketConnected = socketConnected
+            newOnboarding.validatorConnected = validatorConnected
+            newOnboarding
+        }
+    }
+
+    private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {
+        updateAddressRestriction()
+    }
+
+    private fun updateAddressRestriction() {
+        val restrictions: Set<Restriction?> =
+            iSetOf(accountAddressRestriction, sourceAddressRestriction)
+        addressRestriction = if (restrictions.contains(Restriction.USER_RESTRICTED)) {
+            UsageRestriction.userRestriction
+        } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
+            UsageRestriction.userRestrictionUnknown
+        } else {
+            if (sourceAddressRestriction == null && accountAddressRestriction == null) {
+                null
+            } else {
+                UsageRestriction.noRestriction
+            }
+        }
+    }
+
+    private fun didSetAddressRestriction(addressRestriction: UsageRestriction?) {
+        updateRestriction()
+    }
+
+    internal open fun updateRestriction() {
+        restriction = addressRestriction ?: UsageRestriction.noRestriction
+    }
+
+    private fun didSetRestriction(restriction: UsageRestriction?) {
+        val state = stateMachine.state
+        stateMachine.state = PerpetualState(
+            state?.assets,
+            state?.marketsSummary,
+            state?.orderbooks,
+            state?.candles,
+            state?.trades,
+            state?.historicalFundings,
+            state?.wallet,
+            state?.account,
+            state?.historicalPnl,
+            state?.fills,
+            state?.transfers,
+            state?.fundingPayments,
+            state?.configs,
+            state?.input,
+            state?.availableSubaccountNumbers ?: iListOf(),
+            state?.transferStatuses,
+            restriction,
+            state?.launchIncentive,
+        )
+        helper.ioImplementations.threading?.async(ThreadingType.main) {
+            helper.stateNotification?.stateChanged(
+                stateMachine.state,
+                StateChanges(
+                    iListOf(Changes.restriction),
+                ),
+            )
+        }
+    }
+
+    internal fun receiveSubaccountChannelSocketData(
+        info: SocketInfo,
+        subaccountNumber: Int,
+        payload: IMap<String, Any>,
+        height: BlockAndTime?,
+    ) {
+        val subaccount = subaccounts[subaccountNumber] ?: return
+        subaccount.receiveSubaccountChannelSocketData(info, payload, height)
+    }
 }
 
-internal class AutoAccountSupervisor(
-    stateMachine: TradingStateMachine,
-    helper: NetworkHelper,
-    configs: AccountConfigs,
-    accountAddress: String,
-    private val subaccountNumber: Int,
-) : AccountSupervisor(stateMachine, helper, configs, accountAddress) {
-    internal var connectedSubaccountNumber: Int? = null
-        set(value) {
-            if (field != value) {
-                val oldValue = value
-                field = value
-                didSetConnectedSubaccountNumber(oldValue)
-            }
-        }
+// Extension properties to help with current singular subaccount
 
-    override fun retrievedSubaccounts(response: String) {
-        super.retrievedSubaccounts(response)
-        updateConnectedSubaccountNumber()
+private val AccountSupervisor.subaccount: SubaccountSupervisor?
+    get() {
+        return if (subaccounts.count() == 1) subaccounts.values.firstOrNull() else null
     }
 
-    private fun didSetConnectedSubaccountNumber(oldValue: Int?) {
-        if (oldValue != null) {
-            unsubscribeFromSubaccount(oldValue)
+internal var AccountSupervisor.connectedSubaccountNumber: Int?
+    get() {
+        return subaccount?.subaccountNumber
+    }
+    set(value) {
+        subaccounts.keys.filter { it != value }.forEach {
+            subaccounts[it]?.forceRelease()
+            subaccounts.remove(it)
         }
-        if (connectedSubaccountNumber != null) {
-            subscribeToSubaccount(connectedSubaccountNumber!!)
+        if (subaccounts.contains(value).not() && value != null) {
+            subscribeToSubaccount(value)
         }
     }
 
-
-    private fun updateConnectedSubaccountNumber() {
-        if (connectedSubaccountNumber != subaccountNumber) {
-            connectedSubaccountNumber = if (canConnectTo(subaccountNumber)) {
-                subaccountNumber
-            } else {
-                null
-            }
-        }
+internal val AccountSupervisor.notifications: IMap<String, Notification>
+    get() {
+        return subaccount?.notifications ?: iMapOf()
     }
 
-    private fun canConnectTo(subaccountNumber: Int): Boolean {
-        return stateMachine.state?.subaccount(subaccountNumber) != null
+
+internal fun AccountSupervisor.trade(data: String?, type: TradeInputField?) {
+    subaccount?.trade(data, type)
+}
+
+internal fun AccountSupervisor.closePosition(data: String?, type: ClosePositionInputField) {
+    subaccount?.closePosition(data, type)
+}
+
+internal fun AccountSupervisor.transfer(data: String?, type: TransferInputField?) {
+    onboarding?.transfer(data, type, connectedSubaccountNumber)
+}
+
+
+internal fun AccountSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
+    return subaccount?.placeOrderPayload(currentHeight)
+}
+
+internal fun AccountSupervisor.closePositionPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
+    return subaccount?.closePositionPayload(currentHeight)
+}
+
+internal fun AccountSupervisor.cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
+    return subaccount?.cancelOrderPayload(orderId)
+}
+
+internal fun AccountSupervisor.depositPayload(): HumanReadableDepositPayload? {
+    return subaccount?.depositPayload()
+}
+
+internal fun AccountSupervisor.withdrawPayload(): HumanReadableWithdrawPayload? {
+    return subaccount?.withdrawPayload()
+}
+
+internal fun AccountSupervisor.subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
+    return subaccount?.subaccountTransferPayload()
+}
+
+internal fun AccountSupervisor.commitPlaceOrder(
+    currentHeight: Int?,
+    callback: TransactionCallback
+): HumanReadablePlaceOrderPayload? {
+    return subaccount?.commitPlaceOrder(currentHeight, callback)
+}
+
+internal fun AccountSupervisor.commitClosePosition(
+    currentHeight: Int?,
+    callback: TransactionCallback
+): HumanReadablePlaceOrderPayload? {
+    return subaccount?.commitClosePosition(currentHeight, callback)
+}
+
+internal fun AccountSupervisor.stopWatchingLastOrder() {
+    subaccount?.stopWatchingLastOrder()
+}
+
+internal fun AccountSupervisor.commitTransfer(callback: TransactionCallback) {
+    onboarding?.commitTransfer(connectedSubaccountNumber, callback)
+}
+
+internal fun AccountSupervisor.commitCCTPWithdraw(callback: TransactionCallback) {
+    onboarding?.commitCCTPWithdraw(connectedSubaccountNumber, callback)
+}
+
+internal fun AccountSupervisor.faucet(amount: Double, callback: TransactionCallback) {
+    subaccount?.faucet(amount, callback)
+}
+
+internal fun AccountSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {
+    subaccount?.cancelOrder(orderId, callback)
+}
+
+internal fun AccountSupervisor.orderCanceled(orderId: String) {
+    subaccount?.orderCanceled(orderId)
+}
+
+internal fun AccountSupervisor.transferStatus(
+    hash: String,
+    fromChainId: String?,
+    toChainId: String?,
+    isCctp: Boolean
+) {
+    onboarding?.transferStatus(hash, fromChainId, toChainId, isCctp)
+}
+
+internal fun AccountSupervisor.refresh(data: ApiData) {
+    when (data) {
+        ApiData.HISTORICAL_TRADING_REWARDS -> {
+            retrieveHistoricalTradingRewards(historicalTradingRewardPeriod)
+        }
+
+        ApiData.HISTORICAL_PNLS -> {
+            subaccount?.refresh(data)
+        }
     }
 }

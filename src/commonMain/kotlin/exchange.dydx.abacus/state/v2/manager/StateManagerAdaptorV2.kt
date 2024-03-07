@@ -1,0 +1,453 @@
+package exchange.dydx.abacus.state.v2.manager
+
+import BlockAndTime
+import NetworkState
+import exchange.dydx.abacus.output.Notification
+import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.protocols.DataNotificationProtocol
+import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
+import exchange.dydx.abacus.responses.ParsingException
+import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
+import exchange.dydx.abacus.state.manager.utils.ApiData
+import exchange.dydx.abacus.state.manager.utils.HistoricalPnlPeriod
+import exchange.dydx.abacus.state.manager.utils.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.utils.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.utils.OrderbookGrouping
+import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.state.model.PerpTradingStateMachine
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.v2.supervisor.AccountsSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
+import exchange.dydx.abacus.state.v2.supervisor.ConnectionDelegate
+import exchange.dydx.abacus.state.v2.supervisor.ConnectionsSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.MarketsSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
+import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
+import exchange.dydx.abacus.state.v2.supervisor.accountAddress
+import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
+import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
+import exchange.dydx.abacus.state.v2.supervisor.closePosition
+import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
+import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
+import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
+import exchange.dydx.abacus.state.v2.supervisor.commitTransfer
+import exchange.dydx.abacus.state.v2.supervisor.commitCCTPWithdraw
+import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
+import exchange.dydx.abacus.state.v2.supervisor.depositPayload
+import exchange.dydx.abacus.state.v2.supervisor.faucet
+import exchange.dydx.abacus.state.v2.supervisor.marketId
+import exchange.dydx.abacus.state.v2.supervisor.notifications
+import exchange.dydx.abacus.state.v2.supervisor.orderCanceled
+import exchange.dydx.abacus.state.v2.supervisor.placeOrderPayload
+import exchange.dydx.abacus.state.v2.supervisor.refresh
+import exchange.dydx.abacus.state.v2.supervisor.screen
+import exchange.dydx.abacus.state.v2.supervisor.sourceAddress
+import exchange.dydx.abacus.state.v2.supervisor.stopWatchingLastOrder
+import exchange.dydx.abacus.state.v2.supervisor.subaccountNumber
+import exchange.dydx.abacus.state.v2.supervisor.subaccountTransferPayload
+import exchange.dydx.abacus.state.v2.supervisor.trade
+import exchange.dydx.abacus.state.v2.supervisor.transfer
+import exchange.dydx.abacus.state.v2.supervisor.transferStatus
+import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
+import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.UIImplementations
+import exchange.dydx.abacus.utils.iMapOf
+import kollections.JsExport
+import kollections.iListOf
+
+@JsExport
+internal class StateManagerAdaptorV2(
+    val deploymentUri: String,
+    val environment: V4Environment,
+    val ioImplementations: IOImplementations,
+    val uiImplementations: UIImplementations,
+    val configs: V4StateManagerConfigs,
+    val appConfigs: AppConfigsV2,
+    var stateNotification: StateNotificationProtocol?,
+    var dataNotification: DataNotificationProtocol?,
+) : ConnectionDelegate {
+    var stateMachine: TradingStateMachine = PerpTradingStateMachine(
+        environment,
+        uiImplementations.localizer,
+        Formatter(uiImplementations.formatter),
+        127,
+    )
+
+    internal val jsonEncoder = JsonEncoder()
+    internal val parser = Parser()
+    internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
+
+    private val networkHelper = NetworkHelper(
+        deploymentUri,
+        environment,
+        uiImplementations,
+        ioImplementations,
+        configs,
+        stateNotification,
+        dataNotification,
+        parser,
+    )
+
+    private val connections = ConnectionsSupervisor(
+        stateMachine,
+        networkHelper,
+        analyticsUtils,
+        this,
+    )
+
+    private val system = SystemSupervisor(
+        stateMachine,
+        networkHelper,
+        analyticsUtils,
+        appConfigs.systemConfigs,
+    )
+
+    private val accounts = AccountsSupervisor(
+        stateMachine,
+        networkHelper,
+        analyticsUtils,
+        appConfigs.accountConfigs,
+    )
+
+    private val markets = MarketsSupervisor(
+        stateMachine,
+        networkHelper,
+        analyticsUtils,
+        appConfigs.marketConfigs,
+    )
+
+    internal var readyToConnect: Boolean = false
+        internal set(value) {
+            if (field != value) {
+                field = value
+                didSetReadyToConnect(field)
+            }
+        }
+
+    internal var indexerConnected: Boolean = false
+        internal set(value) {
+            if (field != value) {
+                field = value
+                didSetIndexerConnected(indexerConnected)
+            }
+        }
+
+    internal var socketConnected: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetSocketConnected(socketConnected)
+            }
+        }
+
+    internal var validatorConnected: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetValidatorConnected(validatorConnected)
+            }
+        }
+
+    internal var market: String?
+        get() {
+            return markets.marketId
+        }
+        set(value) {
+            markets.marketId = value
+        }
+
+    internal var candlesResolution: String
+        get() {
+            return markets.candlesResolution
+        }
+        set(value) {
+            markets.marketId = value
+        }
+
+
+    internal var orderbookGrouping: OrderbookGrouping
+        get() {
+            return markets.orderbookGrouping
+        }
+        set(value) {
+            markets.orderbookGrouping = value
+        }
+
+    internal var accountAddress: String?
+        get() {
+            return accounts.accountAddress
+        }
+        set(value) {
+            accounts.accountAddress = value
+        }
+
+    internal var sourceAddress: String?
+        get() {
+            return accounts.sourceAddress
+        }
+        set(value) {
+            accounts.sourceAddress = value
+        }
+
+    internal var historicalPnlPeriod: HistoricalPnlPeriod
+        get() {
+            return accounts.historicalPnlPeriod
+        }
+        set(value) {
+            accounts.historicalPnlPeriod = value
+        }
+
+    internal var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod
+        get() {
+            return accounts.historicalTradingRewardPeriod
+        }
+        set(value) {
+            accounts.historicalTradingRewardPeriod = value
+        }
+
+    internal var subaccountNumber: Int
+        get() = accounts.subaccountNumber
+        set(value) {
+            accounts.subaccountNumber = value
+        }
+
+    private val currentHeight: Int?
+        get() {
+            return connections.calculateCurrentHeight()
+        }
+
+    internal val notifications: IMap<String, Notification>
+        get() {
+            return accounts.notifications
+        }
+
+    internal val indexerState: NetworkState
+        get() {
+            return connections.indexerState
+        }
+
+    internal val validatorState: NetworkState
+        get() {
+            return connections.validatorState
+        }
+
+    private fun didSetReadyToConnect(readyToConnect: Boolean) {
+        connections.readyToConnect = readyToConnect
+        system.readyToConnect = readyToConnect
+        markets.readyToConnect = readyToConnect
+        accounts.readyToConnect = readyToConnect
+    }
+
+    private fun didSetIndexerConnected(indexerConnected: Boolean) {
+        system.indexerConnected = indexerConnected
+        markets.indexerConnected = indexerConnected
+        accounts.indexerConnected = indexerConnected
+    }
+
+    private fun didSetSocketConnected(socketConnected: Boolean) {
+        system.socketConnected = socketConnected
+        markets.socketConnected = socketConnected
+        accounts.socketConnected = socketConnected
+    }
+
+    private fun didSetValidatorConnected(validatorConnected: Boolean) {
+        system.validatorConnected = validatorConnected
+        markets.validatorConnected = validatorConnected
+        accounts.validatorConnected = validatorConnected
+    }
+
+    internal fun dispose() {
+        stateNotification = null
+        dataNotification = null
+        readyToConnect = false
+    }
+
+    override fun didConnectToIndexer(connectedToIndexer: Boolean) {
+        indexerConnected = connectedToIndexer
+    }
+
+    override fun didConnectToValidator(connectedToValidator: Boolean) {
+        validatorConnected = connectedToValidator
+    }
+
+    override fun didConnectToSocket(connectedToSocket: Boolean) {
+        socketConnected = connectedToSocket
+    }
+
+    override fun processSocketResponse(message: String) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            try {
+                val json = parser.decodeJsonObject(message)
+                if (json != null) {
+                    socket(json)
+                }
+            } catch (_: Exception) {
+
+            }
+        }
+    }
+
+    @Throws(Exception::class)
+    private fun socket(
+        payload: IMap<String, Any>,
+    ) {
+        val channel = parser.asString(payload["channel"]) ?: return
+        val type = parser.asString(payload["type"]) ?: return
+        val id = parser.asString(payload["id"]) ?: return
+
+        val info = SocketInfo(type, channel, id)
+
+
+        try {
+            when (channel) {
+                configs.marketsChannel() -> {
+                    val subaccountNumber = accounts.connectedSubaccountNumber
+                    markets.receiveMarketsChannelSocketData(info, payload, subaccountNumber)
+                }
+
+                configs.marketOrderbookChannel() -> {
+                    val subaccountNumber = accounts.connectedSubaccountNumber
+                    markets.receiveMarketOrderbooksChannelSocketData(
+                        info,
+                        payload,
+                        subaccountNumber
+                    )
+                }
+
+                configs.marketTradesChannel() -> {
+                    markets.receiveMarketTradesChannelSocketData(info, payload)
+                }
+
+                configs.marketCandlesChannel() -> {
+                    markets.receiveMarketCandlesChannelSocketData(info, payload)
+                }
+
+                configs.subaccountChannel() -> {
+                    accounts.receiveSubaccountChannelSocketData(info, payload, height())
+                }
+
+                else -> {
+                    throw ParsingException(
+                        ParsingErrorType.UnknownChannel,
+                        "$channel is not known"
+                    )
+                }
+            }
+        } catch (e: ParsingException) {
+            val error = ParsingError(
+                e.type,
+                e.message ?: "Unknown error",
+            )
+            emitError(error)
+        }
+    }
+
+    private fun emitError(error: ParsingError) {
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.errorsEmitted(iListOf(error))
+            dataNotification?.errorsEmitted(iListOf(error))
+        }
+    }
+
+    private fun height(): BlockAndTime? {
+        return null
+    }
+
+    internal fun trade(data: String?, type: TradeInputField?) {
+        accounts.trade(data, type)
+    }
+
+    internal fun closePosition(data: String?, type: ClosePositionInputField) {
+        accounts.closePosition(data, type)
+    }
+
+
+    internal fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
+        return accounts.placeOrderPayload(currentHeight)
+    }
+
+    internal fun closePositionPayload(): HumanReadablePlaceOrderPayload? {
+        return accounts.closePositionPayload(currentHeight)
+    }
+
+    internal fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
+        return accounts.cancelOrderPayload(orderId)
+    }
+
+    internal fun transfer(data: String?, type: TransferInputField?) {
+        accounts.transfer(data, type)
+    }
+
+    internal fun depositPayload(): HumanReadableDepositPayload? {
+        return accounts.depositPayload()
+    }
+
+    internal fun withdrawPayload(): HumanReadableWithdrawPayload? {
+        return accounts.withdrawPayload()
+    }
+
+    internal fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
+        return accounts.subaccountTransferPayload()
+    }
+
+    internal fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+        return accounts.commitPlaceOrder(currentHeight, callback)
+    }
+
+    internal fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+        return accounts.commitClosePosition(currentHeight, callback)
+    }
+
+    internal fun stopWatchingLastOrder() {
+        accounts.stopWatchingLastOrder()
+    }
+
+    internal fun commitTransfer(callback: TransactionCallback) {
+        return accounts.commitTransfer(callback)
+    }
+
+    internal fun commitCCTPWithdraw(callback: TransactionCallback) {
+        return accounts.commitCCTPWithdraw(callback)
+    }
+
+    internal fun cancelOrder(orderId: String, callback: TransactionCallback) {
+        accounts.cancelOrder(orderId, callback)
+    }
+
+    internal fun orderCanceled(orderId: String) {
+        accounts.orderCanceled(orderId)
+    }
+
+    internal fun faucet(amount: Double, callback: TransactionCallback) {
+        accounts.faucet(amount, callback)
+    }
+
+    internal fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
+        accounts.transferStatus(hash, fromChainId, toChainId, isCctp)
+    }
+
+    internal fun refresh(data: ApiData) {
+        accounts.refresh(data)
+    }
+
+    internal fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
+        accounts.screen(address, callback)
+    }
+}

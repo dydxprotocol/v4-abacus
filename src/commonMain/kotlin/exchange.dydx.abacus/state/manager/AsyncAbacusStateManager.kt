@@ -52,7 +52,7 @@ class AsyncAbacusStateManager(
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
-) {
+): AsyncAbacusStateManagerProtocol {
     init {
         if (appConfigs.enableLogger) {
             DebugLogger.enable()
@@ -79,12 +79,12 @@ class AsyncAbacusStateManager(
             }
         }
 
-    val availableEnvironments: IList<SelectionOption>
+    override val availableEnvironments: IList<SelectionOption>
         get() = environments.map { environment ->
             SelectionOption(environment.id, environment.name, null, null)
         }
 
-    var environmentId: String? = null
+    override var environmentId: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -102,10 +102,10 @@ class AsyncAbacusStateManager(
             }
         }
 
-    val environment: V4Environment?
+    override val environment: V4Environment?
         get() = _environment
 
-    var documentation: Documentation? = null
+    override var documentation: Documentation? = null
         private set
 
     var adaptor: StateManagerAdaptor? = null
@@ -126,7 +126,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var readyToConnect: Boolean = false
+    override var readyToConnect: Boolean = false
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -134,7 +134,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var market: String? = null
+    override var market: String? = null
         set(value) {
             if (isMarketValid(value) && field != value) {
                 field = value
@@ -144,7 +144,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var accountAddress: String? = null
+    override var accountAddress: String? = null
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -152,7 +152,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var sourceAddress: String? = null
+    override var sourceAddress: String? = null
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -160,7 +160,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var subaccountNumber: Int = 0
+    override var subaccountNumber: Int = 0
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -168,7 +168,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var orderbookGrouping: OrderbookGrouping = OrderbookGrouping.none
+    override var orderbookGrouping: OrderbookGrouping = OrderbookGrouping.none
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -176,7 +176,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period7d
+    override var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period7d
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -184,7 +184,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
+    override var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
         HistoricalTradingRewardsPeriod.WEEKLY
         set(value) {
             field = value
@@ -193,7 +193,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var candlesResolution: String = "1DAY"
+    override var candlesResolution: String = "1DAY"
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -399,24 +399,19 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun setAddresses(source: String?, account: String?) {
-        sourceAddress = source
-        accountAddress = account
-    }
-
-    fun trade(data: String?, type: TradeInputField?) {
+    override fun trade(data: String?, type: TradeInputField?) {
         adaptor?.trade(data, type)
     }
 
-    fun closePosition(data: String?, type: ClosePositionInputField) {
+    override fun closePosition(data: String?, type: ClosePositionInputField) {
         adaptor?.closePosition(data, type)
     }
 
-    fun transfer(data: String?, type: TransferInputField?) {
+    override fun transfer(data: String?, type: TransferInputField?) {
         adaptor?.transfer(data, type)
     }
 
-    fun isMarketValid(marketId: String?): Boolean {
+    override fun isMarketValid(marketId: String?): Boolean {
         return if (marketId == null) {
             true
         } else {
@@ -425,39 +420,39 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
+    override fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
         adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
-    fun refresh(data: ApiData) {
+    override fun refresh(data: ApiData) {
         adaptor?.refresh(data)
     }
 
-    fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
+    override fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
         return adaptor?.placeOrderPayload()
     }
 
-    fun closePositionPayload(): HumanReadablePlaceOrderPayload? {
+    override fun closePositionPayload(): HumanReadablePlaceOrderPayload? {
         return adaptor?.closePositionPayload()
     }
 
-    fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
+    override fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
         return adaptor?.cancelOrderPayload(orderId)
     }
 
-    fun depositPayload(): HumanReadableDepositPayload? {
+    override fun depositPayload(): HumanReadableDepositPayload? {
         return adaptor?.depositPayload()
     }
 
-    fun withdrawPayload(): HumanReadableWithdrawPayload? {
+    override fun withdrawPayload(): HumanReadableWithdrawPayload? {
         return adaptor?.withdrawPayload()
     }
 
-    fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
+    override fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
         return adaptor?.subaccountTransferPayload()
     }
 
-    fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+    override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return try {
             adaptor?.commitPlaceOrder(callback)
         } catch (e: Exception) {
@@ -467,7 +462,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+    override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return try {
             adaptor?.commitClosePosition(callback)
         } catch (e: Exception) {
@@ -477,11 +472,11 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun stopWatchingLastOrder() {
+    override fun stopWatchingLastOrder() {
         adaptor?.stopWatchingLastOrder()
     }
 
-    fun commitTransfer(callback: TransactionCallback) {
+    override fun commitTransfer(callback: TransactionCallback) {
         try {
             adaptor?.commitTransfer(callback)
         } catch (e: Exception) {
@@ -490,7 +485,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun commitCCTPWithdraw(callback: TransactionCallback) {
+    override fun commitCCTPWithdraw(callback: TransactionCallback) {
         try {
             adaptor?.commitCCTPWithdraw(callback)
         } catch (e: Exception) {
@@ -499,7 +494,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun faucet(amount: Double, callback: TransactionCallback) {
+    override fun faucet(amount: Double, callback: TransactionCallback) {
         try {
             adaptor?.faucet(amount, callback)
         } catch (e: Exception) {
@@ -508,7 +503,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun cancelOrder(orderId: String, callback: TransactionCallback) {
+    override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         try {
             adaptor?.cancelOrder(orderId, callback)
         } catch (e: Exception) {
@@ -524,7 +519,7 @@ class AsyncAbacusStateManager(
     // Bridge functions.
     // If client is not using cancelOrder function, it should call orderCanceled function with
     // payload from v4-client to process state
-    fun orderCanceled(orderId: String) {
+    override fun orderCanceled(orderId: String) {
         adaptor?.orderCanceled(orderId)
     }
 
@@ -541,7 +536,7 @@ class AsyncAbacusStateManager(
         )
     }
 
-    fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
+    override fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
         adaptor?.screen(address, callback)
     }
 }

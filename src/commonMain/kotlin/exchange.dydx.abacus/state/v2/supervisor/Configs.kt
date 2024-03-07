@@ -7,7 +7,6 @@ import kollections.JsExport
 data class SystemConfigs(
     val retrieveServerTime: Boolean,
     val retrieveMarketConfigs: Boolean,
-    val retrieveSparklines: Boolean,
     val retrieveEquityTiers: Boolean,
     val retrieveFeeTiers: Boolean,
     val retrieveRewardsParams: Boolean,
@@ -18,7 +17,6 @@ data class SystemConfigs(
         val forApp = SystemConfigs(
             retrieveServerTime = true,
             retrieveMarketConfigs = true,
-            retrieveSparklines = true,
             retrieveEquityTiers = true,
             retrieveFeeTiers = true,
             retrieveRewardsParams = true,
@@ -28,7 +26,6 @@ data class SystemConfigs(
         val forProgrammaticTraders = SystemConfigs(
             retrieveServerTime = true,
             retrieveMarketConfigs = true,
-            retrieveSparklines = false,
             retrieveEquityTiers = true,
             retrieveFeeTiers = true,
             retrieveRewardsParams = false,
@@ -40,6 +37,7 @@ data class SystemConfigs(
 
 @JsExport
 data class MarketConfigs(
+    val retrieveSparklines: Boolean,
     val retrieveCandles: Boolean,
     val retrieveHistoricalFundings: Boolean,
     val subscribeToOrderbook: Boolean,
@@ -48,6 +46,7 @@ data class MarketConfigs(
 ) {
     companion object {
         val forApp = MarketConfigs(
+            retrieveSparklines = true,
             retrieveCandles = true,
             retrieveHistoricalFundings = true,
             subscribeToOrderbook = true,
@@ -55,6 +54,7 @@ data class MarketConfigs(
             subscribeToCandles = true,
         )
         val forWeb = MarketConfigs(
+            retrieveSparklines = true,
             retrieveCandles = true,
             retrieveHistoricalFundings = true,
             subscribeToOrderbook = true,
@@ -62,6 +62,7 @@ data class MarketConfigs(
             subscribeToCandles = false,
         )
         val forProgrammaticTraders = MarketConfigs(
+            retrieveSparklines = false,
             retrieveCandles = false,
             retrieveHistoricalFundings = false,
             subscribeToOrderbook = true,
@@ -101,6 +102,7 @@ data class AccountConfigs(
     val retrieveHistoricalTradingRewards: Boolean,
     val retrieveLaunchIncentivePoints: Boolean,
     val transferNobleBalances: Boolean,
+    val onboardingConfigs: OnboardingConfigs,
     val subaccountConfigs: SubaccountConfigs,
 ) {
     companion object {
@@ -110,6 +112,7 @@ data class AccountConfigs(
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
             transferNobleBalances = true,
+            onboardingConfigs = OnboardingConfigs.forApp,
             subaccountConfigs = SubaccountConfigs.forApp,
         )
         val forProgrammaticTraders = AccountConfigs(
@@ -118,7 +121,28 @@ data class AccountConfigs(
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
             transferNobleBalances = true,
+            onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
             subaccountConfigs = SubaccountConfigs.forProgrammaticTraders,
+        )
+    }
+}
+
+@JsExport
+data class OnboardingConfigs(
+    val retrieveSquidRoutes: Boolean,
+) {
+    enum class SquidVersion {
+        V1, V2, V2DepositOnly, V2WithdrawalOnly,
+    }
+
+    var squidVersion: SquidVersion = SquidVersion.V1
+
+    companion object {
+        val forApp = OnboardingConfigs(
+            retrieveSquidRoutes = true,
+        )
+        val forProgrammaticTraders = OnboardingConfigs(
+            retrieveSquidRoutes = false,
         )
     }
 }
@@ -131,12 +155,6 @@ class AppConfigsV2(
     val loadRemote: Boolean = true,
     val enableLogger: Boolean = false,
 ) {
-    enum class SquidVersion {
-        V1, V2, V2DepositOnly, V2WithdrawalOnly,
-    }
-
-    var squidVersion: SquidVersion = SquidVersion.V1
-
     companion object {
         val forApp = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,

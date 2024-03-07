@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
+import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.manager.utils.AppConfigs
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
