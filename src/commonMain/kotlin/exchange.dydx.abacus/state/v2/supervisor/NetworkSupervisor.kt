@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap

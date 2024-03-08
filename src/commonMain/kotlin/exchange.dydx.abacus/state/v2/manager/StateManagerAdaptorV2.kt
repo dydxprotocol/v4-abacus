@@ -3,7 +3,9 @@ package exchange.dydx.abacus.state.v2.manager
 import BlockAndTime
 import NetworkState
 import exchange.dydx.abacus.output.Notification
+import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -13,6 +15,8 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.manager.utils.ApiData
@@ -38,6 +42,7 @@ import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
 import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
+import exchange.dydx.abacus.state.v2.supervisor.addressRestriction
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
@@ -99,7 +104,9 @@ internal class StateManagerAdaptorV2(
         stateNotification,
         dataNotification,
         parser,
-    )
+    ) { indexerRestriction ->
+        updateRestriction(indexerRestriction)
+    }
 
     private val connections = ConnectionsSupervisor(
         stateMachine,
@@ -135,6 +142,14 @@ internal class StateManagerAdaptorV2(
         analyticsUtils,
         appConfigs.marketConfigs,
     )
+
+    internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetRestriction(value)
+            }
+        }
 
     internal var readyToConnect: Boolean = false
         internal set(value) {
@@ -482,4 +497,41 @@ internal class StateManagerAdaptorV2(
     internal fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
         accounts.screen(address, callback)
     }
+
+    private fun updateRestriction(indexerRestriction: UsageRestriction?) {
+        restriction = indexerRestriction ?: accounts.addressRestriction ?: UsageRestriction.noRestriction
+    }
+
+    private fun didSetRestriction(restriction: UsageRestriction?) {
+        val state = stateMachine.state
+        stateMachine.state = PerpetualState(
+            state?.assets,
+            state?.marketsSummary,
+            state?.orderbooks,
+            state?.candles,
+            state?.trades,
+            state?.historicalFundings,
+            state?.wallet,
+            state?.account,
+            state?.historicalPnl,
+            state?.fills,
+            state?.transfers,
+            state?.fundingPayments,
+            state?.configs,
+            state?.input,
+            state?.availableSubaccountNumbers ?: iListOf(),
+            state?.transferStatuses,
+            restriction,
+            state?.launchIncentive,
+        )
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.stateChanged(
+                stateMachine.state,
+                StateChanges(
+                    iListOf(Changes.restriction),
+                ),
+            )
+        }
+    }
+
 }

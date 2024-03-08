@@ -49,7 +49,8 @@ internal class MarketsSupervisor(
     internal fun subscribeToMarket(market: String) {
         val marketSupervisor = markets[market]
         marketSupervisor?.retain() ?: run {
-            val newMarketSupervisor = MarketSupervisor(stateMachine, helper, analyticsUtils, configs, market)
+            val newMarketSupervisor =
+                MarketSupervisor(stateMachine, helper, analyticsUtils, configs, market)
             newMarketSupervisor.candlesResolution = candlesResolution
             newMarketSupervisor.orderbookGrouping = orderbookGrouping
             newMarketSupervisor.readyToConnect = readyToConnect
@@ -170,7 +171,7 @@ internal class MarketsSupervisor(
         info: SocketInfo,
         payload: IMap<String, Any>,
         subaccountNumber: Int?,
-        ) {
+    ) {
         val oldState = stateMachine.state
         var changes: StateChanges? = null
         try {
@@ -196,12 +197,14 @@ internal class MarketsSupervisor(
                 }
 
                 "channel_batch_data" -> {
-                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
-                        ?: throw ParsingException(
-                            ParsingErrorType.MissingContent,
-                            payload.toString()
-                        )
-                    changes = stateMachine.receivedBatchedMarketsChanges(content, subaccountNumber ?: 0)
+                    val content =
+                        helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                            ?: throw ParsingException(
+                                ParsingErrorType.MissingContent,
+                                payload.toString()
+                            )
+                    changes =
+                        stateMachine.receivedBatchedMarketsChanges(content, subaccountNumber ?: 0)
                 }
 
                 else -> {

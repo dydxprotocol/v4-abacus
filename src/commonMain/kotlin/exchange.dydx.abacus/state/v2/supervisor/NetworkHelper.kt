@@ -1,13 +1,16 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
@@ -15,6 +18,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
@@ -39,11 +43,23 @@ class NetworkHelper(
     internal val configs: V4StateManagerConfigs,
     internal var stateNotification: StateNotificationProtocol?,
     internal var dataNotification: DataNotificationProtocol?,
-    internal val parser: ParserProtocol
+    internal val parser: ParserProtocol,
+    internal val indexerRestrictionChanged: (UsageRestriction?) -> Unit
 ) {
     internal var lastValidatorCallTime: Instant? = null
     internal var lastIndexerCallTime: Instant? = null
     internal val jsonEncoder = JsonEncoder()
+
+    private var indexerRestriction: UsageRestriction? = null
+        set(value) {
+            if (field !== value) {
+                field = value
+                didSetIndexerRestriction(field)
+            }
+        }
+
+    private var restRetryTimers: MutableMap<String, LocalTimerProtocol> =
+        exchange.dydx.abacus.utils.mutableMapOf()
 
     internal fun retrieveTimed(
         url: String,
@@ -158,7 +174,7 @@ class NetworkHelper(
         } else url
     }
 
-    open fun getWithFullUrl(
+    private fun getWithFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
         callback: (url: String, response: String?, code: Int) -> Unit,
@@ -174,7 +190,25 @@ class NetworkHelper(
                         this.lastIndexerCallTime = time
                     }
                     try {
-                        callback(fullUrl, response, httpCode)
+                        when (httpCode) {
+                            403 -> {
+                                indexerRestriction = restrictionReason(response)
+                            }
+
+                            429 -> {
+                                // retry after 5 seconds
+                                val timer = ioImplementations.timer ?: CoroutineTimer.instance
+                                val localTimer = timer.run(5.0) {
+                                    restRetryTimers[fullUrl]?.cancel()
+                                    restRetryTimers.remove(fullUrl)
+
+                                    getWithFullUrl(fullUrl, headers, callback)
+                                }
+                                restRetryTimers[fullUrl] = localTimer
+                            }
+
+                            else -> callback(fullUrl, response, httpCode)
+                        }
                     } catch (e: Exception) {
                         e.printStackTrace()
                         val error = ParsingError(
@@ -187,6 +221,30 @@ class NetworkHelper(
                 }
             }
         }
+    }
+
+    private fun didSetIndexerRestriction(indexerRestriction: UsageRestriction?) {
+        notifyRestriction()
+    }
+
+    internal fun restrictionReason(response: String?): UsageRestriction {
+        return if (response != null) {
+            val json = parser.decodeJsonObject(response)
+            val errors = parser.asList(parser.value(json, "errors"))
+            val geoRestriciton = errors?.firstOrNull { error ->
+                val code = parser.asString(parser.value(error, "code"))
+                code?.contains("GEOBLOCKED") == true
+            }
+
+            if (geoRestriciton !== null)
+                UsageRestriction.http403Restriction
+            else
+                UsageRestriction.userRestriction
+        } else UsageRestriction.http403Restriction
+    }
+
+    private fun notifyRestriction() {
+        indexerRestrictionChanged(indexerRestriction)
     }
 
     fun post(

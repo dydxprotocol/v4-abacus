@@ -3,9 +3,9 @@ package exchange.dydx.abacus.state.v2.supervisor
 import BlockAndTime
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
@@ -22,7 +22,6 @@ import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
-import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
@@ -220,6 +219,11 @@ internal var AccountsSupervisor.connectedSubaccountNumber: Int?
     }
     set(value) {
         account?.connectedSubaccountNumber = value
+    }
+
+internal val AccountsSupervisor.addressRestriction: UsageRestriction?
+    get() {
+        return account?.addressRestriction
     }
 
 internal val AccountsSupervisor.notifications: IMap<String, Notification>

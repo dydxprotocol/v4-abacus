@@ -26,7 +26,6 @@ import exchange.dydx.abacus.state.manager.utils.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
-import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
@@ -156,6 +155,10 @@ internal open class AccountSupervisor(
                 didSetSubaccountNumber()
             }
         }
+
+    init {
+        screenAccountAddress()
+    }
 
     private fun didSetSubaccountNumber() {
         updateConnectedSubaccountNumber()
@@ -615,7 +618,9 @@ internal open class AccountSupervisor(
     private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
         sourceAddressTimer = null
         sourceAddressRestriction = null
-        screenSourceAddress()
+        if (sourceAddress != null) {
+            screenSourceAddress()
+        }
     }
 
     private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {
