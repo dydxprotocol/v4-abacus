@@ -296,7 +296,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: Map<String, Any>,
     ): Map<String, Any> {
         val modified = existing.mutable()
-        if (modified["status"] !== "CANCELED") {
+        if (modified["status"] !== "CANCELED" && modified["status"] !== "FILLED") {
             modified["status"] = "BEST_EFFORT_CANCELED"
         }
 
