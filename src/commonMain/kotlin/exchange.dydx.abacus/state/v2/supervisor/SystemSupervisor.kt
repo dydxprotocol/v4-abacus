@@ -57,12 +57,6 @@ internal class SystemSupervisor(
         }
     }
 
-    override fun didSetSocketConnected(socketConnected: Boolean) {
-        if (configs.subscribeToMarkets) {
-            marketsChannelSubscription(socketConnected)
-        }
-    }
-
     private fun retrieveServerTime() {
         val url = helper.configs.publicApiUrl("time")
         if (url != null) {
@@ -143,20 +137,5 @@ internal class SystemSupervisor(
                 }
             }
         }
-    }
-
-    @Throws(Exception::class)
-    private fun marketsChannelSubscription(subscribe: Boolean = true) {
-        val channel = helper.configs.marketsChannel() ?: throw Exception("market is null")
-        helper.socket(
-            helper.socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketsChannelData()) {
-                iMapOf("batched" to "true")
-            } else null
-        )
-    }
-
-    private fun shouldBatchMarketsChannelData(): Boolean {
-        return false
     }
 }

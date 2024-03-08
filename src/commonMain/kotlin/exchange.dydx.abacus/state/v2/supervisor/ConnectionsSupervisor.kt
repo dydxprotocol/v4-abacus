@@ -78,6 +78,12 @@ internal class ConnectionsSupervisor(
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
             bestEffortConnectIndexer()
+            bestEffortConnectChain()
+        } else {
+            indexerConfig = null
+            validatorConnected = false
+            socketConnected = false
+            disconnectSocket()
         }
     }
 
@@ -85,6 +91,7 @@ internal class ConnectionsSupervisor(
         super.didSetIndexerConnected(indexerConnected)
         delegate.didConnectToIndexer(indexerConnected)
         if (indexerConnected) {
+            retrieveHeights()
             connectSocket()
         } else {
             disconnectSocket()

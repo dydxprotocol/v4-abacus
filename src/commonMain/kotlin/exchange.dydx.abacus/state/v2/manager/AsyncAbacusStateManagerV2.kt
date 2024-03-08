@@ -13,6 +13,7 @@ import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.AppSettings
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManagerProtocol
+import exchange.dydx.abacus.state.manager.AsyncAbacusStateManagerSingletonProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.manager.utils.ApiData
@@ -54,7 +55,7 @@ class AsyncAbacusStateManagerV2(
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
-) : AsyncAbacusStateManagerProtocol {
+) : AsyncAbacusStateManagerProtocol, AsyncAbacusStateManagerSingletonProtocol {
     init {
         if (appConfigs.enableLogger) {
             DebugLogger.enable()

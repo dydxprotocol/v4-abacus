@@ -16,7 +16,6 @@ import exchange.dydx.abacus.state.manager.CctpConfig
 import exchange.dydx.abacus.state.manager.CctpWithdrawState
 import exchange.dydx.abacus.state.manager.ExchangeConfig
 import exchange.dydx.abacus.state.manager.ExchangeInfo
-import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.manager.utils.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.utils.HumanReadableFaucetPayload
@@ -55,8 +54,6 @@ internal class OnboardingSupervisor(
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
     private val configs: OnboardingConfigs,
-    internal val accountAddress: String,
-    internal val sourceAddress: String,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
@@ -172,22 +169,39 @@ internal class OnboardingSupervisor(
         }
     }
 
-    internal fun retrieveDepositRoute(state: PerpetualState?, subaccountNumber: Int?) {
+    private fun retrieveDepositRoute(
+        state: PerpetualState?,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?
+    ) {
         val isCctp = state?.input?.transfer?.isCctp ?: false
         when (configs.squidVersion) {
             OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
-                state, subaccountNumber
+                state, accountAddress, sourceAddress, subaccountNumber
             )
 
             OnboardingConfigs.SquidVersion.V2, OnboardingConfigs.SquidVersion.V2DepositOnly ->
                 if (isCctp) retrieveDepositRouteV2(
                     state,
+                    accountAddress,
+                    sourceAddress,
                     subaccountNumber
-                ) else retrieveDepositRouteV1(state, subaccountNumber)
+                ) else retrieveDepositRouteV1(
+                    state,
+                    accountAddress,
+                    sourceAddress,
+                    subaccountNumber
+                )
         }
     }
 
-    private fun retrieveDepositRouteV1(state: PerpetualState?, subaccountNumber: Int?) {
+    private fun retrieveDepositRouteV1(
+        state: PerpetualState?,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?
+    ) {
         val fromChain = state?.input?.transfer?.chain
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
@@ -217,10 +231,10 @@ internal class OnboardingSupervisor(
                 "fromAmount" to fromAmountString,
                 "toChain" to chainId,
                 "toToken" to dydxTokenDemon,
-                "toAddress" to accountAddress.toString(),
+                "toAddress" to accountAddress,
                 "slippage" to "1",
                 "enableForecall" to "false",
-                "fromAddress" to sourceAddress.toString(),
+                "fromAddress" to sourceAddress,
             )
 
             val oldState = stateMachine.state
@@ -241,7 +255,12 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun retrieveDepositRouteV2(state: PerpetualState?, subaccountNumber: Int?) {
+    private fun retrieveDepositRouteV2(
+        state: PerpetualState?,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?
+    ) {
         val fromChain = state?.input?.transfer?.chain
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
@@ -274,7 +293,7 @@ internal class OnboardingSupervisor(
             val body: Map<String, Any> = mapOf(
                 "fromChain" to fromChain,
                 "fromToken" to fromToken,
-                "fromAddress" to sourceAddress.toString(),
+                "fromAddress" to sourceAddress,
                 "fromAmount" to fromAmountString,
                 "toChain" to toChain,
                 "toToken" to toToken,
@@ -308,11 +327,13 @@ internal class OnboardingSupervisor(
     internal fun transfer(
         data: String?,
         type: TransferInputField?,
+        accountAddress: String,
+        sourceAddress: String,
         subaccountNumber: Int?,
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
             val stateResponse = stateMachine.transfer(data, type, subaccountNumber ?: 0)
-            didUpdateStateForTransfer(data, type, subaccountNumber)
+            didUpdateStateForTransfer(data, type, accountAddress, sourceAddress, subaccountNumber)
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(
                     stateResponse.state,
@@ -325,12 +346,14 @@ internal class OnboardingSupervisor(
     private fun didUpdateStateForTransfer(
         data: String?,
         type: TransferInputField?,
+        accountAddress: String,
+        sourceAddress: String,
         subaccountNumber: Int?
     ) {
         val state = stateMachine.state
         if (state?.input?.transfer?.type == TransferType.deposit) {
             if (type == TransferInputField.size) {
-                retrieveDepositRoute(state, subaccountNumber)
+                retrieveDepositRoute(state, accountAddress, sourceAddress, subaccountNumber)
             }
         } else if (state?.input?.transfer?.type == TransferType.withdrawal) {
             if (type == TransferInputField.usdcSize ||
@@ -347,12 +370,21 @@ internal class OnboardingSupervisor(
                 if (usdcSize > Numeric.double.ZERO) {
                     simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
                         if (gasFee != null) {
-                            retrieveWithdrawalRoute(state, decimals, gasFee, subaccountNumber)
+                            retrieveWithdrawalRoute(
+                                state,
+                                decimals,
+                                gasFee,
+                                accountAddress,
+                                sourceAddress,
+                                subaccountNumber
+                            )
                         } else {
                             retrieveWithdrawalRoute(
                                 state,
                                 decimals,
                                 Numeric.decimal.ZERO,
+                                accountAddress,
+                                sourceAddress,
                                 subaccountNumber
                             )
                         }
@@ -478,6 +510,8 @@ internal class OnboardingSupervisor(
         state: PerpetualState?,
         decimals: Int,
         gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
         subaccountNumber: Int?,
     ) {
         val isCctp =
@@ -488,18 +522,37 @@ internal class OnboardingSupervisor(
                 state,
                 decimals,
                 gas,
+                accountAddress,
+                sourceAddress,
                 subaccountNumber,
             )
 
             OnboardingConfigs.SquidVersion.V2, OnboardingConfigs.SquidVersion.V2WithdrawalOnly ->
-                if (isCctp) retrieveWithdrawalRouteV2(state, decimals, gas, subaccountNumber)
+                if (isCctp)
+                    retrieveWithdrawalRouteV2(
+                        state,
+                        decimals,
+                        gas,
+                        accountAddress,
+                        sourceAddress,
+                        subaccountNumber
+                    )
                 else if (isExchange) retrieveWithdrawalRouteNoble(
                     state,
                     decimals,
                     gas,
+                    accountAddress,
+                    sourceAddress,
                     subaccountNumber
                 )
-                else retrieveWithdrawalRouteV1(state, decimals, gas, subaccountNumber)
+                else retrieveWithdrawalRouteV1(
+                    state,
+                    decimals,
+                    gas,
+                    accountAddress,
+                    sourceAddress,
+                    subaccountNumber
+                )
         }
     }
 
@@ -507,6 +560,8 @@ internal class OnboardingSupervisor(
         state: PerpetualState?,
         decimals: Int,
         gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
         subaccountNumber: Int?,
     ) {
         val nobleChain = helper.configs.nobleChainId()
@@ -563,6 +618,8 @@ internal class OnboardingSupervisor(
         state: PerpetualState?,
         decimals: Int,
         gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
         subaccountNumber: Int?,
     ) {
         val toChain = state?.input?.transfer?.chain
@@ -620,6 +677,8 @@ internal class OnboardingSupervisor(
         state: PerpetualState?,
         decimals: Int,
         gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
         subaccountNumber: Int?,
     ) {
         val toChain = state?.input?.transfer?.chain
@@ -729,7 +788,7 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun transferNobleBalance(amount: BigDecimal) {
+    private fun transferNobleBalance(accountAddress: String, amount: BigDecimal) {
         val url = helper.configs.squidRoute()
         val fromChain = helper.configs.nobleChainId()
         val fromToken = helper.configs.nobleDenom()
@@ -900,7 +959,11 @@ internal class OnboardingSupervisor(
         }
     }
 
-    internal fun commitCCTPWithdraw(subaccountNumber: Int?, callback: TransactionCallback) {
+    internal fun commitCCTPWithdraw(
+        accountAddress: String,
+        subaccountNumber: Int?,
+        callback: TransactionCallback
+    ) {
         val state = stateMachine.state
         if (state?.input?.transfer?.type == TransferType.withdrawal) {
             val decimals = helper.environment.tokens["usdc"]?.decimals ?: 6
@@ -910,9 +973,23 @@ internal class OnboardingSupervisor(
             if (usdcSize > Numeric.double.ZERO) {
                 simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
                     if (gasFee != null) {
-                        cctpToNoble(state, decimals, gasFee, subaccountNumber, callback)
+                        cctpToNoble(
+                            state,
+                            decimals,
+                            gasFee,
+                            accountAddress,
+                            subaccountNumber,
+                            callback
+                        )
                     } else {
-                        cctpToNoble(state, decimals, Numeric.decimal.ZERO, subaccountNumber, callback)
+                        cctpToNoble(
+                            state,
+                            decimals,
+                            Numeric.decimal.ZERO,
+                            accountAddress,
+                            subaccountNumber,
+                            callback
+                        )
                     }
                 }
             } else {
@@ -928,13 +1005,14 @@ internal class OnboardingSupervisor(
         state: PerpetualState?,
         decimals: Int,
         gas: BigDecimal,
+        accountAddress: String,
         subaccountNumber: Int?,
         callback: TransactionCallback
     ) {
         val url = helper.configs.squidRoute()
         val nobleChain = helper.configs.nobleChainId()
         val nobleToken = helper.configs.nobleDenom()
-        val nobleAddress = accountAddress?.toNobleAddress()
+        val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
         val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
@@ -962,7 +1040,7 @@ internal class OnboardingSupervisor(
                 "fromAmount" to fromAmountString,
                 "fromChain" to chainId,
                 "fromToken" to dydxTokenDemon,
-                "fromAddress" to accountAddress.toString(),
+                "fromAddress" to accountAddress,
                 "slippage" to "1",
                 "enableForecall" to "false",
             )
@@ -973,7 +1051,12 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val json = helper.parser.decodeJsonObject(response)
                     val ibcPayload =
-                        helper.parser.asString(helper.parser.value(json, "route.transactionRequest.data"))
+                        helper.parser.asString(
+                            helper.parser.value(
+                                json,
+                                "route.transactionRequest.data"
+                            )
+                        )
                     if (ibcPayload != null) {
                         val payload = helper.jsonEncoder.encode(
                             mapOf(

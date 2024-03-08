@@ -32,13 +32,9 @@ interface AsyncAbacusStateManagerProtocol {
     var readyToConnect: Boolean
 
     // account/subaccount data options
-    var accountAddress: String?
-    var sourceAddress: String?
-    var subaccountNumber: Int
     var historicalPnlPeriod: HistoricalPnlPeriod
 
     // market data options
-    var market: String?
     var orderbookGrouping: OrderbookGrouping
     var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod
     var candlesResolution: String
@@ -84,7 +80,15 @@ interface AsyncAbacusStateManagerProtocol {
     fun screen(address: String, callback: (restriction: Restriction) -> Unit)
 }
 
-internal fun AsyncAbacusStateManagerProtocol.setAddresses(source: String?, account: String?) {
+
+interface AsyncAbacusStateManagerSingletonProtocol {
+    var accountAddress: String?
+    var sourceAddress: String?
+    var subaccountNumber: Int
+    var market: String?
+}
+
+internal fun AsyncAbacusStateManagerSingletonProtocol.setAddresses(source: String?, account: String?) {
     accountAddress = account
     sourceAddress = source
 }

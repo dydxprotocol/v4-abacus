@@ -52,7 +52,6 @@ internal open class AccountSupervisor(
     internal val accountAddress: String,
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
     val subaccounts = mutableMapOf<Int, SubaccountSupervisor>()
-    var onboarding: OnboardingSupervisor? = null
 
     private val accountBalancePollingDuration = 10.0
     private var accountBalancesTimer: LocalTimerProtocol? = null
@@ -194,7 +193,6 @@ internal open class AccountSupervisor(
         for ((_, subaccountSupervisor) in subaccounts) {
             subaccountSupervisor.readyToConnect = readyToConnect
         }
-        onboarding?.readyToConnect = readyToConnect
 
         if (readyToConnect) {
             if (configs.retrieveLaunchIncentivePoints) {
@@ -208,7 +206,6 @@ internal open class AccountSupervisor(
         for ((_, subaccountSupervisor) in subaccounts) {
             subaccountSupervisor.indexerConnected = indexerConnected
         }
-        onboarding?.indexerConnected = indexerConnected
 
         if (indexerConnected) {
             if (configs.retrieveSubaccounts) {
@@ -225,7 +222,6 @@ internal open class AccountSupervisor(
         for ((_, subaccountSupervisor) in subaccounts) {
             subaccountSupervisor.validatorConnected = validatorConnected
         }
-        onboarding?.validatorConnected = validatorConnected
 
         if (validatorConnected) {
             if (configs.retrieveBalances) {
@@ -242,7 +238,6 @@ internal open class AccountSupervisor(
         for ((_, subaccountSupervisor) in subaccounts) {
             subaccountSupervisor.socketConnected = socketConnected
         }
-        onboarding?.socketConnected = socketConnected
     }
 
     private fun retrieveSubaccounts() {
@@ -621,21 +616,6 @@ internal open class AccountSupervisor(
         sourceAddressTimer = null
         sourceAddressRestriction = null
         screenSourceAddress()
-        onboarding = sourceAddress?.let {
-            val newOnboarding = OnboardingSupervisor(
-                stateMachine,
-                helper,
-                analyticsUtils,
-                configs.onboardingConfigs,
-                accountAddress,
-                it,
-            )
-            newOnboarding.readyToConnect = readyToConnect
-            newOnboarding.indexerConnected = indexerConnected
-            newOnboarding.socketConnected = socketConnected
-            newOnboarding.validatorConnected = validatorConnected
-            newOnboarding
-        }
     }
 
     private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {
@@ -744,11 +724,6 @@ internal fun AccountSupervisor.closePosition(data: String?, type: ClosePositionI
     subaccount?.closePosition(data, type)
 }
 
-internal fun AccountSupervisor.transfer(data: String?, type: TransferInputField?) {
-    onboarding?.transfer(data, type, connectedSubaccountNumber)
-}
-
-
 internal fun AccountSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
     return subaccount?.placeOrderPayload(currentHeight)
 }
@@ -791,14 +766,6 @@ internal fun AccountSupervisor.stopWatchingLastOrder() {
     subaccount?.stopWatchingLastOrder()
 }
 
-internal fun AccountSupervisor.commitTransfer(callback: TransactionCallback) {
-    onboarding?.commitTransfer(connectedSubaccountNumber, callback)
-}
-
-internal fun AccountSupervisor.commitCCTPWithdraw(callback: TransactionCallback) {
-    onboarding?.commitCCTPWithdraw(connectedSubaccountNumber, callback)
-}
-
 internal fun AccountSupervisor.faucet(amount: Double, callback: TransactionCallback) {
     subaccount?.faucet(amount, callback)
 }
@@ -809,15 +776,6 @@ internal fun AccountSupervisor.cancelOrder(orderId: String, callback: Transactio
 
 internal fun AccountSupervisor.orderCanceled(orderId: String) {
     subaccount?.orderCanceled(orderId)
-}
-
-internal fun AccountSupervisor.transferStatus(
-    hash: String,
-    fromChainId: String?,
-    toChainId: String?,
-    isCctp: Boolean
-) {
-    onboarding?.transferStatus(hash, fromChainId, toChainId, isCctp)
 }
 
 internal fun AccountSupervisor.refresh(data: ApiData) {

@@ -235,11 +235,6 @@ internal fun AccountsSupervisor.closePosition(data: String?, type: ClosePosition
     account?.closePosition(data, type)
 }
 
-internal fun AccountsSupervisor.transfer(data: String?, type: TransferInputField?) {
-    account?.transfer(data, type)
-}
-
-
 internal fun AccountsSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
     return account?.placeOrderPayload(currentHeight)
 }
@@ -282,14 +277,6 @@ internal fun AccountsSupervisor.stopWatchingLastOrder() {
     account?.stopWatchingLastOrder()
 }
 
-internal fun AccountsSupervisor.commitTransfer(callback: TransactionCallback) {
-    account?.commitTransfer(callback)
-}
-
-internal fun AccountsSupervisor.commitCCTPWithdraw(callback: TransactionCallback) {
-    account?.commitCCTPWithdraw(callback)
-}
-
 internal fun AccountsSupervisor.faucet(amount: Double, callback: TransactionCallback) {
     account?.faucet(amount, callback)
 }
@@ -302,9 +289,6 @@ internal fun AccountsSupervisor.orderCanceled(orderId: String) {
     account?.orderCanceled(orderId)
 }
 
-internal fun AccountsSupervisor.transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
-    account?.transferStatus(hash, fromChainId, toChainId, isCctp)
-}
 
 internal fun AccountsSupervisor.refresh(data: ApiData) {
     account?.refresh(data)

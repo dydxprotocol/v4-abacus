@@ -35,6 +35,7 @@ import exchange.dydx.abacus.state.v2.supervisor.ConnectionDelegate
 import exchange.dydx.abacus.state.v2.supervisor.ConnectionsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.MarketsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
+import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
@@ -43,8 +44,6 @@ import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
-import exchange.dydx.abacus.state.v2.supervisor.commitTransfer
-import exchange.dydx.abacus.state.v2.supervisor.commitCCTPWithdraw
 import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.depositPayload
 import exchange.dydx.abacus.state.v2.supervisor.faucet
@@ -59,8 +58,6 @@ import exchange.dydx.abacus.state.v2.supervisor.stopWatchingLastOrder
 import exchange.dydx.abacus.state.v2.supervisor.subaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.subaccountTransferPayload
 import exchange.dydx.abacus.state.v2.supervisor.trade
-import exchange.dydx.abacus.state.v2.supervisor.transfer
-import exchange.dydx.abacus.state.v2.supervisor.transferStatus
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
@@ -68,7 +65,6 @@ import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.UIImplementations
-import exchange.dydx.abacus.utils.iMapOf
 import kollections.JsExport
 import kollections.iListOf
 
@@ -117,6 +113,13 @@ internal class StateManagerAdaptorV2(
         networkHelper,
         analyticsUtils,
         appConfigs.systemConfigs,
+    )
+
+    private val onboarding = OnboardingSupervisor(
+        stateMachine,
+        networkHelper,
+        analyticsUtils,
+        appConfigs.onboardingConfigs,
     )
 
     private val accounts = AccountsSupervisor(
@@ -178,7 +181,7 @@ internal class StateManagerAdaptorV2(
             return markets.candlesResolution
         }
         set(value) {
-            markets.marketId = value
+            markets.candlesResolution = value
         }
 
 
@@ -251,24 +254,29 @@ internal class StateManagerAdaptorV2(
     private fun didSetReadyToConnect(readyToConnect: Boolean) {
         connections.readyToConnect = readyToConnect
         system.readyToConnect = readyToConnect
+        onboarding.readyToConnect = readyToConnect
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
     }
 
     private fun didSetIndexerConnected(indexerConnected: Boolean) {
         system.indexerConnected = indexerConnected
+        onboarding.indexerConnected = indexerConnected
         markets.indexerConnected = indexerConnected
         accounts.indexerConnected = indexerConnected
     }
 
     private fun didSetSocketConnected(socketConnected: Boolean) {
+        connections.socketConnected = socketConnected
         system.socketConnected = socketConnected
+        onboarding.socketConnected = socketConnected
         markets.socketConnected = socketConnected
         accounts.socketConnected = socketConnected
     }
 
     private fun didSetValidatorConnected(validatorConnected: Boolean) {
         system.validatorConnected = validatorConnected
+        onboarding.validatorConnected = validatorConnected
         markets.validatorConnected = validatorConnected
         accounts.validatorConnected = validatorConnected
     }
@@ -308,46 +316,57 @@ internal class StateManagerAdaptorV2(
     private fun socket(
         payload: IMap<String, Any>,
     ) {
-        val channel = parser.asString(payload["channel"]) ?: return
         val type = parser.asString(payload["type"]) ?: return
-        val id = parser.asString(payload["id"]) ?: return
-
-        val info = SocketInfo(type, channel, id)
-
 
         try {
-            when (channel) {
-                configs.marketsChannel() -> {
-                    val subaccountNumber = accounts.connectedSubaccountNumber
-                    markets.receiveMarketsChannelSocketData(info, payload, subaccountNumber)
+            when (type) {
+                "connected" -> {
+                    socketConnected = true
                 }
 
-                configs.marketOrderbookChannel() -> {
-                    val subaccountNumber = accounts.connectedSubaccountNumber
-                    markets.receiveMarketOrderbooksChannelSocketData(
-                        info,
-                        payload,
-                        subaccountNumber
-                    )
-                }
-
-                configs.marketTradesChannel() -> {
-                    markets.receiveMarketTradesChannelSocketData(info, payload)
-                }
-
-                configs.marketCandlesChannel() -> {
-                    markets.receiveMarketCandlesChannelSocketData(info, payload)
-                }
-
-                configs.subaccountChannel() -> {
-                    accounts.receiveSubaccountChannelSocketData(info, payload, height())
+                "error" -> {
+                    throw ParsingException(ParsingErrorType.BackendError, payload.toString())
                 }
 
                 else -> {
-                    throw ParsingException(
-                        ParsingErrorType.UnknownChannel,
-                        "$channel is not known"
-                    )
+                    val channel = parser.asString(payload["channel"]) ?: return
+                    val id = parser.asString(payload["id"])
+
+                    val info = SocketInfo(type, channel, id)
+                    when (channel) {
+                        configs.marketsChannel() -> {
+                            val subaccountNumber = accounts.connectedSubaccountNumber
+                            markets.receiveMarketsChannelSocketData(info, payload, subaccountNumber)
+                        }
+
+                        configs.marketOrderbookChannel() -> {
+                            val subaccountNumber = accounts.connectedSubaccountNumber
+                            markets.receiveMarketOrderbooksChannelSocketData(
+                                info,
+                                payload,
+                                subaccountNumber
+                            )
+                        }
+
+                        configs.marketTradesChannel() -> {
+                            markets.receiveMarketTradesChannelSocketData(info, payload)
+                        }
+
+                        configs.marketCandlesChannel() -> {
+                            markets.receiveMarketCandlesChannelSocketData(info, payload)
+                        }
+
+                        configs.subaccountChannel() -> {
+                            accounts.receiveSubaccountChannelSocketData(info, payload, height())
+                        }
+
+                        else -> {
+                            throw ParsingException(
+                                ParsingErrorType.UnknownChannel,
+                                "$channel is not known"
+                            )
+                        }
+                    }
                 }
             }
         } catch (e: ParsingException) {
@@ -391,10 +410,6 @@ internal class StateManagerAdaptorV2(
         return accounts.cancelOrderPayload(orderId)
     }
 
-    internal fun transfer(data: String?, type: TransferInputField?) {
-        accounts.transfer(data, type)
-    }
-
     internal fun depositPayload(): HumanReadableDepositPayload? {
         return accounts.depositPayload()
     }
@@ -419,14 +434,6 @@ internal class StateManagerAdaptorV2(
         accounts.stopWatchingLastOrder()
     }
 
-    internal fun commitTransfer(callback: TransactionCallback) {
-        return accounts.commitTransfer(callback)
-    }
-
-    internal fun commitCCTPWithdraw(callback: TransactionCallback) {
-        return accounts.commitCCTPWithdraw(callback)
-    }
-
     internal fun cancelOrder(orderId: String, callback: TransactionCallback) {
         accounts.cancelOrder(orderId, callback)
     }
@@ -439,8 +446,33 @@ internal class StateManagerAdaptorV2(
         accounts.faucet(amount, callback)
     }
 
-    internal fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
-        accounts.transferStatus(hash, fromChainId, toChainId, isCctp)
+
+    internal fun transfer(data: String?, type: TransferInputField?) {
+        val address = accountAddress
+        val source = sourceAddress
+        if (address != null && source != null) {
+            onboarding.transfer(data, type, address, source, subaccountNumber)
+        }
+    }
+
+    internal fun commitTransfer(callback: TransactionCallback) {
+        onboarding.commitTransfer(subaccountNumber, callback)
+    }
+
+    internal fun commitCCTPWithdraw(callback: TransactionCallback) {
+        val address = accountAddress
+        if (address != null) {
+            onboarding.commitCCTPWithdraw(address, subaccountNumber, callback)
+        }
+    }
+
+    internal fun transferStatus(
+        hash: String,
+        fromChainId: String?,
+        toChainId: String?,
+        isCctp: Boolean
+    ) {
+        onboarding.transferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
     internal fun refresh(data: ApiData) {

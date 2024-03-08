@@ -15,14 +15,6 @@ internal open class NetworkSupervisor(
     internal val helper: NetworkHelper,
     internal val analyticsUtils: AnalyticsUtils,
 ) {
-    internal var retainerCount: Int = 1
-        set(value) {
-            if (field != value) {
-                field = value
-                didSetRetainerCount(value)
-            }
-        }
-
     internal var readyToConnect: Boolean = false
         set(value) {
             if (field != value) {
@@ -54,13 +46,6 @@ internal open class NetworkSupervisor(
                 didSetValidatorConnected(validatorConnected)
             }
         }
-
-    private fun didSetRetainerCount(retainerCount: Int) {
-        if (retainerCount == 0) {
-            readyToConnect = false
-            socketConnected = false
-        }
-    }
 
 
     internal open fun didSetReadyToConnect(readyToConnect: Boolean) {
@@ -123,6 +108,8 @@ internal open class NetworkSupervisor(
     internal fun parseTransactionResponse(response: String?): ParsingError? {
         return helper.parseTransactionResponse(response)
     }
+
+
 }
 
 internal open class DynamicNetworkSupervisor(
@@ -132,6 +119,12 @@ internal open class DynamicNetworkSupervisor(
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
 
     internal var retainCount: Int = 1
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetRetainCount()
+            }
+        }
 
     internal fun retain() {
         retainCount++
@@ -139,13 +132,18 @@ internal open class DynamicNetworkSupervisor(
 
     internal fun release() {
         retainCount--
-        if (retainerCount == 0) {
-            readyToConnect = false
-        }
     }
 
     internal fun forceRelease() {
         retainCount = 0
-        readyToConnect = false
+    }
+
+    internal open fun didSetRetainCount() {
+        if (retainCount == 0) {
+            readyToConnect = false
+            indexerConnected = false
+            validatorConnected = false
+            socketConnected = false
+        }
     }
 }

@@ -90,16 +90,30 @@ class V4ForegroundCycleTests : NetworkTests() {
         )
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals"
+//                ]
+//            """.trimIndent(),
             """
                 [
                    "https://api.examples.com/configs/documentation.json",
                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/1DAY",
+                   "https://indexer.v4staging.dydx.exchange/v4/height",
                    "https://api.examples.com/configs/markets.json",
+                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals"
+                   "https://api.examples.com/configs/exchanges.json"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -160,19 +174,34 @@ class V4ForegroundCycleTests : NetworkTests() {
         )
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
+//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY"
+//                ]
+//            """.trimIndent(),
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY"
+                    "https://api.examples.com/configs/documentation.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/height",
+                    "https://api.examples.com/configs/markets.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+                    "https://api.examples.com/configs/exchanges.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -189,9 +218,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     {"type":"subscribe","channel":"v4_candles","id":"ETH-USD/1DAY","batched":"true"},
                     {"type":"unsubscribe","channel":"v4_trades","id":"ETH-USD"},
                     {"type":"unsubscribe","channel":"v4_orderbook","id":"ETH-USD"},
+                    {"type":"unsubscribe","channel":"v4_candles","id":"ETH-USD/1DAY"},
                     {"type":"subscribe","channel":"v4_trades","id":"BTC-USD","batched":"true"},
                     {"type":"subscribe","channel":"v4_orderbook","id":"BTC-USD","batched":"true"},
-                    {"type":"unsubscribe","channel":"v4_candles","id":"ETH-USD/1DAY","batched":"true"},
                     {"type":"subscribe","channel":"v4_candles","id":"BTC-USD/1DAY","batched":"true"}
                 ]
             """.trimIndent(),
@@ -199,21 +228,39 @@ class V4ForegroundCycleTests : NetworkTests() {
         )
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
+//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD",
+//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY"
+//                ]
+//            """.trimIndent(),
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD",
-                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY"
+                    
+                    "https://api.examples.com/configs/documentation.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/height",
+                    "https://api.examples.com/configs/markets.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+                    "https://api.examples.com/configs/exchanges.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
+                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -238,19 +285,34 @@ class V4ForegroundCycleTests : NetworkTests() {
         /* Only getting historical funding rate once for now */
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
+//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY"
+//                ]
+//            """.trimIndent(),
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY"
+                    "https://api.examples.com/configs/documentation.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/height",
+                    "https://api.examples.com/configs/markets.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+                    "https://api.examples.com/configs/exchanges.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -301,20 +363,36 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, testAddress)
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=0xsecondaryFakeAddress",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
+//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2"
+//                ]
+//            """.trimIndent(),
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=0xsecondaryFakeAddress",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY",
-                   "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
-                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2"
+                    "https://api.examples.com/configs/documentation.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/height",
+                    "https://api.examples.com/configs/markets.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+                    "https://api.examples.com/configs/exchanges.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2",
+                    "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -337,23 +415,42 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, testAddress)
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+//                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
+//                ]
+//            """.trimIndent(),
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
-                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
+                    "https://api.examples.com/configs/documentation.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/height",
+                    "https://api.examples.com/configs/markets.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+                    "https://api.examples.com/configs/exchanges.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
+                    "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -402,24 +499,44 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, testAddress)
 
         compareExpectedRequests(
+//            """
+//                [
+//                   "https://api.examples.com/configs/documentation.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/time",
+//                   "https://api.examples.com/configs/markets.json",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+//                   "https://api.examples.com/configs/exchanges.json",
+//                   "https://indexer.v4staging.dydx.exchange/v4/height",
+//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
+//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+//                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
+//                ]
+//            """.trimIndent(),
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
-                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
+                    "https://api.examples.com/configs/documentation.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/time",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/height",
+                    "https://api.examples.com/configs/markets.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
+                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
+                    "https://api.examples.com/configs/exchanges.json",
+                    "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
+                    "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
                 ]
             """.trimIndent(),
             testRest?.requests
@@ -451,14 +568,8 @@ class V4ForegroundCycleTests : NetworkTests() {
         compareExpectedRequests(
             """
                 [
-                   "https://api.examples.com/configs/documentation.json",
-                   "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://api.examples.com/configs/markets.json",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                    "https://api.examples.com/configs/exchanges.json",
                    "https://indexer.v4staging.dydx.exchange/v4/height",
-                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
                    "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
                    "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",

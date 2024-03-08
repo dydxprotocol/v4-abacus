@@ -11,7 +11,6 @@ data class SystemConfigs(
     val retrieveFeeTiers: Boolean,
     val retrieveRewardsParams: Boolean,
     val retrieveLaunchIncentiveSeasons: Boolean,
-    val subscribeToMarkets: Boolean,
 ) {
     companion object {
         val forApp = SystemConfigs(
@@ -21,7 +20,6 @@ data class SystemConfigs(
             retrieveFeeTiers = true,
             retrieveRewardsParams = true,
             retrieveLaunchIncentiveSeasons = true,
-            subscribeToMarkets = true,
         )
         val forProgrammaticTraders = SystemConfigs(
             retrieveServerTime = true,
@@ -30,7 +28,6 @@ data class SystemConfigs(
             retrieveFeeTiers = true,
             retrieveRewardsParams = false,
             retrieveLaunchIncentiveSeasons = false,
-            subscribeToMarkets = true,
         )
     }
 }
@@ -40,6 +37,7 @@ data class MarketConfigs(
     val retrieveSparklines: Boolean,
     val retrieveCandles: Boolean,
     val retrieveHistoricalFundings: Boolean,
+    val subscribeToMarkets: Boolean,
     val subscribeToOrderbook: Boolean,
     val subscribeToTrades: Boolean,
     val subscribeToCandles: Boolean,
@@ -49,6 +47,7 @@ data class MarketConfigs(
             retrieveSparklines = true,
             retrieveCandles = true,
             retrieveHistoricalFundings = true,
+            subscribeToMarkets = true,
             subscribeToOrderbook = true,
             subscribeToTrades = true,
             subscribeToCandles = true,
@@ -57,6 +56,7 @@ data class MarketConfigs(
             retrieveSparklines = true,
             retrieveCandles = true,
             retrieveHistoricalFundings = true,
+            subscribeToMarkets = true,
             subscribeToOrderbook = true,
             subscribeToTrades = true,
             subscribeToCandles = false,
@@ -65,6 +65,7 @@ data class MarketConfigs(
             retrieveSparklines = false,
             retrieveCandles = false,
             retrieveHistoricalFundings = false,
+            subscribeToMarkets = true,
             subscribeToOrderbook = true,
             subscribeToTrades = false,
             subscribeToCandles = false,
@@ -102,7 +103,6 @@ data class AccountConfigs(
     val retrieveHistoricalTradingRewards: Boolean,
     val retrieveLaunchIncentivePoints: Boolean,
     val transferNobleBalances: Boolean,
-    val onboardingConfigs: OnboardingConfigs,
     val subaccountConfigs: SubaccountConfigs,
 ) {
     companion object {
@@ -112,7 +112,6 @@ data class AccountConfigs(
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
             transferNobleBalances = true,
-            onboardingConfigs = OnboardingConfigs.forApp,
             subaccountConfigs = SubaccountConfigs.forApp,
         )
         val forProgrammaticTraders = AccountConfigs(
@@ -121,7 +120,6 @@ data class AccountConfigs(
             retrieveHistoricalTradingRewards = true,
             retrieveLaunchIncentivePoints = true,
             transferNobleBalances = true,
-            onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
             subaccountConfigs = SubaccountConfigs.forProgrammaticTraders,
         )
     }
@@ -152,6 +150,7 @@ class AppConfigsV2(
     val systemConfigs: SystemConfigs,
     val marketConfigs: MarketConfigs,
     val accountConfigs: AccountConfigs,
+    val onboardingConfigs: OnboardingConfigs,
     val loadRemote: Boolean = true,
     val enableLogger: Boolean = false,
 ) {
@@ -160,12 +159,14 @@ class AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketConfigs.forApp,
             accountConfigs = AccountConfigs.forApp,
+            onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true
         )
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketConfigs.forApp,
             accountConfigs = AccountConfigs.forApp,
+            onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = false,
             enableLogger = true
         )
@@ -173,12 +174,14 @@ class AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketConfigs.forWeb,
             accountConfigs = AccountConfigs.forApp,
+            onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true
         )
         val forProgrammaticTraders = AppConfigsV2(
             systemConfigs = SystemConfigs.forProgrammaticTraders,
             marketConfigs = MarketConfigs.forProgrammaticTraders,
             accountConfigs = AccountConfigs.forProgrammaticTraders,
+            onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
             loadRemote = true
         )
     }

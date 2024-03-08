@@ -46,7 +46,7 @@ internal class MarketsSupervisor(
             }
         }
 
-    fun subscribeToMarket(market: String) {
+    internal fun subscribeToMarket(market: String) {
         val marketSupervisor = markets[market]
         marketSupervisor?.retain() ?: run {
             val newMarketSupervisor = MarketSupervisor(stateMachine, helper, analyticsUtils, configs, market)
@@ -60,7 +60,7 @@ internal class MarketsSupervisor(
         }
     }
 
-    fun unsubscribeFromMarket(market: String) {
+    internal fun unsubscribeFromMarket(market: String) {
         val marketSupervisor = markets[market] ?: return
         marketSupervisor.release()
         if (marketSupervisor.retainCount == 0) {
@@ -100,6 +100,9 @@ internal class MarketsSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
+        if (configs.subscribeToMarkets) {
+            marketsChannelSubscription(socketConnected)
+        }
         for (market in markets.values) {
             market.socketConnected = socketConnected
         }
@@ -118,15 +121,15 @@ internal class MarketsSupervisor(
             helper.configs.marketsChannel() ?: throw Exception("markets channel is null")
         helper.socket(
             helper.socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketOrderbookChannelData())
+            if (subscribe && shouldBatchMarketsChannelData())
                 iMapOf("batched" to "true")
             else
                 null
         )
     }
 
-    private fun shouldBatchMarketOrderbookChannelData(): Boolean {
-        return false
+    private fun shouldBatchMarketsChannelData(): Boolean {
+        return true
     }
 
     private fun retrieveSparklines() {

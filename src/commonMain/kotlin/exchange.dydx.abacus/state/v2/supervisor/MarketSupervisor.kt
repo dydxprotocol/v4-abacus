@@ -14,19 +14,15 @@ import exchange.dydx.abacus.state.model.candles
 import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
 import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
-import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
 import exchange.dydx.abacus.state.model.receivedBatchedTradesChanges
 import exchange.dydx.abacus.state.model.receivedCandles
 import exchange.dydx.abacus.state.model.receivedCandlesChanges
-import exchange.dydx.abacus.state.model.receivedMarkets
-import exchange.dydx.abacus.state.model.receivedMarketsChanges
 import exchange.dydx.abacus.state.model.receivedOrderbook
 import exchange.dydx.abacus.state.model.receivedOrderbookChanges
 import exchange.dydx.abacus.state.model.receivedTrades
 import exchange.dydx.abacus.state.model.receivedTradesChanges
 import exchange.dydx.abacus.state.model.setOrderbookGrouping
 import exchange.dydx.abacus.utils.AnalyticsUtils
-import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
@@ -96,11 +92,11 @@ internal open class MarketSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        if (configs.subscribeToOrderbook) {
-            orderbookChannelSubscription(socketConnected)
-        }
         if (configs.subscribeToTrades) {
             tradesChannelSubscription(socketConnected)
+        }
+        if (configs.subscribeToOrderbook) {
+            orderbookChannelSubscription(socketConnected)
         }
         if (configs.subscribeToCandles) {
             candlesChannelSubscription(candlesResolution, socketConnected)
@@ -108,7 +104,6 @@ internal open class MarketSupervisor(
     }
 
     private fun retrieveCandles() {
-        val marketId = marketId ?: return
         val url = helper.configs.publicApiUrl("candles") ?: return
         val candleResolution = candlesResolution
         val resolutionDuration =
@@ -133,7 +128,7 @@ internal open class MarketSupervisor(
                 "resolution" to candleResolution
             ),
             null,
-        ) { url, response, httpCode ->
+        ) { _, response, httpCode ->
             val oldState = stateMachine.state
             if (helper.success(httpCode) && response != null) {
                 val changes = stateMachine.candles(response)
@@ -164,7 +159,6 @@ internal open class MarketSupervisor(
         historicalFundingTimer = null
         val oldState = stateMachine.state
         val url = helper.configs.publicApiUrl("historical-funding") ?: return
-        val marketId = marketId ?: return
         helper.get("$url/$marketId", null, null, callback = { _, response, httpCode ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.historicalFundings(response), oldState)
@@ -248,7 +242,7 @@ internal open class MarketSupervisor(
     }
 
     internal open fun shouldBatchMarketTradesChannelData(): Boolean {
-        return false
+        return true
     }
 
     @Throws(Exception::class)
@@ -257,14 +251,18 @@ internal open class MarketSupervisor(
         helper.socket(
             helper.socketAction(subscribe),
             channel,
-            iMapOf("id" to "$marketId/$resolution", "batched" to "true")
+            if (subscribe)
+                iMapOf("id" to "$marketId/$resolution", "batched" to "true")
+            else
+                iMapOf("id" to "$marketId/$resolution")
         )
     }
 
     internal fun receiveMarketCandlesChannelSocketData(
         info: SocketInfo,
         resolution: String,
-        payload: IMap<String, Any>) {
+        payload: IMap<String, Any>
+    ) {
         val oldState = stateMachine.state
         var changes: StateChanges? = null
         try {
@@ -290,12 +288,13 @@ internal open class MarketSupervisor(
                 }
 
                 "channel_batch_data" -> {
-                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                    val content = helper.parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
                             payload.toString()
                         )
-                    changes = stateMachine.receivedBatchedCandlesChanges(marketId, resolution, content)
+                    changes =
+                        stateMachine.receivedBatchedCandlesChanges(marketId, resolution, content)
                 }
 
                 else -> {
@@ -330,7 +329,8 @@ internal open class MarketSupervisor(
                             ParsingErrorType.MissingContent,
                             payload.toString()
                         )
-                    changes = stateMachine.receivedOrderbook(marketId, content, subaccountNumber ?: 0)
+                    changes =
+                        stateMachine.receivedOrderbook(marketId, content, subaccountNumber ?: 0)
                 }
 
                 "unsubscribed" -> {}
@@ -341,16 +341,24 @@ internal open class MarketSupervisor(
                             ParsingErrorType.MissingContent,
                             payload.toString()
                         )
-                    changes = stateMachine.receivedOrderbookChanges(marketId, content, subaccountNumber ?: 0)
+                    changes = stateMachine.receivedOrderbookChanges(
+                        marketId,
+                        content,
+                        subaccountNumber ?: 0
+                    )
                 }
 
                 "channel_batch_data" -> {
-                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                    val content = helper.parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
                             payload.toString()
                         )
-                    changes = stateMachine.receivedBatchOrderbookChanges(marketId, content, subaccountNumber ?: 0)
+                    changes = stateMachine.receivedBatchOrderbookChanges(
+                        marketId,
+                        content,
+                        subaccountNumber ?: 0
+                    )
                 }
 
                 else -> {
@@ -399,7 +407,7 @@ internal open class MarketSupervisor(
                 }
 
                 "channel_batch_data" -> {
-                    val content = helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                    val content = helper.parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
                             payload.toString()
@@ -422,5 +430,10 @@ internal open class MarketSupervisor(
             )
             emitError(error)
         }
+    }
+
+    override fun dispose() {
+        super.dispose()
+        socketConnected = false
     }
 }

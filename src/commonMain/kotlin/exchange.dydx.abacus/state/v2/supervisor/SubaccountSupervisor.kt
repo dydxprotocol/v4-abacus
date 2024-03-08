@@ -31,6 +31,7 @@ import exchange.dydx.abacus.state.manager.utils.PlaceOrderRecord
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
@@ -41,6 +42,7 @@ import exchange.dydx.abacus.state.model.receivedFills
 import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
 import exchange.dydx.abacus.state.model.receivedTransfers
 import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
