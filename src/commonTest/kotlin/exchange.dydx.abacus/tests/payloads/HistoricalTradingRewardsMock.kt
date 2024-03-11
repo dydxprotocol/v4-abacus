@@ -72,7 +72,7 @@ internal class HistoricalTradingRewardsMock {
         ]
       }
     """.trimIndent()
-    
+
     internal val empty = """
         {
         	"rewards": []

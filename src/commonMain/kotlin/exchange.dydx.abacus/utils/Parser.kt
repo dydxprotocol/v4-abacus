@@ -8,7 +8,17 @@ import kollections.toIList
 import kollections.toIMap
 import kollections.toIMutableList
 import kotlinx.datetime.Instant
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.longOrNull
 
 inline fun <reified T> cast(any: Any?): T = any as T
 
@@ -275,13 +285,13 @@ class Parser : ParserProtocol {
 
     override fun asMap(data: Any?): IMap<String, Any>? {
         if (data == null) return null
-		val imap = data as? IMap<String, Any>
-		if (imap != null) return imap
-		val map = data as? Map<String, Any>
-		if (map != null) return map.toIMap()
+        val imap = data as? IMap<String, Any>
+        if (imap != null) return imap
+        val map = data as? Map<String, Any>
+        if (map != null) return map.toIMap()
         val jsonObject = data as? JsonObject
-		if (jsonObject != null) return jsonObject.toMap().toIMap()
-		return null
+        if (jsonObject != null) return jsonObject.toMap().toIMap()
+        return null
     }
 
     override fun asNativeMap(data: Any?): Map<String, Any>? {

@@ -12,16 +12,16 @@ internal class TradeProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         ),
         "double" to mapOf(
             "size" to "size",
-            "price" to "price"
+            "price" to "price",
         ),
         "datetime" to mapOf(
-            "createdAt" to "createdAt"
+            "createdAt" to "createdAt",
         ),
     )
 
     private val sideStringKeys = mapOf(
         "BUY" to "APP.GENERAL.BUY",
-        "SELL" to "APP.GENERAL.SELL"
+        "SELL" to "APP.GENERAL.SELL",
     )
 
     override fun received(existing: Map<String, Any>?, payload: Map<String, Any>): Map<String, Any> {

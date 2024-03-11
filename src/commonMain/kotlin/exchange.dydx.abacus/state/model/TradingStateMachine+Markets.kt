@@ -20,7 +20,7 @@ internal fun TradingStateMachine.receivedMarkets(
             Changes.historicalPnl,
         ),
         null,
-        iListOf(subaccountNumber)
+        iListOf(subaccountNumber),
     )
 }
 
@@ -32,20 +32,24 @@ internal fun TradingStateMachine.receivedMarketsChanges(
     marketsSummary = marketsProcessor.channel_data(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, payload.keys)
     return StateChanges(
-        if (blankAssets) iListOf(
-            Changes.markets,
-            Changes.assets,
-            Changes.subaccount,
-            Changes.historicalPnl,
-        ) else iListOf(
-            Changes.assets,
-            Changes.markets,
-            Changes.subaccount,
-            Changes.input,
-            Changes.historicalPnl,
-        ),
+        if (blankAssets) {
+            iListOf(
+                Changes.markets,
+                Changes.assets,
+                Changes.subaccount,
+                Changes.historicalPnl,
+            )
+        } else {
+            iListOf(
+                Changes.assets,
+                Changes.markets,
+                Changes.subaccount,
+                Changes.input,
+                Changes.historicalPnl,
+            )
+        },
         payload.keys.toIList(),
-        iListOf(subaccountNumber)
+        iListOf(subaccountNumber),
     )
 }
 
@@ -60,26 +64,30 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
         parser.asMap(partialPayload)?.let { partialPayload ->
             val narrowedPayload =
                 parser.asMap(partialPayload["trading"]) ?: parser.asMap(partialPayload["oraclePrices"])
-                ?: parser.asMap(partialPayload["markets"]) ?: partialPayload
+                    ?: parser.asMap(partialPayload["markets"]) ?: partialPayload
             keys.addAll(narrowedPayload.keys)
         }
     }
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, keys)
     return StateChanges(
-        if (blankAssets) iListOf(
-            Changes.markets,
-            Changes.assets,
-            Changes.subaccount,
-            Changes.historicalPnl,
-        ) else iListOf(
-            Changes.assets,
-            Changes.markets,
-            Changes.subaccount,
-            Changes.input,
-            Changes.historicalPnl,
-        ),
+        if (blankAssets) {
+            iListOf(
+                Changes.markets,
+                Changes.assets,
+                Changes.subaccount,
+                Changes.historicalPnl,
+            )
+        } else {
+            iListOf(
+                Changes.assets,
+                Changes.markets,
+                Changes.subaccount,
+                Changes.input,
+                Changes.historicalPnl,
+            )
+        },
         keys.toIList(),
-        iListOf(subaccountNumber)
+        iListOf(subaccountNumber),
     )
 }
 
@@ -91,16 +99,17 @@ internal fun TradingStateMachine.receivedMarketsConfigurations(
     this.marketsSummary = marketsProcessor.receivedConfigurations(this.marketsSummary, payload)
     assets = assetsProcessor.receivedConfigurations(assets, payload, deploymentUri)
     this.marketsSummary = marketsCalculator.calculate(this.marketsSummary, assets, null)
-    return if (subaccountNumber != null)
+    return if (subaccountNumber != null) {
         StateChanges(
             iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
             null,
-            iListOf(subaccountNumber)
+            iListOf(subaccountNumber),
         )
-    else
+    } else {
         StateChanges(
             iListOf(Changes.markets, Changes.assets),
             null,
-            null
+            null,
         )
+    }
 }

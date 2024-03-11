@@ -3,11 +3,18 @@ package exchange.dydx.abacus.utils
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.floatOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.longOrNull
 
 class JsonEncoder {
     private val parser = Parser()
-    internal fun encode(element: Any?) : String {
+    internal fun encode(element: Any?): String {
         if (element == null) {
             return "null"
         }
@@ -78,7 +85,7 @@ class JsonEncoder {
         if (jsonElement != null) {
             return Json.encodeToString(jsonElement)
         }
-        return  ""
+        return ""
     }
 
     private fun string(element: Any): String? {

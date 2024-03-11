@@ -40,7 +40,8 @@ interface FormatterProtocol {
 
 @JsExport
 enum class FileLocation {
-    AppBundle, AppDocs
+    AppBundle,
+    AppDocs
 }
 
 @JsExport
@@ -81,7 +82,6 @@ interface RestProtocol {
         callback: ((response: String?, httpCode: Int) -> Unit),
     )
 
-
     fun post(
         url: String,
         headers: IMap<String, String>?,
@@ -114,7 +114,6 @@ interface WebSocketProtocol {
     fun disconnect()
     fun send(message: String)
 }
-
 
 @JsExport
 @Serializable
@@ -272,14 +271,15 @@ interface DataNotificationProtocol {
 
 @JsExport
 enum class ThreadingType {
-    main, abacus, network
+    main,
+    abacus,
+    network
 }
 
 @JsExport
 interface ThreadingProtocol {
     fun async(type: ThreadingType, block: (() -> Unit))
 }
-
 
 @JsExport
 interface LocalTimerProtocol {

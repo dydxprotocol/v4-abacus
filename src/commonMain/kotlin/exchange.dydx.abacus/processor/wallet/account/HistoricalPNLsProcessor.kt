@@ -22,7 +22,7 @@ internal class HistoricalPNLsProcessor(parser: ParserProtocol) : BaseProcessor(p
             existing,
             history,
             "createdAt",
-            true
+            true,
         )
     }
 }

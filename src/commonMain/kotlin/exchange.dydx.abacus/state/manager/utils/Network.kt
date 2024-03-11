@@ -53,15 +53,18 @@ internal class NetworkState() {
     private fun updateStatus() {
         val time = time
         status = if (time != null) {
-            if (failCount >= 3)
+            if (failCount >= 3) {
                 NetworkStatus.UNREACHABLE
-            else if (sameBlockCount >= 6)
+            } else if (sameBlockCount >= 6) {
                 NetworkStatus.HALTED
-            else if (blockAndTime != null)
+            } else if (blockAndTime != null) {
                 NetworkStatus.NORMAL
-            else
+            } else {
                 NetworkStatus.UNKNOWN
-        } else NetworkStatus.UNKNOWN
+            }
+        } else {
+            NetworkStatus.UNKNOWN
+        }
     }
 }
 

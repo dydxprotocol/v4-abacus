@@ -57,7 +57,6 @@ data class Tooltip(
     val bodyStringKey: String,
 )
 
-
 @JsExport
 @Serializable
 data class TradeInputOptions(
@@ -86,13 +85,13 @@ data class TradeInputOptions(
                     OrderType.limit.rawValue,
                     null,
                     "APP.TRADE.LIMIT_ORDER_SHORT",
-                    null
+                    null,
                 ),
                 SelectionOption(
                     OrderType.market.rawValue,
                     null,
                     "APP.TRADE.MARKET_ORDER_SHORT",
-                    null
+                    null,
                 ),
                 SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
                 SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
@@ -100,19 +99,19 @@ data class TradeInputOptions(
                     OrderType.trailingStop.rawValue,
                     null,
                     "APP.TRADE.TRAILING_STOP",
-                    null
+                    null,
                 ),
                 SelectionOption(
                     OrderType.takeProfitLimit.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT",
-                    null
+                    null,
                 ),
                 SelectionOption(
                     OrderType.takeProfitMarket.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
-                    null
+                    null,
                 ),
             )
         private val typeOptionsV4Array =
@@ -121,13 +120,13 @@ data class TradeInputOptions(
                     OrderType.limit.rawValue,
                     null,
                     "APP.TRADE.LIMIT_ORDER_SHORT",
-                    null
+                    null,
                 ),
                 SelectionOption(
                     OrderType.market.rawValue,
                     null,
                     "APP.TRADE.MARKET_ORDER_SHORT",
-                    null
+                    null,
                 ),
                 SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
                 SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
@@ -135,20 +134,20 @@ data class TradeInputOptions(
                     OrderType.takeProfitLimit.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT",
-                    null
+                    null,
                 ),
                 SelectionOption(
                     OrderType.takeProfitMarket.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
-                    null
+                    null,
                 ),
             )
 
         private val sideOptionsArray =
             iListOf(
                 SelectionOption(OrderSide.buy.rawValue, null, "APP.GENERAL.BUY", null),
-                SelectionOption(OrderSide.sell.rawValue, null, "APP.GENERAL.SELL", null)
+                SelectionOption(OrderSide.sell.rawValue, null, "APP.GENERAL.SELL", null),
             )
 
         private val goodTilUnitOptionsArray =
@@ -156,7 +155,7 @@ data class TradeInputOptions(
                 SelectionOption("M", null, "APP.GENERAL.TIME_STRINGS.MINUTES_SHORT", null),
                 SelectionOption("H", null, "APP.GENERAL.TIME_STRINGS.HOURS", null),
                 SelectionOption("D", null, "APP.GENERAL.TIME_STRINGS.DAYS", null),
-                SelectionOption("W", null, "APP.GENERAL.TIME_STRINGS.WEEKS", null)
+                SelectionOption("W", null, "APP.GENERAL.TIME_STRINGS.WEEKS", null),
             )
 
         internal fun create(
@@ -188,7 +187,8 @@ data class TradeInputOptions(
                         val item = data[i]
                         SelectionOption.create(
                             existing?.timeInForceOptions?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             timeInForceOptions?.add(it)
                         }
@@ -202,7 +202,8 @@ data class TradeInputOptions(
                         val item = data[i]
                         SelectionOption.create(
                             existing?.executionOptions?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             executionOptions?.add(it)
                         }
@@ -318,7 +319,7 @@ data class TradeInputSummary(
                         fee,
                         total,
                         reward,
-                        filled
+                        filled,
                     )
                 } else {
                     existing
@@ -394,12 +395,12 @@ data class TradeInputMarketOrder(
                         val item = data[i]
                         OrderbookUsage.create(
                             existing?.orderbook?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             orderbook?.add(it)
                         }
                     }
-
                 }
                 return if (existing?.size != size ||
                     existing?.usdcSize != usdcSize ||
@@ -414,7 +415,7 @@ data class TradeInputMarketOrder(
                         price,
                         worstPrice,
                         filled,
-                        orderbook
+                        orderbook,
                     )
                 } else {
                     existing
@@ -582,18 +583,18 @@ data class TradeInputBracket(
                 val stopLoss = TradeInputBracketSide.create(
                     existing?.stopLoss,
                     parser,
-                    parser.asMap(data["stopLoss"])
+                    parser.asMap(data["stopLoss"]),
                 )
                 val takeProfit =
                     TradeInputBracketSide.create(
                         existing?.takeProfit,
                         parser,
-                        parser.asMap(data["takeProfit"])
+                        parser.asMap(data["takeProfit"]),
                     )
                 val goodTil = TradeInputGoodUntil.create(
                     existing?.goodTil,
                     parser,
-                    parser.asMap(data["goodTil"])
+                    parser.asMap(data["goodTil"]),
                 )
                 val execution = parser.asString(data["execution"])
                 return if (existing?.stopLoss != stopLoss ||
@@ -638,7 +639,8 @@ enum class OrderType(val rawValue: String) {
 @JsExport
 @Serializable
 enum class OrderSide(val rawValue: String) {
-    buy("BUY"), sell("SELL");
+    buy("BUY"),
+    sell("SELL");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -659,8 +661,11 @@ enum class OrderStatus(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String): OrderStatus? {
-            return if (rawValue == "BEST_EFFORT_OPENED") OrderStatus.pending else
+            return if (rawValue == "BEST_EFFORT_OPENED") {
+                OrderStatus.pending
+            } else {
                 OrderStatus.values().firstOrNull { it.rawValue == rawValue }
+            }
         }
     }
 }
@@ -700,7 +705,6 @@ enum class ReceiptLine(val rawValue: String) {
         operator fun invoke(rawValue: String) =
             ReceiptLine.values().firstOrNull { it.rawValue == rawValue }
 
-
         internal fun create(
             parser: ParserProtocol,
             data: List<Any>?,
@@ -712,7 +716,6 @@ enum class ReceiptLine(val rawValue: String) {
         }
     }
 }
-
 
 @JsExport
 @Serializable
@@ -765,18 +768,18 @@ data class TradeInput(
                 val goodTil = TradeInputGoodUntil.create(
                     existing?.goodTil,
                     parser,
-                    parser.asMap(data["goodTil"])
+                    parser.asMap(data["goodTil"]),
                 )
                 val bracket = TradeInputBracket.create(
                     existing?.bracket,
                     parser,
-                    parser.asMap(data["bracket"])
+                    parser.asMap(data["bracket"]),
                 )
                 val marketOrder =
                     TradeInputMarketOrder.create(
                         existing?.marketOrder,
                         parser,
-                        parser.asMap(data["marketOrder"])
+                        parser.asMap(data["marketOrder"]),
                     )
                 val options = TradeInputOptions.create(
                     existing?.options,
@@ -786,7 +789,7 @@ data class TradeInput(
                 val summary = TradeInputSummary.create(
                     existing?.summary,
                     parser,
-                    parser.asMap(data["summary"])
+                    parser.asMap(data["summary"]),
                 )
 
                 return if (existing?.type != type ||
@@ -820,7 +823,7 @@ data class TradeInput(
                         bracket,
                         marketOrder,
                         options,
-                        summary
+                        summary,
                     )
                 } else {
                     existing

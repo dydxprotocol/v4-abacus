@@ -3,8 +3,6 @@ package exchange.dydx.abacus.processor.squid
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.state.manager.ExchangeInfo
-import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -101,7 +99,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val processor = SquidRouteProcessor(parser)
         modified.safeSet(
             "transfer.route",
-            processor.received(null, payload) as MutableMap<String, Any>
+            processor.received(null, payload) as MutableMap<String, Any>,
         )
         if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
             val value = usdcAmount(modified)
@@ -123,7 +121,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val processor = SquidRouteV2Processor(parser)
         modified.safeSet(
             "transfer.route",
-            processor.received(null, payload) as MutableMap<String, Any>
+            processor.received(null, payload) as MutableMap<String, Any>,
         )
         if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
             val value = usdcAmount(modified)

@@ -2,7 +2,6 @@ package exchange.dydx.abacus.payload.v3
 
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.tests.extensions.loadAccounts
 import exchange.dydx.abacus.tests.extensions.loadFeeDiscounts
 import exchange.dydx.abacus.tests.extensions.loadFeeTiers
@@ -10,8 +9,6 @@ import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadUser
-import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 open class V3BaseTests : BaseTests(0) {
     internal fun loadMarkets(): StateResponse {
@@ -24,7 +21,8 @@ open class V3BaseTests : BaseTests(0) {
         return test(
             {
                 perp.loadMarketsConfigurations(mock, deploymentUri)
-            }, """
+            },
+            """
             {
                 "markets": {
                     "markets": {
@@ -43,7 +41,7 @@ open class V3BaseTests : BaseTests(0) {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -84,5 +82,4 @@ open class V3BaseTests : BaseTests(0) {
             perp.loadFeeDiscounts(mock)
         }, null)
     }
-
 }

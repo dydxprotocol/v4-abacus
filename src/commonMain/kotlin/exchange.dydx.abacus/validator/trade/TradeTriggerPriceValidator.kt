@@ -49,8 +49,8 @@ internal class TradeTriggerPriceValidator(
             val oraclePrice = parser.asDouble(
                 parser.value(
                     market,
-                    "oraclePrice"
-                )
+                    "oraclePrice",
+                ),
             ) ?: return null
             val triggerPrice =
                 parser.asDouble(parser.value(trade, "price.triggerPrice")) ?: return null
@@ -67,8 +67,8 @@ internal class TradeTriggerPriceValidator(
                                 triggerToIndex,
                                 type,
                                 oraclePrice,
-                                tickSize
-                            )
+                                tickSize,
+                            ),
                         )
                     }
                 }
@@ -80,8 +80,8 @@ internal class TradeTriggerPriceValidator(
                                 triggerToIndex,
                                 type,
                                 oraclePrice,
-                                tickSize
-                            )
+                                tickSize,
+                            ),
                         )
                     }
                 }
@@ -102,8 +102,8 @@ internal class TradeTriggerPriceValidator(
                                 errors.add(
                                     triggerToLiquidationError(
                                         triggerToLiquidation,
-                                        liquidationPrice
-                                    )
+                                        liquidationPrice,
+                                    ),
                                 )
                             }
                         }
@@ -113,8 +113,8 @@ internal class TradeTriggerPriceValidator(
                                 errors.add(
                                     triggerToLiquidationError(
                                         triggerToLiquidation,
-                                        liquidationPrice
-                                    )
+                                        liquidationPrice,
+                                    ),
                                 )
                             }
                         }
@@ -157,18 +157,24 @@ internal class TradeTriggerPriceValidator(
         tickSize: String,
     ): Map<String, Any> {
         val fields =
-            if (type == "TRAILING_STOP") listOf("price.trailingPercent") else
+            if (type == "TRAILING_STOP") {
+                listOf("price.trailingPercent")
+            } else {
                 listOf("price.triggerPrice")
+            }
         val action =
-            if (type == "TRAILING_STOP") "APP.TRADE.MODIFY_TRAILING_PERCENT" else
+            if (type == "TRAILING_STOP") {
+                "APP.TRADE.MODIFY_TRAILING_PERCENT"
+            } else {
                 "APP.TRADE.MODIFY_TRIGGER_PRICE"
+            }
         val params = mapOf(
             "INDEX_PRICE" to
-                    mapOf(
-                        "value" to oraclePrice,
-                        "format" to "price",
-                        "tickSize" to tickSize
-                    )
+                mapOf(
+                    "value" to oraclePrice,
+                    "format" to "price",
+                    "tickSize" to tickSize,
+                ),
         )
         return when (triggerToIndex) {
             RelativeToPrice.ABOVE -> error(
@@ -178,7 +184,7 @@ internal class TradeTriggerPriceValidator(
                 action,
                 "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_ABOVE_INDEX_PRICE",
                 "ERRORS.TRADE_BOX.TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                params
+                params,
             )
 
             else -> error(
@@ -188,7 +194,7 @@ internal class TradeTriggerPriceValidator(
                 action,
                 "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_BELOW_INDEX_PRICE",
                 "ERRORS.TRADE_BOX.TRIGGER_MUST_BELOW_INDEX_PRICE",
-                params
+                params,
             )
         }
     }
@@ -224,8 +230,8 @@ internal class TradeTriggerPriceValidator(
         return parser.asDouble(
             parser.value(
                 subaccount,
-                "openPositions.$marketId.liquidationPrice.current"
-            )
+                "openPositions.$marketId.liquidationPrice.current",
+            ),
         )
     }
 
@@ -246,7 +252,7 @@ internal class TradeTriggerPriceValidator(
                 action,
                 "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
                 "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                params
+                params,
             )
 
             RelativeToPrice.BELOW -> error(
@@ -256,7 +262,7 @@ internal class TradeTriggerPriceValidator(
                 action,
                 "ERRORS.TRADE_BOX_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
                 "ERRORS.TRADE_BOX.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                params
+                params,
             )
         }
     }
@@ -271,7 +277,7 @@ internal class TradeTriggerPriceValidator(
             null,
             "WARNINGS.TRADE_BOX_TITLE.STOP_MARKET_ORDER_MAY_NOT_EXECUTE",
             "WARNINGS.TRADE_BOX.STOP_MARKET_ORDER_MAY_NOT_EXECUTE",
-            null
+            null,
         )
     }
 }

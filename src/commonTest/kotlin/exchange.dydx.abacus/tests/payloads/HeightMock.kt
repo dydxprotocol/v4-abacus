@@ -241,7 +241,6 @@ internal class HeightMock {
         }
     """.trimIndent()
 
-
     val v4ClientValidatorHeight = """
         {
             "header": {
@@ -441,5 +440,4 @@ internal class HeightMock {
             }
         }
     """.trimIndent()
-
 }

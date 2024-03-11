@@ -3,6 +3,7 @@ package exchange.dydx.abacus.tests.payloads
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
+@Suppress("PropertyName")
 @JsExport
 @Serializable
 internal class AccountsChannelMock {
@@ -2111,7 +2112,6 @@ internal class AccountsChannelMock {
         }
     """.trimIndent()
 
-
     internal val v4_subaccounts_update_5 = """
         {
            "type":"channel_data",
@@ -2276,7 +2276,6 @@ internal class AccountsChannelMock {
             }]
         }
     """.trimIndent()
-
 
     internal val v4_subscribed_for_calculation = """
         {

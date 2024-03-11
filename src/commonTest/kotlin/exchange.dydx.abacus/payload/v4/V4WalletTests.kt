@@ -31,10 +31,9 @@ class V4WalletTests : V4BaseTests() {
                     "walletAddress": "1234"
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testResetWallet() {
         test(
@@ -45,7 +44,7 @@ class V4WalletTests : V4BaseTests() {
                 {
                     "wallet": null
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

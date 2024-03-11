@@ -17,7 +17,9 @@ internal fun Double.numberOfDecimals(): Int {
     val elements = string.split(".")
     return if (elements.size > 1) {
         elements.last().length
-    } else 0
+    } else {
+        0
+    }
 }
 
 internal fun Double.tickDecimals(): BigDecimal {

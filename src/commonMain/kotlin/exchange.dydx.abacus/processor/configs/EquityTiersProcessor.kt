@@ -4,7 +4,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
 @Suppress("UNCHECKED_CAST")
-internal class EquityTiersProcessor(parser: ParserProtocol): BaseProcessor(parser) {
+internal class EquityTiersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = EquityTierProcessor(parser = parser)
 
     internal fun received(
@@ -14,7 +14,7 @@ internal class EquityTiersProcessor(parser: ParserProtocol): BaseProcessor(parse
         val equityTiers = parser.asNativeMap(payload["equityTiers"])
         val modified = mutableMapOf<String, MutableList<Any>>(
             "shortTermOrderEquityTiers" to mutableListOf(),
-            "statefulOrderEquityTiers" to mutableListOf()
+            "statefulOrderEquityTiers" to mutableListOf(),
         )
 
         parser.asNativeList(equityTiers?.get("shortTermOrderEquityTiers"))?.let { shortTermOrderEquityTiers ->

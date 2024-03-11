@@ -16,12 +16,16 @@ class AccountTransformer() {
         usePessimisticCollateralCheck: Boolean
     ): Map<String, Any>? {
         val modified = account?.mutable() ?: return null
-        val subaccount = if (subaccountNumber != null) parser.asNativeMap(
-            parser.value(
-                account,
-                "subaccounts.$subaccountNumber"
-            )
-        ) ?: mapOf() else null
+        val subaccount = if (subaccountNumber != null) {
+            parser.asNativeMap(
+                parser.value(
+                    account,
+                    "subaccounts.$subaccountNumber",
+                ),
+            ) ?: mapOf()
+        } else {
+            null
+        }
         val modifiedSubaccount =
             subaccountTransformer.applyTradeToSubaccount(subaccount, trade, market, parser, period, usePessimisticCollateralCheck)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)

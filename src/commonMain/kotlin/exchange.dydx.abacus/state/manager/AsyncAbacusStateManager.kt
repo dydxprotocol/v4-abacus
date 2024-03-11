@@ -31,7 +31,6 @@ import kollections.iListOf
 import kollections.iMutableListOf
 import kotlinx.serialization.json.Json
 
-
 @JsExport
 class AsyncAbacusStateManager(
     val deploymentUri: String,
@@ -265,7 +264,7 @@ class AsyncAbacusStateManager(
 
     private fun loadFromRemoteConfigFile(configFile: ConfigFile) {
         ioImplementations.fileSystem?.readCachedTextFile(
-            configFile.path
+            configFile.path,
         )?.let {
             parse(it, configFile)
         }
@@ -298,7 +297,7 @@ class AsyncAbacusStateManager(
     private fun writeToLocalFile(response: String, file: String) {
         ioImplementations.fileSystem?.writeTextFile(
             file,
-            response
+            response,
         )
     }
 
@@ -364,7 +363,6 @@ class AsyncAbacusStateManager(
             return false
         }
     }
-
 
     private fun findEnvironment(environment: String?): V4Environment? {
         return environments.firstOrNull { it ->
@@ -526,7 +524,7 @@ class AsyncAbacusStateManager(
             response,
             subaccountNumber,
             amount,
-            submitTimeInMilliseconds
+            submitTimeInMilliseconds,
         )
     }
 

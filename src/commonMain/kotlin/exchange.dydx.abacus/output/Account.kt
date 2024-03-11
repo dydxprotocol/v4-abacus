@@ -65,7 +65,7 @@ data class SubaccountHistoricalPNL(
                             equity,
                             totalPnl,
                             netTransfers,
-                            createdAtMilliseconds
+                            createdAtMilliseconds,
                         )
                     } else {
                         existing
@@ -75,7 +75,6 @@ data class SubaccountHistoricalPNL(
             DebugLogger.debug("Account Historical PNL not valid")
             return null
         }
-
 
         fun create(
             existing: IList<SubaccountHistoricalPNL>?,
@@ -89,12 +88,14 @@ data class SubaccountHistoricalPNL(
                     val time1 = (obj as SubaccountHistoricalPNL).createdAtMilliseconds
                     val time2MS = time2.toEpochMilliseconds().toDouble()
                     ParsingHelper.compare(time1, time2MS ?: 0.0, true)
-                } else null
+                } else {
+                    null
+                }
             }, { _, obj, itemData ->
                 obj ?: SubaccountHistoricalPNL.create(
                     null,
                     parser,
-                    parser.asMap(itemData)
+                    parser.asMap(itemData),
                 )
             }, true, { item ->
                 val ms = (item as SubaccountHistoricalPNL).createdAtMilliseconds.toDouble()
@@ -107,7 +108,6 @@ data class SubaccountHistoricalPNL(
         }
     }
 }
-
 
 @JsExport
 @Serializable
@@ -129,7 +129,7 @@ data class SubaccountPositionResources(
                     TradeStatesWithStringValues.create(
                         existing?.sideStringKey,
                         parser,
-                        parser.asMap(data["sideStringKey"])
+                        parser.asMap(data["sideStringKey"]),
                     )
                 val sideString: TradeStatesWithStringValues =
                     TradeStatesWithStringValues.create(
@@ -139,14 +139,16 @@ data class SubaccountPositionResources(
                             val stringKey = parser.asString(it.value)
                             if (stringKey != null) {
                                 localizer?.localize(stringKey)
-                            } else null
-                        }
+                            } else {
+                                null
+                            }
+                        },
                     )
                 val indicator: TradeStatesWithStringValues =
                     TradeStatesWithStringValues.create(
                         existing?.indicator,
                         parser,
-                        parser.asMap(data["indicator"])
+                        parser.asMap(data["indicator"]),
                     )
                 return if (existing?.sideStringKey !== sideStringKey ||
                     existing.indicator !== indicator
@@ -165,7 +167,9 @@ data class SubaccountPositionResources(
 @JsExport
 @Serializable
 enum class PositionSide(val rawValue: String) {
-    LONG("LONG"), SHORT("SHORT"), NONE("NONE");
+    LONG("LONG"),
+    SHORT("SHORT"),
+    NONE("NONE");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -214,7 +218,6 @@ data class TradeStatesWithPositionSides(
                 get() = this@TradeStatesWithPositionSides.postOrder
             override val postAllOrders: PositionSide?
                 get() = this@TradeStatesWithPositionSides.postAllOrders
-
         }
     }
 }
@@ -264,7 +267,7 @@ data class SubaccountPosition(
                         TradeStatesWithDoubleValues.create(
                             existing?.entryPrice,
                             parser,
-                            parser.asMap(data["entryPrice"])
+                            parser.asMap(data["entryPrice"]),
                         )
                     val exitPrice = parser.asDouble(data["exitPrice"])
                     val createdAtMilliseconds =
@@ -276,81 +279,81 @@ data class SubaccountPosition(
                         TradeStatesWithDoubleValues.create(
                             existing?.realizedPnl,
                             parser,
-                            parser.asMap(data["realizedPnl"])
+                            parser.asMap(data["realizedPnl"]),
                         )
                     val realizedPnlPercent = TradeStatesWithDoubleValues.create(
                         existing?.realizedPnlPercent,
                         parser,
-                        parser.asMap(data["realizedPnlPercent"])
+                        parser.asMap(data["realizedPnlPercent"]),
                     )
                     val unrealizedPnl =
                         TradeStatesWithDoubleValues.create(
                             existing?.unrealizedPnl,
                             parser,
-                            parser.asMap(data["unrealizedPnl"])
+                            parser.asMap(data["unrealizedPnl"]),
                         )
                     val unrealizedPnlPercent = TradeStatesWithDoubleValues.create(
                         existing?.unrealizedPnlPercent,
                         parser,
-                        parser.asMap(data["unrealizedPnlPercent"])
+                        parser.asMap(data["unrealizedPnlPercent"]),
                     )
                     val size =
                         TradeStatesWithDoubleValues.create(
                             existing?.size,
                             parser,
-                            parser.asMap(data["size"])
+                            parser.asMap(data["size"]),
                         )
                     val notionalTotal =
                         TradeStatesWithDoubleValues.create(
                             existing?.notionalTotal,
                             parser,
-                            parser.asMap(data["notionalTotal"])
+                            parser.asMap(data["notionalTotal"]),
                         )
                     val valueTotal =
                         TradeStatesWithDoubleValues.create(
                             existing?.valueTotal,
                             parser,
-                            parser.asMap(data["valueTotal"])
+                            parser.asMap(data["valueTotal"]),
                         )
                     val initialRiskTotal = TradeStatesWithDoubleValues.create(
                         existing?.initialRiskTotal,
                         parser,
-                        parser.asMap(data["initialRiskTotal"])
+                        parser.asMap(data["initialRiskTotal"]),
                     )
                     val adjustedImf =
                         TradeStatesWithDoubleValues.create(
                             existing?.adjustedImf,
                             parser,
-                            parser.asMap(data["adjustedImf"])
+                            parser.asMap(data["adjustedImf"]),
                         )
                     val adjustedMmf =
                         TradeStatesWithDoubleValues.create(
                             existing?.adjustedMmf,
                             parser,
-                            parser.asMap(data["adjustedMmf"])
+                            parser.asMap(data["adjustedMmf"]),
                         )
                     val leverage =
                         TradeStatesWithDoubleValues.create(
                             existing?.leverage,
                             parser,
-                            parser.asMap(data["leverage"])
+                            parser.asMap(data["leverage"]),
                         )
                     val maxLeverage =
                         TradeStatesWithDoubleValues.create(
                             existing?.leverage,
                             parser,
-                            parser.asMap(data["maxLeverage"])
+                            parser.asMap(data["maxLeverage"]),
                         )
                     val buyingPower =
                         TradeStatesWithDoubleValues.create(
                             existing?.leverage,
                             parser,
-                            parser.asMap(data["buyingPower"])
+                            parser.asMap(data["buyingPower"]),
                         )
                     val liquidationPrice = TradeStatesWithDoubleValues.create(
                         existing?.liquidationPrice,
                         parser,
-                        parser.asMap(data["liquidationPrice"])
+                        parser.asMap(data["liquidationPrice"]),
                     )
 
                     return if (existing?.id != id ||
@@ -400,7 +403,7 @@ data class SubaccountPosition(
                             maxLeverage,
                             buyingPower,
                             liquidationPrice,
-                            resources
+                            resources,
                         )
                     } else {
                         existing
@@ -420,10 +423,16 @@ data class SubaccountPosition(
 
         private fun positionSide(size: Double?): PositionSide? {
             return if (size != null) {
-                if (size > 0) PositionSide.LONG
-                else if (size < 0) PositionSide.SHORT
-                else PositionSide.NONE
-            } else null
+                if (size > 0) {
+                    PositionSide.LONG
+                } else if (size < 0) {
+                    PositionSide.SHORT
+                } else {
+                    PositionSide.NONE
+                }
+            } else {
+                null
+            }
         }
     }
 }
@@ -470,9 +479,13 @@ data class SubaccountOrderResources(
                         val statusString =
                             if (statusStringKey != null) localizer?.localize(statusStringKey) else null
                         val timeInForceString =
-                            if (timeInForceStringKey != null) localizer?.localize(
-                                timeInForceStringKey
-                            ) else null
+                            if (timeInForceStringKey != null) {
+                                localizer?.localize(
+                                    timeInForceStringKey,
+                                )
+                            } else {
+                                null
+                            }
                         SubaccountOrderResources(
                             sideString,
                             typeString,
@@ -481,7 +494,7 @@ data class SubaccountOrderResources(
                             sideStringKey,
                             typeStringKey,
                             statusStringKey,
-                            timeInForceStringKey
+                            timeInForceStringKey,
                         )
                     } else {
                         existing
@@ -554,8 +567,8 @@ data class SubaccountOrder(
                 val resources = parser.asMap(data["resources"])?.let {
                     SubaccountOrderResources.create(existing?.resources, parser, it, localizer)
                 }
-                if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null
-                    && resources != null
+                if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null &&
+                    resources != null
                 ) {
                     val triggerPrice = parser.asDouble(data["triggerPrice"])
                     val trailingPercent = parser.asDouble(data["trailingPercent"])
@@ -629,7 +642,7 @@ data class SubaccountOrder(
                             postOnly,
                             reduceOnly,
                             cancelReason,
-                            resources
+                            resources,
                         )
                     } else {
                         existing
@@ -691,7 +704,7 @@ data class SubaccountFillResources(
                         sideStringKey,
                         liquidityStringKey,
                         typeStringKey,
-                        iconLocal
+                        iconLocal,
                     )
                 } else {
                     DebugLogger.debug("Account Fill Resources not valid")
@@ -707,7 +720,8 @@ data class SubaccountFillResources(
 @JsExport
 @Serializable
 enum class FillLiquidity(val rawValue: String) {
-    maker("MAKER"), taker("TAKER");
+    maker("MAKER"),
+    taker("TAKER");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -770,7 +784,7 @@ data class SubaccountFill(
                         existing.fee != fee ||
                         existing.createdAtMilliseconds != createdAtMilliseconds ||
                         existing.resources !== resources
-                    )
+                    ) {
                         SubaccountFill(
                             id,
                             marketId,
@@ -782,8 +796,11 @@ data class SubaccountFill(
                             size,
                             fee,
                             createdAtMilliseconds,
-                            resources
-                        ) else existing
+                            resources,
+                        )
+                    } else {
+                        existing
+                    }
                 } else {
                     DebugLogger.debug("Account Fill not valid")
                     null
@@ -791,7 +808,6 @@ data class SubaccountFill(
             }
             return null
         }
-
 
         fun create(
             existing: IList<SubaccountFill>?,
@@ -865,7 +881,7 @@ data class SubaccountTransferResources(
                         blockExplorerUrl,
                         statusStringKey,
                         iconLocal,
-                        indicator
+                        indicator,
                     )
                 } else {
                     existing
@@ -881,7 +897,10 @@ data class SubaccountTransferResources(
 @JsExport
 @Serializable
 enum class TransferRecordType(val rawValue: String) {
-    DEPOSIT("DEPOSIT"), WITHDRAW("WITHDRAWAL"), TRANSFER_IN("TRANSFER_IN"), TRANSFER_OUT("TRANSFER_OUT");
+    DEPOSIT("DEPOSIT"),
+    WITHDRAW("WITHDRAWAL"),
+    TRANSFER_IN("TRANSFER_IN"),
+    TRANSFER_OUT("TRANSFER_OUT");
 
     companion object {
         operator fun invoke(rawValue: String?) =
@@ -951,7 +970,7 @@ data class SubaccountTransfer(
                             fromAddress,
                             toAddress,
                             transactionHash,
-                            resources
+                            resources,
                         )
                     } else {
                         existing
@@ -962,7 +981,6 @@ data class SubaccountTransfer(
             return null
         }
 
-
         fun create(
             existing: IList<SubaccountTransfer>?,
             parser: ParserProtocol,
@@ -971,15 +989,17 @@ data class SubaccountTransfer(
             return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
                 val time1 = (obj as SubaccountTransfer).updatedAtMilliseconds
                 val time2 =
-                    (parser.asDatetime(itemData["confirmedAt"])
-                        ?: parser.asDatetime(itemData["createdAt"]))?.toEpochMilliseconds()
+                    (
+                        parser.asDatetime(itemData["confirmedAt"])
+                            ?: parser.asDatetime(itemData["createdAt"])
+                        )?.toEpochMilliseconds()
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
                 obj ?: SubaccountTransfer.create(
                     null,
                     parser,
-                    parser.asMap(itemData)
+                    parser.asMap(itemData),
                 )
             })?.toIList()
         }
@@ -1026,7 +1046,7 @@ data class SubaccountFundingPayment(
                             rate,
                             positionSize,
                             price,
-                            effectiveAtMilliSeconds
+                            effectiveAtMilliSeconds,
                         )
                     } else {
                         existing
@@ -1036,7 +1056,6 @@ data class SubaccountFundingPayment(
             DebugLogger.debug("Account Funding Payment not valid")
             return null
         }
-
 
         fun create(
             existing: IList<SubaccountFundingPayment>?,
@@ -1053,7 +1072,7 @@ data class SubaccountFundingPayment(
                 obj ?: SubaccountFundingPayment.create(
                     null,
                     parser,
-                    parser.asMap(itemData)
+                    parser.asMap(itemData),
                 )
             })?.toIList()
         }
@@ -1120,59 +1139,68 @@ data class Subaccount(
                 val quoteBalance =
                     TradeStatesWithDoubleValues.create(
                         existing?.quoteBalance,
-                        parser, parser.asMap(data["quoteBalance"])
+                        parser,
+                        parser.asMap(data["quoteBalance"]),
                     )
                 val notionalTotal =
                     TradeStatesWithDoubleValues.create(
                         existing?.notionalTotal,
-                        parser, parser.asMap(data["notionalTotal"])
+                        parser,
+                        parser.asMap(data["notionalTotal"]),
                     )
                 val valueTotal =
                     TradeStatesWithDoubleValues.create(
                         existing?.valueTotal,
-                        parser, parser.asMap(data["valueTotal"])
+                        parser,
+                        parser.asMap(data["valueTotal"]),
                     )
                 val initialRiskTotal =
                     TradeStatesWithDoubleValues.create(
                         existing?.initialRiskTotal,
                         parser,
-                        parser.asMap(data["initialRiskTotal"])
+                        parser.asMap(data["initialRiskTotal"]),
                     )
                 val adjustedImf =
                     TradeStatesWithDoubleValues.create(
                         existing?.adjustedImf,
-                        parser, parser.asMap(data["adjustedImf"])
+                        parser,
+                        parser.asMap(data["adjustedImf"]),
                     )
                 val equity =
                     TradeStatesWithDoubleValues.create(
                         existing?.equity,
-                        parser, parser.asMap(data["equity"])
+                        parser,
+                        parser.asMap(data["equity"]),
                     )
                 val freeCollateral =
                     TradeStatesWithDoubleValues.create(
                         existing?.freeCollateral,
-                        parser, parser.asMap(data["freeCollateral"])
+                        parser,
+                        parser.asMap(data["freeCollateral"]),
                     )
                 val leverage =
                     TradeStatesWithDoubleValues.create(
                         existing?.leverage,
-                        parser, parser.asMap(data["leverage"])
+                        parser,
+                        parser.asMap(data["leverage"]),
                     )
                 val marginUsage =
                     TradeStatesWithDoubleValues.create(
                         existing?.marginUsage,
-                        parser, parser.asMap(data["marginUsage"])
+                        parser,
+                        parser.asMap(data["marginUsage"]),
                     )
                 val buyingPower =
                     TradeStatesWithDoubleValues.create(
                         existing?.buyingPower,
-                        parser, parser.asMap(data["buyingPower"])
+                        parser,
+                        parser.asMap(data["buyingPower"]),
                     )
 
                 val openPositions = openPositions(
                     existing?.openPositions,
                     parser,
-                    parser.asMap(data["openPositions"])
+                    parser.asMap(data["openPositions"]),
                 )
                 val orders =
                     orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
@@ -1227,7 +1255,7 @@ data class Subaccount(
                         buyingPower,
                         openPositions,
                         orders,
-                        marginEnabled
+                        marginEnabled,
                     )
                 } else {
                     existing
@@ -1283,9 +1311,13 @@ data class Subaccount(
                     if (time1 != null) {
                         if (time2 != null) {
                             ParsingHelper.compare(time1, time2, false)
-                        } else ComparisonOrder.ascending
+                        } else {
+                            ComparisonOrder.ascending
+                        }
                     } else {
-                        if (time2 != null) ComparisonOrder.descending else {
+                        if (time2 != null) {
+                            ComparisonOrder.descending
+                        } else {
                             ParsingHelper.compare(obj1.id, obj2.id, true)
                         }
                     }
@@ -1301,7 +1333,9 @@ data class Subaccount(
         private inline fun block(order: SubaccountOrder): Int? {
             return order.createdAtHeight ?: if (order.goodTilBlock != null) {
                 order.goodTilBlock - SHORT_TERM_ORDER_DURATION
-            } else null
+            } else {
+                null
+            }
         }
 
         private fun transfers(
@@ -1320,7 +1354,7 @@ data class Subaccount(
                 SubaccountTransfer.create(
                     null,
                     parser,
-                    parser.asMap(itemData)
+                    parser.asMap(itemData),
                 )
             }, true)?.toIList()
         }
@@ -1395,7 +1429,7 @@ data class HistoricalTradingReward(
             return HistoricalTradingReward(
                 amount,
                 startedAt.toEpochMilliseconds().toDouble(),
-                endedAt.toEpochMilliseconds().toDouble()
+                endedAt.toEpochMilliseconds().toDouble(),
             )
         }
 
@@ -1418,7 +1452,7 @@ data class HistoricalTradingReward(
                         create(
                             amount,
                             startedAt,
-                            endedAt ?: getEndedAt(startedAt, period)
+                            endedAt ?: getEndedAt(startedAt, period),
                         )
                     } else {
                         existing
@@ -1439,7 +1473,6 @@ data class HistoricalTradingReward(
         }
     }
 }
-
 
 @JsExport
 @Serializable
@@ -1468,7 +1501,7 @@ data class BlockReward(
                         BlockReward(
                             tradingReward,
                             createdAtMilliseconds,
-                            createdAtHeight
+                            createdAtHeight,
                         )
                     } else {
                         existing
@@ -1539,7 +1572,7 @@ data class TradingRewards(
                 val historical = createHistoricalTradingRewards(
                     existing?.historical,
                     parser.asMap(data["historical"]),
-                    parser
+                    parser,
                 )
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
@@ -1552,7 +1585,7 @@ data class TradingRewards(
                     TradingRewards(
                         total,
                         blockRewards,
-                        historical
+                        historical,
                     )
                 } else {
                     existing
@@ -1669,7 +1702,7 @@ data class TradingRewards(
             return HistoricalTradingReward(
                 0.0,
                 thisPeriod.start.toEpochMilliseconds().toDouble(),
-                thisPeriod.end.toEpochMilliseconds().toDouble()
+                thisPeriod.end.toEpochMilliseconds().toDouble(),
             )
         }
 
@@ -1681,25 +1714,25 @@ data class TradingRewards(
                 "DAILY" -> HistoricalTradingReward(
                     0.0,
                     lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble()
+                    lastStartTime.toEpochMilliseconds().toDouble(),
                 )
 
                 "WEEKLY" -> HistoricalTradingReward(
                     0.0,
                     lastStartTime.minus(7.days).toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble()
+                    lastStartTime.toEpochMilliseconds().toDouble(),
                 )
 
                 "MONTHLY" -> HistoricalTradingReward(
                     0.0,
                     lastStartTime.previousMonth().toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble()
+                    lastStartTime.toEpochMilliseconds().toDouble(),
                 )
 
                 else -> HistoricalTradingReward(
                     0.0,
                     lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble()
+                    lastStartTime.toEpochMilliseconds().toDouble(),
                 )
             }
         }
@@ -1838,7 +1871,9 @@ data class Account(
             val tradingRewardsData = parser.asMap(data["tradingRewards"])
             val tradingRewards = if (tradingRewardsData != null) {
                 TradingRewards.create(existing?.tradingRewards, parser, tradingRewardsData)
-            } else null
+            } else {
+                null
+            }
 
             val launchIncentivePoints = (parser.asMap(data["launchIncentivePoints"]))?.let {
                 LaunchIncentivePoints.create(existing?.launchIncentivePoints, parser, it)
@@ -1868,7 +1903,7 @@ data class Account(
                 stakingBalances,
                 subaccounts,
                 tradingRewards,
-                launchIncentivePoints
+                launchIncentivePoints,
             )
         }
 

@@ -10,12 +10,13 @@ import kollections.iListOf
 import kollections.toIList
 import kotlinx.serialization.json.Json
 
-
 internal fun TradingStateMachine.account(payload: String): StateChanges {
     val json = parser.asMap(Json.parseToJsonElement(payload))
     return if (json != null) {
         receivedAccount(json)
-    } else StateChanges(iListOf<Changes>(), null, null)
+    } else {
+        StateChanges(iListOf<Changes>(), null, null)
+    }
 }
 
 internal fun TradingStateMachine.receivedAccount(

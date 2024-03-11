@@ -8,7 +8,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class TradeBracketsTests: ValidationsTests() {
+class TradeBracketsTests : ValidationsTests() {
     @Test
     fun testDataFeed() {
         setup()
@@ -17,7 +17,6 @@ class TradeBracketsTests: ValidationsTests() {
 
         testTradeInputOnce()
     }
-
 
     fun loadValidationsAccounts2(): StateResponse {
         return perp.socket(mock.socketUrl, mock.validationsMock.accountsSubscribed2, 0, null)
@@ -131,7 +130,7 @@ class TradeBracketsTests: ValidationsTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test({
@@ -155,7 +154,7 @@ class TradeBracketsTests: ValidationsTests() {
                     "errors": null
                 }
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test({
@@ -242,7 +241,7 @@ class TradeBracketsTests: ValidationsTests() {
                     ]
                 }
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

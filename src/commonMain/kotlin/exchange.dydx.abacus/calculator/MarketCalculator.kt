@@ -21,7 +21,9 @@ internal class MarketCalculator(val parser: ParserProtocol) {
 
         val modifiedMarkets = if (assets != null) {
             markets.mutable()
-        } else null
+        } else {
+            null
+        }
         var volume24HUSDC = Numeric.double.ZERO
         var openInterestUSDC = Numeric.double.ZERO
         var trades24H = 0
@@ -68,5 +70,4 @@ internal class MarketCalculator(val parser: ParserProtocol) {
         modified["marketCaps"] = oraclePrice * circulatingSupply
         return modified
     }
-
 }

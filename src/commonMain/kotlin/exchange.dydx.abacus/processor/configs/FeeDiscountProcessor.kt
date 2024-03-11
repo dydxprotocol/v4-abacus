@@ -8,14 +8,14 @@ internal class FeeDiscountProcessor(parser: ParserProtocol) : BaseProcessor(pars
     private val feeDiscountKeyMap = mapOf(
         "string" to mapOf(
             "tier" to "tier",
-            "symbol" to "symbol"
+            "symbol" to "symbol",
         ),
         "double" to mapOf(
-            "discount" to "discount"
+            "discount" to "discount",
         ),
         "int" to mapOf(
-            "balance" to "balance"
-        )
+            "balance" to "balance",
+        ),
     )
 
     override fun received(

@@ -1,14 +1,11 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.output.MarketCandle
-import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.tests.extensions.*
+import exchange.dydx.abacus.tests.extensions.loadCandlesAllMarkets
+import exchange.dydx.abacus.tests.extensions.loadCandlesFirst
+import exchange.dydx.abacus.tests.extensions.loadCandlesSecond
+import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class V3CandlesTests : V3BaseTests() {
     @Test
@@ -20,7 +17,6 @@ class V3CandlesTests : V3BaseTests() {
 
         testCandlesOnce()
     }
-
 
     private fun testCandlesOnce() {
         var time = ServerTime.now()
@@ -62,7 +58,7 @@ class V3CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -94,7 +90,7 @@ class V3CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -126,7 +122,7 @@ class V3CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

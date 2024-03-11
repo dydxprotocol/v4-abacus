@@ -20,5 +20,4 @@ internal class LaunchIncentiveSeasonsProcessor(parser: ParserProtocol) : BasePro
         }
         return modified
     }
-
 }

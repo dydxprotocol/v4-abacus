@@ -9,11 +9,11 @@ internal class AssetPositionProcessor(parser: ParserProtocol) : BaseProcessor(pa
         "string" to mapOf(
             "symbol" to "id",
             "side" to "side",
-            "assetId" to "assetId"
+            "assetId" to "assetId",
         ),
         "double" to mapOf(
-            "size" to "size"
-        )
+            "size" to "size",
+        ),
     )
 
     override fun received(

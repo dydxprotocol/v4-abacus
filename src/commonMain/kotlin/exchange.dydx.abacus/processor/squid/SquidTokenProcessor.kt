@@ -8,8 +8,8 @@ internal class SquidTokenProcessor(parser: ParserProtocol) : BaseProcessor(parse
         "string" to mapOf(
             "name" to "stringKey",
             "address" to "type",
-            "logoURI" to "iconUrl"
-        )
+            "logoURI" to "iconUrl",
+        ),
     )
 
     override fun received(

@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.wallet.account.HistoricalTradingRewardProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
 @Suppress("UNCHECKED_CAST")
@@ -23,7 +22,7 @@ internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseP
             existing,
             history,
             "startedAt",
-            false
+            false,
         )
     }
 

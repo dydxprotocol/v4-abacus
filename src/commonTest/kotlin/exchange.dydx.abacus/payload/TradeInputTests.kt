@@ -9,7 +9,6 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-
 class TradeInputTests : V3BaseTests() {
     @Test
     fun testDataFeed() {
@@ -81,10 +80,8 @@ class TradeInputTests : V3BaseTests() {
                     }
                 }
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
-
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
@@ -116,11 +113,9 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
     }
-
 
     private fun testTradeInputOnce() {
         var time = ServerTime.now()
@@ -144,7 +139,6 @@ class TradeInputTests : V3BaseTests() {
 
         testTakeProfitMarketTradeInput()
         perp.log("Take Profit Market Order", time)
-
     }
 
     private fun testMarketTradeInput() {
@@ -170,7 +164,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test({
@@ -204,7 +198,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         /*
@@ -295,10 +289,10 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
-        test ({
+        test({
             loadOrderbook()
         }, null)
         /*
@@ -384,9 +378,8 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         /*
         size = 35.0
@@ -468,7 +461,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         /*
@@ -550,7 +543,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         /*
@@ -633,7 +626,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -720,7 +713,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -799,7 +792,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -887,7 +880,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -975,7 +968,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1058,7 +1051,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1141,14 +1134,15 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("LIMIT", TradeInputField.type, 0)
-            }, null)
-
+            },
+            null,
+        )
 
         test(
             {
@@ -1170,10 +1164,9 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testLimitTradeInput() {
         test({
@@ -1183,7 +1176,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.trade("LIMIT", TradeInputField.type, 0)
         }, null)
-
 
         /*
         size = 1.0
@@ -1278,12 +1270,11 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
-
                 perp.trade("10", TradeInputField.goodTilDuration, 0)
             },
             """
@@ -1368,7 +1359,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1457,10 +1448,9 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testStopLimitTradeInput() {
         test({
@@ -1470,7 +1460,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         }, null)
-
 
         /*
         size = 1.0
@@ -1565,7 +1554,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1577,7 +1566,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
         }, null)
-
 
         /*
         size = 1.0
@@ -1672,7 +1660,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1685,8 +1673,6 @@ class TradeInputTests : V3BaseTests() {
             perp.trade("TRAILING_STOP", TradeInputField.type, 0)
         }, null)
 
-
-
         /*
         size = 1.0
          */
@@ -1694,7 +1680,6 @@ class TradeInputTests : V3BaseTests() {
             perp.trade("1.0", TradeInputField.size, 0)
         }, null)
     }
-
 
     private fun testStopMarketTradeInput() {
         test({
@@ -1704,7 +1689,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
         }, null)
-
 
         /*
         size = 1.0
@@ -1795,7 +1779,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1896,7 +1880,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1960,10 +1944,8 @@ class TradeInputTests : V3BaseTests() {
                     }
                 }
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
-
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
@@ -1972,8 +1954,6 @@ class TradeInputTests : V3BaseTests() {
         test({
             perp.trade("MARKET", TradeInputField.type, 0)
         }, null)
-
-
 
         /*
         size = 0.1
@@ -2079,7 +2059,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -2168,9 +2148,8 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -2258,7 +2237,7 @@ class TradeInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

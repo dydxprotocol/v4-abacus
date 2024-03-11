@@ -16,7 +16,7 @@ object Bech32 {
         -1, -1, -1, -1, -1, -1, 15, -1, 10, 17, 21, 20, 26, 30, 7, 5, -1, -1, -1, -1, -1,
         -1, -1, 29, -1, 24, 13, 25, 9, 8, 23, -1, 18, 22, 31, 27, 19, -1, 1, 0, 3, 16, 11,
         28, 12, 14, 6, 4, 2, -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9, 8, 23, -1, 18,
-        22, 31, 27, 19, -1, 1, 0, 3, 16, 11, 28, 12, 14, 6, 4, 2, -1, -1, -1, -1, -1
+        22, 31, 27, 19, -1, 1, 0, 3, 16, 11, 28, 12, 14, 6, 4, 2, -1, -1, -1, -1, -1,
     )
 
     /** Find the polynomial with value coefficients mod the generator as 30-bit.  */
@@ -108,24 +108,30 @@ object Bech32 {
     fun decode(str: String): Bech32Data {
         var lower = false
         var upper = false
-        if (str.length < 8)
+        if (str.length < 8) {
             throw AddressFormatException.InvalidDataLength("Input too short: " + str.length)
-        if (str.length > 90)
+        }
+        if (str.length > 90) {
             throw AddressFormatException.InvalidDataLength("Input too long: " + str.length)
+        }
         for (i in 0 until str.length) {
             val c = str[i]
-            if (c.toInt() < 33 || c.toInt() > 126) throw AddressFormatException.InvalidCharacter(
-                c,
-                i
-            )
+            if (c.toInt() < 33 || c.toInt() > 126) {
+                throw AddressFormatException.InvalidCharacter(
+                    c,
+                    i,
+                )
+            }
             if (c in 'a'..'z') {
-                if (upper)
+                if (upper) {
                     throw AddressFormatException.InvalidCharacter(c, i)
+                }
                 lower = true
             }
             if (c in 'A'..'Z') {
-                if (lower)
+                if (lower) {
                     throw AddressFormatException.InvalidCharacter(c, i)
+                }
                 upper = true
             }
         }
@@ -136,18 +142,22 @@ object Bech32 {
         val values = ByteArray(dataPartLength)
         for (i in 0 until dataPartLength) {
             val c = str[i + pos + 1]
-            if (CHARSET_REV[c.toInt()].toInt() == -1) throw AddressFormatException.InvalidCharacter(
-                c,
-                i + pos + 1
-            )
+            if (CHARSET_REV[c.toInt()].toInt() == -1) {
+                throw AddressFormatException.InvalidCharacter(
+                    c,
+                    i + pos + 1,
+                )
+            }
             values[i] = CHARSET_REV[c.toInt()]
         }
         val hrp = str.substring(0, pos).toLowerCase()
         if (!verifyChecksum(
                 hrp,
-                values
+                values,
             )
-        ) throw AddressFormatException.InvalidChecksum()
+        ) {
+            throw AddressFormatException.InvalidChecksum()
+        }
         return Bech32Data(hrp, values.copyOfRange(0, values.size - 6))
     }
 }

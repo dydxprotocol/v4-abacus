@@ -26,8 +26,6 @@ data class CancelOrderRecord(
     val timestampInMilliseconds: Double,
 )
 
-
-
 @JsExport
 @Serializable
 data class PlaceOrderMarketInfo(

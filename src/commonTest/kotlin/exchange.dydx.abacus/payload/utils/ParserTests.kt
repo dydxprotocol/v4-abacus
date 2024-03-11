@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.payload.utils
 
 import exchange.dydx.abacus.utils.Parser
-import kollections.iListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -15,5 +14,4 @@ class ParserTests {
         assertEquals(0.1, parser.asDouble("0.1000000000000000000000000000000000001"))
         assertEquals(10000000000000000.0, parser.asDouble("10000000000000000"))
     }
-
 }

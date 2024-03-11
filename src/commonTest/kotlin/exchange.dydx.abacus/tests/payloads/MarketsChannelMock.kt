@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
+@Suppress("PropertyName")
 internal class MarketsChannelMock {
     internal val subscribed = """
         {
@@ -1268,7 +1269,6 @@ internal class MarketsChannelMock {
         }
     """.trimIndent()
 
-
     internal val v4_channel_batch_data_oracle_prices = """
         {
            "type":"channel_batch_data",
@@ -1379,7 +1379,6 @@ internal class MarketsChannelMock {
            ]
         }
     """.trimIndent()
-
 
     internal val v4_subscribed_for_calculation = """
         {

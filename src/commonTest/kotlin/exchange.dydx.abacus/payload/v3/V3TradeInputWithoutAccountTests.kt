@@ -8,7 +8,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V3TradeInputWithoutAccountTests: V3BaseTests() {
+class V3TradeInputWithoutAccountTests : V3BaseTests() {
     @Test
     fun testDataFeed() {
         setup()
@@ -74,7 +74,7 @@ class V3TradeInputWithoutAccountTests: V3BaseTests() {
                         "current": "trade"
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -117,7 +117,7 @@ class V3TradeInputWithoutAccountTests: V3BaseTests() {
                         "current": "trade"
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

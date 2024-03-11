@@ -90,7 +90,9 @@ internal fun TradingStateMachine.user(payload: String): StateChanges {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         receivedUser(json)
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.receivedUser(payload: Map<String, Any>): StateChanges {
@@ -102,7 +104,9 @@ internal fun TradingStateMachine.onChainUserFeeTier(payload: String): StateChang
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         receivedOnChainUserFeeTier(json)
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 private fun TradingStateMachine.receivedOnChainUserFeeTier(payload: Map<String, Any>): StateChanges {
@@ -115,14 +119,18 @@ internal fun TradingStateMachine.onChainUserStats(payload: String): StateChanges
     return if (json != null) {
         this.wallet = walletProcessor.receivedOnChainUserStats(wallet, json)
         StateChanges(iListOf(Changes.wallet), null)
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.fills(payload: String, subaccountNumber: Int): StateChanges {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         receivedFills(json, subaccountNumber)
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.receivedFills(
@@ -133,14 +141,18 @@ internal fun TradingStateMachine.receivedFills(
     return if (size > 0) {
         wallet = walletProcessor.receivedFills(wallet, payload, subaccountNumber)
         StateChanges(iListOf(Changes.fills), null, iListOf(subaccountNumber))
-    } else StateChanges(iListOf<Changes>())
+    } else {
+        StateChanges(iListOf<Changes>())
+    }
 }
 
 internal fun TradingStateMachine.transfers(payload: String, subaccountNumber: Int): StateChanges {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         receivedTransfers(json, subaccountNumber)
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.receivedTransfers(
@@ -151,7 +163,9 @@ internal fun TradingStateMachine.receivedTransfers(
     return if (size > 0) {
         wallet = walletProcessor.receivedTransfers(wallet, payload, subaccountNumber)
         StateChanges(iListOf(Changes.transfers), null, iListOf(subaccountNumber))
-    } else StateChanges(iListOf<Changes>())
+    } else {
+        StateChanges(iListOf<Changes>())
+    }
 }
 
 internal fun TradingStateMachine.orderCanceled(
@@ -163,7 +177,7 @@ internal fun TradingStateMachine.orderCanceled(
         val (modifiedWallet, updated) = walletProcessor.orderCanceled(
             wallet,
             orderId,
-            subaccountNumber
+            subaccountNumber,
         )
         if (updated) {
             this.wallet = modifiedWallet

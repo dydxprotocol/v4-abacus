@@ -8,8 +8,8 @@ internal class NetworkConfigsProcessor(parser: ParserProtocol) : BaseProcessor(p
     private val keyMap = mapOf(
         "string" to mapOf(
             "api" to "api",
-            "node" to "node"
-        )
+            "node" to "node",
+        ),
     )
 
     override fun received(

@@ -64,7 +64,6 @@ import exchange.dydx.abacus.utils.safeSet
 
  */
 
-
 @Suppress("UNCHECKED_CAST")
 internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val typeStringKeys = mapOf(
@@ -80,7 +79,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     )
     private val sideStringKeys = mapOf(
         "BUY" to "APP.GENERAL.BUY",
-        "SELL" to "APP.GENERAL.SELL"
+        "SELL" to "APP.GENERAL.SELL",
     )
     private val statusStringKeys = mapOf(
         "OPEN" to "APP.TRADE.OPEN_STATUS",
@@ -95,7 +94,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val timeInForceStringKeys = mapOf(
         "FOK" to "APP.TRADE.FILL_OR_KILL",
         "IOC" to "APP.TRADE.IMMEDIATE_OR_CANCEL",
-        "GTT" to "APP.TRADE.GOOD_TIL_TIME"
+        "GTT" to "APP.TRADE.GOOD_TIL_TIME",
     )
     private val cancelReasonStringKeys = mapOf(
         "COULD_NOT_FILL" to "APP.TRADE.COULD_NOT_FILL",
@@ -104,7 +103,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "POST_ONLY_WOULD_CROSS" to "APP.TRADE.POST_ONLY_WOULD_CROSS",
         "SELF_TRADE" to "APP.TRADE.SELF_TRADE",
         "UNDERCOLLATERALIZED" to "APP.TRADE.UNDERCOLLATERALIZED",
-        "USER_CANCELED" to "APP.TRADE.USER_CANCELED"
+        "USER_CANCELED" to "APP.TRADE.USER_CANCELED",
     )
 
     private val orderKeyMap = mapOf(
@@ -132,19 +131,19 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "unfillableAt" to "unfillableAt",
             "expiresAt" to "expiresAt",
             "updatedAt" to "updatedAt",
-            "goodTilBlockTime" to "goodTilBlockTime"
+            "goodTilBlockTime" to "goodTilBlockTime",
         ),
         "bool" to mapOf(
             "postOnly" to "postOnly",
-            "reduceOnly" to "reduceOnly"
+            "reduceOnly" to "reduceOnly",
         ),
         "int" to mapOf(
             "clobPairId" to "clobPairId",
             "orderFlags" to "orderFlags",
             "goodTilBlock" to "goodTilBlock",
             "clientMetadata" to "clientMetadata",
-            "createdAtHeight" to "createdAtHeight"
-        )
+            "createdAtHeight" to "createdAtHeight",
+        ),
     )
 
     private fun shouldUpdate(existing: Map<String, Any>?, payload: Map<String, Any>): Boolean {
@@ -225,14 +224,16 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 "type",
                 OrderTypeProcessor.orderType(
                     parser.asString(modified["type"]),
-                    parser.asInt(modified["clientMetadata"])
-                )
+                    parser.asInt(modified["clientMetadata"]),
+                ),
             )
 
             updateResource(modified)
             val (returnValue, updated) = updateHeight(modified, height);
             return returnValue
-        } else existing
+        } else {
+            existing
+        }
     }
 
     private fun updateResource(modified: MutableMap<String, Any>) {

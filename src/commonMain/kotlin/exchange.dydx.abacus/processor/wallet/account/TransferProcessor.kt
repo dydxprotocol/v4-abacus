@@ -2,7 +2,6 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -19,18 +18,18 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             "senderWallet" to "fromAddress",
             "recipientWallet" to "toAddress",
             "status" to "status",
-            "transactionHash" to "transactionHash"
+            "transactionHash" to "transactionHash",
         ),
         "datetime" to mapOf(
             "createdAt" to "createdAt",
-            "confirmedAt" to "confirmedAt"
+            "confirmedAt" to "confirmedAt",
         ),
         "double" to mapOf(
             "size" to "amount",
         ),
         "int" to mapOf(
             "createdAtHeight" to "updatedAtBlock",
-        )
+        ),
     )
 
     private val typeMap = mapOf(
@@ -38,7 +37,7 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         "WITHDRAWAL" to "APP.GENERAL.WITHDRAW",
         "FAST_WITHDRAWAL" to "APP.GENERAL.FAST_WITHDRAW",
         "TRANSFER_OUT" to "APP.GENERAL.TRANSFER_OUT",
-        "TRANSFER_IN" to "APP.GENERAL.TRANSFER_IN"
+        "TRANSFER_IN" to "APP.GENERAL.TRANSFER_IN",
     )
 
     private val typeIconMap = mapOf(
@@ -46,7 +45,7 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         "WITHDRAWAL" to "Outgoing",
         "FAST_WITHDRAWAL" to "Outgoing",
         "TRANSFER_OUT" to "Outgoing",
-        "TRANSFER_IN" to "Incoming"
+        "TRANSFER_IN" to "Incoming",
     )
 
     private val statusMap = mapOf(
@@ -63,20 +62,20 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         val sender = parser.asNativeMap(payload["sender"])
         val recipient = parser.asNativeMap(payload["recipient"])
 
-        sender?.let { 
+        sender?.let {
             modified.safeSet("fromAddress", parser.asString(it["address"]))
         }
-        recipient?.let { 
+        recipient?.let {
             modified.safeSet("toAddress", parser.asString(it["address"]))
         }
-        
+
         // for v3
         val debitAmount = parser.asDouble(payload["debitAmount"])
         val creditAmount = parser.asDouble(payload["creditAmount"])
         if (debitAmount != null && debitAmount != Numeric.double.ZERO) {
             modified["amount"] = debitAmount
             modified.safeSet("asset", parser.asString(payload["debitAsset"]))
-        } else if (creditAmount != null  && debitAmount != Numeric.double.ZERO) {
+        } else if (creditAmount != null && debitAmount != Numeric.double.ZERO) {
             modified["amount"] = creditAmount
             modified.safeSet("asset", parser.asString(payload["creditAsset"]))
         }

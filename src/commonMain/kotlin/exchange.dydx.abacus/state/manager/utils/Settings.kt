@@ -10,7 +10,10 @@ class AppConfigs(
     val enableLogger: Boolean = false,
 ) {
     enum class SquidVersion {
-        V1, V2, V2DepositOnly, V2WithdrawalOnly,
+        V1,
+        V2,
+        V2DepositOnly,
+        V2WithdrawalOnly,
     }
     var squidVersion: SquidVersion = SquidVersion.V1
 

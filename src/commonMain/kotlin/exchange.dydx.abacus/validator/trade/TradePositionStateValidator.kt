@@ -26,38 +26,42 @@ internal class TradePositionStateValidator(
         environment: V4Environment?,
     ): List<Any>? {
         val marketId = parser.asString(trade["marketId"])
-        val position = if (marketId != null) parser.asNativeMap(
-            parser.value(
-                subaccount,
-                "openPositions.$marketId"
+        val position = if (marketId != null) {
+            parser.asNativeMap(
+                parser.value(
+                    subaccount,
+                    "openPositions.$marketId",
+                ),
             )
-        ) else null
+        } else {
+            null
+        }
 
         val errors = mutableListOf<Any>()
         val closeOnlyError = validateCloseOnly(
             market,
-            change
+            change,
         )
         if (position != null) {
             val leverageError = validatePositionLeverage(
                 position,
                 trade,
                 change,
-                restricted
+                restricted,
             )
             if (leverageError != null) {
                 errors.add(leverageError)
             }
             val positionSizeError = validatePositionSize(
                 position,
-                market
+                market,
             )
             if (positionSizeError != null) {
                 errors.add(positionSizeError)
             }
             val positionFlipError = validatePositionFlip(
                 change,
-                trade
+                trade,
             )
             if (positionFlipError != null) {
                 errors.add(positionFlipError)
@@ -65,7 +69,6 @@ internal class TradePositionStateValidator(
         }
         return if (errors.size > 0) errors else null
     }
-
 
     private fun validateCloseOnly(
         market: Map<String, Any>?,
@@ -93,11 +96,13 @@ internal class TradePositionStateValidator(
                 mapOf(
                     "MARKET" to mapOf(
                         "value" to marketId,
-                        "format" to "string"
-                    )
-                )
+                        "format" to "string",
+                    ),
+                ),
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun validatePositionLeverage(
@@ -114,7 +119,7 @@ internal class TradePositionStateValidator(
         INVALID_LARGE_POSITION_LEVERAGE
          */
         return if (overMaxLeverage(
-                position
+                position,
             )
         ) {
             if (parser.asString(trade["type"]) == "MARKET") {
@@ -129,25 +134,28 @@ internal class TradePositionStateValidator(
                     if (increasingPosition) listOf("size.size") else null,
                     if (increasingPosition) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
                     "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                    "ERRORS.TRADE_BOX.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE"
+                    "ERRORS.TRADE_BOX.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
                 )
             } else {
-                if (change == PositionChange.NEW) error(
-                    "ERROR",
-                    "INVALID_NEW_POSITION_LEVERAGE",
-                    listOf("size.size"),
-                    "APP.TRADE.MODIFY_SIZE_FIELD",
-                    "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_POSITION_LEVERAGE",
-                    "ERRORS.TRADE_BOX.INVALID_NEW_POSITION_LEVERAGE"
-                )
-                else error(
-                    "ERROR",
-                    "INVALID_LARGE_POSITION_LEVERAGE",
-                    listOf("size.size"),
-                    "APP.TRADE.MODIFY_SIZE_FIELD",
-                    "ERRORS.TRADE_BOX_TITLE.INVALID_LARGE_POSITION_LEVERAGE",
-                    "ERRORS.TRADE_BOX.INVALID_LARGE_POSITION_LEVERAGE"
-                )
+                if (change == PositionChange.NEW) {
+                    error(
+                        "ERROR",
+                        "INVALID_NEW_POSITION_LEVERAGE",
+                        listOf("size.size"),
+                        "APP.TRADE.MODIFY_SIZE_FIELD",
+                        "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_POSITION_LEVERAGE",
+                        "ERRORS.TRADE_BOX.INVALID_NEW_POSITION_LEVERAGE",
+                    )
+                } else {
+                    error(
+                        "ERROR",
+                        "INVALID_LARGE_POSITION_LEVERAGE",
+                        listOf("size.size"),
+                        "APP.TRADE.MODIFY_SIZE_FIELD",
+                        "ERRORS.TRADE_BOX_TITLE.INVALID_LARGE_POSITION_LEVERAGE",
+                        "ERRORS.TRADE_BOX.INVALID_LARGE_POSITION_LEVERAGE",
+                    )
+                }
             }
         } else {
             if (parser.asString(trade["type"]) == "MARKET") {
@@ -163,10 +171,14 @@ internal class TradePositionStateValidator(
                         listOf("size.size"),
                         "APP.TRADE.MODIFY_SIZE_FIELD",
                         "WARNINGS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
-                        "WARNINGS.TRADE_BOX.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE"
+                        "WARNINGS.TRADE_BOX.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
                     )
-                } else null
-            } else null
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
         }
     }
 
@@ -181,7 +193,9 @@ internal class TradePositionStateValidator(
     private fun overLeverage(leverage: Double?, adjustedImf: Double?): Boolean {
         return if (leverage != null && adjustedImf != null && adjustedImf > Numeric.double.ZERO) {
             leverage > (Numeric.double.ONE / adjustedImf) || leverage < Numeric.double.ZERO
-        } else false
+        } else {
+            false
+        }
     }
 
     private fun orderOverMaxLeverage(
@@ -206,24 +220,28 @@ internal class TradePositionStateValidator(
             return null
         }
         val symbol = parser.asString(market?.get("assetId")) ?: return null
-        return if (size > maxSize) error(
-            "ERROR",
-            "NEW_POSITION_SIZE_OVER_MAX",
-            listOf("size.size"),
-            "APP.TRADE.MODIFY_SIZE_FIELD",
-            "ERRORS.TRADE_BOX_TITLE.NEW_POSITION_SIZE_OVER_MAX",
-            "ERRORS.TRADE_BOX.NEW_POSITION_SIZE_OVER_MAX",
-            mapOf(
-                "MAX_SIZE" to mapOf(
-                    "value" to maxSize,
-                    "format" to "size"
+        return if (size > maxSize) {
+            error(
+                "ERROR",
+                "NEW_POSITION_SIZE_OVER_MAX",
+                listOf("size.size"),
+                "APP.TRADE.MODIFY_SIZE_FIELD",
+                "ERRORS.TRADE_BOX_TITLE.NEW_POSITION_SIZE_OVER_MAX",
+                "ERRORS.TRADE_BOX.NEW_POSITION_SIZE_OVER_MAX",
+                mapOf(
+                    "MAX_SIZE" to mapOf(
+                        "value" to maxSize,
+                        "format" to "size",
+                    ),
+                    "SYMBOL" to mapOf(
+                        "value" to symbol,
+                        "format" to "string",
+                    ),
                 ),
-                "SYMBOL" to mapOf(
-                    "value" to symbol,
-                    "format" to "string"
-                )
             )
-        ) else null
+        } else {
+            null
+        }
     }
 
     private fun validatePositionFlip(
@@ -242,11 +260,13 @@ internal class TradePositionStateValidator(
                     listOf("size.size"),
                     "APP.TRADE.MODIFY_SIZE_FIELD",
                     "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
-                    "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION"
+                    "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION",
                 )
 
                 else -> null
             }
-        } else null
+        } else {
+            null
+        }
     }
 }

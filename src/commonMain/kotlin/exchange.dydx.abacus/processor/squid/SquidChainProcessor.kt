@@ -9,8 +9,8 @@ internal class SquidChainProcessor(parser: ParserProtocol) : BaseProcessor(parse
             "chainName" to "stringKey",
             "networkIdentifier" to "stringKey",
             "chainId" to "type",
-            "chainIconURI" to "iconUrl"
-        )
+            "chainIconURI" to "iconUrl",
+        ),
     )
 
     override fun received(

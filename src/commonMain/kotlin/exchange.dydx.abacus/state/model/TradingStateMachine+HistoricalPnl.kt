@@ -18,5 +18,7 @@ internal fun TradingStateMachine.receivedHistoricalPnls(payload: Map<String, Any
     return if (size > 0) {
         wallet = walletProcessor.receivedHistoricalPnls(wallet, payload, subaccountNumber)
         StateChanges(iListOf(Changes.historicalPnl), null, iListOf(subaccountNumber))
-    } else StateChanges(iListOf<Changes>())
+    } else {
+        StateChanges(iListOf<Changes>())
+    }
 }

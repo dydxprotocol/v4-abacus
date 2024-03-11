@@ -48,7 +48,5 @@ open class ValidationsTests : V3BaseTests() {
         test({
             perp.trade(null, null, 0)
         }, null)
-
     }
-
 }

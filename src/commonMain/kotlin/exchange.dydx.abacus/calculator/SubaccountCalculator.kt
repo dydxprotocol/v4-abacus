@@ -5,18 +5,17 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kotlin.math.sqrt
-
 
 internal enum class CalculationPeriod(val rawValue: String) {
-    current("current"), post("postOrder"), settled("postAllOrders");
+    current("current"),
+    post("postOrder"),
+    settled("postAllOrders");
 
     companion object {
         operator fun invoke(rawValue: String) =
             CalculationPeriod.values().firstOrNull { it.rawValue == rawValue }
     }
 }
-
 
 @Suppress("UNCHECKED_CAST")
 internal class SubaccountCalculator(val parser: ParserProtocol) {
@@ -110,7 +109,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                     if (positionEntryValue > Numeric.double.ZERO) realizedPnl / positionEntryValue else null,
                                     modified,
                                     "realizedPnlPercent",
-                                    period
+                                    period,
                                 )
                             }
                         }
@@ -121,8 +120,14 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
                 val marketOraclePrice = parser.asDouble(oraclePrice(market))
                 val oraclePrice =
-                    if (period == CalculationPeriod.current) marketOraclePrice else (price
-                        ?: marketOraclePrice)
+                    if (period == CalculationPeriod.current) {
+                        marketOraclePrice
+                    } else {
+                        (
+                            price
+                                ?: marketOraclePrice
+                            )
+                    }
                 if (oraclePrice != null) {
                     when (status) {
                         "CLOSED", "LIQUIDATED" -> {
@@ -146,7 +151,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     set(null, modified, "unrealizedPnl", period)
                     set(null, modified, "unrealizedPnlPercent", period)
                 }
-
 
                 if (oraclePrice != null) {
                     when (status) {
@@ -182,7 +186,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 adjustedImf * notional,
                                 modified,
                                 "initialRiskTotal",
-                                period
+                                period,
                             )
                             set(maxLeverage, modified, "maxLeverage", period)
                         }
@@ -257,24 +261,24 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             value(
                                 position,
                                 "notionalTotal",
-                                period
-                            )
+                                period,
+                            ),
                         ) ?: Numeric.double.ZERO
 
                         valueTotal += parser.asDouble(
                             value(
                                 position,
                                 "valueTotal",
-                                period
-                            )
+                                period,
+                            ),
                         ) ?: Numeric.double.ZERO
 
                         initialRiskTotal += parser.asDouble(
                             value(
                                 position,
                                 "initialRiskTotal",
-                                period
-                            )
+                                period,
+                            ),
                         ) ?: Numeric.double.ZERO
                     }
                 }
@@ -295,7 +299,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 if (equityDouble > Numeric.double.ZERO) {
                     val leverage = notionalTotalDouble / equityDouble
                     val marginUsage = Numeric.double.ONE - freeCollateralDouble / equityDouble
-
 
                     set(parser.asDouble(leverage), subaccount, "leverage", period)
                     set(parser.asDouble(marginUsage), subaccount, "marginUsage", period)
@@ -329,7 +332,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 for ((key, position) in positions) {
                     val leverage = calculatePositionLeverage(
                         equity,
-                        parser.asDouble(value(position, "valueTotal", period))
+                        parser.asDouble(value(position, "valueTotal", period)),
                     )
                     set(leverage, position, "leverage", period)
                     val liquidationPrice = calculatePositionLiquidationPrice(
@@ -337,13 +340,13 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                         key,
                         positions,
                         markets,
-                        period
+                        period,
                     )
                     set(liquidationPrice, position, "liquidationPrice", period)
                     val buyingPower = calculatePositionBuyingPower(
                         equity,
                         initialRiskTotal,
-                        parser.asDouble(value(position, "adjustedImf", period))
+                        parser.asDouble(value(position, "adjustedImf", period)),
                     )
                     set(buyingPower, position, "buyingPower", period)
                 }
@@ -361,7 +364,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
             null
         }
     }
-
 
     private fun calculatePositionLiquidationPrice(
         equity: Double,
@@ -397,7 +399,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                         if (size > Numeric.double.ZERO) (size - size * maintenanceMarginFraction) else (size + size * maintenanceMarginFraction)
                                     liquidationPrice = if (denominator != Numeric.double.ZERO) {
                                         (otherPositionsRisk + size * oraclePrice - equity) / denominator
-                                    } else null
+                                    } else {
+                                        null
+                                    }
                                     if (liquidationPrice != null && liquidationPrice!! < Numeric.double.ZERO) {
                                         liquidationPrice = null
                                     }
@@ -426,7 +430,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     risk += calculatePositionRisk(
                         position,
                         parser.asNativeMap(markets?.get(key)),
-                        period
+                        period,
                     )
                 }
             }
@@ -455,7 +459,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         return Numeric.double.ZERO
     }
 
-
     private fun calculatePositionBuyingPower(
         equity: Double?,
         initialRiskTotal: Double?,
@@ -465,9 +468,11 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
             calculateBuyingPower(
                 equity,
                 initialRiskTotal,
-                imf
+                imf,
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun calculateSubaccountBuyingPower(
@@ -490,14 +495,14 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     calculateBuyingPower(equity, initialRiskTotal, imf),
                     subaccount,
                     "buyingPower",
-                    period
+                    period,
                 )
             } else {
                 set(
                     null,
                     subaccount,
                     "buyingPower",
-                    period
+                    period,
                 )
             }
         }
@@ -509,9 +514,15 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         imf: Double,
     ): Double {
         val buyingPowerFreeCollateral = equity - initialRiskTotal
-        return buyingPowerFreeCollateral / (if (imf > Numeric.double.ZERO) imf else parser.asDouble(
-            0.05
-        )!!)
+        return buyingPowerFreeCollateral / (
+            if (imf > Numeric.double.ZERO) {
+                imf
+            } else {
+                parser.asDouble(
+                    0.05,
+                )!!
+            }
+            )
     }
 
     private fun key(period: CalculationPeriod): String {
@@ -539,5 +550,4 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         map.safeSet(key(period), value)
         data[key] = map
     }
-
 }

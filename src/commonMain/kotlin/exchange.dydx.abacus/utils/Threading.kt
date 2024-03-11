@@ -11,13 +11,13 @@ class Threading : ThreadingProtocol {
     }
 }
 
-class DummyLocalizer: LocalizerProtocol {
+class DummyLocalizer : LocalizerProtocol {
     override fun localize(path: String, paramsAsJson: String?): String {
         return path
     }
 }
 
-class DummyFormatter: FormatterProtocol {
+class DummyFormatter : FormatterProtocol {
     override fun percent(value: Double?, digits: Int): String? {
         return value.toString()
     }

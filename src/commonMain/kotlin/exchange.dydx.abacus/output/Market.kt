@@ -93,7 +93,9 @@ data class MarketConfigsV4(
                 } else {
                     existing
                 }
-            } else null
+            } else {
+                null
+            }
         }
     }
 }
@@ -153,12 +155,12 @@ data class MarketConfigs(
             val candleOptions = CandleOption.create(
                 existing?.candleOptions,
                 parser,
-                parser.asList(data["candleOptions"]) as? IList<IMap<String, Any>>
+                parser.asList(data["candleOptions"]) as? IList<IMap<String, Any>>,
             )
             val v4 = MarketConfigsV4.create(
                 existing?.v4,
                 parser,
-                parser.asMap(data["v4"])
+                parser.asMap(data["v4"]),
             ) ?: return null
 
             return if (existing == null ||
@@ -240,7 +242,6 @@ data class MarketHistoricalFunding(
             print("Market Historical Funding not valid")
             return null
         }
-
 
         fun create(
             existing: IList<MarketHistoricalFunding>?,
@@ -350,7 +351,6 @@ data class CandleOption(
             return null
         }
 
-
         fun create(
             existing: IList<CandleOption>?,
             parser: ParserProtocol,
@@ -375,7 +375,9 @@ data class CandleOption(
                 }
 
                 if (result.size > 0) result else null
-            } else null
+            } else {
+                null
+            }
         }
     }
 }
@@ -443,7 +445,7 @@ data class MarketCandle(
                                 close,
                                 trades,
                                 baseTokenVolume,
-                                usdVolume
+                                usdVolume,
                             )
                         } else {
                             existing
@@ -549,7 +551,7 @@ data class MarketTradeResources(val sideString: String?, val sideStringKey: Stri
 @JsExport
 @Serializable
 data class MarketTrade(
-    val id: String?,    // in case "id" is not sent, app should still function
+    val id: String?, // in case "id" is not sent, app should still function
     val side: OrderSide,
     val size: Double,
     val price: Double,
@@ -594,7 +596,7 @@ data class MarketTrade(
                             price,
                             type,
                             createdAtMilliseconds,
-                            resources
+                            resources,
                         )
                     } else {
                         existing
@@ -604,7 +606,6 @@ data class MarketTrade(
             print("Market Trade not valid")
             return null
         }
-
 
         internal fun create(
             existing: IList<MarketTrade>?,
@@ -724,7 +725,9 @@ data class MarketOrderbook(
                     existing?.bids != bids
                 ) {
                     return MarketOrderbook(midPrice, spreadPercent, grouping, asks, bids)
-                } else existing
+                } else {
+                    existing
+                }
             }
             return null
         }
@@ -762,7 +765,9 @@ data class MarketOrderbook(
                     }
                 }
                 lines
-            } else null
+            } else {
+                null
+            }
 
 //
 //            return OrderbookLines.fromArray(
@@ -844,16 +849,18 @@ data class PerpetualMarket(
             } ?: return null
 
             val significantChange = existing?.id != id ||
-                    existing.assetId != assetId ||
-                    existing.market != market ||
-                    existing.oraclePrice != oraclePrice ||
-                    existing.marketCaps != marketCaps ||
-                    existing.priceChange24H != priceChange24H ||
-                    existing.priceChange24HPercent != priceChange24HPercent ||
-                    existing.status !== status ||
-                    existing.configs !== configs ||
-                    existing.perpetual !== perpetual
-            return if (!significantChange) existing else {
+                existing.assetId != assetId ||
+                existing.market != market ||
+                existing.oraclePrice != oraclePrice ||
+                existing.marketCaps != marketCaps ||
+                existing.priceChange24H != priceChange24H ||
+                existing.priceChange24HPercent != priceChange24HPercent ||
+                existing.status !== status ||
+                existing.configs !== configs ||
+                existing.perpetual !== perpetual
+            return if (!significantChange) {
+                existing
+            } else {
                 PerpetualMarket(
                     id,
                     assetId,
@@ -864,7 +871,7 @@ data class PerpetualMarket(
                     priceChange24HPercent,
                     status,
                     configs,
-                    perpetual
+                    perpetual,
                 )
             }
         }
@@ -921,7 +928,7 @@ data class PerpetualMarketSummary(
                     marketData,
                     assets,
                     false,
-                    false
+                    false,
                 )
                     ?.let { market ->
                         markets[key] = market
@@ -953,7 +960,7 @@ data class PerpetualMarketSummary(
                     marketData,
                     assets,
                     changes.changes.contains(Changes.orderbook),
-                    changes.changes.contains(Changes.trades)
+                    changes.changes.contains(Changes.trades),
                 )
                 markets.typedSafeSet(marketId, perpMarket)
             }
@@ -970,17 +977,19 @@ data class PerpetualMarketSummary(
             val openInterestUSDC = parser.asDouble(data["openInterestUSDC"])
             val trades24H = parser.asDouble(data["trades24H"])
 
-            val significantChanges = existing?.volume24HUSDC != volume24HUSDC
-                    || existing?.openInterestUSDC != openInterestUSDC
-                    || existing?.trades24H != trades24H
-                    || existing?.markets != newMarkets
+            val significantChanges = existing?.volume24HUSDC != volume24HUSDC ||
+                existing?.openInterestUSDC != openInterestUSDC ||
+                existing?.trades24H != trades24H ||
+                existing?.markets != newMarkets
 
-            return if (!significantChanges) existing else {
+            return if (!significantChanges) {
+                existing
+            } else {
                 PerpetualMarketSummary(
                     volume24HUSDC,
                     openInterestUSDC,
                     trades24H,
-                    newMarkets
+                    newMarkets,
                 )
             }
         }

@@ -73,34 +73,34 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
     private val sideStringKeys = mapOf(
         "LONG" to "APP.GENERAL.LONG_POSITION_SHORT",
         "SHORT" to "APP.GENERAL.SHORT_POSITION_SHORT",
-        "NONE" to "APP.GENERAL.NONE"
+        "NONE" to "APP.GENERAL.NONE",
     )
     private val indicators = mapOf(
         "LONG" to "long",
         "SHORT" to "short",
-        "NONE" to "none"
+        "NONE" to "none",
     )
     private val positionKeyMap = mapOf(
         "string" to mapOf(
             "market" to "id",
-            "status" to "status"
+            "status" to "status",
         ),
         "double" to mapOf(
             "maxSize" to "maxSize",
             "exitPrice" to "exitPrice",
             "netFunding" to "netFunding",
-            "unrealizedPnl" to "unrealizedPnl"
+            "unrealizedPnl" to "unrealizedPnl",
         ),
         "datetime" to mapOf(
             "createdAt" to "createdAt",
             "closedAt" to "closedAt",
-        )
+        ),
     )
 
     private val currentPositionKeyMap = mapOf(
         "double" to mapOf(
             "entryPrice" to "entryPrice",
-            "realizedPnl" to "realizedPnl"
+            "realizedPnl" to "realizedPnl",
         ),
     )
 

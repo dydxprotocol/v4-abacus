@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 buildscript {
@@ -14,19 +13,41 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
 plugins {
     kotlin("multiplatform") version "1.9.10"
     kotlin("native.cocoapods") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.1.0"
+    id("com.diffplug.spotless") version "6.25.0"
+}
+
+allprojects {
+    apply(plugin = "com.diffplug.spotless")
+    spotless {
+        kotlin {
+            target("src/**/*.kt")
+            targetExclude(".idea/")
+            ktlint("1.2.1")
+                .editorConfigOverride(
+                    mapOf(
+                        "max_line_length" to "off",
+                        "filename" to "off",
+                        "pascal_case_package" to "disabled",
+                        "ktlint_standard_enum-entry-name-case" to "disabled",
+                        "ktlint_standard_trailing-comma-on-declaration-site" to "disabled",
+                        "ktlint_standard_no-semi" to "disabled",
+                        "ktlint_standard_backing-property-naming" to "disabled",
+                        "ktlint_standard_filename" to "disabled",
+                    )
+                )
+
+        }
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 
 group = "exchange.dydx.abacus"

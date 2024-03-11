@@ -7,13 +7,9 @@ import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.utils.DebugLogger
-import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
-import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutableMapOf
-import kotlinx.serialization.json.Json
 
 data class Language(val code: String, val name: String, val path: String?)
 
@@ -122,7 +118,7 @@ class DynamicLocalizer(
     }
 
     private fun matchLanguage() {
-        val language = primaryLanguageCode(systemLanguage) ?: "en"   // Default to English
+        val language = primaryLanguageCode(systemLanguage) ?: "en" // Default to English
         setLanguage(language) { successful, _ ->
             if (!successful) {
                 if (language != "en") {
@@ -152,7 +148,6 @@ class DynamicLocalizer(
             "localization_notifications/$languageCode/app.json",
         )
     }
-
 
     private fun loadLocalLanguageFiles(filePaths: List<String>): Map<String, Map<String, Any>>? {
         val result = mutableMapOf<String, Map<String, Any>>()
@@ -309,7 +304,11 @@ class DynamicLocalizer(
                 } else {
                     text
                 }
-            } else null
-        } else null
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 }

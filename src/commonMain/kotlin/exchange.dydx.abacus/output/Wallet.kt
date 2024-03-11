@@ -8,7 +8,6 @@ import kollections.JsExport
 import kollections.iMutableMapOf
 import kotlinx.serialization.Serializable
 
-
 @JsExport
 @Serializable
 data class User(
@@ -75,7 +74,7 @@ data class User(
                             isEmailVerified,
                             country,
                             favorited,
-                            walletId
+                            walletId,
                         )
                     } else {
                         existing
@@ -111,7 +110,7 @@ data class LaunchIncentivePoint(
                     ) {
                         LaunchIncentivePoint(
                             incentivePoints,
-                            marketMakingIncentivePoints
+                            marketMakingIncentivePoints,
                         )
                     } else {
                         existing
@@ -145,7 +144,7 @@ data class LaunchIncentivePoints(
                     val point = LaunchIncentivePoint.create(
                         existingPoint,
                         parser,
-                        parser.asMap(value)
+                        parser.asMap(value),
                     )
                     if (existingPoint != point) {
                         diff = true

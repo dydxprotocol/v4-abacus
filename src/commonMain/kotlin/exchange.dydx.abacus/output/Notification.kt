@@ -1,8 +1,7 @@
 package exchange.dydx.abacus.output
 
-import exchange.dydx.abacus.utils.IMap
-import kotlinx.serialization.Serializable
 import kollections.JsExport
+import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
@@ -39,7 +38,6 @@ data class Notification(
     val title: String,
     val text: String?,
     val link: String?,
-    val data: String?,  // JSON String
+    val data: String?, // JSON String
     val updateTimeInMilliseconds: Double,
-) {
-}
+)

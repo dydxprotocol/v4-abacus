@@ -69,7 +69,7 @@ internal class TransferInputValidator(
                             listOf("size.size"),
                             "APP.TRADE.MODIFY_SIZE_FIELD",
                             "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_POSITION_ONLY",
-                            "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY"
+                            "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY",
                         )
 
                     else -> null
@@ -90,26 +90,28 @@ internal class TransferInputValidator(
                         mapOf(
                             "MARKET" to mapOf(
                                 "value" to marketId,
-                                "format" to "string"
-                            )
-                        )
+                                "format" to "string",
+                            ),
+                        ),
                     )
 
                 else -> null
             }
-        } else error(
-            "ERROR",
-            "CLOSED_MARKET",
-            null,
-            null,
-            "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-            "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-            mapOf(
-                "MARKET" to mapOf(
-                    "value" to marketId,
-                    "format" to "string"
-                )
+        } else {
+            error(
+                "ERROR",
+                "CLOSED_MARKET",
+                null,
+                null,
+                "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
+                "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
+                mapOf(
+                    "MARKET" to mapOf(
+                        "value" to marketId,
+                        "format" to "string",
+                    ),
+                ),
             )
-        )
+        }
     }
 }

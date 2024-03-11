@@ -9,10 +9,11 @@ internal fun TradingStateMachine.onChainRewardsParams(payload: String): StateCha
     val json = parser.decodeJsonObject(payload)
     val params = parser.asMap(json?.get("params"))
     rewardsParams =
-        if (params != null)
+        if (params != null) {
             rewardsProcessor.received(parser.asMap(rewardsParams), params)
-        else
+        } else {
             null
+        }
     return StateChanges(iListOf())
 }
 
@@ -21,10 +22,10 @@ internal fun TradingStateMachine.onChainRewardTokenPrice(payload: String): State
     val map = parser.asMap(json)
     val price = parser.asMap(map?.get("marketPrice"))
     rewardsParams =
-        if (price != null)
+        if (price != null) {
             rewardsProcessor.receivedTokenPrice(parser.asMap(rewardsParams), price)
-        else
+        } else {
             null
+        }
     return StateChanges(iListOf())
 }
-

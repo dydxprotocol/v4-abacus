@@ -27,7 +27,9 @@ data class LaunchIncentiveSeason(val label: String, val startTimeInMilliseconds:
                         label,
                         startTimeInMilliseconds,
                     )
-                } else existing
+                } else {
+                    existing
+                }
             }
             DebugLogger.debug("LaunchIncentiveSeason not valid")
             return null
@@ -48,7 +50,9 @@ data class LaunchIncentiveSeasons(val seasons: IList<LaunchIncentiveSeason>) {
                 val seasons = data.mapNotNull { LaunchIncentiveSeason.create(null, parser, it) }
                 return if (existing?.seasons != seasons) {
                     LaunchIncentiveSeasons(seasons.toIList())
-                } else existing
+                } else {
+                    existing
+                }
             }
             DebugLogger.debug("LaunchIncentiveSeasons not valid")
             return null

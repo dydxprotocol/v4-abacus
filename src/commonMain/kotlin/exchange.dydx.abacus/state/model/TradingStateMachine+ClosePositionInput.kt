@@ -5,8 +5,8 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
@@ -39,7 +39,7 @@ fun TradingStateMachine.closePosition(
     val trade =
         parser.asMap(input["closePosition"])?.mutable() ?: inititiateClosePosition(
             null,
-            subaccountNumber
+            subaccountNumber,
         )
 
     var sizeChanged = false
@@ -63,7 +63,7 @@ fun TradingStateMachine.closePosition(
                 changes = StateChanges(
                     iListOf(Changes.subaccount, Changes.input),
                     null,
-                    iListOf(subaccountNumber)
+                    iListOf(subaccountNumber),
                 )
             } else {
                 error = cannotModify(typeText)
@@ -75,7 +75,7 @@ fun TradingStateMachine.closePosition(
             changes = StateChanges(
                 iListOf(Changes.subaccount, Changes.input),
                 null,
-                iListOf(subaccountNumber)
+                iListOf(subaccountNumber),
             )
         }
         else -> {}
@@ -98,7 +98,6 @@ fun TradingStateMachine.closePosition(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-
 fun TradingStateMachine.getPosition(
     marketId: String,
     subaccountNumber: Int = 0
@@ -106,12 +105,16 @@ fun TradingStateMachine.getPosition(
     val position = parser.asMap(
         parser.value(
             wallet,
-            "account.subaccounts.$subaccountNumber.openPositions.$marketId"
-        )
+            "account.subaccounts.$subaccountNumber.openPositions.$marketId",
+        ),
     )
-    return if (position != null && (parser.asDouble(parser.value(position, "size.current"))
-            ?: Numeric.double.ZERO) != Numeric.double.ZERO
+    return if (position != null && (
+            parser.asDouble(parser.value(position, "size.current"))
+                ?: Numeric.double.ZERO
+            ) != Numeric.double.ZERO
     ) {
         position
-    } else null
+    } else {
+        null
+    }
 }

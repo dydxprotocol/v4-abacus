@@ -1,18 +1,17 @@
 package exchange.dydx.abacus.tests.payloads
 
-import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.TokenInfo
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.WalletConnect
 import exchange.dydx.abacus.state.manager.WalletConnectClient
 import exchange.dydx.abacus.state.manager.WalletConnectV1
 import exchange.dydx.abacus.state.manager.WalletConnectV2
 import exchange.dydx.abacus.state.manager.WalletConnection
 import exchange.dydx.abacus.state.manager.WalletSegue
-import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import kollections.JsExport
-import kollections.iMapOf
 import kollections.toIMap
 
 @JsExport
@@ -76,7 +75,7 @@ class AbacusMockData {
                 ),
                 WalletConnectV2(
                     "test",
-                )
+                ),
             ),
             WalletSegue("callback"),
             "/images/",
@@ -90,14 +89,14 @@ class AbacusMockData {
                 "adv4tnt",
                 18,
                 null,
-                "/currencies/dydx.png"
+                "/currencies/dydx.png",
             ),
             "usdc" to TokenInfo(
                 "USDC",
                 "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
                 6,
                 "uusdc",
-                "/currencies/usdc.png"
+                "/currencies/usdc.png",
             ),
         ).toIMap(),
         null,

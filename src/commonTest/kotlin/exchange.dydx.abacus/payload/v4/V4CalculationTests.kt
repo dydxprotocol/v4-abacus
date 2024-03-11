@@ -21,7 +21,7 @@ class V4CalculationTests : V4BaseTests() {
                     mock.socketUrl,
                     mock.marketsChannel.v4_subscribed_for_calculation,
                     0,
-                    null
+                    null,
                 )
             },
             """
@@ -34,7 +34,7 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -43,7 +43,7 @@ class V4CalculationTests : V4BaseTests() {
             AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
             mock.accountsChannel.v4_accounts_received_for_calculation,
             0,
-            null
+            null,
         )
     }
 
@@ -54,9 +54,10 @@ class V4CalculationTests : V4BaseTests() {
                     AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
                     mock.accountsChannel.v4_accounts_received_for_calculation,
                     0,
-                    null
+                    null,
                 )
-            }, """
+            },
+            """
                 {
                     "wallet": {
                         "account": {
@@ -132,7 +133,7 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
         test(
             {
@@ -140,9 +141,10 @@ class V4CalculationTests : V4BaseTests() {
                     mock.socketUrl,
                     mock.accountsChannel.v4_subscribed_for_calculation,
                     0,
-                    null
+                    null,
                 )
-            }, """
+            },
+            """
                 {
                     "wallet": {
                         "account": {
@@ -205,10 +207,9 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testNextFundingRate(): StateResponse {
         return test(
@@ -217,7 +218,7 @@ class V4CalculationTests : V4BaseTests() {
                     mock.socketUrl,
                     mock.marketsChannel.v4_next_funding_rate_update,
                     0,
-                    null
+                    null,
                 )
             },
             """
@@ -237,7 +238,7 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }
