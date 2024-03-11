@@ -4,9 +4,9 @@ import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -140,8 +140,10 @@ data class MarketConfigs(
             val displayStepSize = parser.asDouble(data["displayStepSize"]) ?: stepSize
             val displayTickSize = parser.asDouble(data["displayTickSize"]) ?: tickSize
             val minOrderSize = parser.asDouble(data["minOrderSize"])
-            val initialMarginFraction = parser.asDouble(data["initialMarginFraction"]) ?: return null
-            val maintenanceMarginFraction = parser.asDouble(data["maintenanceMarginFraction"]) ?: return null
+            val initialMarginFraction =
+                parser.asDouble(data["initialMarginFraction"]) ?: return null
+            val maintenanceMarginFraction =
+                parser.asDouble(data["maintenanceMarginFraction"]) ?: return null
             val incrementalInitialMarginFraction =
                 parser.asDouble(data["incrementalInitialMarginFraction"])
             val incrementalPositionSize = parser.asDouble(data["incrementalPositionSize"])
@@ -819,7 +821,7 @@ data class PerpetualMarket(
             resetOrderbook: Boolean,
             resetTrades: Boolean,
         ): PerpetualMarket? {
-            val status  = parser.asMap(data["status"])?.let {
+            val status = parser.asMap(data["status"])?.let {
                 MarketStatus.create(existing?.status, parser, it)
             } ?: return null
             if (!status.canTrade && !status.canReduce) {

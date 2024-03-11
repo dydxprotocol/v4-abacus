@@ -1019,7 +1019,8 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         payload: Any,
     ): MutableMap<String, Any> {
         val modified = existing.mutable()
-        val blockRewards = parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
+        val blockRewards =
+            parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
         val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingReward(
             blockRewards,
             payload
@@ -1110,7 +1111,11 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
          */
         val data = parser.asNativeMap(payload) ?: return existing
         val modified = existing.mutable()
-        val points = launchIncentivePointsProcessor.received(season, parser.asNativeMap(existing["launchIncentivePoints"]), data)
+        val points = launchIncentivePointsProcessor.received(
+            season,
+            parser.asNativeMap(existing["launchIncentivePoints"]),
+            data
+        )
 
         modified.safeSet("launchIncentivePoints", points)
         return modified

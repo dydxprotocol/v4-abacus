@@ -212,8 +212,10 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                 } else {
                     return ParsingHelper.merge(parser, existing, incoming,
                         { obj, data ->
-                            val existingTime = parser.asDatetime(parser.asNativeMap(obj)?.get(timeField))
-                            val incomingTime = parser.asDatetime(parser.asNativeMap(data)?.get(timeField))
+                            val existingTime =
+                                parser.asDatetime(parser.asNativeMap(obj)?.get(timeField))
+                            val incomingTime =
+                                parser.asDatetime(parser.asNativeMap(data)?.get(timeField))
                             ParsingHelper.compare(existingTime, incomingTime, ascending)
                         },
                         { _, _, itemData ->

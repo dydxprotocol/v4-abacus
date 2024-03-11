@@ -29,7 +29,6 @@ import exchange.dydx.abacus.state.model.squidChains
 import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.updateHeight
-import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
@@ -46,8 +45,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
@@ -668,7 +665,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveIndexerHeight(callback: (()-> Unit)? = null) {
+    private fun retrieveIndexerHeight(callback: (() -> Unit)? = null) {
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.previousRequestTime = indexerState.requestTime
@@ -1398,11 +1395,14 @@ class V4StateManagerAdaptor(
     private fun retrieveLaunchIncentiveSeasons() {
         val url = configs.launchIncentiveUrl("graphql")
         if (url != null) {
-            val requestBody = "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
-            post(url, iMapOf(
-                "content-type" to "application/json",
-                "protocol" to "dydx-v4",
-            ), requestBody) { _, response, httpCode ->
+            val requestBody =
+                "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
+            post(
+                url, iMapOf(
+                    "content-type" to "application/json",
+                    "protocol" to "dydx-v4",
+                ), requestBody
+            ) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)
@@ -1418,9 +1418,11 @@ class V4StateManagerAdaptor(
         val url = configs.launchIncentiveUrl("points")
         val address = accountAddress
         if (url != null && address != null) {
-            get("${url}/${address}", iMapOf(
-                "n" to season,
-            ), null) { _, response, httpCode ->
+            get(
+                "${url}/${address}", iMapOf(
+                    "n" to season,
+                ), null
+            ) { _, response, httpCode ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentivePoints(season, response), oldState)
