@@ -314,6 +314,8 @@ class TestChain : DYDXChainTransactionsProtocol {
     var depositResponse: String? = null
     var withdrawResponse: String? = null
 
+    var requests = mutableListOf<QueryType>()
+
     val dummySuccess = """
         {
             "success": true
@@ -341,6 +343,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         paramsInJson: String?,
         callback: (response: String?) -> Unit
     ) {
+        requests.add(type)
         when (type) {
             QueryType.Height -> {
                 getHeight(callback)

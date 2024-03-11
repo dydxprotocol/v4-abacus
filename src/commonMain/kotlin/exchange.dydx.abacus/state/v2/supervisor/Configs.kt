@@ -98,6 +98,8 @@ data class SubaccountConfigs(
 
 @JsExport
 data class AccountConfigs(
+    val retrieveUserFeeTier: Boolean,
+    val retrieveUserStats: Boolean,
     val retrieveBalances: Boolean,
     val retrieveSubaccounts: Boolean,
     val retrieveHistoricalTradingRewards: Boolean,
@@ -107,6 +109,8 @@ data class AccountConfigs(
 ) {
     companion object {
         val forApp = AccountConfigs(
+            retrieveUserFeeTier = true,
+            retrieveUserStats = true,
             retrieveBalances = true,
             retrieveSubaccounts = true,
             retrieveHistoricalTradingRewards = true,
@@ -115,6 +119,8 @@ data class AccountConfigs(
             subaccountConfigs = SubaccountConfigs.forApp,
         )
         val forProgrammaticTraders = AccountConfigs(
+            retrieveUserFeeTier = true,
+            retrieveUserStats = true,
             retrieveBalances = true,
             retrieveSubaccounts = true,
             retrieveHistoricalTradingRewards = true,

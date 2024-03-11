@@ -87,6 +87,8 @@ internal open class MarketSupervisor(
             if (configs.retrieveHistoricalFundings) {
                 retrieveHistoricalFundings()
             }
+        } else {
+            historicalFundingTimer = null
         }
     }
 

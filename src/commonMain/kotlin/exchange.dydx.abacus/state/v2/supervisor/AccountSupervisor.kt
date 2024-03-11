@@ -30,6 +30,8 @@ import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.onChainUserFeeTier
+import exchange.dydx.abacus.state.model.onChainUserStats
 import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
@@ -121,7 +123,7 @@ internal open class AccountSupervisor(
             }
         }
 
-    private var accountAddressTimer: LocalTimerProtocol? = null
+    private var screenAccountAddressTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
                 field?.cancel()
@@ -140,7 +142,7 @@ internal open class AccountSupervisor(
     private val addressRetryDuration = 10.0
     private val addressContinuousMonitoringDuration = 60.0 * 60.0
 
-    private var sourceAddressTimer: LocalTimerProtocol? = null
+    private var screenSourceAddressTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {
                 field?.cancel()
@@ -153,6 +155,15 @@ internal open class AccountSupervisor(
             if (field != value) {
                 field = value
                 didSetSubaccountNumber()
+            }
+        }
+
+    private val userStatsPollingDuration = 60.0
+    private var userStatsTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
             }
         }
 
@@ -217,6 +228,10 @@ internal open class AccountSupervisor(
             if (configs.retrieveHistoricalTradingRewards) {
                 retrieveHistoricalTradingRewards(historicalTradingRewardPeriod)
             }
+        } else {
+            subaccountsTimer = null
+            screenAccountAddressTimer = null
+            screenSourceAddressTimer = null
         }
     }
 
@@ -227,12 +242,24 @@ internal open class AccountSupervisor(
         }
 
         if (validatorConnected) {
+            if (subaccounts.isNotEmpty()) {
+                if (configs.retrieveUserFeeTier) {
+                    retrieveUserFeeTier()
+                }
+                if (configs.retrieveUserStats) {
+                    retrieveUserStats()
+                }
+            }
             if (configs.retrieveBalances) {
                 retrieveBalances()
             }
             if (configs.transferNobleBalances) {
                 retrieveNobleBalance()
             }
+        } else {
+            userStatsTimer = null
+            accountBalancesTimer = null
+            nobleBalancesTimer = null
         }
     }
 
@@ -274,6 +301,36 @@ internal open class AccountSupervisor(
         return if (url != null) {
             "$url/$accountAddress"
         } else null
+    }
+
+    private fun retrieveUserFeeTier() {
+        val params = iMapOf("address" to accountAddress)
+        val paramsInJson = helper.jsonEncoder.encode(params)
+        helper.getOnChain(QueryType.UserFeeTier, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainUserFeeTier(response), oldState)
+        }
+    }
+
+    private fun retrieveUserStats() {
+        val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
+        userStatsTimer = timer.schedule(0.0, userStatsPollingDuration) {
+            if (validatorConnected && subaccount != null) {
+                getUserStats()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun getUserStats() {
+        val params = iMapOf("address" to accountAddress)
+        val paramsInJson = helper.jsonEncoder.encode(params)
+        helper.getOnChain(QueryType.UserStats, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainUserStats(response), oldState)
+        }
     }
 
     private fun retrieveBalances() {
@@ -517,7 +574,7 @@ internal open class AccountSupervisor(
                 }
                 rerunAddressScreeningDelay(sourceAddressRestriction)?.let {
                     val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-                    sourceAddressTimer = timer.schedule(it, it) {
+                    screenSourceAddressTimer = timer.schedule(it, it) {
                         screenSourceAddress()
                         true
                     }
@@ -550,7 +607,7 @@ internal open class AccountSupervisor(
             }
             rerunAddressScreeningDelay(accountAddressRestriction)?.let {
                 val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-                accountAddressTimer = timer.schedule(it, it) {
+                screenAccountAddressTimer = timer.schedule(it, it) {
                     screenAccountAddress()
                     true
                 }
@@ -616,7 +673,7 @@ internal open class AccountSupervisor(
     }
 
     private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
-        sourceAddressTimer = null
+        screenSourceAddressTimer = null
         sourceAddressRestriction = null
         if (sourceAddress != null) {
             screenSourceAddress()

@@ -80,6 +80,10 @@ internal class ConnectionsSupervisor(
             bestEffortConnectIndexer()
             bestEffortConnectChain()
         } else {
+            chainTimer = null
+            heightTimer = null
+            indexerTimer = null
+
             indexerConfig = null
             validatorConnected = false
             socketConnected = false

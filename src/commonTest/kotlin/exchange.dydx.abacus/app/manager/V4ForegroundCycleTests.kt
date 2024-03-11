@@ -100,6 +100,18 @@ class V4ForegroundCycleTests : NetworkTests() {
             """.trimIndent(),
             testRest?.requests
         )
+
+        compareExpectedRequests(
+            """
+                [
+                   "getEquityTiers",
+                   "getFeeTiers",
+                   "getRewardsParams",
+                   "getHeight"
+                ]
+            """.trimIndent(),
+            testChain?.requests?.map { it.rawValue }
+        )
     }
 
     @Test
@@ -173,6 +185,19 @@ class V4ForegroundCycleTests : NetworkTests() {
                 ]
             """.trimIndent(),
             testRest?.requests
+        )
+
+
+        compareExpectedRequests(
+            """
+                [
+                   "getEquityTiers",
+                   "getFeeTiers",
+                   "getRewardsParams",
+                   "getHeight"
+                ]
+            """.trimIndent(),
+            testChain?.requests?.map { it.rawValue }
         )
 
         stateManager.market = "BTC-USD"
@@ -316,6 +341,22 @@ class V4ForegroundCycleTests : NetworkTests() {
             """.trimIndent(),
             testRest?.requests
         )
+
+
+        compareExpectedRequests(
+            """
+                [
+                   "getEquityTiers",
+                   "getFeeTiers",
+                   "getRewardsParams",
+                   "getHeight",
+                   "getAccountBalances",
+                   "getDelegatorDelegations",
+                   "getNobleBalance"
+                ]
+            """.trimIndent(),
+            testChain?.requests?.map { it.rawValue }
+        )
     }
 
     @Test
@@ -356,7 +397,6 @@ class V4ForegroundCycleTests : NetworkTests() {
             testRest?.requests
         )
 
-
         compareExpectedRequests(
             """
                 [
@@ -365,6 +405,23 @@ class V4ForegroundCycleTests : NetworkTests() {
                 ]
             """.trimIndent(),
             testWebSocket?.messages
+        )
+
+        compareExpectedRequests(
+            """
+                [
+                   "getEquityTiers",
+                   "getFeeTiers",
+                   "getRewardsParams",
+                   "getHeight",
+                   "getUserFeeTier",
+                   "getUserStats",
+                   "getAccountBalances",
+                   "getDelegatorDelegations",
+                   "getNobleBalance"
+                ]
+            """.trimIndent(),
+            testChain?.requests?.map { it.rawValue }
         )
 
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
@@ -484,6 +541,27 @@ class V4ForegroundCycleTests : NetworkTests() {
             """.trimIndent(),
             testWebSocket?.messages
         )
+
+
+        compareExpectedRequests(
+            """
+                [
+                   "getEquityTiers",
+                   "getFeeTiers",
+                   "getRewardsParams",
+                   "getHeight",
+                   "getUserFeeTier",
+                   "getUserStats",
+                   "getAccountBalances",
+                   "getDelegatorDelegations",
+                   "getNobleBalance",
+                   "getAccountBalances",
+                   "getDelegatorDelegations",
+                   "getNobleBalance"
+                ]
+            """.trimIndent(),
+            testChain?.requests?.map { it.rawValue }
+        )
     }
 
     @Test
@@ -538,6 +616,23 @@ class V4ForegroundCycleTests : NetworkTests() {
                 ]
             """.trimIndent(),
             testWebSocket?.messages
+        )
+
+        compareExpectedRequests(
+            """
+                [
+                   "getEquityTiers",
+                   "getFeeTiers",
+                   "getRewardsParams",
+                   "getHeight",
+                   "getUserFeeTier",
+                   "getUserStats",
+                   "getAccountBalances",
+                   "getDelegatorDelegations",
+                   "getNobleBalance"
+                ]
+            """.trimIndent(),
+            testChain?.requests?.map { it.rawValue }
         )
     }
 
