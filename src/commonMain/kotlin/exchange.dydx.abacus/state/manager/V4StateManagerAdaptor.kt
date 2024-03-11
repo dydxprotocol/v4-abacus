@@ -673,7 +673,7 @@ class V4StateManagerAdaptor(
         if (url != null) {
             indexerState.previousRequestTime = indexerState.requestTime
             indexerState.requestTime = Clock.System.now()
-            get(url, null, null) { _, response, httpCode ->
+            get(url, null, null) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     val json = parser.decodeJsonObject(response)
                     if (json != null) {
@@ -707,7 +707,7 @@ class V4StateManagerAdaptor(
         val squidIntegratorId = environment.squidIntegratorId
         if (url != null && squidIntegratorId != null) {
             val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            get(url, null, header) { _, response, httpCode ->
+            get(url, null, header) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidChains(response), oldState)
                 }
@@ -721,7 +721,7 @@ class V4StateManagerAdaptor(
         val squidIntegratorId = environment.squidIntegratorId
         if (url != null && squidIntegratorId != null) {
             val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            get(url, null, header) { _, response, httpCode ->
+            get(url, null, header) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
                 }
@@ -735,7 +735,7 @@ class V4StateManagerAdaptor(
         val squidIntegratorId = environment.squidIntegratorId
         if (url != null && squidIntegratorId != null) {
             val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            get(url, null, header) { _, response, httpCode ->
+            get(url, null, header) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidTokens(response), oldState)
                 }
@@ -1313,9 +1313,9 @@ class V4StateManagerAdaptor(
     override fun getWithFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
-        callback: (url: String, response: String?, code: Int) -> Unit
+        callback: (url: String, response: String?, code: Int, headers: Map<String, String>?)  -> Unit
     ) {
-        super.getWithFullUrl(fullUrl, headers) { url, response, httpCode ->
+        super.getWithFullUrl(fullUrl, headers) { url, response, httpCode, headers ->
             when (httpCode) {
                 403 -> {
                     indexerRestriction = restrictionReason(response)
@@ -1333,7 +1333,7 @@ class V4StateManagerAdaptor(
                     restRetryTimers[url] = localTimer
                 }
 
-                else -> callback(url, response, httpCode)
+                else -> callback(url, response, httpCode, headers)
             }
 
         }
@@ -1402,7 +1402,7 @@ class V4StateManagerAdaptor(
             post(url, iMapOf(
                 "content-type" to "application/json",
                 "protocol" to "dydx-v4",
-            ), requestBody) { _, response, httpCode ->
+            ), requestBody) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)
@@ -1420,7 +1420,7 @@ class V4StateManagerAdaptor(
         if (url != null && address != null) {
             get("${url}/${address}", iMapOf(
                 "n" to season,
-            ), null) { _, response, httpCode ->
+            ), null) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentivePoints(season, response), oldState)

@@ -8,6 +8,7 @@ import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
+import exchange.dydx.abacus.protocols.RestCallback
 import exchange.dydx.abacus.protocols.RestProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingProtocol
@@ -202,10 +203,10 @@ class TestRest() : RestProtocol {
     override fun get(
         url: String,
         headers: IMap<String, String>?,
-        callback: (response: String?, httpCode: Int) -> Unit,
+        callback: RestCallback,
     ) {
         if (url.contains("env.json")) {
-            callback(mock.environments.environments, 200)
+            callback(mock.environments.environments, 200, null)
             return
         }
         if (!url.contains("localization")) {
@@ -216,12 +217,12 @@ class TestRest() : RestProtocol {
             responses.remove(url)
             val code = parser.asInt(response)
             if (code != null) {
-                callback(null, code)
+                callback(null, code, null)
             } else {
-                callback(response, 200)
+                callback(response, 200, null)
             }
         } else {
-            callback(null, 404)
+            callback(null, 404, null)
         }
     }
 
@@ -229,7 +230,7 @@ class TestRest() : RestProtocol {
         url: String,
         headers: IMap<String, String>?,
         body: String?,
-        callback: (response: String?, httpCode: Int) -> Unit,
+        callback: RestCallback,
     ) {
         requests.add(url)
 
@@ -238,12 +239,12 @@ class TestRest() : RestProtocol {
             responses.remove(url)
             val code = parser.asInt(response)
             if (code != null) {
-                callback(null, code)
+                callback(null, code, null)
             } else {
-                callback(response, 200)
+                callback(response, 200, null)
             }
         } else {
-            callback(null, 404)
+            callback(null, 404, null)
         }
     }
 
@@ -251,7 +252,7 @@ class TestRest() : RestProtocol {
         url: String,
         headers: IMap<String, String>?,
         body: String?,
-        callback: (response: String?, httpCode: Int) -> Unit,
+        callback: RestCallback,
     ) {
         requests.add(url)
     }
@@ -259,7 +260,7 @@ class TestRest() : RestProtocol {
     override fun delete(
         url: String,
         headers: IMap<String, String>?,
-        callback: (response: String?, httpCode: Int) -> Unit,
+        callback: RestCallback,
     ) {
         requests.add(url)
     }

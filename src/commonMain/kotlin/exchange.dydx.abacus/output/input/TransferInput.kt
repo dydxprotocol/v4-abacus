@@ -211,14 +211,14 @@ data class TransferOutInputOptions(
                     "chain",
                     chainName,
                     null,
-                    environment?.chainLogo
+                    environment.chainLogo
                 )
             } else {
                 return null
             }
             val chains: IList<SelectionOption> = iListOf(chainOption)
 
-            val assets: IList<SelectionOption> = environment?.tokens?.keys?.map { key ->
+            val assets: IList<SelectionOption> = environment.tokens.keys.map { key ->
                 val token = environment.tokens[key]!!
                 SelectionOption(
                     key,
@@ -226,12 +226,12 @@ data class TransferOutInputOptions(
                     null,
                     token.imageUrl
                 )
-            }?.toIList() ?: iListOf()
+            }.toIList()
 
             return if (existing?.needsSize != needsSize ||
-                existing?.needsAddress != needsAddress ||
-                existing?.chains != chains ||
-                existing?.assets != assets
+                existing.needsAddress != needsAddress ||
+                existing.chains != chains ||
+                existing.assets != assets
             ) {
                 TransferOutInputOptions(
                     needsSize,
@@ -408,7 +408,8 @@ data class TransferInputRequestPayload(
     val toChainId: String?,
     val fromAddress: String?,
     val toAddress: String?,
-    val isV2Route: Boolean?
+    val isV2Route: Boolean?,
+    val requestId: String?,
 ) {
     companion object {
         internal fun create(
@@ -432,7 +433,8 @@ data class TransferInputRequestPayload(
                 val fromAddress = parser.asString(data["fromAddress"])
                 val toAddress = parser.asString(data["toAddress"])
                 val isV2Route = parser.asBool(data["isV2Route"])
-
+                val requestId = parser.asString(data["requestId"])
+                
                 return if (
                     existing?.routeType != routeType ||
                     existing?.targetAddress != targetAddress ||
@@ -446,7 +448,8 @@ data class TransferInputRequestPayload(
                     existing?.toChainId != toChainId ||
                     existing?.fromAddress != fromAddress ||
                     existing?.toAddress != toAddress ||
-                    existing?.isV2Route != isV2Route
+                    existing?.isV2Route != isV2Route ||
+                    existing?.requestId != requestId
                 ) {
                     TransferInputRequestPayload(
                         routeType,
@@ -461,7 +464,8 @@ data class TransferInputRequestPayload(
                         toChainId,
                         fromAddress,
                         toAddress,
-                        isV2Route
+                        isV2Route,
+                        requestId,
                     )
                 } else {
                     existing

@@ -439,7 +439,7 @@ class AsyncAbacusStateManager(
         if (appConfigs.loadRemote) {
             loadFromRemoteConfigFile(configFile)
             val configFileUrl = "$deploymentUri$path"
-            ioImplementations.rest?.get(configFileUrl, null, callback = { response, httpCode ->
+            ioImplementations.rest?.get(configFileUrl, null, callback = { response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     if (parse(response, configFile)) {
                         writeToLocalFile(response, path)
