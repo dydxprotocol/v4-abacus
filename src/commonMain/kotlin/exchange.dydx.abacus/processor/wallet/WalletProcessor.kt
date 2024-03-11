@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.processor.wallet
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.wallet.account.LaunchIncentivePointsProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
 import exchange.dydx.abacus.processor.wallet.account.deprecated.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
@@ -51,7 +50,12 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 if (payload["accounts"] != null) {
                     v3accountProcessor.channel_data(parser.asNativeMap(existing), payload, height)
                 } else {
-                    v4accountProcessor.channel_data(parser.asNativeMap(existing), payload, info, height)
+                    v4accountProcessor.channel_data(
+                        parser.asNativeMap(existing),
+                        payload,
+                        info,
+                        height
+                    )
                 }
             }
         }
@@ -62,7 +66,10 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedAccount(parser.asNativeMap(existing), payload as? Map<String, Any>?)
+            v4accountProcessor.receivedAccount(
+                parser.asNativeMap(existing),
+                payload as? Map<String, Any>?
+            )
         }
     }
 

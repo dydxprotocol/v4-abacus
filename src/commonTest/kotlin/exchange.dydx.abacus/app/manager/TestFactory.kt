@@ -16,8 +16,8 @@ import exchange.dydx.abacus.protocols.TimerProtocol
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -314,6 +314,8 @@ class TestChain : DYDXChainTransactionsProtocol {
     var depositResponse: String? = null
     var withdrawResponse: String? = null
 
+    var requests = mutableListOf<QueryType>()
+
     val dummySuccess = """
         {
             "success": true
@@ -341,6 +343,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         paramsInJson: String?,
         callback: (response: String?) -> Unit
     ) {
+        requests.add(type)
         when (type) {
             QueryType.Height -> {
                 getHeight(callback)

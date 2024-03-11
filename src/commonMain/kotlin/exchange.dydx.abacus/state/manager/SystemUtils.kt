@@ -5,6 +5,7 @@ enum class Platform(val rawValue: String) {
     android("android"),
     web("web"),
 }
+
 expect class SystemUtils {
     companion object {
         val platform: Platform
