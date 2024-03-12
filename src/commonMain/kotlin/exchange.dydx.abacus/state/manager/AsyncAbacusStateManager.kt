@@ -250,7 +250,7 @@ class AsyncAbacusStateManager(
         if (appConfigs.loadRemote) {
             loadFromRemoteConfigFile(configFile)
             val configFileUrl = "$deploymentUri$path"
-            ioImplementations.rest?.get(configFileUrl, null, callback = { response, httpCode ->
+            ioImplementations.rest?.get(configFileUrl, null, callback = { response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     if (parse(response, configFile)) {
                         writeToLocalFile(response, path)
@@ -407,13 +407,8 @@ class AsyncAbacusStateManager(
         }
     }
 
-    override fun transferStatus(
-        hash: String,
-        fromChainId: String?,
-        toChainId: String?,
-        isCctp: Boolean
-    ) {
-        adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
+    override fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean, requestId: String?) {
+        adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
     override fun refresh(data: ApiData) {

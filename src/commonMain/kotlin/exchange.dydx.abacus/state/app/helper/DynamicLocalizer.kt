@@ -87,7 +87,7 @@ class DynamicLocalizer(
         if (!loadLocalOnly) {
             // Try to update from online
             val url = "$endpoint$languagePath"
-            ioImplementations.rest?.get(url, null) { response, code ->
+            ioImplementations.rest?.get(url, null) { response, code, _ ->
                 if (code in 200..299 && response != null) {
                     val list = parser.decodeJsonArray(response)
                     if (list != null && list.size != 0) {
@@ -180,7 +180,7 @@ class DynamicLocalizer(
         var resultCount = 0
         for (file in files) {
             val url = "$endpoint/$file"
-            ioImplementations.rest?.get(url, null) { response, code ->
+            ioImplementations.rest?.get(url, null) { response, code, _ ->
                 ioImplementations.threading?.async(ThreadingType.main) {
                     if (code in 200..299 && response != null) {
                         val data = parser.decodeJsonObject(response)

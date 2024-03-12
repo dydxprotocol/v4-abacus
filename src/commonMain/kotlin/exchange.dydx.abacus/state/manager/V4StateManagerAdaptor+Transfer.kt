@@ -29,7 +29,7 @@ import kotlinx.serialization.json.jsonObject
 
 internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
     val url = "$deploymentUri/configs/cctp.json"
-    get(url) { _, response, _ ->
+    get(url) { _, response, _, _ ->
         if (response != null) {
             var chainIds = mutableListOf<CctpChainTokenInfo>()
             val chains: List<JsonElement>? =
@@ -49,7 +49,7 @@ internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
 
 internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
     val url = "$deploymentUri/configs/exchanges.json"
-    get(url) { _, response, _ ->
+    get(url) { _, response, _, _ ->
         if (response != null) {
             var exchanges = mutableListOf<ExchangeInfo>()
             val exchangeInfos: List<JsonElement>? =
@@ -125,12 +125,13 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, code ->
+        get(url, params, header) { _, response, code, headers ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
+                val requestId = headers?.get("x-request-id")
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.squidRoute(response, subaccountNumber), oldState)
+                    update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
                 }
             } else {
                 DebugLogger.error("retrieveDepositRouteV1 error, code: $code")
@@ -191,12 +192,13 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { url, response, code ->
+        post(url, header, body.toJsonPrettyPrint()) { url, response, code, headers ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
+                val requestId = headers?.get("x-request-id")
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.squidRouteV2(response, subaccountNumber), oldState)
+                    update(stateMachine.squidRouteV2(response, subaccountNumber, requestId), oldState)
                 }
             } else {
                 DebugLogger.error("retrieveDepositRouteV2 error, code: $code")
@@ -336,9 +338,10 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteNoble(
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, _ ->
+        get(url, params, header) { _, response, _, headera ->
             if (response != null) {
-                update(stateMachine.squidRoute(response, subaccountNumber), oldState)
+                val requestId = headera?.get("x-request-id")
+                update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
             }
         }
     }
@@ -393,9 +396,10 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV1(
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, _ ->
+        get(url, params, header) { _, response, _, headers ->
             if (response != null) {
-                update(stateMachine.squidRoute(response, subaccountNumber), oldState)
+                val requestId = headers?.get("x-request-id")
+                update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
             }
         }
     }
@@ -459,12 +463,13 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             "x-integrator-id" to squidIntegratorId,
             "Content-Type" to "application/json",
         )
-        post(url, header, body.toJsonPrettyPrint()) { url, response, code ->
+        post(url, header, body.toJsonPrettyPrint()) { url, response, code, headers ->
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
+                val requestId = headers?.get("x-request-id")
                 if (currentFromAmount == oldFromAmount) {
-                    update(stateMachine.squidRouteV2(response, subaccountNumber), oldState)
+                    update(stateMachine.squidRouteV2(response, subaccountNumber, requestId), oldState)
                 }
             } else {
                 DebugLogger.error("retrieveWithdrawalRouteV2 error, code: $code")
@@ -478,6 +483,7 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     fromChainId: String?,
     toChainId: String?,
     isCctp: Boolean,
+    requestId: String?
 ) {
     val params: IMap<String, String> = iMapOf(
         "transactionId" to hash,
@@ -489,10 +495,11 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     val squidIntegratorId = environment.squidIntegratorId
     if (url != null && squidIntegratorId != null) {
         val oldState = stateMachine.state
-        val header = iMapOf(
+        val headers = iMapOf(
             "x-integrator-id" to squidIntegratorId,
-        )
-        get(url, params, header) { _, response, httpCode ->
+            "x-request-id" to requestId,
+        ).filterNotNull()
+        get(url, params, headers) { _, response, httpCode, _ ->
             if (response != null) {
                 update(stateMachine.squidStatus(response, hash), oldState)
             } else {
@@ -543,7 +550,7 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, code ->
+        get(url, params, header) { _, response, code, _ ->
             if (response != null) {
                 val json = parser.decodeJsonObject(response)
                 val ibcPayload =
@@ -615,7 +622,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
         val header = iMapOf(
             "x-integrator-id" to squidIntegratorId,
         )
-        get(url, params, header) { _, response, code ->
+        get(url, params, header) { _, response, code, _ ->
             if (response != null) {
                 val json = parser.decodeJsonObject(response)
                 val ibcPayload =

@@ -76,32 +76,35 @@ interface SynchronizedFileSystemProtocol {
 
 @JsExport
 interface RestProtocol {
+
     fun get(
         url: String,
         headers: IMap<String, String>?,
-        callback: ((response: String?, httpCode: Int) -> Unit),
+        callback: RestCallback,
     )
 
     fun post(
         url: String,
         headers: IMap<String, String>?,
         body: String?,
-        callback: ((response: String?, httpCode: Int) -> Unit),
+        callback: RestCallback,
     )
 
     fun put(
         url: String,
         headers: IMap<String, String>?,
         body: String?,
-        callback: ((response: String?, httpCode: Int) -> Unit),
+        callback: RestCallback,
     )
 
     fun delete(
         url: String,
         headers: IMap<String, String>?,
-        callback: ((response: String?, httpCode: Int) -> Unit),
+        callback: RestCallback,
     )
 }
+
+typealias RestCallback = (response: String?, httpCode: Int, headers: Map<String, String>?) -> Unit
 
 @JsExport
 interface WebSocketProtocol {

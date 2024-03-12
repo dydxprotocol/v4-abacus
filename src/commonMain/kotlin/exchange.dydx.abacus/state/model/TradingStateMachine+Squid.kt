@@ -36,10 +36,14 @@ internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? 
     }
 }
 
-internal fun TradingStateMachine.squidRoute(payload: String, subaccountNumber: Int): StateChanges? {
+internal fun TradingStateMachine.squidRoute(
+    payload: String,
+    subaccountNumber: Int,
+    requestId: String?,
+): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedRoute(input, json)
+        input = squidProcessor.receivedRoute(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
             subaccountNumbers = iListOf(subaccountNumber),
@@ -51,11 +55,12 @@ internal fun TradingStateMachine.squidRoute(payload: String, subaccountNumber: I
 
 internal fun TradingStateMachine.squidRouteV2(
     payload: String,
-    subaccountNumber: Int
+    subaccountNumber: Int,
+    requestId: String?
 ): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedRouteV2(input, json)
+        input = squidProcessor.receivedRouteV2(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
             subaccountNumbers = iListOf(subaccountNumber),

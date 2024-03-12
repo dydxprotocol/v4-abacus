@@ -82,7 +82,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.squidV2SdkInfo(mock.squidV2AssetsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidRouteV2(mock.squidV2RouteMock.payload, 0)
+        stateChange = perp.squidRouteV2(mock.squidV2RouteMock.payload, 0, null)
         assertNotNull(stateChange)
 
         test({
@@ -118,7 +118,7 @@ class V4SquidTests : V4BaseTests() {
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidRoute(mock.squidRouteMock.payload, 0)
+        stateChange = perp.squidRoute(mock.squidRouteMock.payload, 0, null)
         assertNotNull(stateChange)
 
         test({
@@ -154,7 +154,7 @@ class V4SquidTests : V4BaseTests() {
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidRoute(mock.squidRouteMock.errors_payload, 0)
+        stateChange = perp.squidRoute(mock.squidRouteMock.errors_payload, 0, null)
         assertNotNull(stateChange)
 
         test({

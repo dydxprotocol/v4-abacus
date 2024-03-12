@@ -34,7 +34,7 @@ interface AsyncAbacusStateManagerProtocol {
 
     // helper functions
     fun isMarketValid(marketId: String?): Boolean
-    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean)
+    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean, requestId: String?)
 
     // Refresh some part of the state
     fun refresh(data: ApiData)

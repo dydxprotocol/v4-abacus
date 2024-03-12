@@ -89,7 +89,8 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     internal fun receivedRoute(
         existing: Map<String, Any>?,
-        payload: Map<String, Any>
+        payload: Map<String, Any>,
+        requestId: String?,
     ): Map<String, Any>? {
         var modified = mutableMapOf<String, Any>()
         existing?.let {
@@ -101,6 +102,9 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "transfer.route",
             processor.received(null, payload) as MutableMap<String, Any>,
         )
+        if (requestId != null) {
+            modified.safeSet("transfer.route.requestPayload.requestId", requestId)
+        }
         if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
             val value = usdcAmount(modified)
             modified.safeSet("transfer.size.usdcSize", value)
@@ -111,7 +115,8 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     internal fun receivedRouteV2(
         existing: Map<String, Any>?,
-        payload: Map<String, Any>
+        payload: Map<String, Any>,
+        requestId: String?
     ): Map<String, Any>? {
         var modified = mutableMapOf<String, Any>()
         existing?.let {
@@ -123,6 +128,9 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "transfer.route",
             processor.received(null, payload) as MutableMap<String, Any>,
         )
+        if (requestId != null) {
+            modified.safeSet("transfer.route.requestPayload.requestId", requestId)
+        }
         if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
             val value = usdcAmount(modified)
             modified.safeSet("transfer.size.usdcSize", value)
@@ -248,13 +256,11 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val chainProcessor = SquidChainProcessor(parser)
         val options = mutableListOf<Any>()
 
-        this.chains?.let {
+        this.chains?.let { it ->
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
                     if (parser.asString(chain.get("chainType")) != "cosmos") {
-                        chainProcessor.received(null, chain)?.let {
-                            options.add(it)
-                        }
+                        options.add(chainProcessor.received(null, chain))
                     }
                 }
             }
@@ -274,9 +280,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 for (token in it) {
                     parser.asNativeMap(token)?.let { token ->
                         if (parser.asString(token.get("chainId")) == selectedChainId) {
-                            processor.received(null, token)?.let {
-                                options.add(it)
-                            }
+                            options.add(processor.received(null, token))
                         }
                     }
                 }

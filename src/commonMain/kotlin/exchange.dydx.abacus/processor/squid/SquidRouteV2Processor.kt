@@ -26,7 +26,7 @@ internal class SquidRouteV2Processor(parser: ParserProtocol) : BaseProcessor(par
 
     override fun received(
         existing: Map<String, Any>?,
-        payload: Map<String, Any>
+        payload: Map<String, Any>,
     ): Map<String, Any> {
         val modified = transform(existing, payload, keyMap)
         val payloadProcessor = SquidRouteV2PayloadProcessor(parser)
