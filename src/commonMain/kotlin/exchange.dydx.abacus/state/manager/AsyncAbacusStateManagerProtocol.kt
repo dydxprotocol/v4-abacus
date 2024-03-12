@@ -68,7 +68,6 @@ interface AsyncAbacusStateManagerProtocol {
     fun screen(address: String, callback: (restriction: Restriction) -> Unit)
 }
 
-
 interface AsyncAbacusStateManagerSingletonProtocol {
     var accountAddress: String?
     var sourceAddress: String?

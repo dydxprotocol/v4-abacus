@@ -2,6 +2,7 @@ package exchange.dydx.abacus.tests.payloads
 
 import kollections.iListOf
 
+@Suppress("PropertyName")
 internal class OrderbookChannelMock {
     internal val subscribed = """
         {
@@ -454,7 +455,6 @@ internal class OrderbookChannelMock {
         }
     """.trimIndent()
 
-
     internal val v4_channel_batch_data = """
         {
           "type": "channel_batch_data",
@@ -562,7 +562,6 @@ internal class OrderbookChannelMock {
           ]
         }
     """.trimIndent()
-
 
     internal val subscribed_overlapped = """
         {
@@ -4059,7 +4058,7 @@ internal class OrderbookChannelMock {
                  ]
               }
            }
-    """.trimIndent(),
+        """.trimIndent(),
         """
             {
               "type":"channel_batch_data",
@@ -10181,7 +10180,7 @@ internal class OrderbookChannelMock {
                  }
               ]
            }
-        """.trimIndent()
+        """.trimIndent(),
     )
 
     val load_test_subscribed = """
@@ -11484,7 +11483,7 @@ internal class OrderbookChannelMock {
                   }
                ]
             }
-        """.trimIndent()
+        """.trimIndent(),
     )
 
     val load_test_2_subscribed = """
@@ -15263,7 +15262,7 @@ internal class OrderbookChannelMock {
                   }
                ]
             }
-        """.trimIndent()
+        """.trimIndent(),
     )
 
     val load_test_3_channel_batch_data = """

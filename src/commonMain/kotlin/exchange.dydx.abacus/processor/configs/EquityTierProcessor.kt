@@ -8,11 +8,11 @@ import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 internal class EquityTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val equityTierKeyMap = mapOf(
         "int" to mapOf(
-            "maxOrders" to "maxOrders"
-            ),
+            "maxOrders" to "maxOrders",
+        ),
         "double" to mapOf(
             "requiredTotalNetCollateralUSD" to "requiredTotalNetCollateralUSD",
-            ),
+        ),
     )
 
     override fun received(

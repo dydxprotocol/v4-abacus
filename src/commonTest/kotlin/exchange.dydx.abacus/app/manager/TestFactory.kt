@@ -122,11 +122,10 @@ class TestRest() : RestProtocol {
 
     var requests = iMutableListOf<String>()
 
-
     init {
         setResponse(
             "https://api.examples.com/configs/markets.json",
-            mock.marketsConfigurations.configurations
+            mock.marketsConfigurations.configurations,
         )
         setResponse(
             "https://dydx-v4-shared-resources.vercel.app/config/localization/languages.json",
@@ -174,7 +173,7 @@ class TestRest() : RestProtocol {
                         "name": "Türkçe"
                     }
                 ]
-            """.trimIndent()
+            """.trimIndent(),
         )
         setResponse(
             "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -195,7 +194,7 @@ class TestRest() : RestProtocol {
                       ]
                    }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -298,7 +297,7 @@ class TestWebSocket : WebSocketProtocol {
         this.received?.invoke(
             """
             {"type":"connected","connection_id":"c98ace50-5f67-4ed8-8096-de0c694eeb1d","message_id":0}
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -418,8 +417,6 @@ class TestChain : DYDXChainTransactionsProtocol {
             callback(dummyError)
         }
     }
-
-
 }
 
 class TestThreading : ThreadingProtocol {

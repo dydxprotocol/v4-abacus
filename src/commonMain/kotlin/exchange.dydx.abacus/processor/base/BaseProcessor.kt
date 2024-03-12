@@ -121,7 +121,9 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                 val list = parser.asNativeList(payload)
                 if (list != null) {
                     process(modified[key], list)
-                } else null
+                } else {
+                    null
+                }
             }
             modified.safeSet(key, transformed)
             return modified
@@ -173,7 +175,6 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
         return Pair(existing, false)
     }
 
-
     internal open fun merge(
         parser: ParserProtocol,
         existing: List<Any>?,
@@ -193,7 +194,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                     parser.asDatetime(parser.asNativeMap(existing.firstOrNull())?.get(timeField))
                 if (lastIncomingTime != null && firstExisting != null && lastIncomingTime != firstExisting && ascending(
                         lastIncomingTime,
-                        firstExisting
+                        firstExisting,
                     ) == ascending
                 ) {
                     val result = mutableListOf<Any>()
@@ -202,7 +203,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                     result
                 } else if (firstIncomingTime != null && lastExisting != null && firstIncomingTime != lastExisting && ascending(
                         firstIncomingTime,
-                        lastExisting
+                        lastExisting,
                     ) != ascending
                 ) {
                     val result = mutableListOf<Any>()
@@ -210,7 +211,10 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                     result.addAll(incoming)
                     result
                 } else {
-                    return ParsingHelper.merge(parser, existing, incoming,
+                    return ParsingHelper.merge(
+                        parser,
+                        existing,
+                        incoming,
                         { obj, data ->
                             val existingTime =
                                 parser.asDatetime(parser.asNativeMap(obj)?.get(timeField))
@@ -220,11 +224,15 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
                         },
                         { _, _, itemData ->
                             itemData
-                        })!!
+                        },
+                    )!!
                 }
-
-            } else existing
-        } else incoming
+            } else {
+                existing
+            }
+        } else {
+            incoming
+        }
     }
 
     private fun ascending(first: Instant, second: Instant): Boolean {

@@ -27,7 +27,6 @@ import kollections.iListOf
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
-
 internal fun V4StateManagerAdaptor.retrieveCctpChainIds() {
     val url = "$deploymentUri/configs/cctp.json"
     get(url) { _, response, _ ->
@@ -75,7 +74,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) 
     val isCctp = state?.input?.transfer?.isCctp ?: false
     when (appConfigs.squidVersion) {
         AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
-            state
+            state,
         )
 
         AppConfigs.SquidVersion.V2, AppConfigs.SquidVersion.V2DepositOnly ->
@@ -90,7 +89,9 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
         val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
         if (decimals != null) {
             (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else null
+        } else {
+            null
+        }
     }
     val chainId = environment.dydxChainId
     val squidIntegratorId = environment.squidIntegratorId
@@ -145,7 +146,9 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
         val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
         if (decimals != null) {
             (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else null
+        } else {
+            null
+        }
     }
     val chainId = environment.dydxChainId
     val squidIntegratorId = environment.squidIntegratorId
@@ -180,7 +183,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             "enableBoost" to false,
             "slippage" to 1,
             "slippageConfig" to iMapOf<String, Any>(
-                "autoMode" to 1
+                "autoMode" to 1,
             ),
         )
         val oldState = stateMachine.state
@@ -201,7 +204,6 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
         }
     }
 }
-
 
 internal fun V4StateManagerAdaptor.simulateWithdrawal(
     decimals: Int,
@@ -240,7 +242,7 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
 
     transaction(
         TransactionType.simulateTransferNativeToken,
-        payload
+        payload,
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
@@ -272,13 +274,17 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(
         AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
             state,
             decimals,
-            gas
+            gas,
         )
 
         AppConfigs.SquidVersion.V2, AppConfigs.SquidVersion.V2WithdrawalOnly ->
-            if (isCctp) retrieveWithdrawalRouteV2(state, decimals, gas)
-            else if (isExchange) retrieveWithdrawalRouteNoble(state, decimals, gas)
-            else retrieveWithdrawalRouteV1(state, decimals, gas)
+            if (isCctp) {
+                retrieveWithdrawalRouteV2(state, decimals, gas)
+            } else if (isExchange) {
+                retrieveWithdrawalRouteNoble(state, decimals, gas)
+            } else {
+                retrieveWithdrawalRouteV1(state, decimals, gas)
+            }
     }
 }
 
@@ -443,7 +449,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             "enableBoost" to false,
             "slippage" to 1,
             "slippageConfig" to iMapOf<String, Any>(
-                "autoMode" to 1
+                "autoMode" to 1,
             ),
             // "enableForecall" to "false",
             // "cosmosSignerAddress" to accountAddress.toString(),
@@ -620,7 +626,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                             "subaccountNumber" to connectedSubaccountNumber,
                             "amount" to state?.input?.transfer?.size?.usdcSize,
                             "ibcPayload" to ibcPayload.encodeBase64(),
-                        )
+                        ),
                     )
                     transaction(TransactionType.WithdrawToNobleIBC, payload) {
                         val error = parseTransactionResponse(it)
@@ -630,7 +636,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         } else {
                             pendingCctpWithdraw = CctpWithdrawState(
                                 state?.input?.transfer?.requestPayload?.data,
-                                callback
+                                callback,
                             )
                         }
                     }
@@ -638,7 +644,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     DebugLogger.error("cctpToNoble error, code: $code")
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
-                        "Missing squid response"
+                        "Missing squid response",
                     )
                     send(error, callback)
                 }
@@ -646,7 +652,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                 DebugLogger.error("cctpToNoble error, code: $code")
                 val error = ParsingError(
                     ParsingErrorType.MissingContent,
-                    "Missing squid response"
+                    "Missing squid response",
                 )
                 send(error, callback)
             }
@@ -654,7 +660,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
     } else {
         val error = ParsingError(
             ParsingErrorType.MissingRequiredData,
-            "Missing required data for cctp withdraw"
+            "Missing required data for cctp withdraw",
         )
         send(error, callback)
     }

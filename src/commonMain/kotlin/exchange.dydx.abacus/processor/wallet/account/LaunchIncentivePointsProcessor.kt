@@ -14,9 +14,11 @@ internal class LaunchIncentivePointsProcessor(parser: ParserProtocol) : BaseProc
     ): Map<String, Any>? {
         parser.asNativeMap(payload)?.let { data ->
             itemProcessor.received(
-                parser.asNativeMap(existing?.get(season)), data).let { parsed ->
+                parser.asNativeMap(existing?.get(season)),
+                data,
+            ).let { parsed ->
                 val modified = existing?.mutable() ?: mutableMapOf()
-                modified[season]= parsed
+                modified[season] = parsed
                 return modified
             }
         }

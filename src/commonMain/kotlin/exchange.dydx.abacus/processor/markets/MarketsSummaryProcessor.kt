@@ -24,6 +24,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         return modify(existing, markets)
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>
@@ -32,6 +33,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         return modify(existing, markets)
     }
 
+    @Suppress("FunctionName")
     internal fun channel_batch_data(
         existing: Map<String, Any>?,
         content: List<Any>
@@ -58,7 +60,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         val markets = marketsProcessor.receivedOrderbook(
             parser.asNativeMap(existing?.get("markets")),
             market,
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
@@ -71,7 +73,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         val markets = marketsProcessor.receivedBatchOrderbookChanges(
             parser.asNativeMap(existing?.get("markets")),
             market,
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
@@ -94,7 +96,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         val markets = marketsProcessor.receivedTradesChanges(
             parser.asNativeMap(existing?.get("markets")),
             market,
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
@@ -107,7 +109,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         val markets = marketsProcessor.receivedBatchedTradesChanges(
             parser.asNativeMap(existing?.get("markets")),
             market,
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
@@ -141,7 +143,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
                 parser.asNativeMap(existing?.get("markets")),
                 market,
                 resolution,
-                payload
+                payload,
             )
         return modify(existing, markets)
     }
@@ -156,7 +158,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
             parser.asNativeMap(existing?.get("markets")),
             market,
             resolution,
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
@@ -171,7 +173,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
             parser.asNativeMap(existing?.get("markets")),
             market,
             resolution,
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
@@ -182,15 +184,16 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
     ): Map<String, Any>? {
         val markets = marketsProcessor.receivedHistoricalFundings(
             parser.asNativeMap(existing?.get("markets")),
-            payload
+            payload,
         )
         return modify(existing, markets)
     }
 
     private fun modify(
-        existing: Map<String, Any>?, markets: Map<String, Any>?, key: String = "markets"
+        existing: Map<String, Any>?,
+        markets: Map<String, Any>?,
+        key: String = "markets"
     ): Map<String, Any>? {
-
         return if (markets != null) {
             val modified = existing?.mutable() ?: mutableMapOf()
             modified.safeSet(key, markets)

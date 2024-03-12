@@ -5,7 +5,9 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 
 @Suppress("UNCHECKED_CAST")
 internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+    @Suppress("PropertyName")
     private val LIMIT = 500
+
     private val tradeProcessor = TradeProcessor(parser = parser)
     internal fun subscribed(
         content: Map<String, Any>,
@@ -15,6 +17,7 @@ internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return if (payload != null) received(payload) else null
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: List<Any>?,
         content: Map<String, Any>,
@@ -47,9 +50,11 @@ internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             if (existing?.isNotEmpty() == true) {
                 merged.addAll(existing)
             }
-            return if (merged != null && merged.size > LIMIT) {
+            return if (merged.size > LIMIT) {
                 merged.subList(0, LIMIT).toList()
-            } else merged
+            } else {
+                merged
+            }
         } else {
             return existing
         }

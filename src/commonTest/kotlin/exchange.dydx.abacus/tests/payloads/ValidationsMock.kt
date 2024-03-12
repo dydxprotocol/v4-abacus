@@ -62,7 +62,6 @@ internal class ValidationsMock {
         }
     """.trimIndent()
 
-
     internal val accountsSubscribed = """
         {
           "type": "subscribed",

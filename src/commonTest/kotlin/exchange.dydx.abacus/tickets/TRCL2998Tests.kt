@@ -5,7 +5,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
-internal open class TRCL2998Tests: V4BaseTests() {
+internal open class TRCL2998Tests : V4BaseTests() {
     private val marketsMock = """
         {
            "type":"subscribed",
@@ -795,9 +795,11 @@ internal open class TRCL2998Tests: V4BaseTests() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
         setup()
 
-        test({
-            perp.socket(mock.socketUrl, subaccountMock, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(mock.socketUrl, subaccountMock, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -820,11 +822,14 @@ internal open class TRCL2998Tests: V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        test({
-            perp.tradeInMarket("BTC-USD", 0)
-        }, """
+        test(
+            {
+                perp.tradeInMarket("BTC-USD", 0)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -847,11 +852,14 @@ internal open class TRCL2998Tests: V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        test({
-            perp.tradeInMarket("ETH-USD", 0)
-        }, """
+        test(
+            {
+                perp.tradeInMarket("ETH-USD", 0)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -874,6 +882,7 @@ internal open class TRCL2998Tests: V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 }

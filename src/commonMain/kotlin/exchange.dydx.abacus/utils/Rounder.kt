@@ -6,8 +6,7 @@ import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 import numberOfDecimals
-import kotlin.math.*
-
+import kotlin.math.roundToInt
 
 @JsExport
 @Serializable
@@ -29,7 +28,7 @@ class Rounder {
             } else {
                 val stepSizeDecimals = stepSize.numberOfDecimals()
                 cache[stepSize] = stepSizeDecimals
-                return  stepSizeDecimals
+                return stepSizeDecimals
             }
         }
 
@@ -54,15 +53,17 @@ class Rounder {
                     stringBuilder.append(
                         multiplierString.substring(
                             length - stepSizeDecimals,
-                            length
-                        )
+                            length,
+                        ),
                     )
                 }
                 stringBuilder.toString().toDouble()
             } else {
                 (multiplier * stepSize.toInt()).toDouble()
             }
-            return if (absValue == 0.0) 0.0 else {
+            return if (absValue == 0.0) {
+                0.0
+            } else {
                 absValue * (if (negative) -1 else 1)
             }
         }
@@ -71,7 +72,7 @@ class Rounder {
             val roundedDecimal = roundDecimal(
                 number.toBigDecimal(null, Numeric.decimal.mode),
                 stepSize.toBigDecimal(null, Numeric.decimal.mode),
-                roundingMode
+                roundingMode,
             )
             return roundedDecimal.doubleValue(false)
         }
@@ -106,7 +107,9 @@ class Rounder {
                 val long =
                     (number / stepSize + modifier).longValue(false)
                 return stepSize * long.toBigDecimal(null, Numeric.decimal.mode)
-            } else number
+            } else {
+                number
+            }
         }
     }
 }

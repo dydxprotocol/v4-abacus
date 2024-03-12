@@ -30,12 +30,11 @@ internal class TransferOutValidator(
                     listOf("address"),
                     "APP.DIRECT_TRANSFER_MODAL.ADDRESS_FIELD",
                     "APP.DIRECT_TRANSFER_MODAL.INVALID_ADDRESS_TITLE",
-                    "APP.DIRECT_TRANSFER_MODAL.INVALID_ADDRESS_BODY"
-                )
+                    "APP.DIRECT_TRANSFER_MODAL.INVALID_ADDRESS_BODY",
+                ),
             )
         } else {
             return null
         }
     }
 }
-

@@ -44,7 +44,7 @@ class V4RestrictionsTests {
             ioImplementations,
             uiImplementations,
             TestState(),
-            null
+            null,
         )
         stateManager.environmentId = "dydxprotocol-staging"
         return stateManager
@@ -77,7 +77,7 @@ class V4RestrictionsTests {
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/height",
-            "403"
+            "403",
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -86,7 +86,7 @@ class V4RestrictionsTests {
         assertEquals(
             Restriction.GEO_RESTRICTED,
             stateManager.adaptor?.stateMachine?.state?.restriction?.restriction,
-            "Expected geo restriction"
+            "Expected geo restriction",
         )
     }
 
@@ -101,7 +101,7 @@ class V4RestrictionsTests {
                 {
                     "restricted": true
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -111,18 +111,17 @@ class V4RestrictionsTests {
         assertEquals(
             Restriction.USER_RESTRICTED,
             stateManager.adaptor?.stateMachine?.state?.restriction?.restriction,
-            "Expected user restriction"
+            "Expected user restriction",
         )
         assertEquals(12, testRest?.requests?.size)
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-            testRest?.requests?.get(8)
+            testRest?.requests?.get(8),
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-            testRest?.requests?.get(10)
+            testRest?.requests?.get(10),
         )
-
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -130,16 +129,15 @@ class V4RestrictionsTests {
                 {
                     "restricted": true
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
         stateManager.screen("cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm") { restriction ->
 
             assertEquals(
                 Restriction.USER_RESTRICTED,
                 stateManager.adaptor?.stateMachine?.state?.restriction?.restriction,
-                "Expected user restriction"
+                "Expected user restriction",
             )
         }
     }
-
 }

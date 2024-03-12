@@ -16,7 +16,9 @@ internal fun TradingStateMachine.candles(payload: String): StateChanges {
 
 private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): StateChanges {
     val markets = parser.asMap(payload["candles"])
-    val marketIds = if (markets != null) markets.keys.toIList() else {
+    val marketIds = if (markets != null) {
+        markets.keys.toIList()
+    } else {
         val marketId = parser.asString(parser.value(payload, "candles.0.market"))
             ?: parser.asString(parser.value(payload, "candles.0.ticker"))
         if (marketId != null) iListOf(marketId) else null
@@ -31,9 +33,13 @@ private fun TradingStateMachine.receivedCandles(payload: Map<String, Any>): Stat
             if (size > 0) {
                 marketsSummary = marketsProcessor.receivedCandles(marketsSummary, payload)
                 StateChanges(iListOf(Changes.candles), marketIds)
-            } else StateChanges(iListOf())
+            } else {
+                StateChanges(iListOf())
+            }
         }
-    } else StateChanges(iListOf())
+    } else {
+        StateChanges(iListOf())
+    }
 }
 
 internal fun TradingStateMachine.sparklines(payload: String): StateChanges? {
@@ -49,7 +55,6 @@ private fun TradingStateMachine.receivedSparklines(payload: Map<String, Any>): S
     marketsSummary = marketsProcessor.receivedSparklines(marketsSummary, payload)
     return StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
 }
-
 
 internal fun TradingStateMachine.receivedCandles(
     market: String,

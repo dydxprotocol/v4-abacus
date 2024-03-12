@@ -1,7 +1,10 @@
 package exchange.dydx.abacus.payload.v3
 
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.tests.extensions.*
+import exchange.dydx.abacus.tests.extensions.loadCandlesAllMarkets
+import exchange.dydx.abacus.tests.extensions.loadCandlesFirst
+import exchange.dydx.abacus.tests.extensions.loadCandlesSecond
+import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +22,6 @@ class V4CandlesTests : V3BaseTests() {
 
         testCandlesOnce()
     }
-
 
     private fun testCandlesOnce() {
         var time = ServerTime.now()
@@ -70,7 +72,7 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -102,7 +104,7 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -134,7 +136,7 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -169,7 +171,7 @@ class V4CandlesTests : V3BaseTests() {
             """.trimIndent(),
             { response ->
                 assertEquals(125, response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size)
-            }
+            },
         )
     }
 
@@ -207,7 +209,7 @@ class V4CandlesTests : V3BaseTests() {
                 val lastCandle = response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
                 assertEquals(1582.8, lastCandle?.close)
                 assertEquals(1577.7, lastCandle?.open)
-            }
+            },
         )
     }
 
@@ -237,9 +239,8 @@ class V4CandlesTests : V3BaseTests() {
                 val lastCandle = response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
                 assertEquals(1590.8, lastCandle?.close)
                 assertEquals(1598.0, lastCandle?.open)
-            }
+            },
         )
-
 
         test(
             {
@@ -266,7 +267,7 @@ class V4CandlesTests : V3BaseTests() {
                 val lastCandle = response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
                 assertEquals(1592.7, lastCandle?.close)
                 assertEquals(1598.0, lastCandle?.open)
-            }
+            },
         )
     }
 }

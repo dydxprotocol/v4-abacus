@@ -7,8 +7,8 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
@@ -52,7 +52,6 @@ enum class TradeInputField(val rawValue: String) {
     }
 }
 
-
 internal fun TradingStateMachine.tradeInMarket(
     marketId: String,
     subaccountNumber: Int,
@@ -67,7 +66,7 @@ internal fun TradingStateMachine.tradeInMarket(
                 StateChanges(
                     iListOf(Changes.input),
                     null,
-                    iListOf(subaccountNumber)
+                    iListOf(subaccountNumber),
                 )
 
             changes.let {
@@ -85,10 +84,12 @@ internal fun TradingStateMachine.tradeInMarket(
             modified.safeSet("size", null)
             modified.safeSet("price", null)
             modified
-        } else initiateTrade(
-            marketId,
-            subaccountNumber
-        )
+        } else {
+            initiateTrade(
+                marketId,
+                subaccountNumber,
+            )
+        }
         input["trade"] = trade
         input["current"] = "trade"
         this.input = input
@@ -96,7 +97,7 @@ internal fun TradingStateMachine.tradeInMarket(
             StateChanges(
                 iListOf(Changes.subaccount, Changes.input),
                 null,
-                iListOf(subaccountNumber)
+                iListOf(subaccountNumber),
             )
 
         changes.let {
@@ -180,12 +181,12 @@ fun TradingStateMachine.trade(
                         changes = StateChanges(
                             iListOf(Changes.subaccount, Changes.input),
                             null,
-                            iListOf(subaccountNumber)
+                            iListOf(subaccountNumber),
                         )
                     } else {
                         error = ParsingError(
                             ParsingErrorType.MissingRequiredData,
-                            "$data is not a valid string"
+                            "$data is not a valid string",
                         )
                     }
                 }
@@ -199,7 +200,7 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
 
@@ -215,7 +216,7 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
 
@@ -227,8 +228,9 @@ fun TradingStateMachine.trade(
                 -> {
                     trade.safeSet(typeText, parser.asString(data))
                     changes = StateChanges(
-                        iListOf(Changes.input), null,
-                        iListOf(subaccountNumber)
+                        iListOf(Changes.input),
+                        null,
+                        iListOf(subaccountNumber),
                     )
                 }
 
@@ -237,11 +239,11 @@ fun TradingStateMachine.trade(
                 -> {
                     trade.safeSet(typeText, parser.asInt(data))
                     changes = StateChanges(
-                        iListOf(Changes.input), null,
-                        iListOf(subaccountNumber)
+                        iListOf(Changes.input),
+                        null,
+                        iListOf(subaccountNumber),
                     )
                 }
-
 
                 TradeInputField.reduceOnly.rawValue,
                 TradeInputField.postOnly.rawValue,
@@ -252,7 +254,7 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
 
@@ -265,7 +267,7 @@ fun TradingStateMachine.trade(
         changes = StateChanges(
             iListOf(Changes.wallet, Changes.subaccount, Changes.input),
             null,
-            iListOf(subaccountNumber)
+            iListOf(subaccountNumber),
         )
     }
     if (sizeChanged) {
@@ -336,5 +338,7 @@ fun TradingStateMachine.validTradeInput(trade: Map<String, Any>, typeText: Strin
         } else {
             parser.asBool(value) ?: false
         }
-    } else true
+    } else {
+        true
+    }
 }

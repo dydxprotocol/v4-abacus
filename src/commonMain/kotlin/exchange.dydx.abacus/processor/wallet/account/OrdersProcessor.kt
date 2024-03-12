@@ -53,7 +53,6 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return Pair(modified, updated)
     }
 
-
     internal fun canceled(
         existing: Map<String, Any>,
         orderId: String,
@@ -64,6 +63,8 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             itemProcessor.canceled(order)
             modified.typedSafeSet(orderId, order)
             Pair(modified, true)
-        } else Pair(existing, false)
+        } else {
+            Pair(existing, false)
+        }
     }
 }

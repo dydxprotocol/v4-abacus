@@ -2,7 +2,6 @@ package exchange.dydx.abacus.payload.v3
 
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
-import kotlinx.datetime.Clock
 import kotlin.test.Test
 
 class V3CalculationsTests : V3BaseTests() {

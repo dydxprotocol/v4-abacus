@@ -31,7 +31,7 @@ internal class HistoricalFundingsProcessor(parser: ParserProtocol) : BaseProcess
                 existing,
                 history.reversed().toList(),
                 "effectiveAt",
-                true
+                true,
             )
         } else {
             return existing

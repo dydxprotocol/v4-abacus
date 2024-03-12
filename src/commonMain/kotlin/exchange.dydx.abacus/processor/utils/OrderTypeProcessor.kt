@@ -13,7 +13,9 @@ internal class OrderTypeProcessor {
 
                     else -> type
                 }
-            } else type
+            } else {
+                type
+            }
         }
     }
 }

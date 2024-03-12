@@ -56,29 +56,28 @@ internal class InputValidator(
 
         "WOULD_NOT_REDUCE_UNCHECK" to 1100,
 
-
         "MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE" to 1200,
         "MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE" to 1201,
         "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE" to 1202,
         "LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_LOWER" to 1203,
-        "LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_HIGHER" to 1204
+        "LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_HIGHER" to 1204,
     )
 
     private val tradeValidators = listOf<ValidatorProtocol>(
         AccountInputValidator(localizer, formatter, parser),
         FieldsInputValidator(localizer, formatter, parser),
-        TradeInputValidator(localizer, formatter, parser)
+        TradeInputValidator(localizer, formatter, parser),
     )
 
     private val closePositionValidators = listOf<ValidatorProtocol>(
         AccountInputValidator(localizer, formatter, parser),
         FieldsInputValidator(localizer, formatter, parser),
-        TradeInputValidator(localizer, formatter, parser)
+        TradeInputValidator(localizer, formatter, parser),
     )
 
     private val transferValidators = listOf<ValidatorProtocol>(
         FieldsInputValidator(localizer, formatter, parser),
-        TransferInputValidator(localizer, formatter, parser)
+        TransferInputValidator(localizer, formatter, parser),
     )
 
     fun validate(
@@ -93,16 +92,18 @@ internal class InputValidator(
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
             val transaction = parser.asNativeMap(input[transactionType]) ?: return input
-            val errors = sort(validate(
-                wallet,
-                user,
-                subaccount,
-                markets,
-                configs,
-                transaction,
-                transactionType,
-                environment,
-            ))
+            val errors = sort(
+                validate(
+                    wallet,
+                    user,
+                    subaccount,
+                    markets,
+                    configs,
+                    transaction,
+                    transactionType,
+                    environment,
+                ),
+            )
             if (errors != input["errors"]) {
                 input.modify("errors", errors)
             } else {
@@ -136,14 +137,16 @@ internal class InputValidator(
                         configs,
                         transaction,
                         transactionType,
-                        environment
+                        environment,
                     )
                 if (validatorErrors != null) {
                     result.addAll(validatorErrors)
                 }
             }
             if (result.size > 0) result else null
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun validatorsFor(transactionType: String): List<ValidatorProtocol>? {
@@ -157,7 +160,7 @@ internal class InputValidator(
 
     private fun sort(errors: List<Any>?): List<Any>? {
         return if (errors != null) {
-            return errors.sortedWith{ error1, error2 ->
+            return errors.sortedWith { error1, error2 ->
                 val typeString1 = parser.asString(parser.value(error1, "type"))
                 val typeString2 = parser.asString(parser.value(error2, "type"))
                 if (typeString1 == typeString2) {
@@ -196,7 +199,8 @@ internal class InputValidator(
                     }
                 }
             }
-
-        } else null
+        } else {
+            null
+        }
     }
 }

@@ -45,15 +45,15 @@ class NotificationsProvider(
             buildOrderStatusChangesNotifications(stateMachine, subaccountNumber)
         val merged1 = ParsingHelper.merge(
             fillsNotifications,
-            positionsNotifications
+            positionsNotifications,
         )
         val merged2 = ParsingHelper.merge(
             merged1,
-            orderStatusChangesNotifications
+            orderStatusChangesNotifications,
         )
         val merged3 = ParsingHelper.merge(
             merged2,
-            blockRewardsNotifications
+            blockRewardsNotifications,
         )
         return (merged3 as? Map<String, Notification>)!!.toIMap()
     }
@@ -81,7 +81,7 @@ class NotificationsProvider(
                 createBlockRewardNotification(stateMachine, blockReward, token)?.let {
                     notifications.typedSafeSet(
                         it.id,
-                        it
+                        it,
                     )
                 }
             }
@@ -110,7 +110,7 @@ class NotificationsProvider(
         val text =
             uiImplementations.localizer?.localize(
                 "NOTIFICATIONS.BLOCK_REWARD.BODY",
-                paramsAsJson
+                paramsAsJson,
             )
 
         val notificationId = "blockReward:$blockHeight"
@@ -172,7 +172,7 @@ class NotificationsProvider(
                 val notificationId = "order:$orderId"
                 notifications.typedSafeSet(
                     notificationId,
-                    createFillNotification(stateMachine, fillsForOrder, order)
+                    createFillNotification(stateMachine, fillsForOrder, order),
                 )
             }
 
@@ -181,7 +181,7 @@ class NotificationsProvider(
                 val notificationId = "fill:$fillId"
                 notifications.typedSafeSet(
                     notificationId,
-                    createNotificationForFill(stateMachine, fill)
+                    createNotificationForFill(stateMachine, fill),
                 )
             }
         }
@@ -221,18 +221,20 @@ class NotificationsProvider(
         val averagePriceText = parser.asString(averagePrice(fillsForOrder))
         val orderType = order.type.rawValue
         val orderTypeText = text(orderType)
-        val params = (iMapOf(
-            "MARKET" to marketId,
-            "ASSET" to assetText,
-            "SIDE" to sideText,
-            "AMOUNT" to amountText,
-            "FILLED_AMOUNT" to filledAmountText,
-            "PRICE" to priceText,
-            "AVERAGE_PRICE" to averagePriceText,
-            "ORDER_TYPE" to orderType,
-            "ORDER_TYPE_TEXT" to orderTypeText,
-            "ORDER_STATUS" to order.status.rawValue,
-        ).filterValues { it != null } as Map<String, String>).toIMap()
+        val params = (
+            iMapOf(
+                "MARKET" to marketId,
+                "ASSET" to assetText,
+                "SIDE" to sideText,
+                "AMOUNT" to amountText,
+                "FILLED_AMOUNT" to filledAmountText,
+                "PRICE" to priceText,
+                "AVERAGE_PRICE" to averagePriceText,
+                "ORDER_TYPE" to orderType,
+                "ORDER_TYPE_TEXT" to orderTypeText,
+                "ORDER_STATUS" to order.status.rawValue,
+            ).filterValues { it != null } as Map<String, String>
+            ).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
         val title = orderStatusTitle(order.status) ?: return null
@@ -290,21 +292,21 @@ class NotificationsProvider(
             OrderStatus.filled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_FILL.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
             }
 
             OrderStatus.partiallyFilled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_PARTIAL_FILL.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
             }
 
             OrderStatus.cancelled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_CANCEL.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
             }
 
@@ -327,15 +329,17 @@ class NotificationsProvider(
         val priceText = parser.asString(fill.price)
         val fillType = fill.type.rawValue
         val fillTypeText = text(fillType)
-        val params = (iMapOf(
-            "MARKET" to marketId,
-            "ASSET" to assetText,
-            "SIDE" to sideText,
-            "AMOUNT" to amountText,
-            "PRICE" to priceText,
-            "FILL_TYPE" to fillType,
-            "FILL_TYPE_TEXT" to fillTypeText,
-        ).filterValues { it != null } as Map<String, String>).toIMap()
+        val params = (
+            iMapOf(
+                "MARKET" to marketId,
+                "ASSET" to assetText,
+                "SIDE" to sideText,
+                "AMOUNT" to amountText,
+                "PRICE" to priceText,
+                "FILL_TYPE" to fillType,
+                "FILL_TYPE_TEXT" to fillTypeText,
+            ).filterValues { it != null } as Map<String, String>
+            ).toIMap()
         val paramsAsJson = jsonEncoder.encode(params)
 
         var title: String? = null
@@ -347,7 +351,7 @@ class NotificationsProvider(
                     ?: return null
                 text = uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.DELEVERAGED.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
             }
 
@@ -357,7 +361,7 @@ class NotificationsProvider(
                         ?: return null
                 text = uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.FINAL_SETTLEMENT.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
             }
 
@@ -366,9 +370,8 @@ class NotificationsProvider(
                     ?: return null
                 text = uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.LIQUIDATION.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
-
             }
 
             OrderType.offsetting -> {
@@ -376,7 +379,7 @@ class NotificationsProvider(
                     ?: return null
                 text = uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.OFFSETTING.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
             }
 
@@ -409,8 +412,8 @@ class NotificationsProvider(
         val positions = parser.asMap(
             parser.value(
                 stateMachine.data,
-                "wallet.account.subaccounts.$subaccountNumber.positions"
-            )
+                "wallet.account.subaccounts.$subaccountNumber.positions",
+            ),
         )
 
         if (positions != null) {
@@ -422,10 +425,12 @@ class NotificationsProvider(
                     val asset = asset(stateMachine, marketId) ?: continue
                     val assetText = asset.name
                     val marketImageUrl = asset.resources?.imageUrl
-                    val params = (iMapOf(
-                        "MARKET" to marketId,
-                        "ASSET" to assetText,
-                    ).filterValues { it != null } as Map<String, String>).toIMap()
+                    val params = (
+                        iMapOf(
+                            "MARKET" to marketId,
+                            "ASSET" to assetText,
+                        ).filterValues { it != null } as Map<String, String>
+                        ).toIMap()
                     val paramsAsJson = jsonEncoder.encode(params)
 
                     val title =
@@ -433,9 +438,8 @@ class NotificationsProvider(
                             ?: continue
                     val text = uiImplementations.localizer?.localize(
                         "NOTIFICATIONS.POSITION_CLOSED.BODY",
-                        paramsAsJson
+                        paramsAsJson,
                     )
-
 
                     val notificationId = "position:$marketId"
                     notifications[notificationId] = Notification(
@@ -496,7 +500,9 @@ class NotificationsProvider(
                         timestamp = order.updatedAtMilliseconds
                         if (timestamp != null && order.totalFilled == Numeric.double.ZERO) {
                             "NOTIFICATIONS.ORDER_TRIGGERED"
-                        } else null
+                        } else {
+                            null
+                        }
                     }
 
                     OrderType.limit, OrderType.market -> {
@@ -507,7 +513,9 @@ class NotificationsProvider(
                         timestamp = order.createdAtMilliseconds
                         if (timestamp != null && order.totalFilled == Numeric.double.ZERO) {
                             "NOTIFICATIONS.ORDER_OPENED"
-                        } else null
+                        } else {
+                            null
+                        }
                     }
 
                     else -> null
@@ -534,15 +542,17 @@ class NotificationsProvider(
             val totalFilled = parser.asString(order.totalFilled)
             val orderType = order.type.rawValue
             val orderTypeText = text(orderType)
-            val params = (iMapOf(
-                "MARKET" to marketId,
-                "SIDE" to sideText,
-                "AMOUNT" to amountText,
-                "TOTAL_FILLED" to totalFilled,
-                "ORDER_TYPE" to orderType,
-                "ORDER_TYPE_TEXT" to orderTypeText,
-                "ORDER_STATUS" to order.status.rawValue,
-            ).filterValues { it != null } as Map<String, String>).toIMap()
+            val params = (
+                iMapOf(
+                    "MARKET" to marketId,
+                    "SIDE" to sideText,
+                    "AMOUNT" to amountText,
+                    "TOTAL_FILLED" to totalFilled,
+                    "ORDER_TYPE" to orderType,
+                    "ORDER_TYPE_TEXT" to orderTypeText,
+                    "ORDER_STATUS" to order.status.rawValue,
+                ).filterValues { it != null } as Map<String, String>
+                ).toIMap()
             val paramsAsJson = jsonEncoder.encode(params)
 
             val title =
@@ -551,7 +561,7 @@ class NotificationsProvider(
             val text =
                 uiImplementations.localizer?.localize(
                     "$statusNotificationStringKey.BODY",
-                    paramsAsJson
+                    paramsAsJson,
                 )
 
             val orderId = order.id
@@ -567,7 +577,9 @@ class NotificationsProvider(
                 paramsAsJson,
                 timestamp,
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun text(orderType: String): String? {

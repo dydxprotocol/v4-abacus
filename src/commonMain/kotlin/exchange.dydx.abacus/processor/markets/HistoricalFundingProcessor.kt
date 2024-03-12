@@ -7,11 +7,11 @@ internal class HistoricalFundingProcessor(parser: ParserProtocol) : BaseProcesso
     private val keyMap = mapOf(
         "double" to mapOf(
             "rate" to "rate",
-            "price" to "price"
+            "price" to "price",
         ),
         "datetime" to mapOf(
-            "effectiveAt" to "effectiveAt"
-        )
+            "effectiveAt" to "effectiveAt",
+        ),
     )
 
     override fun received(existing: Map<String, Any>?, payload: Map<String, Any>): Map<String, Any> {

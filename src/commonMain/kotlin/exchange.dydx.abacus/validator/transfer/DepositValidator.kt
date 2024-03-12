@@ -7,7 +7,6 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.TransferValidatorProtocol
 
-
 internal class DepositValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,

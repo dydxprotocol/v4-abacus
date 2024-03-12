@@ -1,12 +1,8 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingException
-import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
-
 
 internal fun TradingStateMachine.launchIncentiveSeasons(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
@@ -24,5 +20,7 @@ internal fun TradingStateMachine.launchIncentivePoints(season: String, payload: 
     return if (wallet != null && json != null) {
         this.wallet = walletProcessor.receivedLaunchIncentivePoint(wallet, season, json)
         StateChanges(iListOf(Changes.accountBalances))
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }

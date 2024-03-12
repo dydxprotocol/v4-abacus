@@ -51,7 +51,7 @@ internal class TradeInputValidator(
                     market,
                     transaction,
                     change,
-                    restricted
+                    restricted,
                 )
             if (closeOnlyError != null) {
                 errors.add(closeOnlyError)
@@ -91,30 +91,35 @@ internal class TradeInputValidator(
         return if (size != Numeric.double.ZERO) {
             if (postOrder != Numeric.double.ZERO) {
                 if (size > Numeric.double.ZERO) {
-                    if (postOrder > size)
+                    if (postOrder > size) {
                         PositionChange.INCREASING
-                    else if (postOrder < Numeric.double.ZERO)
+                    } else if (postOrder < Numeric.double.ZERO) {
                         PositionChange.CROSSING
-                    else if (postOrder < size)
+                    } else if (postOrder < size) {
                         PositionChange.DECREASING
-                    else
+                    } else {
                         PositionChange.NONE
+                    }
                 } else {
-                    if (postOrder > size)
+                    if (postOrder > size) {
                         PositionChange.DECREASING
-                    else if (postOrder > Numeric.double.ZERO)
+                    } else if (postOrder > Numeric.double.ZERO) {
                         PositionChange.CROSSING
-                    else if (postOrder < size)
+                    } else if (postOrder < size) {
                         PositionChange.INCREASING
-                    else
+                    } else {
                         PositionChange.NONE
+                    }
                 }
-            } else PositionChange.CLOSING
+            } else {
+                PositionChange.CLOSING
+            }
         } else {
-            if (postOrder != Numeric.double.ZERO)
+            if (postOrder != Numeric.double.ZERO) {
                 PositionChange.NEW
-            else
+            } else {
                 PositionChange.NONE
+            }
         }
     }
 
@@ -139,7 +144,7 @@ internal class TradeInputValidator(
                             null,
                             null,
                             "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_POSITION_ONLY",
-                            "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY"
+                            "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY",
                         )
 
                     else -> null
@@ -160,26 +165,28 @@ internal class TradeInputValidator(
                         mapOf(
                             "MARKET" to mapOf(
                                 "value" to marketId,
-                                "format" to "string"
-                            )
-                        )
+                                "format" to "string",
+                            ),
+                        ),
                     )
 
                 else -> null
             }
-        } else error(
-            "ERROR",
-            "CLOSED_MARKET",
-            null,
-            null,
-            "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-            "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-            mapOf(
-                "MARKET" to mapOf(
-                    "value" to marketId,
-                    "format" to "string"
-                )
+        } else {
+            error(
+                "ERROR",
+                "CLOSED_MARKET",
+                null,
+                null,
+                "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
+                "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
+                mapOf(
+                    "MARKET" to mapOf(
+                        "value" to marketId,
+                        "format" to "string",
+                    ),
+                ),
             )
-        )
+        }
     }
 }

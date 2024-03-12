@@ -2,8 +2,8 @@ package exchange.dydx.abacus.processor.configs
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.*
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.safeSet
 
 internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val equityTiersProcessor = EquityTiersProcessor(parser)
@@ -17,7 +17,7 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val map = parser.asNativeMap(payload) as Map<String, List<Any>>?
-        modified?.safeSet("equityTiers", map)
+        modified.safeSet("equityTiers", map)
 
         return receivedObject(existing, "equityTiers", modified) { existing, payload ->
             val map = parser.asNativeMap(payload) as Map<String, Map<String, List<Any>>>?

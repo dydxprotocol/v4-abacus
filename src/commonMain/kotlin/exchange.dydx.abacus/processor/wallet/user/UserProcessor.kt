@@ -12,25 +12,25 @@ internal class UserProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "takerFeeRate" to "takerFeeRate",
             "makerVolume30D" to "makerVolume30D",
             "takerVolume30D" to "takerVolume30D",
-            "fees30D" to "fees30D"
-        )
+            "fees30D" to "fees30D",
+        ),
     )
 
-    private val OnChainUserFeeTierKeyMap = mapOf(
+    private val onchainUserFeeTierKeyMap = mapOf(
         "double" to mapOf(
             "makerFeePpm" to "makerFeePpm",
-            "takerFeePpm" to "takerFeePpm"
+            "takerFeePpm" to "takerFeePpm",
         ),
         "string" to mapOf(
-            "name" to "feeTierId"
+            "name" to "feeTierId",
         ),
     )
 
-    private val OnChainUserFeeStatsKeyMap = mapOf(
+    private val onchainUserFeeStatsKeyMap = mapOf(
         "double" to mapOf(
             "makerNotional" to "makerNotional",
-            "takerNotional" to "takerNotional"
-        )
+            "takerNotional" to "takerNotional",
+        ),
     )
 
     override fun received(
@@ -40,12 +40,11 @@ internal class UserProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return transform(existing, payload, userKeyMap)
     }
 
-
     fun receivedOnChainUserFeeTier(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
-        val received = transform(existing, payload, OnChainUserFeeTierKeyMap)
+        val received = transform(existing, payload, onchainUserFeeTierKeyMap)
         val makerFeePpm = parser.asDecimal(received["makerFeePpm"])
         if (makerFeePpm != null) {
             received["makerFeeRate"] = makerFeePpm / QUANTUM_MULTIPLIER
@@ -62,7 +61,7 @@ internal class UserProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
-        val received = transform(existing, payload, OnChainUserFeeStatsKeyMap)
+        val received = transform(existing, payload, onchainUserFeeStatsKeyMap)
         val makerNotional = parser.asDecimal(received["makerNotional"])
         if (makerNotional != null) {
             received["makerVolume30D"] = makerNotional / QUANTUM_MULTIPLIER

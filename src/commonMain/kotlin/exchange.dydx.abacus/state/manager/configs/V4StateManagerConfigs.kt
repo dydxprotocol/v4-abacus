@@ -9,7 +9,7 @@ import kotlinx.serialization.json.jsonObject
 class V4StateManagerConfigs(
     deploymentUrl: String,
     environment: V4Environment,
-): StateManagerConfigs(deploymentUrl, environment, configs) {
+) : StateManagerConfigs(deploymentUrl, environment, configs) {
     companion object {
         internal val configs: IMap<String, Any> =
             Json.parseToJsonElement(
@@ -61,7 +61,7 @@ class V4StateManagerConfigs(
                       "subaccount":"v4_subaccounts"
                    }
                 }
-                """.trimIndent()
+                """.trimIndent(),
             ).jsonObject.toIMap()
     }
 

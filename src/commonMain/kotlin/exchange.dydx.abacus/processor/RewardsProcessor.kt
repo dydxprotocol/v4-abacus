@@ -13,14 +13,14 @@ internal class RewardsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
             "denomExponent" to "denomExponent",
             "feeMultiplierPpm" to "feeMultiplierPpm",
             "marketId" to "marketId",
-        )
+        ),
     )
 
     private val tokenPriceMap = mapOf(
         "double" to mapOf(
             "price" to "price",
             "exponent" to "exponent",
-        )
+        ),
     )
 
     override fun received(

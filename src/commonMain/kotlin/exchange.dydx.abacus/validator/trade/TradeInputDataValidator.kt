@@ -41,7 +41,9 @@ internal class TradeInputDataValidator(
     parser: ParserProtocol,
 ) :
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
-    private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS = 20
+
+    @Suppress("PropertyName")
+    private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS: Int = 20
 
     override fun validateTrade(
         subaccount: Map<String, Any>?,
@@ -66,14 +68,14 @@ internal class TradeInputDataValidator(
         validateOrder(trade, subaccount, configs, environment)?.let {
             /*
             USER_MAX_ORDERS
-            */
+             */
             errors.addAll(it)
         }
         validateSize(trade, market)?.let {
             /*
             AMOUNT_INPUT_STEP_SIZE
             ORDER_SIZE_BELOW_MIN_SIZE
-            */
+             */
             errors.addAll(it)
         }
         validateLimitPrice(trade, market)?.let {
@@ -82,7 +84,7 @@ internal class TradeInputDataValidator(
             LIMIT_MUST_BELOW_TRIGGER_PRICE
             LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_HIGHER
             LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_LOWER
-            */
+             */
             errors.addAll(it)
         }
 
@@ -92,7 +94,7 @@ internal class TradeInputDataValidator(
             LIMIT_MUST_BELOW_TRIGGER_PRICE
             LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_HIGHER
             LIMIT_PRICE_TRIGGER_PRICE_SLIPPAGE_LOWER
-            */
+             */
             errors.addAll(it)
         }
 
@@ -107,7 +109,7 @@ internal class TradeInputDataValidator(
     ): List<Any>? {
         /*
         USER_MAX_ORDERS
-        */
+         */
         val fallbackMaxNumOrders = MAX_NUM_OPEN_UNTRIGGERED_ORDERS
         val orderType = parser.asString(trade["type"])
         val timeInForce = parser.asString(trade["timeInForce"])
@@ -123,7 +125,7 @@ internal class TradeInputDataValidator(
 
         // Equity tier limit is not applicable for `MARKET` orders and `LIMIT` orders with FOK or IOC time in force
         val isEquityTierLimitApplicable = orderType != "MARKET" &&
-                !(orderType == "LIMIT" && (timeInForce == "FOK" || timeInForce == "IOC"))
+            !(orderType == "LIMIT" && (timeInForce == "FOK" || timeInForce == "IOC"))
 
         val documentation = environment?.links?.documentation
         val link = if (documentation != null) "$documentation/trading/other_limits" else null
@@ -140,15 +142,15 @@ internal class TradeInputDataValidator(
                         mapOf(
                             "EQUITY" to mapOf(
                                 "value" to nextLevelRequiredTotalNetCollateralUSD,
-                                "format" to "price"
+                                "format" to "price",
                             ),
                             "LIMIT" to mapOf(
                                 "value" to equityTierLimit,
-                                "format" to "string"
-                            )
+                                "format" to "string",
+                            ),
                         ),
                         null,
-                        link
+                        link,
                     )
                 } else {
                     error(
@@ -161,15 +163,17 @@ internal class TradeInputDataValidator(
                         mapOf(
                             "LIMIT" to mapOf(
                                 "value" to equityTierLimit,
-                                "format" to "string"
-                            )
+                                "format" to "string",
+                            ),
                         ),
                         null,
-                        link
+                        link,
                     )
-                }
+                },
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun equityTier(
@@ -195,7 +199,7 @@ internal class TradeInputDataValidator(
                             val maxNumOrders = parser.asInt(item["maxOrders"]) ?: 0
                             equityTier = EquityTier(
                                 requiredTotalNetCollateralUSD,
-                                maxNumOrders
+                                maxNumOrders,
                             )
                         } else if (equityTier?.nextLevelRequiredTotalNetCollateralUSD == null) {
                             equityTier?.nextLevelRequiredTotalNetCollateralUSD =
@@ -248,7 +252,7 @@ internal class TradeInputDataValidator(
         /*
         AMOUNT_INPUT_STEP_SIZE
         ORDER_SIZE_BELOW_MIN_SIZE
-        */
+         */
         val symbol = parser.asString(market?.get("assetId")) ?: return null
         parser.asDouble(parser.value(trade, "size.size"))?.let { size ->
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
@@ -266,10 +270,10 @@ internal class TradeInputDataValidator(
                                 mapOf(
                                     "STEP_SIZE" to mapOf(
                                         "value" to stepSize,
-                                        "format" to "size"
-                                    )
-                                )
-                            )
+                                        "format" to "size",
+                                    ),
+                                ),
+                            ),
                         )
                     }
                 }
@@ -286,20 +290,19 @@ internal class TradeInputDataValidator(
                                 mapOf(
                                     "MIN_SIZE" to mapOf(
                                         "value" to minOrderSize,
-                                        "format" to "size"
+                                        "format" to "size",
                                     ),
                                     "SYMBOL" to mapOf(
                                         "value" to symbol,
-                                        "format" to "string"
-                                    )
-                                )
-                            )
+                                        "format" to "string",
+                                    ),
+                                ),
+                            ),
                         )
                     }
                 }
                 return if (errors.size > 0) errors else null
             }
-
         }
         return null
     }
@@ -311,7 +314,7 @@ internal class TradeInputDataValidator(
         /*
         LIMIT_MUST_ABOVE_TRIGGER_PRICE
         LIMIT_MUST_BELOW_TRIGGER_PRICE
-        */
+         */
         return when (parser.asString(trade["type"])) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
                 val execution = parser.asString(trade["execution"])
@@ -330,8 +333,8 @@ internal class TradeInputDataValidator(
                                                     listOf("price.triggerPrice"),
                                                     "APP.TRADE.MODIFY_TRIGGER_PRICE",
                                                     "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE"
-                                                )
+                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                ),
                                             )
                                         } else if (side == "SELL" && limitPrice > triggerPrice) {
                                             // SELL
@@ -342,10 +345,12 @@ internal class TradeInputDataValidator(
                                                     listOf("price.triggerPrice"),
                                                     "APP.TRADE.MODIFY_TRIGGER_PRICE",
                                                     "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE"
-                                                )
+                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                ),
                                             )
-                                        } else null
+                                        } else {
+                                            null
+                                        }
                                     }
                             }
                     }
@@ -370,8 +375,8 @@ internal class TradeInputDataValidator(
         return if (fields != null && parser.asBool(
                 parser.value(
                     trade,
-                    "options.needsGoodUntil"
-                )
+                    "options.needsGoodUntil",
+                ),
             ) == true
         ) {
             val goodTil = parser.asNativeMap(trade["goodTil"])
@@ -385,11 +390,15 @@ internal class TradeInputDataValidator(
                         listOf("goodTil"),
                         "APP.TRADE.MODIFY_GOOD_TIL",
                         "ERRORS.TRADE_BOX_TITLE.INVALID_GOOD_TIL",
-                        "ERRORS.TRADE_BOX.INVALID_GOOD_TIL_MAX_90_DAYS"
-                    )
+                        "ERRORS.TRADE_BOX.INVALID_GOOD_TIL_MAX_90_DAYS",
+                    ),
                 )
-            } else null
-        } else null
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 
     private fun isStatefulOrder(orderType: String, timeInForce: String): Boolean {

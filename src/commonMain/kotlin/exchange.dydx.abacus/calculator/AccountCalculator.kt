@@ -24,6 +24,8 @@ class AccountCalculator(val parser: ParserProtocol) {
                 }
             }
             modified
-        } else null
+        } else {
+            null
+        }
     }
 }

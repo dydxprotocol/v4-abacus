@@ -1,11 +1,9 @@
 package exchange.dydx.abacus.output
 
-
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
@@ -38,7 +36,9 @@ data class FeeDiscountResources(
                 } else {
                     existing
                 }
-            } else null
+            } else {
+                null
+            }
         }
     }
 }
@@ -96,7 +96,7 @@ data class FeeDiscount(
                             existing?.resources,
                             parser,
                             resourcesData,
-                            localizer
+                            localizer,
                         )
                     return if (existing?.id != id ||
                         existing.tier != tier ||
@@ -143,7 +143,9 @@ data class FeeTierResources(
                     } else {
                         existing
                     }
-                } else null
+                } else {
+                    null
+                }
             }
             DebugLogger.debug("Fee Tier Resources not valid")
             return null
@@ -210,7 +212,7 @@ data class FeeTier(
                             existing?.resources,
                             parser,
                             resourcesData,
-                            localizer
+                            localizer,
                         )
                     return if (existing?.id != id ||
                         existing.tier != tier ||
@@ -231,7 +233,7 @@ data class FeeTier(
                             makerShare,
                             maker,
                             taker,
-                            resources
+                            resources,
                         )
                     } else {
                         existing
@@ -264,7 +266,7 @@ data class NetworkConfigs(
                 ) {
                     NetworkConfigs(
                         api,
-                        node
+                        node,
                     )
                 } else {
                     existing
@@ -312,7 +314,7 @@ data class Configs(
                     Configs(
                         network,
                         feeTiers,
-                        feeDiscounts
+                        feeDiscounts,
                     )
                 } else {
                     existing ?: Configs(

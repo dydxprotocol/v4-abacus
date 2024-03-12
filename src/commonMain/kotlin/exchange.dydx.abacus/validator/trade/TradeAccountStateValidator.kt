@@ -36,7 +36,7 @@ internal class TradeAccountStateValidator(
             }
             val totalOrderError = validateSubaccountOrders(
                 parser,
-                subaccount
+                subaccount,
             )
             if (totalOrderError != null) {
                 errors.add(totalOrderError)
@@ -44,7 +44,7 @@ internal class TradeAccountStateValidator(
             val crossOrdersError = validateSubaccountCrossOrders(
                 parser,
                 subaccount,
-                trade
+                trade,
             )
             if (crossOrdersError != null) {
                 errors.add(crossOrdersError)
@@ -53,13 +53,15 @@ internal class TradeAccountStateValidator(
                 parser,
                 subaccount,
                 trade,
-                change
+                change,
             )
             if (postAllOrdersError != null) {
                 errors.add(postAllOrdersError)
             }
             if (errors.size > 0) errors else null
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun validateSubaccountMarginUsage(
@@ -75,16 +77,25 @@ internal class TradeAccountStateValidator(
             else -> {
                 val equity = parser.asDouble(parser.value(subaccount, "equity.postOrder"))
                 val marginUsage = parser.asDouble(parser.value(subaccount, "marginUsage.postOrder"))
-                if (equity != null && (equity == Numeric.double.ZERO || marginUsage == null || marginUsage < Numeric.double.ZERO || marginUsage > Numeric.double.ONE)) {
+                if (equity != null &&
+                    (
+                        equity == Numeric.double.ZERO ||
+                            marginUsage == null ||
+                            marginUsage < Numeric.double.ZERO ||
+                            marginUsage > Numeric.double.ONE
+                        )
+                ) {
                     error(
                         "ERROR",
                         "INVALID_NEW_ACCOUNT_MARGIN_USAGE",
                         listOf("size.size"),
                         "APP.TRADE.MODIFY_SIZE_FIELD",
                         "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                        "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE"
+                        "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
                     )
-                } else null
+                } else {
+                    null
+                }
             }
         }
     }
@@ -111,17 +122,20 @@ internal class TradeAccountStateValidator(
         return if (fillsExistingOrder(
                 parser,
                 trade,
-                parser.asNativeMap(subaccount["orders"])
+                parser.asNativeMap(subaccount["orders"]),
             )
-        ) error(
-            "ERROR",
-            "ORDER_CROSSES_OWN_ORDER",
-            listOf("size.size"),
-            "APP.TRADE.MODIFY_SIZE_FIELD",
-            "ERRORS.TRADE_BOX_TITLE.ORDER_CROSSES_OWN_ORDER",
-            "ERRORS.TRADE_BOX.ORDER_CROSSES_OWN_ORDER"
-        )
-        else null
+        ) {
+            error(
+                "ERROR",
+                "ORDER_CROSSES_OWN_ORDER",
+                listOf("size.size"),
+                "APP.TRADE.MODIFY_SIZE_FIELD",
+                "ERRORS.TRADE_BOX_TITLE.ORDER_CROSSES_OWN_ORDER",
+                "ERRORS.TRADE_BOX.ORDER_CROSSES_OWN_ORDER",
+            )
+        } else {
+            null
+        }
     }
 
     private fun fillsExistingOrder(
@@ -133,14 +147,18 @@ internal class TradeAccountStateValidator(
             val type = parser.asString(trade["type"]) ?: return false
             val price = parser.asDouble(
                 parser.value(
-                    trade, if (type == "MARKET")
-                        "marketOrder.worstPrice" else "summary.price"
-                )
+                    trade,
+                    if (type == "MARKET") {
+                        "marketOrder.worstPrice"
+                    } else {
+                        "summary.price"
+                    },
+                ),
             ) ?: return false
             val marketId = parser.asString(trade["marketId"]) ?: return false
             val side = parser.asString(trade["side"]) ?: return false
 
-            val existing = orders.values.firstOrNull() first@{ item ->
+            val existing = orders.values.firstOrNull first@{ item ->
                 val order = parser.asNativeMap(item) ?: return@first false
                 val orderPrice = parser.asDouble(order["price"]) ?: return@first false
                 val orderType = parser.asString(order["type"]) ?: return@first false
@@ -198,9 +216,9 @@ internal class TradeAccountStateValidator(
         /*
         ORDER_WITH_CURRENT_ORDERS_INVALID
          */
-        return if (reducingWithLimit(parser, change, parser.asString(trade["type"])))
+        return if (reducingWithLimit(parser, change, parser.asString(trade["type"]))) {
             null
-        else {
+        } else {
             val positions = parser.asNativeMap(subaccount["openPositions"])
             if (positions != null) {
                 var overleveraged = false
@@ -211,15 +229,21 @@ internal class TradeAccountStateValidator(
                         break
                     }
                 }
-                if (overleveraged) error(
-                    "ERROR",
-                    "ORDER_WITH_CURRENT_ORDERS_INVALID",
-                    null,
-                    null,
-                    "ERRORS.TRADE_BOX_TITLE.ORDER_WITH_CURRENT_ORDERS_INVALID",
-                    "ERRORS.TRADE_BOX.ORDER_WITH_CURRENT_ORDERS_INVALID"
-                ) else null
-            } else null
+                if (overleveraged) {
+                    error(
+                        "ERROR",
+                        "ORDER_WITH_CURRENT_ORDERS_INVALID",
+                        null,
+                        null,
+                        "ERRORS.TRADE_BOX_TITLE.ORDER_WITH_CURRENT_ORDERS_INVALID",
+                        "ERRORS.TRADE_BOX.ORDER_WITH_CURRENT_ORDERS_INVALID",
+                    )
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
         }
     }
 

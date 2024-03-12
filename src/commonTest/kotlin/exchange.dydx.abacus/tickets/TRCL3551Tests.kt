@@ -1,23 +1,21 @@
 package exchange.dydx.abacus.tickets
 
-import exchange.dydx.abacus.payload.v4.V4BaseTests
-import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.launchIncentiveSeasons
-import exchange.dydx.abacus.state.model.receivedAccount
-import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
-internal class TRCL3551Tests: TRCL2998Tests() {
+internal class TRCL3551Tests : TRCL2998Tests() {
 
     @Test
     fun testLaunchIncentive() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
         setup()
 
-        test({
-            perp.updateResponse(perp.launchIncentiveSeasons(mock.launchIncentiveMock.seasons))
-        }, """
+        test(
+            {
+                perp.updateResponse(perp.launchIncentiveSeasons(mock.launchIncentiveMock.seasons))
+            },
+            """
             {
                 "launchIncentive": {
                     "seasons": [
@@ -32,11 +30,14 @@ internal class TRCL3551Tests: TRCL2998Tests() {
                     ]
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        test({
-            perp.updateResponse(perp.launchIncentivePoints("2", mock.launchIncentiveMock.points))
-        }, """
+        test(
+            {
+                perp.updateResponse(perp.launchIncentivePoints("2", mock.launchIncentiveMock.points))
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -49,6 +50,7 @@ internal class TRCL3551Tests: TRCL2998Tests() {
                     }
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 }

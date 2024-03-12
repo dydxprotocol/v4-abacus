@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class V3MarketsDelayedTests: V3BaseTests() {
+class V3MarketsDelayedTests : V3BaseTests() {
     @Test
     fun testOrderbookFirst() {
         test(
@@ -26,7 +26,7 @@ class V3MarketsDelayedTests: V3BaseTests() {
             """.trimIndent(),
             {
                 assertNull(perp.state?.marketsSummary)
-            }
+            },
         )
         test(
             {
@@ -48,7 +48,7 @@ class V3MarketsDelayedTests: V3BaseTests() {
             """.trimIndent(),
             {
                 assertNull(perp.state?.marketsSummary)
-            }
+            },
         )
         test(
             {
@@ -68,7 +68,7 @@ class V3MarketsDelayedTests: V3BaseTests() {
             """.trimIndent(),
             {
                 assertNotNull(perp.state?.marketsSummary)
-            }
+            },
         )
     }
 
@@ -92,7 +92,7 @@ class V3MarketsDelayedTests: V3BaseTests() {
             """.trimIndent(),
             {
                 assertNull(perp.state?.marketsSummary)
-            }
+            },
         )
         test(
             {
@@ -114,7 +114,7 @@ class V3MarketsDelayedTests: V3BaseTests() {
             """.trimIndent(),
             {
                 assertNull(perp.state?.marketsSummary)
-            }
+            },
         )
         test(
             {
@@ -134,7 +134,7 @@ class V3MarketsDelayedTests: V3BaseTests() {
             """.trimIndent(),
             {
                 assertNotNull(perp.state?.marketsSummary)
-            }
+            },
         )
     }
 }

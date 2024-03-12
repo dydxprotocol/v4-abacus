@@ -29,6 +29,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         }
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>
@@ -36,6 +37,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         return receivedChanges(existing, content)
     }
 
+    @Suppress("FunctionName")
     internal fun channel_batch_data(
         existing: Map<String, Any>?,
         content: List<Any>
@@ -59,7 +61,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             if (marketPayload != null) {
                 val receivedMarket = marketProcessor.received(
                     parser.asNativeMap(existing?.get(market)),
-                    marketPayload
+                    marketPayload,
                 )
                 markets[market] = receivedMarket
             }
@@ -78,7 +80,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             if (marketPayload != null) {
                 val receivedMarket = marketProcessor.receivedDelta(
                     parser.asNativeMap(existing?.get(market)),
-                    marketPayload
+                    marketPayload,
                 )
                 markets[market] = receivedMarket
             }
@@ -88,7 +90,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
 
     private fun narrow(payload: Map<String, Any>): Map<String, Any> {
         return parser.asNativeMap(payload["trading"]) ?: parser.asNativeMap(payload["oraclePrices"])
-        ?: parser.asNativeMap("markets") ?: payload
+            ?: parser.asNativeMap("markets") ?: payload
     }
 
     internal fun receivedConfigurations(
@@ -103,7 +105,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             } else {
                 val receivedMarket = marketProcessor.receivedConfigurations(
                     parser.asNativeMap(existing?.get(market)),
-                    marketPayload
+                    marketPayload,
                 )
                 markets[market] = receivedMarket
             }
@@ -163,7 +165,6 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         }
     }
 
-
     internal fun receivedBatchedTradesChanges(
         existing: Map<String, Any>?,
         market: String,
@@ -178,7 +179,6 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             existing
         }
     }
-
 
     internal fun receivedCandles(
         existing: Map<String, Any>?,
@@ -266,7 +266,6 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         }
     }
 
-
     internal fun receivedBatchedCandlesChanges(
         existing: Map<String, Any>?,
         market: String,
@@ -291,8 +290,8 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         val market = parser.asString(
             parser.value(payload, "historicalFunding.0.market") ?: parser.value(
                 payload,
-                "historicalFunding.0.ticker"
-            )
+                "historicalFunding.0.ticker",
+            ),
         )
         if (market != null) {
             val marketData = parser.asNativeMap(existing?.get(market))
@@ -318,6 +317,8 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
                 }
             }
             modified
-        } else null
+        } else {
+            null
+        }
     }
 }

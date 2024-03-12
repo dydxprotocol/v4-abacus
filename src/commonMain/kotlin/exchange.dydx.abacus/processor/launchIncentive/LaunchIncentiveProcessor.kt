@@ -37,8 +37,9 @@ internal class LaunchIncentiveProcessor(parser: ParserProtocol) : BaseProcessor(
         val seasons = seasonsProcessor.received(
             seasonsProcessor.received(
                 parser.asNativeList(existing?.get("seasons")),
-                data
-            ), data
+                data,
+            ),
+            data,
         ) ?: return existing
 
         val modified = existing?.mutable() ?: mutableMapOf()

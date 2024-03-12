@@ -20,7 +20,7 @@ internal class SquidRouteV2PayloadProcessor(parser: ParserProtocol) : BaseProces
             "route.estimate.fromToken.address" to "fromAddress",
             "route.estimate.toToken.chainId" to "toChainId",
             "route.estimate.toToken.address" to "toAddress",
-        )
+        ),
     )
 
     override fun received(

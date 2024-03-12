@@ -4,7 +4,6 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -55,7 +54,9 @@ data class AssetResources(
                         primaryDescriptionKey,
                         secondaryDescriptionKey,
                     )
-                } else existing
+                } else {
+                    existing
+                }
             }
             DebugLogger.debug("Asset Resources not valid")
             return null
@@ -91,7 +92,7 @@ data class Asset(
                         parser,
                         resourcesData,
                         localizer,
-                        )
+                    )
                     val name = parser.asString(data["name"])
                     val tags = parser.asStrings(data["tags"])
 

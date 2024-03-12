@@ -5,8 +5,8 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
@@ -83,7 +83,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
                 TransferInputField.address.rawValue -> {
@@ -92,7 +92,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                     transfer.safeSet("route", null)
                     transfer.safeSet("requestPayload", null)
@@ -108,7 +108,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
                 TransferInputField.usdcSize.rawValue,
@@ -119,7 +119,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
                 TransferInputField.size.rawValue -> {
@@ -132,7 +132,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
 
@@ -141,7 +141,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
                 TransferInputField.chain.rawValue -> {
@@ -152,7 +152,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
                 TransferInputField.exchange.rawValue -> {
@@ -163,7 +163,7 @@ fun TradingStateMachine.transfer(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber)
+                        iListOf(subaccountNumber),
                     )
                 }
                 else -> {}
@@ -190,11 +190,11 @@ private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<S
     } else {
         transfer.safeSet(
             "resources.tokenSymbol",
-            squidProcessor.selectedTokenSymbol(token)
+            squidProcessor.selectedTokenSymbol(token),
         )
         transfer.safeSet(
             "resources.tokenDecimals",
-            squidProcessor.selectedTokenDecimals(token)
+            squidProcessor.selectedTokenDecimals(token),
         )
     }
     transfer.safeSet("route", null)
@@ -206,21 +206,21 @@ private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<S
     if (transfer["type"] != "TRANSFER_OUT") {
         transfer.safeSet(
             "depositOptions.assets",
-            tokenOptions
+            tokenOptions,
         )
         transfer.safeSet(
             "withdrawalOptions.assets",
-            tokenOptions
+            tokenOptions,
         )
         transfer.safeSet("chain", chainType)
         transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
         transfer.safeSet(
             "resources.chainResources",
-            squidProcessor.chainResources(chainType)
+            squidProcessor.chainResources(chainType),
         )
         transfer.safeSet(
             "resources.tokenResources",
-            squidProcessor.tokenResources(chainType)
+            squidProcessor.tokenResources(chainType),
         )
     }
     transfer.safeSet("exchange", null)
@@ -235,16 +235,16 @@ private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<
     if (transfer["type"] != "TRANSFER_OUT") {
         transfer.safeSet(
             "depositOptions.assets",
-            tokenOptions
+            tokenOptions,
         )
         transfer.safeSet(
             "withdrawalOptions.assets",
-            tokenOptions
+            tokenOptions,
         )
         transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
         transfer.safeSet(
             "resources.tokenResources",
-            squidProcessor.tokenResources(exchangeDestinationChainId)
+            squidProcessor.tokenResources(exchangeDestinationChainId),
         )
     }
     transfer.safeSet("exchange", exchange)
@@ -257,7 +257,7 @@ private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<
 private fun TradingStateMachine.transferDataOptionUsdcSize(typeText: String?): String? {
     return when (typeText) {
         TransferInputField.usdcSize.rawValue -> "options.needsSize"
-      //  TransferInputField.address.rawValue -> "options.needsAddress"
+        //  TransferInputField.address.rawValue -> "options.needsAddress"
         TransferInputField.fastSpeed.rawValue -> "options.needsFastSpeed"
 
         else -> null
@@ -287,5 +287,7 @@ fun TradingStateMachine.validTransferInput(transfer: Map<String, Any>, typeText:
         } else {
             parser.asBool(value) ?: false
         }
-    } else true
+    } else {
+        true
+    }
 }

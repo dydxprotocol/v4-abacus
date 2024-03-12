@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
+@Suppress("PropertyName")
 internal class FillsMock {
     internal val v4_rest = """
         {

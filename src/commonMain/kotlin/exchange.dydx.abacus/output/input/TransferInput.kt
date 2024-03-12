@@ -46,7 +46,8 @@ data class DepositInputOptions(
                         val item = data[i]
                         SelectionOption.create(
                             existing?.chains?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             chains?.add(it)
                         }
@@ -60,7 +61,8 @@ data class DepositInputOptions(
                         val item = data[i]
                         SelectionOption.create(
                             existing?.assets?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             assets?.add(it)
                         }
@@ -89,7 +91,7 @@ data class DepositInputOptions(
                         needsFastSpeed,
                         exchanges,
                         chains,
-                        assets
+                        assets,
                     )
                 } else {
                     existing
@@ -131,7 +133,8 @@ data class WithdrawalInputOptions(
                         val item = data[i]
                         SelectionOption.create(
                             existing?.chains?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             chains?.add(it)
                         }
@@ -144,7 +147,8 @@ data class WithdrawalInputOptions(
                         val item = data[i]
                         SelectionOption.create(
                             existing?.assets?.getOrNull(i),
-                            parser, parser.asMap(item)
+                            parser,
+                            parser.asMap(item),
                         )?.let {
                             assets?.add(it)
                         }
@@ -173,7 +177,7 @@ data class WithdrawalInputOptions(
                         needsFastSpeed,
                         exchanges,
                         chains,
-                        assets
+                        assets,
                     )
                 } else {
                     existing
@@ -211,7 +215,7 @@ data class TransferOutInputOptions(
                     "chain",
                     chainName,
                     null,
-                    environment?.chainLogo
+                    environment?.chainLogo,
                 )
             } else {
                 return null
@@ -224,7 +228,7 @@ data class TransferOutInputOptions(
                     key,
                     token.name,
                     null,
-                    token.imageUrl
+                    token.imageUrl,
                 )
             }?.toIList() ?: iListOf()
 
@@ -237,7 +241,7 @@ data class TransferOutInputOptions(
                     needsSize,
                     needsAddress,
                     chains,
-                    assets
+                    assets,
                 )
             } else {
                 existing
@@ -281,7 +285,7 @@ data class TransferInputChainResource(
                         rpc,
                         networkName,
                         chainId,
-                        iconUrl
+                        iconUrl,
                     )
                 } else {
                     existing
@@ -328,7 +332,7 @@ data class TransferInputTokenResource(
                         address,
                         symbol,
                         decimals,
-                        iconUrl
+                        iconUrl,
                     )
                 } else {
                     existing
@@ -361,7 +365,7 @@ data class TransferInputResources(
                         TransferInputChainResource.create(
                             null,
                             parser,
-                            parser.asMap(entry.value)
+                            parser.asMap(entry.value),
                         ) ?: TransferInputChainResource(null, null, null, null, null)
                     }?.toIMap() ?: iMapOf()
 
@@ -371,7 +375,7 @@ data class TransferInputResources(
                         TransferInputTokenResource.create(
                             null,
                             parser,
-                            parser.asMap(it.value)
+                            parser.asMap(it.value),
                         ) ?: TransferInputTokenResource(null, null, null, null, null)
                     }?.toIMap() ?: iMapOf()
 
@@ -381,7 +385,7 @@ data class TransferInputResources(
                 ) {
                     TransferInputResources(
                         chainResources,
-                        tokenResources
+                        tokenResources,
                     )
                 } else {
                     existing
@@ -461,7 +465,7 @@ data class TransferInputRequestPayload(
                         toChainId,
                         fromAddress,
                         toAddress,
-                        isV2Route
+                        isV2Route,
                     )
                 } else {
                     existing
@@ -645,7 +649,7 @@ data class TransferInput(
                     depositOptions = DepositInputOptions.create(
                         existing?.depositOptions,
                         parser,
-                        parser.asMap(data["depositOptions"])
+                        parser.asMap(data["depositOptions"]),
                     )
                 }
 
@@ -654,7 +658,7 @@ data class TransferInput(
                     withdrawalOptions = WithdrawalInputOptions.create(
                         existing?.withdrawalOptions,
                         parser,
-                        parser.asMap(data["withdrawalOptions"])
+                        parser.asMap(data["withdrawalOptions"]),
                     )
                 }
 
@@ -664,27 +668,27 @@ data class TransferInput(
                         existing?.transferOutOptions,
                         parser,
                         parser.asMap(data["transferOutOptions"]),
-                        environment
+                        environment,
                     )
                 }
 
                 val summary = TransferInputSummary.create(
                     existing?.summary,
                     parser,
-                    parser.asMap(data["summary"])
+                    parser.asMap(data["summary"]),
                 )
 
                 val resources = TransferInputResources.create(
                     existing?.resources,
                     parser,
-                    parser.asMap(data["resources"])
+                    parser.asMap(data["resources"]),
                 )
 
                 val route = parser.asMap(data["route"])
                 val requestPayload = TransferInputRequestPayload.create(
                     null,
                     parser,
-                    parser.asMap(route?.get("requestPayload"))
+                    parser.asMap(route?.get("requestPayload")),
                 )
 
                 val errors = parser.asString(route?.get("errors"))

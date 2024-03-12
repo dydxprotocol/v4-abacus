@@ -4,15 +4,17 @@ import exchange.dydx.abacus.state.model.setOrderbookGrouping
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
-class V3OrderbookTests: V3BaseTests() {
+class V3OrderbookTests : V3BaseTests() {
     @Test
     fun testOverlappedOrderbook() {
         loadMarkets()
         loadMarketsConfigurations()
 
-        test({
-            perp.socket(mock.socketUrl, mock.orderbookChannel.subscribed_overlapped, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(mock.socketUrl, mock.orderbookChannel.subscribed_overlapped, 0, null)
+            },
+            """
             {
                 "markets": {
                     "markets": {
@@ -54,26 +56,28 @@ class V3OrderbookTests: V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-            val orderbook = it.state?.marketOrderbook("ETH-USD")
-            val bids = orderbook?.bids
-            val asks = orderbook?.asks
-            val highestBid = bids?.firstOrNull()?.price
-            val lowestAsk = asks?.firstOrNull()?.price
-            val bidSize = bids?.firstOrNull()?.size
-            val askSize = asks?.firstOrNull()?.size
-            val bidOffset = bids?.firstOrNull()?.offset
-            val askOffset = asks?.firstOrNull()?.offset
-            assertNotNull(highestBid)
-            assertNotNull(lowestAsk)
+            """.trimIndent(),
+            {
+                val orderbook = it.state?.marketOrderbook("ETH-USD")
+                val bids = orderbook?.bids
+                val asks = orderbook?.asks
+                val highestBid = bids?.firstOrNull()?.price
+                val lowestAsk = asks?.firstOrNull()?.price
+                val bidSize = bids?.firstOrNull()?.size
+                val askSize = asks?.firstOrNull()?.size
+                val bidOffset = bids?.firstOrNull()?.offset
+                val askOffset = asks?.firstOrNull()?.offset
+                assertNotNull(highestBid)
+                assertNotNull(lowestAsk)
 //                assertTrue { highestBid <= lowestAsk }
-        })
+            },
+        )
 
         test(
             {
                 perp.setOrderbookGrouping("ETH-USD", 100)
             },
-            null
+            null,
         )
     }
 

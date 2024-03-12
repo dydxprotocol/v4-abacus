@@ -3,10 +3,7 @@ package exchange.dydx.abacus.payload
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.Rounder
-import io.ktor.http.*
-import kollections.toIMap
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
+import io.ktor.http.URLBuilder
 import numberOfDecimals
 import tickDecimals
 import kotlin.test.Test
@@ -67,7 +64,6 @@ class UtilsTests {
         assertEquals(72.34, Rounder.round(72.34, 0.001))
         assertEquals(12.0, Rounder.round(12.87, 1.0))
         assertEquals(12000.0, Rounder.round(12232.87, 1000.0))
-
 
         assertEquals(-93.34223, Rounder.round(-93.34223, 0.00001))
         assertEquals(-93.3422, Rounder.round(-93.34223, 0.0001))
@@ -199,7 +195,6 @@ class UtilsTests {
         assertEquals(12.0, Rounder.round(12.87, 1.0))
         assertEquals(12000.0, Rounder.round(12232.87, 1000.0))
 
-
         assertEquals(-93.34223, Rounder.round(-93.34223, 0.00001))
         assertEquals(-93.3422, Rounder.round(-93.34223, 0.0001))
         assertEquals(-93.342, Rounder.round(-93.34223, 0.001))
@@ -228,9 +223,7 @@ class UtilsTests {
         assertEquals(-1000.0, Rounder.round(-1934.0, 1000.0))
         assertEquals(0.0, Rounder.round(-1934.0, 10000.0))
 
-
         // ---
-
 
         assertEquals(93.34223, Rounder.quickRound(93.34223, 0.00001))
         assertEquals(93.3422, Rounder.quickRound(93.34223, 0.0001))
@@ -270,7 +263,6 @@ class UtilsTests {
         assertEquals(72.34, Rounder.quickRound(72.34, 0.001))
         assertEquals(13.0, Rounder.quickRound(12.87, 1.0))
         assertEquals(12000.0, Rounder.quickRound(12232.87, 1000.0))
-
 
         assertEquals(-93.34223, Rounder.quickRound(-93.34223, 0.00001))
         assertEquals(-93.3422, Rounder.quickRound(-93.34223, 0.0001))

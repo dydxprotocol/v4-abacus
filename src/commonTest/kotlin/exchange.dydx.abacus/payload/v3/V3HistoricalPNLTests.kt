@@ -1,14 +1,10 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.output.SubaccountHistoricalPNL
-import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.tests.extensions.loadHistoricalPnlsFirst
 import exchange.dydx.abacus.tests.extensions.loadHistoricalPnlsSecond
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
-import kotlinx.datetime.Clock
-import kotlin.test.*
-
+import kotlin.test.Test
 
 class V3HistoricalPNLTests : V3BaseTests() {
     @Test
@@ -51,7 +47,7 @@ class V3HistoricalPNLTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -77,7 +73,7 @@ class V3HistoricalPNLTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -103,7 +99,7 @@ class V3HistoricalPNLTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

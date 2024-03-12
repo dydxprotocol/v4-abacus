@@ -22,7 +22,7 @@ internal class AccountInputValidator(
     ): List<Any>? {
         val error = missingWallet(parser, wallet) ?: missingAccount(parser, wallet) ?: checkEquity(
             parser,
-            subaccount
+            subaccount,
         )
         return if (error != null) listOf(error) else null
     }
@@ -31,7 +31,9 @@ internal class AccountInputValidator(
         parser: ParserProtocol,
         wallet: Map<String, Any>?,
     ): Map<String, Any>? {
-        return if (wallet != null) null else {
+        return if (wallet != null) {
+            null
+        } else {
             error(
                 "ERROR",
                 "REQUIRED_WALLET",
@@ -40,7 +42,7 @@ internal class AccountInputValidator(
                 "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
                 "ERRORS.TRADE_BOX.CONNECT_WALLET_TO_TRADE",
                 null,
-                "/onboard"
+                "/onboard",
             )
         }
     }
@@ -50,7 +52,9 @@ internal class AccountInputValidator(
         wallet: Map<String, Any>?,
     ): Map<String, Any>? {
         val account = parser.asNativeMap(wallet?.get("account"))
-        return if (account != null) null else {
+        return if (account != null) {
+            null
+        } else {
             error(
                 "ERROR",
                 "REQUIRED_ACCOUNT",
@@ -59,18 +63,19 @@ internal class AccountInputValidator(
                 "ERRORS.TRADE_BOX_TITLE.DEPOSIT_TO_TRADE",
                 "ERRORS.TRADE_BOX.DEPOSIT_TO_TRADE",
                 null,
-                "/deposit"
+                "/deposit",
             )
         }
     }
-
 
     private fun checkEquity(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
     ): Map<String, Any>? {
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
-        return if (equity != null && equity > 0) null else {
+        return if (equity != null && equity > 0) {
+            null
+        } else {
             error(
                 "ERROR",
                 "NO_EQUITY_DEPOSIT_FIRST",
@@ -79,7 +84,7 @@ internal class AccountInputValidator(
                 "ERRORS.TRADE_BOX_TITLE.NO_EQUITY_DEPOSIT_FIRST",
                 "ERRORS.TRADE_BOX.NO_EQUITY_DEPOSIT_FIRST",
                 null,
-                "/deposit"
+                "/deposit",
             )
         }
     }

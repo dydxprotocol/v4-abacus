@@ -22,7 +22,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-
 open class V4BaseTests : BaseTests(127) {
     internal val testWsUrl =
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
@@ -57,13 +56,12 @@ open class V4BaseTests : BaseTests(127) {
         loadSubaccounts()
     }
 
-
     override fun verifyState(state: PerpetualState?) {
         super.verifyState(state)
         verifyLaunchIncentiveState(
             parser.asNativeMap(perp.launchIncentive),
             state?.launchIncentive,
-            "account"
+            "account",
         )
     }
 
@@ -74,7 +72,7 @@ open class V4BaseTests : BaseTests(127) {
             verifyLaunchIncentiveSeasonsState(
                 parser.asNativeList(data["seasons"]),
                 obj.seasons,
-                "$trace.seasons"
+                "$trace.seasons",
             )
         } else {
             assertNull(obj)
@@ -90,7 +88,7 @@ open class V4BaseTests : BaseTests(127) {
                 verifyLaunchIncentiveSeasonState(
                     parser.asNativeMap(data[i]),
                     obj.seasons[i],
-                    "$trace.$i"
+                    "$trace.$i",
                 )
             }
         } else {
@@ -104,18 +102,17 @@ open class V4BaseTests : BaseTests(127) {
             assertEquals(
                 parser.asString(data["label"]),
                 obj.label,
-                "$trace.label"
+                "$trace.label",
             )
             assertEquals(
                 parser.asDouble(data["startTimestamp"])?.let { it * 1000.0 },
                 obj.startTimeInMilliseconds,
-                "$trace.startTimeInMilliseconds"
+                "$trace.startTimeInMilliseconds",
             )
         } else {
             assertNull(obj)
         }
     }
-
 
     override fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
         super.verifyAccountState(data, obj, trace)
@@ -123,12 +120,12 @@ open class V4BaseTests : BaseTests(127) {
             verifyTradingRewardsState(
                 parser.asNativeMap(data["tradingRewards"]),
                 obj!!.tradingRewards,
-                "$trace.tradingRewards"
+                "$trace.tradingRewards",
             )
             verifyLaunchIncentivePointsState(
                 parser.asNativeMap(data["launchIncentivePoints"]),
                 obj.launchIncentivePoints,
-                "$trace.launchIncentivePoints"
+                "$trace.launchIncentivePoints",
             )
         } else {
             assertNull(obj)
@@ -149,7 +146,7 @@ open class V4BaseTests : BaseTests(127) {
                 verifyLaunchIncentivePointState(
                     pointData,
                     pointObj,
-                    "$trace.$key"
+                    "$trace.$key",
                 )
             }
         } else {
@@ -167,12 +164,12 @@ open class V4BaseTests : BaseTests(127) {
             assertEquals(
                 parser.asDouble(data["incentivePoints"]),
                 obj.incentivePoints,
-                "$trace.incentivePoints"
+                "$trace.incentivePoints",
             )
             assertEquals(
                 parser.asDouble(data["marketMakingIncentivePoints"]),
                 obj.marketMakingIncentivePoints,
-                "$trace.marketMakingIncentivePoints"
+                "$trace.marketMakingIncentivePoints",
             )
         } else {
             assertNull(obj)
@@ -200,13 +197,13 @@ open class V4BaseTests : BaseTests(127) {
                 assertEquals(
                     blockRewardsData.size,
                     blockRewards.size,
-                    "$trace.blockRewards.size $doesntMatchText"
+                    "$trace.blockRewards.size $doesntMatchText",
                 )
                 for (i in blockRewards.indices) {
                     verifyBlockRewardState(
                         parser.asNativeMap(blockRewardsData.get(i)),
                         blockRewards[i],
-                        "$trace.blockRewards.$i"
+                        "$trace.blockRewards.$i",
                     )
                 }
             }
@@ -232,24 +229,22 @@ open class V4BaseTests : BaseTests(127) {
                         (rewardsListData?.size ?: 0).toDouble(),
                         (rewardsListObj.size ?: 0).toDouble(),
                         0.0,
-                        "$trace.historical.$period.size $doesntMatchText"
+                        "$trace.historical.$period.size $doesntMatchText",
                     )
 
                     for (i in rewardsListObj.indices) {
                         verifyHistoricalTradingRewardState(
                             parser.asNativeMap(rewardsListData?.get(i)),
                             rewardsListObj[i],
-                            "$trace.historical.$period.$i"
+                            "$trace.historical.$period.$i",
                         )
                     }
-
                 }
             }
         } else {
             assertNull(obj)
         }
     }
-
 
     private fun verifyBlockRewardState(
         data: Map<String, Any>?,
@@ -261,17 +256,17 @@ open class V4BaseTests : BaseTests(127) {
             assertEquals(
                 parser.asDouble(data["tradingReward"]),
                 obj.tradingReward,
-                "$trace.tradingReward"
+                "$trace.tradingReward",
             )
             assertEquals(
                 parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble(),
                 obj.createdAtMilliseconds,
-                "$trace.createdAt"
+                "$trace.createdAt",
             )
             assertEquals(
                 parser.asInt(data["createdAtHeight"]),
                 obj.createdAtHeight,
-                "$trace.createdAtHeight"
+                "$trace.createdAtHeight",
             )
         } else {
             assertNull(obj)
@@ -288,25 +283,23 @@ open class V4BaseTests : BaseTests(127) {
             assertEquals(
                 parser.asDouble(data["amount"]),
                 obj.amount,
-                "$trace.amount"
+                "$trace.amount",
             )
             assertEquals(
                 parser.asDatetime(data["startedAt"]),
                 obj.startedAt,
-                "$trace.startedAt"
+                "$trace.startedAt",
             )
             assertNotNull(obj.endedAt)
             if (parser.asDatetime(data["endedAt"]) != null) {
                 assertEquals(
                     parser.asDatetime(data["endedAt"]),
                     obj.endedAt,
-                    "$trace.endedAt"
+                    "$trace.endedAt",
                 )
             }
-
         } else {
             assertNull(obj)
         }
     }
-
 }

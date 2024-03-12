@@ -12,7 +12,6 @@ class TransferRequiredInputTests : V3BaseTests() {
     fun testDataFeed() {
         setup()
 
-
         print("--------First round----------\n")
 
         testTransferInputOnce()
@@ -41,7 +40,6 @@ class TransferRequiredInputTests : V3BaseTests() {
     }
 
     private fun testTransferInputDeposit() {
-
         test(
             {
                 perp.transfer("DEPOSIT", TransferInputField.type)
@@ -69,7 +67,7 @@ class TransferRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -86,10 +84,9 @@ class TransferRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testTransferInputWithdraw() {
         test(
@@ -119,7 +116,7 @@ class TransferRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -136,12 +133,11 @@ class TransferRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     private fun testTransferInputTransferOut() {
-
         test(
             {
                 perp.transfer("TRANSFER_OUT", TransferInputField.type)
@@ -169,7 +165,7 @@ class TransferRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -199,7 +195,7 @@ class TransferRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -228,7 +224,7 @@ class TransferRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -245,8 +241,7 @@ class TransferRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 }

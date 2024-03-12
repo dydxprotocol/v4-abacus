@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator
 
 import abs
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -34,9 +33,11 @@ internal class SubaccountTransformer {
         if (usePessimisticPrice) {
             oraclePrice?.let { oraclePrice ->
                 limitPrice?.let { limitPrice ->
-                    return if (isBuying)
+                    return if (isBuying) {
                         max(oraclePrice, limitPrice)
-                    else min(oraclePrice, limitPrice)
+                    } else {
+                        min(oraclePrice, limitPrice)
+                    }
                 }
             }
         }
@@ -62,15 +63,21 @@ internal class SubaccountTransformer {
                             parser.asDouble(market["oraclePrice"]),
                             originalPrice,
                             side == "BUY",
-                            usePessimisticCollateralCheck
+                            usePessimisticCollateralCheck,
                         )
                     } ?: originalPrice
-                    val size = (parser.asDouble(summary["size"])
-                        ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
-                    val usdcSize = (price ?: Numeric.double.ZERO) * (parser.asDouble(summary["size"])
-                        ?: Numeric.double.ZERO) * multiplier
-                    val fee = (parser.asDouble(summary["fee"])
-                        ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
+                    val size = (
+                        parser.asDouble(summary["size"])
+                            ?: Numeric.double.ZERO
+                        ) * multiplier * Numeric.double.NEGATIVE
+                    val usdcSize = (price ?: Numeric.double.ZERO) * (
+                        parser.asDouble(summary["size"])
+                            ?: Numeric.double.ZERO
+                        ) * multiplier
+                    val fee = (
+                        parser.asDouble(summary["fee"])
+                            ?: Numeric.double.ZERO
+                        ) * Numeric.double.NEGATIVE
                     val feeRate = parser.asDouble(summary["feeRate"]) ?: Numeric.double.ZERO
                     if (price != null && size != Numeric.double.ZERO) {
                         return mapOf(
@@ -80,7 +87,7 @@ internal class SubaccountTransformer {
                             "usdcSize" to usdcSize,
                             "fee" to fee,
                             "feeRate" to feeRate,
-                            "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false)
+                            "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false),
                         )
                     }
                 }
@@ -104,11 +111,13 @@ internal class SubaccountTransformer {
                     (if (type == "DEPOSIT") Numeric.double.POSITIVE else Numeric.double.NEGATIVE)
                 val usdcSize =
                     (parser.asDouble(summary["usdcSize"]) ?: Numeric.double.ZERO) * multiplier
-                val fee = (parser.asDouble(summary["fee"])
-                    ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
+                val fee = (
+                    parser.asDouble(summary["fee"])
+                        ?: Numeric.double.ZERO
+                    ) * Numeric.double.NEGATIVE
                 return mapOf(
                     "usdcSize" to usdcSize,
-                    "fee" to fee
+                    "fee" to fee,
                 )
             }
         }
@@ -127,8 +136,10 @@ internal class SubaccountTransformer {
             val multiplier =
                 if (side == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
             val size =
-                ((parser.asDouble(order["remainingSize"]) ?: parser.asDouble(order["size"]))
-                    ?: Numeric.double.ZERO) * multiplier
+                (
+                    (parser.asDouble(order["remainingSize"]) ?: parser.asDouble(order["size"]))
+                        ?: Numeric.double.ZERO
+                    ) * multiplier
             if (marketId != null && price != null && size != Numeric.double.ZERO) {
                 val usdcSize = price * size * Numeric.double.NEGATIVE
                 val feeRate = parser.asDouble(
@@ -137,8 +148,8 @@ internal class SubaccountTransformer {
                         when (parser.asString(order["type"])) {
                             "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> "user.takerFeeRate"
                             else -> "user.makerFeeRate"
-                        }
-                    )
+                        },
+                    ),
                 ) ?: Numeric.double.ZERO
                 val fee = usdcSize * feeRate
                 return mapOf(
@@ -148,7 +159,7 @@ internal class SubaccountTransformer {
                     "usdcSize" to usdcSize,
                     "feeRate" to feeRate,
                     "fee" to fee,
-                    "reduceOnly" to (parser.asBool(order["reduceOnly"]) ?: false)
+                    "reduceOnly" to (parser.asBool(order["reduceOnly"]) ?: false),
                 )
             }
         }
@@ -171,8 +182,12 @@ internal class SubaccountTransformer {
                 val modifiedWallet = wallet.mutable()
                 modifiedWallet.safeSet(key, modifiedSubaccount)
                 modifiedWallet
-            } else wallet
-        } else wallet
+            } else {
+                wallet
+            }
+        } else {
+            wallet
+        }
     }
 
     internal fun applyTradeToSubaccount(
@@ -200,25 +215,25 @@ internal class SubaccountTransformer {
                 "current" to "NONE"
             },
             "size" to mapOf(
-                "current" to 0.0
+                "current" to 0.0,
             ),
             "entryPrice" to mapOf(
-                "current" to 0.0
+                "current" to 0.0,
             ),
             "realizedPnl" to mapOf(
-                "current" to 0.0
+                "current" to 0.0,
             ),
             "maxSize" to 0.0,
             "netFunding" to 0.0,
             "unrealizedPnl" to 0.0,
             "resources" to mapOf(
                 "sideStringKey" to mapOf(
-                    "current" to "APP.GENERAL.NONE"
+                    "current" to "APP.GENERAL.NONE",
                 ),
                 "indicator" to mapOf(
-                    "current" to "none"
-                )
-            )
+                    "current" to "none",
+                ),
+            ),
         )
     }
 
@@ -238,7 +253,9 @@ internal class SubaccountTransformer {
                 } else {
                     mapOf()
                 }
-            } else null
+            } else {
+                null
+            }
         } else {
             // Not a trade input. So we want the postOrder positions to be the same as the current positions
             mapOf("size" to 0.0)
@@ -251,7 +268,7 @@ internal class SubaccountTransformer {
                     position,
                     if (deltaMarketId == marketId) delta else nullDelta,
                     parser,
-                    period
+                    period,
                 )
                 if (deltaMarketId == marketId) {
                     modified[marketId] = modifiedPosition
@@ -263,11 +280,15 @@ internal class SubaccountTransformer {
         if (modified[deltaMarketId] == null && deltaMarketId != null) {
             // position didn't exists
             val position = nullPosition(deltaMarketId)
-            val modifiedDelta = if (delta != null) transformDelta(
-                delta,
-                parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO,
-                parser
-            ) else null
+            val modifiedDelta = if (delta != null) {
+                transformDelta(
+                    delta,
+                    parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO,
+                    parser,
+                )
+            } else {
+                null
+            }
             modified[deltaMarketId] = applyDeltaToPosition(position, modifiedDelta, parser, period)
         }
 
@@ -286,11 +307,15 @@ internal class SubaccountTransformer {
         val positions =
             parser.asNativeMap(subaccount["openPositions"])?.mutable() ?: mutableMapOf()
         val marketPosition = positions[deltaMarketId]
-        val modifiedDelta = if (delta != null) transformDelta(
-            delta,
-            parser.asDouble(parser.value(marketPosition, "size.current")) ?: Numeric.double.ZERO,
-            parser
-        ) else null
+        val modifiedDelta = if (delta != null) {
+            transformDelta(
+                delta,
+                parser.asDouble(parser.value(marketPosition, "size.current")) ?: Numeric.double.ZERO,
+                parser,
+            )
+        } else {
+            null
+        }
 
         val modifiedPositions = applyDeltaToPositions(positions, modifiedDelta, parser, period)
         modified["openPositions"] = modifiedPositions
@@ -300,8 +325,10 @@ internal class SubaccountTransformer {
             val quoteBalance =
                 parser.asNativeMap(subaccount["quoteBalance"])?.mutable() ?: mutableMapOf()
             val quoteBalanceValue =
-                (parser.asDouble(quoteBalance["current"])
-                    ?: Numeric.double.ZERO) + usdcSize + fee
+                (
+                    parser.asDouble(quoteBalance["current"])
+                        ?: Numeric.double.ZERO
+                    ) + usdcSize + fee
             quoteBalance[period] = quoteBalanceValue
             modified["quoteBalance"] = quoteBalance
         } else {
@@ -338,12 +365,11 @@ internal class SubaccountTransformer {
                 "size" to size,
                 "usdcSize" to usdcSize,
                 "fee" to fee,
-                "marketId" to marketId
+                "marketId" to marketId,
             )
         }
         return delta
     }
-
 
     private fun applyDeltaToPosition(
         position: Map<String, Any>,

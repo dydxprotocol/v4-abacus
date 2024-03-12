@@ -159,7 +159,6 @@ internal class ParsingHelper {
             }
         }
 
-
         internal fun compare(value1: Double, value2: Double, ascending: Boolean): ComparisonOrder {
             return if (value1 == value2) {
                 ComparisonOrder.same
@@ -193,13 +192,25 @@ internal class ParsingHelper {
                 ComparisonOrder.same
             } else {
                 if (ascending) {
-                    if ((value2 ?: "") > (value1
-                            ?: "")
-                    ) ComparisonOrder.ascending else ComparisonOrder.descending
+                    if ((value2 ?: "") > (
+                            value1
+                                ?: ""
+                            )
+                    ) {
+                        ComparisonOrder.ascending
+                    } else {
+                        ComparisonOrder.descending
+                    }
                 } else {
-                    if ((value2 ?: "") > (value1
-                            ?: "")
-                    ) ComparisonOrder.descending else ComparisonOrder.ascending
+                    if ((value2 ?: "") > (
+                            value1
+                                ?: ""
+                            )
+                    ) {
+                        ComparisonOrder.descending
+                    } else {
+                        ComparisonOrder.ascending
+                    }
                 }
             }
         }
@@ -252,7 +263,7 @@ internal class ParsingHelper {
                         if (existingValue != null) {
                             val mergedValue = mergeMap(
                                 existingValue,
-                                newValue
+                                newValue,
                             )
                             if (mergedValue != null) {
                                 result[key] = mergedValue
