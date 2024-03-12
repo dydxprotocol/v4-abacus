@@ -29,7 +29,6 @@ import exchange.dydx.abacus.state.model.squidChains
 import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.updateHeight
-import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
@@ -46,8 +45,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
@@ -68,7 +65,7 @@ class V4StateManagerAdaptor(
     configs,
     appConfigs,
     stateNotification,
-    dataNotification
+    dataNotification,
 ) {
     private var validatorUrl: String? = null
         set(value) {
@@ -151,7 +148,7 @@ class V4StateManagerAdaptor(
             }
         }
 
-
+    @Suppress("PropertyName")
     private val MAX_NUM_BLOCK_DELAY = 15
 
     private var lastValidatorCallTime: Instant? = null
@@ -196,7 +193,7 @@ class V4StateManagerAdaptor(
             socket(
                 socketAction(subscribe),
                 channel,
-                iMapOf("id" to "$market/$resolution", "batched" to "true")
+                iMapOf("id" to "$market/$resolution", "batched" to "true"),
             )
         }
     }
@@ -213,10 +210,12 @@ class V4StateManagerAdaptor(
             val params = iMapOf(
                 "address" to accountAddress,
                 "subaccountNumber" to subaccountNumber,
-                "amount" to amount
+                "amount" to amount,
             )
             jsonEncoder.encode(params)
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun socketConnectedSubaccountNumber(id: String?): Int {
@@ -224,15 +223,21 @@ class V4StateManagerAdaptor(
             val parts = id.split("/")
             if (parts.size == 2) {
                 parts[1].toIntOrNull() ?: 0
-            } else 0
-        } else 0
+            } else {
+                0
+            }
+        } else {
+            0
+        }
     }
 
     override fun accountUrl(): String? {
         val url = configs.privateApiUrl("account")
         return if (accountAddress != null && url != null) {
             "$url/$accountAddress"
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun screenUrl(): String? {
@@ -243,7 +248,9 @@ class V4StateManagerAdaptor(
         val url = configs.privateApiUrl("historicalTradingRewardAggregations")
         return if (accountAddress != null && url != null) {
             "$url/$accountAddress"
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String>? {
@@ -253,11 +260,15 @@ class V4StateManagerAdaptor(
     override fun subaccountParams(): IMap<String, String>? {
         val accountAddress = accountAddress
         val subaccountNumber = subaccountNumber
-        return if (accountAddress != null) iMapOf(
-            "address" to accountAddress,
-            "subaccountNumber" to "$subaccountNumber",
-        );
-        else null
+        return if (accountAddress != null) {
+            iMapOf(
+                "address" to accountAddress,
+                "subaccountNumber" to "$subaccountNumber",
+            )
+        };
+        else {
+            null
+        }
     }
 
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
@@ -335,7 +346,7 @@ class V4StateManagerAdaptor(
         // serialize height retrieval. Get indexer height first, then validator height
         // If indexer height is not available, then validator height is not available
         // indexer height no longer triggers api state change
-        retrieveIndexerHeight() {
+        retrieveIndexerHeight {
             retrieveValidatorHeight()
         }
     }
@@ -399,7 +410,9 @@ class V4StateManagerAdaptor(
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()
-                } else null
+                } else {
+                    null
+                }
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (time != null) {
                         lastValidatorCallTime = time
@@ -556,7 +569,7 @@ class V4StateManagerAdaptor(
                         /*
                     response = {
                         "url": "https://...",
-                     */
+                         */
                         val map = parser.decodeJsonObject(result)
                         val node = parser.asString(map?.get("url"))
                         ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -645,7 +658,7 @@ class V4StateManagerAdaptor(
                         /*
                     response = {
                         "url": "https://...",
-                     */
+                         */
                         val map = parser.decodeJsonObject(result)
                         val url = parser.asString(map?.get("url"))
                         val config = endpointUrls.firstOrNull { it.api == url }
@@ -668,7 +681,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveIndexerHeight(callback: (()-> Unit)? = null) {
+    private fun retrieveIndexerHeight(callback: (() -> Unit)? = null) {
         val url = configs.publicApiUrl("height")
         if (url != null) {
             indexerState.previousRequestTime = indexerState.requestTime
@@ -793,9 +806,13 @@ class V4StateManagerAdaptor(
                     // previous request (previousTime)
                     // The app was probably in background
                     gap > (heightPollingDuration * 1.5).seconds
-                } else false
+                } else {
+                    false
+                }
             }
-        } else false
+        } else {
+            false
+        }
     }
 
     private fun delayedStatus(
@@ -888,8 +905,12 @@ class V4StateManagerAdaptor(
         val block = if (validatorBlockAndTime != null) {
             if (indexerBlockAndTime != null) {
                 max(validatorBlockAndTime.block, indexerBlockAndTime.block)
-            } else validatorBlockAndTime.block
-        } else indexerBlockAndTime?.block
+            } else {
+                validatorBlockAndTime.block
+            }
+        } else {
+            indexerBlockAndTime?.block
+        }
         if (apiState?.status != status ||
             apiState.height != block ||
             apiState.haltedBlock != haltedBlock ||
@@ -926,7 +947,9 @@ class V4StateManagerAdaptor(
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()
-                } else null
+                } else {
+                    null
+                }
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (time != null) {
                         lastValidatorCallTime = time
@@ -946,7 +969,7 @@ class V4StateManagerAdaptor(
 
         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
             payload,
-            false
+            false,
         )
 
         lastOrderClientId = null
@@ -963,7 +986,7 @@ class V4StateManagerAdaptor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeInMilliseconds,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -980,7 +1003,7 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
             payload,
-            true
+            true,
         )
 
         lastOrderClientId = null
@@ -997,7 +1020,7 @@ class V4StateManagerAdaptor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeInMilliseconds,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -1106,7 +1129,7 @@ class V4StateManagerAdaptor(
                         subaccountNumber,
                         amount,
                         submitTimeInMilliseconds,
-                    )
+                    ),
                 )
             }
             null
@@ -1129,7 +1152,7 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    analyticsUtils.formatCancelOrderPayload(payload)
+                    analyticsUtils.formatCancelOrderPayload(payload),
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -1138,7 +1161,7 @@ class V4StateManagerAdaptor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeInMilliseconds,
-                        )
+                        ),
                     )
                 }
             }
@@ -1260,12 +1283,16 @@ class V4StateManagerAdaptor(
 
     override fun trackingParams(interval: Double): IMap<String, Any> {
         val validatorUrl = this.validatorUrl
-        return if (validatorUrl != null) iMapOf(
-            "roundtripMs" to interval,
-            "validatorUrl" to validatorUrl,
-        ) else iMapOf(
-            "roundtripMs" to interval,
-        )
+        return if (validatorUrl != null) {
+            iMapOf(
+                "roundtripMs" to interval,
+                "validatorUrl" to validatorUrl,
+            )
+        } else {
+            iMapOf(
+                "roundtripMs" to interval,
+            )
+        }
     }
 
     private fun didSetApiState(apiState: ApiState?, oldValue: ApiState?) {
@@ -1297,8 +1324,14 @@ class V4StateManagerAdaptor(
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
             val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
             val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-            val interval = if (indexerTime != null) (Clock.System.now().toEpochMilliseconds()
-                .toDouble() - indexerTime) else null
+            val interval = if (indexerTime != null) {
+                (
+                    Clock.System.now().toEpochMilliseconds()
+                        .toDouble() - indexerTime
+                    )
+            } else {
+                null
+            }
             val params = mapOf(
                 "lastSuccessfulIndexerRPC" to indexerTime,
                 "lastSuccessfulFullNodeRPC" to validatorTime,
@@ -1314,7 +1347,7 @@ class V4StateManagerAdaptor(
     override fun getWithFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
-        callback: (url: String, response: String?, code: Int, headers: Map<String, String>?)  -> Unit
+        callback: (url: String, response: String?, code: Int, headers: Map<String, String>?) -> Unit
     ) {
         super.getWithFullUrl(fullUrl, headers) { url, response, httpCode, headers ->
             when (httpCode) {
@@ -1336,10 +1369,8 @@ class V4StateManagerAdaptor(
 
                 else -> callback(url, response, httpCode, headers)
             }
-
         }
     }
-
 
     private fun didSetIndexerRestriction(indexerRestriction: UsageRestriction?) {
         updateRestriction()
@@ -1399,11 +1430,16 @@ class V4StateManagerAdaptor(
     private fun retrieveLaunchIncentiveSeasons() {
         val url = configs.launchIncentiveUrl("graphql")
         if (url != null) {
-            val requestBody = "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
-            post(url, iMapOf(
-                "content-type" to "application/json",
-                "protocol" to "dydx-v4",
-            ), requestBody) { _, response, httpCode, _ ->
+            val requestBody =
+                "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
+            post(
+                url,
+                iMapOf(
+                    "content-type" to "application/json",
+                    "protocol" to "dydx-v4",
+                ),
+                requestBody,
+            ) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentiveSeasons(response), oldState)
@@ -1419,9 +1455,13 @@ class V4StateManagerAdaptor(
         val url = configs.launchIncentiveUrl("points")
         val address = accountAddress
         if (url != null && address != null) {
-            get("${url}/${address}", iMapOf(
-                "n" to season,
-            ), null) { _, response, httpCode, _ ->
+            get(
+                "$url/$address",
+                iMapOf(
+                    "n" to season,
+                ),
+                null,
+            ) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentivePoints(season, response), oldState)

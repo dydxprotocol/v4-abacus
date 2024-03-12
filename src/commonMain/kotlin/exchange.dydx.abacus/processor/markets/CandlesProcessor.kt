@@ -18,7 +18,7 @@ internal class CandlesProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
             existing,
             parser.asNativeList(payload)?.reversed()?.toList(),
             "startedAt",
-            true
+            true,
         )
     }
 
@@ -31,9 +31,12 @@ internal class CandlesProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
             parser.asNativeList(content["candles"])
         return if (payload != null) {
             receivedChanges(existing, resolution, payload)
-        } else existing
+        } else {
+            existing
+        }
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         resolution: String,
@@ -63,7 +66,7 @@ internal class CandlesProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
                 existingResolution,
                 candles,
                 "startedAt",
-                true
+                true,
             )
             modified.safeSet(resolution, mergedResolution)
             return modified

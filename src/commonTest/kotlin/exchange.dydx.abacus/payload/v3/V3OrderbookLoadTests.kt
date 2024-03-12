@@ -13,7 +13,8 @@ class V3OrderbookLoadTests : V3BaseTests() {
         test(
             {
                 perp.socket(mock.socketUrl, mock.orderbookChannel.load_test_2_subscribed, 0, null)
-            }, """
+            },
+            """
             {
                 "markets": {
                     "markets": {
@@ -24,7 +25,7 @@ class V3OrderbookLoadTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         for (i in 0 until mock.orderbookChannel.load_test_2_channel_batch_data_list.count()) {
@@ -36,7 +37,8 @@ class V3OrderbookLoadTests : V3BaseTests() {
         test(
             {
                 perp.socket(mock.socketUrl, text, 0, null)
-            }, """
+            },
+            """
             {
                 "markets": {
                     "markets": {
@@ -47,7 +49,8 @@ class V3OrderbookLoadTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), { stateResponse ->
+            """.trimIndent(),
+            { stateResponse ->
                 val orderbook = stateResponse.state?.marketOrderbook("ETH-USD")
                 assertNotNull(orderbook)
                 val asks = orderbook.asks
@@ -57,6 +60,7 @@ class V3OrderbookLoadTests : V3BaseTests() {
                 val asksCount = asks.count()
                 val bidsCount = bids.count()
                 DebugLogger.log("Asks: $asksCount, Bids: $bidsCount")
-            })
+            },
+        )
     }
 }

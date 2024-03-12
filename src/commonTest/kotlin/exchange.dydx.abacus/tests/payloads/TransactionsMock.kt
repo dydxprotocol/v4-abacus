@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
+@Suppress("PropertyName")
 internal class TransactionsMock {
     internal val place_order_transaction = """
         {

@@ -15,8 +15,10 @@ fun TradingStateMachine.historicalTradingRewards(payload: String, period: String
 
 internal fun TradingStateMachine.receivedHistoricalTradingRewards(payload: Map<String, Any>, period: String): StateChanges {
     val rewards = parser.asList(payload["rewards"])
-    return if ((rewards?.size?: 0) > 0) {
+    return if ((rewards?.size ?: 0) > 0) {
         wallet = walletProcessor.receivedHistoricalTradingRewards(wallet, rewards, period)
         StateChanges(iListOf(Changes.tradingRewards))
-    } else StateChanges(iListOf<Changes>())
+    } else {
+        StateChanges(iListOf<Changes>())
+    }
 }

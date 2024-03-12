@@ -14,7 +14,10 @@ internal class TradeMarketOrderInputValidator(
     formatter: Formatter?,
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+    @Suppress("LocalVariableName", "PropertyName")
     private val MARKET_ORDER_ERROR_SLIPPAGE = 0.02
+
+    @Suppress("LocalVariableName", "PropertyName")
     private val MARKET_ORDER_WARNING_SLIPPAGE = 0.005
 
     override fun validateTrade(
@@ -30,9 +33,11 @@ internal class TradeMarketOrderInputValidator(
             validateMarketOrder(
                 trade,
                 market,
-                restricted
+                restricted,
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun accountRestricted(): Boolean {
@@ -75,14 +80,18 @@ internal class TradeMarketOrderInputValidator(
          */
         val filled = parser.asBool(parser.value(trade, "marketOrder.filled"))
 
-        return if (filled != false) null else error(
-            if (restricted) "WARNING" else "ERROR",
-            "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
-            listOf("size.size"),
-            "APP.TRADE.MODIFY_SIZE_FIELD",
-            "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
-            "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
-        )
+        return if (filled != false) {
+            null
+        } else {
+            error(
+                if (restricted) "WARNING" else "ERROR",
+                "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+                listOf("size.size"),
+                "APP.TRADE.MODIFY_SIZE_FIELD",
+                "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+                "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+            )
+        }
     }
 
     private fun orderbookSlippage(
@@ -107,9 +116,9 @@ internal class TradeMarketOrderInputValidator(
                         mapOf(
                             "SLIPPAGE" to mapOf(
                                 "value" to slippageValue,
-                                "format" to "percent"
-                            )
-                        )
+                                "format" to "percent",
+                            ),
+                        ),
                     )
                 } else if (slippageValue >= MARKET_ORDER_WARNING_SLIPPAGE) {
                     return error(
@@ -122,9 +131,9 @@ internal class TradeMarketOrderInputValidator(
                         mapOf(
                             "SLIPPAGE" to mapOf(
                                 "value" to slippageValue,
-                                "format" to "percent"
-                            )
-                        )
+                                "format" to "percent",
+                            ),
+                        ),
                     )
                 }
             }
@@ -154,9 +163,9 @@ internal class TradeMarketOrderInputValidator(
                         mapOf(
                             "SLIPPAGE" to mapOf(
                                 "value" to slippageValue,
-                                "format" to "percent"
-                            )
-                        )
+                                "format" to "percent",
+                            ),
+                        ),
                     )
                 } else if (slippageValue >= MARKET_ORDER_WARNING_SLIPPAGE) {
                     return error(
@@ -169,9 +178,9 @@ internal class TradeMarketOrderInputValidator(
                         mapOf(
                             "SLIPPAGE" to mapOf(
                                 "value" to slippageValue,
-                                "format" to "percent"
-                            )
-                        )
+                                "format" to "percent",
+                            ),
+                        ),
                     )
                 }
             }

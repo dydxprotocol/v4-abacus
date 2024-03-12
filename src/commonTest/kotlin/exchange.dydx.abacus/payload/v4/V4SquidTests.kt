@@ -94,7 +94,7 @@ class V4SquidTests : V4BaseTests() {
             assertTrue { summary.exchangeRate!! > 0 }
             assertTrue { summary.estimatedRouteDuration!! > 0 }
             assertTrue { summary.gasFee!! > 0 }
-            //assertTrue { summary.bridgeFee!! > 0 }
+            // assertTrue { summary.bridgeFee!! > 0 }
             assertNotNull(it.state?.input?.transfer?.requestPayload)
             assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
         })
@@ -105,7 +105,6 @@ class V4SquidTests : V4BaseTests() {
             assertNull(it.state?.input?.transfer?.requestPayload)
         })
     }
-
 
     @Test
     fun testSquidRoute() {
@@ -166,7 +165,7 @@ class V4SquidTests : V4BaseTests() {
 
             assertEquals(
                 it.state?.input?.transfer?.errorMessage,
-                "toChain: dydxprotocol-testnet-1 unsupported chain id"
+                "toChain: dydxprotocol-testnet-1 unsupported chain id",
             )
         })
     }
@@ -239,8 +238,8 @@ class V4SquidTests : V4BaseTests() {
         val result = parser.asMap(perp.squidProcessor.chainResources("1"))!!
         val resource = parser.asMap(result["1"])!!
         assertTrue(resource.keys.size == 5)
-        assertTrue(resource["chainId"] == "1")    // Ethereum
-        assertTrue(resource["chainName"] == "Ethereum")   // Ethereum
+        assertTrue(resource["chainId"] == "1") // Ethereum
+        assertTrue(resource["chainName"] == "Ethereum") // Ethereum
     }
 
     @Test

@@ -24,202 +24,12 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
-import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.Threading
 import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kotlinx.serialization.Serializable
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-
-@JsExport
-class AppConfigs(
-    val subscribeToCandles: Boolean,
-    val loadRemote: Boolean = true,
-    val enableLogger: Boolean = false,
-) {
-    enum class SquidVersion {
-        V1, V2, V2DepositOnly, V2WithdrawalOnly,
-    }
-    var squidVersion: SquidVersion = SquidVersion.V1
-
-    companion object {
-        val forApp = AppConfigs(subscribeToCandles = true, loadRemote = true)
-        val forAppDebug = AppConfigs(subscribeToCandles = true, loadRemote = false, enableLogger = true)
-        val forWeb = AppConfigs(subscribeToCandles = false, loadRemote = true)
-    }
-}
-
-@JsExport
-@Serializable
-enum class HistoricalPnlPeriod(val rawValue: String) {
-    Period1d("1d"),
-    Period7d("7d"),
-    Period30d("30d"),
-    Period90d("90d");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            HistoricalPnlPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class HistoricalTradingRewardsPeriod(val rawValue: String) {
-    DAILY("DAILY"),
-    WEEKLY("WEEKLY"),
-    MONTHLY("MONTHLY");
-
-    companion object {
-        operator fun invoke(rawValue: String) = 
-        HistoricalTradingRewardsPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class CandlesPeriod(val rawValue: String) {
-    Period1m("1m"),
-    Period5m("5m"),
-    Period15m("15m"),
-    Period30m("30m"),
-    Period1h("1h"),
-    Period4h("4h"),
-    Period1d("1d");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            CandlesPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class OrderbookGrouping(val rawValue: Int) {
-    none(1),
-    x10(10),
-    x100(100),
-    x1000(1000);
-
-    companion object {
-        operator fun invoke(rawValue: Int) =
-            OrderbookGrouping.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-enum class NetworkStatus(val rawValue: String) {
-    UNKNOWN("UNKNOWN"),
-    UNREACHABLE("UNREACHABLE"),
-    HALTED("HALTED"),
-    NORMAL("NORMAL");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            NetworkStatus.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-public class BlockAndTime(val block: Int, val time: Instant)
-
-internal class NetworkState() {
-    var status: NetworkStatus = NetworkStatus.UNKNOWN
-        private set
-    var blockAndTime: BlockAndTime? = null
-        private set
-    private var sameBlockCount: Int = 0
-    private var failCount: Int = 0
-
-    internal var time: Instant? = null
-
-    internal var previousRequestTime: Instant? = null
-    internal var requestTime: Instant? = null
-
-    internal fun updateHeight(height: Int?, heightTime: Instant?) {
-        time = ServerTime.now()
-        if (height != null && heightTime != null) {
-            failCount = 0
-            if (blockAndTime?.block != height) {
-                blockAndTime = BlockAndTime(height, heightTime)
-                sameBlockCount = 0
-            } else {
-                sameBlockCount += 1
-            }
-        } else {
-            failCount += 1
-        }
-        updateStatus()
-    }
-
-    private fun updateStatus() {
-        val time = time
-        status = if (time != null) {
-            if (failCount >= 3)
-                NetworkStatus.UNREACHABLE
-            else if (sameBlockCount >= 6)
-                NetworkStatus.HALTED
-            else if (blockAndTime != null)
-                NetworkStatus.NORMAL
-            else
-                NetworkStatus.UNKNOWN
-        } else NetworkStatus.UNKNOWN
-    }
-}
-
-@JsExport
-@Serializable
-enum class ApiStatus(val rawValue: String) {
-    UNKNOWN("UNKNOWN"),
-    VALIDATOR_DOWN("VALIDATOR_DOWN"),
-    VALIDATOR_HALTED("VALIDATOR_HALTED"),
-    INDEXER_DOWN("INDEXER_DOWN"),
-    INDEXER_HALTED("INDEXER_HALTED"),
-    INDEXER_TRAILING("INDEXER_TRAILING"),
-    NORMAL("NORMAL");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            ApiStatus.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
-data class ApiState(
-    val status: ApiStatus?,
-    val height: Int?,
-    val haltedBlock: Int?,
-    val trailingBlocks: Int?
-) {
-    fun abnormalState(): Boolean {
-        return status == ApiStatus.INDEXER_DOWN || status == ApiStatus.INDEXER_HALTED || status == ApiStatus.VALIDATOR_DOWN || status == ApiStatus.VALIDATOR_HALTED
-    }
-}
-
-@JsExport
-enum class ApiData {
-    HISTORICAL_PNLS,
-    HISTORICAL_TRADING_REWARDS,
-}
-
-@JsExport
-enum class ConfigFile(val rawValue: String) {
-    DOCUMENTATION("DOCUMENTATION") {
-        override val path: String
-            get() = "/configs/documentation.json"
-    },
-    ENV("ENV") {
-        override val path: String
-            get() = "/configs/v1/env.json"
-    };
-
-    abstract val path: String
-}
-
 
 @JsExport
 class AsyncAbacusStateManager(
@@ -230,7 +40,7 @@ class AsyncAbacusStateManager(
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
-) {
+) : AsyncAbacusStateManagerProtocol, AsyncAbacusStateManagerSingletonProtocol {
     init {
         if (appConfigs.enableLogger) {
             DebugLogger.enable()
@@ -257,12 +67,12 @@ class AsyncAbacusStateManager(
             }
         }
 
-    val availableEnvironments: IList<SelectionOption>
+    override val availableEnvironments: IList<SelectionOption>
         get() = environments.map { environment ->
             SelectionOption(environment.id, environment.name, null, null)
         }
 
-    var environmentId: String? = null
+    override var environmentId: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -280,10 +90,10 @@ class AsyncAbacusStateManager(
             }
         }
 
-    val environment: V4Environment?
+    override val environment: V4Environment?
         get() = _environment
 
-    var documentation: Documentation? = null
+    override var documentation: Documentation? = null
         private set
 
     var adaptor: StateManagerAdaptor? = null
@@ -304,7 +114,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var readyToConnect: Boolean = false
+    override var readyToConnect: Boolean = false
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -312,7 +122,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var market: String? = null
+    override var market: String? = null
         set(value) {
             if (isMarketValid(value) && field != value) {
                 field = value
@@ -322,7 +132,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var accountAddress: String? = null
+    override var accountAddress: String? = null
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -330,7 +140,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var sourceAddress: String? = null
+    override var sourceAddress: String? = null
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -338,7 +148,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var subaccountNumber: Int = 0
+    override var subaccountNumber: Int = 0
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -346,7 +156,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var orderbookGrouping: OrderbookGrouping = OrderbookGrouping.none
+    override var orderbookGrouping: OrderbookGrouping = OrderbookGrouping.none
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -354,15 +164,16 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period7d
+    override var historicalPnlPeriod: HistoricalPnlPeriod = HistoricalPnlPeriod.Period7d
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.historicalPnlPeriod = field
             }
         }
-    
-    var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod = HistoricalTradingRewardsPeriod.WEEKLY
+
+    override var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
+        HistoricalTradingRewardsPeriod.WEEKLY
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -370,7 +181,7 @@ class AsyncAbacusStateManager(
             }
         }
 
-    var candlesResolution: String = "1DAY"
+    override var candlesResolution: String = "1DAY"
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -453,7 +264,7 @@ class AsyncAbacusStateManager(
 
     private fun loadFromRemoteConfigFile(configFile: ConfigFile) {
         ioImplementations.fileSystem?.readCachedTextFile(
-            configFile.path
+            configFile.path,
         )?.let {
             parse(it, configFile)
         }
@@ -474,6 +285,7 @@ class AsyncAbacusStateManager(
                 parseDocumentation(response)
                 return true
             }
+
             ConfigFile.ENV -> parseEnvironments(response)
         }
     }
@@ -485,7 +297,7 @@ class AsyncAbacusStateManager(
     private fun writeToLocalFile(response: String, file: String) {
         ioImplementations.fileSystem?.writeTextFile(
             file,
-            response
+            response,
         )
     }
 
@@ -552,7 +364,6 @@ class AsyncAbacusStateManager(
         }
     }
 
-
     private fun findEnvironment(environment: String?): V4Environment? {
         return environments.firstOrNull { it ->
             it.id == environment
@@ -575,24 +386,19 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun setAddresses(source: String?, account: String?) {
-        sourceAddress = source
-        accountAddress = account
-    }
-
-    fun trade(data: String?, type: TradeInputField?) {
+    override fun trade(data: String?, type: TradeInputField?) {
         adaptor?.trade(data, type)
     }
 
-    fun closePosition(data: String?, type: ClosePositionInputField) {
+    override fun closePosition(data: String?, type: ClosePositionInputField) {
         adaptor?.closePosition(data, type)
     }
 
-    fun transfer(data: String?, type: TransferInputField?) {
+    override fun transfer(data: String?, type: TransferInputField?) {
         adaptor?.transfer(data, type)
     }
 
-    fun isMarketValid(marketId: String?): Boolean {
+    override fun isMarketValid(marketId: String?): Boolean {
         return if (marketId == null) {
             true
         } else {
@@ -601,39 +407,39 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean, requestId: String?) {
+    override fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean, requestId: String?) {
         adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
-    fun refresh(data: ApiData) {
+    override fun refresh(data: ApiData) {
         adaptor?.refresh(data)
     }
 
-    fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
+    override fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
         return adaptor?.placeOrderPayload()
     }
 
-    fun closePositionPayload(): HumanReadablePlaceOrderPayload? {
+    override fun closePositionPayload(): HumanReadablePlaceOrderPayload? {
         return adaptor?.closePositionPayload()
     }
 
-    fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
+    override fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
         return adaptor?.cancelOrderPayload(orderId)
     }
 
-    fun depositPayload(): HumanReadableDepositPayload? {
+    override fun depositPayload(): HumanReadableDepositPayload? {
         return adaptor?.depositPayload()
     }
 
-    fun withdrawPayload(): HumanReadableWithdrawPayload? {
+    override fun withdrawPayload(): HumanReadableWithdrawPayload? {
         return adaptor?.withdrawPayload()
     }
 
-    fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
+    override fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
         return adaptor?.subaccountTransferPayload()
     }
 
-    fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+    override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return try {
             adaptor?.commitPlaceOrder(callback)
         } catch (e: Exception) {
@@ -643,7 +449,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
+    override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return try {
             adaptor?.commitClosePosition(callback)
         } catch (e: Exception) {
@@ -653,11 +459,11 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun stopWatchingLastOrder() {
+    override fun stopWatchingLastOrder() {
         adaptor?.stopWatchingLastOrder()
     }
 
-    fun commitTransfer(callback: TransactionCallback) {
+    override fun commitTransfer(callback: TransactionCallback) {
         try {
             adaptor?.commitTransfer(callback)
         } catch (e: Exception) {
@@ -666,7 +472,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun commitCCTPWithdraw(callback: TransactionCallback) {
+    override fun commitCCTPWithdraw(callback: TransactionCallback) {
         try {
             adaptor?.commitCCTPWithdraw(callback)
         } catch (e: Exception) {
@@ -675,7 +481,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun faucet(amount: Double, callback: TransactionCallback) {
+    override fun faucet(amount: Double, callback: TransactionCallback) {
         try {
             adaptor?.faucet(amount, callback)
         } catch (e: Exception) {
@@ -684,7 +490,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun cancelOrder(orderId: String, callback: TransactionCallback) {
+    override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         try {
             adaptor?.cancelOrder(orderId, callback)
         } catch (e: Exception) {
@@ -700,7 +506,7 @@ class AsyncAbacusStateManager(
     // Bridge functions.
     // If client is not using cancelOrder function, it should call orderCanceled function with
     // payload from v4-client to process state
-    fun orderCanceled(orderId: String) {
+    override fun orderCanceled(orderId: String) {
         adaptor?.orderCanceled(orderId)
     }
 
@@ -713,11 +519,11 @@ class AsyncAbacusStateManager(
             response,
             subaccountNumber,
             amount,
-            submitTimeInMilliseconds
+            submitTimeInMilliseconds,
         )
     }
 
-    fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
+    override fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
         adaptor?.screen(address, callback)
     }
 }

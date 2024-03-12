@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -39,7 +38,7 @@ data class TradeStatesWithDoubleValues(
         }
     }
 
-    internal fun asTradingStates() : TradingStates<Double> {
+    internal fun asTradingStates(): TradingStates<Double> {
         return object : TradingStates<Double> {
             override val current: Double?
                 get() = this@TradeStatesWithDoubleValues.current
@@ -47,7 +46,6 @@ data class TradeStatesWithDoubleValues(
                 get() = this@TradeStatesWithDoubleValues.postOrder
             override val postAllOrders: Double?
                 get() = this@TradeStatesWithDoubleValues.postAllOrders
-
         }
     }
 }
@@ -58,7 +56,7 @@ class TradeStatesWithStringValues(
     val current: String?,
     val postOrder: String?,
     val postAllOrders: String?
-)  {
+) {
     companion object {
         internal fun create(
             existing: TradeStatesWithStringValues?,
@@ -79,7 +77,7 @@ class TradeStatesWithStringValues(
             }
         }
     }
-    internal fun asTradingStates() : TradingStates<String> {
+    internal fun asTradingStates(): TradingStates<String> {
         return object : TradingStates<String> {
             override val current: String?
                 get() = this@TradeStatesWithStringValues.current
@@ -87,7 +85,6 @@ class TradeStatesWithStringValues(
                 get() = this@TradeStatesWithStringValues.postOrder
             override val postAllOrders: String?
                 get() = this@TradeStatesWithStringValues.postAllOrders
-
         }
     }
 }

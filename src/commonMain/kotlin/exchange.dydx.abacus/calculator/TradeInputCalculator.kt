@@ -2,13 +2,13 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -17,7 +17,8 @@ import kotlin.math.pow
 @JsExport
 @Serializable
 enum class TradeCalculation(val rawValue: String) {
-    trade("TRADE"), closePosition("CLOSE_POSITION");
+    trade("TRADE"),
+    closePosition("CLOSE_POSITION");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -33,11 +34,22 @@ internal class TradeInputCalculator(
 ) {
     private val accountTransformer = AccountTransformer()
 
+    @Suppress("LocalVariableName", "PropertyName")
     private val MARKET_ORDER_MAX_SLIPPAGE = 0.05
+
+    @Suppress("LocalVariableName", "PropertyName")
     private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01
+
+    @Suppress("LocalVariableName", "PropertyName")
     private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+
+    @Suppress("LocalVariableName", "PropertyName")
     private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+
+    @Suppress("LocalVariableName", "PropertyName")
     private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+
+    @Suppress("LocalVariableName", "PropertyName")
     private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
 
     internal fun calculate(
@@ -46,12 +58,16 @@ internal class TradeInputCalculator(
         input: String?,
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
-        val subaccount = if (subaccountNumber != null) parser.asNativeMap(
-            parser.value(
-                account,
-                "subaccounts.$subaccountNumber"
+        val subaccount = if (subaccountNumber != null) {
+            parser.asNativeMap(
+                parser.value(
+                    account,
+                    "subaccounts.$subaccountNumber",
+                ),
             )
-        ) else null
+        } else {
+            null
+        }
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
@@ -73,7 +89,7 @@ internal class TradeInputCalculator(
                             subaccount,
                             user,
                             isBuying,
-                            input
+                            input,
                         )
                     }
 
@@ -83,7 +99,7 @@ internal class TradeInputCalculator(
                             market,
                             type,
                             isBuying,
-                            input
+                            input,
                         )
                     }
                 }
@@ -101,11 +117,13 @@ internal class TradeInputCalculator(
                     market,
                     parser,
                     "postOrder",
-                    featureFlags.usePessimisticCollateralCheck
-                )
+                    featureFlags.usePessimisticCollateralCheck,
+                ),
             )
             modified
-        } else state
+        } else {
+            state
+        }
     }
 
     private fun calculateNonMarketTrade(
@@ -135,9 +153,11 @@ internal class TradeInputCalculator(
                     val price = nonMarketOrderPrice(tradePrices, market, type, isBuying)
                     val usdcSize = parser.asDouble(tradeSize.get("usdcSize"))
                     val size =
-                        if (price != null && usdcSize != null && usdcSize > Numeric.double.ZERO && price > Numeric.double.ZERO)
+                        if (price != null && usdcSize != null && usdcSize > Numeric.double.ZERO && price > Numeric.double.ZERO) {
                             Rounder.round(usdcSize / price, stepSize)
-                        else null
+                        } else {
+                            null
+                        }
                     modifiedTradeSize.safeSet("size", size)
                 }
 
@@ -175,10 +195,11 @@ internal class TradeInputCalculator(
                             parser.asDouble(prices["trailingPercent"]) ?: Numeric.double.ZERO
                         if (trailingPercent != Numeric.double.ZERO) {
                             val percent =
-                                if (isBuying)
+                                if (isBuying) {
                                     (Numeric.double.ONE - trailingPercent)
-                                else
+                                } else {
                                     (Numeric.double.ONE + trailingPercent)
+                                }
                             return oraclePrice * percent
                         }
                     }
@@ -233,22 +254,22 @@ internal class TradeInputCalculator(
         when (input) {
             "size.size", "size.percent" -> tradeSize?.safeSet(
                 "usdcSize",
-                if (filled) parser.asDouble(marketOrder?.get("usdcSize")) else null
+                if (filled) parser.asDouble(marketOrder?.get("usdcSize")) else null,
             )
 
             "size.usdcSize" -> tradeSize?.safeSet(
                 "size",
-                if (filled) parser.asDouble(marketOrder?.get("size")) else null
+                if (filled) parser.asDouble(marketOrder?.get("size")) else null,
             )
 
             "size.leverage" -> {
                 tradeSize?.safeSet(
                     "size",
-                    if (filled) parser.asDouble(marketOrder?.get("size")) else null
+                    if (filled) parser.asDouble(marketOrder?.get("size")) else null,
                 )
                 tradeSize?.safeSet(
                     "usdcSize",
-                    if (filled) parser.asDouble(marketOrder?.get("usdcSize")) else null
+                    if (filled) parser.asDouble(marketOrder?.get("usdcSize")) else null,
                 )
 
                 val orderbook = parser.asNativeMap(market?.get("orderbook_consolidated"))
@@ -326,7 +347,7 @@ internal class TradeInputCalculator(
                     val orderbook = orderbook(market, isBuying)
                     calculateMarketOrderFromSize(
                         parser.asDouble(tradeSize["size"]),
-                        orderbook
+                        orderbook,
                     )
                 }
 
@@ -338,7 +359,7 @@ internal class TradeInputCalculator(
                     calculateMarketOrderFromUsdcSize(
                         parser.asDouble(tradeSize["usdcSize"]),
                         orderbook,
-                        stepSize
+                        stepSize,
                     )
                 }
 
@@ -375,20 +396,30 @@ internal class TradeInputCalculator(
             parser.asDouble(parser.value(user, "takerFeeRate"))
                 ?: Numeric.double.ZERO
         val positions = parser.asNativeMap(subaccount?.get("openPositions"))
-        val positionSize = if (positions != null && market != null) parser.asDouble(
-            parser.value(
-                positions,
-                "${market["id"]}.size.current"
+        val positionSize = if (positions != null && market != null) {
+            parser.asDouble(
+                parser.value(
+                    positions,
+                    "${market["id"]}.size.current",
+                ),
             )
-        ) else null
+        } else {
+            null
+        }
         return if (equity > Numeric.double.ZERO) {
             val existingLeverage =
                 ((positionSize ?: Numeric.double.ZERO) * oraclePrice) / equity
             val calculatedIsBuying =
-                if (leverage > existingLeverage) true else if (leverage < existingLeverage) false else null
+                if (leverage > existingLeverage) {
+                    true
+                } else if (leverage < existingLeverage) {
+                    false
+                } else {
+                    null
+                }
             if (calculatedIsBuying != null) {
                 val orderbook = orderbook(market, calculatedIsBuying)
-                if (orderbook != null)
+                if (orderbook != null) {
                     calculateMarketOrderFromLeverage(
                         equity,
                         oraclePrice,
@@ -397,10 +428,17 @@ internal class TradeInputCalculator(
                         feeRate,
                         leverage,
                         stepSize,
-                        orderbook
-                    ) else null
-            } else null
-        } else null
+                        orderbook,
+                    )
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 
     private fun calculateMarketOrderFromSize(
@@ -441,7 +479,7 @@ internal class TradeInputCalculator(
                     sizeTotal,
                     usdcSizeTotal,
                     worstPrice,
-                    filled
+                    filled,
                 )
             } else {
                 marketOrder(
@@ -449,10 +487,12 @@ internal class TradeInputCalculator(
                     parser.asDouble(size)!!,
                     Numeric.double.ZERO,
                     null,
-                    false
+                    false,
                 )
             }
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun marketOrder(
@@ -520,8 +560,8 @@ internal class TradeInputCalculator(
                         marketOrderOrderBook.add(
                             matchingOrderbookEntry(
                                 entry,
-                                matchedSize
-                            )
+                                matchedSize,
+                            ),
                         )
                         if (filled) {
                             break@orderbookLoop
@@ -533,7 +573,7 @@ internal class TradeInputCalculator(
                     sizeTotal,
                     usdcSizeTotal,
                     worstPrice,
-                    filled
+                    filled,
                 )
             } else {
                 marketOrder(
@@ -541,10 +581,12 @@ internal class TradeInputCalculator(
                     Numeric.double.ZERO,
                     usdcSize,
                     null,
-                    false
+                    false,
                 )
             }
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun matchingOrderbookEntry(
@@ -602,7 +644,7 @@ internal class TradeInputCalculator(
              X = (LV * AE - SZ * OR) / (OR + OS * LV * MP * FR - LV * (OR - MP))
 
             new(AE) = AE + X * (OR - MP) - abs(X) * MP * FR
-        */
+         */
         var sizeTotal = Numeric.double.ZERO
         var usdcSizeTotal = Numeric.double.ZERO
         var worstPrice: Double? = null
@@ -612,13 +654,23 @@ internal class TradeInputCalculator(
         /*
         Breaking naming rules a little bit to match the documentation above
          */
+        @Suppress("LocalVariableName", "PropertyName")
         val OR = parser.asDouble(oraclePrice)!!
+
+        @Suppress("LocalVariableName", "PropertyName")
         val LV = parser.asDouble(leverage)!!
+
+        @Suppress("LocalVariableName", "PropertyName")
         val OS: Double =
             if (isBuying) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+
+        @Suppress("LocalVariableName", "PropertyName")
         val FR = parser.asDouble(feeRate)!!
 
+        @Suppress("LocalVariableName", "PropertyName")
         var AE = parser.asDouble(equity)!!
+
+        @Suppress("LocalVariableName", "PropertyName")
         var SZ = parser.asDouble(positionSize) ?: Numeric.double.ZERO
 
         orderbookLoop@ for (i in 0 until orderbook.size) {
@@ -627,9 +679,12 @@ internal class TradeInputCalculator(
             val entryPrice = parser.asDouble(entry["price"])
             val entrySize = parser.asDouble(entry["size"])
             if (entryPrice != null && entryPrice != Numeric.double.ZERO && entrySize != null) {
+                @Suppress("LocalVariableName", "PropertyName")
                 val MP = entryPrice
+
+                @Suppress("LocalVariableName", "PropertyName")
                 val X = ((LV * AE) - (SZ * OR)) /
-                        (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
+                    (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
                     val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
@@ -644,7 +699,7 @@ internal class TradeInputCalculator(
                     usdcSizeTotal += rounded * MP
                     /*
                     new(AE) = AE + X * (OR - MP) - abs(X) * MP * FR
-                    */
+                     */
                     var signedSize = rounded
                     if (!isBuying) {
                         signedSize *= Numeric.double.NEGATIVE
@@ -654,8 +709,8 @@ internal class TradeInputCalculator(
                     marketOrderOrderBook.add(
                         matchingOrderbookEntry(
                             entry,
-                            rounded
-                        )
+                            rounded,
+                        ),
                     )
                 }
             }
@@ -669,7 +724,7 @@ internal class TradeInputCalculator(
             sizeTotal,
             usdcSizeTotal,
             worstPrice,
-            filled
+            filled,
         )
     }
 
@@ -680,9 +735,13 @@ internal class TradeInputCalculator(
             parser.asDouble(parser.value(orderbook, "asks.0.price")) ?: return null
         val firstBidPrice =
             parser.asDouble(parser.value(orderbook, "bids.0.price")) ?: return null
-        return if (firstMarketOrderbookPrice == firstAskPrice) "BUY"
-        else if (firstMarketOrderbookPrice == firstBidPrice) "SELL"
-        else null
+        return if (firstMarketOrderbookPrice == firstAskPrice) {
+            "BUY"
+        } else if (firstMarketOrderbookPrice == firstBidPrice) {
+            "SELL"
+        } else {
+            null
+        }
     }
 
     private fun finalize(
@@ -695,12 +754,16 @@ internal class TradeInputCalculator(
         type: String,
     ): Map<String, Any> {
         val marketId = parser.asString(market?.get("id"))
-        val position = if (marketId != null) parser.asNativeMap(
-            parser.value(
-                subaccount,
-                "openPositions.$marketId"
+        val position = if (marketId != null) {
+            parser.asNativeMap(
+                parser.value(
+                    subaccount,
+                    "openPositions.$marketId",
+                ),
             )
-        ) else null
+        } else {
+            null
+        }
         var modified = trade.mutable()
         val fields = requiredFields(trade)
         modified.safeSet("fields", fields)
@@ -708,7 +771,7 @@ internal class TradeInputCalculator(
         modified = defaultOptions(modified, position, market)
         modified.safeSet(
             "summary",
-            summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type)
+            summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type),
         )
 
         return modified
@@ -721,8 +784,9 @@ internal class TradeInputCalculator(
                 listOf(
                     sizeField(),
                     leverageField(),
-                    bracketsField()
-                ), reduceOnlyField()
+                    bracketsField(),
+                ),
+                reduceOnlyField(),
             )
 
             "LIMIT" -> {
@@ -734,7 +798,7 @@ internal class TradeInputCalculator(
                             limitPriceField(),
                             timeInForceField(),
                             goodTilField(),
-                            postOnlyField()
+                            postOnlyField(),
                         )
 
                     else -> fieldList(
@@ -742,7 +806,8 @@ internal class TradeInputCalculator(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
-                        ), reduceOnlyField()
+                        ),
+                        reduceOnlyField(),
                     )
                 }
             }
@@ -760,7 +825,7 @@ internal class TradeInputCalculator(
                     when (execution) {
                         "FOK", "IOC" -> reduceOnlyField()
                         else -> null
-                    }
+                    },
                 )
             }
 
@@ -769,8 +834,9 @@ internal class TradeInputCalculator(
                     sizeField(),
                     triggerPriceField(),
                     goodTilField(),
-                    executionField(false)
-                ), reduceOnlyField()
+                    executionField(false),
+                ),
+                reduceOnlyField(),
             )
 
             "TRAILING_STOP" ->
@@ -793,41 +859,43 @@ internal class TradeInputCalculator(
             val modified = list.toMutableList()
             modified.add(reduceOnly)
             modified
-        } else list
+        } else {
+            list
+        }
     }
 
     private fun sizeField(): Map<String, Any> {
         return mapOf(
             "field" to "size.size",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
     private fun leverageField(): Map<String, Any> {
         return mapOf(
             "field" to "size.leverage",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
     private fun limitPriceField(): Map<String, Any> {
         return mapOf(
             "field" to "price.limitPrice",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
     private fun triggerPriceField(): Map<String, Any> {
         return mapOf(
             "field" to "price.triggerPrice",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
     private fun trailingPercentField(): Map<String, Any> {
         return mapOf(
             "field" to "price.trailingPercent",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
@@ -836,16 +904,18 @@ internal class TradeInputCalculator(
             mapOf(
                 "field" to "reduceOnly",
                 "type" to "bool",
-                "default" to false
+                "default" to false,
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun postOnlyField(): Map<String, Any> {
         return mapOf(
             "field" to "postOnly",
             "type" to "bool",
-            "default" to false
+            "default" to false,
         )
     }
 
@@ -856,8 +926,8 @@ internal class TradeInputCalculator(
                 stopLossField(),
                 takeProfitField(),
                 goodTilField(),
-                executionField(false)
-            )
+                executionField(false),
+            ),
         )
     }
 
@@ -868,8 +938,8 @@ internal class TradeInputCalculator(
                 listOf(
                     priceField(),
                 ),
-                reduceOnlyField()
-            )
+                reduceOnlyField(),
+            ),
         )
     }
 
@@ -880,15 +950,15 @@ internal class TradeInputCalculator(
                 listOf(
                     priceField(),
                 ),
-                reduceOnlyField()
-            )
+                reduceOnlyField(),
+            ),
         )
     }
 
     private fun priceField(): Map<String, Any> {
         return mapOf(
             "field" to "price",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
@@ -900,7 +970,7 @@ internal class TradeInputCalculator(
                 timeInForceOptionGTT,
                 timeInForceOptionIOC,
                 timeInForceOptionFOK,
-            )
+            ),
         )
     }
 
@@ -909,15 +979,15 @@ internal class TradeInputCalculator(
             "field" to "goodTil",
             "type" to listOf(
                 goodTilDurationField(),
-                goodTilUnitField()
-            )
+                goodTilUnitField(),
+            ),
         )
     }
 
     private fun goodTilDurationField(): Map<String, Any> {
         return mapOf(
             "field" to "duration",
-            "type" to "int"
+            "type" to "int",
         )
     }
 
@@ -929,8 +999,8 @@ internal class TradeInputCalculator(
                 goodTilUnitMinutes,
                 goodTilUnitHours,
                 goodTilUnitDays,
-                goodTilUnitWeeks
-            )
+                goodTilUnitWeeks,
+            ),
         )
     }
 
@@ -939,15 +1009,19 @@ internal class TradeInputCalculator(
             "field" to "execution",
             "type" to "string",
             "options" to
-                    if (includesDefaultAndPostOnly) listOf(
+                if (includesDefaultAndPostOnly) {
+                    listOf(
                         executionDefault,
                         executionIOC,
                         executionFOK,
                         executionPostOnly,
-                    ) else listOf(
+                    )
+                } else {
+                    listOf(
                         executionIOC,
                         executionFOK,
                     )
+                },
         )
     }
 
@@ -969,7 +1043,7 @@ internal class TradeInputCalculator(
                 "needsBrackets" to false,
                 "needsTimeInForce" to false,
                 "needsGoodUntil" to false,
-                "needsExecution" to false
+                "needsExecution" to false,
             )
             for (item in fields) {
                 parser.asNativeMap(item)?.let { field ->
@@ -982,7 +1056,7 @@ internal class TradeInputCalculator(
                         "timeInForce" -> {
                             options.safeSet(
                                 "timeInForceOptions",
-                                parser.asNativeList(field["options"])
+                                parser.asNativeList(field["options"]),
                             )
                             options.safeSet("needsTimeInForce", true)
                         }
@@ -990,7 +1064,7 @@ internal class TradeInputCalculator(
                         "goodTil" -> {
                             options.safeSet(
                                 "goodTilUnitOptions",
-                                parser.asNativeList(parser.value(field, "type.1.options"))
+                                parser.asNativeList(parser.value(field, "type.1.options")),
                             )
                             options.safeSet("needsGoodUntil", true)
                         }
@@ -998,7 +1072,7 @@ internal class TradeInputCalculator(
                         "execution" -> {
                             options.safeSet(
                                 "executionOptions",
-                                parser.asNativeList(field["options"])
+                                parser.asNativeList(field["options"]),
                             )
                             options.safeSet("needsExecution", true)
                         }
@@ -1057,7 +1131,9 @@ internal class TradeInputCalculator(
 
                 else -> return null
             }
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun postOnlyPromptFromTrade(
@@ -1108,8 +1184,8 @@ internal class TradeInputCalculator(
                 calculatedOptions(
                     trade,
                     position,
-                    market
-                )?.get("needsGoodUntil")
+                    market,
+                )?.get("needsGoodUntil"),
             ) == true
         ) {
             val key = "goodTil.duration"
@@ -1160,18 +1236,20 @@ internal class TradeInputCalculator(
         val notional = parser.asDouble(usdcSize)
         val maxMakerRebate = findMaxMakerRebate(feeTiers)
 
-        if (fee != null
-            && feeMultiplierPpm != null
-            && tokenPrice != null
-            && tokenPriceExponent != null
-            && fee > 0.0
-            && notional != null
-            && tokenPrice > 0.0
+        if (fee != null &&
+            feeMultiplierPpm != null &&
+            tokenPrice != null &&
+            tokenPriceExponent != null &&
+            fee > 0.0 &&
+            notional != null &&
+            tokenPrice > 0.0
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
-            return feeMultiplier * (fee - maxMakerRebate * notional) / (tokenPrice * 10.0.pow(
-                tokenPriceExponent
-            ))
+            return feeMultiplier * (fee - maxMakerRebate * notional) / (
+                tokenPrice * 10.0.pow(
+                    tokenPriceExponent,
+                )
+                )
         }
         return null
     }
@@ -1181,12 +1259,12 @@ internal class TradeInputCalculator(
         val tokenPrice = parser.asDouble(parser.value(rewardsParams, "tokenPrice.price"))
         val tokenPriceExponent = parser.asDouble(parser.value(rewardsParams, "tokenPrice.exponent"))
 
-        if (fee != null
-            && feeMultiplierPpm != null
-            && tokenPrice != null
-            && tokenPriceExponent != null
-            && fee > 0.0
-            && tokenPrice > 0.0
+        if (fee != null &&
+            feeMultiplierPpm != null &&
+            tokenPrice != null &&
+            tokenPriceExponent != null &&
+            fee > 0.0 &&
+            tokenPrice > 0.0
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
             return fee * feeMultiplier / (tokenPrice * 10.0.pow(tokenPriceExponent))
@@ -1213,10 +1291,14 @@ internal class TradeInputCalculator(
                     val bestPrice = marketOrderBestPrice(marketOrder)
                     val worstPrice = marketOrderWorstPrice(marketOrder)
                     val slippage =
-                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) Rounder.round(
-                            (worstPrice - bestPrice).abs() / bestPrice,
-                            0.00001
-                        ) else null
+                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) {
+                            Rounder.round(
+                                (worstPrice - bestPrice).abs() / bestPrice,
+                                0.00001,
+                            )
+                        } else {
+                            null
+                        }
 
                     val price = marketOrderPrice(marketOrder)
                     val side = parser.asString(trade["side"])
@@ -1226,22 +1308,24 @@ internal class TradeInputCalculator(
                             "BUY" ->
                                 priceIfLessThan(
                                     price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE),
-                                    priceLimit
+                                    priceLimit,
                                 ) ?: priceIfLessThan(
                                     price * (Numeric.double.ONE + MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD),
-                                    priceLimit
+                                    priceLimit,
                                 ) ?: price
 
                             else ->
                                 priceIfLargerThan(
                                     price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE),
-                                    priceLimit
+                                    priceLimit,
                                 ) ?: priceIfLargerThan(
                                     price * (Numeric.double.ONE - MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD),
-                                    priceLimit
+                                    priceLimit,
                                 ) ?: price
                         }
-                    } else null
+                    } else {
+                        null
+                    }
 
                     val size = marketOrderSize(marketOrder)
                     val usdcSize =
@@ -1249,18 +1333,31 @@ internal class TradeInputCalculator(
                     val fee =
                         if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
                     val total =
-                        if (usdcSize != null) (usdcSize * multiplier + (fee
-                            ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE) else null
+                        if (usdcSize != null) {
+                            (
+                                usdcSize * multiplier + (
+                                    fee
+                                        ?: Numeric.double.ZERO
+                                    ) * Numeric.double.NEGATIVE
+                                )
+                        } else {
+                            null
+                        }
 
                     val oraclePrice =
-                        parser.asDouble(market?.get("oraclePrice"))  // if no indexPrice(v4), use oraclePrice
+                        parser.asDouble(market?.get("oraclePrice")) // if no indexPrice(v4), use oraclePrice
                     val priceDiff =
                         slippage(worstPrice, oraclePrice, parser.asString(trade["side"]))
                     val slippageStepSize = 0.00001
                     val indexSlippage =
-                        if (priceDiff != null && oraclePrice != null && oraclePrice > Numeric.double.ZERO) Rounder.quickRound(
-                            priceDiff / oraclePrice, slippageStepSize
-                        ) else null
+                        if (priceDiff != null && oraclePrice != null && oraclePrice > Numeric.double.ZERO) {
+                            Rounder.quickRound(
+                                priceDiff / oraclePrice,
+                                slippageStepSize,
+                            )
+                        } else {
+                            null
+                        }
                     /*
                     indexSlippage can be negative. For example, it is OK to buy below index price
                      */
@@ -1268,7 +1365,7 @@ internal class TradeInputCalculator(
                         usdcSize,
                         parser.asDouble(fee),
                         rewardsParams,
-                        feeTiers
+                        feeTiers,
                     )
 
                     summary.safeSet("price", price)
@@ -1279,7 +1376,7 @@ internal class TradeInputCalculator(
                     summary.safeSet("feeRate", feeRate)
                     summary.safeSet(
                         "total",
-                        if (total == Numeric.double.ZERO) Numeric.double.ZERO else total
+                        if (total == Numeric.double.ZERO) Numeric.double.ZERO else total,
                     )
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("indexSlippage", indexSlippage)
@@ -1295,10 +1392,14 @@ internal class TradeInputCalculator(
                     val worstPrice = marketOrderWorstPrice(marketOrder)
                     val slippageStepSize = 0.00001
                     val slippage =
-                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) Rounder.quickRound(
-                            (worstPrice - bestPrice).abs() / bestPrice,
-                            slippageStepSize,
-                        ) else null
+                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) {
+                            Rounder.quickRound(
+                                (worstPrice - bestPrice).abs() / bestPrice,
+                                slippageStepSize,
+                            )
+                        } else {
+                            null
+                        }
 
                     val triggerPrice =
                         parser.asDouble(parser.value(trade, "price.triggerPrice"))
@@ -1306,9 +1407,11 @@ internal class TradeInputCalculator(
                     val priceslippage =
                         if (bestPrice != null && marketOrderPrice != null) (marketOrderPrice - bestPrice) else null
                     val slippagePercentage =
-                        if (priceslippage != null && bestPrice != null)
+                        if (priceslippage != null && bestPrice != null) {
                             abs(priceslippage / bestPrice)
-                        else null
+                        } else {
+                            null
+                        }
                     val adjustedslippagePercentage = if (slippagePercentage != null) {
                         val majorMarket = when (parser.asString(trade["marketId"])) {
                             "BTC-USD", "ETH-USD" -> true
@@ -1327,7 +1430,9 @@ internal class TradeInputCalculator(
                                 slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
                             }
                         }
-                    } else null
+                    } else {
+                        null
+                    }
 
                     val price = if (triggerPrice != null && slippagePercentage != null) {
                         if (parser.asString(trade["side"]) == "BUY") {
@@ -1356,14 +1461,22 @@ internal class TradeInputCalculator(
                     val fee =
                         if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
                     val total =
-                        if (usdcSize != null) (usdcSize * multiplier + (fee
-                            ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE) else null
+                        if (usdcSize != null) {
+                            (
+                                usdcSize * multiplier + (
+                                    fee
+                                        ?: Numeric.double.ZERO
+                                    ) * Numeric.double.NEGATIVE
+                                )
+                        } else {
+                            null
+                        }
 
                     val reward = calculateTakerReward(
                         usdcSize,
                         parser.asDouble(fee),
                         rewardsParams,
-                        feeTiers
+                        feeTiers,
                     )
 
                     summary.safeSet("price", price)
@@ -1374,7 +1487,7 @@ internal class TradeInputCalculator(
                     summary.safeSet("feeRate", feeRate)
                     summary.safeSet(
                         "total",
-                        if (total == Numeric.double.ZERO) Numeric.double.ZERO else total
+                        if (total == Numeric.double.ZERO) Numeric.double.ZERO else total,
                     )
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
@@ -1390,8 +1503,8 @@ internal class TradeInputCalculator(
                 val feeRate = parser.asDouble(
                     parser.value(
                         user,
-                        if (isMaker) "makerFeeRate" else "takerFeeRate"
-                    )
+                        if (isMaker) "makerFeeRate" else "takerFeeRate",
+                    ),
                 )
                 val price = parser.asDouble(parser.value(trade, "price.limitPrice"))
                 val size = parser.asDouble(parser.value(trade, "size.size"))
@@ -1400,17 +1513,28 @@ internal class TradeInputCalculator(
                 val fee =
                     if (usdcSize != null && feeRate != null) (usdcSize * feeRate) else null
                 val total =
-                    if (usdcSize != null) (usdcSize * multiplier + (fee
-                        ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE) else null
+                    if (usdcSize != null) {
+                        (
+                            usdcSize * multiplier + (
+                                fee
+                                    ?: Numeric.double.ZERO
+                                ) * Numeric.double.NEGATIVE
+                            )
+                    } else {
+                        null
+                    }
 
                 val reward =
-                    if (isMaker) calculateMakerReward(parser.asDouble(fee), rewardsParams)
-                    else calculateTakerReward(
-                        usdcSize,
-                        parser.asDouble(fee),
-                        rewardsParams,
-                        feeTiers
-                    )
+                    if (isMaker) {
+                        calculateMakerReward(parser.asDouble(fee), rewardsParams)
+                    } else {
+                        calculateTakerReward(
+                            usdcSize,
+                            parser.asDouble(fee),
+                            rewardsParams,
+                            feeTiers,
+                        )
+                    }
 
                 summary.safeSet("price", price)
                 summary.safeSet("payloadPrice", price)
@@ -1420,7 +1544,7 @@ internal class TradeInputCalculator(
                 summary.safeSet("feeRate", feeRate)
                 summary.safeSet(
                     "total",
-                    if (total == Numeric.double.ZERO) Numeric.double.ZERO else total
+                    if (total == Numeric.double.ZERO) Numeric.double.ZERO else total,
                 )
                 summary.safeSet("filled", true)
                 summary.safeSet("reward", reward)
@@ -1449,9 +1573,11 @@ internal class TradeInputCalculator(
                     market,
                     subaccount,
                     user,
-                )?.get("price")
+                )?.get("price"),
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun priceIfLessThan(price: Double, priceLimit: Double?): Double {
@@ -1477,8 +1603,8 @@ internal class TradeInputCalculator(
         val position = parser.asNativeMap(
             parser.value(
                 subaccount,
-                "openPositions.$marketId"
-            )
+                "openPositions.$marketId",
+            ),
         )
         return maxLeverageFromPosition(position, market)
     }
@@ -1486,7 +1612,9 @@ internal class TradeInputCalculator(
     private fun slippage(price: Double?, oraclePrice: Double?, side: String?): Double? {
         return if (price != null && oraclePrice != null) {
             if (side == "BUY") price - oraclePrice else oraclePrice - price
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun marketOrderBestPrice(marketOrder: Map<String, Any>): Double? {
@@ -1544,22 +1672,22 @@ internal class TradeInputCalculator(
     private val goodTilUnitMinutes: Map<String, Any>
         get() = mapOf(
             "type" to "M",
-            "stringKey" to "APP.GENERAL.TIME_STRINGS.MINUTES_ABBREVIATED"
+            "stringKey" to "APP.GENERAL.TIME_STRINGS.MINUTES_ABBREVIATED",
         )
     private val goodTilUnitHours: Map<String, Any>
         get() = mapOf(
             "type" to "H",
-            "stringKey" to "APP.GENERAL.TIME_STRINGS.HOURS_ABBREVIATED"
+            "stringKey" to "APP.GENERAL.TIME_STRINGS.HOURS_ABBREVIATED",
         )
     private val goodTilUnitDays: Map<String, Any>
         get() = mapOf(
             "type" to "D",
-            "stringKey" to "APP.GENERAL.TIME_STRINGS.DAYS_ABBREVIATED"
+            "stringKey" to "APP.GENERAL.TIME_STRINGS.DAYS_ABBREVIATED",
         )
     private val goodTilUnitWeeks: Map<String, Any>
         get() = mapOf(
             "type" to "W",
-            "stringKey" to "APP.GENERAL.TIME_STRINGS.WEEKS_ABBREVIATED"
+            "stringKey" to "APP.GENERAL.TIME_STRINGS.WEEKS_ABBREVIATED",
         )
 
     private val executionDefault: Map<String, Any>

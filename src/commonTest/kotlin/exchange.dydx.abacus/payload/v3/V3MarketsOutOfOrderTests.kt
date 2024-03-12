@@ -1,8 +1,9 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.tests.extensions.*
+import exchange.dydx.abacus.tests.extensions.loadMarketsChanged
+import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
-import kotlin.test.*
+import kotlin.test.Test
 
 /*
 Test if we receive REST payload from markets configurations first, then the socket
@@ -72,7 +73,7 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -92,12 +93,12 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     private fun testMarketsConfigurations() {
-        test (
+        test(
             {
                 loadMarketsConfigurations()
             },
@@ -123,7 +124,7 @@ class V3MarketsOutOfOrderTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

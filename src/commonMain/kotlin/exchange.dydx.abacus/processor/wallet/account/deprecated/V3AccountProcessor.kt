@@ -26,6 +26,7 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
@@ -80,5 +81,4 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 }
 
-internal class V3SubaccountProcessor(parser: ParserProtocol) : SubaccountProcessor(parser) {
-}
+internal class V3SubaccountProcessor(parser: ParserProtocol) : SubaccountProcessor(parser)

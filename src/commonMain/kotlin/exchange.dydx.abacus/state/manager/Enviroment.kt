@@ -105,7 +105,7 @@ data class EnvironmentFeatureFlags(
         ): EnvironmentFeatureFlags {
             val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
             val usePessimisticCollateralCheck = parser.asBool(data?.get("usePessimisticCollateralCheck")) ?: false
-            
+
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
                 usePessimisticCollateralCheck,
@@ -137,6 +137,7 @@ data class EnvironmentGovernanceNewMarketProposal(
         }
     }
 }
+
 @JsExport
 data class EnvironmentGovernance(
     val newMarketProposal: EnvironmentGovernanceNewMarketProposal,
@@ -247,9 +248,11 @@ data class WalletConnect(
                     ?: return null
             val v1 = WalletConnectV1.parse(parser.asMap(data?.get("v1")), parser)
             val v2 = WalletConnectV2.parse(parser.asMap(data?.get("v2")), parser)
-            return if (v1 != null || v2 != null)
+            return if (v1 != null || v2 != null) {
                 WalletConnect(client, v1, v2)
-            else null
+            } else {
+                null
+            }
         }
     }
 }
@@ -289,22 +292,24 @@ data class WalletConnection(
                     parser.asMap(data?.get("walletConnect"))
                         ?: parser.asMap(data?.get("walletconnect")),
                     parser,
-                    deploymentUri
+                    deploymentUri,
                 )
             val walletSegue =
                 WalletSegue.parse(parser.asMap(data?.get("walletSegue")), parser, deploymentUri)
             val images = parser.asString(data?.get("images")) ?: return null
             val signTypedDataAction = parser.asString(data?.get("signTypedDataAction"))
             val signTypedDataDomainName = parser.asString(data?.get("signTypedDataDomainName"))
-            return if (walletConnect != null || walletSegue != null)
+            return if (walletConnect != null || walletSegue != null) {
                 WalletConnection(
                     walletConnect,
                     walletSegue,
                     "$deploymentUri$images",
                     signTypedDataAction,
-                    signTypedDataDomainName
+                    signTypedDataDomainName,
                 )
-            else null
+            } else {
+                null
+            }
         }
     }
 }
@@ -323,12 +328,12 @@ class AppsRequirements(
             val ios = AppRequirements.parse(
                 parser.asMap(data["ios"]),
                 parser,
-                localizer
+                localizer,
             )
             val android = AppRequirements.parse(
                 parser.asMap(data["android"]),
                 parser,
-                localizer
+                localizer,
             )
             return AppsRequirements(ios, android)
         }
@@ -361,7 +366,6 @@ class AppRequirements(
         }
     }
 }
-
 
 @JsExport
 open class Environment(
@@ -438,7 +442,7 @@ class V4Environment(
                     ?: parser.asNativeMap(data["walletConnection"])
                     ?: parser.asNativeMap(data["wallets"]),
                 parser,
-                deploymentUri
+                deploymentUri,
             )
             val apps = AppsRequirements.parse(data, parser, localizer)
             val tokens = parseTokens(tokensData ?: parser.asNativeMap(data["tokens"]), parser, deploymentUri)
@@ -488,7 +492,7 @@ class V4Environment(
                             denom,
                             decimals,
                             gasDenom,
-                            imageUrl
+                            imageUrl,
                         )
                     }
                 }
@@ -523,7 +527,7 @@ class AppSettings(
 }
 
 @JsExport
-class AppSetting (
+class AppSetting(
     val scheme: String?
 ) {
     companion object {

@@ -1,7 +1,5 @@
 package exchange.dydx.abacus.processor.markets
 
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -27,6 +25,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return received(null, content)
     }
 
+    @Suppress("FunctionName")
     internal fun channel_batch_data(
         existing: Map<String, Any>?,
         content: List<Any>
@@ -84,14 +83,14 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 orderbook["asks"] as? List<Map<String, Any>>,
                 parser.asNativeList(payload["asks"] ?: payload["ask"]),
                 offset,
-                true
+                true,
             )
 
             orderbook["bids"] = receivedChanges(
                 orderbook["bids"] as? List<Map<String, Any>>,
                 parser.asNativeList(payload["bids"] ?: payload["bid"]),
                 offset,
-                false
+                false,
             )
             lastOffset = offset
             return orderbook
@@ -123,7 +122,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         For v4, with N around 300+, g almost always 1, it is worth the effort to use binary search
 
         Keep the old code here, commented out, for reference and for testing
-        */
+         */
         /*
         val linearResult = receivedChangesLinear(existing, changes, offset, ascending)
         compareResults(linearResult, bindaryResult)
@@ -141,7 +140,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val price = parser.asDouble(it["price"])
             if (price != null) {
                 if (ascending) price else (price * Numeric.double.NEGATIVE)
-            } else null
+            } else {
+                null
+            }
         }
         var orderbook = existing?.mutable() ?: mutableListOf()
         for (change in changes) {
@@ -149,7 +150,6 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         }
         return orderbook
     }
-
 
     private fun receiveChangeBinary(
         existing: List<Map<String, Any>>,
@@ -241,7 +241,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                                     existingEntry,
                                     offset,
                                     price,
-                                    size
+                                    size,
                                 )
                                 if (entry != null) {
                                     result.add(entry)
@@ -302,13 +302,13 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
     private fun entryPrice(entry: Any): Double? {
         return parser.asDouble(
-            parser.asNativeMap(entry)?.get("price") ?: parser.asNativeList(entry)?.getOrNull(0)
+            parser.asNativeMap(entry)?.get("price") ?: parser.asNativeList(entry)?.getOrNull(0),
         )
     }
 
     private fun entrySize(entry: Any): Double? {
         return parser.asDouble(
-            parser.asNativeMap(entry)?.get("size") ?: parser.asNativeList(entry)?.getOrNull(1)
+            parser.asNativeMap(entry)?.get("size") ?: parser.asNativeList(entry)?.getOrNull(1),
         )
     }
 
@@ -343,14 +343,22 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             modified["depth"] = bidsDepth
             modified
         }
-        val firstAsk = parser.asDouble(parser.asNativeMap(asks?.firstOrNull { item ->
-            val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
-            (size != 0.0)
-        })?.get("price"))
-        val firstBid = parser.asDouble(parser.asNativeMap(bids?.firstOrNull { item ->
-            val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
-            (size != 0.0)
-        })?.get("price"))
+        val firstAsk = parser.asDouble(
+            parser.asNativeMap(
+                asks?.firstOrNull { item ->
+                    val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
+                    (size != 0.0)
+                },
+            )?.get("price"),
+        )
+        val firstBid = parser.asDouble(
+            parser.asNativeMap(
+                bids?.firstOrNull { item ->
+                    val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
+                    (size != 0.0)
+                },
+            )?.get("price"),
+        )
         val modified = orderbook.mutable()
         if (firstAsk != null && firstBid != null) {
             val firstAskPrice = firstAsk
@@ -413,7 +421,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             }
             calculate(mapOf("asks" to asks, "bids" to bids))
         } else orderbook
-        */
+         */
 
         val asks = parser.asNativeList(orderbook?.get("asks"))?.mutable()
         val bids = parser.asNativeList(orderbook?.get("bids"))?.mutable()
@@ -449,7 +457,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 }
             }
             calculate(mapOf("asks" to asks, "bids" to bids))
-        } else orderbook
+        } else {
+            orderbook
+        }
     }
 
     private fun crossed(ask: Map<String, Any>, bid: Map<String, Any>): Boolean {
@@ -457,7 +467,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val bidPrice = parser.asDouble(bid["price"])
         return if (askPrice != null && bidPrice != null) {
             askPrice <= bidPrice
-        } else false
+        } else {
+            false
+        }
     }
 
     private fun buildGroupingLookup(tickSize: Double) {
@@ -475,11 +487,11 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 val modified = mutableMapOf<String, Any>()
                 modified.safeSet(
                     "asks",
-                    group(parser.asNativeList(orderbook["asks"]), groupingTickSize)
+                    group(parser.asNativeList(orderbook["asks"]), groupingTickSize),
                 )
                 modified.safeSet(
                     "bids",
-                    group(parser.asNativeList(orderbook["bids"]), groupingTickSize)
+                    group(parser.asNativeList(orderbook["bids"]), groupingTickSize),
                 )
                 modified.safeSet("midPrice", orderbook["midPrice"])
                 modified.safeSet("spreadPercent", orderbook["spreadPercent"])
@@ -489,10 +501,12 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             }
             modified.safeSet(
                 "grouping",
-                mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier)
+                mapOf("tickSize" to groupingTickSize, "multiplier" to groupingMultiplier),
             )
             modified
-        } else orderbook
+        } else {
+            orderbook
+        }
     }
 
     fun group(orderbook: List<Any>?, grouping: Double): List<Any>? {
@@ -535,7 +549,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             result.add(item)
 
             return result
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun grouping(tickSize: Double, grouping: Int): Double {
@@ -543,9 +559,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return if (cached != null) {
             cached
         } else {
-            val decimals = if (grouping == 1)
+            val decimals = if (grouping == 1) {
                 parser.asDouble(tickSize.tickDecimals())!!
-            else {
+            } else {
                 val tickDecimals = parser.asDouble(tickSize.tickDecimals())!!
                 tickDecimals * grouping
             }

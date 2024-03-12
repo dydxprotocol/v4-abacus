@@ -28,8 +28,6 @@ class TransferInputTests : V3BaseTests() {
 
         testTransferOutTransferInput()
         perp.log("Transfer Out", time)
-
-
     }
 
     private fun testDepositTransferInput() {
@@ -54,7 +52,7 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -105,9 +103,8 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -157,9 +154,8 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         /*
         size = 1000.0
@@ -213,7 +209,7 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -273,7 +269,7 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -346,9 +342,8 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -399,7 +394,7 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -407,7 +402,6 @@ class TransferInputTests : V3BaseTests() {
         test({
             perp.transfer("TRANSFER_OUT", TransferInputField.type)
         }, null)
-
 
         test({
             perp.transfer("0.0", TransferInputField.usdcFee)
@@ -468,11 +462,11 @@ class TransferInputTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
-            , { response ->
-                assertTrue { response.state?.input?.transfer?.transferOutOptions?.assets?.count()  == 2 }
-                assertTrue { response.state?.input?.transfer?.transferOutOptions?.chains?.count()  == 1 }
-            }
+            """.trimIndent(),
+            { response ->
+                assertTrue { response.state?.input?.transfer?.transferOutOptions?.assets?.count() == 2 }
+                assertTrue { response.state?.input?.transfer?.transferOutOptions?.chains?.count() == 1 }
+            },
         )
     }
 }

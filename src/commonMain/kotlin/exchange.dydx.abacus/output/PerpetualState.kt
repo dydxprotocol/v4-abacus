@@ -7,7 +7,6 @@ import kollections.JsExport
 import kollections.toIList
 import kotlinx.serialization.Serializable
 
-
 @JsExport
 @Serializable
 data class PerpetualState(

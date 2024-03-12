@@ -4,12 +4,14 @@ import exchange.dydx.abacus.utils.DebugLogger
 import io.github.aakira.napier.LogLevel
 
 class AbacusAndroid {
-    companion object{
+    companion object {
         fun enableDebug(tag: String, logLevel: Int) {
             val values = LogLevel.values()
-            val napLogLevel = if (logLevel >=0 && logLevel < values.size) {
+            val napLogLevel = if (logLevel >= 0 && logLevel < values.size) {
                 values[logLevel]
-            } else LogLevel.DEBUG
+            } else {
+                LogLevel.DEBUG
+            }
             DebugLogger.enable(tag, napLogLevel)
         }
     }

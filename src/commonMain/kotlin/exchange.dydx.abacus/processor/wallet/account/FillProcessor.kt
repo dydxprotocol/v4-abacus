@@ -13,15 +13,15 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "liquidity" to "liquidity",
             "type" to "type",
             "market" to "marketId",
-            "orderId" to "orderId"
+            "orderId" to "orderId",
         ),
         "datetime" to mapOf(
-            "createdAt" to "createdAt"
+            "createdAt" to "createdAt",
         ),
         "double" to mapOf(
             "price" to "price",
             "size" to "size",
-            "fee" to "fee"
+            "fee" to "fee",
         ),
         "int" to mapOf(
             "clientMetadata" to "clientMetadata",
@@ -30,12 +30,12 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     private val sideMap = mapOf(
         "BUY" to "APP.GENERAL.BUY",
-        "SELL" to "APP.GENERAL.SELL"
+        "SELL" to "APP.GENERAL.SELL",
     )
 
     private val liquidityMap = mapOf(
         "MAKER" to "APP.TRADE.MAKER",
-        "TAKER" to "APP.TRADE.TAKER"
+        "TAKER" to "APP.TRADE.TAKER",
     )
 
     private val typeMap = mapOf(
@@ -55,7 +55,7 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     private val sideIconMap = mapOf(
         "BUY" to "Buy",
-        "SELL" to "Sell"
+        "SELL" to "Sell",
     )
 
     override fun received(
@@ -71,8 +71,8 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "type",
             OrderTypeProcessor.orderType(
                 parser.asString(fill["type"]),
-                parser.asInt(fill["clientMetadata"])
-            )
+                parser.asInt(fill["clientMetadata"]),
+            ),
         )
 
         val resources = mutableMapOf<String, Any>()

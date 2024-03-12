@@ -1,9 +1,7 @@
 package exchange.dydx.abacus.processor.configs
 
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 
 @Suppress("UNCHECKED_CAST")
@@ -12,15 +10,15 @@ internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         "string" to mapOf(
             "tier" to "tier",
             "name" to "tier",
-            "symbol" to "symbol"
+            "symbol" to "symbol",
         ),
         "double" to mapOf(
             "maker" to "maker",
-            "taker" to "taker"
+            "taker" to "taker",
         ),
         "int" to mapOf(
-            "volume" to "volume"
-        ).toMap()
+            "volume" to "volume",
+        ).toMap(),
     )
 
     override fun received(

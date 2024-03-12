@@ -21,7 +21,9 @@ internal fun TradingStateMachine.squidTokens(payload: String): StateChanges? {
     return if (json != null) {
         input = squidProcessor.receivedTokens(input, json)
         StateChanges(iListOf(Changes.input))
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? {
@@ -29,7 +31,9 @@ internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? 
     return if (json != null) {
         input = squidProcessor.receivedV2SdkInfo(input, json)
         StateChanges(iListOf(Changes.input))
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.squidRoute(
@@ -42,9 +46,11 @@ internal fun TradingStateMachine.squidRoute(
         input = squidProcessor.receivedRoute(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
-            subaccountNumbers = iListOf(subaccountNumber)
+            subaccountNumbers = iListOf(subaccountNumber),
         )
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
 
 internal fun TradingStateMachine.squidRouteV2(
@@ -57,11 +63,12 @@ internal fun TradingStateMachine.squidRouteV2(
         input = squidProcessor.receivedRouteV2(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
-            subaccountNumbers = iListOf(subaccountNumber)
+            subaccountNumbers = iListOf(subaccountNumber),
         )
-    } else StateChanges.noChange
+    } else {
+        StateChanges.noChange
+    }
 }
-
 
 internal fun TradingStateMachine.squidStatus(
     payload: String,

@@ -56,5 +56,7 @@ internal fun TradingStateMachine.setOrderbookGrouping(market: String?, groupingM
             update(it)
         }
         return StateResponse(state, changes, null)
-    } else StateResponse(state, null, null)
+    } else {
+        StateResponse(state, null, null)
+    }
 }

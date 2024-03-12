@@ -65,7 +65,8 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.tradeInMarket("ETH-USD", 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -73,7 +74,7 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test({
@@ -95,7 +96,8 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("1", TradeInputField.limitPrice, 0)
-            }, """
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -118,13 +120,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("10000", TradeInputField.limitPrice, 0)
-            }, """
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -147,13 +150,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("SELL", TradeInputField.side, 0)
-            }, """
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -193,13 +197,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("1", TradeInputField.limitPrice, 0)
-            }, """
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -222,7 +227,7 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
 //        test({
@@ -233,12 +238,11 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("1500", TradeInputField.limitPrice, 0)
         }, null)
 
-
-
         test(
             {
                 perp.tradeInMarket("BTC-USD", 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "trade",
@@ -249,7 +253,7 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test({
@@ -263,7 +267,8 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("190", TradeInputField.goodTilDuration, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "errors": [
@@ -288,7 +293,7 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -300,16 +305,18 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.tradeInMarket("LTC-USD", 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("1", TradeInputField.size, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "errors": [
@@ -334,40 +341,44 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.tradeInMarket("ETH-USD", 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("SELL", TradeInputField.side, 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade(null, TradeInputField.usdcSize, 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("0.5", TradeInputField.usdcSize, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -384,13 +395,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade(null, TradeInputField.usdcSize, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "errors": [
@@ -401,14 +413,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     private fun testUpdates() {
-        test({
-            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_1, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_1, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -432,12 +446,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-        })
+            """.trimIndent(),
+            {
+            },
+        )
 
-        test({
-            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_2, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_2, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -461,12 +479,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-        })
+            """.trimIndent(),
+            {
+            },
+        )
 
-        test({
-            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_3, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_3, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -506,12 +528,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-        })
+            """.trimIndent(),
+            {
+            },
+        )
 
-        test({
-            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_4, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_4, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -551,12 +577,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-        })
+            """.trimIndent(),
+            {
+            },
+        )
 
-        test({
-            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_5, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_5, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -596,12 +626,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-        })
+            """.trimIndent(),
+            {
+            },
+        )
 
-        test({
-            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_6, 0, null)
-        }, """
+        test(
+            {
+                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_6, 0, null)
+            },
+            """
             {
                 "wallet": {
                     "account": {
@@ -641,8 +675,10 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent(), {
-        })
+            """.trimIndent(),
+            {
+            },
+        )
     }
 
     private fun testAdjustedMarginFraction() {
@@ -652,7 +688,7 @@ open class V4TradeInputTests : V4BaseTests() {
                     mock.socketUrl,
                     mock.marketsChannel.v4_subscribed_for_adjusted_mf_calculation,
                     0,
-                    null
+                    null,
                 )
             },
             """
@@ -695,7 +731,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -719,7 +755,8 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("1000.0", TradeInputField.triggerPrice, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -730,40 +767,44 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.tradeInMarket("ETH-USD", 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimMargin()
+            """.trimMargin(),
         )
 
         test(
             {
                 perp.trade("0.1", TradeInputField.size, 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimMargin()
+            """.trimMargin(),
         )
 
         test(
             {
                 perp.trade("1000", TradeInputField.triggerPrice, 0)
-            }, """
+            },
+            """
             {
             }
-        """.trimMargin()
+            """.trimMargin(),
         )
 
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -773,13 +814,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("2000.0", TradeInputField.triggerPrice, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -789,14 +831,14 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -806,11 +848,9 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
-
     }
-
 
     fun testReduceOnly() {
         test(
@@ -832,7 +872,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("LIMIT", TradeInputField.type, 0)
@@ -854,7 +894,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -876,7 +916,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -898,9 +938,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
@@ -922,7 +961,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -944,7 +983,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -966,9 +1005,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -988,9 +1026,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
 
@@ -1012,7 +1049,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1034,7 +1071,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1056,9 +1093,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -1078,9 +1114,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("STOP_MARKET", TradeInputField.type, 0)
 
@@ -1103,7 +1138,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1125,7 +1160,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
@@ -1149,7 +1184,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -1171,11 +1206,9 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
     }
-
 
     private fun testExecution() {
         testExecutionStopLimit()
@@ -1209,7 +1242,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
@@ -1229,7 +1262,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
@@ -1249,9 +1282,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
@@ -1271,7 +1303,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1294,7 +1326,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
@@ -1314,7 +1346,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
@@ -1334,9 +1366,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
@@ -1356,7 +1387,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1379,7 +1410,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
@@ -1399,7 +1430,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
@@ -1419,9 +1450,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
@@ -1441,10 +1471,9 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testExecutionStopMarket() {
         testExecutionStopMarketToStopLimit()
@@ -1471,7 +1500,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_MARKET", TradeInputField.type, 0)
@@ -1491,7 +1520,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1513,7 +1542,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_MARKET", TradeInputField.type, 0)
@@ -1533,7 +1562,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1555,7 +1584,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("STOP_MARKET", TradeInputField.type, 0)
@@ -1575,12 +1604,9 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
     }
-
-
 
     private fun testExecutionTakeProfit() {
         testExecutionTakeProfitToStopMarket()
@@ -1607,7 +1633,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
@@ -1627,7 +1653,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
@@ -1647,9 +1673,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
@@ -1669,7 +1694,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1691,7 +1716,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
@@ -1711,7 +1736,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
@@ -1731,9 +1756,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
@@ -1752,7 +1776,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1775,7 +1799,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
@@ -1795,7 +1819,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
@@ -1815,9 +1839,8 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
@@ -1837,10 +1860,9 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testExecutionTakeProfitMarket() {
         testExecutionTakeProfitMarketToStopLimit()
@@ -1867,7 +1889,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
@@ -1887,7 +1909,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1909,7 +1931,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
@@ -1929,7 +1951,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -1951,7 +1973,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
@@ -1971,8 +1993,7 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
     }
 }

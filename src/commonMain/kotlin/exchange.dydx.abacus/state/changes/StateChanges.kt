@@ -63,7 +63,7 @@ data class StateChanges(
         return StateChanges(
             changes = mergedChanges,
             markets = mergedMarkets,
-            subaccountNumbers = mergedSubaccountNumbers
+            subaccountNumbers = mergedSubaccountNumbers,
         )
     }
 }

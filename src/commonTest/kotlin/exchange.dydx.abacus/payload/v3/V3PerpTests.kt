@@ -12,7 +12,6 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-
 class V3PerpTests : V3BaseTests() {
     @Test
     fun testDataFeed() {
@@ -25,7 +24,6 @@ class V3PerpTests : V3BaseTests() {
         testTradesOnce()
         testOrderbookOnce()
         testHistoricalFundingsOnce()
-
     }
 
     private fun testMarketsOnce() {
@@ -70,7 +68,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -104,7 +102,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -141,7 +139,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -239,10 +237,9 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testFillsReceived() {
         test(
@@ -276,10 +273,9 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testAccountsChanged() {
         test(
@@ -369,7 +365,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -422,10 +418,9 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testOrderbookBatchChangedv4() {
         test(
@@ -455,7 +450,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -489,7 +484,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -525,7 +520,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -551,10 +546,9 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testHistoricalFundingsOnce() {
         var time = ServerTime.now()
@@ -573,7 +567,10 @@ class V3PerpTests : V3BaseTests() {
         test(
             {
                 perp.rest(
-                    url, mock.historicalFundingsMock.call, 0, null
+                    url,
+                    mock.historicalFundingsMock.call,
+                    0,
+                    null,
                 )
             },
             """
@@ -592,13 +589,16 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.rest(
-                    url, mock.historicalFundingsMock.call, 0, null
+                    url,
+                    mock.historicalFundingsMock.call,
+                    0,
+                    null,
                 )
             },
             """
@@ -617,13 +617,16 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.rest(
-                    url, mock.historicalFundingsMock.call2, 0, null
+                    url,
+                    mock.historicalFundingsMock.call2,
+                    0,
+                    null,
                 )
             },
             """
@@ -642,8 +645,7 @@ class V3PerpTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 }

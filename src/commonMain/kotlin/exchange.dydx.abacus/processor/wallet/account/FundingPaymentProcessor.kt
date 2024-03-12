@@ -6,17 +6,17 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 internal class FundingPaymentProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val fundingPaymentKeyMap = mapOf(
         "string" to mapOf(
-            "market" to "marketId"
+            "market" to "marketId",
         ),
         "double" to mapOf(
             "payment" to "payment",
             "rate" to "rate",
             "positionSize" to "positionSize",
-            "price" to "price"
+            "price" to "price",
         ),
         "datetime" to mapOf(
-            "effectiveAt" to "effectiveAt"
-        )
+            "effectiveAt" to "effectiveAt",
+        ),
     )
 
     override fun received(

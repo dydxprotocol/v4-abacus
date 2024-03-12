@@ -7,7 +7,6 @@ import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
-
 @JsExport
 @Serializable
 enum class InputType(val rawValue: String) {
@@ -64,7 +63,7 @@ data class Input(
                         closePosition,
                         transfer,
                         receiptLines,
-                        errors
+                        errors,
                     )
                 } else {
                     existing

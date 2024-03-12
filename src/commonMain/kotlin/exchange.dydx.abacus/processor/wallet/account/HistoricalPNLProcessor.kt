@@ -9,11 +9,11 @@ internal class HistoricalPNLProcessor(parser: ParserProtocol) : BaseProcessor(pa
         "double" to mapOf(
             "equity" to "equity",
             "totalPnl" to "totalPnl",
-            "netTransfers" to "netTransfers"
+            "netTransfers" to "netTransfers",
         ),
         "datetime" to mapOf(
-            "createdAt" to "createdAt"
-        )
+            "createdAt" to "createdAt",
+        ),
     )
 
     override fun received(

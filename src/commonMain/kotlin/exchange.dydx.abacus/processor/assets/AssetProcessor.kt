@@ -11,17 +11,17 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "string" to mapOf(
             "websiteLink" to "websiteLink",
             "whitepaperLink" to "whitepaperLink",
-            "coinMarketCapsLink" to "coinMarketCapsLink"
-        )
+            "coinMarketCapsLink" to "coinMarketCapsLink",
+        ),
     )
 
     private val assetConfigurationsKeyMap = mapOf(
         "string" to mapOf(
-            "name" to "name"
+            "name" to "name",
         ),
         "strings" to mapOf(
-            "tags" to "tags"
-        )
+            "tags" to "tags",
+        ),
     )
 
     override fun received(
@@ -41,9 +41,9 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val resources = transform(
             parser.asNativeMap(asset?.get("resources")),
             payload,
-            assetConfigurationsResourcesKeyMap
+            assetConfigurationsResourcesKeyMap,
         ).mutable()
-        val imageUrl = "${deploymentUri}/currencies/${assetId.lowercase()}.png"
+        val imageUrl = "$deploymentUri/currencies/${assetId.lowercase()}.png"
         val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
         val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
         resources.safeSet("imageUrl", imageUrl)

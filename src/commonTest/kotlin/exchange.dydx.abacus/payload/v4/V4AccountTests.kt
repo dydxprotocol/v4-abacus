@@ -92,10 +92,9 @@ class V4AccountTests : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testSubaccountSubscribed() {
         test(
@@ -249,7 +248,7 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -296,9 +295,9 @@ class V4AccountTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
                 assertEquals(
                     100,
-                    fills?.size
+                    fills?.size,
                 )
-            }
+            },
         )
 
         test(
@@ -343,7 +342,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -389,7 +388,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
 
         test(
@@ -419,7 +418,7 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -522,9 +521,9 @@ class V4AccountTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
                 assertEquals(
                     101,
-                    fills?.size
+                    fills?.size,
                 )
-            }
+            },
         )
     }
 
@@ -679,9 +678,9 @@ class V4AccountTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
                 assertEquals(
                     102,
-                    fills?.size
+                    fills?.size,
                 )
-            }
+            },
         )
 
         test(
@@ -690,7 +689,7 @@ class V4AccountTests : V4BaseTests() {
                     testWsUrl,
                     mock.accountsChannel.v4_best_effort_cancelled,
                     0,
-                    BlockAndTime(16940, Clock.System.now())
+                    BlockAndTime(16940, Clock.System.now()),
                 )
             },
             """
@@ -719,7 +718,7 @@ class V4AccountTests : V4BaseTests() {
                     testWsUrl,
                     mock.accountsChannel.v4_best_effort_cancelled,
                     0,
-                    BlockAndTime(16960, Clock.System.now())
+                    BlockAndTime(16960, Clock.System.now()),
                 )
             },
             """
@@ -741,7 +740,6 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
         )
-
 
         test(
             {
@@ -768,7 +766,6 @@ class V4AccountTests : V4BaseTests() {
         )
     }
 
-
     private fun testBatchedSubaccountChanged() {
         test(
             {
@@ -776,7 +773,7 @@ class V4AccountTests : V4BaseTests() {
                     testWsUrl,
                     mock.accountsChannel.v4_batched,
                     0,
-                    BlockAndTime(16960, Clock.System.now())
+                    BlockAndTime(16960, Clock.System.now()),
                 )
             },
             """
@@ -811,9 +808,9 @@ class V4AccountTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
                 assertEquals(
                     112,
-                    fills?.size
+                    fills?.size,
                 )
-            }
+            },
         )
 
         test(
@@ -822,7 +819,7 @@ class V4AccountTests : V4BaseTests() {
                     testWsUrl,
                     mock.accountsChannel.v4_position_closed,
                     0,
-                    BlockAndTime(16961, Clock.System.now())
+                    BlockAndTime(16961, Clock.System.now()),
                 )
             },
             """
@@ -856,26 +853,26 @@ class V4AccountTests : V4BaseTests() {
                         uiImplementations,
                         environment = mock.v4Environment,
                         Parser(),
-                        JsonEncoder()
+                        JsonEncoder(),
                     )
                 val notifications = notificationsProvider.buildNotifications(perp, 0)
                 assertEquals(
                     6,
-                    notifications.size
+                    notifications.size,
                 )
                 val order = notifications["order:1118c548-1715-5a72-9c41-f4388518c6e2"]
                 assertNotNull(order)
                 assertEquals(
                     "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
-                    order.title
+                    order.title,
                 )
                 val position = notifications["position:ETH-USD"]
                 assertNotNull(position)
                 assertEquals(
                     "NOTIFICATIONS.POSITION_CLOSED.TITLE",
-                    position.title
+                    position.title,
                 )
-            }
+            },
         )
     }
 
@@ -945,7 +942,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -971,7 +968,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -992,7 +989,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -1012,7 +1009,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -1043,7 +1040,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -1070,7 +1067,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 
@@ -1081,7 +1078,7 @@ class V4AccountTests : V4BaseTests() {
             {
                 val changes = perp.historicalTradingRewards(
                     mock.historicalTradingRewards.weeklyCall,
-                    "WEEKLY"
+                    "WEEKLY",
                 )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
@@ -1112,14 +1109,14 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
 
         test(
             {
                 val changes = perp.historicalTradingRewards(
                     mock.historicalTradingRewards.dailyCall,
-                    "DAILY"
+                    "DAILY",
                 )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
@@ -1159,14 +1156,14 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
 
         test(
             {
                 val changes = perp.historicalTradingRewards(
                     mock.historicalTradingRewards.monthlyCall,
-                    "MONTHLY"
+                    "MONTHLY",
                 )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
@@ -1213,14 +1210,14 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
 
         test(
             {
                 val changes = perp.historicalTradingRewards(
                     mock.historicalTradingRewards.monthlySecondCall,
-                    "MONTHLY"
+                    "MONTHLY",
                 )
                 perp.update(changes)
                 return@test StateResponse(perp.state, changes)
@@ -1265,7 +1262,7 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-            }
+            },
         )
     }
 }

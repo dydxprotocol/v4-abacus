@@ -27,7 +27,6 @@ open class StateManagerConfigs(
         return parser.asString(parser.value(configs, "paths.public.$type"))
     }
 
-
     fun publicApiUrl(type: String): String? {
         val api = indexerConfig?.api ?: return null
         val path = publicApiPath(type) ?: return null

@@ -24,11 +24,13 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 subaccountNumber,
                 modifiedTransfer,
                 parser,
-                "postOrder"
+                "postOrder",
             )
             modified["wallet"] = modifiedWallet
             modified
-        } else state
+        } else {
+            state
+        }
     }
 
     private fun finalize(
@@ -48,21 +50,21 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
             "DEPOSIT" -> {
                 listOf(
                     sizeField(),
-                    gaslessField()
+                    gaslessField(),
                 )
             }
 
             "WITHDRAWAL" -> {
                 listOf(
                     sizeField(),
-                    speedField()
+                    speedField(),
                 )
             }
 
             "TRANSFER_OUT" -> {
                 listOf(
                     sizeField(),
-                    addressField()
+                    addressField(),
                 )
             }
 
@@ -73,14 +75,14 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
     private fun sizeField(): Map<String, Any> {
         return mapOf(
             "field" to "size.usdcSize",
-            "type" to "double"
+            "type" to "double",
         )
     }
 
     private fun gaslessField(): Map<String, Any> {
         return mapOf(
             "field" to "gasless",
-            "type" to "bool"
+            "type" to "bool",
         )
     }
 
@@ -88,14 +90,14 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
         return mapOf(
             "field" to "fastSpeed",
             "type" to "bool",
-            "default" to true
+            "default" to true,
         )
     }
 
     private fun addressField(): Map<String, Any> {
         return mapOf(
             "field" to "address",
-            "type" to "string"
+            "type" to "string",
         )
     }
 
@@ -105,7 +107,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                 "needsSize" to false,
                 "needsGasless" to false,
                 "needsFastSpeed" to false,
-                "needsAddress" to false
+                "needsAddress" to false,
             )
             for (item in fields) {
                 parser.asNativeMap(item)?.let { field ->
@@ -180,7 +182,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                     parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
                 summary.safeSet(
                     "aggregatePriceImpact",
-                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
+                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null,
                 )
             }
 
@@ -225,7 +227,7 @@ internal class TransferInputCalculator(val parser: ParserProtocol) {
                     parser.asDouble(parser.value(transfer, "route.aggregatePriceImpact"))
                 summary.safeSet(
                     "aggregatePriceImpact",
-                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null
+                    if (aggregatePriceImpact != null) aggregatePriceImpact / 100.0 else null,
                 )
             }
 

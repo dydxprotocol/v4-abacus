@@ -56,7 +56,7 @@ internal class StringHelper {
                 val afterDecimal = if (decimalComponents.size != 1) decimalComponents.last() else ""
                 return beforeDecimal + StringHelper.decimals(
                     afterDecimal,
-                    decimals
+                    decimals,
                 )
             } else {
                 val beforeE = scientific.first()
@@ -72,13 +72,14 @@ internal class StringHelper {
                     return if (shift > afterDecimal.length) {
                         beforeDecimal + afterDecimal + StringHelper.zeros(shift - afterDecimal.length) + StringHelper.decimals(
                             "",
-                            decimals
+                            decimals,
                         )
                     } else {
                         beforeDecimal + afterDecimal.substring(0, shift) + StringHelper.decimals(
                             afterDecimal.substring(
-                                shift
-                            ), decimals
+                                shift,
+                            ),
+                            decimals,
                         )
                     }
                 } else {
@@ -87,15 +88,15 @@ internal class StringHelper {
                     return if (backShift > beforeDecimal.length) {
                         "0" + StringHelper.decimals(
                             StringHelper.zeros(backShift - beforeDecimal.length) + beforeDecimal + afterDecimal,
-                            decimals
+                            decimals,
                         )
                     } else {
                         beforeDecimal.substring(
                             0,
-                            beforeDecimal.length - backShift
+                            beforeDecimal.length - backShift,
                         ) + StringHelper.decimals(
                             beforeDecimal.substring(beforeDecimal.length - backShift) + afterDecimal,
-                            decimals
+                            decimals,
                         )
                     }
                 }

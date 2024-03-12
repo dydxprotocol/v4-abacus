@@ -9,13 +9,11 @@ import kotlin.test.assertEquals
 
 @JsExport
 @Serializable
-data class DummyClass1(val strings: IList<String>) {
-}
+data class DummyClass1(val strings: IList<String>)
 
 @JsExport
 @Serializable
-data class DummyClass2(val children: IList<DummyClass1>) {
-}
+data class DummyClass2(val children: IList<DummyClass1>)
 
 class JSExportTests {
     @Test
@@ -27,5 +25,4 @@ class JSExportTests {
         assertEquals(parent.children[0], child1)
         assertEquals(parent.children[0].strings[0], "1")
     }
-
 }

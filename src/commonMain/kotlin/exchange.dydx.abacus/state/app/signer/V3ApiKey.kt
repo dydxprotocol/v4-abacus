@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.state.app.signer
 
-import kotlinx.serialization.Serializable
 import kollections.JsExport
+import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable

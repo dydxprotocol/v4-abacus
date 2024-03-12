@@ -16,11 +16,12 @@ class TradeInputOptionsTests : V3BaseTests() {
         testTradeInputOnce()
     }
 
-
     private fun testTradeInputOnce() {
-        test({
-            perp.tradeInMarket("ETH-USD", 0)
-        }, """
+        test(
+            {
+                perp.tradeInMarket("ETH-USD", 0)
+            },
+            """
             {
                 "input": {
                     "current": "trade",
@@ -35,7 +36,8 @@ class TradeInputOptionsTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         test(
             {
@@ -52,16 +54,18 @@ class TradeInputOptionsTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
         }, null)
 
-        test({
-            perp.trade("MARKET", TradeInputField.type, 0)
-        }, """
+        test(
+            {
+                perp.trade("MARKET", TradeInputField.type, 0)
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -81,12 +85,14 @@ class TradeInputOptionsTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         test(
             {
                 perp.trade("LIMIT", TradeInputField.type, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -106,13 +112,14 @@ class TradeInputOptionsTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("GTT", TradeInputField.timeInForceType, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -132,13 +139,14 @@ class TradeInputOptionsTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("IOC", TradeInputField.timeInForceType, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -172,13 +180,14 @@ class TradeInputOptionsTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.trade("FOK", TradeInputField.timeInForceType, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "trade": {
@@ -198,7 +207,7 @@ class TradeInputOptionsTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

@@ -74,7 +74,7 @@ data class ClosePositionInput(
                 val size = ClosePositionInputSize.create(
                     existing?.size,
                     parser,
-                    parser.asMap(data["size"])
+                    parser.asMap(data["size"]),
                 )
                 val price =
                     TradeInputPrice.create(existing?.price, parser, parser.asMap(data["price"]))
@@ -85,12 +85,12 @@ data class ClosePositionInput(
                     TradeInputMarketOrder.create(
                         existing?.marketOrder,
                         parser,
-                        parser.asMap(data["marketOrder"])
+                        parser.asMap(data["marketOrder"]),
                     )
                 val summary = TradeInputSummary.create(
                     existing?.summary,
                     parser,
-                    parser.asMap(data["summary"])
+                    parser.asMap(data["summary"]),
                 )
 
                 return if (
@@ -111,7 +111,7 @@ data class ClosePositionInput(
                         price,
                         fee,
                         marketOrder,
-                        summary
+                        summary,
                     )
                 } else {
                     existing

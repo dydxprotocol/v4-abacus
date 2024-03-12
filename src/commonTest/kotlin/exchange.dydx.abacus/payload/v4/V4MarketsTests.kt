@@ -36,7 +36,6 @@ class V4MarketsTests : V4BaseTests() {
         testMarketNotOnline()
     }
 
-
     @Test
     fun testDataFeedWithV4Data() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
@@ -73,12 +72,12 @@ class V4MarketsTests : V4BaseTests() {
         time = perp.log("Trades Batch Changed", time)
     }
 
-
     private fun testMarketsSubscribed() {
         test(
             {
                 perp.loadv4MarketsSubscribed(mock, testWsUrl)
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -133,7 +132,7 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent(),
+            """.trimIndent(),
             {
                 val markets = perp.state?.marketIds()
                 assertNotNull(markets)
@@ -141,7 +140,7 @@ class V4MarketsTests : V4BaseTests() {
                 assertNotNull(first)
                 val market = perp.state?.market(first)
                 assertNotNull(first)
-            }
+            },
         )
     }
 
@@ -149,7 +148,8 @@ class V4MarketsTests : V4BaseTests() {
         test(
             {
                 perp.socket(testWsUrl, mock.marketsChannel.v4_subscribed_r1, 0, null)
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -176,7 +176,7 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent(),
+            """.trimIndent(),
             {
                 val markets = perp.state?.marketIds()
                 assertNotNull(markets)
@@ -184,7 +184,7 @@ class V4MarketsTests : V4BaseTests() {
                 assertNotNull(first)
                 val market = perp.state?.market(first)
                 assertNotNull(first)
-            }
+            },
         )
     }
 
@@ -197,7 +197,8 @@ class V4MarketsTests : V4BaseTests() {
                     0,
                     null,
                 )
-            }, """
+            },
+            """
             {
                 "markets": {
                     "markets": {
@@ -220,7 +221,7 @@ class V4MarketsTests : V4BaseTests() {
                     }
                 }
             }
-            """
+            """,
         )
     }
 
@@ -228,7 +229,8 @@ class V4MarketsTests : V4BaseTests() {
         test(
             {
                 perp.loadv4MarketsChanged(mock, testWsUrl)
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -281,7 +283,7 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -289,7 +291,8 @@ class V4MarketsTests : V4BaseTests() {
         test(
             {
                 perp.loadv4MarketsBatchChanged(mock, testWsUrl)
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -342,9 +345,8 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -352,9 +354,10 @@ class V4MarketsTests : V4BaseTests() {
                     testWsUrl,
                     mock.marketsChannel.v4_channel_batch_data_oracle_prices,
                     0,
-                    null
+                    null,
                 )
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -407,7 +410,7 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -442,9 +445,10 @@ class V4MarketsTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
                 assertEquals(
                     100,
-                    trades?.size
+                    trades?.size,
                 )
-            })
+            },
+        )
     }
 
     private fun testTradesChanged() {
@@ -477,9 +481,10 @@ class V4MarketsTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
                 assertEquals(
                     101,
-                    trades?.size
+                    trades?.size,
                 )
-            })
+            },
+        )
     }
 
     private fun testTradesBatchChanged() {
@@ -512,9 +517,10 @@ class V4MarketsTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
                 assertEquals(
                     240,
-                    trades?.size
+                    trades?.size,
                 )
-            })
+            },
+        )
     }
 
     private fun testMarketNotOnline() {
@@ -538,11 +544,11 @@ class V4MarketsTests : V4BaseTests() {
                     parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
                 assertEquals(
                     240,
-                    trades?.size
+                    trades?.size,
                 )
-            })
+            },
+        )
     }
-
 
     @Test
     fun testInitializingMarkets() {
@@ -555,9 +561,10 @@ class V4MarketsTests : V4BaseTests() {
                     testWsUrl,
                     mock.marketsChannel.v4_subscribed_with_initializing_status,
                     0,
-                    null
+                    null,
                 )
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -571,7 +578,7 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent(),
+            """.trimIndent(),
             {
                 val markets = perp.state?.marketIds()
                 assertNotNull(markets)
@@ -579,9 +586,8 @@ class V4MarketsTests : V4BaseTests() {
                 assertNotNull(first)
                 val market = perp.state?.market(first)
                 assertNotNull(first)
-            }
+            },
         )
-
 
         test(
             {
@@ -589,9 +595,10 @@ class V4MarketsTests : V4BaseTests() {
                     testWsUrl,
                     mock.marketsChannel.v4_channel_batch_data_oracle_prices_for_initializing_status,
                     0,
-                    null
+                    null,
                 )
-            }, """
+            },
+            """
             {
                "markets":{
                   "markets":{
@@ -606,7 +613,7 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-        """.trimIndent(),
+            """.trimIndent(),
             {
                 val markets = perp.state?.marketIds()
                 assertNotNull(markets)
@@ -614,7 +621,7 @@ class V4MarketsTests : V4BaseTests() {
                 assertNotNull(first)
                 val market = perp.state?.market(first)
                 assertNotNull(first)
-            }
+            },
         )
     }
 }

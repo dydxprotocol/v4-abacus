@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.processor.wallet
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.wallet.account.LaunchIncentivePointsProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
 import exchange.dydx.abacus.processor.wallet.account.deprecated.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
@@ -24,7 +23,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return receivedObject(
             existing,
             "account",
-            parser.asNativeMap(content)
+            parser.asNativeMap(content),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let {
                 if (it["account"] != null) {
@@ -36,6 +35,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
@@ -45,13 +45,18 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return receivedObject(
             existing,
             "account",
-            parser.asNativeMap(content)
+            parser.asNativeMap(content),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let { payload ->
                 if (payload["accounts"] != null) {
                     v3accountProcessor.channel_data(parser.asNativeMap(existing), payload, height)
                 } else {
-                    v4accountProcessor.channel_data(parser.asNativeMap(existing), payload, info, height)
+                    v4accountProcessor.channel_data(
+                        parser.asNativeMap(existing),
+                        payload,
+                        info,
+                        height,
+                    )
                 }
             }
         }
@@ -62,7 +67,10 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedAccount(parser.asNativeMap(existing), payload as? Map<String, Any>?)
+            v4accountProcessor.receivedAccount(
+                parser.asNativeMap(existing),
+                payload as? Map<String, Any>?,
+            )
         }
     }
 
@@ -75,7 +83,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             if (account != null) {
                 val (modifiedAccount, accountUpdated, subaccountIds) = v4accountProcessor.updateHeight(
                     account,
-                    height
+                    height,
                 )
                 if (accountUpdated) {
                     val modified = existing.mutable()
@@ -94,7 +102,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v4accountProcessor.receivedAccountBalances(
                 parser.asNativeMap(existing),
-                payload as? List<Any>
+                payload as? List<Any>,
             )
         }
     }
@@ -106,7 +114,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return receivedObject(existing, "account", payload) { existing, payload ->
             v4accountProcessor.receivedDelegations(
                 parser.asNativeMap(existing),
-                payload as? List<Any>
+                payload as? List<Any>,
             )
         }
     }
@@ -132,7 +140,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return receivedObject(
             existing,
             "user",
-            parser.asNativeMap(payload?.get("user"))
+            parser.asNativeMap(payload?.get("user")),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let {
                 userProcessor.received(parser.asNativeMap(existing), it)
@@ -147,7 +155,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return receivedObject(
             existing,
             "user",
-            parser.asNativeMap(payload?.get("tier"))
+            parser.asNativeMap(payload?.get("tier")),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let {
                 userProcessor.receivedOnChainUserFeeTier(parser.asNativeMap(existing), it)
@@ -175,7 +183,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             v4accountProcessor.receivedHistoricalPnls(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
-                subaccountNumber
+                subaccountNumber,
             )
         }
     }
@@ -189,7 +197,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             v4accountProcessor.receivedFills(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
-                subaccountNumber
+                subaccountNumber,
             )
         }
     }
@@ -203,7 +211,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             v4accountProcessor.receivedTransfers(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
-                subaccountNumber
+                subaccountNumber,
             )
         }
     }
@@ -218,7 +226,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             val (modifiedAccount, accountUpdated) = v4accountProcessor.received(
                 account,
                 subaccountNumber,
-                height
+                height,
             )
             if (accountUpdated) {
                 val modified = existing.mutable()
@@ -239,7 +247,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             val (modifiedAccount, updated) = v4accountProcessor.orderCanceled(
                 account,
                 orderId,
-                subaccountNumber
+                subaccountNumber,
             )
             if (updated) {
                 val modified = existing.mutable()
@@ -265,7 +273,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         val modifiedAccount = v4accountProcessor.receivedLaunchIncentivePoint(
             account,
             season,
-            payload
+            payload,
         )
 
         val modified = existing.mutable()

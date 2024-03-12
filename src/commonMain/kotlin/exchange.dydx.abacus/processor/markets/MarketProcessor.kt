@@ -7,12 +7,7 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Suppress("UNCHECKED_CAST")
 internal class MarketProcessor(parser: ParserProtocol, private val calculateSparklines: Boolean) :
@@ -36,29 +31,29 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.5MINS",
             "value" to "5MINS",
-            "seconds" to 60 * 5
+            "seconds" to 60 * 5,
         ),
         mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.15MINS",
             "value" to "15MINS",
-            "seconds" to 60 * 15
+            "seconds" to 60 * 15,
         ),
         mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.30MINS",
             "value" to "30MINS",
-            "seconds" to 60 * 30
+            "seconds" to 60 * 30,
         ),
         mapOf("stringKey" to "GERNERAL.TIME_STRINGS.1H", "value" to "1HOUR", "seconds" to 60 * 60),
         mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.4H",
             "value" to "4HOURS",
-            "seconds" to 60 * 60 * 4
+            "seconds" to 60 * 60 * 4,
         ),
         mapOf(
             "stringKey" to "GERNERAL.TIME_STRINGS.1D",
             "value" to "1DAY",
-            "seconds" to 60 * 60 * 24
-        )
+            "seconds" to 60 * 60 * 24,
+        ),
     )
 
     private val configsV4KeyMap = mapOf(
@@ -67,8 +62,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             "atomicResolution" to "atomicResolution",
             "stepBaseQuantums" to "stepBaseQuantums",
             "quantumConversionExponent" to "quantumConversionExponent",
-            "subticksPerTick" to "subticksPerTick"
-        )
+            "subticksPerTick" to "subticksPerTick",
+        ),
     )
 
     private val configsKeyMap = mapOf(
@@ -85,42 +80,42 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             "basePositionNotional" to "basePositionNotional",
         ),
         "int" to mapOf(
-            "clobPairId" to "clobPairId"
-        )
+            "clobPairId" to "clobPairId",
+        ),
     )
 
     private val displayConfigsKeyMap = mapOf(
         "double" to mapOf(
             "displayStepSize" to "displayStepSize",
-            "displayTickSize" to "displayTickSize"
-        )
+            "displayTickSize" to "displayTickSize",
+        ),
     )
 
     private val marketKeyMap = mapOf(
         "string" to mapOf(
             "market" to "market",
             "ticker" to "ticker",
-            "baseAsset" to "assetId"
+            "baseAsset" to "assetId",
         ),
         "double" to mapOf(
             "oraclePrice" to "oraclePrice",
             "price" to "oraclePrice",
-            "priceChange24H" to "priceChange24H"
-        )
+            "priceChange24H" to "priceChange24H",
+        ),
     )
 
     private val perpetualKeyMap = mapOf(
         "double" to mapOf(
             "volume24H" to "volume24H",
             "openInterest" to "openInterest",
-            "nextFundingRate" to "nextFundingRate"
+            "nextFundingRate" to "nextFundingRate",
         ),
         "datetime" to mapOf(
-            "nextFundingAt" to "nextFundingAt"
+            "nextFundingAt" to "nextFundingAt",
         ),
         "int" to mapOf(
             "trades24H" to "trades24H",
-        )
+        ),
     )
 
     override fun received(
@@ -169,8 +164,9 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             if (priceChange24H != null && oraclePrice != null && oraclePrice > priceChange24H) {
                 val basePrice = (oraclePrice - priceChange24H)
                 if (basePrice > Numeric.double.ZERO) (priceChange24H / basePrice) else null
-            } else
+            } else {
                 null
+            },
         )
 
         return modified
@@ -225,7 +221,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         if (configs["baselinePositionSize"] == null) {
             configs.safeSet(
                 "baselinePositionSize",
-                parser.asDouble(payload["basePositionSize"])
+                parser.asDouble(payload["basePositionSize"]),
             ) // v4
         }
         return configs
@@ -310,7 +306,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
     ): Map<String, Any> {
         val orderbookRaw = orderbookProcessor.channel_batch_data(
             parser.asNativeMap(market["orderbook_raw"]),
-            payload
+            payload,
         )
         return processRawOrderbook(market, orderbookRaw)
     }
@@ -330,7 +326,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
                         parser.asNativeList(candles[resolution])
                     val modifiedResolution = candlesProcessor.received(
                         existingResolution,
-                        payload
+                        payload,
                     )
                     candles.safeSet(resolution, modifiedResolution)
                     modified["candles"] = candles
@@ -386,7 +382,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             candlesProcessor.channel_data(
                 parser.asNativeMap(market["candles"]),
                 resolution,
-                payload
+                payload,
             )
         modified.safeSet("candles", candles)
         return modified
@@ -448,7 +444,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val historicalFundings =
             historicalFundingsProcessor.received(
                 parser.asNativeList(market["historicalFunding"]) as? List<Map<String, Any>>,
-                payload
+                payload,
             )
         modified.safeSet("historicalFunding", historicalFundings)
         return modified
@@ -462,6 +458,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
             val orderbook = orderbookProcessor.group(orderbookConsolidated, tickSize)
             modified.safeSet("orderbook", orderbook)
             return modified
-        } else null
+        } else {
+            null
+        }
     }
 }

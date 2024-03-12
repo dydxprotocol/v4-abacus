@@ -53,10 +53,9 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testSubaccountSubscribed() {
         test(
@@ -65,7 +64,7 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
                     testWsUrl,
                     mock.accountsChannel.v4_subscribed_for_orders_sorting,
                     0,
-                    null
+                    null,
                 )
             },
             """
@@ -84,7 +83,7 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
                 for (i in 0 until orders.size) {
                     assertEquals(orders[i].id, sortedOrders[i].id)
                 }
-            }
+            },
         )
     }
 }

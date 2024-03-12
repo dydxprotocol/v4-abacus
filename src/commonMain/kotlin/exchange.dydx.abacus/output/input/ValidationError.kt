@@ -3,7 +3,6 @@ package exchange.dydx.abacus.output.input
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import kollections.JsExport
 import kollections.iMutableListOf
@@ -35,7 +34,7 @@ data class ErrorParam(
                         ErrorParam(
                             key,
                             value.toString(),
-                            format
+                            format,
                         )
                     } else {
                         existing
@@ -73,7 +72,8 @@ data class ErrorString(
                             val item = data[i]
                             ErrorParam.create(
                                 existing?.params?.getOrNull(i),
-                                parser, parser.asMap(item)
+                                parser,
+                                parser.asMap(item),
                             )?.let { param ->
                                 params?.add(param)
                             }
@@ -136,7 +136,9 @@ data class ErrorResources(
 @JsExport
 @Serializable
 enum class ErrorType(val rawValue: String) {
-    error("ERROR"), warning("WARNING"), required("REQUIRED");
+    error("ERROR"),
+    warning("WARNING"),
+    required("REQUIRED");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -147,14 +149,14 @@ enum class ErrorType(val rawValue: String) {
 @JsExport
 @Serializable
 enum class ErrorAction(val rawValue: String) {
-    CONNECT_WALLET("/onboard"), DEPOSIT("/deposit");
+    CONNECT_WALLET("/onboard"),
+    DEPOSIT("/deposit");
 
     companion object {
         operator fun invoke(rawValue: String) =
             ErrorAction.values().firstOrNull { it.rawValue == rawValue }
     }
 }
-
 
 @JsExport
 @Serializable
@@ -183,7 +185,9 @@ data class ValidationError(
                     }
                 }
                 errors
-            } else null
+            } else {
+                null
+            }
         }
 
         internal fun create(
@@ -200,7 +204,7 @@ data class ValidationError(
                             ErrorResources.create(
                                 existing?.resources,
                                 parser,
-                                parser.asMap(data["resources"])
+                                parser.asMap(data["resources"]),
                             )
                                 ?.let { resources ->
                                     var fields: IMutableList<String>? = null
@@ -227,7 +231,7 @@ data class ValidationError(
                                             fields,
                                             action,
                                             link,
-                                            resources
+                                            resources,
                                         )
                                     } else {
                                         existing

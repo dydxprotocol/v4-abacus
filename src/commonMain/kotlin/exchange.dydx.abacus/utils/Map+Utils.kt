@@ -60,7 +60,6 @@ internal fun IMap<String, Any>.modify(key: String, value: Any?): IMap<String, An
     return modified
 }
 
-
 fun <T> IMap<String, T>.values(): Collection<T> = this.toMap().values
 
 private fun kotlin.collections.MutableMap<String, Any>.safeSet(route: List<String>, value: Any?) {
@@ -111,8 +110,10 @@ private fun IMutableMap<String, Any>.safeSet(route: List<String>, value: Any?) {
             val rest = route.toMutableList()
             rest.removeFirst()
             val existingValue = get(key)
-            val existing = ((existingValue as? IMap<*, *>)
-                ?: (existingValue as? Map<*, *>)?.toIMap()) as? IMap<String, Any>
+            val existing = (
+                (existingValue as? IMap<*, *>)
+                    ?: (existingValue as? Map<*, *>)?.toIMap()
+                ) as? IMap<String, Any>
             if (value != null) {
                 val modified = existing?.toIMutableMap() ?: mutableMapOf()
                 modified.safeSet(rest, value)

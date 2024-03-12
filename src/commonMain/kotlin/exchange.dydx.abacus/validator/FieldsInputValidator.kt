@@ -32,7 +32,7 @@ internal class FieldsInputValidator(
                                 transaction,
                                 transactionType,
                                 field,
-                                type
+                                type,
                             )?.let {
                                 errors.add(it)
                             }
@@ -52,12 +52,16 @@ internal class FieldsInputValidator(
         field: String,
         type: String,
     ): Map<String, Any>? {
-        return if (hasData(parser, transaction, field, type)) null else {
+        return if (hasData(parser, transaction, field, type)) {
+            null
+        } else {
             val errorCode = errorCode(field)
             val errorStringKey = errorStringKey(transaction, transactionType, field)
             if (errorCode != null && errorStringKey != null) {
                 required(errorCode, field, errorStringKey)
-            } else null
+            } else {
+                null
+            }
         }
     }
 
@@ -110,7 +114,6 @@ internal class FieldsInputValidator(
 
             else -> null
         }
-
     }
 
     private fun hasData(
@@ -124,14 +127,18 @@ internal class FieldsInputValidator(
                 val inputField = parser.asString(parser.value(transaction, "size.input"))
                 if (inputField != null) {
                     parser.value(transaction, inputField)
-                } else null
+                } else {
+                    null
+                }
             }
 
             else -> parser.value(transaction, field)
         }
         return if (value != null) {
             validData(parser, value, type)
-        } else false
+        } else {
+            false
+        }
     }
 
     private fun validData(parser: ParserProtocol, data: Any, type: String): Boolean {

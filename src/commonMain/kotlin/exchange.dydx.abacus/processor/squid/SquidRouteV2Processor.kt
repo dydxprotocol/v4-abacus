@@ -21,7 +21,7 @@ internal class SquidRouteV2Processor(parser: ParserProtocol) : BaseProcessor(par
             "route.estimate.toAmountUSDC" to "toAmountUSDC",
             "route.estimate.aggregatePriceImpact" to "aggregatePriceImpact",
             "errors" to "errors",
-        )
+        ),
     )
 
     override fun received(

@@ -34,7 +34,8 @@ class V3ClosePositionTests : V3BaseTests() {
         test(
             {
                 perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "closePosition",
@@ -45,13 +46,14 @@ class V3ClosePositionTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.closePosition("0.25", ClosePositionInputField.percent, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "closePosition",
@@ -94,14 +96,14 @@ class V3ClosePositionTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
                 perp.closePosition("15", ClosePositionInputField.size, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "closePosition",
@@ -144,7 +146,7 @@ class V3ClosePositionTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -152,10 +154,11 @@ class V3ClosePositionTests : V3BaseTests() {
         test(
             {
                 perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
-            }, """
+            },
+            """
                 {
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
         /*
         Initial setup
@@ -163,7 +166,8 @@ class V3ClosePositionTests : V3BaseTests() {
         test(
             {
                 perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "closePosition",
@@ -174,13 +178,14 @@ class V3ClosePositionTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
             {
                 perp.closePosition("0.25", ClosePositionInputField.percent, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "closePosition",
@@ -216,14 +221,14 @@ class V3ClosePositionTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
                 perp.closePosition("15", ClosePositionInputField.size, 0)
-            }, """
+            },
+            """
             {
                 "input": {
                     "current": "closePosition",
@@ -266,7 +271,7 @@ class V3ClosePositionTests : V3BaseTests() {
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

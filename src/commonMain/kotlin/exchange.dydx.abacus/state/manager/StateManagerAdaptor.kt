@@ -83,7 +83,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -95,118 +94,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.times
 import kotlin.time.toDuration
-
-@JsExport
-internal data class Subaccount(
-    val address: String,
-    val subaccountNumber: Int,
-)
-
-@JsExport
-@Serializable
-data class PlaceOrderMarketInfo(
-    val clobPairId: Int,
-    val atomicResolution: Int,
-    val stepBaseQuantums: Int,
-    val quantumConversionExponent: Int,
-    val subticksPerTick: Int,
-)
-
-@JsExport
-@Serializable
-data class HumanReadablePlaceOrderPayload(
-    val subaccountNumber: Int,
-    val marketId: String,
-    val clientId: Int,
-    val type: String,
-    val side: String,
-    val price: Double,
-    val triggerPrice: Double?,
-    val size: Double,
-    val reduceOnly: Boolean?,
-    val postOnly: Boolean?,
-    val timeInForce: String?,
-    val execution: String?,
-    val goodTilTimeInSeconds: Int?,
-    val marketInfo: PlaceOrderMarketInfo? = null,
-    val currentHeight: Int? = null,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableCancelOrderPayload(
-    val subaccountNumber: Int,
-    val orderId: String,
-    val clientId: Int,
-    val orderFlags: Int,
-    val clobPairId: Int,
-    val goodTilBlock: Int?,
-    val goodTilBlockTime: Int?,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableSubaccountTransferPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-    val destinationAddress: String,
-    val destinationSubaccountNumber: Int,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableFaucetPayload(
-    val subaccountNumber: Int,
-    val amount: Double,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableDepositPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableWithdrawPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-)
-
-@Serializable
-data class HumanReadableWithdrawIBCPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-    val ibcPayload: String,
-)
-
-@JsExport
-@Serializable
-data class HumanReadableTransferPayload(
-    val subaccountNumber: Int,
-    val amount: String,
-    val recipient: String,
-)
-
-data class FaucetRecord(
-    val subaccountNumber: Int,
-    val amount: Double,
-    val timestampInMilliseconds: Double,
-)
-
-data class PlaceOrderRecord(
-    val subaccountNumber: Int,
-    val clientId: Int,
-    val timestampInMilliseconds: Double,
-)
-
-data class CancelOrderRecord(
-    val subaccountNumber: Int,
-    val clientId: Int,
-    val timestampInMilliseconds: Double,
-)
-
 
 @JsExport
 open class StateManagerAdaptor(
@@ -486,7 +373,6 @@ open class StateManagerAdaptor(
             }
         }
 
-
     private var lastOrder: SubaccountOrder? = null
         set(value) {
             if (field !== value) {
@@ -624,7 +510,7 @@ open class StateManagerAdaptor(
                     subaccountChannelSubscription(
                         oldValue.address,
                         oldValue.subaccountNumber,
-                        false
+                        false,
                     )
                 }
 
@@ -648,7 +534,6 @@ open class StateManagerAdaptor(
                     // Do not set socketConnected to true here, wait for the "connected" message
                     socketConnected = false
                 }
-
             }, received = { message ->
                 processSocketResponse(message)
             })
@@ -684,7 +569,9 @@ open class StateManagerAdaptor(
     }
 
     internal fun socket(
-        type: String, channel: String, params: IMap<String, Any>? = null,
+        type: String,
+        channel: String,
+        params: IMap<String, Any>? = null,
     ) {
         val request = mutableMapOf<String, Any>("type" to type, "channel" to channel)
         if (params != null) {
@@ -700,10 +587,13 @@ open class StateManagerAdaptor(
     private fun marketsChannelSubscription(subscribe: Boolean = true) {
         val channel = configs.marketsChannel() ?: throw Exception("market is null")
         socket(
-            socketAction(subscribe), channel,
+            socketAction(subscribe),
+            channel,
             if (subscribe && shouldBatchMarketsChannelData()) {
                 iMapOf("batched" to "true")
-            } else null
+            } else {
+                null
+            },
         )
     }
 
@@ -715,11 +605,13 @@ open class StateManagerAdaptor(
     private fun marketTradesChannelSubscription(market: String, subscribe: Boolean = true) {
         val channel = configs.marketTradesChannel() ?: throw Exception("trades channel is null")
         socket(
-            socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketTradesChannelData())
+            socketAction(subscribe),
+            channel,
+            if (subscribe && shouldBatchMarketTradesChannelData()) {
                 iMapOf("id" to market, "batched" to "true")
-            else
+            } else {
                 iMapOf("id" to market)
+            },
         )
     }
 
@@ -727,17 +619,18 @@ open class StateManagerAdaptor(
         return false
     }
 
-
     @Throws(Exception::class)
     private fun marketOrderbookChannelSubscription(market: String, subscribe: Boolean = true) {
         val channel =
             configs.marketOrderbookChannel() ?: throw Exception("orderbook channel is null")
         socket(
-            socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketOrderbookChannelData())
+            socketAction(subscribe),
+            channel,
+            if (subscribe && shouldBatchMarketOrderbookChannelData()) {
                 iMapOf("id" to market, "batched" to "true")
-            else
+            } else {
                 iMapOf("id" to market)
+            },
         )
     }
 
@@ -747,14 +640,16 @@ open class StateManagerAdaptor(
 
     @Throws(Exception::class)
     private fun subaccountChannelSubscription(
-        accountAddress: String, subaccountNumber: Int, subscribe: Boolean = true,
+        accountAddress: String,
+        subaccountNumber: Int,
+        subscribe: Boolean = true,
     ) {
         val channel =
             configs.subaccountChannel() ?: throw Exception("subaccount channel is null")
         socket(
             socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber)
+            subaccountChannelParams(accountAddress, subaccountNumber),
         )
     }
 
@@ -773,7 +668,6 @@ open class StateManagerAdaptor(
                     socket(json)
                 }
             } catch (_: Exception) {
-
             }
         }
     }
@@ -795,7 +689,7 @@ open class StateManagerAdaptor(
                     val content = parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = socketSubscribed(channel, id, subaccountNumber, content)
                 }
@@ -808,7 +702,7 @@ open class StateManagerAdaptor(
                     val content = parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = socketChannelData(channel, id, subaccountNumber, info, content)
                 }
@@ -819,7 +713,7 @@ open class StateManagerAdaptor(
                     val content = parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = socketChannelBatchData(channel, id, subaccountNumber, content)
                 }
@@ -835,7 +729,7 @@ open class StateManagerAdaptor(
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ $type ] is not handled"
+                        "Type [ $type ] is not handled",
                     )
                 }
             }
@@ -882,7 +776,7 @@ open class StateManagerAdaptor(
             val dataNotification = this.dataNotification
             stateNotification?.stateChanged(
                 stateMachine.state,
-                changes
+                changes,
             )
             if (dataNotification != null) {
                 if (state?.marketsSummary !== oldState?.marketsSummary) {
@@ -920,7 +814,7 @@ open class StateManagerAdaptor(
                     if (marketHistoricalFunding !== oldMarketHistoricalFunding) {
                         dataNotification.marketHistoricalFundingChanged(
                             marketHistoricalFunding,
-                            marketId
+                            marketId,
                         )
                     }
 
@@ -977,7 +871,7 @@ open class StateManagerAdaptor(
                     if (fundingPayments !== oldFundingPayments) {
                         dataNotification.subaccountFundingPaymentsChanged(
                             fundingPayments,
-                            subaccountId
+                            subaccountId,
                         )
                     }
                 }
@@ -1046,7 +940,7 @@ open class StateManagerAdaptor(
             else -> {
                 throw ParsingException(
                     ParsingErrorType.UnknownChannel,
-                    "$channel is not known"
+                    "$channel is not known",
                 )
             }
         }
@@ -1056,14 +950,14 @@ open class StateManagerAdaptor(
         if (channel == null) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "$channel is not known"
+                "$channel is not known",
             )
         }
         val marketAndResolution = channel.split("/")
         if (marketAndResolution.size != 2) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "$channel is not known"
+                "$channel is not known",
             )
         }
         val market = marketAndResolution[0]
@@ -1074,7 +968,6 @@ open class StateManagerAdaptor(
     open fun socketConnectedSubaccountNumber(id: String?): Int {
         return 0
     }
-
 
     @Throws(Exception::class)
     private fun socketChannelData(
@@ -1096,7 +989,7 @@ open class StateManagerAdaptor(
             configs.marketOrderbookChannel() -> {
                 throw ParsingException(
                     ParsingErrorType.UnhandledEndpoint,
-                    "channel_data for ${channel} is not implemented"
+                    "channel_data for $channel is not implemented",
                 )
             }
 
@@ -1112,12 +1005,11 @@ open class StateManagerAdaptor(
             else -> {
                 throw ParsingException(
                     ParsingErrorType.UnknownChannel,
-                    "$channel is not known"
+                    "$channel is not known",
                 )
             }
         }
     }
-
 
     @Throws(Exception::class)
     private fun socketChannelBatchData(
@@ -1130,7 +1022,7 @@ open class StateManagerAdaptor(
             configs.marketsChannel() -> {
                 stateMachine.receivedBatchedMarketsChanges(
                     content,
-                    subaccountNumber ?: 0
+                    subaccountNumber ?: 0,
                 )
             }
 
@@ -1142,7 +1034,7 @@ open class StateManagerAdaptor(
                 stateMachine.receivedBatchOrderbookChanges(
                     id,
                     content,
-                    subaccountNumber ?: 0
+                    subaccountNumber ?: 0,
                 )
             }
 
@@ -1154,7 +1046,7 @@ open class StateManagerAdaptor(
             else -> {
                 throw ParsingException(
                     ParsingErrorType.UnknownChannel,
-                    "$channel is not known"
+                    "$channel is not known",
                 )
             }
         }
@@ -1165,7 +1057,6 @@ open class StateManagerAdaptor(
     }
 
     open fun retrieveFeeTiers() {
-
     }
 
     fun get(
@@ -1186,7 +1077,9 @@ open class StateManagerAdaptor(
         return if (params != null) {
             val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }
             "$url?$queryString"
-        } else url
+        } else {
+            url
+        }
     }
 
     open fun getWithFullUrl(
@@ -1198,7 +1091,9 @@ open class StateManagerAdaptor(
             ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headers ->
                 val time = if (configs.isIndexer(fullUrl) && success(httpCode)) {
                     Clock.System.now()
-                } else null
+                } else {
+                    null
+                }
 
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (time != null) {
@@ -1210,7 +1105,7 @@ open class StateManagerAdaptor(
                         e.printStackTrace()
                         val error = ParsingError(
                             ParsingErrorType.Unhandled,
-                            e.message ?: "Unknown error"
+                            e.message ?: "Unknown error",
                         )
                         emitError(error)
                     }
@@ -1271,7 +1166,7 @@ open class StateManagerAdaptor(
                 if (success(httpCode) && response != null) {
                     update(
                         stateMachine.configurations(response, subaccountNumber, deploymentUri),
-                        oldState
+                        oldState,
                     )
                 }
             }
@@ -1322,10 +1217,9 @@ open class StateManagerAdaptor(
         val marketCandles = parser.asList(
             parser.value(
                 stateMachine.data,
-                "markets.markets.$market.candles.$candleResolution"
-            )
+                "markets.markets.$market.candles.$candleResolution",
+            ),
         )
-
 
         return retrieveTimed(
             "$url/$market",
@@ -1336,7 +1230,7 @@ open class StateManagerAdaptor(
             "toISO",
             "fromISO",
             mapOf(
-                "resolution" to candleResolution
+                "resolution" to candleResolution,
             ),
             null,
         ) { url, response, httpCode, _ ->
@@ -1379,7 +1273,7 @@ open class StateManagerAdaptor(
                 this.historicalFundingTimer = ioImplementations.timer?.schedule(
                     // Give 30 seconds past the hour to make sure the funding is available
                     (delay + 30.seconds).inWholeSeconds.toDouble(),
-                    null
+                    null,
                 ) {
                     retrieveMarketHistoricalFundings()
                     false
@@ -1402,8 +1296,8 @@ open class StateManagerAdaptor(
         val nanosecond = time.nanosecond
         val duration =
             nanosecond.toDuration(DurationUnit.NANOSECONDS) +
-                    second.toDuration(DurationUnit.SECONDS) +
-                    minute.toDuration(DurationUnit.MINUTES)
+                second.toDuration(DurationUnit.SECONDS) +
+                minute.toDuration(DurationUnit.MINUTES)
 
         return now.minus(duration).plus(1.hours)
     }
@@ -1415,11 +1309,10 @@ open class StateManagerAdaptor(
         val nanosecond = time.nanosecond
         val duration =
             nanosecond.toDuration(DurationUnit.NANOSECONDS) +
-                    second.toDuration(DurationUnit.SECONDS)
+                second.toDuration(DurationUnit.SECONDS)
 
         return now.minus(duration).plus(1.minutes)
     }
-
 
     open fun retrieveAccount() {
         val oldState = stateMachine.state
@@ -1450,8 +1343,8 @@ open class StateManagerAdaptor(
         val historicalTradingRewardsInPeriod = parser.asNativeList(
             parser.value(
                 stateMachine.data,
-                "wallet.account.tradingRewards.historical.$period"
-            )
+                "wallet.account.tradingRewards.historical.$period",
+            ),
         )?.mutable()
 
         retrieveTimed(
@@ -1463,14 +1356,14 @@ open class StateManagerAdaptor(
             "endedAt",
             null,
             params,
-            previousUrl
+            previousUrl,
         ) { url, response, httpCode, _ ->
             if (success(httpCode) && !response.isNullOrEmpty()) {
                 val historicalTradingRewards = parser.decodeJsonObject(response)?.toIMap()
                 if (historicalTradingRewards != null) {
                     val changes = stateMachine.receivedHistoricalTradingRewards(
                         historicalTradingRewards,
-                        period
+                        period,
                     )
                     update(changes, oldState)
                     if (changes.changes.contains(Changes.tradingRewards)) {
@@ -1503,8 +1396,8 @@ open class StateManagerAdaptor(
         val historicalPnl = parser.asNativeList(
             parser.value(
                 stateMachine.data,
-                "wallet.account.subaccounts.$subaccountNumber.historicalPnl"
-            )
+                "wallet.account.subaccounts.$subaccountNumber.historicalPnl",
+            ),
         )?.mutable()
 
         if (historicalPnl != null) {
@@ -1523,13 +1416,13 @@ open class StateManagerAdaptor(
             "createdBeforeOrAt",
             "createdAtOrAfter",
             params,
-            previousUrl
+            previousUrl,
         ) { url, response, httpCode, _ ->
             val oldState = stateMachine.state
             if (success(httpCode) && !response.isNullOrEmpty()) {
                 val changes = stateMachine.historicalPnl(
                     payload = response,
-                    subaccountNumber = subaccountNumber
+                    subaccountNumber = subaccountNumber,
                 )
                 update(changes, oldState)
                 if (changes.changes.contains(Changes.historicalPnl)) {
@@ -1590,11 +1483,11 @@ open class StateManagerAdaptor(
         if (items != null) {
             val lastItemTime =
                 parser.asDatetime(
-                    parser.asMap(items.lastOrNull())?.get(timeField)
+                    parser.asMap(items.lastOrNull())?.get(timeField),
                 )
             val firstItemTime =
                 parser.asDatetime(
-                    parser.asMap(items.firstOrNull())?.get(timeField)
+                    parser.asMap(items.firstOrNull())?.get(timeField),
                 )
             val now = ServerTime.now()
             if (lastItemTime != null && (now.minus(lastItemTime)) > sampleDuration * 2.0) {
@@ -1608,7 +1501,7 @@ open class StateManagerAdaptor(
                     beforeParam,
                     lastItemTime + 1.seconds,
                     afterParam,
-                    additionalParams
+                    additionalParams,
                 )
                 val fullUrl = fullUrl(url, params)
                 if (fullUrl != previousUrl) {
@@ -1753,10 +1646,15 @@ open class StateManagerAdaptor(
         type: ClosePositionInputField,
     ) {
         ioImplementations.threading?.async(ThreadingType.abacus) {
-            val currentMarket = parser.asString(parser.value(stateMachine.input, "closePosition.marketId"))
+            val currentMarket =
+                parser.asString(parser.value(stateMachine.input, "closePosition.marketId"))
             var stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
             if (type == ClosePositionInputField.market && currentMarket != data) {
-                val nextResponse = stateMachine.closePosition("1", ClosePositionInputField.percent, subaccountNumber)
+                val nextResponse = stateMachine.closePosition(
+                    "1",
+                    ClosePositionInputField.percent,
+                    subaccountNumber,
+                )
                 stateResponse = nextResponse.merge(stateResponse)
             }
             ioImplementations.threading?.async(ThreadingType.main) {
@@ -1788,7 +1686,6 @@ open class StateManagerAdaptor(
         data: String?,
         type: TransferInputField?,
     ) {
-
     }
 
     internal open fun transferStatus(
@@ -1798,7 +1695,6 @@ open class StateManagerAdaptor(
         isCctp: Boolean,
         requestId: String? = null,
     ) {
-
     }
 
     internal open fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
@@ -1846,7 +1742,8 @@ open class StateManagerAdaptor(
         val type = trade.type?.rawValue ?: throw Exception("type is null")
         val side = trade.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
-        val triggerPrice = if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
+        val triggerPrice =
+            if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
         val size = summary.size ?: throw Exception("size is null")
         val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null
@@ -1857,17 +1754,27 @@ open class StateManagerAdaptor(
                 OrderType.market -> "FOK"
                 else -> trade.timeInForce ?: "FOK"
             }
-        } else null
+        } else {
+            null
+        }
 
         val execution = if (trade.options?.executionOptions != null) {
             trade.execution ?: "Default"
-        } else null
+        } else {
+            null
+        }
 
-        val goodTilTimeInSeconds = ((if (trade.options?.goodTilUnitOptions != null) {
-            val timeInterval =
-                GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
-            timeInterval / 1.seconds
-        } else null))?.toInt()
+        val goodTilTimeInSeconds = (
+            (
+                if (trade.options?.goodTilUnitOptions != null) {
+                    val timeInterval =
+                        GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
+                    timeInterval / 1.seconds
+                } else {
+                    null
+                }
+                )
+            )?.toInt()
 
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
@@ -1886,7 +1793,7 @@ open class StateManagerAdaptor(
             execution,
             goodTilTimeInSeconds,
             marketInfo,
-            currentHeight
+            currentHeight,
         )
     }
 
@@ -1931,7 +1838,7 @@ open class StateManagerAdaptor(
             postOnly,
             timeInForce,
             execution,
-            goodTilTimeInSeconds
+            goodTilTimeInSeconds,
         )
     }
 
@@ -1947,7 +1854,7 @@ open class StateManagerAdaptor(
         val amount = transfer.size?.size ?: throw Exception("size is null")
         return HumanReadableDepositPayload(
             subaccountNumber,
-            amount
+            amount,
         )
     }
 
@@ -1963,7 +1870,7 @@ open class StateManagerAdaptor(
         val amount = transfer.size?.usdcSize ?: throw Exception("usdcSize is null")
         return HumanReadableWithdrawPayload(
             subaccountNumber,
-            amount
+            amount,
         )
     }
 
@@ -2017,7 +1924,7 @@ open class StateManagerAdaptor(
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload {
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             ?: throw Exception("subaccount is null")
-        val order = subaccount.orders?.firstOrNull() { it.id == orderId }
+        val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
         val clientId = order.clientId ?: throw Exception("clientId is null")
         val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
@@ -2142,7 +2049,7 @@ open class StateManagerAdaptor(
                                 .toDouble() - faucet.timestampInMilliseconds
                             tracking(
                                 AnalyticsEvent.TransferFaucetConfirmed.rawValue,
-                                trackingParams(interval)
+                                trackingParams(interval),
                             )
                             faucetRecords.remove(faucet)
                             break
@@ -2194,8 +2101,9 @@ open class StateManagerAdaptor(
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval), orderAnalyticsPayload
-                        )?.toIMap()
+                            trackingParams(interval),
+                            orderAnalyticsPayload,
+                        )?.toIMap(),
                     )
                     placeOrderRecords.remove(placeOrderRecord)
                     break
@@ -2209,8 +2117,9 @@ open class StateManagerAdaptor(
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval), orderAnalyticsPayload
-                        )?.toIMap()
+                            trackingParams(interval),
+                            orderAnalyticsPayload,
+                        )?.toIMap(),
                     )
                     cancelOrderRecords.remove(cancelOrderRecord)
                     break
@@ -2218,7 +2127,6 @@ open class StateManagerAdaptor(
             }
         }
     }
-
 
     open fun screenSourceAddress() {
         val address = sourceAddress
@@ -2248,7 +2156,6 @@ open class StateManagerAdaptor(
         }
     }
 
-
     private fun rerunAddressScreeningDelay(restriction: Restriction?): Double? {
         return when (restriction) {
             Restriction.NO_RESTRICTION -> addressContinuousMonitoringDuration
@@ -2256,7 +2163,6 @@ open class StateManagerAdaptor(
             else -> null
         }
     }
-
 
     open fun screenAccountAddress() {
         val address = accountAddress
@@ -2311,7 +2217,8 @@ open class StateManagerAdaptor(
                             callback(Restriction.USER_RESTRICTION_UNKNOWN)
                         }
                     }
-                })
+                },
+            )
         }
     }
 
@@ -2324,11 +2231,14 @@ open class StateManagerAdaptor(
                 code?.contains("GEOBLOCKED") == true
             }
 
-            if (geoRestriciton !== null)
+            if (geoRestriciton !== null) {
                 UsageRestriction.http403Restriction
-            else
+            } else {
                 UsageRestriction.userRestriction
-        } else UsageRestriction.http403Restriction
+            }
+        } else {
+            UsageRestriction.http403Restriction
+        }
     }
 
     private fun didSetSourceAddressRestriction(sourceAddressRestriction: Restriction?) {
@@ -2390,7 +2300,6 @@ open class StateManagerAdaptor(
             )
         }
     }
-
 
     internal open fun dispose() {
         stateNotification = null

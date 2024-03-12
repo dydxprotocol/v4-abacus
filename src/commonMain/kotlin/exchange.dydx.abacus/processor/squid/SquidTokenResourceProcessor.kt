@@ -10,8 +10,8 @@ internal class SquidTokenResourceProcessor(parser: ParserProtocol) : BaseProcess
             "address" to "address",
             "symbol" to "symbol",
             "decimals" to "decimals",
-            "logoURI" to "iconUrl"
-        )
+            "logoURI" to "iconUrl",
+        ),
     )
 
     override fun received(

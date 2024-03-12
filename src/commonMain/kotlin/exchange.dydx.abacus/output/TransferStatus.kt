@@ -2,7 +2,6 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -30,7 +29,7 @@ class TransferStatus(
 
             val routeStatusList = parser.asList(data?.get("routeStatus"))
             val fromChain = parser.asMap(data?.get("fromChain"))
-            val toChain =  parser.asMap(data?.get("toChain"))
+            val toChain = parser.asMap(data?.get("toChain"))
 
             val fromChainStatus = TransferChainStatus.create(
                 existing?.fromChainStatus,
@@ -48,7 +47,7 @@ class TransferStatus(
                 TransferRouteStatus.create(
                     null,
                     parser,
-                    routeStatusMap
+                    routeStatusMap,
                 )
             }
 

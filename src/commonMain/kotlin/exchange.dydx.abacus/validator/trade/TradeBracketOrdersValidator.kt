@@ -34,7 +34,7 @@ internal class TradeBracketOrdersValidator(
                 position,
                 trade,
                 price,
-                tickSize
+                tickSize,
             )
         } else {
             return null
@@ -52,7 +52,7 @@ internal class TradeBracketOrdersValidator(
             position,
             trade,
             price,
-            tickSize
+            tickSize,
         )
         if (takeProfitError != null) {
             errors.add(takeProfitError)
@@ -61,7 +61,7 @@ internal class TradeBracketOrdersValidator(
             position,
             trade,
             price,
-            tickSize
+            tickSize,
         )
         if (stopError != null) {
             errors.add(stopError)
@@ -82,7 +82,7 @@ internal class TradeBracketOrdersValidator(
                 trade,
                 position,
                 triggerPrice,
-                tickSize
+                tickSize,
             )
             ?: validateTakeProfitReduceOnly(trade, position)
     }
@@ -105,11 +105,13 @@ internal class TradeBracketOrdersValidator(
                             "EXPECTED_PRICE" to mapOf(
                                 "value" to price,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             "BUY" -> {
@@ -123,11 +125,13 @@ internal class TradeBracketOrdersValidator(
                             "EXPECTED_PRICE" to mapOf(
                                 "value" to price,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             else -> null
@@ -152,7 +156,7 @@ internal class TradeBracketOrdersValidator(
                         "BRACKET_ORDER_TAKE_PROFIT_ABOVE_LIQUIDATION_PRICE",
                         listOf(
                             "brackets.takeProfit.triggerPrice",
-                            "brackets.takeProfit.reduceOnly"
+                            "brackets.takeProfit.reduceOnly",
                         ),
                         "ERRORS.TRADE_BOX_TITLE.BRACKET_ORDER_TAKE_PROFIT_ABOVE_LIQUIDATION_PRICE",
                         "ERRORS.TRADE_BOX.BRACKET_ORDER_TAKE_PROFIT_ABOVE_LIQUIDATION_PRICE",
@@ -160,11 +164,13 @@ internal class TradeBracketOrdersValidator(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             "BUY" -> {
@@ -173,7 +179,7 @@ internal class TradeBracketOrdersValidator(
                         "BRACKET_ORDER_TAKE_PROFIT_BELOW_LIQUIDATION_PRICE",
                         listOf(
                             "brackets.takeProfit.triggerPrice",
-                            "brackets.takeProfit.reduceOnly"
+                            "brackets.takeProfit.reduceOnly",
                         ),
                         "ERRORS.TRADE_BOX_TITLE.BRACKET_ORDER_TAKE_PROFIT_BELOW_LIQUIDATION_PRICE",
                         "ERRORS.TRADE_BOX.BRACKET_ORDER_TAKE_PROFIT_BELOW_LIQUIDATION_PRICE",
@@ -181,11 +187,13 @@ internal class TradeBracketOrdersValidator(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             else -> null
@@ -200,27 +208,34 @@ internal class TradeBracketOrdersValidator(
             parser.asBool(parser.value(trade, "brackets.takeProfit.reduceOnly")) ?: false
         val sizePostOrder =
             parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
-        return if (reduceOnly) when (parser.asString(trade["side"])) {
-            "SELL" -> {
-                if (sizePostOrder > 0.0) {
-                    reduceOnlyError(
-                        listOf("brackets.takeProfit.triggerPrice", "brackets.takeProfit.reduceOnly")
-                    )
-                } else null
-            }
+        return if (reduceOnly) {
+            when (parser.asString(trade["side"])) {
+                "SELL" -> {
+                    if (sizePostOrder > 0.0) {
+                        reduceOnlyError(
+                            listOf("brackets.takeProfit.triggerPrice", "brackets.takeProfit.reduceOnly"),
+                        )
+                    } else {
+                        null
+                    }
+                }
 
-            "BUY" -> {
-                if (sizePostOrder < 0.0) {
-                    reduceOnlyError(
-                        listOf("brackets.takeProfit.triggerPrice", "brackets.takeProfit.reduceOnly")
-                    )
-                } else null
-            }
+                "BUY" -> {
+                    if (sizePostOrder < 0.0) {
+                        reduceOnlyError(
+                            listOf("brackets.takeProfit.triggerPrice", "brackets.takeProfit.reduceOnly"),
+                        )
+                    } else {
+                        null
+                    }
+                }
 
-            else -> null
-        } else null
+                else -> null
+            }
+        } else {
+            null
+        }
     }
-
 
     private fun validateStopLoss(
         position: Map<String, Any>,
@@ -235,7 +250,7 @@ internal class TradeBracketOrdersValidator(
                 trade,
                 position,
                 triggerPrice,
-                tickSize
+                tickSize,
             )
             ?: validateStopLossReduceOnly(trade, position)
     }
@@ -258,11 +273,13 @@ internal class TradeBracketOrdersValidator(
                             "EXPECTED_PRICE" to mapOf(
                                 "value" to price,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             "BUY" -> {
@@ -276,11 +293,13 @@ internal class TradeBracketOrdersValidator(
                             "EXPECTED_PRICE" to mapOf(
                                 "value" to price,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             else -> null
@@ -310,11 +329,13 @@ internal class TradeBracketOrdersValidator(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             "BUY" -> {
@@ -328,11 +349,13 @@ internal class TradeBracketOrdersValidator(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
                                 "format" to "price",
-                                "tickSize" to tickSize
-                            )
-                        )
+                                "tickSize" to tickSize,
+                            ),
+                        ),
                     )
-                } else null
+                } else {
+                    null
+                }
             }
 
             else -> null
@@ -346,27 +369,34 @@ internal class TradeBracketOrdersValidator(
         val reduceOnly = parser.asBool(parser.value(trade, "brackets.stopLoss.reduceOnly")) ?: false
         val sizePostOrder =
             parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
-        return if (reduceOnly) when (parser.asString(trade["side"])) {
-            "SELL" -> {
-                if (sizePostOrder > 0.0) {
-                    reduceOnlyError(
-                        listOf("brackets.stopLoss.triggerPrice", "brackets.stopLoss.reduceOnly")
-                    )
-                } else null
-            }
+        return if (reduceOnly) {
+            when (parser.asString(trade["side"])) {
+                "SELL" -> {
+                    if (sizePostOrder > 0.0) {
+                        reduceOnlyError(
+                            listOf("brackets.stopLoss.triggerPrice", "brackets.stopLoss.reduceOnly"),
+                        )
+                    } else {
+                        null
+                    }
+                }
 
-            "BUY" -> {
-                if (sizePostOrder < 0.0) {
-                    reduceOnlyError(
-                        listOf("brackets.stopLoss.triggerPrice", "brackets.stopLoss.reduceOnly")
-                    )
-                } else null
-            }
+                "BUY" -> {
+                    if (sizePostOrder < 0.0) {
+                        reduceOnlyError(
+                            listOf("brackets.stopLoss.triggerPrice", "brackets.stopLoss.reduceOnly"),
+                        )
+                    } else {
+                        null
+                    }
+                }
 
-            else -> null
-        } else null
+                else -> null
+            }
+        } else {
+            null
+        }
     }
-
 
     private fun triggerPriceError(
         errorCode: String,
@@ -382,7 +412,7 @@ internal class TradeBracketOrdersValidator(
             "APP.TRADE.ENTER_TRIGGER_PRICE",
             title,
             text,
-            params
+            params,
         )
     }
 
@@ -395,7 +425,7 @@ internal class TradeBracketOrdersValidator(
             field,
             "APP.TRADE.ENTER_TRIGGER_PRICE",
             "ERRORS.TRADE_BOX_TITLE.WOULD_NOT_REDUCE_UNCHECK",
-            "ERRORS.TRADE_BOX.WOULD_NOT_REDUCE_UNCHECK"
+            "ERRORS.TRADE_BOX.WOULD_NOT_REDUCE_UNCHECK",
         )
     }
 }

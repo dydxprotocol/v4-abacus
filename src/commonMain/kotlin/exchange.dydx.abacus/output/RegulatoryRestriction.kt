@@ -33,18 +33,18 @@ data class UsageRestriction(
                 ParsingErrorType.UserRestricted,
                 "User restricted",
                 "ERROR.USER_RESTRICTED",
-                null
-            )
+                null,
+            ),
         )
 
         internal val userRestrictionUnknown: UsageRestriction = UsageRestriction(
             Restriction.USER_RESTRICTION_UNKNOWN,
-            null
+            null,
         )
 
         internal val noRestriction: UsageRestriction = UsageRestriction(
             Restriction.NO_RESTRICTION,
-            null
+            null,
         )
 
         internal val http403Restriction: UsageRestriction = UsageRestriction(
@@ -53,8 +53,8 @@ data class UsageRestriction(
                 ParsingErrorType.HttpError403,
                 "Indexer restricted",
                 "ERROR.HTTPCODE_403",
-                null
-            )
+                null,
+            ),
         )
     }
 }

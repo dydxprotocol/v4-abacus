@@ -7,7 +7,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class TradeMarketOrderTests: ValidationsTests() {
+class TradeMarketOrderTests : ValidationsTests() {
     @Test
     fun testDataFeed() {
         setup()
@@ -28,11 +28,11 @@ class TradeMarketOrderTests: ValidationsTests() {
     private fun testMarketOrderbookSlippageAndLiquidity() {
         test({
             perp.tradeInMarket("ETH-USD", 0)
-        },null)
+        }, null)
 
         test({
             perp.trade("MARKET", TradeInputField.type, 0)
-        },null)
+        }, null)
 
         test(
             {
@@ -59,7 +59,7 @@ class TradeMarketOrderTests: ValidationsTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -121,7 +121,7 @@ class TradeMarketOrderTests: ValidationsTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -191,7 +191,7 @@ class TradeMarketOrderTests: ValidationsTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

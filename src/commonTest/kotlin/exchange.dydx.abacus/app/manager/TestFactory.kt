@@ -17,8 +17,8 @@ import exchange.dydx.abacus.protocols.TimerProtocol
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.ApiState
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -123,11 +123,10 @@ class TestRest() : RestProtocol {
 
     var requests = iMutableListOf<String>()
 
-
     init {
         setResponse(
             "https://api.examples.com/configs/markets.json",
-            mock.marketsConfigurations.configurations
+            mock.marketsConfigurations.configurations,
         )
         setResponse(
             "https://dydx-v4-shared-resources.vercel.app/config/localization/languages.json",
@@ -175,7 +174,7 @@ class TestRest() : RestProtocol {
                         "name": "Türkçe"
                     }
                 ]
-            """.trimIndent()
+            """.trimIndent(),
         )
         setResponse(
             "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -196,7 +195,7 @@ class TestRest() : RestProtocol {
                       ]
                    }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -299,7 +298,7 @@ class TestWebSocket : WebSocketProtocol {
         this.received?.invoke(
             """
             {"type":"connected","connection_id":"c98ace50-5f67-4ed8-8096-de0c694eeb1d","message_id":0}
-        """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -314,6 +313,8 @@ class TestChain : DYDXChainTransactionsProtocol {
     var cancelOrderResponse: String? = null
     var depositResponse: String? = null
     var withdrawResponse: String? = null
+
+    var requests = mutableListOf<QueryType>()
 
     val dummySuccess = """
         {
@@ -342,6 +343,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         paramsInJson: String?,
         callback: (response: String?) -> Unit
     ) {
+        requests.add(type)
         when (type) {
             QueryType.Height -> {
                 getHeight(callback)
@@ -416,8 +418,6 @@ class TestChain : DYDXChainTransactionsProtocol {
             callback(dummyError)
         }
     }
-
-
 }
 
 class TestThreading : ThreadingProtocol {

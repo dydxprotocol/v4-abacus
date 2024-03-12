@@ -24,9 +24,9 @@ internal open class BaseInputValidator(
             "fields" to listOf(field),
             "resources" to mapOf(
                 "action" to mapOf(
-                    "stringKey" to actionStringKey
-                )
-            )
+                    "stringKey" to actionStringKey,
+                ),
+            ),
         )
     }
 
@@ -50,18 +50,18 @@ internal open class BaseInputValidator(
             "resources" to mapOf(
                 "title" to listOfNotNull(
                     localize(titleStringKey, null)?.let { "localized" to it } ?: run { null },
-                    "stringKey" to titleStringKey
+                    "stringKey" to titleStringKey,
                 ).toMap(),
                 "text" to listOfNotNull(
                     localize(textStringKey, textParams)?.let { "localized" to it } ?: run { null },
                     "stringKey" to textStringKey,
-                    "params" to params(parser, textParams)
+                    "params" to params(parser, textParams),
                 ).toMap(),
                 "action" to listOfNotNull(
                     localize(actionStringKey, null)?.let { "localized" to it } ?: run { null },
-                    "stringKey" to actionStringKey
+                    "stringKey" to actionStringKey,
                 ).toMap(),
-            )
+            ),
         ).filterNotNull()
     }
 
@@ -113,7 +113,8 @@ internal open class BaseInputValidator(
     }
 
     private fun params(
-        parser: ParserProtocol, map: Map<String, Any>?,
+        parser: ParserProtocol,
+        map: Map<String, Any>?,
     ): List<Map<String, Any>>? {
         if (map != null) {
             val params = mutableListOf<Map<String, Any>>()

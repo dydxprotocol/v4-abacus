@@ -7,7 +7,7 @@ import exchange.dydx.abacus.utils.mutable
 internal class SquidStatusProcessor(
     parser: ParserProtocol,
     private val transactionId: String?,
-    ) : BaseProcessor(parser) {
+) : BaseProcessor(parser) {
 
     override fun received(
         existing: Map<String, Any>?,

@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
+@Suppress("PropertyName")
 internal class TradesChannelMock {
     internal val subscribed = """
         {

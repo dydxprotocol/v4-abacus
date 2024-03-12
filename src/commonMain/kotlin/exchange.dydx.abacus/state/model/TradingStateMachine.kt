@@ -69,10 +69,9 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration.Companion.days
 
-
 @Suppress("UNCHECKED_CAST")
 @JsExport
-//@Serializable
+// @Serializable
 open class TradingStateMachine(
     private val environment: V4Environment?,
     private val localizer: LocalizerProtocol?,
@@ -95,7 +94,6 @@ open class TradingStateMachine(
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser)
     internal val inputValidator = InputValidator(localizer, formatter, parser)
-
 
     internal var data: Map<String, Any>? = null
 
@@ -170,7 +168,6 @@ open class TradingStateMachine(
             this.wallet = if (modified.size != 0) modified else null
         }
 
-
     internal var configs: Map<String, Any>?
         get() {
             return parser.asNativeMap(data?.get("configs"))
@@ -211,7 +208,6 @@ open class TradingStateMachine(
             this.data = if (modified.size != 0) modified else null
         }
 
-
     internal var launchIncentive: Map<String, Any>?
         get() {
             return parser.asNativeMap(data?.get("launchIncentive"))
@@ -221,7 +217,6 @@ open class TradingStateMachine(
             modified.safeSet("launchIncentive", value)
             this.data = if (modified.size != 0) modified else null
         }
-
 
     var state: PerpetualState? = null
 
@@ -244,8 +239,8 @@ open class TradingStateMachine(
                     ParsingError(
                         ParsingErrorType.ParsingError,
                         "$jsonString is not a valid JSON object",
-                        e.stackTraceToString()
-                    )
+                        e.stackTraceToString(),
+                    ),
                 )
                 null
             }
@@ -274,7 +269,7 @@ open class TradingStateMachine(
                     val content = parser.asNativeMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     when (channel) {
                         "v3_markets", "v4_markets" -> {
@@ -304,7 +299,7 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel subscribed is not known"
+                                "$channel subscribed is not known",
                             )
                         }
                     }
@@ -316,7 +311,7 @@ open class TradingStateMachine(
                     val content = parser.asNativeMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     when (channel) {
                         "v3_markets", "v4_markets" -> {
@@ -330,7 +325,7 @@ open class TradingStateMachine(
                         "v3_orderbook", "v4_orderbook" -> {
                             throw ParsingException(
                                 ParsingErrorType.UnhandledEndpoint,
-                                "channel_data for ${channel} is not implemented"
+                                "channel_data for $channel is not implemented",
                             )
                             //                                    change = receivedOrderbookChanges(market, it)
                         }
@@ -349,7 +344,7 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel channel data is not known"
+                                "$channel channel data is not known",
                             )
                         }
                     }
@@ -359,7 +354,7 @@ open class TradingStateMachine(
                     val content = parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     when (channel) {
                         "v3_markets", "v4_markets" -> {
@@ -382,7 +377,7 @@ open class TradingStateMachine(
                             changes = receivedBatchOrderbookChanges(
                                 market,
                                 content,
-                                subaccountNumber
+                                subaccountNumber,
                             )
                         }
 
@@ -393,7 +388,7 @@ open class TradingStateMachine(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel channel batch data is not known"
+                                "$channel channel batch data is not known",
                             )
                         }
                     }
@@ -408,7 +403,7 @@ open class TradingStateMachine(
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ $type # $channel ] is not handled"
+                        "Type [ $type # $channel ] is not handled",
                     )
                 }
             }
@@ -426,14 +421,14 @@ open class TradingStateMachine(
         if (channel == null) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "$channel is not known"
+                "$channel is not known",
             )
         }
         val marketAndResolution = channel.split("/")
         if (marketAndResolution.size != 2) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "$channel is not known"
+                "$channel is not known",
             )
         }
         val market = marketAndResolution[0]
@@ -495,17 +490,18 @@ open class TradingStateMachine(
             }
 
             else -> {
-                if (url.path.contains("/v3/historical-funding/") || url.path.contains("/v4/historicalFunding/"))
+                if (url.path.contains("/v3/historical-funding/") || url.path.contains("/v4/historicalFunding/")) {
                     changes = historicalFundings(payload)
-                else if (url.path.contains("/v3/candles/") || url.path.contains("/v4/candles/"))
+                } else if (url.path.contains("/v3/candles/") || url.path.contains("/v4/candles/")) {
                     changes = candles(payload)
-                else if (url.path.contains("/v4/addresses/"))
+                } else if (url.path.contains("/v4/addresses/")) {
                     changes = account(payload)
-                else
+                } else {
                     error = ParsingError(
                         ParsingErrorType.UnhandledEndpoint,
-                        "${url.path} parsing has not be implemented, or is an invalid endpoint"
+                        "${url.path} parsing has not be implemented, or is an invalid endpoint",
                     )
+                }
             }
         }
         if (changes != null) {
@@ -536,8 +532,8 @@ open class TradingStateMachine(
                 Changes.historicalPnl,
                 Changes.fills,
                 Changes.transfers,
-                Changes.fundingPayments
-            )
+                Changes.fundingPayments,
+            ),
         )
         update(changes)
         walletProcessor.accountAddress = accountAddress
@@ -552,20 +548,25 @@ open class TradingStateMachine(
         val json = parser.decodeJsonObject(payload)
         return if (json != null) {
             receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
-        } else StateChanges.noChange
+        } else {
+            StateChanges.noChange
+        }
     }
 
     internal fun update(changes: StateChanges): StateChanges {
         if (changes.changes.contains(Changes.input)) {
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
 
-            val subaccount = if (subaccountNumber != null)
+            val subaccount = if (subaccountNumber != null) {
                 parser.asNativeMap(
                     parser.value(
                         this.account,
-                        "subaccounts.$subaccountNumber"
-                    )
-                ) else null
+                        "subaccounts.$subaccountNumber",
+                    ),
+                )
+            } else {
+                null
+            }
             this.input = inputValidator.validate(
                 this.wallet,
                 this.user,
@@ -596,7 +597,6 @@ open class TradingStateMachine(
 
         val wallet = state?.wallet
         val input = state?.input
-
 
         state = update(state, changes, tokensInfo, localizer)
 
@@ -705,7 +705,6 @@ open class TradingStateMachine(
         setSubaccount(modifiedSubaccount, subaccountNumber)
     }
 
-
     private fun subaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
         return subaccountList(subaccountNumber, "historicalPnl")
     }
@@ -744,7 +743,9 @@ open class TradingStateMachine(
             parser.asNativeMap(subaccountsData)?.keys?.mapNotNull { key ->
                 parser.asInt(key)
             }?.toIList() ?: iListOf<Int>()
-        } else iListOf<Int>()
+        } else {
+            iListOf<Int>()
+        }
     }
 
     private fun maxSubaccountNumber(): Int? {
@@ -772,17 +773,23 @@ open class TradingStateMachine(
                 subaccountNumbers.add(i)
             }
             subaccountNumbers
-        } else iListOf(0)
+        } else {
+            iListOf(0)
+        }
     }
 
     private fun recalculateStates(changes: StateChanges) {
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
         if (changes.changes.contains(Changes.subaccount)) {
-            val periods = if (this.input != null) setOf(
-                CalculationPeriod.current,
-                CalculationPeriod.post,
-                CalculationPeriod.settled
-            ) else setOf(CalculationPeriod.current)
+            val periods = if (this.input != null) {
+                setOf(
+                    CalculationPeriod.current,
+                    CalculationPeriod.post,
+                    CalculationPeriod.settled,
+                )
+            } else {
+                setOf(CalculationPeriod.current)
+            }
 
             this.marketsSummary?.let { marketsSummary ->
                 parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
@@ -811,8 +818,8 @@ open class TradingStateMachine(
                                     parser.asDouble(
                                         parser.value(
                                             this.account,
-                                            "subaccounts.$subaccountNumber.openPositions.$marketId.leverage.postOrder"
-                                        )
+                                            "subaccounts.$subaccountNumber.openPositions.$marketId.leverage.postOrder",
+                                        ),
                                     )
                                 modified.safeSet("trade.size.leverage", leverage)
                             } else {
@@ -826,7 +833,6 @@ open class TradingStateMachine(
                 }
 
                 "closePosition", "transfer" -> {
-
                 }
             }
             modified.safeSet("receiptLines", calculateReceipt(modified))
@@ -846,7 +852,7 @@ open class TradingStateMachine(
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.expectedPrice.rawValue,
                             ReceiptLine.fee.rawValue,
-                            ReceiptLine.reward.rawValue
+                            ReceiptLine.reward.rawValue,
                         )
                     }
 
@@ -855,7 +861,7 @@ open class TradingStateMachine(
                             ReceiptLine.buyingPower.rawValue,
                             ReceiptLine.marginUsage.rawValue,
                             ReceiptLine.fee.rawValue,
-                            ReceiptLine.reward.rawValue
+                            ReceiptLine.reward.rawValue,
                         )
                     }
                 }
@@ -867,7 +873,7 @@ open class TradingStateMachine(
                     ReceiptLine.marginUsage.rawValue,
                     ReceiptLine.expectedPrice.rawValue,
                     ReceiptLine.fee.rawValue,
-                    ReceiptLine.reward.rawValue
+                    ReceiptLine.reward.rawValue,
                 )
             }
 
@@ -884,7 +890,7 @@ open class TradingStateMachine(
                             ReceiptLine.bridgeFee.rawValue,
                             ReceiptLine.fee.rawValue,
                             ReceiptLine.slippage.rawValue,
-                            ReceiptLine.transferRouteEstimatedDuration.rawValue
+                            ReceiptLine.transferRouteEstimatedDuration.rawValue,
                         )
                     }
 
@@ -892,7 +898,7 @@ open class TradingStateMachine(
                         listOf(
                             ReceiptLine.equity.rawValue,
                             ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue
+                            ReceiptLine.fee.rawValue,
                         )
                     }
 
@@ -947,8 +953,8 @@ open class TradingStateMachine(
                         parser.asNativeMap(
                             parser.value(
                                 data,
-                                "markets.markets.$marketId.orderbook"
-                            )
+                                "markets.markets.$marketId.orderbook",
+                            ),
                         )
                     val existing = orderbooks?.get(marketId)
                     val orderbook = MarketOrderbook.create(existing, parser, data)
@@ -967,8 +973,8 @@ open class TradingStateMachine(
                     val data = parser.asList(
                         parser.value(
                             data,
-                            "markets.markets.$marketId.trades"
-                        )
+                            "markets.markets.$marketId.trades",
+                        ),
                     ) as? IList<Map<String, Any>>
                     val existing = trades?.get(marketId)
                     val trades = MarketTrade.create(existing, parser, data, localizer)
@@ -987,8 +993,8 @@ open class TradingStateMachine(
                     val data = parser.asList(
                         parser.value(
                             data,
-                            "markets.markets.$marketId.historicalFunding"
-                        )
+                            "markets.markets.$marketId.historicalFunding",
+                        ),
                     ) as? IList<Map<String, Any>>
                     val existing = historicalFundings?.get(marketId)
                     val historicalFunding = MarketHistoricalFunding.create(existing, parser, data)
@@ -1065,12 +1071,12 @@ open class TradingStateMachine(
                         account.stakingBalances,
                         subaccounts,
                         account.tradingRewards,
-                        account.launchIncentivePoints
+                        account.launchIncentivePoints,
                     )
                 }
             }
             if (changes.changes.contains(Changes.accountBalances) || changes.changes.contains(
-                    Changes.tradingRewards
+                    Changes.tradingRewards,
                 )
             ) {
                 account = Account.create(account, parser, accountData, tokensInfo, localizer)
@@ -1108,7 +1114,7 @@ open class TradingStateMachine(
                     subaccountHistoricalPnl,
                     parser,
                     subaccountHistoricalPnlData,
-                    start
+                    start,
                 )
                 modifiedHistoricalPnl.typedSafeSet(subaccountText, subaccountHistoricalPnl)
                 historicalPnl = modifiedHistoricalPnl
@@ -1131,7 +1137,7 @@ open class TradingStateMachine(
                 subaccountTransfers = SubaccountTransfer.create(
                     subaccountTransfers,
                     parser,
-                    subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>
+                    subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>,
                 )
                 modifiedTransfers.typedSafeSet(subaccountText, subaccountTransfers)
                 transfers = modifiedTransfers
@@ -1142,7 +1148,7 @@ open class TradingStateMachine(
                 subaccountFundingPayments = SubaccountFundingPayment.create(
                     subaccountFundingPayments,
                     parser,
-                    subaccountFundingPayments(subaccountNumber) as? IList<Map<String, Any>>
+                    subaccountFundingPayments(subaccountNumber) as? IList<Map<String, Any>>,
                 )
                 modifiedFundingPayments.typedSafeSet(subaccountText, subaccountFundingPayments)
                 fundingPayments = modifiedFundingPayments
@@ -1250,7 +1256,6 @@ open class TradingStateMachine(
     }
 
     private fun setMarkets(markets: Map<String, Any>?) {
-
     }
 
     fun setHistoricalPnlDays(days: Int, subaccountNumber: Int): StateResponse {
@@ -1263,7 +1268,9 @@ open class TradingStateMachine(
             val changes = StateChanges(iListOf(Changes.historicalPnl))
             state = update(state, changes, tokensInfo, localizer)
             StateResponse(state, changes)
-        } else noChange()
+        } else {
+            noChange()
+        }
     }
 
     fun clearInput(subaccountNumber: Int): StateResponse {
@@ -1281,12 +1288,16 @@ open class TradingStateMachine(
                 val changes = StateChanges(
                     iListOf(Changes.input, Changes.subaccount),
                     null,
-                    iListOf(subaccountNumber)
+                    iListOf(subaccountNumber),
                 )
                 state = update(state, changes, tokensInfo, localizer)
                 StateResponse(state, changes)
-            } else noChange()
-        } else noChange()
+            } else {
+                noChange()
+            }
+        } else {
+            noChange()
+        }
     }
 
     fun clearTradeInput(input: Map<String, Any>): Map<String, Any> {
@@ -1313,7 +1324,7 @@ open class TradingStateMachine(
             val (modifiedWallet, updated) = walletProcessor.received(
                 wallet,
                 subaccountNumber,
-                height
+                height,
             )
             if (updated) {
                 this.wallet = wallet

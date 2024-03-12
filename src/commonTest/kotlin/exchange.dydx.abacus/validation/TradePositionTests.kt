@@ -86,9 +86,8 @@ class TradePositionTests : ValidationsTests() {
                     }
                 }
             """
-                .trimIndent()
+                .trimIndent(),
         )
-
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
@@ -130,9 +129,8 @@ class TradePositionTests : ValidationsTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -166,7 +164,7 @@ class TradePositionTests : ValidationsTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -186,7 +184,7 @@ class TradePositionTests : ValidationsTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

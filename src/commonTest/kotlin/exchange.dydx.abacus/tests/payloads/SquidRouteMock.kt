@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
+@Suppress("PropertyName")
 class SquidRouteMock {
     internal val errors_payload = """
         {

@@ -2,6 +2,7 @@ package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.TimerProtocol
+import kollections.JsExport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -9,11 +10,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kollections.JsExport
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-internal class Timer (
+internal class Timer(
     private val delay: Duration = Duration.ZERO,
     private val repeat: Duration? = null,
     action: suspend () -> Boolean,
@@ -80,7 +80,7 @@ internal class Timer (
 }
 
 @JsExport
-class LocalTimer(): LocalTimerProtocol {
+class LocalTimer() : LocalTimerProtocol {
     internal var timer: Timer? = null
     override fun cancel() {
         timer?.cancel()
@@ -88,7 +88,7 @@ class LocalTimer(): LocalTimerProtocol {
 }
 
 @JsExport
-class CoroutineTimer: TimerProtocol {
+class CoroutineTimer : TimerProtocol {
     companion object {
         var instance = CoroutineTimer()
     }

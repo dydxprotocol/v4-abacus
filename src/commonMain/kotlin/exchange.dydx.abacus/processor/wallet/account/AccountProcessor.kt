@@ -193,25 +193,25 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             "id" to "id",
             "accountNumber" to "accountNumber",
             "starkKey" to "starkKey",
-            "positionId" to "positionId"
+            "positionId" to "positionId",
         ),
         "double" to mapOf(
             "pendingDeposits" to "pendingDeposits",
-            "pendingWithdrawals" to "pendingWithdrawals"
+            "pendingWithdrawals" to "pendingWithdrawals",
         ),
         "datetime" to mapOf(
-            "createdAt" to "createdAt"
+            "createdAt" to "createdAt",
         ),
         "bool" to mapOf(
-            "marginEnabled" to "marginEnabled"
-        )
+            "marginEnabled" to "marginEnabled",
+        ),
     )
 
     private val currentAccountKeyMap = mapOf(
         "double" to mapOf(
             "equity" to "equity",
             "freeCollateral" to "freeCollateral",
-            "quoteBalance" to "quoteBalance"
+            "quoteBalance" to "quoteBalance",
         ),
     )
 
@@ -223,6 +223,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         return socket(existing, content, true, height)
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
@@ -264,7 +265,9 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         val transfersPayloadList = if (transfersPayload != null) {
             parser.asNativeList(transfersPayload)
                 ?: parser.asNativeList(listOf(parser.asNativeMap(transfersPayload)))
-        } else null
+        } else {
+            null
+        }
 
         if (transfersPayloadList != null) {
             subaccount = receivedTransfers(subaccount, transfersPayloadList, false)
@@ -294,18 +297,23 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
 
         if (firstTime) {
             val openPerpetualPositionsData =
-                (parser.asNativeMap(payload["openPositions"])
-                    ?: parser.asNativeMap(payload["openPerpetualPositions"]))
+                (
+                    parser.asNativeMap(payload["openPositions"])
+                        ?: parser.asNativeMap(payload["openPerpetualPositions"])
+                    )
 
             val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
             modified.safeSet(
                 "positions",
-                positions
+                positions,
             )
-            modified.safeSet("openPositions", positions?.filterValues { it ->
-                val data = parser.asNativeMap(it)
-                parser.asString(data?.get("status")) == "OPEN"
-            }?.toMap())
+            modified.safeSet(
+                "openPositions",
+                positions?.filterValues { it ->
+                    val data = parser.asNativeMap(it)
+                    parser.asString(data?.get("status")) == "OPEN"
+                }?.toMap(),
+            )
 
             val assetPositionsData = parser.asNativeMap(payload["assetPositions"])
             modified.safeSet("assetPositions", assetPositionsProcessor.received(assetPositionsData))
@@ -346,8 +354,12 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             if (size != null) {
                 val side = parser.asString(usdc["side"])
                 if (side == "LONG") size else size * -1.0
-            } else null
-        } else null
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 
     private fun receivedOrders(
@@ -421,7 +433,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             parser.asNativeList(payload)?.let {
                 fundingPaymentsProcessor.received(
                     if (reset) null else parser.asNativeList(existing),
-                    it
+                    it,
                 )
             }
         } ?: subaccount
@@ -435,13 +447,16 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             val modified = subaccount.mutable()
             val positions = perpetualPositionsProcessor.receivedChanges(
                 parser.asNativeMap(subaccount["positions"]),
-                payload
+                payload,
             )
             modified.safeSet("positions", positions)
-            modified.safeSet("openPositions", positions?.filterValues { it ->
-                val data = parser.asNativeMap(it)
-                parser.asString(data?.get("status")) == "OPEN"
-            }?.toMap())
+            modified.safeSet(
+                "openPositions",
+                positions?.filterValues { it ->
+                    val data = parser.asNativeMap(it)
+                    parser.asString(data?.get("status")) == "OPEN"
+                }?.toMap(),
+            )
             modified
         } else {
             subaccount
@@ -456,7 +471,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             val modified = subaccount.mutable()
             val transformed = assetPositionsProcessor.receivedChanges(
                 parser.asNativeMap(subaccount["assetPositions"]),
-                payload
+                payload,
             )
             modified.safeSet("assetPositions", transformed)
             modified
@@ -472,7 +487,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         return receivedObject(
             existing,
             "historicalPnl",
-            payload?.get("historicalPnl")
+            payload?.get("historicalPnl"),
         ) { existing, payload ->
             parser.asNativeList(payload)?.let {
                 historicalPNLsProcessor.received(parser.asNativeList(existing), it)
@@ -552,7 +567,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
 
                 modified.safeSet(
                     "entryPrice",
-                    mapOf("current" to newEntryPrice)
+                    mapOf("current" to newEntryPrice),
                 )
                 modified.safeSet("size", mapOf("current" to newSize))
                 return notEmpty(modified)
@@ -579,9 +594,13 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     private fun notEmpty(position: Map<String, Any>?): Map<String, Any>? {
         return if (parser.value(position, "size.current") != null || parser.value(
                 position,
-                "size.postOrder"
+                "size.postOrder",
             ) != null || parser.value(position, "size.postAllOrders") != null
-        ) position else null
+        ) {
+            position
+        } else {
+            null
+        }
     }
 
     internal fun setWalletBalance(
@@ -591,11 +610,10 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         val modified = existing?.mutable() ?: mutableMapOf()
         modified.safeSet(
             "wallet.current",
-            balance?.toBigDecimal(null, Numeric.decimal.highDefinitionMode)
+            balance?.toBigDecimal(null, Numeric.decimal.highDefinitionMode),
         )
         return modified
     }
-
 
     internal fun orderCanceled(
         existing: Map<String, Any>,
@@ -662,7 +680,9 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
                 }
             }
             return modified
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun subaccountPayload(content: Map<String, Any>): Map<String, Any>? {
@@ -684,7 +704,7 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
             val existing = parser.asNativeMap(modified["assetPositions"])
             modified.safeSet(
                 "assetPositions",
-                assetPositionsProcessor.receivedChanges(existing, assetPositionsPayload)
+                assetPositionsProcessor.receivedChanges(existing, assetPositionsPayload),
             )
         }
         modified["quoteBalance"] = calculateQuoteBalance(modified, content)
@@ -735,7 +755,7 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
         if (subaccount != null) {
             val (modifiedSubaccount, updated) = subaccountProcessor.orderCanceled(
                 subaccount,
-                orderId
+                orderId,
             )
             if (updated) {
                 val modified = existing.mutable()
@@ -746,7 +766,6 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
         return Pair(existing, false)
     }
 }
-
 
 @Suppress("UNCHECKED_CAST")
 private class V4AccountBalancesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
@@ -771,7 +790,9 @@ private class V4AccountBalancesProcessor(parser: ParserProtocol) : BaseProcessor
                 }
             }
             return modified
-        } else null
+        } else {
+            null
+        }
     }
 }
 
@@ -793,11 +814,13 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
                             parser.asNativeMap(modified[key])?.mutable()
                         if (current == null) {
                             modified.safeSet(
-                                key, mapOf(
-                                    "denom" to denom, "amount" to parser.asDecimal(
-                                        balance["amount"]
-                                    )
-                                )
+                                key,
+                                mapOf(
+                                    "denom" to denom,
+                                    "amount" to parser.asDecimal(
+                                        balance["amount"],
+                                    ),
+                                ),
                             )
                         } else {
                             val amount = parser.asDecimal(balance["amount"]);
@@ -810,7 +833,9 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
                 }
             }
             return modified
-        } else null
+        } else {
+            null
+        }
     }
 }
 
@@ -834,20 +859,28 @@ private class V4AccountTradingRewardsProcessor(parser: ParserProtocol) : BasePro
         existing: List<Any>?,
         payload: List<Any>?,
     ): List<Any>? {
-        return if (payload != null) historicalTradingRewardsProcessor.received(
-            existing,
-            payload
-        ) else null
+        return if (payload != null) {
+            historicalTradingRewardsProcessor.received(
+                existing,
+                payload,
+            )
+        } else {
+            null
+        }
     }
 
     fun recievedBlockTradingReward(
         existing: List<Any>?,
         payload: Any?,
     ): List<Any>? {
-        return if (payload != null) historicalTradingRewardsProcessor.receivedBlockTradingReward(
-            existing,
-            payload
-        ) else null
+        return if (payload != null) {
+            historicalTradingRewardsProcessor.receivedBlockTradingReward(
+                existing,
+                payload,
+            )
+        } else {
+            null
+        }
     }
 }
 
@@ -928,7 +961,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val modifiedHistoricalTradingRewards =
             tradingRewardsProcessor.recievedHistoricalTradingRewards(
                 historicalTradingRewards,
-                payload
+                payload,
             )
         modified.safeSet("tradingRewards.historical.$period", modifiedHistoricalTradingRewards)
         return modified
@@ -942,14 +975,14 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
         val modifiedSubaccounts = subaccountsProcessor.receivedSubaccounts(
             subaccounts,
-            parser.asList(payload?.get("subaccounts"))
+            parser.asList(payload?.get("subaccounts")),
         )
         modified.safeSet("subaccounts", modifiedSubaccounts)
 
         val tradingRewards = parser.asNativeMap(parser.value(existing, "tradingRewards"))
         val modifiedTradingRewards = tradingRewardsProcessor.receivedTotalTradingRewards(
             tradingRewards,
-            payload?.get("totalTradingRewards")
+            payload?.get("totalTradingRewards"),
         )
         modified.safeSet("tradingRewards", modifiedTradingRewards)
 
@@ -986,9 +1019,12 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             }
 
             return modified
-        } else existing
+        } else {
+            existing
+        }
     }
 
+    @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
@@ -1011,7 +1047,9 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
             }
             return modified
-        } else existing
+        } else {
+            existing
+        }
     }
 
     private fun receivedBlockTradingReward(
@@ -1019,10 +1057,11 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         payload: Any,
     ): MutableMap<String, Any> {
         val modified = existing.mutable()
-        val blockRewards = parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
+        val blockRewards =
+            parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
         val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingReward(
             blockRewards,
-            payload
+            payload,
         )
         modified.safeSet("tradingRewards.blockRewards", modifiedTradingRewards)
         return modified
@@ -1036,7 +1075,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         if (subaccounts != null) {
             val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeight(
                 subaccounts,
-                height
+                height,
             )
             if (updated) {
                 val modified = existing.mutable()
@@ -1053,8 +1092,12 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val elements = id.split("/")
             if (elements.size == 2) {
                 parser.asInt(elements.lastOrNull())
-            } else null
-        } else null
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 
     internal fun received(
@@ -1066,7 +1109,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         if (subaccount != null) {
             val (modifiedsubaccount, subaccountUpdated) = subaccountsProcessor.received(
                 subaccount,
-                height
+                height,
             )
             if (subaccountUpdated) {
                 val modified = existing.toMutableMap()
@@ -1110,7 +1153,11 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
          */
         val data = parser.asNativeMap(payload) ?: return existing
         val modified = existing.mutable()
-        val points = launchIncentivePointsProcessor.received(season, parser.asNativeMap(existing["launchIncentivePoints"]), data)
+        val points = launchIncentivePointsProcessor.received(
+            season,
+            parser.asNativeMap(existing["launchIncentivePoints"]),
+            data,
+        )
 
         modified.safeSet("launchIncentivePoints", points)
         return modified

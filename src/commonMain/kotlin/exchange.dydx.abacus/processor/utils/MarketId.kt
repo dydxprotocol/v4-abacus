@@ -8,7 +8,9 @@ internal class MarketId {
             val elements = marketId.split("-")
             return if (elements.size == 2) {
                 elements.first()
-            } else null
+            } else {
+                null
+            }
         }
     }
 }

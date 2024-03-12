@@ -11,8 +11,7 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
-data class SocketInfo(val type: String?, val channel: String?, val id: String?) {
-}
+data class SocketInfo(val type: String?, val channel: String?, val id: String?)
 
 @JsExport
 @Serializable
@@ -22,14 +21,14 @@ class StateResponse(
     val errors: IList<ParsingError>? = null,
     val info: SocketInfo? = null
 ) {
-    fun merge(earlierResponse: StateResponse) : StateResponse {
+    fun merge(earlierResponse: StateResponse): StateResponse {
         val mergedChanges = this.changes?.merge(earlierResponse.changes ?: StateChanges(iListOf<Changes>())) ?: earlierResponse.changes
         val mergedErrors = this.errors?.toSet()?.union(earlierResponse.errors?.toSet() ?: setOf())?.toIList() ?: earlierResponse.errors
         return StateResponse(
             state = this.state,
             changes = mergedChanges,
             errors = mergedErrors,
-            info = this.info ?: earlierResponse.info
+            info = this.info ?: earlierResponse.info,
         )
     }
 }

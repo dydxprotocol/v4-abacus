@@ -4,7 +4,9 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import io.ktor.http.*
+import io.ktor.http.Parameters
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
 import kollections.JsExport
 import kollections.iMutableListOf
 import kollections.toIList
@@ -44,7 +46,7 @@ data class AbUrl(
                 port = url.port,
                 path = url.encodedPath,
                 scheme = url.protocol.name,
-                params = fromKtorParams(url.parameters)
+                params = fromKtorParams(url.parameters),
             )
 
         fun fromString(urlString: String): AbUrl = fromKtor(URLBuilder(urlString).build())
@@ -74,12 +76,11 @@ data class AbUrl(
         if (strict && validatedAbUrl.urlString != this.urlString) {
             throw ParsingException(
                 type = ParsingErrorType.InvalidUrl,
-                "$urlString\ndoes not recreate\n$this but instead creates $validatedAbUrl"
+                "$urlString\ndoes not recreate\n$this but instead creates $validatedAbUrl",
             )
         }
         return validatedAbUrl
     }
-
 }
 
 @JsExport
@@ -121,14 +122,14 @@ data class NetworkParam(val key: String, val value: String? = null) {
                     val keyAndValue = it.split("=")
                     NetworkParam(
                         keyAndValue.first(),
-                        if (keyAndValue.size == 2) keyAndValue.last() else null
+                        if (keyAndValue.size == 2) keyAndValue.last() else null,
                     )
                 }.toIList()
         }
     }
 }
 
-internal  fun IList<NetworkParam>.paramString(): String {
+internal fun IList<NetworkParam>.paramString(): String {
     if (isEmpty()) {
         return ""
     }

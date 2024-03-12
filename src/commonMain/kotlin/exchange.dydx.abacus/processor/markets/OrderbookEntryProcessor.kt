@@ -9,8 +9,8 @@ internal class OrderbookEntryProcessor(parser: ParserProtocol) : BaseProcessor(p
     private val orderbookEntryKeyMap = mapOf(
         "double" to mapOf(
             "size" to "size",
-            "price" to "price"
-        )
+            "price" to "price",
+        ),
     )
 
     override fun received(

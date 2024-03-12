@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.protocols.LocalizerProtocol
-import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.V4Environment
 
 class PerpTradingStateMachine(
     environment: V4Environment?,

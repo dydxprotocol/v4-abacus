@@ -12,7 +12,6 @@ class TradeRequiredInputTests : V3BaseTests() {
     fun testDataFeed() {
         setup()
 
-
         print("--------First round----------\n")
 
         testTradeInputOnce()
@@ -82,7 +81,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -104,7 +103,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -148,7 +147,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -178,7 +177,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -200,9 +199,8 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -223,7 +221,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -267,7 +265,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -297,7 +295,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -319,10 +317,9 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testTradeInputLimitType() {
         test(
@@ -364,9 +361,8 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -395,7 +391,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -412,7 +408,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -468,7 +464,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -510,7 +506,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -540,7 +536,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -557,9 +553,8 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -580,9 +575,8 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
-
 
         test(
             {
@@ -603,7 +597,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -625,10 +619,9 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testTradeInputTakeProfitLimitType() {
         test(
@@ -682,7 +675,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -724,7 +717,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -754,7 +747,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -776,7 +769,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -793,7 +786,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -815,10 +808,9 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 
     private fun testTradeInputTrailingStopType() {
         test(
@@ -860,7 +852,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -890,7 +882,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         test(
@@ -907,8 +899,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "errors": null
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
-
 }
