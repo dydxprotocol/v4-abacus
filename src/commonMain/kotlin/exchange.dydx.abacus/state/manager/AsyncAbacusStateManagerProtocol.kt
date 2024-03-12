@@ -8,7 +8,9 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.utils.IList
+import kollections.JsExport
 
+@JsExport
 interface AsyncAbacusStateManagerProtocol {
     // Connection environments
     val availableEnvironments: IList<SelectionOption>
@@ -68,6 +70,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun screen(address: String, callback: (restriction: Restriction) -> Unit)
 }
 
+@JsExport
 interface AsyncAbacusStateManagerSingletonProtocol {
     var accountAddress: String?
     var sourceAddress: String?
