@@ -129,7 +129,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
-                val requestId = headers?.get("x-request-id")
+                val requestId = parser.asString(headers?.get("x-request-id"))
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
                 }
@@ -196,7 +196,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
-                val requestId = headers?.get("x-request-id")
+                val requestId = parser.asString(headers?.get("x-request-id"))
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRouteV2(response, subaccountNumber, requestId), oldState)
                 }
@@ -340,7 +340,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteNoble(
         )
         get(url, params, header) { _, response, _, headera ->
             if (response != null) {
-                val requestId = headera?.get("x-request-id")
+                val requestId = parser.asString(headera?.get("x-request-id"))
                 update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
             }
         }
@@ -398,7 +398,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV1(
         )
         get(url, params, header) { _, response, _, headers ->
             if (response != null) {
-                val requestId = headers?.get("x-request-id")
+                val requestId = parser.asString(headers?.get("x-request-id"))
                 update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
             }
         }
@@ -467,7 +467,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
             if (response != null) {
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
-                val requestId = headers?.get("x-request-id")
+                val requestId = parser.asString(headers?.get("x-request-id"))
                 if (currentFromAmount == oldFromAmount) {
                     update(stateMachine.squidRouteV2(response, subaccountNumber, requestId), oldState)
                 }

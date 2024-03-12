@@ -41,6 +41,6 @@ interface ParserProtocol {
 
     fun value(data: Any?, path: String): Any?
 
-    fun decodeJsonObject(text: String): IMap<String, Any>?
-    fun decodeJsonArray(text: String): IList<Any>?
+    fun decodeJsonObject(text: String?): IMap<String, Any>?
+    fun decodeJsonArray(text: String?): IList<Any>?
 }

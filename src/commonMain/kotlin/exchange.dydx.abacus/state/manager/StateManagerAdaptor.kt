@@ -1063,7 +1063,7 @@ open class StateManagerAdaptor(
         url: String,
         params: Map<String, String>? = null,
         headers: Map<String, String>? = null,
-        callback: (url: String, response: String?, code: Int, headers: Map<String, String>?) -> Unit,
+        callback: (url: String, response: String?, code: Int, headers: Map<String, Any>?) -> Unit,
     ) {
         val fullUrl = fullUrl(url, params)
 
@@ -1085,10 +1085,10 @@ open class StateManagerAdaptor(
     open fun getWithFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
-        callback: (url: String, response: String?, code: Int, headers: Map<String, String>?) -> Unit,
+        callback: (url: String, response: String?, code: Int, headers: Map<String, Any>?) -> Unit,
     ) {
         ioImplementations.threading?.async(ThreadingType.network) {
-            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headers ->
+            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headersAsJsonString ->
                 val time = if (configs.isIndexer(fullUrl) && success(httpCode)) {
                     Clock.System.now()
                 } else {
@@ -1100,6 +1100,7 @@ open class StateManagerAdaptor(
                         this.lastIndexerCallTime = time
                     }
                     try {
+                        val headers = parser.decodeJsonObject(headersAsJsonString)
                         callback(fullUrl, response, httpCode, headers)
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -1132,12 +1133,13 @@ open class StateManagerAdaptor(
         url: String,
         headers: IMap<String, String>?,
         body: String?,
-        callback: (String, String?, Int, IMap<String, String>?) -> Unit,
+        callback: (String, String?, Int, Map<String, Any>?) -> Unit,
     ) {
         ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.rest?.post(url, headers, body) { response, httpCode, headers ->
+            ioImplementations.rest?.post(url, headers, body) { response, httpCode, headersAsJsonString ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
-                    callback(url, response, httpCode, headers?.toIMap())
+                    val headers = parser.decodeJsonObject(headersAsJsonString)
+                    callback(url, response, httpCode, headers)
                 }
             }
         }
@@ -1478,7 +1480,7 @@ open class StateManagerAdaptor(
         afterParam: String? = null,
         additionalParams: Map<String, String>? = null,
         previousUrl: String?,
-        callback: (url: String, response: String?, httpCode: Int, headers: Map<String, String>?) -> Unit,
+        callback: (url: String, response: String?, httpCode: Int, headers: Map<String, Any>?) -> Unit,
     ) {
         if (items != null) {
             val lastItemTime =
