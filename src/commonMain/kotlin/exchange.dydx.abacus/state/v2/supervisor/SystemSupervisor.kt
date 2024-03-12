@@ -81,7 +81,7 @@ internal class SystemSupervisor(
                     update(
                         // TODO, subaccountNumber required to refresh
                         stateMachine.configurations(response, null, helper.deploymentUri),
-                        oldState
+                        oldState,
                     )
                 }
             }
@@ -124,10 +124,12 @@ internal class SystemSupervisor(
             val requestBody =
                 "{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"
             helper.post(
-                url, iMapOf(
+                url,
+                iMapOf(
                     "content-type" to "application/json",
                     "protocol" to "dydx-v4",
-                ), requestBody
+                ),
+                requestBody,
             ) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state

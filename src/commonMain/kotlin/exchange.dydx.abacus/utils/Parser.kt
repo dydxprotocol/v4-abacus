@@ -361,7 +361,8 @@ class Parser : ParserProtocol {
         return null
     }
 
-    override fun decodeJsonObject(text: String): IMap<String, Any>? {
+    override fun decodeJsonObject(text: String?): IMap<String, Any>? {
+        if (text == null) return null
         val map = try {
             Json.parseToJsonElement(text).jsonObject.toMap().toIMap()
         } catch (e: Exception) {
@@ -371,7 +372,8 @@ class Parser : ParserProtocol {
         return map
     }
 
-    override fun decodeJsonArray(text: String): IList<Any>? {
+    override fun decodeJsonArray(text: String?): IList<Any>? {
+        if (text == null) return null
         val list = try {
             Json.parseToJsonElement(text).jsonArray.toIList()
         } catch (e: Exception) {

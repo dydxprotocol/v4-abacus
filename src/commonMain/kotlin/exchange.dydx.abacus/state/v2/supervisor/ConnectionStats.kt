@@ -33,6 +33,7 @@ internal class ConnectionStats(
     internal var lastIndexerCallTime: Instant? = null
     private var lastValidatorCallTime: Instant? = null
 
+    @Suppress("PropertyName")
     private val MAX_NUM_BLOCK_DELAY = 15
 
     internal var indexerState = NetworkState()
@@ -78,7 +79,6 @@ internal class ConnectionStats(
     private fun updateRestriction() {
 //        restriction = indexerRestriction ?: addressRestriction ?: UsageRestriction.noRestriction
     }
-
 
     private fun updateApiState() {
         helper.ioImplementations.threading?.async(ThreadingType.main) {
@@ -169,8 +169,12 @@ internal class ConnectionStats(
         val block = if (validatorBlockAndTime != null) {
             if (indexerBlockAndTime != null) {
                 max(validatorBlockAndTime.block, indexerBlockAndTime.block)
-            } else validatorBlockAndTime.block
-        } else indexerBlockAndTime?.block
+            } else {
+                validatorBlockAndTime.block
+            }
+        } else {
+            indexerBlockAndTime?.block
+        }
         if (apiState?.status != status ||
             apiState.height != block ||
             apiState.haltedBlock != haltedBlock ||
@@ -205,9 +209,13 @@ internal class ConnectionStats(
                     // previous request (previousTime)
                     // The app was probably in background
                     gap > (heightPollingDuration * 1.5).seconds
-                } else false
+                } else {
+                    false
+                }
             }
-        } else false
+        } else {
+            false
+        }
     }
 
     internal fun parseHeight(response: String) {
@@ -241,8 +249,14 @@ internal class ConnectionStats(
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
             val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
             val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-            val interval = if (indexerTime != null) (Clock.System.now().toEpochMilliseconds()
-                .toDouble() - indexerTime) else null
+            val interval = if (indexerTime != null) {
+                (
+                    Clock.System.now().toEpochMilliseconds()
+                        .toDouble() - indexerTime
+                    )
+            } else {
+                null
+            }
             val params = mapOf(
                 "lastSuccessfulIndexerRPC" to indexerTime,
                 "lastSuccessfulFullNodeRPC" to validatorTime,
@@ -261,5 +275,4 @@ internal class ConnectionStats(
             helper.ioImplementations.tracking?.log(eventName, paramsAsString)
         }
     }
-
 }

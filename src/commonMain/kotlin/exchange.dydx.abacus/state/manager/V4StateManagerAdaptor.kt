@@ -1347,9 +1347,9 @@ class V4StateManagerAdaptor(
     override fun getWithFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
-        callback: (url: String, response: String?, code: Int, headers: Map<String, String>?) -> Unit
+        callback: (url: String, response: String?, code: Int, headers: Map<String, Any>?) -> Unit
     ) {
-        super.getWithFullUrl(fullUrl, headers) { url, response, httpCode, headers ->
+        super.getWithFullUrl(fullUrl, headers) { url, response, httpCode, headersAsJsonString ->
             when (httpCode) {
                 403 -> {
                     indexerRestriction = restrictionReason(response)
@@ -1367,7 +1367,7 @@ class V4StateManagerAdaptor(
                     restRetryTimers[url] = localTimer
                 }
 
-                else -> callback(url, response, httpCode, headers)
+                else -> callback(url, response, httpCode, headersAsJsonString)
             }
         }
     }

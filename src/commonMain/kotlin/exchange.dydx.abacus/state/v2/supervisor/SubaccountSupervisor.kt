@@ -15,7 +15,6 @@ import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.CancelOrderRecord
@@ -26,6 +25,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.model.ClosePositionInputField
@@ -97,7 +97,6 @@ internal class SubaccountSupervisor(
             }
         }
 
-
     private var lastOrder: SubaccountOrder? = null
         set(value) {
             if (field !== value) {
@@ -119,7 +118,7 @@ internal class SubaccountSupervisor(
         helper.uiImplementations,
         helper.environment,
         helper.parser,
-        helper.jsonEncoder
+        helper.jsonEncoder,
     )
 
     internal var notifications: IMap<String, Notification> = iMapOf()
@@ -129,7 +128,6 @@ internal class SubaccountSupervisor(
                 sendNotifications()
             }
         }
-
 
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
@@ -200,8 +198,8 @@ internal class SubaccountSupervisor(
         val historicalPnl = helper.parser.asNativeList(
             helper.parser.value(
                 stateMachine.data,
-                "wallet.account.subaccounts.$subaccountNumber.historicalPnl"
-            )
+                "wallet.account.subaccounts.$subaccountNumber.historicalPnl",
+            ),
         )?.mutable()
 
         if (historicalPnl != null) {
@@ -220,13 +218,13 @@ internal class SubaccountSupervisor(
             "createdBeforeOrAt",
             "createdAtOrAfter",
             params,
-            previousUrl
+            previousUrl,
         ) { url, response, httpCode, _ ->
             val oldState = stateMachine.state
             if (helper.success(httpCode) && !response.isNullOrEmpty()) {
                 val changes = stateMachine.historicalPnl(
                     payload = response,
-                    subaccountNumber = subaccountNumber
+                    subaccountNumber = subaccountNumber,
                 )
                 update(changes, oldState)
                 if (changes.changes.contains(Changes.historicalPnl)) {
@@ -245,7 +243,7 @@ internal class SubaccountSupervisor(
         helper.socket(
             helper.socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber)
+            subaccountChannelParams(accountAddress, subaccountNumber),
         )
     }
 
@@ -275,8 +273,9 @@ internal class SubaccountSupervisor(
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval), orderAnalyticsPayload
-                        )?.toIMap()
+                            trackingParams(interval),
+                            orderAnalyticsPayload,
+                        )?.toIMap(),
                     )
                     placeOrderRecords.remove(placeOrderRecord)
                     break
@@ -290,8 +289,9 @@ internal class SubaccountSupervisor(
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval), orderAnalyticsPayload
-                        )?.toIMap()
+                            trackingParams(interval),
+                            orderAnalyticsPayload,
+                        )?.toIMap(),
                     )
                     cancelOrderRecords.remove(cancelOrderRecord)
                     break
@@ -334,15 +334,15 @@ internal class SubaccountSupervisor(
                 helper.parser.asString(
                     helper.parser.value(
                         stateMachine.input,
-                        "closePosition.marketId"
-                    )
+                        "closePosition.marketId",
+                    ),
                 )
             var stateResponse = stateMachine.closePosition(data, type, subaccountNumber)
             if (type == ClosePositionInputField.market && currentMarket != data) {
                 val nextResponse = stateMachine.closePosition(
                     "1",
                     ClosePositionInputField.percent,
-                    subaccountNumber
+                    subaccountNumber,
                 )
                 stateResponse = nextResponse.merge(stateResponse)
             }
@@ -365,7 +365,7 @@ internal class SubaccountSupervisor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    analyticsUtils.formatCancelOrderPayload(payload)
+                    analyticsUtils.formatCancelOrderPayload(payload),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -374,14 +374,13 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeInMilliseconds,
-                        )
+                        ),
                     )
                 }
             }
             helper.send(error, callback, payload)
         }
     }
-
 
     internal fun commitPlaceOrder(
         currentHeight: Int?,
@@ -394,7 +393,7 @@ internal class SubaccountSupervisor(
 
         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
             payload,
-            false
+            false,
         )
 
         lastOrderClientId = null
@@ -411,7 +410,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeInMilliseconds,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -435,7 +434,7 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
             payload,
-            true
+            true,
         )
 
         lastOrderClientId = null
@@ -452,7 +451,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeInMilliseconds,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -483,17 +482,27 @@ internal class SubaccountSupervisor(
                 OrderType.market -> "FOK"
                 else -> trade.timeInForce ?: "FOK"
             }
-        } else null
+        } else {
+            null
+        }
 
         val execution = if (trade.options?.executionOptions != null) {
             trade.execution ?: "Default"
-        } else null
+        } else {
+            null
+        }
 
-        val goodTilTimeInSeconds = ((if (trade.options?.goodTilUnitOptions != null) {
-            val timeInterval =
-                GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
-            timeInterval / 1.seconds
-        } else null))?.toInt()
+        val goodTilTimeInSeconds = (
+            (
+                if (trade.options?.goodTilUnitOptions != null) {
+                    val timeInterval =
+                        GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
+                    timeInterval / 1.seconds
+                } else {
+                    null
+                }
+                )
+            )?.toInt()
 
         val marketInfo = marketInfo(marketId)
         return HumanReadablePlaceOrderPayload(
@@ -511,10 +520,9 @@ internal class SubaccountSupervisor(
             execution,
             goodTilTimeInSeconds,
             marketInfo,
-            currentHeight
+            currentHeight,
         )
     }
-
 
     @Throws(Exception::class)
     fun closePositionPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {
@@ -554,7 +562,6 @@ internal class SubaccountSupervisor(
         return Json.encodeToString(closePositionPayload(currentHeight))
     }
 
-
     private fun marketInfo(marketId: String): PlaceOrderMarketInfo? {
         val market = stateMachine.state?.market(marketId) ?: return null
         val v4config = market.configs?.v4 ?: return null
@@ -572,7 +579,7 @@ internal class SubaccountSupervisor(
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload {
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             ?: throw Exception("subaccount is null")
-        val order = subaccount.orders?.firstOrNull() { it.id == orderId }
+        val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
         val clientId = order.clientId ?: throw Exception("clientId is null")
         val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
@@ -605,14 +612,13 @@ internal class SubaccountSupervisor(
         }
     }
 
-
     @Throws(Exception::class)
     fun depositPayload(): HumanReadableDepositPayload {
         val transfer = stateMachine.state?.input?.transfer ?: throw Exception("Transfer is null")
         val amount = transfer.size?.size ?: throw Exception("size is null")
         return HumanReadableDepositPayload(
             subaccountNumber,
-            amount
+            amount,
         )
     }
 
@@ -622,7 +628,7 @@ internal class SubaccountSupervisor(
         val amount = transfer.size?.usdcSize ?: throw Exception("usdcSize is null")
         return HumanReadableWithdrawPayload(
             subaccountNumber,
-            amount
+            amount,
         )
     }
 
@@ -645,10 +651,12 @@ internal class SubaccountSupervisor(
             val params = iMapOf(
                 "address" to accountAddress,
                 "subaccountNumber" to subaccountNumber,
-                "amount" to amount
+                "amount" to amount,
             )
             helper.jsonEncoder.encode(params)
-        } else null
+        } else {
+            null
+        }
     }
 
     internal fun faucet(amount: Double, callback: TransactionCallback) {
@@ -681,7 +689,7 @@ internal class SubaccountSupervisor(
                         subaccountNumber,
                         amount,
                         submitTimeInMilliseconds,
-                    )
+                    ),
                 )
             }
             null
@@ -720,7 +728,7 @@ internal class SubaccountSupervisor(
                                 .toDouble() - faucet.timestampInMilliseconds
                             tracking(
                                 AnalyticsEvent.TransferFaucetConfirmed.rawValue,
-                                trackingParams(interval)
+                                trackingParams(interval),
                             )
                             faucetRecords.remove(faucet)
                             break
@@ -801,7 +809,7 @@ internal class SubaccountSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedSubaccountSubscribed(content, height)
                 }
@@ -812,7 +820,7 @@ internal class SubaccountSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedAccountsChanges(content, info, height)
                 }
@@ -822,7 +830,7 @@ internal class SubaccountSupervisor(
                         helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                             ?: throw ParsingException(
                                 ParsingErrorType.MissingContent,
-                                payload.toString()
+                                payload.toString(),
                             )
                     changes = stateMachine.receivedBatchAccountsChanges(content, info, height)
                 }
@@ -830,7 +838,7 @@ internal class SubaccountSupervisor(
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ ${info.type} ] is not handled"
+                        "Type [ ${info.type} ] is not handled",
                     )
                 }
             }

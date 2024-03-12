@@ -46,12 +46,11 @@ class V4HeightTests {
             ioImplementations,
             uiImplementations,
             TestState(),
-            null
+            null,
         )
         stateManager.environmentId = "dydxprotocol-staging"
         return stateManager
     }
-
 
     private fun setStateMachineReadyToConnect(stateManager: AsyncAbacusStateManagerV2) {
         stateManager.readyToConnect = true
@@ -79,7 +78,7 @@ class V4HeightTests {
         /* Only indexer height */
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/height",
-            mock.heightMock.indexerHeight
+            mock.heightMock.indexerHeight,
         )
         stateManager.readyToConnect = true
 
@@ -120,7 +119,7 @@ class V4HeightTests {
         /* Only indexer height */
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/height",
-            mock.heightMock.indexerHeight
+            mock.heightMock.indexerHeight,
         )
         testChain?.heightResponse = mock.heightMock.v4ClientValidatorHeight
         stateManager.readyToConnect = true
@@ -145,7 +144,7 @@ class V4HeightTests {
             stateManager.readyToConnect = false
             testRest?.setResponse(
                 "https://indexer.v4staging.dydx.exchange/v4/height",
-                mock.heightMock.indexerHeight
+                mock.heightMock.indexerHeight,
             )
             stateManager.readyToConnect = true
         }
@@ -153,7 +152,6 @@ class V4HeightTests {
         assertEquals(ApiStatus.VALIDATOR_HALTED, testState?.apiState?.status)
         assertEquals(16753, testState?.apiState?.haltedBlock)
         assertEquals(NetworkStatus.HALTED, v4Adapter?.indexerState?.status)
-
 
         // Halting Validator
         for (i in 0..10) {
@@ -171,7 +169,7 @@ class V4HeightTests {
         stateManager.readyToConnect = false
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/height",
-            mock.heightMock.indexerHeight2
+            mock.heightMock.indexerHeight2,
         )
         stateManager.readyToConnect = true
 

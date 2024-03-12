@@ -46,7 +46,6 @@ internal open class NetworkSupervisor(
             }
         }
 
-
     internal open fun didSetReadyToConnect(readyToConnect: Boolean) {
     }
 
@@ -65,7 +64,6 @@ internal open class NetworkSupervisor(
         indexerConnected = false
         readyToConnect = false
     }
-
 
     internal fun update(changes: StateChanges?, oldState: PerpetualState?) {
         if (changes != null) {
@@ -90,7 +88,6 @@ internal open class NetworkSupervisor(
         }
     }
 
-
     internal open fun updateTracking(changes: StateChanges) {
     }
 
@@ -107,8 +104,6 @@ internal open class NetworkSupervisor(
     internal fun parseTransactionResponse(response: String?): ParsingError? {
         return helper.parseTransactionResponse(response)
     }
-
-
 }
 
 internal open class DynamicNetworkSupervisor(

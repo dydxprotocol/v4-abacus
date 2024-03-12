@@ -104,7 +104,7 @@ interface RestProtocol {
     )
 }
 
-typealias RestCallback = (response: String?, httpCode: Int, headers: Map<String, String>?) -> Unit
+typealias RestCallback = (response: String?, httpCode: Int, headersAsJsonString: String?) -> Unit
 
 @JsExport
 interface WebSocketProtocol {

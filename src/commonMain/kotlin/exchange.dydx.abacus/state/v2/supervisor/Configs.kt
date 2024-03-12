@@ -2,7 +2,6 @@ package exchange.dydx.abacus.state.v2.supervisor
 
 import kollections.JsExport
 
-
 @JsExport
 data class SystemConfigs(
     val retrieveServerTime: Boolean,
@@ -136,7 +135,10 @@ data class OnboardingConfigs(
     val retrieveSquidRoutes: Boolean,
 ) {
     enum class SquidVersion {
-        V1, V2, V2DepositOnly, V2WithdrawalOnly,
+        V1,
+        V2,
+        V2DepositOnly,
+        V2WithdrawalOnly,
     }
 
     var squidVersion: SquidVersion = SquidVersion.V1
@@ -166,7 +168,7 @@ class AppConfigsV2(
             marketConfigs = MarketConfigs.forApp,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
-            loadRemote = true
+            loadRemote = true,
         )
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
@@ -174,21 +176,21 @@ class AppConfigsV2(
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = false,
-            enableLogger = true
+            enableLogger = true,
         )
         val forWeb = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketConfigs.forWeb,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
-            loadRemote = true
+            loadRemote = true,
         )
         val forProgrammaticTraders = AppConfigsV2(
             systemConfigs = SystemConfigs.forProgrammaticTraders,
             marketConfigs = MarketConfigs.forProgrammaticTraders,
             accountConfigs = AccountConfigs.forProgrammaticTraders,
             onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
-            loadRemote = true
+            loadRemote = true,
         )
     }
 }

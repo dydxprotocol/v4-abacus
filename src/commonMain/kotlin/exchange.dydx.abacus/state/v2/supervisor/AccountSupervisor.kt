@@ -13,8 +13,6 @@ import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
-import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
@@ -23,6 +21,8 @@ import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
+import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -150,7 +150,7 @@ internal open class AccountSupervisor(
             }
         }
 
-    internal var subaccountNumber: Int = 0  // Desired subaccountNumber
+    internal var subaccountNumber: Int = 0 // Desired subaccountNumber
         set(value) {
             if (field != value) {
                 field = value
@@ -184,7 +184,7 @@ internal open class AccountSupervisor(
                 analyticsUtils,
                 configs.subaccountConfigs,
                 accountAddress,
-                subaccountNumber
+                subaccountNumber,
             )
             newSubaccountSupervisor.readyToConnect = readyToConnect
             newSubaccountSupervisor.indexerConnected = indexerConnected
@@ -300,7 +300,9 @@ internal open class AccountSupervisor(
         val url = helper.configs.privateApiUrl("account")
         return if (url != null) {
             "$url/$accountAddress"
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun retrieveUserFeeTier() {
@@ -385,7 +387,7 @@ internal open class AccountSupervisor(
                         val callback = walletState.callback
                         helper.transaction(
                             TransactionType.CctpWithdraw,
-                            walletState.payload
+                            walletState.payload,
                         ) { hash ->
                             val error = helper.parseTransactionResponse(hash)
                             if (error != null) {
@@ -417,7 +419,9 @@ internal open class AccountSupervisor(
         val url = helper.configs.privateApiUrl("historicalTradingRewardAggregations")
         return if (url != null) {
             "$url/$accountAddress"
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun historicalTradingRewardAggregationsParams(period: String): IMap<String, String> {
@@ -434,8 +438,8 @@ internal open class AccountSupervisor(
         val historicalTradingRewardsInPeriod = helper.parser.asNativeList(
             helper.parser.value(
                 stateMachine.data,
-                "wallet.account.tradingRewards.historical.$period"
-            )
+                "wallet.account.tradingRewards.historical.$period",
+            ),
         )?.mutable()
 
         helper.retrieveTimed(
@@ -447,14 +451,14 @@ internal open class AccountSupervisor(
             "endedAt",
             null,
             params,
-            previousUrl
+            previousUrl,
         ) { url, response, httpCode, _ ->
             if (helper.success(httpCode) && !response.isNullOrEmpty()) {
                 val historicalTradingRewards = helper.parser.decodeJsonObject(response)?.toIMap()
                 if (historicalTradingRewards != null) {
                     val changes = stateMachine.receivedHistoricalTradingRewards(
                         historicalTradingRewards,
-                        period.rawValue
+                        period.rawValue,
                     )
                     update(changes, oldState)
                     if (changes.changes.contains(Changes.tradingRewards)) {
@@ -470,9 +474,11 @@ internal open class AccountSupervisor(
         val url = helper.configs.launchIncentiveUrl("points")
         if (url != null) {
             helper.get(
-                "${url}/${accountAddress}", iMapOf(
+                "$url/$accountAddress",
+                iMapOf(
                     "n" to season,
-                ), null
+                ),
+                null,
             ) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state
@@ -539,8 +545,8 @@ internal open class AccountSupervisor(
                         helper.parser.asString(
                             helper.parser.value(
                                 json,
-                                "route.transactionRequest.data"
-                            )
+                                "route.transactionRequest.data",
+                            ),
                         )
                     if (ibcPayload != null) {
                         helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
@@ -585,11 +591,9 @@ internal open class AccountSupervisor(
         }
     }
 
-
     private fun didSetAccountAddressRestriction(accountAddressRestriction: Restriction?) {
         updateAddressRestriction()
     }
-
 
     open fun screenAccountAddress() {
         val address = accountAddress
@@ -648,7 +652,8 @@ internal open class AccountSupervisor(
                             callback(Restriction.USER_RESTRICTION_UNKNOWN)
                         }
                     }
-                })
+                },
+            )
         }
     }
 
@@ -665,11 +670,14 @@ internal open class AccountSupervisor(
                 code?.contains("GEOBLOCKED") == true
             }
 
-            if (geoRestriciton !== null)
+            if (geoRestriciton !== null) {
                 UsageRestriction.http403Restriction
-            else
+            } else {
                 UsageRestriction.userRestriction
-        } else UsageRestriction.http403Restriction
+            }
+        } else {
+            UsageRestriction.http403Restriction
+        }
     }
 
     private fun didSetSourceAddress(sourceAddress: String?, oldValue: String?) {
@@ -776,7 +784,6 @@ internal val AccountSupervisor.notifications: IMap<String, Notification>
     get() {
         return subaccount?.notifications ?: iMapOf()
     }
-
 
 internal fun AccountSupervisor.trade(data: String?, type: TradeInputField?) {
     subaccount?.trade(data, type)

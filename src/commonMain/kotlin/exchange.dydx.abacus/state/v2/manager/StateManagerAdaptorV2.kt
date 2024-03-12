@@ -15,8 +15,6 @@ import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
@@ -28,6 +26,8 @@ import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NetworkState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
+import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -199,7 +199,6 @@ internal class StateManagerAdaptorV2(
             markets.candlesResolution = value
         }
 
-
     internal var orderbookGrouping: OrderbookGrouping
         get() {
             return markets.orderbookGrouping
@@ -322,7 +321,6 @@ internal class StateManagerAdaptorV2(
                     socket(json)
                 }
             } catch (_: Exception) {
-
             }
         }
     }
@@ -359,7 +357,7 @@ internal class StateManagerAdaptorV2(
                             markets.receiveMarketOrderbooksChannelSocketData(
                                 info,
                                 payload,
-                                subaccountNumber
+                                subaccountNumber,
                             )
                         }
 
@@ -378,7 +376,7 @@ internal class StateManagerAdaptorV2(
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,
-                                "$channel is not known"
+                                "$channel is not known",
                             )
                         }
                     }
@@ -411,7 +409,6 @@ internal class StateManagerAdaptorV2(
     internal fun closePosition(data: String?, type: ClosePositionInputField) {
         accounts.closePosition(data, type)
     }
-
 
     internal fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
         return accounts.placeOrderPayload(currentHeight)
@@ -460,7 +457,6 @@ internal class StateManagerAdaptorV2(
     internal fun faucet(amount: Double, callback: TransactionCallback) {
         accounts.faucet(amount, callback)
     }
-
 
     internal fun transfer(data: String?, type: TransferInputField?) {
         val address = accountAddress
@@ -534,5 +530,4 @@ internal class StateManagerAdaptorV2(
             )
         }
     }
-
 }

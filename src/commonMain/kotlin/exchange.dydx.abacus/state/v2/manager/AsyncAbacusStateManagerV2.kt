@@ -11,12 +11,10 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
+import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.AppSettings
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManagerProtocol
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManagerSingletonProtocol
-import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
-import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.ConfigFile
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
@@ -26,6 +24,8 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
+import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -44,7 +44,6 @@ import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
 import kotlinx.serialization.json.Json
-
 
 @JsExport
 class AsyncAbacusStateManagerV2(
@@ -279,7 +278,7 @@ class AsyncAbacusStateManagerV2(
 
     private fun loadFromRemoteConfigFile(configFile: ConfigFile) {
         ioImplementations.fileSystem?.readCachedTextFile(
-            configFile.path
+            configFile.path,
         )?.let {
             parse(it, configFile)
         }
@@ -312,7 +311,7 @@ class AsyncAbacusStateManagerV2(
     private fun writeToLocalFile(response: String, file: String) {
         ioImplementations.fileSystem?.writeTextFile(
             file,
-            response
+            response,
         )
     }
 
@@ -378,7 +377,6 @@ class AsyncAbacusStateManagerV2(
             return false
         }
     }
-
 
     private fun findEnvironment(environment: String?): V4Environment? {
         return environments.firstOrNull { it ->

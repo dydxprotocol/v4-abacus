@@ -50,7 +50,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             ioImplementations,
             uiImplementations,
             TestState(),
-            null
+            null,
         )
         stateManager.environmentId = "dydxprotocol-staging"
         return stateManager
@@ -86,7 +86,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         assertEquals(
             "wss://indexer.v4staging.dydx.exchange/v4/ws",
             testWebSocket?.connectUrl,
-            "WebSocket should be connected to correct url"
+            "WebSocket should be connected to correct url",
         )
 
         compareExpectedRequests(
@@ -115,7 +115,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "https://api.examples.com/configs/exchanges.json"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
 
         compareExpectedRequests(
@@ -127,7 +127,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getHeight"
                 ]
             """.trimIndent(),
-            testChain?.requests?.map { it.rawValue }
+            testChain?.requests?.map { it.rawValue },
         )
     }
 
@@ -144,7 +144,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    {"type":"subscribe","channel":"v4_markets","batched":"true"}
                 ]
             """.trimIndent(),
-            testWebSocket?.messages
+            testWebSocket?.messages,
         )
     }
 
@@ -181,7 +181,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     {"type":"subscribe","channel":"v4_candles","id":"ETH-USD/1DAY","batched":"true"}
                 ]
             """.trimIndent(),
-            testWebSocket?.messages
+            testWebSocket?.messages,
         )
 
         compareExpectedRequests(
@@ -215,7 +215,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
 
         compareExpectedRequests(
@@ -227,7 +227,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getHeight"
                 ]
             """.trimIndent(),
-            testChain?.requests?.map { it.rawValue }
+            testChain?.requests?.map { it.rawValue },
         )
 
         stateManager.market = "BTC-USD"
@@ -247,7 +247,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     {"type":"subscribe","channel":"v4_candles","id":"BTC-USD/1DAY","batched":"true"}
                 ]
             """.trimIndent(),
-            testWebSocket?.messages
+            testWebSocket?.messages,
         )
 
         compareExpectedRequests(
@@ -286,7 +286,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
     }
 
@@ -295,7 +295,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         reset()
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-            mock.historicalFundingsMock.call
+            mock.historicalFundingsMock.call,
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -338,7 +338,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
     }
 
@@ -419,7 +419,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
 
         compareExpectedRequests(
@@ -434,7 +434,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getNobleBalance"
                 ]
             """.trimIndent(),
-            testChain?.requests?.map { it.rawValue }
+            testChain?.requests?.map { it.rawValue },
         )
     }
 
@@ -445,7 +445,7 @@ class V4ForegroundCycleTests : NetworkTests() {
         val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/$testAddress",
-            mock.accountsChannel.v4accountsReceived
+            mock.accountsChannel.v4accountsReceived,
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -493,7 +493,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
 
         compareExpectedRequests(
@@ -503,7 +503,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
                 ]
             """.trimIndent(),
-            testWebSocket?.messages
+            testWebSocket?.messages,
         )
 
         compareExpectedRequests(
@@ -520,7 +520,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getNobleBalance"
                 ]
             """.trimIndent(),
-            testChain?.requests?.map { it.rawValue }
+            testChain?.requests?.map { it.rawValue },
         )
 
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
@@ -530,9 +530,8 @@ class V4ForegroundCycleTests : NetworkTests() {
         val notification = stateManager.adaptor?.notifications?.values()?.first()
         assertEquals(
             "order:b812bea8-29d3-5841-9549-caa072f6f8a8",
-            notification?.id
+            notification?.id,
         )
-
     }
 
     @Test
@@ -543,11 +542,11 @@ class V4ForegroundCycleTests : NetworkTests() {
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/$testAddress",
-            mock.accountsChannel.v4accountsReceived
+            mock.accountsChannel.v4accountsReceived,
         )
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-            mock.historicalPNL.firstCall
+            mock.historicalPNL.firstCall,
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -597,10 +596,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
     }
-
 
     @Test
     fun connectWalletWithExistingAccountShouldUnsubscribeFromPreviousAccountAndStartNewAccountRequests() {
@@ -611,7 +609,7 @@ class V4ForegroundCycleTests : NetworkTests() {
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/$testAddress",
-            mock.accountsChannel.v4accountsReceived
+            mock.accountsChannel.v4accountsReceived,
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -665,7 +663,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?period=WEEKLY"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
 
         compareExpectedRequests(
@@ -676,7 +674,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
                 ]
             """.trimIndent(),
-            testWebSocket?.messages
+            testWebSocket?.messages,
         )
 
         compareExpectedRequests(
@@ -696,7 +694,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getNobleBalance"
                 ]
             """.trimIndent(),
-            testChain?.requests?.map { it.rawValue }
+            testChain?.requests?.map { it.rawValue },
         )
     }
 
@@ -708,7 +706,7 @@ class V4ForegroundCycleTests : NetworkTests() {
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/$testAddress",
-            mock.accountsChannel.v4accountsReceived
+            mock.accountsChannel.v4accountsReceived,
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -759,7 +757,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
                 ]
             """.trimIndent(),
-            testRest?.requests
+            testRest?.requests,
         )
 
         compareExpectedRequests(
@@ -770,7 +768,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
                 ]
             """.trimIndent(),
-            testWebSocket?.messages
+            testWebSocket?.messages,
         )
 
         compareExpectedRequests(
@@ -787,7 +785,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getNobleBalance"
                 ]
             """.trimIndent(),
-            testChain?.requests?.map { it.rawValue }
+            testChain?.requests?.map { it.rawValue },
         )
     }
 

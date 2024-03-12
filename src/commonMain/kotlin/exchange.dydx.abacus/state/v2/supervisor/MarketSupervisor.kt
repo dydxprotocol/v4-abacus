@@ -35,7 +35,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-
 internal open class MarketSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
@@ -114,8 +113,8 @@ internal open class MarketSupervisor(
         val marketCandles = helper.parser.asList(
             helper.parser.value(
                 stateMachine.data,
-                "markets.markets.$marketId.candles.$candleResolution"
-            )
+                "markets.markets.$marketId.candles.$candleResolution",
+            ),
         )
 
         return helper.retrieveTimed(
@@ -127,7 +126,7 @@ internal open class MarketSupervisor(
             "toISO",
             "fromISO",
             mapOf(
-                "resolution" to candleResolution
+                "resolution" to candleResolution,
             ),
             null,
         ) { _, response, httpCode, _ ->
@@ -142,7 +141,6 @@ internal open class MarketSupervisor(
         }
     }
 
-
     private fun candleOptionDuration(
         stateMachine: TradingStateMachine?,
         market: String,
@@ -155,7 +153,6 @@ internal open class MarketSupervisor(
         }
         return option?.seconds?.seconds
     }
-
 
     private fun retrieveHistoricalFundings() {
         historicalFundingTimer = null
@@ -171,7 +168,7 @@ internal open class MarketSupervisor(
                 this.historicalFundingTimer = helper.ioImplementations.timer?.schedule(
                     // Give 30 seconds past the hour to make sure the funding is available
                     (delay + 30.seconds).inWholeSeconds.toDouble(),
-                    null
+                    null,
                 ) {
                     retrieveHistoricalFundings()
                     false
@@ -194,8 +191,8 @@ internal open class MarketSupervisor(
         val nanosecond = time.nanosecond
         val duration =
             nanosecond.toDuration(DurationUnit.NANOSECONDS) +
-                    second.toDuration(DurationUnit.SECONDS) +
-                    minute.toDuration(DurationUnit.MINUTES)
+                second.toDuration(DurationUnit.SECONDS) +
+                minute.toDuration(DurationUnit.MINUTES)
 
         return now.minus(duration).plus(1.hours)
     }
@@ -218,11 +215,13 @@ internal open class MarketSupervisor(
         val channel =
             helper.configs.marketOrderbookChannel() ?: throw Exception("orderbook channel is null")
         helper.socket(
-            helper.socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketOrderbookChannelData())
+            helper.socketAction(subscribe),
+            channel,
+            if (subscribe && shouldBatchMarketOrderbookChannelData()) {
                 iMapOf("id" to marketId, "batched" to "true")
-            else
+            } else {
                 iMapOf("id" to marketId)
+            },
         )
     }
 
@@ -235,11 +234,13 @@ internal open class MarketSupervisor(
         val channel =
             helper.configs.marketTradesChannel() ?: throw Exception("trades channel is null")
         helper.socket(
-            helper.socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketTradesChannelData())
+            helper.socketAction(subscribe),
+            channel,
+            if (subscribe && shouldBatchMarketTradesChannelData()) {
                 iMapOf("id" to marketId, "batched" to "true")
-            else
+            } else {
                 iMapOf("id" to marketId)
+            },
         )
     }
 
@@ -253,10 +254,11 @@ internal open class MarketSupervisor(
         helper.socket(
             helper.socketAction(subscribe),
             channel,
-            if (subscribe)
+            if (subscribe) {
                 iMapOf("id" to "$marketId/$resolution", "batched" to "true")
-            else
+            } else {
                 iMapOf("id" to "$marketId/$resolution")
+            },
         )
     }
 
@@ -273,7 +275,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedCandles(marketId, resolution, content)
                 }
@@ -284,7 +286,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedCandlesChanges(marketId, resolution, content)
                 }
@@ -293,7 +295,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes =
                         stateMachine.receivedBatchedCandlesChanges(marketId, resolution, content)
@@ -302,7 +304,7 @@ internal open class MarketSupervisor(
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ ${info.type} ] is not handled"
+                        "Type [ ${info.type} ] is not handled",
                     )
                 }
             }
@@ -329,7 +331,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes =
                         stateMachine.receivedOrderbook(marketId, content, subaccountNumber ?: 0)
@@ -341,12 +343,12 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedOrderbookChanges(
                         marketId,
                         content,
-                        subaccountNumber ?: 0
+                        subaccountNumber ?: 0,
                     )
                 }
 
@@ -354,19 +356,19 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedBatchOrderbookChanges(
                         marketId,
                         content,
-                        subaccountNumber ?: 0
+                        subaccountNumber ?: 0,
                     )
                 }
 
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ ${info.type} ] is not handled"
+                        "Type [ ${info.type} ] is not handled",
                     )
                 }
             }
@@ -392,7 +394,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedTrades(marketId, content)
                 }
@@ -403,7 +405,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedTradesChanges(marketId, content)
                 }
@@ -412,7 +414,7 @@ internal open class MarketSupervisor(
                     val content = helper.parser.asList(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedBatchedTradesChanges(marketId, content)
                 }
@@ -420,7 +422,7 @@ internal open class MarketSupervisor(
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ ${info.type} ] is not handled"
+                        "Type [ ${info.type} ] is not handled",
                     )
                 }
             }

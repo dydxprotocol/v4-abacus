@@ -6,7 +6,6 @@ import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.QueryType
-import exchange.dydx.abacus.protocols.RestCallback
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -36,7 +35,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.times
 
-typealias RestCallbackWithUrl = (url: String, response: String?, httpCode: Int, headers: Map<String, String>?) -> Unit
+typealias RestCallbackWithUrl = (url: String, response: String?, httpCode: Int, headers: Map<String, Any>?) -> Unit
 
 class NetworkHelper(
     internal val deploymentUri: String,
@@ -79,11 +78,11 @@ class NetworkHelper(
         if (items != null) {
             val lastItemTime =
                 parser.asDatetime(
-                    parser.asMap(items.lastOrNull())?.get(timeField)
+                    parser.asMap(items.lastOrNull())?.get(timeField),
                 )
             val firstItemTime =
                 parser.asDatetime(
-                    parser.asMap(items.firstOrNull())?.get(timeField)
+                    parser.asMap(items.firstOrNull())?.get(timeField),
                 )
             val now = ServerTime.now()
             if (lastItemTime != null && (now.minus(lastItemTime)) > sampleDuration * 2.0) {
@@ -97,7 +96,7 @@ class NetworkHelper(
                     beforeParam,
                     lastItemTime + 1.seconds,
                     afterParam,
-                    additionalParams
+                    additionalParams,
                 )
                 val fullUrl = fullUrl(url, params)
                 if (fullUrl != previousUrl) {
@@ -129,7 +128,6 @@ class NetworkHelper(
             }
         }
     }
-
 
     private fun timedParams(
         before: Instant?,
@@ -174,7 +172,9 @@ class NetworkHelper(
         return if (params != null) {
             val queryString = params.toIMap().joinToString("&") { "${it.key}=${it.value}" }
             "$url?$queryString"
-        } else url
+        } else {
+            url
+        }
     }
 
     private fun getWithFullUrl(
@@ -183,10 +183,12 @@ class NetworkHelper(
         callback: RestCallbackWithUrl,
     ) {
         ioImplementations.threading?.async(ThreadingType.network) {
-            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headers ->
+            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headersAsJsonString ->
                 val time = if (configs.isIndexer(fullUrl) && success(httpCode)) {
                     Clock.System.now()
-                } else null
+                } else {
+                    null
+                }
 
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (time != null) {
@@ -210,13 +212,16 @@ class NetworkHelper(
                                 restRetryTimers[fullUrl] = localTimer
                             }
 
-                            else -> callback(fullUrl, response, httpCode, headers)
+                            else -> {
+                                val headers = parser.decodeJsonObject(headersAsJsonString)
+                                callback(fullUrl, response, httpCode, headers)
+                            }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
                         val error = ParsingError(
                             ParsingErrorType.Unhandled,
-                            e.message ?: "Unknown error"
+                            e.message ?: "Unknown error",
                         )
                         emitError(error)
                     }
@@ -239,11 +244,14 @@ class NetworkHelper(
                 code?.contains("GEOBLOCKED") == true
             }
 
-            if (geoRestriciton !== null)
+            if (geoRestriciton !== null) {
                 UsageRestriction.http403Restriction
-            else
+            } else {
                 UsageRestriction.userRestriction
-        } else UsageRestriction.http403Restriction
+            }
+        } else {
+            UsageRestriction.http403Restriction
+        }
     }
 
     private fun notifyRestriction() {
@@ -257,11 +265,11 @@ class NetworkHelper(
         callback: RestCallbackWithUrl,
     ) {
         ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.rest?.post(url, headers, body) { response, httpCode, headers ->
+            ioImplementations.rest?.post(url, headers, body) { response, httpCode, headersAsJsonString ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
+                    val headers = parser.decodeJsonObject(headersAsJsonString)
                     callback(url, response, httpCode, headers)
                 }
-                callback(url, response, httpCode, headers)
             }
         }
     }
@@ -280,7 +288,6 @@ class NetworkHelper(
     internal open fun trackApiCall() {
     }
 
-
     @Throws(Exception::class)
     internal fun getOnChain(
         type: QueryType,
@@ -296,7 +303,9 @@ class NetworkHelper(
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()
-                } else null
+                } else {
+                    null
+                }
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (time != null) {
                         lastValidatorCallTime = time
@@ -318,7 +327,7 @@ class NetworkHelper(
             val dataNotification = this.dataNotification
             stateNotification?.stateChanged(
                 stateMachine.state,
-                changes
+                changes,
             )
             if (dataNotification != null) {
                 val state = stateMachine.state
@@ -357,7 +366,7 @@ class NetworkHelper(
                     if (marketHistoricalFunding !== oldMarketHistoricalFunding) {
                         dataNotification.marketHistoricalFundingChanged(
                             marketHistoricalFunding,
-                            marketId
+                            marketId,
                         )
                     }
 
@@ -414,7 +423,7 @@ class NetworkHelper(
                     if (fundingPayments !== oldFundingPayments) {
                         dataNotification.subaccountFundingPaymentsChanged(
                             fundingPayments,
-                            subaccountId
+                            subaccountId,
                         )
                     }
                 }
@@ -449,9 +458,10 @@ class NetworkHelper(
         }
     }
 
-
     internal fun socket(
-        type: String, channel: String, params: IMap<String, Any>? = null,
+        type: String,
+        channel: String,
+        params: IMap<String, Any>? = null,
     ) {
         val request = mutableMapOf<String, Any>("type" to type, "channel" to channel)
         if (params != null) {
@@ -481,7 +491,9 @@ class NetworkHelper(
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()
-                } else null
+                } else {
+                    null
+                }
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     if (time != null) {
                         lastValidatorCallTime = time
@@ -492,7 +504,6 @@ class NetworkHelper(
             }
         }
     }
-
 
     internal fun parseTransactionResponse(response: String?): ParsingError? {
         return if (response == null) {
@@ -530,5 +541,4 @@ class NetworkHelper(
             ioImplementations.tracking?.log(eventName, paramsAsString)
         }
     }
-
 }

@@ -121,11 +121,13 @@ internal class MarketsSupervisor(
         val channel =
             helper.configs.marketsChannel() ?: throw Exception("markets channel is null")
         helper.socket(
-            helper.socketAction(subscribe), channel,
-            if (subscribe && shouldBatchMarketsChannelData())
+            helper.socketAction(subscribe),
+            channel,
+            if (subscribe && shouldBatchMarketsChannelData()) {
                 iMapOf("batched" to "true")
-            else
+            } else {
                 null
+            },
         )
     }
 
@@ -180,7 +182,7 @@ internal class MarketsSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedMarkets(content, subaccountNumber ?: 0)
                 }
@@ -191,7 +193,7 @@ internal class MarketsSupervisor(
                     val content = helper.parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
-                            payload.toString()
+                            payload.toString(),
                         )
                     changes = stateMachine.receivedMarketsChanges(content, subaccountNumber ?: 0)
                 }
@@ -201,7 +203,7 @@ internal class MarketsSupervisor(
                         helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                             ?: throw ParsingException(
                                 ParsingErrorType.MissingContent,
-                                payload.toString()
+                                payload.toString(),
                             )
                     changes =
                         stateMachine.receivedBatchedMarketsChanges(content, subaccountNumber ?: 0)
@@ -210,7 +212,7 @@ internal class MarketsSupervisor(
                 else -> {
                     throw ParsingException(
                         ParsingErrorType.Unhandled,
-                        "Type [ ${info.type} ] is not handled"
+                        "Type [ ${info.type} ] is not handled",
                     )
                 }
             }
@@ -237,14 +239,14 @@ internal class MarketsSupervisor(
         if (id == null) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "No candles channel id provided"
+                "No candles channel id provided",
             )
         }
         val marketAndResolution = id.split("/")
         if (marketAndResolution.size != 2) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "$id is not a valid candles channel id"
+                "$id is not a valid candles channel id",
             )
         }
         val market = marketAndResolution[0]

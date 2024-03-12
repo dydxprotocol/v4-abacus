@@ -16,12 +16,12 @@ import exchange.dydx.abacus.state.manager.CctpConfig
 import exchange.dydx.abacus.state.manager.CctpWithdrawState
 import exchange.dydx.abacus.state.manager.ExchangeConfig
 import exchange.dydx.abacus.state.manager.ExchangeInfo
-import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.squidChains
@@ -124,7 +124,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-
     private fun retrieveCctpChainIds() {
         val url = "${helper.deploymentUri}/configs/cctp.json"
         helper.get(url) { _, response, _, _ ->
@@ -178,21 +177,28 @@ internal class OnboardingSupervisor(
         val isCctp = state?.input?.transfer?.isCctp ?: false
         when (configs.squidVersion) {
             OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
-                state, accountAddress, sourceAddress, subaccountNumber
+                state,
+                accountAddress,
+                sourceAddress,
+                subaccountNumber,
             )
 
             OnboardingConfigs.SquidVersion.V2, OnboardingConfigs.SquidVersion.V2DepositOnly ->
-                if (isCctp) retrieveDepositRouteV2(
-                    state,
-                    accountAddress,
-                    sourceAddress,
-                    subaccountNumber
-                ) else retrieveDepositRouteV1(
-                    state,
-                    accountAddress,
-                    sourceAddress,
-                    subaccountNumber
-                )
+                if (isCctp) {
+                    retrieveDepositRouteV2(
+                        state,
+                        accountAddress,
+                        sourceAddress,
+                        subaccountNumber,
+                    )
+                } else {
+                    retrieveDepositRouteV1(
+                        state,
+                        accountAddress,
+                        sourceAddress,
+                        subaccountNumber,
+                    )
+                }
         }
     }
 
@@ -209,7 +215,9 @@ internal class OnboardingSupervisor(
                 helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-            } else null
+            } else {
+                null
+            }
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -245,7 +253,7 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = headers?.get("x-request-id")
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     if (currentFromAmount == oldFromAmount) {
                         update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
                     }
@@ -269,7 +277,9 @@ internal class OnboardingSupervisor(
                 helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-            } else null
+            } else {
+                null
+            }
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -303,7 +313,7 @@ internal class OnboardingSupervisor(
                 "enableBoost" to false,
                 "slippage" to 1,
                 "slippageConfig" to iMapOf<String, Any>(
-                    "autoMode" to 1
+                    "autoMode" to 1,
                 ),
             )
             val oldState = stateMachine.state
@@ -315,7 +325,7 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = headers?.get("x-request-id")
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     if (currentFromAmount == oldFromAmount) {
                         update(stateMachine.squidRouteV2(response, subaccountNumber ?: 0, requestId), oldState)
                     }
@@ -378,7 +388,7 @@ internal class OnboardingSupervisor(
                                 gasFee,
                                 accountAddress,
                                 sourceAddress,
-                                subaccountNumber
+                                subaccountNumber,
                             )
                         } else {
                             retrieveWithdrawalRoute(
@@ -387,7 +397,7 @@ internal class OnboardingSupervisor(
                                 Numeric.decimal.ZERO,
                                 accountAddress,
                                 sourceAddress,
-                                subaccountNumber
+                                subaccountNumber,
                             )
                         }
                     }
@@ -446,7 +456,6 @@ internal class OnboardingSupervisor(
         fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
     }
 
-
     private fun simulateWithdrawal(
         decimals: Int,
         subaccountNumber: Int?,
@@ -487,7 +496,7 @@ internal class OnboardingSupervisor(
 
         helper.transaction(
             TransactionType.simulateTransferNativeToken,
-            payload
+            payload,
         ) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error != null) {
@@ -531,31 +540,34 @@ internal class OnboardingSupervisor(
             )
 
             OnboardingConfigs.SquidVersion.V2, OnboardingConfigs.SquidVersion.V2WithdrawalOnly ->
-                if (isCctp)
+                if (isCctp) {
                     retrieveWithdrawalRouteV2(
                         state,
                         decimals,
                         gas,
                         accountAddress,
                         sourceAddress,
-                        subaccountNumber
+                        subaccountNumber,
                     )
-                else if (isExchange) retrieveWithdrawalRouteNoble(
-                    state,
-                    decimals,
-                    gas,
-                    accountAddress,
-                    sourceAddress,
-                    subaccountNumber
-                )
-                else retrieveWithdrawalRouteV1(
-                    state,
-                    decimals,
-                    gas,
-                    accountAddress,
-                    sourceAddress,
-                    subaccountNumber
-                )
+                } else if (isExchange) {
+                    retrieveWithdrawalRouteNoble(
+                        state,
+                        decimals,
+                        gas,
+                        accountAddress,
+                        sourceAddress,
+                        subaccountNumber,
+                    )
+                } else {
+                    retrieveWithdrawalRouteV1(
+                        state,
+                        decimals,
+                        gas,
+                        accountAddress,
+                        sourceAddress,
+                        subaccountNumber,
+                    )
+                }
         }
     }
 
@@ -611,7 +623,7 @@ internal class OnboardingSupervisor(
             )
             helper.get(url, params, header) { _, response, _, headers ->
                 if (response != null) {
-                    val requestId = headers?.get("x-request-id")
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
                 }
             }
@@ -671,7 +683,7 @@ internal class OnboardingSupervisor(
             )
             helper.get(url, params, header) { _, response, _, headers ->
                 if (response != null) {
-                    val requestId = headers?.get("x-request-id")
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
                 }
             }
@@ -729,7 +741,7 @@ internal class OnboardingSupervisor(
                 "enableBoost" to false,
                 "slippage" to 1,
                 "slippageConfig" to iMapOf<String, Any>(
-                    "autoMode" to 1
+                    "autoMode" to 1,
                 ),
                 // "enableForecall" to "false",
                 // "cosmosSignerAddress" to accountAddress.toString(),
@@ -743,7 +755,7 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = headers?.get("x-request-id")
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     if (currentFromAmount == oldFromAmount) {
                         update(stateMachine.squidRouteV2(response, subaccountNumber ?: 0, requestId), oldState)
                     }
@@ -831,8 +843,8 @@ internal class OnboardingSupervisor(
                         helper.parser.asString(
                             helper.parser.value(
                                 json,
-                                "route.transactionRequest.data"
-                            )
+                                "route.transactionRequest.data",
+                            ),
                         )
                     if (ibcPayload != null) {
                         helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
@@ -855,7 +867,7 @@ internal class OnboardingSupervisor(
         val amount = transfer.size?.size ?: throw Exception("size is null")
         return HumanReadableDepositPayload(
             subaccountNumber ?: 0,
-            amount
+            amount,
         )
     }
 
@@ -869,7 +881,7 @@ internal class OnboardingSupervisor(
         val amount = transfer.size?.usdcSize ?: throw Exception("usdcSize is null")
         return HumanReadableWithdrawPayload(
             subaccountNumber ?: 0,
-            amount
+            amount,
         )
     }
 
@@ -914,7 +926,6 @@ internal class OnboardingSupervisor(
     fun subaccountTransferPayloadJson(subaccountNumber: Int?): String {
         return Json.encodeToString(subaccountTransferPayload(subaccountNumber))
     }
-
 
     internal fun commitTransfer(subaccountNumber: Int?, callback: TransactionCallback) {
         val type = stateMachine.state?.input?.transfer?.type
@@ -985,7 +996,7 @@ internal class OnboardingSupervisor(
                             gasFee,
                             accountAddress,
                             subaccountNumber,
-                            callback
+                            callback,
                         )
                     } else {
                         cctpToNoble(
@@ -994,7 +1005,7 @@ internal class OnboardingSupervisor(
                             Numeric.decimal.ZERO,
                             accountAddress,
                             subaccountNumber,
-                            callback
+                            callback,
                         )
                     }
                 }
@@ -1005,7 +1016,6 @@ internal class OnboardingSupervisor(
             helper.send(V4TransactionErrors.error(null, "Invalid transfer type"), callback)
         }
     }
-
 
     private fun cctpToNoble(
         state: PerpetualState?,
@@ -1060,8 +1070,8 @@ internal class OnboardingSupervisor(
                         helper.parser.asString(
                             helper.parser.value(
                                 json,
-                                "route.transactionRequest.data"
-                            )
+                                "route.transactionRequest.data",
+                            ),
                         )
                     if (ibcPayload != null) {
                         val payload = helper.jsonEncoder.encode(
@@ -1069,7 +1079,7 @@ internal class OnboardingSupervisor(
                                 "subaccountNumber" to (subaccountNumber ?: 0),
                                 "amount" to state?.input?.transfer?.size?.usdcSize,
                                 "ibcPayload" to ibcPayload.encodeBase64(),
-                            )
+                            ),
                         )
                         helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
                             val error = parseTransactionResponse(it)
@@ -1079,7 +1089,7 @@ internal class OnboardingSupervisor(
                             } else {
                                 pendingCctpWithdraw = CctpWithdrawState(
                                     state?.input?.transfer?.requestPayload?.data,
-                                    callback
+                                    callback,
                                 )
                             }
                         }
@@ -1087,7 +1097,7 @@ internal class OnboardingSupervisor(
                         DebugLogger.error("cctpToNoble error, code: $code")
                         val error = ParsingError(
                             ParsingErrorType.MissingContent,
-                            "Missing squid response"
+                            "Missing squid response",
                         )
                         helper.send(error, callback)
                     }
@@ -1095,7 +1105,7 @@ internal class OnboardingSupervisor(
                     DebugLogger.error("cctpToNoble error, code: $code")
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
-                        "Missing squid response"
+                        "Missing squid response",
                     )
                     helper.send(error, callback)
                 }
@@ -1103,7 +1113,7 @@ internal class OnboardingSupervisor(
         } else {
             val error = ParsingError(
                 ParsingErrorType.MissingRequiredData,
-                "Missing required data for cctp withdraw"
+                "Missing required data for cctp withdraw",
             )
             helper.send(error, callback)
         }

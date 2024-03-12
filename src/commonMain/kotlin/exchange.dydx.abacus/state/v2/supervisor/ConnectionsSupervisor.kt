@@ -115,7 +115,6 @@ internal class ConnectionsSupervisor(
                     // Do not set socketConnected to true here, wait for the "connected" message
                     socketConnected = false
                 }
-
             }, received = { message ->
                 delegate.processSocketResponse(message)
             })
@@ -140,7 +139,6 @@ internal class ConnectionsSupervisor(
             }
         }
     }
-
 
     private fun bestEffortConnectIndexer() {
         findOptimalIndexer { config ->
@@ -175,7 +173,7 @@ internal class ConnectionsSupervisor(
                         /*
                     response = {
                         "url": "https://...",
-                     */
+                         */
                         val map = helper.parser.decodeJsonObject(result)
                         val node = helper.parser.asString(map?.get("url"))
                         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
@@ -293,12 +291,11 @@ internal class ConnectionsSupervisor(
         }
     }
 
-
     private fun getHeights() {
         // serialize height retrieval. Get indexer height first, then validator height
         // If indexer height is not available, then validator height is not available
         // indexer height no longer triggers api state change
-        getIndexerHeight() {
+        getIndexerHeight {
             getValidatorHeight()
         }
     }
@@ -337,7 +334,6 @@ internal class ConnectionsSupervisor(
         }
     }
 
-
     private fun reconnectChain() {
         if (readyToConnect) {
             // Create a timer, to try to connect the chain again
@@ -355,7 +351,7 @@ internal class ConnectionsSupervisor(
     internal fun calculateCurrentHeight(): Int? {
         val latestBlockAndTime =
             connectionStats.validatorState.blockAndTime ?: connectionStats.indexerState.blockAndTime
-            ?: return null
+                ?: return null
         val currentTime = Clock.System.now()
         val lapsedTime = currentTime - latestBlockAndTime.time
         return if (lapsedTime.inWholeMilliseconds <= 0L) {
@@ -386,6 +382,4 @@ internal class ConnectionsSupervisor(
             }
         }
     }
-
-
 }

@@ -9,14 +9,13 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
-import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class V4RestrictionsTests: NetworkTests() {
+class V4RestrictionsTests : NetworkTests() {
     val mock = AbacusMockData()
     private val testCosmoAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
     private var stateManager: AsyncAbacusStateManagerV2 = resetStateManager()
@@ -49,7 +48,7 @@ class V4RestrictionsTests: NetworkTests() {
             ioImplementations,
             uiImplementations,
             TestState(),
-            null
+            null,
         )
         stateManager.environmentId = "dydxprotocol-staging"
         return stateManager
@@ -82,7 +81,7 @@ class V4RestrictionsTests: NetworkTests() {
 
         testRest?.setResponse(
             "https://indexer.v4staging.dydx.exchange/v4/height",
-            "403"
+            "403",
         )
 
         setStateMachineReadyToConnect(stateManager)
@@ -91,7 +90,7 @@ class V4RestrictionsTests: NetworkTests() {
         assertEquals(
             Restriction.GEO_RESTRICTED,
             stateManager.adaptor?.stateMachine?.state?.restriction?.restriction,
-            "Expected geo restriction"
+            "Expected geo restriction",
         )
     }
 
@@ -158,5 +157,4 @@ class V4RestrictionsTests: NetworkTests() {
 //            )
 //        }
 //    }
-
 }

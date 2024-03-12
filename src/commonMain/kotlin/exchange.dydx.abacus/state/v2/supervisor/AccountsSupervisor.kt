@@ -72,7 +72,6 @@ internal class AccountsSupervisor(
             }
         }
 
-
     fun subscribeToAccount(address: String) {
         val accountSupervisor = accounts[address]
         accountSupervisor?.retain() ?: run {
@@ -146,7 +145,7 @@ internal class AccountsSupervisor(
             info,
             subaccountNumber,
             payload,
-            height
+            height,
         )
     }
 
@@ -154,21 +153,21 @@ internal class AccountsSupervisor(
         if (id == null) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "No subaccount channel id provided"
+                "No subaccount channel id provided",
             )
         }
         val addressAndSubaccountNumber = id.split("/")
         if (addressAndSubaccountNumber.size != 2) {
             throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "$id is not a valid subaccount channel id"
+                "$id is not a valid subaccount channel id",
             )
         }
         val address = addressAndSubaccountNumber[0]
         val subaccountNumber =
             helper.parser.asInt(addressAndSubaccountNumber[1]) ?: throw ParsingException(
                 ParsingErrorType.UnknownChannel,
-                "${addressAndSubaccountNumber[1]} is not a valid subaccount number"
+                "${addressAndSubaccountNumber[1]} is not a valid subaccount number",
             )
 
         return Pair(address, subaccountNumber)
@@ -203,7 +202,6 @@ internal var AccountsSupervisor.sourceAddress: String?
     set(value) {
         account?.sourceAddress = value
     }
-
 
 internal var AccountsSupervisor.subaccountNumber: Int
     get() {
@@ -292,7 +290,6 @@ internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: Transacti
 internal fun AccountsSupervisor.orderCanceled(orderId: String) {
     account?.orderCanceled(orderId)
 }
-
 
 internal fun AccountsSupervisor.refresh(data: ApiData) {
     account?.refresh(data)
