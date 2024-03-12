@@ -477,6 +477,7 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     fromChainId: String?,
     toChainId: String?,
     isCctp: Boolean,
+    requestId: String?
 ) {
     val params: IMap<String, String> = iMapOf(
         "transactionId" to hash,
@@ -488,10 +489,11 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
     val squidIntegratorId = environment.squidIntegratorId
     if (url != null && squidIntegratorId != null) {
         val oldState = stateMachine.state
-        val header = iMapOf(
+        val headers = iMapOf(
             "x-integrator-id" to squidIntegratorId,
-        )
-        get(url, params, header) { _, response, httpCode, _ ->
+            "x-request-id" to requestId,
+        ).filterNotNull()
+        get(url, params, headers) { _, response, httpCode, _ ->
             if (response != null) {
                 update(stateMachine.squidStatus(response, hash), oldState)
             } else {

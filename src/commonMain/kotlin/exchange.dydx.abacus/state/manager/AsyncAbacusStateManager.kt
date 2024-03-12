@@ -601,8 +601,8 @@ class AsyncAbacusStateManager(
         }
     }
 
-    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean) {
-        adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp)
+    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean, requestId: String?) {
+        adaptor?.transferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
     fun refresh(data: ApiData) {
