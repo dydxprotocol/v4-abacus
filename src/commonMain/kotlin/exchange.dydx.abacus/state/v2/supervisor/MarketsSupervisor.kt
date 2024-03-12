@@ -22,7 +22,7 @@ internal class MarketsSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
-    private val configs: MarketConfigs,
+    private val configs: MarketsConfigs,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     internal val markets = mutableMapOf<String, MarketSupervisor>()
 

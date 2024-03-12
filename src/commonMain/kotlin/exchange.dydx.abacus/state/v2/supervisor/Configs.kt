@@ -32,7 +32,7 @@ data class SystemConfigs(
 }
 
 @JsExport
-data class MarketConfigs(
+data class MarketsConfigs(
     val retrieveSparklines: Boolean,
     val retrieveCandles: Boolean,
     val retrieveHistoricalFundings: Boolean,
@@ -42,7 +42,7 @@ data class MarketConfigs(
     val subscribeToCandles: Boolean,
 ) {
     companion object {
-        val forApp = MarketConfigs(
+        val forApp = MarketsConfigs(
             retrieveSparklines = true,
             retrieveCandles = true,
             retrieveHistoricalFundings = true,
@@ -51,7 +51,7 @@ data class MarketConfigs(
             subscribeToTrades = true,
             subscribeToCandles = true,
         )
-        val forWeb = MarketConfigs(
+        val forWeb = MarketsConfigs(
             retrieveSparklines = true,
             retrieveCandles = true,
             retrieveHistoricalFundings = true,
@@ -60,7 +60,7 @@ data class MarketConfigs(
             subscribeToTrades = true,
             subscribeToCandles = false,
         )
-        val forProgrammaticTraders = MarketConfigs(
+        val forProgrammaticTraders = MarketsConfigs(
             retrieveSparklines = false,
             retrieveCandles = false,
             retrieveHistoricalFundings = false,
@@ -156,7 +156,7 @@ data class OnboardingConfigs(
 @JsExport
 class AppConfigsV2(
     val systemConfigs: SystemConfigs,
-    val marketConfigs: MarketConfigs,
+    val marketConfigs: MarketsConfigs,
     val accountConfigs: AccountConfigs,
     val onboardingConfigs: OnboardingConfigs,
     val loadRemote: Boolean = true,
@@ -165,14 +165,14 @@ class AppConfigsV2(
     companion object {
         val forApp = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
-            marketConfigs = MarketConfigs.forApp,
+            marketConfigs = MarketsConfigs.forApp,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
         )
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
-            marketConfigs = MarketConfigs.forApp,
+            marketConfigs = MarketsConfigs.forApp,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = false,
@@ -180,14 +180,14 @@ class AppConfigsV2(
         )
         val forWeb = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
-            marketConfigs = MarketConfigs.forWeb,
+            marketConfigs = MarketsConfigs.forWeb,
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
         )
         val forProgrammaticTraders = AppConfigsV2(
             systemConfigs = SystemConfigs.forProgrammaticTraders,
-            marketConfigs = MarketConfigs.forProgrammaticTraders,
+            marketConfigs = MarketsConfigs.forProgrammaticTraders,
             accountConfigs = AccountConfigs.forProgrammaticTraders,
             onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
             loadRemote = true,

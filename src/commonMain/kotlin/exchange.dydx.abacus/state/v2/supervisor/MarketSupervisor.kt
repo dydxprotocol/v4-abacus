@@ -39,7 +39,7 @@ internal open class MarketSupervisor(
     stateMachine: TradingStateMachine,
     helper: NetworkHelper,
     analyticsUtils: AnalyticsUtils,
-    private val configs: MarketConfigs,
+    private val configs: MarketsConfigs,
     internal val marketId: String
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
 
