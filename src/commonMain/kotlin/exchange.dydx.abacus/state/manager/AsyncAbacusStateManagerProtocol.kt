@@ -79,7 +79,7 @@ interface AsyncAbacusStateManagerSingletonProtocol {
 }
 
 @JsExport
-internal fun AsyncAbacusStateManagerSingletonProtocol.setAddresses(
+fun AsyncAbacusStateManagerSingletonProtocol.setAddresses(
     source: String?,
     account: String?
 ) {
