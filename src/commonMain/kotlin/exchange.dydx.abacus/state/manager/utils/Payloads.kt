@@ -98,6 +98,7 @@ data class HumanReadableWithdrawPayload(
     val amount: String,
 )
 
+@JsExport
 @Serializable
 data class HumanReadableWithdrawIBCPayload(
     val subaccountNumber: Int,
