@@ -451,10 +451,6 @@ class NetworkHelper(
                     dataNotification.feeTiersChanged(feeTiers)
                 }
             }
-//            val lastOrderClientId = this.lastOrderClientId
-//            if (lastOrderClientId != null) {
-//                lastOrder = stateMachine.findOrder(lastOrderClientId, subaccountNumber)
-//            }
         }
     }
 

@@ -727,29 +727,31 @@ internal class SubaccountSupervisor(
             val firstIndexTransferAfter = transfers.indexOfFirst {
                 it.updatedAtMilliseconds < earliest
             }
-            val transfersAfter = transfers.subList(firstIndexTransferAfter ?: 0, transfers.size)
-            // Now, try to match transfers with faucet records
-            for (transfer in transfersAfter) {
-                when (transfer.type) {
-                    TransferRecordType.TRANSFER_IN -> {
-                        val faucet = subaccountFaucetRecords.firstOrNull {
-                            it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
+            if (firstIndexTransferAfter != -1) {
+                val transfersAfter = transfers.subList(firstIndexTransferAfter, transfers.size)
+                // Now, try to match transfers with faucet records
+                for (transfer in transfersAfter) {
+                    when (transfer.type) {
+                        TransferRecordType.TRANSFER_IN -> {
+                            val faucet = subaccountFaucetRecords.firstOrNull {
+                                it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
+                            }
+                            if (faucet != null) {
+                                val interval = Clock.System.now().toEpochMilliseconds()
+                                    .toDouble() - faucet.timestampInMilliseconds
+                                tracking(
+                                    AnalyticsEvent.TransferFaucetConfirmed.rawValue,
+                                    trackingParams(interval),
+                                )
+                                faucetRecords.remove(faucet)
+                                break
+                            }
                         }
-                        if (faucet != null) {
-                            val interval = Clock.System.now().toEpochMilliseconds()
-                                .toDouble() - faucet.timestampInMilliseconds
-                            tracking(
-                                AnalyticsEvent.TransferFaucetConfirmed.rawValue,
-                                trackingParams(interval),
-                            )
-                            faucetRecords.remove(faucet)
-                            break
-                        }
-                    }
 
-                    else -> {}
+                        else -> {}
+                    }
+                    val transferType = transfer.type
                 }
-                val transferType = transfer.type
             }
         }
     }
@@ -855,6 +857,11 @@ internal class SubaccountSupervisor(
                 }
             }
             update(changes, oldState)
+
+            val lastOrderClientId = this.lastOrderClientId
+            if (lastOrderClientId != null) {
+                lastOrder = stateMachine.findOrder(lastOrderClientId, subaccountNumber)
+            }
         } catch (e: ParsingException) {
             val error = ParsingError(
                 e.type,

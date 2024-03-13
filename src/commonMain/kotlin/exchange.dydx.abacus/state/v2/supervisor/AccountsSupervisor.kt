@@ -220,7 +220,6 @@ internal var AccountsSupervisor.subaccountNumber: Int
         account?.subaccountNumber = value
     }
 
-
 internal val AccountsSupervisor.connectedSubaccountNumber: Int?
     get() {
         return account?.connectedSubaccountNumber

@@ -164,12 +164,10 @@ internal open class AccountSupervisor(
             }
         }
 
-
     internal val connectedSubaccountNumber: Int?
         get() {
             return if (subaccount?.realized == true) subaccount?.subaccountNumber else null
         }
-
 
     private val userStatsPollingDuration = 60.0
     private var userStatsTimer: LocalTimerProtocol? = null
