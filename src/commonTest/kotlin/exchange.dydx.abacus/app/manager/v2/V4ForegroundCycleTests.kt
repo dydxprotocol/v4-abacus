@@ -106,7 +106,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                    "https://api.examples.com/configs/documentation.json",
                    "https://indexer.v4staging.dydx.exchange/v4/time",
-                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                    "https://indexer.v4staging.dydx.exchange/v4/height",
                    "https://api.examples.com/configs/markets.json",
                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -204,13 +203,13 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
@@ -273,13 +272,13 @@ class V4ForegroundCycleTests : NetworkTests() {
                     
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY",
@@ -327,13 +326,13 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
@@ -406,7 +405,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -477,7 +475,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -579,7 +576,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -643,7 +639,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
@@ -741,7 +736,6 @@ class V4ForegroundCycleTests : NetworkTests() {
                 [
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
-                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
