@@ -69,8 +69,13 @@ internal class SubaccountSupervisor(
     private val accountAddress: String,
     internal val subaccountNumber: Int
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
-    // if realized is false, the object is not yet created on protocol
-    // It is still useful to handle faucet and other operations
+    /*
+    Because faucet is done at subaccount level, we need SubaccountSupervisor even
+    before the subaccount is realized on protocol/indexer.
+
+    The realized flag indicates whether the subaccount contains payload from the indexer.
+    Only when it is true, we send REST requests and subscribe to the subaccount channel.
+     */
     internal var realized: Boolean = false
         set(value) {
             if (field != value) {
