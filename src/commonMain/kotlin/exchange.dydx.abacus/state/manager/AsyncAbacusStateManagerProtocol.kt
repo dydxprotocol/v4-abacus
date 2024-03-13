@@ -8,7 +8,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.utils.IList
-import kollections.JsExport
+import kotlin.js.JsExport
 
 @JsExport
 interface AsyncAbacusStateManagerProtocol {
@@ -78,7 +78,8 @@ interface AsyncAbacusStateManagerSingletonProtocol {
     var market: String?
 }
 
-internal fun AsyncAbacusStateManagerSingletonProtocol.setAddresses(
+@JsExport
+fun AsyncAbacusStateManagerSingletonProtocol.setAddresses(
     source: String?,
     account: String?
 ) {
