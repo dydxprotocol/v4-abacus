@@ -186,12 +186,21 @@ internal var AccountsSupervisor.accountAddress: String?
         return account?.accountAddress
     }
     set(value) {
-        accounts.keys.filter { it != value }.forEach {
-            accounts[it]?.forceRelease()
-            accounts.remove(it)
-        }
-        if (accounts.contains(value).not() && value != null) {
-            subscribeToAccount(value)
+        if (value != accountAddress) {
+            val stateResponse = stateMachine.resetWallet(value)
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+            accounts.keys.filter { it != value }.forEach {
+                accounts[it]?.forceRelease()
+                accounts.remove(it)
+            }
+            if (accounts.contains(value).not() && value != null) {
+                subscribeToAccount(value)
+            }
         }
     }
 

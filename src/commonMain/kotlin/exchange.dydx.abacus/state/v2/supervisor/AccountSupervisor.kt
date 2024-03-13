@@ -253,7 +253,7 @@ internal open class AccountSupervisor(
         }
 
         if (validatorConnected) {
-            if (subaccounts.isNotEmpty()) {
+            if (subaccounts.values.any { it.realized }) {
                 if (configs.retrieveUserFeeTier) {
                     retrieveUserFeeTier()
                 }
@@ -304,11 +304,13 @@ internal open class AccountSupervisor(
         update(stateMachine.account(response), oldState)
 
         if (subaccounts.isNotEmpty()) {
-            for ((subaccountNumber, _) in subaccounts) {
+            for ((subaccountNumber, subaccount) in subaccounts) {
                 if (canConnectTo(subaccountNumber)) {
-                    subscribeToSubaccount(subaccountNumber)
+                    subaccount.realized = true
                 }
             }
+        } else {
+            subaccountNumber = 0
         }
     }
 
