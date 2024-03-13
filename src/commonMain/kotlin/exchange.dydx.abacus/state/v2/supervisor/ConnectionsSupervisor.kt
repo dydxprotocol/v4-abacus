@@ -272,7 +272,7 @@ internal class ConnectionsSupervisor(
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
         delegate.didConnectToSocket(socketConnected)
-        if (readyToConnect) {
+        if (!socketConnected && readyToConnect) {
             connectSocket()
         }
     }

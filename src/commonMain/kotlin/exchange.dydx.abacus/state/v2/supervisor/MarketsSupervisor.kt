@@ -90,10 +90,6 @@ internal class MarketsSupervisor(
 
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
-        if (configs.retrieveSparklines) {
-            retrieveSparklines()
-        }
-
         for (market in markets.values) {
             market.indexerConnected = indexerConnected
         }
@@ -185,6 +181,11 @@ internal class MarketsSupervisor(
                             payload.toString(),
                         )
                     changes = stateMachine.receivedMarkets(content, subaccountNumber ?: 0)
+
+                    if (configs.retrieveSparklines) {
+                        // Only refresh sparklines after we get the markets data
+                        retrieveSparklines()
+                    }
                 }
 
                 "unsubscribed" -> {}
