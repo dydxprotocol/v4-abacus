@@ -19,8 +19,10 @@ enum class NetworkStatus(val rawValue: String) {
     }
 }
 
-public class BlockAndTime(val block: Int, val time: Instant)
+@JsExport
+class BlockAndTime(val block: Int, val time: Instant)
 
+@JsExport
 internal class NetworkState() {
     var status: NetworkStatus = NetworkStatus.UNKNOWN
         private set
