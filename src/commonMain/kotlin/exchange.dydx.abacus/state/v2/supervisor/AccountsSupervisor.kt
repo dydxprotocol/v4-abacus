@@ -211,12 +211,10 @@ internal var AccountsSupervisor.subaccountNumber: Int
         account?.subaccountNumber = value
     }
 
-internal var AccountsSupervisor.connectedSubaccountNumber: Int?
+
+internal val AccountsSupervisor.connectedSubaccountNumber: Int?
     get() {
         return account?.connectedSubaccountNumber
-    }
-    set(value) {
-        account?.connectedSubaccountNumber = value
     }
 
 internal val AccountsSupervisor.addressRestriction: UsageRestriction?

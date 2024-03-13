@@ -69,6 +69,18 @@ internal class SubaccountSupervisor(
     private val accountAddress: String,
     internal val subaccountNumber: Int
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
+    // if realized is false, the object is not yet created on protocol
+    // It is still useful to handle faucet and other operations
+    internal var realized: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                if (value) {
+                    didSetRealized()
+                }
+            }
+        }
+
     private var placeOrderRecords: IMutableList<PlaceOrderRecord> = iMutableListOf()
         set(value) {
             if (field !== value) {
@@ -131,7 +143,7 @@ internal class SubaccountSupervisor(
 
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
-        if (indexerConnected) {
+        if (indexerConnected && realized) {
             if (configs.retrieveFills) {
                 retrieveFills()
             }
@@ -146,7 +158,7 @@ internal class SubaccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        if (configs.subscribeToSubaccount) {
+        if (configs.subscribeToSubaccount && realized) {
             subaccountChannelSubscription(socketConnected)
         }
     }
@@ -859,6 +871,25 @@ internal class SubaccountSupervisor(
             }
 
             ApiData.HISTORICAL_TRADING_REWARDS -> {}
+        }
+    }
+
+    private fun didSetRealized() {
+        if (realized) {
+            if (indexerConnected) {
+                if (configs.retrieveFills) {
+                    retrieveFills()
+                }
+                if (configs.retrieveTransfers) {
+                    retrieveTransfers()
+                }
+                if (configs.retrieveHistoricalPnls) {
+                    retrieveHistoricalPnls()
+                }
+            }
+            if (socketConnected) {
+                subaccountChannelSubscription(true)
+            }
         }
     }
 }
