@@ -150,12 +150,23 @@ internal open class AccountSupervisor(
             }
         }
 
-    internal var subaccountNumber: Int = 0 // Desired subaccountNumber
+    internal var subaccountNumber: Int? // Desired subaccountNumber
+        get() {
+            return subaccount?.subaccountNumber
+        }
         set(value) {
-            if (field != value) {
-                field = value
-                didSetSubaccountNumber()
+            subaccounts.keys.filter { it != value }.forEach {
+                subaccounts[it]?.forceRelease()
+                subaccounts.remove(it)
             }
+            if (subaccounts.contains(value).not() && value != null) {
+                subscribeToSubaccount(value)
+            }
+        }
+
+    internal val connectedSubaccountNumber: Int?
+        get() {
+            return if (subaccount?.realized == true) subaccount?.subaccountNumber else null
         }
 
     private val userStatsPollingDuration = 60.0
@@ -171,11 +182,8 @@ internal open class AccountSupervisor(
         screenAccountAddress()
     }
 
-    private fun didSetSubaccountNumber() {
-        updateConnectedSubaccountNumber()
-    }
-
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
+        val isSubaccountRealized = stateMachine.state?.subaccount(subaccountNumber) != null
         val subaccountSupervisor = subaccounts[subaccountNumber]
         subaccountSupervisor?.retain() ?: run {
             val newSubaccountSupervisor = SubaccountSupervisor(
@@ -192,6 +200,7 @@ internal open class AccountSupervisor(
             newSubaccountSupervisor.validatorConnected = validatorConnected
             subaccounts[subaccountNumber] = newSubaccountSupervisor
         }
+        subaccounts[subaccountNumber]?.realized = isSubaccountRealized
     }
 
     internal fun unsubscribeFromSubaccount(subaccountNumber: Int) {
@@ -242,7 +251,7 @@ internal open class AccountSupervisor(
         }
 
         if (validatorConnected) {
-            if (subaccounts.isNotEmpty()) {
+            if (subaccounts.values.any { it.realized }) {
                 if (configs.retrieveUserFeeTier) {
                     retrieveUserFeeTier()
                 }
@@ -271,13 +280,13 @@ internal open class AccountSupervisor(
     }
 
     private fun retrieveSubaccounts() {
-        val oldState = stateMachine.state
         val url = accountUrl()
         if (url != null) {
             helper.get(url, null, null, callback = { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     retrievedSubaccounts(response)
                 } else {
+                    subaccountNumber = 0
                     subaccountsTimer =
                         helper.ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
                             retrieveSubaccounts()
@@ -292,8 +301,13 @@ internal open class AccountSupervisor(
         val oldState = stateMachine.state
         update(stateMachine.account(response), oldState)
 
-        // Automatically connect to the first subaccount if no subaccount is connected
-        updateConnectedSubaccountNumber()
+        if (subaccounts.isNotEmpty()) {
+            for ((subaccountNumber, subaccount) in subaccounts) {
+                subaccount.realized = canConnectTo(subaccountNumber)
+            }
+        } else {
+            subaccountNumber = 0
+        }
     }
 
     private fun accountUrl(): String? {
@@ -484,16 +498,6 @@ internal open class AccountSupervisor(
                     val oldState = stateMachine.state
                     update(stateMachine.launchIncentivePoints(season, response), oldState)
                 }
-            }
-        }
-    }
-
-    private fun updateConnectedSubaccountNumber() {
-        if (subaccountNumber != connectedSubaccountNumber) {
-            connectedSubaccountNumber = if (canConnectTo(subaccountNumber)) {
-                subaccountNumber
-            } else {
-                null
             }
         }
     }
@@ -764,20 +768,6 @@ internal open class AccountSupervisor(
 private val AccountSupervisor.subaccount: SubaccountSupervisor?
     get() {
         return if (subaccounts.count() == 1) subaccounts.values.firstOrNull() else null
-    }
-
-internal var AccountSupervisor.connectedSubaccountNumber: Int?
-    get() {
-        return subaccount?.subaccountNumber
-    }
-    set(value) {
-        subaccounts.keys.filter { it != value }.forEach {
-            subaccounts[it]?.forceRelease()
-            subaccounts.remove(it)
-        }
-        if (subaccounts.contains(value).not() && value != null) {
-            subscribeToSubaccount(value)
-        }
     }
 
 internal val AccountSupervisor.notifications: IMap<String, Notification>

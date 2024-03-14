@@ -69,6 +69,23 @@ internal class SubaccountSupervisor(
     private val accountAddress: String,
     internal val subaccountNumber: Int
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
+    /*
+    Because faucet is done at subaccount level, we need SubaccountSupervisor even
+    before the subaccount is realized on protocol/indexer.
+
+    The realized flag indicates whether the subaccount contains payload from the indexer.
+    Only when it is true, we send REST requests and subscribe to the subaccount channel.
+     */
+    internal var realized: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                if (value) {
+                    didSetRealized()
+                }
+            }
+        }
+
     private var placeOrderRecords: IMutableList<PlaceOrderRecord> = iMutableListOf()
         set(value) {
             if (field !== value) {
@@ -131,7 +148,7 @@ internal class SubaccountSupervisor(
 
     override fun didSetIndexerConnected(indexerConnected: Boolean) {
         super.didSetIndexerConnected(indexerConnected)
-        if (indexerConnected) {
+        if (indexerConnected && realized) {
             if (configs.retrieveFills) {
                 retrieveFills()
             }
@@ -146,7 +163,7 @@ internal class SubaccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        if (configs.subscribeToSubaccount) {
+        if (configs.subscribeToSubaccount && realized) {
             subaccountChannelSubscription(socketConnected)
         }
     }
@@ -715,29 +732,31 @@ internal class SubaccountSupervisor(
             val firstIndexTransferAfter = transfers.indexOfFirst {
                 it.updatedAtMilliseconds < earliest
             }
-            val transfersAfter = transfers.subList(firstIndexTransferAfter ?: 0, transfers.size)
-            // Now, try to match transfers with faucet records
-            for (transfer in transfersAfter) {
-                when (transfer.type) {
-                    TransferRecordType.TRANSFER_IN -> {
-                        val faucet = subaccountFaucetRecords.firstOrNull {
-                            it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
+            if (firstIndexTransferAfter != -1) {
+                val transfersAfter = transfers.subList(firstIndexTransferAfter, transfers.size)
+                // Now, try to match transfers with faucet records
+                for (transfer in transfersAfter) {
+                    when (transfer.type) {
+                        TransferRecordType.TRANSFER_IN -> {
+                            val faucet = subaccountFaucetRecords.firstOrNull {
+                                it.amount == transfer.amount && it.timestampInMilliseconds < transfer.updatedAtMilliseconds
+                            }
+                            if (faucet != null) {
+                                val interval = Clock.System.now().toEpochMilliseconds()
+                                    .toDouble() - faucet.timestampInMilliseconds
+                                tracking(
+                                    AnalyticsEvent.TransferFaucetConfirmed.rawValue,
+                                    trackingParams(interval),
+                                )
+                                faucetRecords.remove(faucet)
+                                break
+                            }
                         }
-                        if (faucet != null) {
-                            val interval = Clock.System.now().toEpochMilliseconds()
-                                .toDouble() - faucet.timestampInMilliseconds
-                            tracking(
-                                AnalyticsEvent.TransferFaucetConfirmed.rawValue,
-                                trackingParams(interval),
-                            )
-                            faucetRecords.remove(faucet)
-                            break
-                        }
-                    }
 
-                    else -> {}
+                        else -> {}
+                    }
+                    val transferType = transfer.type
                 }
-                val transferType = transfer.type
             }
         }
     }
@@ -843,6 +862,11 @@ internal class SubaccountSupervisor(
                 }
             }
             update(changes, oldState)
+
+            val lastOrderClientId = this.lastOrderClientId
+            if (lastOrderClientId != null) {
+                lastOrder = stateMachine.findOrder(lastOrderClientId, subaccountNumber)
+            }
         } catch (e: ParsingException) {
             val error = ParsingError(
                 e.type,
@@ -859,6 +883,25 @@ internal class SubaccountSupervisor(
             }
 
             ApiData.HISTORICAL_TRADING_REWARDS -> {}
+        }
+    }
+
+    private fun didSetRealized() {
+        if (realized) {
+            if (indexerConnected) {
+                if (configs.retrieveFills) {
+                    retrieveFills()
+                }
+                if (configs.retrieveTransfers) {
+                    retrieveTransfers()
+                }
+                if (configs.retrieveHistoricalPnls) {
+                    retrieveHistoricalPnls()
+                }
+            }
+            if (socketConnected) {
+                subaccountChannelSubscription(true)
+            }
         }
     }
 }
