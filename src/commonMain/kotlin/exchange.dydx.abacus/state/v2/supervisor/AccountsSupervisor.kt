@@ -186,12 +186,21 @@ internal var AccountsSupervisor.accountAddress: String?
         return account?.accountAddress
     }
     set(value) {
-        accounts.keys.filter { it != value }.forEach {
-            accounts[it]?.forceRelease()
-            accounts.remove(it)
-        }
-        if (accounts.contains(value).not() && value != null) {
-            subscribeToAccount(value)
+        if (value != accountAddress) {
+            val stateResponse = stateMachine.resetWallet(value)
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+            accounts.keys.filter { it != value }.forEach {
+                accounts[it]?.forceRelease()
+                accounts.remove(it)
+            }
+            if (accounts.contains(value).not() && value != null) {
+                subscribeToAccount(value)
+            }
         }
     }
 
@@ -211,12 +220,9 @@ internal var AccountsSupervisor.subaccountNumber: Int
         account?.subaccountNumber = value
     }
 
-internal var AccountsSupervisor.connectedSubaccountNumber: Int?
+internal val AccountsSupervisor.connectedSubaccountNumber: Int?
     get() {
         return account?.connectedSubaccountNumber
-    }
-    set(value) {
-        account?.connectedSubaccountNumber = value
     }
 
 internal val AccountsSupervisor.addressRestriction: UsageRestriction?

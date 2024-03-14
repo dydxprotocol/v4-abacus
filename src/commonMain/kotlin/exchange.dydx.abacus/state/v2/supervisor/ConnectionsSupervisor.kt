@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.state.manager.IndexerURIs
 import exchange.dydx.abacus.state.manager.NetworkState
+import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
@@ -209,7 +210,7 @@ internal class ConnectionsSupervisor(
         val chainTokenDecimals = chainToken.decimals
         val nobleValidator = helper.environment.endpoints.nobleValidator
 
-        val params = exchange.dydx.abacus.utils.mutableMapOf<String, Any>()
+        val params = mutableMapOf<String, Any>()
         params["indexerUrl"] = indexerUrl
         params["websocketUrl"] = websocketUrl
         params["validatorUrl"] = validatorUrl
@@ -222,6 +223,7 @@ internal class ConnectionsSupervisor(
         params.safeSet("USDC_GAS_DENOM", usdcGasDenom)
         params.safeSet("CHAINTOKEN_DENOM", chainTokenDenom)
         params.safeSet("CHAINTOKEN_DECIMALS", chainTokenDecimals)
+        params.safeSet("txnMemo", "dYdX Frontend (${SystemUtils.platform.rawValue})")
         val jsonString = JsonEncoder().encode(params) ?: return
 
         helper.ioImplementations.threading?.async(ThreadingType.main) {
