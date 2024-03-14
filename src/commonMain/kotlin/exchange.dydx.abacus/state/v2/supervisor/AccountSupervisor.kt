@@ -303,9 +303,7 @@ internal open class AccountSupervisor(
 
         if (subaccounts.isNotEmpty()) {
             for ((subaccountNumber, subaccount) in subaccounts) {
-                if (canConnectTo(subaccountNumber)) {
-                    subaccount.realized = true
-                }
+                subaccount.realized = canConnectTo(subaccountNumber)
             }
         } else {
             subaccountNumber = 0
