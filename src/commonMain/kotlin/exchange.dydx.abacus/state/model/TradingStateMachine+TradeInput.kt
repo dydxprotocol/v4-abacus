@@ -19,6 +19,7 @@ import kotlinx.serialization.Serializable
 enum class TradeInputField(val rawValue: String) {
     type("type"),
     side("side"),
+    marginMode("marginMode"),
 
     size("size.size"),
     usdcSize("size.usdcSize"),
@@ -115,6 +116,7 @@ internal fun TradingStateMachine.initiateTrade(
     trade["type"] = "LIMIT"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
+    trade["marginMode"] = "CROSS"
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.trade, featureFlags)
     val params = mutableMapOf<String, Any>()

@@ -615,6 +615,18 @@ data class TradeInputBracket(
 
 @JsExport
 @Serializable
+enum class MarginMode(val rawValue: String) {
+    isolated("ISOLATED"),
+    cross("CROSS");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            MarginMode.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
 enum class OrderType(val rawValue: String) {
     market("MARKET"),
     stopMarket("STOP_MARKET"),
@@ -731,6 +743,8 @@ data class TradeInput(
     val reduceOnly: Boolean,
     val postOnly: Boolean,
     val fee: Double?,
+    val marginMode: MarginMode?,
+    val targetLeverage: Double?,
     val bracket: TradeInputBracket?,
     val marketOrder: TradeInputMarketOrder?,
     val options: TradeInputOptions?,
@@ -764,6 +778,12 @@ data class TradeInput(
                 val postOnly = parser.asBool(data["postOnly"]) ?: false
 
                 val fee = parser.asDouble(data["fee"])
+
+                val marginMode = parser.asString(data["marginMode"])?.let {
+                    MarginMode.invoke(it)
+                }
+
+                val targetLeverage = parser.asDouble(data["targetLeverage"])
 
                 val goodTil = TradeInputGoodUntil.create(
                     existing?.goodTil,
@@ -803,6 +823,8 @@ data class TradeInput(
                     existing?.reduceOnly != reduceOnly ||
                     existing.postOnly != postOnly ||
                     existing.fee != fee ||
+                    existing?.marginMode != marginMode ||
+                    existing?.targetLeverage != targetLeverage ||
                     existing.bracket != bracket ||
                     existing.marketOrder != marketOrder ||
                     existing.options != options ||
@@ -820,6 +842,8 @@ data class TradeInput(
                         reduceOnly,
                         postOnly,
                         fee,
+                        marginMode,
+                        targetLeverage,
                         bracket,
                         marketOrder,
                         options,
