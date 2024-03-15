@@ -43,7 +43,7 @@ internal class TRCL3551Tests : TRCL2998Tests() {
                     "account": {
                         "launchIncentivePoints": {
                             "2": {
-                                "incentivePoints": 10,
+                                "incentivePoints": 0.01,
                                 "marketMakingIncentivePoints": 0
                             }
                         }
