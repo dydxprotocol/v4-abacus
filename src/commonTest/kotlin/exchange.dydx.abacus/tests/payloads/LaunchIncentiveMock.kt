@@ -22,7 +22,7 @@ internal class LaunchIncentiveMock {
 
     internal val points = """
         {
-           "incentivePoints":10,
+           "incentivePoints":0.01,
            "marketMakingIncentivePoints":0
         }
     """.trimIndent()

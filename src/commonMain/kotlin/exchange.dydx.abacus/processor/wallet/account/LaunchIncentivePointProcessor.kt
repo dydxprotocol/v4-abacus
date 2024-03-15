@@ -5,7 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 
 internal class LaunchIncentivePointProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val pointsKeyMap = mapOf(
-        "int" to mapOf(
+        "double" to mapOf(
             "incentivePoints" to "incentivePoints",
             "marketMakingIncentivePoints" to "marketMakingIncentivePoints",
         ),
