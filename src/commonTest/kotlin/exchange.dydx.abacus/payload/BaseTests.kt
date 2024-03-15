@@ -23,6 +23,7 @@ import exchange.dydx.abacus.output.NetworkConfigs
 import exchange.dydx.abacus.output.OrderbookLine
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketSummary
+import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Subaccount
 import exchange.dydx.abacus.output.SubaccountFill
@@ -1370,6 +1371,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asDouble(data["maintenanceMarginFraction"]),
                 obj.maintenanceMarginFraction,
                 "$trace.maintenanceMarginFraction",
+            )
+            assertEquals(
+                PerpetualMarketType.invoke(parser.asString(data["perpetualMarketType"])),
+                obj.perpetualMarketType,
+                "$trace.perpetualMarketType",
             )
             assertEquals(parser.asInt(data["largeSize"]), obj.largeSize, "$trace.largeSize")
         } else {
