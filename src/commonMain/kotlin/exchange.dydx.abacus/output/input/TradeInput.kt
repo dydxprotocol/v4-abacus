@@ -64,6 +64,7 @@ data class TradeInputOptions(
     val needsLeverage: Boolean,
     val maxLeverage: Double?,
     val needsLimitPrice: Boolean,
+    val needsTargetLeverage: Boolean,
     val needsTriggerPrice: Boolean,
     val needsTrailingPercent: Boolean,
     val needsGoodUntil: Boolean,
@@ -75,6 +76,7 @@ data class TradeInputOptions(
     val timeInForceOptions: IList<SelectionOption>?,
     val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
+    val marginModeOptions: IList<SelectionOption>?,
     val reduceOnlyTooltip: Tooltip?,
     val postOnlyTooltip: Tooltip?,
 ) {
@@ -158,6 +160,7 @@ data class TradeInputOptions(
                 SelectionOption("W", null, "APP.GENERAL.TIME_STRINGS.WEEKS", null),
             )
 
+
         internal fun create(
             existing: TradeInputOptions?,
             parser: ParserProtocol,
@@ -170,6 +173,7 @@ data class TradeInputOptions(
                 val needsLeverage = parser.asBool(data["needsLeverage"]) ?: false
                 val maxLeverage = parser.asDouble(data["maxLeverage"])
                 val needsLimitPrice = parser.asBool(data["needsLimitPrice"]) ?: false
+                val needsTargetLeverage = parser.asBool(data["needsTargetLeverage"]) ?: false
                 val needsTriggerPrice = parser.asBool(data["needsTriggerPrice"]) ?: false
                 val needsTrailingPercent = parser.asBool(data["needsTrailingPercent"]) ?: false
                 val needsGoodUntil =
@@ -179,6 +183,21 @@ data class TradeInputOptions(
                 val needsBrackets = parser.asBool(data["needsBrackets"]) ?: false
                 val reduceOnlyTooltip = buildToolTip(parser.asString(data["reduceOnlyPromptStringKey"]))
                 val postOnlyOnlyTooltip = buildToolTip(parser.asString(data["postOnlyPromptStringKey"]))
+
+                var marginModeOptions: IMutableList<SelectionOption>? = null
+                parser.asList(data["marginModeOptions"])?.let { data ->
+                    marginModeOptions = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        SelectionOption.create(
+                            existing?.marginModeOptions?.getOrNull(i),
+                            parser,
+                            parser.asMap(item),
+                        )?.let {
+                            marginModeOptions?.add(it)
+                        }
+                    }
+                }
 
                 var timeInForceOptions: IMutableList<SelectionOption>? = null
                 parser.asList(data["timeInForceOptions"])?.let { data ->
@@ -219,6 +238,7 @@ data class TradeInputOptions(
                     existing.needsLeverage != needsLeverage ||
                     existing.maxLeverage != maxLeverage ||
                     existing.needsLimitPrice != needsLimitPrice ||
+                    existing.needsTargetLeverage != needsTargetLeverage ||
                     existing.needsTriggerPrice != needsTriggerPrice ||
                     existing.needsTrailingPercent != needsTrailingPercent ||
                     existing.needsGoodUntil != needsGoodUntil ||
@@ -226,6 +246,7 @@ data class TradeInputOptions(
                     existing.needsPostOnly != needsPostOnly ||
                     existing.needsBrackets != needsBrackets ||
                     existing.timeInForceOptions != timeInForceOptionsArray ||
+                    existing.marginModeOptions != marginModeOptions ||
                     existing.executionOptions != executionOptionsArray ||
                     existing.reduceOnlyTooltip != reduceOnlyTooltip
                 ) {
@@ -236,6 +257,7 @@ data class TradeInputOptions(
                         needsLeverage,
                         maxLeverage,
                         needsLimitPrice,
+                        needsTargetLeverage,
                         needsTriggerPrice,
                         needsTrailingPercent,
                         needsGoodUntil,
@@ -247,6 +269,7 @@ data class TradeInputOptions(
                         timeInForceOptionsArray,
                         goodTilUnitOptionsArray,
                         executionOptionsArray,
+                        marginModeOptions,
                         reduceOnlyTooltip,
                         postOnlyOnlyTooltip,
                     )

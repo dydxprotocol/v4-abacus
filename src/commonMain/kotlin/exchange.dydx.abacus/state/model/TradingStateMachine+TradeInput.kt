@@ -20,6 +20,7 @@ enum class TradeInputField(val rawValue: String) {
     type("type"),
     side("side"),
     marginMode("marginMode"),
+    targetLeverage("targetLeverage"),
 
     size("size.size"),
     usdcSize("size.usdcSize"),
@@ -196,6 +197,7 @@ fun TradingStateMachine.trade(
                 TradeInputField.size.rawValue,
                 TradeInputField.usdcSize.rawValue,
                 TradeInputField.leverage.rawValue,
+                TradeInputField.targetLeverage.rawValue,
                 -> {
                     sizeChanged = (parser.asDouble(data) != parser.asDouble(parser.value(trade, typeText)))
                     trade.safeSet(typeText, parser.asDouble(data))
@@ -222,6 +224,7 @@ fun TradingStateMachine.trade(
                     )
                 }
 
+                TradeInputField.marginMode.rawValue,
                 TradeInputField.timeInForceType.rawValue,
                 TradeInputField.goodTilUnit.rawValue,
                 TradeInputField.bracketsGoodUntilUnit.rawValue,
@@ -307,6 +310,7 @@ fun TradingStateMachine.tradeDataOption(typeText: String?): String? {
         TradeInputField.limitPrice.rawValue -> "options.needsLimitPrice"
         TradeInputField.triggerPrice.rawValue -> "options.needsTriggerPrice"
         TradeInputField.trailingPercent.rawValue -> "options.needsTrailingPercent"
+        TradeInputField.targetLeverage.rawValue -> "options.needsTargetLeverage"
 
         TradeInputField.goodTilDuration.rawValue -> "options.needsGoodUntil"
         TradeInputField.goodTilUnit.rawValue -> "options.needsGoodUntil"
@@ -326,6 +330,7 @@ fun TradingStateMachine.tradeDataOption(typeText: String?): String? {
 
         TradeInputField.timeInForceType.rawValue -> "options.timeInForceOptions"
         TradeInputField.execution.rawValue -> "options.executionOptions"
+        TradeInputField.marginMode.rawValue -> "options.marginModeOptions"
 
         else -> null
     }
