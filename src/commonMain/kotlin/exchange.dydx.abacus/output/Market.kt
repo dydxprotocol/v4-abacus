@@ -100,6 +100,18 @@ data class MarketConfigsV4(
     }
 }
 
+@JsExport
+@Serializable
+enum class PerpetualMarketType(val rawValue: String) {
+    CROSS("CROSS"),
+    ISOLATED("ISOLATED");
+
+    companion object {
+        operator fun invoke(rawValue: String?) =
+            entries.firstOrNull { it.rawValue == rawValue } ?: CROSS
+    }
+}
+
 /*
 depending on the timing of v3_markets socket channel and /config/markets.json,
 the object may contain empty fields until both payloads are received and processed
@@ -127,6 +139,7 @@ data class MarketConfigs(
     val basePositionNotional: Double? = null,
     val baselinePositionSize: Double? = null,
     val candleOptions: IList<CandleOption>? = null,
+    val perpetualMarketType: PerpetualMarketType = PerpetualMarketType.CROSS,
     val v4: MarketConfigsV4? = null,
 ) {
     companion object {
@@ -157,6 +170,9 @@ data class MarketConfigs(
                 parser,
                 parser.asList(data["candleOptions"]) as? IList<IMap<String, Any>>,
             )
+            val perpetualMarketType = PerpetualMarketType.invoke(
+                parser.asString(data["perpetualMarketType"]),
+            )
             val v4 = MarketConfigsV4.create(
                 existing?.v4,
                 parser,
@@ -178,6 +194,7 @@ data class MarketConfigs(
                 existing.baselinePositionSize != baselinePositionSize ||
                 existing.basePositionNotional != basePositionNotional ||
                 existing.candleOptions != candleOptions ||
+                existing.perpetualMarketType != perpetualMarketType ||
                 existing.v4 != v4
             ) {
                 MarketConfigs(
@@ -200,6 +217,7 @@ data class MarketConfigs(
                     basePositionNotional,
                     baselinePositionSize,
                     candleOptions,
+                    perpetualMarketType,
                     v4,
                 )
             } else {
