@@ -72,25 +72,37 @@ data class MarketsConfigs(
     }
 }
 
+enum class SubaccountSubscriptionType {
+    SUBACCOUNT,
+    PARENT_SUBACCOUNT,
+    NONE,
+}
+
 @JsExport
 data class SubaccountConfigs(
     val retrieveFills: Boolean,
     val retrieveTransfers: Boolean,
     val retrieveHistoricalPnls: Boolean,
-    val subscribeToSubaccount: Boolean,
+    val subscribeToSubaccount: SubaccountSubscriptionType,
 ) {
     companion object {
         val forApp = SubaccountConfigs(
             retrieveFills = true,
             retrieveTransfers = true,
             retrieveHistoricalPnls = true,
-            subscribeToSubaccount = true,
+            subscribeToSubaccount = SubaccountSubscriptionType.SUBACCOUNT,
+        )
+        val forAppWithIsolatedMargins = SubaccountConfigs(
+            retrieveFills = true,
+            retrieveTransfers = true,
+            retrieveHistoricalPnls = true,
+            subscribeToSubaccount = SubaccountSubscriptionType.PARENT_SUBACCOUNT,
         )
         val forProgrammaticTraders = SubaccountConfigs(
             retrieveFills = false,
             retrieveTransfers = false,
             retrieveHistoricalPnls = false,
-            subscribeToSubaccount = true,
+            subscribeToSubaccount = SubaccountSubscriptionType.SUBACCOUNT,
         )
     }
 }
@@ -116,6 +128,16 @@ data class AccountConfigs(
             retrieveLaunchIncentivePoints = true,
             transferNobleBalances = true,
             subaccountConfigs = SubaccountConfigs.forApp,
+        )
+        val forAppWithIsolatedMargins = AccountConfigs(
+            retrieveUserFeeTier = true,
+            retrieveUserStats = true,
+            retrieveBalances = true,
+            retrieveSubaccounts = true,
+            retrieveHistoricalTradingRewards = true,
+            retrieveLaunchIncentivePoints = true,
+            transferNobleBalances = true,
+            subaccountConfigs = SubaccountConfigs.forAppWithIsolatedMargins,
         )
         val forProgrammaticTraders = AccountConfigs(
             retrieveUserFeeTier = true,
@@ -170,6 +192,13 @@ class AppConfigsV2(
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
         )
+        val forAppWithIsolatedMargins = AppConfigsV2(
+            systemConfigs = SystemConfigs.forApp,
+            marketConfigs = MarketsConfigs.forApp,
+            accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
+            onboardingConfigs = OnboardingConfigs.forApp,
+            loadRemote = true,
+        )
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketsConfigs.forApp,
@@ -182,6 +211,13 @@ class AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketsConfigs.forWeb,
             accountConfigs = AccountConfigs.forApp,
+            onboardingConfigs = OnboardingConfigs.forApp,
+            loadRemote = true,
+        )
+        val forWebAppWithIsolatedMargins = AppConfigsV2(
+            systemConfigs = SystemConfigs.forApp,
+            marketConfigs = MarketsConfigs.forWeb,
+            accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
         )

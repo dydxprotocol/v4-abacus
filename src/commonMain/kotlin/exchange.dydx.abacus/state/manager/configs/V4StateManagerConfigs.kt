@@ -58,7 +58,8 @@ class V4StateManagerConfigs(
                       "trades":"v4_trades",
                       "candles":"v4_candles",
                       "orderbook":"v4_orderbook",
-                      "subaccount":"v4_subaccounts"
+                      "subaccount":"v4_subaccounts",
+                      "parent_subaccount":"v4_parent_subaccounts"
                    }
                 }
                 """.trimIndent(),

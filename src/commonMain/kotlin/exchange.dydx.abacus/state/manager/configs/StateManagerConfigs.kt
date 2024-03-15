@@ -83,8 +83,17 @@ open class StateManagerConfigs(
         return parser.asString(parser.value(configs, "channels.candles"))
     }
 
-    fun subaccountChannel(): String? {
-        return parser.asString(parser.value(configs, "channels.subaccount"))
+    fun subaccountChannel(parentSubaccount: Boolean = false): String? {
+        return parser.asString(
+            parser.value(
+                configs,
+                if (parentSubaccount) {
+                    "channels.parent_subaccount"
+                } else {
+                    "channels.subaccount"
+                },
+            ),
+        )
     }
 
     fun websocketUrl(): String? {
