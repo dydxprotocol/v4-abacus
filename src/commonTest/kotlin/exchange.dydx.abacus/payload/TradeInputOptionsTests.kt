@@ -31,7 +31,17 @@ class TradeInputOptionsTests : V3BaseTests() {
                         "marketId": "ETH-USD",
                         "timeInForce": "GTT",
                         "options": {
-                            "needsPostOnly": true
+                            "needsPostOnly": true,
+                            "marginModeOptions": [
+                                {
+                                    "type": "CROSS",
+                                    "stringKey": "APP.TRADE.CROSS_MARGIN"
+                                },
+                                {
+                                    "type": "ISOLATED",
+                                    "stringKey": "APP.TRADE.ISOLATED_MARGIN"
+                                }
+                            ]
                         }
                     }
                 }

@@ -1044,8 +1044,7 @@ internal class TradeInputCalculator(
                         marginModeCross,
                         marginModeIsolated,
                     )
-                }
-            ,
+                },
         )
     }
 

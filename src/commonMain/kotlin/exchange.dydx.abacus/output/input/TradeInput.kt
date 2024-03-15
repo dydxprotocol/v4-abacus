@@ -160,7 +160,6 @@ data class TradeInputOptions(
                 SelectionOption("W", null, "APP.GENERAL.TIME_STRINGS.WEEKS", null),
             )
 
-
         internal fun create(
             existing: TradeInputOptions?,
             parser: ParserProtocol,
@@ -643,7 +642,7 @@ enum class MarginMode(val rawValue: String) {
     cross("CROSS");
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             MarginMode.values().firstOrNull { it.rawValue == rawValue }
     }
 }

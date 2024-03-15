@@ -2239,5 +2239,25 @@ class TradeInputTests : V3BaseTests() {
                 }
             """.trimIndent(),
         )
+
+        test(
+            {
+                perp.trade("ISOLATED", TradeInputField.marginMode, 0)
+            },
+            """
+            
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "type": "LIMIT",
+                            "side": "BUY",
+                            "marketId": "ETH-USD",
+                            "marginMode": "ISOLATED"
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
     }
 }
