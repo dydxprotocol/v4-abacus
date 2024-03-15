@@ -163,8 +163,11 @@ internal class SubaccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        if (configs.subscribeToSubaccount && realized) {
-            subaccountChannelSubscription(socketConnected)
+        if (configs.subscribeToSubaccount != SubaccountSubscriptionType.NONE && realized) {
+            subaccountChannelSubscription(
+                configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
+                socketConnected,
+            )
         }
     }
 
@@ -253,10 +256,11 @@ internal class SubaccountSupervisor(
 
     @Throws(Exception::class)
     private fun subaccountChannelSubscription(
-        subscribe: Boolean = true,
+        parent: Boolean,
+        subscribe: Boolean,
     ) {
         val channel =
-            helper.configs.subaccountChannel() ?: throw Exception("subaccount channel is null")
+            helper.configs.subaccountChannel(parent) ?: throw Exception("subaccount channel is null")
         helper.socket(
             helper.socketAction(subscribe),
             channel,
@@ -510,16 +514,17 @@ internal class SubaccountSupervisor(
         }
 
         val goodTilTimeInSeconds = (
-            (
-                if (trade.options?.goodTilUnitOptions != null) {
-                    val timeInterval =
-                        GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
-                    timeInterval / 1.seconds
-                } else {
-                    null
-                }
-                )
-            )?.toInt()
+                (
+                        if (trade.options?.goodTilUnitOptions != null) {
+                            val timeInterval =
+                                GoodTil.duration(trade.goodTil)
+                                    ?: throw Exception("goodTil is null")
+                            timeInterval / 1.seconds
+                        } else {
+                            null
+                        }
+                        )
+                )?.toInt()
 
         val marketInfo = marketInfo(marketId)
         return HumanReadablePlaceOrderPayload(
@@ -900,7 +905,10 @@ internal class SubaccountSupervisor(
                 }
             }
             if (socketConnected) {
-                subaccountChannelSubscription(true)
+                subaccountChannelSubscription(
+                    configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
+                    true
+                )
             }
         }
     }

@@ -20,7 +20,7 @@ import kotlin.test.assertNotNull
 class V4ForegroundCycleTests : NetworkTests() {
     val mock = AbacusMockData()
     private val testCosmoAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
-    private var stateManager: AsyncAbacusStateManagerV2 = resetStateManager()
+    private var stateManager: AsyncAbacusStateManagerV2 = resetStateManager(false)
     private var ioImplementations = stateManager.ioImplementations
     private var testRest = stateManager.ioImplementations.rest as? TestRest
     private var testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
@@ -30,7 +30,11 @@ class V4ForegroundCycleTests : NetworkTests() {
 
     @BeforeTest
     fun reset() {
-        stateManager = resetStateManager()
+        resetFor(isolatedMargins = false)
+    }
+
+    private fun resetFor(isolatedMargins: Boolean) {
+        stateManager = resetStateManager(isolatedMargins)
         ioImplementations = stateManager.ioImplementations
         testRest = stateManager.ioImplementations.rest as? TestRest
         testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
@@ -39,14 +43,17 @@ class V4ForegroundCycleTests : NetworkTests() {
         v4Adapter = stateManager.adaptor as? StateManagerAdaptorV2
     }
 
-    fun resetStateManager(): AsyncAbacusStateManagerV2 {
+    fun resetStateManager(forIsolatedMargins: Boolean): AsyncAbacusStateManagerV2 {
         val ioImplementations = BaseTests.testIOImplementations()
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
         stateManager = AsyncAbacusStateManagerV2(
             "https://api.examples.com",
             "DEV",
-            AppConfigsV2.forApp,
+            if (forIsolatedMargins)
+                AppConfigsV2.forAppWithIsolatedMargins
+            else
+                AppConfigsV2.forApp,
             ioImplementations,
             uiImplementations,
             TestState(),
@@ -528,6 +535,32 @@ class V4ForegroundCycleTests : NetworkTests() {
         assertEquals(
             "order:b812bea8-29d3-5841-9549-caa072f6f8a8",
             notification?.id,
+        )
+    }
+
+    @Test
+    fun connectWithIsolatedMarginsWalletWithExistingAccountShouldStartAccountAndPNLRequests() {
+        resetFor(true)
+
+        val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/addresses/$testAddress",
+            mock.accountsChannel.v4accountsReceived,
+        )
+
+        setStateMachineReadyToConnect(stateManager)
+        setStateMachineConnected(stateManager)
+
+        stateManager.setAddresses(null, testAddress)
+
+        compareExpectedRequests(
+            """
+                [
+                    {"type":"subscribe","channel":"v4_markets","batched":"true"},
+                    {"type":"subscribe","channel":"v4_parent_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
+                ]
+            """.trimIndent(),
+            testWebSocket?.messages,
         )
     }
 
