@@ -87,11 +87,12 @@ open class StateManagerConfigs(
         return parser.asString(
             parser.value(
                 configs,
-                if (parentSubaccount)
+                if (parentSubaccount) {
                     "channels.parent_subaccount"
-                else
+                } else {
                     "channels.subaccount"
-            )
+                },
+            ),
         )
     }
 

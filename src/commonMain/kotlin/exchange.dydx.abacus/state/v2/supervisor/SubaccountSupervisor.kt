@@ -514,17 +514,17 @@ internal class SubaccountSupervisor(
         }
 
         val goodTilTimeInSeconds = (
-                (
-                        if (trade.options?.goodTilUnitOptions != null) {
-                            val timeInterval =
-                                GoodTil.duration(trade.goodTil)
-                                    ?: throw Exception("goodTil is null")
-                            timeInterval / 1.seconds
-                        } else {
-                            null
-                        }
-                        )
-                )?.toInt()
+            (
+                if (trade.options?.goodTilUnitOptions != null) {
+                    val timeInterval =
+                        GoodTil.duration(trade.goodTil)
+                            ?: throw Exception("goodTil is null")
+                    timeInterval / 1.seconds
+                } else {
+                    null
+                }
+                )
+            )?.toInt()
 
         val marketInfo = marketInfo(marketId)
         return HumanReadablePlaceOrderPayload(
@@ -907,7 +907,7 @@ internal class SubaccountSupervisor(
             if (socketConnected) {
                 subaccountChannelSubscription(
                     configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
-                    true
+                    true,
                 )
             }
         }

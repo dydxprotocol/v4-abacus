@@ -72,7 +72,6 @@ data class MarketsConfigs(
     }
 }
 
-
 enum class SubaccountSubscriptionType {
     SUBACCOUNT,
     PARENT_SUBACCOUNT,

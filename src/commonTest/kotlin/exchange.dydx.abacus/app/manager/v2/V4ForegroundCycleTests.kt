@@ -50,10 +50,11 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager = AsyncAbacusStateManagerV2(
             "https://api.examples.com",
             "DEV",
-            if (forIsolatedMargins)
+            if (forIsolatedMargins) {
                 AppConfigsV2.forAppWithIsolatedMargins
-            else
-                AppConfigsV2.forApp,
+            } else {
+                AppConfigsV2.forApp
+            },
             ioImplementations,
             uiImplementations,
             TestState(),
