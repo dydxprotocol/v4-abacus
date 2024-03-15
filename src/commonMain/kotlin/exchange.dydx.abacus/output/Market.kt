@@ -108,7 +108,7 @@ enum class PerpetualMarketType(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            entries.firstOrNull { it.rawValue == rawValue } ?: CROSS
+            PerpetualMarketType.values().firstOrNull { it.rawValue == rawValue } ?: CROSS
     }
 }
 
