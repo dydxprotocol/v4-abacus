@@ -765,7 +765,7 @@ internal class TradeInputCalculator(
             null
         }
         var modified = trade.mutable()
-        val fields = requiredFields(trade)
+        val fields = requiredFields(trade, market)
         modified.safeSet("fields", fields)
         modified.safeSet("options", calculatedOptionsFromFields(fields, trade, position, market))
         modified = defaultOptions(modified, position, market)
@@ -777,7 +777,7 @@ internal class TradeInputCalculator(
         return modified
     }
 
-    private fun requiredFields(trade: Map<String, Any>): List<Any>? {
+    private fun requiredFields(trade: Map<String, Any>, market: Map<String, Any>?): List<Any>? {
         val type = parser.asString(trade["type"])
         return when (type) {
             "MARKET" -> fieldList(
@@ -785,6 +785,7 @@ internal class TradeInputCalculator(
                     sizeField(),
                     leverageField(),
                     bracketsField(),
+                    marginModeField(market),
                 ),
                 reduceOnlyField(),
             )
@@ -799,6 +800,7 @@ internal class TradeInputCalculator(
                             timeInForceField(),
                             goodTilField(),
                             postOnlyField(),
+                            marginModeField(market),
                         )
 
                     else -> fieldList(
@@ -806,6 +808,7 @@ internal class TradeInputCalculator(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
+                            marginModeField(market),
                         ),
                         reduceOnlyField(),
                     )
@@ -821,6 +824,7 @@ internal class TradeInputCalculator(
                         triggerPriceField(),
                         goodTilField(),
                         executionField(true),
+                        marginModeField(market),
                     ),
                     when (execution) {
                         "FOK", "IOC" -> reduceOnlyField()
@@ -835,6 +839,7 @@ internal class TradeInputCalculator(
                     triggerPriceField(),
                     goodTilField(),
                     executionField(false),
+                    marginModeField(market),
                 ),
                 reduceOnlyField(),
             )
@@ -845,6 +850,7 @@ internal class TradeInputCalculator(
                     trailingPercentField(),
                     goodTilField(),
                     executionField(false),
+                    marginModeField(market),
                 )
 
             else -> null
@@ -1025,6 +1031,23 @@ internal class TradeInputCalculator(
         )
     }
 
+    private fun marginModeField(market: Map<String, Any>?): Map<String, Any> {
+        return mapOf(
+            "field" to "marginMode",
+            "type" to "string",
+            "options" to
+                when (parser.asString(parser.value(market, "configs.perpetualMarketType"))) {
+                    "ISOLATED" -> listOf(
+                        marginModeIsolated,
+                    )
+                    else -> listOf(
+                        marginModeCross,
+                        marginModeIsolated,
+                    )
+                },
+        )
+    }
+
     private fun calculatedOptionsFromFields(
         fields: List<Any>?,
         trade: Map<String, Any>,
@@ -1035,6 +1058,7 @@ internal class TradeInputCalculator(
             val options = mutableMapOf<String, Any>(
                 "needsSize" to false,
                 "needsLeverage" to false,
+                "needsTargetLeverage" to false,
                 "needsTriggerPrice" to false,
                 "needsLimitPrice" to false,
                 "needsTrailingPercent" to false,
@@ -1077,6 +1101,13 @@ internal class TradeInputCalculator(
                             options.safeSet("needsExecution", true)
                         }
 
+                        "marginMode" -> {
+                            options.safeSet(
+                                "marginModeOptions",
+                                parser.asNativeList(field["options"]),
+                            )
+                        }
+
                         "reduceOnly" -> {
                             options["needsReduceOnly"] = true
                         }
@@ -1100,6 +1131,11 @@ internal class TradeInputCalculator(
                 options.safeSet("postOnlyPromptStringKey", null)
             } else {
                 options.safeSet("postOnlyPromptStringKey", postOnlyPromptFromTrade(trade))
+            }
+            if (parser.asString(parser.value(trade, "marginMode")) === "ISOLATED") {
+                options.safeSet("needsTargetLeverage", true)
+            } else {
+                options.safeSet("needsTargetLeverage", false)
             }
             return options
         }
@@ -1151,7 +1187,7 @@ internal class TradeInputCalculator(
         position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): Map<String, Any>? {
-        val fields = requiredFields(trade)
+        val fields = requiredFields(trade, market)
         return calculatedOptionsFromFields(fields, trade, position, market)
     }
 
@@ -1178,6 +1214,12 @@ internal class TradeInputCalculator(
             ?.let { items ->
                 if (!found(parser.asString(trade["execution"]), items)) {
                     modified.safeSet("execution", first(items))
+                }
+            }
+        parser.asNativeList(calculatedOptions(trade, position, market)?.get("marginModeOptions"))
+            ?.let { items ->
+                if (!found(parser.asString(trade["marginMode"]), items)) {
+                    modified.safeSet("marginMode", first(items))
                 }
             }
         if (parser.asBool(
@@ -1698,4 +1740,9 @@ internal class TradeInputCalculator(
         get() = mapOf("type" to "FOK", "stringKey" to "APP.TRADE.FILL_OR_KILL")
     private val executionIOC: Map<String, Any>
         get() = mapOf("type" to "IOC", "stringKey" to "APP.TRADE.IMMEDIATE_OR_CANCEL")
+
+    private val marginModeCross: Map<String, Any>
+        get() = mapOf("type" to "CROSS", "stringKey" to "APP.TRADE.CROSS_MARGIN")
+    private val marginModeIsolated: Map<String, Any>
+        get() = mapOf("type" to "ISOLATED", "stringKey" to "APP.TRADE.ISOLATED_MARGIN")
 }

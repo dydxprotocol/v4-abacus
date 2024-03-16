@@ -64,6 +64,7 @@ data class TradeInputOptions(
     val needsLeverage: Boolean,
     val maxLeverage: Double?,
     val needsLimitPrice: Boolean,
+    val needsTargetLeverage: Boolean,
     val needsTriggerPrice: Boolean,
     val needsTrailingPercent: Boolean,
     val needsGoodUntil: Boolean,
@@ -75,6 +76,7 @@ data class TradeInputOptions(
     val timeInForceOptions: IList<SelectionOption>?,
     val goodTilUnitOptions: IList<SelectionOption>,
     val executionOptions: IList<SelectionOption>?,
+    val marginModeOptions: IList<SelectionOption>?,
     val reduceOnlyTooltip: Tooltip?,
     val postOnlyTooltip: Tooltip?,
 ) {
@@ -170,6 +172,7 @@ data class TradeInputOptions(
                 val needsLeverage = parser.asBool(data["needsLeverage"]) ?: false
                 val maxLeverage = parser.asDouble(data["maxLeverage"])
                 val needsLimitPrice = parser.asBool(data["needsLimitPrice"]) ?: false
+                val needsTargetLeverage = parser.asBool(data["needsTargetLeverage"]) ?: false
                 val needsTriggerPrice = parser.asBool(data["needsTriggerPrice"]) ?: false
                 val needsTrailingPercent = parser.asBool(data["needsTrailingPercent"]) ?: false
                 val needsGoodUntil =
@@ -179,6 +182,21 @@ data class TradeInputOptions(
                 val needsBrackets = parser.asBool(data["needsBrackets"]) ?: false
                 val reduceOnlyTooltip = buildToolTip(parser.asString(data["reduceOnlyPromptStringKey"]))
                 val postOnlyOnlyTooltip = buildToolTip(parser.asString(data["postOnlyPromptStringKey"]))
+
+                var marginModeOptions: IMutableList<SelectionOption>? = null
+                parser.asList(data["marginModeOptions"])?.let { data ->
+                    marginModeOptions = iMutableListOf()
+                    for (i in data.indices) {
+                        val item = data[i]
+                        SelectionOption.create(
+                            existing?.marginModeOptions?.getOrNull(i),
+                            parser,
+                            parser.asMap(item),
+                        )?.let {
+                            marginModeOptions?.add(it)
+                        }
+                    }
+                }
 
                 var timeInForceOptions: IMutableList<SelectionOption>? = null
                 parser.asList(data["timeInForceOptions"])?.let { data ->
@@ -219,6 +237,7 @@ data class TradeInputOptions(
                     existing.needsLeverage != needsLeverage ||
                     existing.maxLeverage != maxLeverage ||
                     existing.needsLimitPrice != needsLimitPrice ||
+                    existing.needsTargetLeverage != needsTargetLeverage ||
                     existing.needsTriggerPrice != needsTriggerPrice ||
                     existing.needsTrailingPercent != needsTrailingPercent ||
                     existing.needsGoodUntil != needsGoodUntil ||
@@ -226,6 +245,7 @@ data class TradeInputOptions(
                     existing.needsPostOnly != needsPostOnly ||
                     existing.needsBrackets != needsBrackets ||
                     existing.timeInForceOptions != timeInForceOptionsArray ||
+                    existing.marginModeOptions != marginModeOptions ||
                     existing.executionOptions != executionOptionsArray ||
                     existing.reduceOnlyTooltip != reduceOnlyTooltip
                 ) {
@@ -236,6 +256,7 @@ data class TradeInputOptions(
                         needsLeverage,
                         maxLeverage,
                         needsLimitPrice,
+                        needsTargetLeverage,
                         needsTriggerPrice,
                         needsTrailingPercent,
                         needsGoodUntil,
@@ -247,6 +268,7 @@ data class TradeInputOptions(
                         timeInForceOptionsArray,
                         goodTilUnitOptionsArray,
                         executionOptionsArray,
+                        marginModeOptions,
                         reduceOnlyTooltip,
                         postOnlyOnlyTooltip,
                     )
@@ -615,6 +637,18 @@ data class TradeInputBracket(
 
 @JsExport
 @Serializable
+enum class MarginMode(val rawValue: String) {
+    isolated("ISOLATED"),
+    cross("CROSS");
+
+    companion object {
+        operator fun invoke(rawValue: String?) =
+            MarginMode.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
 enum class OrderType(val rawValue: String) {
     market("MARKET"),
     stopMarket("STOP_MARKET"),
@@ -731,6 +765,8 @@ data class TradeInput(
     val reduceOnly: Boolean,
     val postOnly: Boolean,
     val fee: Double?,
+    val marginMode: MarginMode?,
+    val targetLeverage: Double?,
     val bracket: TradeInputBracket?,
     val marketOrder: TradeInputMarketOrder?,
     val options: TradeInputOptions?,
@@ -764,6 +800,12 @@ data class TradeInput(
                 val postOnly = parser.asBool(data["postOnly"]) ?: false
 
                 val fee = parser.asDouble(data["fee"])
+
+                val marginMode = parser.asString(data["marginMode"])?.let {
+                    MarginMode.invoke(it)
+                }
+
+                val targetLeverage = parser.asDouble(data["targetLeverage"])
 
                 val goodTil = TradeInputGoodUntil.create(
                     existing?.goodTil,
@@ -803,6 +845,8 @@ data class TradeInput(
                     existing?.reduceOnly != reduceOnly ||
                     existing.postOnly != postOnly ||
                     existing.fee != fee ||
+                    existing?.marginMode != marginMode ||
+                    existing?.targetLeverage != targetLeverage ||
                     existing.bracket != bracket ||
                     existing.marketOrder != marketOrder ||
                     existing.options != options ||
@@ -820,6 +864,8 @@ data class TradeInput(
                         reduceOnly,
                         postOnly,
                         fee,
+                        marginMode,
+                        targetLeverage,
                         bracket,
                         marketOrder,
                         options,

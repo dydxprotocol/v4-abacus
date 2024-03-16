@@ -3,7 +3,9 @@
 data class TradeInput(  
 &emsp;val type: OrderType?,  
 &emsp;val side: OrderSide?,  
-&emsp;val marketId: String?,  
+&emsp;val marketId: String?,
+&emsp;val marginMode: MarginMode?,
+&emsp;val targetLeverage: Double?,
 &emsp;val size: [TradeInputSize](#TradeInputSize)?,  
 &emsp;val price: [TradeInputPrice](#TradeInputPrice)?,  
 &emsp;val timeInForce: String?,  
@@ -29,6 +31,10 @@ BUY or SELL
 ## marketId
 
 Selected Market ID
+
+## marginMode
+
+CROSS or ISOLATED
 
 ## size
 
@@ -201,7 +207,8 @@ data class TradeInputOptions(
 &emsp;val needsSize: Boolean,  
 &emsp;val needsLeverage: Boolean,  
 &emsp;val maxLeverage: Double?,  
-&emsp;val needsLimitPrice: Boolean,  
+&emsp;val needsLimitPrice: Boolean,
+&emsp;val needsTargetLeverage: Boolean,
 &emsp;val needsTriggerPrice: Boolean,  
 &emsp;val needsTrailingPercent: Boolean,  
 &emsp;val needsGoodUntil: Boolean,  
@@ -212,7 +219,8 @@ data class TradeInputOptions(
 &emsp;val sideOptions: Array<SelectionOption>,  
 &emsp;val timeInForceOptions: Array<SelectionOption>?,  
 &emsp;val goodTilUnitOptions: Array<SelectionOption>?,  
-&emsp;val executionOptions: Array<SelectionOption>?  
+&emsp;val executionOptions: Array<SelectionOption>?,
+&emsp;val marginModeOptions: Array<SelectionOption>?
 )
 
 ## needsSize
@@ -226,6 +234,9 @@ UX should ask user for leverage input
 ## maxLeverage
 
 Max leverage for the leverage slider
+
+## needsTargetLeverage
+UX should ask user to adjust their target leverage when margin mode is ISOLATED
 
 ## needsTriggerPrice
 

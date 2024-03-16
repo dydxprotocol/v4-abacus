@@ -39,6 +39,7 @@ import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.input.ClosePositionInput
 import exchange.dydx.abacus.output.input.ClosePositionInputSize
 import exchange.dydx.abacus.output.input.Input
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.output.input.SelectionOption
@@ -318,6 +319,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asBool(data["reduceOnly"]) ?: false,
                 obj.reduceOnly,
                 "$trace.reduceOnly $doesntMatchText",
+            )
+            assertEquals(
+                MarginMode.invoke(parser.asString(data["marginMode"])),
+                obj.marginMode,
+                "$trace.marginMode $doesntMatchText",
             )
             verifyInputTradeInputSizeState(
                 parser.asNativeMap(data["size"]),
