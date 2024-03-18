@@ -35,6 +35,7 @@ class StatefulOrdersTransactionQueue(
         }
 
         val currentTransaction = queue.removeAt(0)
+
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         val uiDelayTimeMs = submitTimeMs - currentTransaction.uiClickTimeMs
 
