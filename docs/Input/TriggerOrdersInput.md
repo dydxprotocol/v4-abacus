@@ -1,0 +1,5 @@
+# TriggerOrdersInput
+
+data class TriggerOrdersInput(
+    
+)
