@@ -49,7 +49,7 @@ import kotlinx.serialization.json.Json
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
-open class V4StateManagerAdaptor(
+class V4StateManagerAdaptor(
     deploymentUri: String,
     environment: V4Environment,
     ioImplementations: IOImplementations,
@@ -962,7 +962,7 @@ open class V4StateManagerAdaptor(
         }
     }
 
-    open val transactionQueue = TransactionQueue(this::transaction)
+    val transactionQueue = TransactionQueue(this::transaction)
 
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val payload = placeOrderPayload()

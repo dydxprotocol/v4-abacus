@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
-import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
@@ -20,23 +19,11 @@ import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.ApiState
-import exchange.dydx.abacus.state.manager.AppConfigs
-import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
-import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
-import exchange.dydx.abacus.state.manager.TransactionQueue
-import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
-import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableList
-import exchange.dydx.abacus.utils.IOImplementations
-import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Parser
-import exchange.dydx.abacus.utils.UIImplementations
 import kollections.iMutableListOf
-import kotlinx.datetime.Clock
 
 class TestFileSystem : FileSystemProtocol {
     private val mock = AbacusMockData()
@@ -492,61 +479,5 @@ class TestState : StateNotificationProtocol {
     }
 
     override fun notificationsChanged(notifications: IList<Notification>) {
-    }
-}
-
-class TestV4AsyncAbacusStateManager(
-    deploymentUri: String,
-    environment: V4Environment,
-    ioImplementations: IOImplementations,
-    uiImplementations: UIImplementations,
-    override var configs: V4StateManagerConfigs,
-    appConfigs: AppConfigs,
-    stateNotification: StateNotificationProtocol?,
-    dataNotification: DataNotificationProtocol?,
-) : V4StateManagerAdaptor(
-    deploymentUri,
-    environment,
-    ioImplementations,
-    uiImplementations,
-    configs, appConfigs,
-    stateNotification,
-    dataNotification
-) {
-    var cancelOrderTestPayload: HumanReadableCancelOrderPayload? = null
-    var placeOrderTestPayload: HumanReadablePlaceOrderPayload? = null
-    var orderPlacedViaQueueCount = 0
-    var orderCanceledViaQueueCount = 0
-
-    fun transactionForQueue(
-        type: TransactionType,
-        paramsInJson: String?,
-        callback: (response: String) -> Unit
-    ) {
-        val transactionsImplementation = ioImplementations.chain
-        transactionsImplementation?.transaction(type, paramsInJson) { response ->
-            when (type) {
-                TransactionType.PlaceOrder -> {
-                    orderPlacedViaQueueCount++
-                }
-
-                TransactionType.CancelOrder -> {
-                    orderCanceledViaQueueCount++
-                }
-
-                else -> {}
-            }
-            callback(response ?: "")
-        }
-    }
-
-    override val transactionQueue = TransactionQueue(this::transactionForQueue)
-    
-    override fun placeOrderPayload(): HumanReadablePlaceOrderPayload {
-        return placeOrderTestPayload ?: super.placeOrderPayload()
-    }
-
-    override fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload {
-        return cancelOrderTestPayload ?: super.cancelOrderPayload(orderId)
     }
 }
