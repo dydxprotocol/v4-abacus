@@ -295,7 +295,9 @@ data class TradeInputSummary(
 &emsp;val slippage: Double?,  
 &emsp;val fee: Double?,  
 &emsp;val total: Double?,  
-&emsp;val filled: Boolean  
+&emsp;val filled: Boolean
+&emsp;val positionMargin: Double?,
+&emsp;val positionLeverage: Double?,
 )
 
 ## price
@@ -325,3 +327,11 @@ Total amount of the trade
 ## filled
 
 Whether this trade can be filled
+
+## positionMargin
+
+The amount of margin used for the trade (Isolated Margin)
+
+## positionLeverage
+
+The overall leverage of the position (Isolated Margin)
