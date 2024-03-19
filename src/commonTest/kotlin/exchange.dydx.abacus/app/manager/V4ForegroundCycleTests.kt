@@ -5,6 +5,7 @@ import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
 import exchange.dydx.abacus.state.manager.setAddresses
+import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.values
 import kotlin.test.BeforeTest
@@ -638,5 +639,44 @@ class V4ForegroundCycleTests : NetworkTests() {
 
         assertEquals(restCount, testRest?.requests?.size)
         assertEquals(socketCount, testWebSocket?.messages?.size)
+    }
+
+
+    @Test
+    fun testStatefulPlaceOrderTransactionsQueue() {
+        setStateMachineConnectedWithMarkets(stateManager)
+        setStateMachineConnected(stateManager)
+        setStateMachineConnectedWithMarketsAndSubaccounts(stateManager)
+        stateManager.trade("MARKET", TradeInputField.type)
+        stateManager.trade("0.01", TradeInputField.size)
+
+        stateManager.commitPlaceOrder() {
+            successful, error, data ->
+        }
+
+        // should be one placeOrder pending, zero waiting
+//        assertEquals(1, (stateManager.adaptor as? V4StateManagerAdaptor)?.transactionQueue?.size)
+
+        stateManager.trade("LIMIT", TradeInputField.type)
+        stateManager.trade("0.01", TradeInputField.size)
+        stateManager.trade("10", TradeInputField.limitPrice)
+        stateManager.trade("GTT", TradeInputField.timeInForceType)
+        stateManager.trade("1", TradeInputField.goodTilDuration)
+        stateManager.trade("D", TradeInputField.goodTilUnit)    // Days?
+        stateManager.commitPlaceOrder() {
+            successful, error, data ->
+        }
+
+        // should be one placeOrder pending, one waiting
+//        assertEquals(1, (stateManager.adaptor as? V4StateManagerAdaptor)?.transactionQueue?.size)
+
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+
+        // Should have 2nd placeOrder pending, none waiting
+
+        stateManager.cancelOrder("1234") {
+            successful, error, data ->
+        }
+
     }
 }

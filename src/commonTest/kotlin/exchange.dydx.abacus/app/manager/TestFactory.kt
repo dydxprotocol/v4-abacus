@@ -322,10 +322,14 @@ class TestWebSocket : WebSocketProtocol {
 
 class TestChain : DYDXChainTransactionsProtocol {
     var heightResponse: String? = null
+
+    // For transaction, only one is called at a time, next one will be called after the previous one is finished
     var placeOrderResponse: String? = null
     var cancelOrderResponse: String? = null
     var depositResponse: String? = null
     var withdrawResponse: String? = null
+
+    var transactionCallback: ((response: String?) -> Unit)? = null
 
     var requests = mutableListOf<QueryType>()
 
@@ -404,7 +408,8 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (placeOrderResponse != null) {
             callback(placeOrderResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
+//            callback(dummyError)
         }
     }
 
@@ -412,7 +417,8 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (cancelOrderResponse != null) {
             callback(cancelOrderResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
+//            callback(dummyError)
         }
     }
 
@@ -420,7 +426,8 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (depositResponse != null) {
             callback(depositResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
+//            callback(dummyError)
         }
     }
 
@@ -428,8 +435,14 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (withdrawResponse != null) {
             callback(withdrawResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
+//            callback(dummyError)
         }
+    }
+
+    fun simulateTransactionResponse(response: String) {
+        this.transactionCallback?.invoke(response)
+        this.transactionCallback = null
     }
 }
 
