@@ -71,6 +71,7 @@ class V4ForegroundCycleTests : NetworkTests() {
     private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManager) {
         setStateMachineConnectedWithMarkets(stateManager)
         stateManager.setAddresses(null, testCosmoAddress)
+        (ioImplementations.webSocket as? TestWebSocket)?.simulateReceived(mock.accountsChannel.v4_subscribed)
     }
 
     @Test
@@ -644,8 +645,6 @@ class V4ForegroundCycleTests : NetworkTests() {
 
     @Test
     fun testStatefulPlaceOrderTransactionsQueue() {
-        setStateMachineConnectedWithMarkets(stateManager)
-        setStateMachineConnected(stateManager)
         setStateMachineConnectedWithMarketsAndSubaccounts(stateManager)
         stateManager.trade("MARKET", TradeInputField.type)
         stateManager.trade("0.01", TradeInputField.size)
@@ -674,7 +673,7 @@ class V4ForegroundCycleTests : NetworkTests() {
 
         // Should have 2nd placeOrder pending, none waiting
 
-        stateManager.cancelOrder("1234") {
+        stateManager.cancelOrder("b812bea8-29d3-5841-9549-caa072f6f8a8") {
             successful, error, data ->
         }
 
