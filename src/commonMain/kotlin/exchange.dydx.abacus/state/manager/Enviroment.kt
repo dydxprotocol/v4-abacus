@@ -97,6 +97,7 @@ data class EnvironmentLinks(
 data class EnvironmentFeatureFlags(
     val reduceOnlySupported: Boolean,
     val usePessimisticCollateralCheck: Boolean,
+    val withdrawalSafetyEnabled: Boolean,
 ) {
     companion object {
         fun parse(
@@ -105,10 +106,12 @@ data class EnvironmentFeatureFlags(
         ): EnvironmentFeatureFlags {
             val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
             val usePessimisticCollateralCheck = parser.asBool(data?.get("usePessimisticCollateralCheck")) ?: false
+            val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
 
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
                 usePessimisticCollateralCheck,
+                withdrawalSafetyEnabled
             )
         }
     }
