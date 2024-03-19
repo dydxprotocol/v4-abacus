@@ -49,7 +49,7 @@ import kotlinx.serialization.json.Json
 import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
-class V4StateManagerAdaptor(
+open class V4StateManagerAdaptor(
     deploymentUri: String,
     environment: V4Environment,
     ioImplementations: IOImplementations,
@@ -962,7 +962,7 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private val statefulOrdersTransactionQueue = StatefulOrdersTransactionQueue(this::transaction)
+    open val transactionQueue = TransactionQueue(this::transaction)
 
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val payload = placeOrderPayload()
@@ -1018,7 +1018,7 @@ class V4StateManagerAdaptor(
                 response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
-            statefulOrdersTransactionQueue.enqueue(
+            transactionQueue.enqueue(
                 TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
             )
         }
@@ -1213,7 +1213,7 @@ class V4StateManagerAdaptor(
                 response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
-            statefulOrdersTransactionQueue.enqueue(
+            transactionQueue.enqueue(
                 TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
             )
         }

@@ -28,7 +28,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
-import exchange.dydx.abacus.state.manager.StatefulOrdersTransactionQueue
+import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -348,7 +348,7 @@ internal class SubaccountSupervisor(
         }
     }
 
-    private val statefulOrdersTransactionQueue = StatefulOrdersTransactionQueue(helper::transaction)
+    private val transactionQueue = TransactionQueue(helper::transaction)
 
     private fun uiTrackingParmas(interval: Double): IMap<String, Any> {
         return iMapOf(
@@ -423,7 +423,7 @@ internal class SubaccountSupervisor(
                     response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
-            statefulOrdersTransactionQueue.enqueue(
+            transactionQueue.enqueue(
                 TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
             )
         }
@@ -486,7 +486,7 @@ internal class SubaccountSupervisor(
                     response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
-            statefulOrdersTransactionQueue.enqueue(
+            transactionQueue.enqueue(
                 TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
             )
         }

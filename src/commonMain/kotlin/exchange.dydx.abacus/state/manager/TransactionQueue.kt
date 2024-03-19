@@ -10,7 +10,7 @@ class TransactionParams(
     val uiClickTimeMs: Double
 )
 
-class StatefulOrdersTransactionQueue(
+class TransactionQueue(
     private val transaction: (
         type: TransactionType,
         paramsInJson: String?,

@@ -1734,7 +1734,7 @@ open class StateManagerAdaptor(
     }
 
     @Throws(Exception::class)
-    fun placeOrderPayload(): HumanReadablePlaceOrderPayload {
+    open fun placeOrderPayload(): HumanReadablePlaceOrderPayload {
         val subaccountNumber =
             connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
         val trade = stateMachine.state?.input?.trade
@@ -1923,7 +1923,7 @@ open class StateManagerAdaptor(
     }
 
     @Throws(Exception::class)
-    fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload {
+    open fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload {
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
