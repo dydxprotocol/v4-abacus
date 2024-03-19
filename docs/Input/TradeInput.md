@@ -330,7 +330,7 @@ Whether this trade can be filled
 
 ## positionMargin
 
-The amount of margin used for the trade (Isolated Margin)
+The amount of margin used for the overall position (Isolated Margin)
 
 ## positionLeverage
 
