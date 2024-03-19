@@ -336,18 +336,50 @@ internal class TradeInputCalculator(
      * Calculate the current and postOrder position margin to be displayed in the TradeInput Summary.
      */
     private fun calculatePositionMargin(
+        trade: Map<String, Any>,
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?
     ): Double? {
-        if (subaccount == null) return null
-        val currentNotionalTotal = parser.asDouble(parser.value(subaccount, "notionalTotal.current"))
-        val postOrderNotionalTotal = parser.asDouble(parser.value(subaccount, "notionalTotal.postOrder"))
-        val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
-        if (currentNotionalTotal != null && mmf != null) {
-            if (postOrderNotionalTotal != null) {
-                return postOrderNotionalTotal.times(mmf)
+        if (subaccount == null || market == null) {
+            return null
+        }
+        val marginMode = parser.asString(parser.value(trade, "marginMode"))
+        val marketId = parser.asString(market["id"]) ?: return null
+        val position = parser.asNativeMap(
+            parser.value(
+                subaccount,
+                "openPositions.$marketId",
+            ),
+        )
+        if (position != null) {
+            when (marginMode) {
+                "ISOLATED" -> {
+                    // TODO: When the collateral of child subaccounts is implemented, return from here. The below code is the CROSS implementation.
+                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
+                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
+                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
+                    if (currentNotionalTotal != null && mmf != null) {
+                        if (postOrderNotionalTotal != null) {
+                            return postOrderNotionalTotal.times(mmf)
+                        }
+                        return currentNotionalTotal.times(mmf)
+                    }
+                }
+
+                "CROSS" -> {
+                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
+                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
+                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
+                    if (currentNotionalTotal != null && mmf != null) {
+                        if (postOrderNotionalTotal != null) {
+                            return postOrderNotionalTotal.times(mmf)
+                        }
+                        return currentNotionalTotal.times(mmf)
+                    }
+                }
+
+                else -> return null
             }
-            return currentNotionalTotal.times(mmf)
         }
         return null
     }
@@ -356,10 +388,19 @@ internal class TradeInputCalculator(
      * Return Subaccount leverage to display as Position leverage in the TradeInput Summary.
      * Use Subaccount leverage since a subaccount can only have 1 isolated position
      */
-    private fun getPositionLeverage(subaccount: Map<String, Any>?): Double? {
-        val currentLeverage = parser.asDouble(parser.value(subaccount, "leverage.current"))
-        val postOrderLeverage = parser.asDouble(parser.value(subaccount, "leverage.postOrder"))
-        return if (postOrderLeverage != null) postOrderLeverage else currentLeverage
+    private fun getPositionLeverage(subaccount: Map<String, Any>?, market: Map<String, Any>?): Double? {
+        if (subaccount == null || market == null) return null
+        // TODO: When Child Subaccounts are added to Subaccount data class, return the child subaccount's leverage
+        val marketId = parser.asString(market["id"])
+        val position = parser.asNativeMap(
+            parser.value(
+                subaccount,
+                "openPositions.$marketId",
+            ),
+        )
+        val currentLeverage = parser.asDouble(parser.value(position, "leverage.current"))
+        val postOrderLeverage = parser.asDouble(parser.value(position, "leverage.postOrder"))
+        return postOrderLeverage ?: currentLeverage
     }
 
     private fun calculateMarketOrder(
@@ -1454,8 +1495,8 @@ internal class TradeInputCalculator(
                     summary.safeSet("indexSlippage", indexSlippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
-                    summary.safeSet("positionMargin", calculatePositionMargin(subaccount, market))
-                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount))
+                    summary.safeSet("positionMargin", calculatePositionMargin(trade, subaccount, market))
+                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
                 }
             }
 
@@ -1566,8 +1607,8 @@ internal class TradeInputCalculator(
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
-                    summary.safeSet("positionMargin", calculatePositionMargin(subaccount, market))
-                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount))
+                    summary.safeSet("positionMargin", calculatePositionMargin(trade, subaccount, market))
+                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
                 }
             }
 
@@ -1624,8 +1665,8 @@ internal class TradeInputCalculator(
                 )
                 summary.safeSet("filled", true)
                 summary.safeSet("reward", reward)
-                summary.safeSet("positionMargin", calculatePositionMargin(subaccount, market))
-                summary.safeSet("positionLeverage", getPositionLeverage(subaccount))
+                summary.safeSet("positionMargin", calculatePositionMargin(trade, subaccount, market))
+                summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
             }
 
             "TRAILING_STOP" -> {
