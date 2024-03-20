@@ -309,8 +309,6 @@ class TestWebSocket : WebSocketProtocol {
 
 class TestChain : DYDXChainTransactionsProtocol {
     var heightResponse: String? = null
-
-    // For transaction, only one is called at a time, next one will be called after the previous one is finished
     var placeOrderResponse: String? = null
     var cancelOrderResponse: String? = null
     var depositResponse: String? = null

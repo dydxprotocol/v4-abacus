@@ -164,11 +164,7 @@ class V4TransactionTests : NetworkTests() {
 
         val statefulOrderId1 = "31d7d484-8685-570c-aa62-c2589cb6c8d8"
 
-        stateManager.trade("LIMIT", TradeInputField.type)
-        stateManager.trade("GTT", TradeInputField.timeInForceType)
-        stateManager.trade("0.01", TradeInputField.size)
-        stateManager.trade("10", TradeInputField.limitPrice)
-
+        tradeInput(false)
         assertTransactionQueueEmpty()
         v4Adapter?.commitPlaceOrder(transactionCallback)
         assertTransactionQueueStarted()
