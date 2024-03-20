@@ -95,7 +95,7 @@ internal class StateManagerAdaptorV2(
     internal val parser = Parser()
     internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
 
-    private val networkHelper = NetworkHelper(
+    internal val networkHelper = NetworkHelper(
         deploymentUri,
         environment,
         uiImplementations,
