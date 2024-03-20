@@ -349,7 +349,7 @@ data class TradeInputSummary(
                         reward,
                         filled,
                         positionMargin,
-                        positionLeverage
+                        positionLeverage,
                     )
                 } else {
                     existing
