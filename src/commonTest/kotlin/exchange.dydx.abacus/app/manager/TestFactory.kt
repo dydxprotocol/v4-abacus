@@ -315,6 +315,8 @@ class TestChain : DYDXChainTransactionsProtocol {
     var depositResponse: String? = null
     var withdrawResponse: String? = null
 
+    var transactionCallback: ((response: String?) -> Unit)? = null
+
     var requests = mutableListOf<QueryType>()
 
     val dummySuccess = """
@@ -445,6 +447,10 @@ class TestChain : DYDXChainTransactionsProtocol {
                 callback(dummyError)
             }
         }
+    }
+
+    fun simulateTransactionResponse(response: String) {
+        this.transactionCallback?.invoke(response)
     }
 }
 

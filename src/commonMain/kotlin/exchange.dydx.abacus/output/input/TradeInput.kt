@@ -302,6 +302,8 @@ data class TradeInputSummary(
     val total: Double?,
     val reward: Double?,
     val filled: Boolean,
+    val positionMargin: Double?,
+    val positionLeverage: Double?,
 ) {
     companion object {
         internal fun create(
@@ -321,6 +323,8 @@ data class TradeInputSummary(
                 val total = parser.asDouble(data["total"])
                 val reward = parser.asDouble(data["reward"])
                 val filled = parser.asBool(data["filled"]) ?: false
+                val positionMargin = parser.asDouble(data["positionMargin"])
+                val positionLeverage = parser.asDouble(data["positionLeverage"])
 
                 return if (
                     existing?.price != price ||
@@ -330,6 +334,8 @@ data class TradeInputSummary(
                     existing?.slippage != slippage ||
                     existing?.fee != fee ||
                     existing?.total != total ||
+                    existing?.positionMargin != positionMargin ||
+                    existing?.positionLeverage != positionLeverage ||
                     existing?.filled != filled
                 ) {
                     TradeInputSummary(
@@ -342,6 +348,8 @@ data class TradeInputSummary(
                         total,
                         reward,
                         filled,
+                        positionMargin,
+                        positionLeverage
                     )
                 } else {
                     existing
