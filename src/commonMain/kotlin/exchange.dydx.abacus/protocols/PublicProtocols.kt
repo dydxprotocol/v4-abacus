@@ -206,6 +206,10 @@ enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
 
+    // UI Clicks
+    TradePlaceOrderClick("TradePlaceOrderClick"),
+    TradeCancelOrderClick("TradeCancelOrderClick"),
+
     // Transactions
     TradePlaceOrder("TradePlaceOrder"),
     TradeCancelOrder("TradeCancelOrder"),
