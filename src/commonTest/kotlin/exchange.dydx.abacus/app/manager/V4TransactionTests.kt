@@ -105,7 +105,7 @@ class V4TransactionTests : NetworkTests() {
         tradeInput(false, "0.02")
         v4Adapter?.commitPlaceOrder(transactionCallback)
         v4Adapter?.commitPlaceOrder(transactionCallback)
-        assertEquals(2, v4Adapter?.transactionQueue?.size)
+        assertEquals(2, transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(2, transactionCalledCount)

@@ -36,7 +36,7 @@ class V4TransactionTests : NetworkTests() {
     private var testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
     private var testChain = stateManager.ioImplementations.chain as? TestChain
     private var testState = stateManager.stateNotification as? TestState
-    private var v4Adapter = stateManager.adaptor as? StateManagerAdaptorV2
+    private var v4Adapter = stateManager.adaptor
     private var subaccountSupervisor: SubaccountSupervisor? = resetSubaccountSupervisor()
 
     internal fun resetSubaccountSupervisor(): SubaccountSupervisor? {
@@ -60,7 +60,7 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
         testChain = stateManager.ioImplementations.chain as? TestChain
         testState = stateManager.stateNotification as? TestState
-        v4Adapter = stateManager.adaptor as? StateManagerAdaptorV2
+        v4Adapter = stateManager.adaptor
         subaccountSupervisor = resetSubaccountSupervisor()
     }
 
@@ -119,7 +119,6 @@ class V4TransactionTests : NetworkTests() {
         var transactionCalledCount = 0
         val transactionCallback: TransactionCallback = { _, _, _ -> transactionCalledCount++ }
 
-        // TODO uncomment when fixing goodTil null error
         tradeInput(true)
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueEmpty("Short term order should not be enqueued")
