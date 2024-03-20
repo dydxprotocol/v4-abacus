@@ -690,36 +690,52 @@ open class TradingStateMachine(
         return parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
     }
 
+    private fun setSubaccount(subaccount: Map<String, Any>?, subaccountNumber: Int) {
+        val modifiedAccount = account?.mutable() ?: mutableMapOf()
+        modifiedAccount.safeSet("subaccounts.$subaccountNumber", subaccount)
+        this.account = modifiedAccount
+    }
+
     private fun subaccountList(subaccountNumber: Int, name: String): IList<Any>? {
         return parser.asList(subaccount(subaccountNumber)?.get(name))
     }
 
-    private fun groupedSubaccount(subaccountNumber: Int): Map<String, Any>? {
-        return parser.asNativeMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-    }
-
-    private fun groupedSubaccountList(subaccountNumber: Int, name: String): IList<Any>? {
-        return parser.asList(groupedSubaccount(subaccountNumber)?.get(name))
+    private fun setSubaccountList(list: IList<Any>?, subaccountNumber: Int, name: String) {
+        val modifiedSubaccount = subaccount(subaccountNumber)?.mutable() ?: mutableMapOf()
+        modifiedSubaccount.safeSet(name, list)
+        setSubaccount(modifiedSubaccount, subaccountNumber)
     }
 
     private fun subaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "historicalPnl")
     }
 
+    private fun setSubaccountHistoricalPnl(historicalPnl: IList<Any>?, subaccountNumber: Int) {
+        setSubaccountList(historicalPnl, subaccountNumber, "historicalPnl")
+    }
+
     private fun subaccountFills(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "fills")
     }
 
+    private fun setSubaccountFills(fills: IList<Any>?, subaccountNumber: Int) {
+        setSubaccountList(fills, subaccountNumber, "fills")
+    }
+
     private fun subaccountTransfers(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "transfers")
     }
 
+    private fun setSubaccountTransfers(transfers: IList<Any>?, subaccountNumber: Int) {
+        setSubaccountList(transfers, subaccountNumber, "transfers")
+    }
+
     private fun subaccountFundingPayments(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "fundingPayments")
+    }
+
+    private fun setSubaccountFundingPayments(fundingPayments: IList<Any>?, subaccountNumber: Int) {
+        setSubaccountList(fundingPayments, subaccountNumber, "fundingPayments")
     }
 
     private fun allSubaccountNumbers(): IList<Int> {
@@ -1051,21 +1067,10 @@ open class TradingStateMachine(
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
-                    val groupedSubaccounts = account.groupedSubaccounts?.toIMutableMap() ?: mutableMapOf()
-                    for (subaccountNumber in subaccountNumbers) {
-                        val subaccount = Subaccount.create(
-                            account.groupedSubaccounts?.get("$subaccountNumber"),
-                            parser,
-                            groupedSubaccount(subaccountNumber),
-                            localizer,
-                        )
-                        groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
-                    }
                     Account(
                         account.balances,
                         account.stakingBalances,
                         subaccounts,
-                        groupedSubaccounts,
                         account.tradingRewards,
                         account.launchIncentivePoints,
                     )
