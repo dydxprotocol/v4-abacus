@@ -314,6 +314,8 @@ class TestChain : DYDXChainTransactionsProtocol {
     var depositResponse: String? = null
     var withdrawResponse: String? = null
 
+    var transactionCallback: ((response: String?) -> Unit)? = null
+
     var requests = mutableListOf<QueryType>()
 
     val dummySuccess = """
@@ -391,7 +393,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (placeOrderResponse != null) {
             callback(placeOrderResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -399,7 +401,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (cancelOrderResponse != null) {
             callback(cancelOrderResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -407,7 +409,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (depositResponse != null) {
             callback(depositResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -415,8 +417,12 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (withdrawResponse != null) {
             callback(withdrawResponse)
         } else {
-            callback(dummyError)
+            this.transactionCallback = callback
         }
+    }
+
+    fun simulateTransactionResponse(response: String) {
+        this.transactionCallback?.invoke(response)
     }
 }
 

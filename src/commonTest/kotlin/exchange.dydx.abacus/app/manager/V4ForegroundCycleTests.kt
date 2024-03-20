@@ -67,11 +67,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.market = "ETH-USD"
     }
 
-    private fun setStateMachineConnectedWithMarketsAndSubaccounts(stateManager: AsyncAbacusStateManager) {
-        setStateMachineConnectedWithMarkets(stateManager)
-        stateManager.setAddresses(null, testCosmoAddress)
-    }
-
     @Test
     fun setReadyToConnectShouldQueueInitialRequests() {
         reset()
