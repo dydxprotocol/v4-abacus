@@ -120,11 +120,11 @@ class V4TransactionTests : NetworkTests() {
         val transactionCallback: TransactionCallback = { _, _, _ -> transactionCalledCount++ }
 
         // TODO uncomment when fixing goodTil null error
-//        tradeInput(true)
-//        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
-//        assertTransactionQueueEmpty("Short term order should not be enqueued")
-//        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-//        assertEquals(1, transactionCalledCount)
+        tradeInput(true)
+        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertTransactionQueueEmpty("Short term order should not be enqueued")
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        assertEquals(1, transactionCalledCount)
 
         // place multiple stateful orders
         tradeInput(false, "0.01")
@@ -136,16 +136,16 @@ class V4TransactionTests : NetworkTests() {
         assertEquals(2, transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(1, transactionCalledCount)
+        assertEquals(2, transactionCalledCount)
         assertEquals(1, transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(2, transactionCalledCount)
+        assertEquals(3, transactionCalledCount)
         assertEquals(0, transactionQueue?.size)
         assertTrue(transactionQueue?.isProcessing ?: false)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(3, transactionCalledCount)
+        assertEquals(4, transactionCalledCount)
         assertTransactionQueueEmpty()
     }
 
