@@ -116,11 +116,11 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
             val modified = existing?.toMutableMap() ?: mutableMapOf()
             val map = parser.asNativeMap(payload)
             val transformed = if (map != null) {
-                process(parser.asNativeMap(modified[key]), map)
+                process(parser.asNativeMap(parser.value(modified, key)), map)
             } else {
                 val list = parser.asNativeList(payload)
                 if (list != null) {
-                    process(modified[key], list)
+                    process(parser.value(modified, key), list)
                 } else {
                     null
                 }
