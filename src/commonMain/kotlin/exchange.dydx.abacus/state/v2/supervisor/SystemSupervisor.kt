@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.launchIncentiveSeasons
@@ -7,9 +8,12 @@ import exchange.dydx.abacus.state.model.onChainEquityTiers
 import exchange.dydx.abacus.state.model.onChainFeeTiers
 import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.model.onChainRewardsParams
+import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 internal class SystemSupervisor(
     stateMachine: TradingStateMachine,
@@ -53,6 +57,9 @@ internal class SystemSupervisor(
             }
             if (configs.retrieveRewardsParams) {
                 retrieveRewardsParams()
+            }
+            if (configs.retrieveWithdrawSafetyChecks) {
+                retrieveWithdrawSafetyChecks()
             }
         }
     }
@@ -138,6 +145,48 @@ internal class SystemSupervisor(
 //                    retrieveLaunchIncentivePoints()
                 }
             }
+        }
+    }
+
+
+    private fun retrieveWithdrawSafetyChecks() {
+        when (stateMachine.state?.input?.transfer?.type) {
+            TransferType.withdrawal -> {
+                updateWithdrawalCapacity()
+                updateWithdrawalGating()
+            }
+
+            TransferType.transferOut -> {
+                updateWithdrawalGating()
+            }
+
+            else -> {
+                // do nothing
+            }
+        }
+    }
+    // best way to test incrementally?
+    // best way to call both methods in parallel but wait for both responses
+    // how to update transferInput
+    // how to hand response errors
+    // why the name "adaptor?"
+    private fun updateWithdrawalCapacity() {
+        val state = stateMachine.state
+        if (state?.input?.transfer?.type == TransferType.withdrawal) {
+            val params = iMapOf(
+                "denom" to state.input.transfer.address,
+            )
+            val paramsInJson = Json.encodeToString(params)
+            helper.getOnChain(QueryType.GetWithdrawalCapacityByDenom, paramsInJson) { response ->
+                val oldState = stateMachine.state
+                update(stateMachine.onChainWithdrawalGating(response), oldState)
+            }
+        }
+    }
+
+    private fun updateWithdrawalGating() {
+        helper.getOnChain(QueryType.GetWithdrawalAndTransferGatingStatus, null) { response ->
+            val oldState = stateMachine.state
         }
     }
 }

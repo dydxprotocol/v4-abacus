@@ -11,6 +11,8 @@ import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 
 @JsExport
 @Serializable
@@ -290,4 +292,11 @@ fun TradingStateMachine.validTransferInput(transfer: Map<String, Any>, typeText:
     } else {
         true
     }
+}
+
+fun TradingStateMachine.onChainWithdrawalGating(payload: String): StateChanges {
+    if (!featureFlags.withdrawalSafetyEnabled) { return StateChanges.noChange }
+    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
+    val map = parser.asMap(json)
+    return StateChanges(iListOf(Changes.configs, Changes.input))
 }

@@ -604,6 +604,37 @@ enum class TransferType(val rawValue: String) {
 
 @JsExport
 @Serializable
+data class TransferInputHyperlink(
+    val label: String?,
+    val url: String?
+) {
+    companion object {
+        internal fun create(
+            existing: TransferInputHyperlink?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): TransferInputHyperlink? {
+            DebugLogger.log("creating Transfer Input Hyperlink\n")
+
+            data?.let {
+                // TODO: Changes values for label and url
+                val label = "yooo"// parser.asString(data["label"])
+                val url = "https://google.com"// parser.asString(data["url"])
+
+                return if (existing?.label != label || existing?.url != url ) {
+                    TransferInputHyperlink(label, url)
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Transfer Input Hyperlink not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class TransferInput(
     val type: TransferType?,
     val size: TransferInputSize?,
@@ -621,6 +652,7 @@ data class TransferInput(
     val requestPayload: TransferInputRequestPayload?,
     val errors: String?,
     val errorMessage: String?,
+    val hyperlink: TransferInputHyperlink?
 ) {
     val isCctp: Boolean
         get() = cctpChainIds?.any { it.isCctpEnabled(this) } ?: false
@@ -706,6 +738,12 @@ data class TransferInput(
                         null
                     }
 
+                val hyperlink = TransferInputHyperlink.create(
+                    existing?.hyperlink,
+                    parser,
+                    parser.asMap(data["hyperlink"]),
+                )
+
                 return if (existing?.type !== type ||
                     existing?.size !== size ||
                     existing?.fastSpeed != fastSpeed ||
@@ -721,7 +759,8 @@ data class TransferInput(
                     existing.resources !== resources ||
                     existing.requestPayload !== requestPayload ||
                     existing.errors != errors ||
-                    existing.errorMessage != errorMessage
+                    existing.errorMessage != errorMessage ||
+                    existing.hyperlink != hyperlink
                 ) {
                     TransferInput(
                         type,
@@ -740,6 +779,7 @@ data class TransferInput(
                         requestPayload,
                         errors,
                         errorMessage,
+                        hyperlink
                     )
                 } else {
                     existing
