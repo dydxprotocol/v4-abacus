@@ -67,10 +67,14 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     return StateChanges(
         changes,
         null,
-        if (childSubaccountNumber != null) iListOf(
-            subaccountNumber,
-            childSubaccountNumber
-        ) else iListOf(subaccountNumber)
+        if (childSubaccountNumber != null) {
+            iListOf(
+                subaccountNumber,
+                childSubaccountNumber,
+            )
+        } else {
+            iListOf(subaccountNumber)
+        },
     )
 }
 
