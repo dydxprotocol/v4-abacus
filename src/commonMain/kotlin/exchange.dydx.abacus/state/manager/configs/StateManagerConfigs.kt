@@ -83,15 +83,20 @@ open class StateManagerConfigs(
         return parser.asString(parser.value(configs, "channels.candles"))
     }
 
-    fun subaccountChannel(parentSubaccount: Boolean = false): String? {
+    fun subaccountChannel(): String? {
         return parser.asString(
             parser.value(
                 configs,
-                if (parentSubaccount) {
-                    "channels.parent_subaccount"
-                } else {
-                    "channels.subaccount"
-                },
+                "channels.subaccount",
+            ),
+        )
+    }
+
+    fun parentSubaccountChannel(): String? {
+        return parser.asString(
+            parser.value(
+                configs,
+                "channels.parent_subaccount",
             ),
         )
     }

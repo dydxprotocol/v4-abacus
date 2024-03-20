@@ -373,6 +373,10 @@ internal class StateManagerAdaptorV2(
                             accounts.receiveSubaccountChannelSocketData(info, payload, height())
                         }
 
+                        configs.parentSubaccountChannel() -> {
+                            accounts.receiveParentSubaccountChannelSocketData(info, payload, height())
+                        }
+
                         else -> {
                             throw ParsingException(
                                 ParsingErrorType.UnknownChannel,

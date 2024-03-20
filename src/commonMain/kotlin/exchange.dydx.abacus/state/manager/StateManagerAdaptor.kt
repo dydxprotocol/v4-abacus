@@ -35,7 +35,6 @@ import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
-import exchange.dydx.abacus.state.model.receivedAccountsChanges
 import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
 import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
 import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
@@ -48,6 +47,7 @@ import exchange.dydx.abacus.state.model.receivedMarkets
 import exchange.dydx.abacus.state.model.receivedMarketsChanges
 import exchange.dydx.abacus.state.model.receivedOrderbook
 import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedTrades
 import exchange.dydx.abacus.state.model.receivedTradesChanges
 import exchange.dydx.abacus.state.model.receivedTransfers
@@ -983,7 +983,7 @@ open class StateManagerAdaptor(
             }
 
             configs.subaccountChannel() -> {
-                stateMachine.receivedAccountsChanges(content, info, height())
+                stateMachine.receivedSubaccountsChanges(content, info, height())
             }
 
             configs.marketOrderbookChannel() -> {

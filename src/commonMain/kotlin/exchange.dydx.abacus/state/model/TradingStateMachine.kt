@@ -280,6 +280,10 @@ open class TradingStateMachine(
                             changes = receivedSubaccountSubscribed(content, height)
                         }
 
+                        "v4_parent_subaccounts" -> {
+                            changes = receivedParentSubaccountSubscribed(content, height)
+                        }
+
                         "v3_orderbook", "v4_orderbook" -> {
                             val market = parser.asString(payload["id"])
                             changes = receivedOrderbook(market, content, subaccountNumber)
@@ -319,7 +323,11 @@ open class TradingStateMachine(
                         }
 
                         "v3_accounts", "v4_subaccounts" -> {
-                            changes = receivedAccountsChanges(content, info, height)
+                            changes = receivedSubaccountsChanges(content, info, height)
+                        }
+
+                        "v4_parent_subaccounts" -> {
+                            changes = receivedParentSubaccountsChanges(content, info, height)
                         }
 
                         "v3_orderbook", "v4_orderbook" -> {
@@ -382,7 +390,11 @@ open class TradingStateMachine(
                         }
 
                         "v3_accounts", "v4_subaccounts" -> {
-                            changes = receivedBatchAccountsChanges(content, info, height)
+                            changes = receivedBatchSubaccountsChanges(content, info, height)
+                        }
+
+                        "v4_parent_subaccounts" -> {
+                            changes = receivedBatchParentSubaccountsChanges(content, info, height)
                         }
 
                         else -> {

@@ -761,6 +761,16 @@ internal open class AccountSupervisor(
         val subaccount = subaccounts[subaccountNumber] ?: return
         subaccount.receiveSubaccountChannelSocketData(info, payload, height)
     }
+
+    internal fun receiveParentSubaccountChannelSocketData(
+        info: SocketInfo,
+        subaccountNumber: Int,
+        payload: IMap<String, Any>,
+        height: BlockAndTime?,
+    ) {
+        val subaccount = subaccounts[subaccountNumber] ?: return
+        subaccount.receiveParentSubaccountChannelSocketData(info, payload, height)
+    }
 }
 
 // Extension properties to help with current singular subaccount

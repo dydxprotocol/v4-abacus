@@ -35,10 +35,13 @@ import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
-import exchange.dydx.abacus.state.model.receivedAccountsChanges
-import exchange.dydx.abacus.state.model.receivedBatchAccountsChanges
+import exchange.dydx.abacus.state.model.receivedBatchParentSubaccountsChanges
+import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedFills
+import exchange.dydx.abacus.state.model.receivedParentSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedParentSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedTransfers
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -163,11 +166,18 @@ internal class SubaccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        if (configs.subscribeToSubaccount != SubaccountSubscriptionType.NONE && realized) {
-            subaccountChannelSubscription(
-                configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
-                socketConnected,
-            )
+        when (configs.subscribeToSubaccount) {
+            SubaccountSubscriptionType.PARENT_SUBACCOUNT -> {
+                if (realized) {
+                    parentSubaccountChannelSubscription(socketConnected)
+                }
+            }
+            SubaccountSubscriptionType.SUBACCOUNT -> {
+                if (realized) {
+                    subaccountChannelSubscription(socketConnected)
+                }
+            }
+            else -> {}
         }
     }
 
@@ -256,11 +266,23 @@ internal class SubaccountSupervisor(
 
     @Throws(Exception::class)
     private fun subaccountChannelSubscription(
-        parent: Boolean,
         subscribe: Boolean,
     ) {
         val channel =
-            helper.configs.subaccountChannel(parent) ?: throw Exception("subaccount channel is null")
+            helper.configs.subaccountChannel() ?: throw Exception("subaccount channel is null")
+        helper.socket(
+            helper.socketAction(subscribe),
+            channel,
+            subaccountChannelParams(accountAddress, subaccountNumber),
+        )
+    }
+
+    @Throws(Exception::class)
+    private fun parentSubaccountChannelSubscription(
+        subscribe: Boolean,
+    ) {
+        val channel =
+            helper.configs.parentSubaccountChannel() ?: throw Exception("parent subaccount channel is null")
         helper.socket(
             helper.socketAction(subscribe),
             channel,
@@ -846,7 +868,7 @@ internal class SubaccountSupervisor(
                             ParsingErrorType.MissingContent,
                             payload.toString(),
                         )
-                    changes = stateMachine.receivedAccountsChanges(content, info, height)
+                    changes = stateMachine.receivedSubaccountsChanges(content, info, height)
                 }
 
                 "channel_batch_data" -> {
@@ -856,7 +878,68 @@ internal class SubaccountSupervisor(
                                 ParsingErrorType.MissingContent,
                                 payload.toString(),
                             )
-                    changes = stateMachine.receivedBatchAccountsChanges(content, info, height)
+                    changes = stateMachine.receivedBatchSubaccountsChanges(content, info, height)
+                }
+
+                else -> {
+                    throw ParsingException(
+                        ParsingErrorType.Unhandled,
+                        "Type [ ${info.type} ] is not handled",
+                    )
+                }
+            }
+            update(changes, oldState)
+
+            val lastOrderClientId = this.lastOrderClientId
+            if (lastOrderClientId != null) {
+                lastOrder = stateMachine.findOrder(lastOrderClientId, subaccountNumber)
+            }
+        } catch (e: ParsingException) {
+            val error = ParsingError(
+                e.type,
+                e.message ?: "Unknown error",
+            )
+            emitError(error)
+        }
+    }
+
+    internal fun receiveParentSubaccountChannelSocketData(
+        info: SocketInfo,
+        payload: IMap<String, Any>,
+        height: BlockAndTime?,
+    ) {
+        val oldState = stateMachine.state
+        var changes: StateChanges? = null
+        try {
+            when (info.type) {
+                "subscribed" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString(),
+                        )
+                    changes = stateMachine.receivedParentSubaccountSubscribed(content, height)
+                }
+
+                "unsubscribed" -> {}
+
+                "channel_data" -> {
+                    val content = helper.parser.asMap(payload["contents"])
+                        ?: throw ParsingException(
+                            ParsingErrorType.MissingContent,
+                            payload.toString(),
+                        )
+                    changes = stateMachine.receivedParentSubaccountsChanges(content, info, height)
+                }
+
+                "channel_batch_data" -> {
+                    val content =
+                        helper.parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
+                            ?: throw ParsingException(
+                                ParsingErrorType.MissingContent,
+                                payload.toString(),
+                            )
+                    changes = stateMachine.receivedBatchParentSubaccountsChanges(content, info, height)
                 }
 
                 else -> {
@@ -905,10 +988,15 @@ internal class SubaccountSupervisor(
                 }
             }
             if (socketConnected) {
-                subaccountChannelSubscription(
-                    configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
-                    true,
-                )
+                when (configs.subscribeToSubaccount) {
+                    SubaccountSubscriptionType.PARENT_SUBACCOUNT -> {
+                        parentSubaccountChannelSubscription(true)
+                    }
+                    SubaccountSubscriptionType.SUBACCOUNT -> {
+                        subaccountChannelSubscription(true)
+                    }
+                    else -> {}
+                }
             }
         }
     }

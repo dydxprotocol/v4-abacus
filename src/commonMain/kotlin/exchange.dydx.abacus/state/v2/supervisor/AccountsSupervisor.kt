@@ -149,6 +149,21 @@ internal class AccountsSupervisor(
         )
     }
 
+    internal fun receiveParentSubaccountChannelSocketData(
+        info: SocketInfo,
+        payload: IMap<String, Any>,
+        height: BlockAndTime?,
+    ) {
+        val (address, subaccountNumber) = splitAddressAndSubaccountNumber(info.id)
+        val accountSupervisor = accounts[address] ?: return
+        accountSupervisor.receiveParentSubaccountChannelSocketData(
+            info,
+            subaccountNumber,
+            payload,
+            height,
+        )
+    }
+
     private fun splitAddressAndSubaccountNumber(id: String?): Pair<String, Int> {
         if (id == null) {
             throw ParsingException(

@@ -29,7 +29,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
 
-internal fun TradingStateMachine.receivedAccountsChanges(
+internal fun TradingStateMachine.receivedSubaccountsChanges(
     payload: Map<String, Any>,
     info: SocketInfo,
     height: BlockAndTime?,
@@ -66,7 +66,7 @@ internal fun TradingStateMachine.receivedAccountsChanges(
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
 
-internal fun TradingStateMachine.receivedBatchAccountsChanges(
+internal fun TradingStateMachine.receivedBatchSubaccountsChanges(
     payload: List<Any>,
     info: SocketInfo,
     height: BlockAndTime?
@@ -75,7 +75,83 @@ internal fun TradingStateMachine.receivedBatchAccountsChanges(
     var subaccountNumbers = iListOf<Int>()
     for (item in payload) {
         parser.asMap(item)?.let {
-            val itemChanges = receivedAccountsChanges(it, info, height)
+            val itemChanges = receivedSubaccountsChanges(it, info, height)
+            val changedSubaccountNumbers = itemChanges.subaccountNumbers?.toList()
+            if (changedSubaccountNumbers != null) {
+                subaccountNumbers = subaccountNumbers.union(changedSubaccountNumbers).toIList()
+            }
+            changes = changes.union(itemChanges.changes).toIList()
+        }
+    }
+    return StateChanges(changes, null, subaccountNumbers)
+}
+
+internal fun TradingStateMachine.receivedParentSubaccountSubscribed(
+    payload: Map<String, Any>,
+    height: BlockAndTime?,
+): StateChanges {
+    this.wallet = walletProcessor.subscribed(wallet, payload, height)
+    val changes = iMutableListOf<Changes>()
+    if (payload["account"] != null || payload["subaccount"] != null) {
+        changes.add(Changes.subaccount)
+        changes.add(Changes.input)
+    }
+    changes.add(Changes.fills)
+    changes.add(Changes.transfers)
+    changes.add(Changes.fundingPayments)
+    changes.add(Changes.historicalPnl)
+    changes.add(Changes.tradingRewards)
+    val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
+    return StateChanges(changes, null, iListOf(subaccountNumber))
+}
+
+internal fun TradingStateMachine.receivedParentSubaccountsChanges(
+    payload: Map<String, Any>,
+    info: SocketInfo,
+    height: BlockAndTime?,
+): StateChanges {
+    this.wallet = walletProcessor.channel_data(wallet, payload, info, height)
+    val changes = iMutableListOf<Changes>()
+
+    val idElements = info.id?.split("/")
+    val subaccountNumber =
+        if (idElements?.size == 2) parser.asInt(idElements.lastOrNull()) ?: 0 else 0
+    if (payload["accounts"] != null ||
+        payload["subaccounts"] != null ||
+        payload["positions"] != null ||
+        payload["perpetualPositions"] != null ||
+        payload["assetPositions"] != null ||
+        payload["orders"] != null
+    ) {
+        changes.add(Changes.subaccount)
+        changes.add(Changes.input)
+        changes.add(Changes.historicalPnl)
+    }
+    if (payload["fills"] != null) {
+        changes.add(Changes.fills)
+    }
+    if (payload["transfers"] != null) {
+        changes.add(Changes.transfers)
+    }
+    if (payload["fundingPayments"] != null) {
+        changes.add(Changes.fundingPayments)
+    }
+    if (payload["tradingReward"] != null) {
+        changes.add(Changes.tradingRewards)
+    }
+    return StateChanges(changes, null, iListOf(subaccountNumber))
+}
+
+internal fun TradingStateMachine.receivedBatchParentSubaccountsChanges(
+    payload: List<Any>,
+    info: SocketInfo,
+    height: BlockAndTime?
+): StateChanges {
+    var changes = iListOf<Changes>()
+    var subaccountNumbers = iListOf<Int>()
+    for (item in payload) {
+        parser.asMap(item)?.let {
+            val itemChanges = receivedSubaccountsChanges(it, info, height)
             val changedSubaccountNumbers = itemChanges.subaccountNumbers?.toList()
             if (changedSubaccountNumbers != null) {
                 subaccountNumbers = subaccountNumbers.union(changedSubaccountNumbers).toIList()
