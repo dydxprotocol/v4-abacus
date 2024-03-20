@@ -298,21 +298,22 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         if (firstTime) {
             val openPerpetualPositionsData =
                 (
-                    parser.asNativeMap(payload["openPositions"])
-                        ?: parser.asNativeMap(payload["openPerpetualPositions"])
-                    )
+                        parser.asNativeMap(payload["openPositions"])
+                            ?: parser.asNativeMap(payload["openPerpetualPositions"])
+                        )
 
             val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
             modified.safeSet(
                 "positions",
                 positions,
             )
+            val openPositions = positions?.filterValues { it ->
+                val data = parser.asNativeMap(it)
+                parser.asString(data?.get("status")) == "OPEN"
+            }
             modified.safeSet(
                 "openPositions",
-                positions?.filterValues { it ->
-                    val data = parser.asNativeMap(it)
-                    parser.asString(data?.get("status")) == "OPEN"
-                }?.toMap(),
+                openPositions,
             )
 
             val assetPositionsData = parser.asNativeMap(payload["assetPositions"])
@@ -450,12 +451,13 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
                 payload,
             )
             modified.safeSet("positions", positions)
+            val openPositins = positions?.filterValues { it ->
+                val data = parser.asNativeMap(it)
+                parser.asString(data?.get("status")) == "OPEN"
+            }
             modified.safeSet(
                 "openPositions",
-                positions?.filterValues { it ->
-                    val data = parser.asNativeMap(it)
-                    parser.asString(data?.get("status")) == "OPEN"
-                }?.toMap(),
+                openPositins,
             )
             modified
         } else {
@@ -1011,7 +1013,8 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         } else {
-            val parentSubaccountNumber = parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
+            val parentSubaccountNumber =
+                parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
             if (parentSubaccountNumber != null) {
                 modified = subscribedParentSubaccount(modified, content, height).mutable()
             }
@@ -1045,14 +1048,17 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 // Go through the list, and group by subaccountNumber
                 val subPayloadBySubaccount = mutableMapOf<Int, MutableList<Any>>()
                 for (subpayload in subpayloadList) {
-                    val subaccountNumber = parser.asInt(parser.value(subpayload, "subaccountNumber"))
+                    val subaccountNumber =
+                        parser.asInt(parser.value(subpayload, "subaccountNumber"))
                     if (subaccountNumber != null) {
-                        val list = subPayloadBySubaccount.getOrPut(subaccountNumber) { mutableListOf() }
+                        val list =
+                            subPayloadBySubaccount.getOrPut(subaccountNumber) { mutableListOf() }
                         list.add(subpayload)
                     }
                 }
                 for ((subaccountNumber, subPayloadList) in subPayloadBySubaccount) {
-                    val subaccount = contentBySubaccountNumber.getOrPut(subaccountNumber) { mutableMapOf() }
+                    val subaccount =
+                        contentBySubaccountNumber.getOrPut(subaccountNumber) { mutableMapOf() }
                     if (key == "subaccount") {
                         // There should be a single subaccount object
                         subaccount.safeSet(key, subPayloadList.firstOrNull())
@@ -1067,8 +1073,10 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
          */
         val modified = existing.mutable()
         for ((subaccountNumber, subaccountContent) in contentBySubaccountNumber) {
-            val subaccount = parser.asNativeMap(parser.value(modified, "subaccounts.$subaccountNumber"))
-            val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, subaccountContent, height)
+            val subaccount =
+                parser.asNativeMap(parser.value(modified, "subaccounts.$subaccountNumber"))
+            val modifiedsubaccount =
+                subaccountsProcessor.subscribed(subaccount, subaccountContent, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         }
         return modified
