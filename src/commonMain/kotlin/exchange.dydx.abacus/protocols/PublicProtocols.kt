@@ -174,6 +174,12 @@ enum class TransactionType(val rawValue: String) {
 }
 
 @JsExport
+data class Transaction(
+    val type: TransactionType,
+    val paramsInJson: String?,
+)
+
+@JsExport
 interface DYDXChainTransactionsProtocol {
     fun connectNetwork(
         paramsInJson: String,
@@ -194,9 +200,12 @@ interface DYDXChainTransactionsProtocol {
 
     fun get(type: QueryType, paramsInJson: String?, callback: ((response: String?) -> Unit))
 
+    /**
+     * @param transactions: A list of transaction objects that include transaction type and their parameters
+     * @param callback: A callback that will be called with the response of the transaction
+     */
     fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
         callback: ((response: String?) -> Unit),
     )
 }

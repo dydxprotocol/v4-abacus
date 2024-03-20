@@ -8,6 +8,7 @@ import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.run
@@ -31,6 +32,7 @@ import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
@@ -41,6 +43,7 @@ import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.toIMap
+import kollections.iListOf
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
@@ -494,7 +497,7 @@ class V4StateManagerAdaptor(
                     pendingCctpWithdraw?.let { walletState ->
                         processingCctpWithdraw = true
                         val callback = walletState.callback
-                        transaction(TransactionType.CctpWithdraw, walletState.payload) { hash ->
+                        transaction(iListOf(Transaction(TransactionType.CctpWithdraw, walletState.payload))) { hash ->
                             val error = parseTransactionResponse(hash)
                             if (error != null) {
                                 DebugLogger.error("TransactionType.CctpWithdraw error: $error")
@@ -935,15 +938,14 @@ class V4StateManagerAdaptor(
 
     @Throws(Exception::class)
     fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
         callback: (response: String) -> Unit,
     ) {
         val transactionsImplementation = ioImplementations.chain
         if (transactionsImplementation === null) {
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }
-        transactionsImplementation.transaction(type, paramsInJson) { response ->
+        transactionsImplementation.transaction(transactions) { response ->
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()
@@ -973,7 +975,7 @@ class V4StateManagerAdaptor(
         )
 
         lastOrderClientId = null
-        transaction(TransactionType.PlaceOrder, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
                 tracking(
@@ -1007,7 +1009,7 @@ class V4StateManagerAdaptor(
         )
 
         lastOrderClientId = null
-        transaction(TransactionType.PlaceOrder, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
                 tracking(
@@ -1053,7 +1055,7 @@ class V4StateManagerAdaptor(
         val payload = depositPayload()
         val string = Json.encodeToString(payload)
 
-        transaction(TransactionType.Deposit, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.Deposit, string))) { response ->
             val error = parseTransactionResponse(response)
             send(error, callback, payload)
         }
@@ -1063,7 +1065,7 @@ class V4StateManagerAdaptor(
         val payload = withdrawPayload()
         val string = Json.encodeToString(payload)
 
-        transaction(TransactionType.Withdraw, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.Withdraw, string))) { response ->
             val error = parseTransactionResponse(response)
             send(error, callback, payload)
         }
@@ -1073,7 +1075,7 @@ class V4StateManagerAdaptor(
         val payload = subaccountTransferPayload()
         val string = Json.encodeToString(payload)
 
-        transaction(TransactionType.PlaceOrder, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
             val error = parseTransactionResponse(response)
             send(error, callback, payload)
         }
@@ -1107,7 +1109,7 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
-        transaction(TransactionType.Faucet, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
             val error =
                 parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
             send(error, callback, payload)
@@ -1147,7 +1149,7 @@ class V4StateManagerAdaptor(
         val payload = cancelOrderPayload(orderId)
         val string = Json.encodeToString(payload)
 
-        transaction(TransactionType.CancelOrder, string) { response ->
+        transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) { response ->
             val error = parseTransactionResponse(response)
             if (error == null) {
                 tracking(

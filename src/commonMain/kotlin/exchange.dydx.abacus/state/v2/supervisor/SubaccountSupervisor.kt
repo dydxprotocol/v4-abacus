@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
@@ -50,6 +51,7 @@ import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
+import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
@@ -381,7 +383,7 @@ internal class SubaccountSupervisor(
         val payload = cancelOrderPayload(orderId)
         val string = Json.encodeToString(payload)
 
-        helper.transaction(TransactionType.CancelOrder, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error == null) {
                 tracking(
@@ -418,7 +420,7 @@ internal class SubaccountSupervisor(
         )
 
         lastOrderClientId = null
-        helper.transaction(TransactionType.PlaceOrder, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error == null) {
                 tracking(
@@ -459,7 +461,7 @@ internal class SubaccountSupervisor(
         )
 
         lastOrderClientId = null
-        helper.transaction(TransactionType.PlaceOrder, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error == null) {
                 tracking(
@@ -686,7 +688,7 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
-        helper.transaction(TransactionType.Faucet, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
             val error =
                 parseFaucetResponse(response, amount, submitTimeInMilliseconds)
             helper.send(error, callback, payload)

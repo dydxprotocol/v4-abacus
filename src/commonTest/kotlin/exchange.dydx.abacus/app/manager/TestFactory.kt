@@ -14,6 +14,7 @@ import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TimerProtocol
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
@@ -354,68 +355,95 @@ class TestChain : DYDXChainTransactionsProtocol {
     }
 
     override fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
         callback: (response: String?) -> Unit
     ) {
-        when (type) {
-            TransactionType.PlaceOrder -> {
-                placeOrder(paramsInJson!!, callback)
+        transactions.forEachIndexed { index, it ->
+            when (it.type) {
+                TransactionType.PlaceOrder -> {
+                    if (index == transactions.size - 1) {
+                        placeOrder(it.paramsInJson!!, callback)
+                    } else {
+                        placeOrder(it.paramsInJson!!)
+                    }
+                }
+
+                TransactionType.CancelOrder -> {
+                    if (index == transactions.size - 1) {
+                        cancelOrder(it.paramsInJson!!, callback)
+                    } else {
+                        cancelOrder(it.paramsInJson!!)
+                    }
+                }
+
+                TransactionType.Deposit -> {
+                    if (index == transactions.size - 1) {
+                        deposit(it.paramsInJson!!, callback)
+                    } else {
+                        deposit(it.paramsInJson!!)
+                    }
+                }
+
+                TransactionType.Withdraw -> {
+                    if (index == transactions.size - 1) {
+                        withdraw(it.paramsInJson!!, callback)
+                    } else {
+                        withdraw(it.paramsInJson!!)
+                    }
+                }
+
+                else -> {}
             }
+        }
+    }
 
-            TransactionType.CancelOrder -> {
-                cancelOrder(paramsInJson!!, callback)
+    fun getHeight(callback: ((response: String?) -> Unit)? = null) {
+        if (callback != null) {
+            if (heightResponse != null) {
+                callback(heightResponse)
+            } else {
+                callback(dummyError)
             }
+        }
+    }
 
-            TransactionType.Deposit -> {
-                deposit(paramsInJson!!, callback)
+    fun placeOrder(json: String, callback: ((response: String?) -> Unit)? = null) {
+        if (callback != null) {
+            if (placeOrderResponse != null) {
+                callback(placeOrderResponse)
+            } else {
+                callback(dummyError)
             }
+        }
+    }
 
-            TransactionType.Withdraw -> {
-                withdraw(paramsInJson!!, callback)
+    fun cancelOrder(json: String, callback: ((response: String?) -> Unit)? = null) {
+        if (callback != null) {
+            if (cancelOrderResponse != null) {
+                callback(cancelOrderResponse)
+            } else {
+                callback(dummyError)
             }
-
-            else -> {}
         }
     }
 
-    fun getHeight(callback: (response: String?) -> Unit) {
-        if (heightResponse != null) {
-            callback(heightResponse)
-        } else {
-            callback(dummyError)
+    fun deposit(json: String, callback: ((response: String?) -> Unit)? = null) {
+        if (callback != null) {
+            if (depositResponse != null) {
+                callback(depositResponse)
+            } else {
+                callback(dummyError)
+            }
         }
     }
 
-    fun placeOrder(json: String, callback: (response: String?) -> Unit) {
-        if (placeOrderResponse != null) {
-            callback(placeOrderResponse)
-        } else {
-            callback(dummyError)
-        }
-    }
-
-    fun cancelOrder(json: String, callback: (response: String?) -> Unit) {
-        if (cancelOrderResponse != null) {
-            callback(cancelOrderResponse)
-        } else {
-            callback(dummyError)
-        }
-    }
-
-    fun deposit(json: String, callback: (response: String?) -> Unit) {
-        if (depositResponse != null) {
-            callback(depositResponse)
-        } else {
-            callback(dummyError)
-        }
-    }
-
-    fun withdraw(json: String, callback: (response: String?) -> Unit) {
-        if (withdrawResponse != null) {
-            callback(withdrawResponse)
-        } else {
-            callback(dummyError)
+    fun withdraw(json: String, callback: ((response: String?) -> Unit)? = null) {
+        if (callback != null) {
+            if (withdrawResponse != null) {
+                callback(withdrawResponse)
+            } else {
+                callback(dummyError)
+            }
         }
     }
 }
