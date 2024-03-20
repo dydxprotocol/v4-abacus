@@ -162,50 +162,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                 {
                     "wallet": {
                         "account": {
-                            "tradingRewards": {
-                                "total": 2800.8
-                            },
                             "subaccounts": {
-                                "0": {
-                                    "equity": {
-                                        "current": 89358.63
-                                    },
-                                    "freeCollateral": {
-                                        "current": 88826.56
-                                    },
-                                    "quoteBalance": {
-                                        "current": 100000.0
-                                    },
-                                    "openPositions": {
-                                        "BTC-USD": {
-                                            "id": "BTC-USD",
-                                            "status": "OPEN",
-                                            "maxSize": 0.442388027,
-                                            "netFunding": 0.0,
-                                            "size": {
-                                                "current": -0.442371112
-                                            },
-                                            "assetId": "BTC",
-                                            "resources": {
-                                            },
-                                            "valueTotal": {
-                                                "current": -10641.37
-                                            },
-                                            "notionalTotal": {
-                                                "current": 10641.37
-                                            },
-                                            "adjustedImf": {
-                                                "current": 5.0E-2
-                                            },
-                                            "initialRiskTotal": {
-                                                "current": 532.07
-                                            },
-                                            "leverage": {
-                                                "current": -0.12
-                                            }
-                                        }
-                                    }
-                                },
                                 "128": {
                                     "equity": {
                                         "current": 829.16
@@ -214,7 +171,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                         "current": 796.244
                                     },
                                     "quoteBalance": {
-                                        "current": 500.0
+                                        "current": 9000.0
                                     },
                                     "marginUsage": {
                                         "current": 0.0397
@@ -229,7 +186,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                                 "current": 0.271316
                                             },
                                             "size": {
-                                                "current": 120.0
+                                                "current": 300.0
                                             },
                                             "assetId": "RUNE",
                                             "resources": {

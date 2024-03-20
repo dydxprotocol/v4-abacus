@@ -261,7 +261,7 @@ open class TradingStateMachine(
         val type = parser.asString(payload["type"])
         val channel = parser.asString(payload["channel"])
         val id = parser.asString(payload["id"])
-        val info = SocketInfo(type, channel, id)
+        val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]) ?: subaccountNumber)
 
         try {
             when (type) {

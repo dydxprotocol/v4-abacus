@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
-data class SocketInfo(val type: String?, val channel: String?, val id: String?)
+data class SocketInfo(val type: String?, val channel: String?, val id: String?, val subaccountNumber: Int?)
 
 @JsExport
 @Serializable

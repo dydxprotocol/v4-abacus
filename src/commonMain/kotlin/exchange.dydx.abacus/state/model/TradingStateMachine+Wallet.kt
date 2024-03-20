@@ -38,7 +38,7 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     val changes = iMutableListOf<Changes>()
 
     val idElements = info.id?.split("/")
-    val subaccountNumber =
+    val subaccountNumber = info.subaccountNumber ?:
         if (idElements?.size == 2) parser.asInt(idElements.lastOrNull()) ?: 0 else 0
     if (payload["accounts"] != null ||
         payload["subaccounts"] != null ||
