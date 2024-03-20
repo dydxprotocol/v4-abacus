@@ -95,9 +95,6 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
             "createdAt" to "createdAt",
             "closedAt" to "closedAt",
         ),
-        "int" to mapOf(
-            "subaccountNumber" to "subaccountNumber",
-        )
     )
 
     private val currentPositionKeyMap = mapOf(
