@@ -1,29 +1,56 @@
-package exchange.dydx.abacus.app.manager
+package exchange.dydx.abacus.app.manager.v2
 
+import exchange.dydx.abacus.app.manager.NetworkTests
+import exchange.dydx.abacus.app.manager.TestChain
+import exchange.dydx.abacus.app.manager.TestRest
+import exchange.dydx.abacus.app.manager.TestState
+import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.state.manager.AppConfigs
-import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
-import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
+import exchange.dydx.abacus.state.v2.manager.StateManagerAdaptorV2
+import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
+import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
+import exchange.dydx.abacus.state.v2.supervisor.SubaccountSubscriptionType
+import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
+import exchange.dydx.abacus.utils.values
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+
 
 class V4TransactionTests : NetworkTests() {
     val mock = AbacusMockData()
     private val testCosmoAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
-    private var stateManager: AsyncAbacusStateManager = resetStateManager()
+    private var stateManager: AsyncAbacusStateManagerV2 = resetStateManager()
     private var ioImplementations = stateManager.ioImplementations
     private var testRest = stateManager.ioImplementations.rest as? TestRest
     private var testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
     private var testChain = stateManager.ioImplementations.chain as? TestChain
     private var testState = stateManager.stateNotification as? TestState
-    private var v4Adapter = stateManager.adaptor as? V4StateManagerAdaptor
+    private var v4Adapter = stateManager.adaptor
+    private var subaccountSupervisor: SubaccountSupervisor? = resetSubaccountSupervisor()
+
+    internal fun resetSubaccountSupervisor(): SubaccountSupervisor? {
+        return if (v4Adapter !== null) {
+            SubaccountSupervisor(
+                v4Adapter!!.stateMachine,
+                v4Adapter!!.networkHelper,
+                v4Adapter!!.analyticsUtils,
+                SubaccountConfigs(true, true, true, SubaccountSubscriptionType.SUBACCOUNT),
+                testCosmoAddress,
+                0
+            )
+        } else null
+    }
 
     @BeforeTest
     fun reset() {
@@ -33,17 +60,18 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket = stateManager.ioImplementations.webSocket as? TestWebSocket
         testChain = stateManager.ioImplementations.chain as? TestChain
         testState = stateManager.stateNotification as? TestState
-        v4Adapter = stateManager.adaptor as? V4StateManagerAdaptor
+        v4Adapter = stateManager.adaptor
+        subaccountSupervisor = resetSubaccountSupervisor()
     }
 
-    fun resetStateManager(): AsyncAbacusStateManager {
+    fun resetStateManager(): AsyncAbacusStateManagerV2 {
         val ioImplementations = BaseTests.testIOImplementations()
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
-        stateManager = AsyncAbacusStateManager(
+        stateManager = AsyncAbacusStateManagerV2(
             "https://api.examples.com",
             "DEV",
-            AppConfigs.forApp,
+            AppConfigsV2.forApp,
             ioImplementations,
             uiImplementations,
             TestState(),
@@ -53,7 +81,7 @@ class V4TransactionTests : NetworkTests() {
         return stateManager
     }
 
-    private fun setStateMachineConnected(stateManager: AsyncAbacusStateManager) {
+    private fun setStateMachineConnected(stateManager: AsyncAbacusStateManagerV2) {
         stateManager.readyToConnect = true
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
@@ -61,7 +89,6 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateReceived(mock.accountsChannel.v4_subscribed)
         stateManager.market = "ETH-USD"
         stateManager.setAddresses(null, testCosmoAddress)
-        v4Adapter?.connectedSubaccountNumber = 0
     }
 
     fun tradeInput(isShortTerm: Boolean, size: String = "0.01", limitPrice: String = "2000") {
@@ -76,35 +103,35 @@ class V4TransactionTests : NetworkTests() {
     }
 
     fun assertTransactionQueueStarted(message: String? = null) {
-        assertEquals(0, v4Adapter?.transactionQueue?.size)
-        assertTrue(v4Adapter?.transactionQueue?.isProcessing ?: false, message)
+        assertEquals(0, subaccountSupervisor?.transactionQueue?.size)
+        assertTrue(subaccountSupervisor?.transactionQueue?.isProcessing ?: false, message)
     }
 
     fun assertTransactionQueueEmpty(message: String? = null) {
-        assertEquals(0, v4Adapter?.transactionQueue?.size)
-        assertFalse(v4Adapter?.transactionQueue?.isProcessing ?: false, message)
+        assertEquals(0, subaccountSupervisor?.transactionQueue?.size)
+        assertFalse(subaccountSupervisor?.transactionQueue?.isProcessing ?: false, message)
     }
 
     @Test
     fun testPlaceOrderTransactionsQueue() {
         setStateMachineConnected(stateManager)
-        val transactionQueue = v4Adapter?.transactionQueue
+        val transactionQueue = subaccountSupervisor?.transactionQueue
         var transactionCalledCount = 0
         val transactionCallback: TransactionCallback = { _, _, _ -> transactionCalledCount++ }
 
         tradeInput(true)
-        v4Adapter?.commitPlaceOrder(transactionCallback)
+        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueEmpty("Short term order should not be enqueued")
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(1, transactionCalledCount)
 
         // place multiple stateful orders
         tradeInput(false, "0.01")
-        v4Adapter?.commitPlaceOrder(transactionCallback)
+        subaccountSupervisor?.commitPlaceOrder(0,transactionCallback)
         assertTransactionQueueStarted()
         tradeInput(false, "0.02")
-        v4Adapter?.commitPlaceOrder(transactionCallback)
-        v4Adapter?.commitPlaceOrder(transactionCallback)
+        subaccountSupervisor?.commitPlaceOrder(0,transactionCallback)
+        subaccountSupervisor?.commitPlaceOrder(0,transactionCallback)
         assertEquals(2, transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
@@ -134,19 +161,19 @@ class V4TransactionTests : NetworkTests() {
         val statefulOrderId2 = "0ae98da9-4fdc-5f08-b880-2449464b6b45"
         val statefulOrderId3 = "734617f4-29ba-50fe-878d-391ad4e4fbd1"
 
-        v4Adapter?.cancelOrder(shortTermOrderId, transactionCallback)
+        subaccountSupervisor?.cancelOrder(shortTermOrderId, transactionCallback)
         assertTransactionQueueEmpty("Short term order should not be enqueued")
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
 
         // cancel multiple stateful orders
-        v4Adapter?.cancelOrder(statefulOrderId1, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId1, transactionCallback)
         assertTransactionQueueStarted()
-        v4Adapter?.cancelOrder(statefulOrderId2, transactionCallback)
-        v4Adapter?.cancelOrder(statefulOrderId3, transactionCallback)
-        assertEquals(2, v4Adapter?.transactionQueue?.size)
+        subaccountSupervisor?.cancelOrder(statefulOrderId2, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId3, transactionCallback)
+        assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(1, v4Adapter?.transactionQueue?.size)
+        assertEquals(1, subaccountSupervisor?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
@@ -166,14 +193,14 @@ class V4TransactionTests : NetworkTests() {
 
         tradeInput(false)
         assertTransactionQueueEmpty()
-        v4Adapter?.commitPlaceOrder(transactionCallback)
+        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueStarted()
-        v4Adapter?.cancelOrder(statefulOrderId1, transactionCallback)
-        assertEquals(1, v4Adapter?.transactionQueue?.size)
+        subaccountSupervisor?.cancelOrder(statefulOrderId1, transactionCallback)
+        assertEquals(1, subaccountSupervisor?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(1, transactionCalledCount)
-        assertEquals(0, v4Adapter?.transactionQueue?.size)
+        assertEquals(0, subaccountSupervisor?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(2, transactionCalledCount)
