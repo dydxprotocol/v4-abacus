@@ -645,7 +645,7 @@ open class StateManagerAdaptor(
         subscribe: Boolean = true,
     ) {
         val channel =
-            configs.subaccountChannel() ?: throw Exception("subaccount channel is null")
+            configs.subaccountChannel(false) ?: throw Exception("subaccount channel is null")
         socket(
             socketAction(subscribe),
             channel,
@@ -920,7 +920,7 @@ open class StateManagerAdaptor(
                 changes
             }
 
-            configs.subaccountChannel() -> {
+            configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
                 stateMachine.receivedSubaccountSubscribed(content, height())
             }
 
@@ -982,7 +982,7 @@ open class StateManagerAdaptor(
                 stateMachine.receivedMarketsChanges(content, subaccountNumber ?: 0)
             }
 
-            configs.subaccountChannel() -> {
+            configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
                 stateMachine.receivedSubaccountsChanges(content, info, height())
             }
 

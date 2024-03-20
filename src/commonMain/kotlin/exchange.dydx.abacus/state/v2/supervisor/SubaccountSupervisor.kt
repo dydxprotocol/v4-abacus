@@ -163,18 +163,11 @@ internal class SubaccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        when (configs.subscribeToSubaccount) {
-            SubaccountSubscriptionType.PARENT_SUBACCOUNT -> {
-                if (realized) {
-                    subaccountChannelSubscription(true, socketConnected)
-                }
-            }
-            SubaccountSubscriptionType.SUBACCOUNT -> {
-                if (realized) {
-                    subaccountChannelSubscription(false, socketConnected)
-                }
-            }
-            else -> {}
+        if (configs.subscribeToSubaccount != SubaccountSubscriptionType.NONE && realized) {
+            subaccountChannelSubscription(
+                configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
+                socketConnected,
+            )
         }
     }
 
@@ -266,7 +259,7 @@ internal class SubaccountSupervisor(
         parent: Boolean,
         subscribe: Boolean,
     ) {
-        val channel = (if (parent) helper.configs.parentSubaccountChannel() else helper.configs.subaccountChannel())
+        val channel = helper.configs.subaccountChannel(parent)
             ?: throw Exception("subaccount channel is null")
         helper.socket(
             helper.socketAction(subscribe),
