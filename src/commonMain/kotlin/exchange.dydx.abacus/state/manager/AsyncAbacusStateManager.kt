@@ -16,6 +16,7 @@ import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.DummyFormatter
@@ -229,9 +230,9 @@ class AsyncAbacusStateManager(
         if (uiImplementations.localizer === null) {
             throw Error("UIImplementations.localizer is not set")
         }
-//        if (UIImplementations.formatter === null) {
-//            throw Error("UIImplementations.formatter is not set")
-//        }
+        //        if (UIImplementations.formatter === null) {
+        //            throw Error("UIImplementations.formatter is not set")
+        //        }
         if (uiImplementations.localizer is DynamicLocalizer) {
             if (ioImplementations.fileSystem === null) {
                 throw Error("IOImplementations.fileSystem is not set, used by Abacus localizer")
@@ -396,6 +397,10 @@ class AsyncAbacusStateManager(
 
     override fun transfer(data: String?, type: TransferInputField?) {
         adaptor?.transfer(data, type)
+    }
+
+    override fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
+        adaptor?.triggerOrders(data, type)
     }
 
     override fun isMarketValid(marketId: String?): Boolean {

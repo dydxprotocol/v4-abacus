@@ -181,3 +181,9 @@ Address input, used for transfer
 ## fastSpeed
 
 Option to use fastSpeed, used by v3 withdrawal
+
+# triggerOrders
+
+fun triggerOrders(data: String?, type: [TriggerOrdersInputField](#TriggerORdersInputField)?): AppStateResponse
+
+# TriggerOrdersInputField

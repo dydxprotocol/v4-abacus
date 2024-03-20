@@ -6,6 +6,7 @@ import exchange.dydx.abacus.calculator.MarketCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
+import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
@@ -590,6 +591,10 @@ open class TradingStateMachine(
                     calculateTransfer(subaccountNumber)
                 }
 
+                "triggerOrders" -> {
+                    calculateTriggerOrders()
+                }
+
                 else -> {}
             }
         }
@@ -681,6 +686,18 @@ open class TradingStateMachine(
         this.setMarkets(parser.asNativeMap(modified["markets"]))
         this.wallet = parser.asNativeMap(modified["wallet"])
         input?.safeSet("transfer", parser.asNativeMap(modified["transfer"]))
+
+        this.input = input
+    }
+
+    private fun calculateTriggerOrders() {
+        val input = this.input?.mutable()
+        val triggerOrders = parser.asNativeMap(input?.get("triggerOrders"))
+        val calculator = TriggerOrdersInputCalculator(parser)
+        val params = mutableMapOf<String, Any>()
+        params.safeSet("triggerOrders", triggerOrders)
+        val modified = calculator.calculate(params)
+        input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
 
         this.input = input
     }
@@ -832,7 +849,7 @@ open class TradingStateMachine(
                     }
                 }
 
-                "closePosition", "transfer" -> {
+                "closePosition", "transfer", "triggerOrders" -> {
                 }
             }
             modified.safeSet("receiptLines", calculateReceipt(modified))

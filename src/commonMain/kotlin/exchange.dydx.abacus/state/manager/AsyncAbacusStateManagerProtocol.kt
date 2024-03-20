@@ -7,6 +7,7 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.IList
 import kotlin.js.JsExport
 
@@ -33,6 +34,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun trade(data: String?, type: TradeInputField?)
     fun closePosition(data: String?, type: ClosePositionInputField)
     fun transfer(data: String?, type: TransferInputField?)
+    fun triggerOrders(data: String?, type: TriggerOrdersInputField?)
 
     // helper functions
     fun isMarketValid(marketId: String?): Boolean

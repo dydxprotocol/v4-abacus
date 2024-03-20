@@ -29,6 +29,7 @@ import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DebugLogger
@@ -410,6 +411,10 @@ class AsyncAbacusStateManagerV2(
 
     override fun transfer(data: String?, type: TransferInputField?) {
         adaptor?.transfer(data, type)
+    }
+
+    override fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
+        adaptor?.triggerOrders(data, type)
     }
 
     override fun isMarketValid(marketId: String?): Boolean {

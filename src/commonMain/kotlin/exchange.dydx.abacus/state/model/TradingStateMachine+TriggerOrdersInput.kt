@@ -1,4 +1,6 @@
 package exchange.dydx.abacus.state.model
+
+import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
@@ -13,12 +15,20 @@ import kotlinx.serialization.Serializable
 @JsExport
 @Serializable
 enum class TriggerOrdersInputField(val rawValue: String) {
-    type("type")
+  size("size"),
 
-    companion object {
-        operator fun invoke(rawValue: String) = 
+  stopLossPrice("stopLossPrice.triggerPrice"),
+  stopLossPercent("stopLossPrice.triggerPercent"),
+  stopLossLimitPrice("stopLossPrice.limitPrice"),
+
+  takeProfitPrice("takeProfitPrice.triggerPrice"),
+  takeProfitPercent("takeProfitPrice.triggerPercent"),
+  takeProfitLimitPrice("takeProfitPrice.limitPrice");
+
+  companion object {
+    operator fun invoke(rawValue: String) =
         TriggerOrdersInputField.values().firstOrNull { it.rawValue == rawValue }
-    }
+  }
 }
 
 fun TradingStateMachine.triggerOrders(
@@ -26,34 +36,109 @@ fun TradingStateMachine.triggerOrders(
     type: TriggerOrdersInputField?,
     subaccountNumber: Int,
 ): StateResponse {
-    var changes: StateChanges? = null
-    var error: ParsingError? = null
-    val typeText = type?.rawValue
+  print("bloop")
+  var changes: StateChanges? = null
+  var error: ParsingError? = null
+  val typeText = type?.rawValue
 
-    val input = this.input?.mutable() ?: mutableMapOf()
-    input["current"] = "triggerOrders"
-    val triggerOrders = parser.asMap(input["triggerOrders"])?.mutable() ?: kotlin.run {
-        val triggerOrders = mutableMapOf<String, Any>()
+  val input = this.input?.mutable() ?: mutableMapOf()
+  input["current"] = "triggerOrders"
+  val triggerOrders =
+      parser.asMap(input["triggerOrders"])?.mutable()
+          ?: kotlin.run {
+            val triggerOrders = mutableMapOf<String, Any>()
 
-        val calculator = TriggerOrdersCalculator(parser)
-        val params = mutableMapOf<String, Any>()
-        params.safeSet("triggerOrders", triggerOrders)
-        val modified = calculator.calculate(params, subaccountNumber)
+            val calculator = TriggerOrdersInputCalculator(parser)
+            val params = mutableMapOf<String, Any>()
+            params.safeSet("triggerOrders", triggerOrders)
+            val modified = calculator.calculate(params)
 
-        parser.asMap(modified["triggerOrders"])?.mutable() ?: triggerOrders
-    }
+            parser.asMap(modified["triggerOrders"])?.mutable() ?: triggerOrders
+          }
 
-    if (typeText != null) {
-        changes = StateChanges(iListOf(Changes.wallet, Changes.subaccount, Changes.input), null, iListOf(subaccountNumber))
+  var stopLossPriceChanged = false
+  var takeProfitPriceChanged = false
+
+  if (typeText != null) {
+    if (validTriggerOrdersInput(triggerOrders, typeText)) {
+      print("bloop2")
+      when (typeText) {
+        TriggerOrdersInputField.size.rawValue,
+        TriggerOrdersInputField.stopLossLimitPrice.rawValue,
+        TriggerOrdersInputField.takeProfitLimitPrice.rawValue, -> {
+          triggerOrders.safeSet(typeText, parser.asDouble(data))
+          changes =
+              StateChanges(
+                  iListOf(Changes.input), // xcxc more?
+                  null,
+                  iListOf(subaccountNumber)
+              )
+        }
+        TriggerOrdersInputField.stopLossPrice.rawValue,
+        TriggerOrdersInputField.stopLossPercent.rawValue -> {
+          stopLossPriceChanged =
+              (parser.asDouble(data) != parser.asDouble(parser.value(triggerOrders, typeText)))
+          triggerOrders.safeSet(typeText, parser.asDouble(data))
+          changes =
+              StateChanges(
+                  iListOf(Changes.input), // xcxc more?
+                  null,
+                  iListOf(subaccountNumber)
+              )
+        }
+        TriggerOrdersInputField.takeProfitPrice.rawValue,
+        TriggerOrdersInputField.takeProfitPercent.rawValue -> {
+          takeProfitPriceChanged =
+              (parser.asDouble(data) != parser.asDouble(parser.value(triggerOrders, typeText)))
+          triggerOrders.safeSet(typeText, parser.asDouble(data))
+          changes =
+              StateChanges(
+                  iListOf(Changes.input), // xcxc more?
+                  null,
+                  iListOf(subaccountNumber)
+              )
+        }
+        else -> {}
+      }
     } else {
-        changes = StateChanges(iListOf(Changes.wallet, Changes.subaccount, Changes.input), null, iListOf(subaccountNumber))
+      error = cannotModify(typeText)
     }
+  } else {
+    changes =
+        StateChanges(
+            iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+            null,
+            iListOf(subaccountNumber)
+        )
+  }
 
-    input["triggerOrders"] = triggerOrders
-    this.input = input
-
-    changes?.let {
-        update(it)
+  if (stopLossPriceChanged) {
+    when (typeText) {
+      TriggerOrdersInputField.stopLossPrice.rawValue,
+      TriggerOrdersInputField.stopLossPercent.rawValue, -> {
+        triggerOrders.safeSet("stopLossPrice.triggerInput", typeText)
+      }
     }
-    return StateResponse(state, changes, if (error != null) iListOf(error) else null)
+  }
+  if (takeProfitPriceChanged) {
+    when (typeText) {
+      TriggerOrdersInputField.takeProfitPrice.rawValue,
+      TriggerOrdersInputField.takeProfitPercent.rawValue, -> {
+        triggerOrders.safeSet("takeProfitPrice.triggerInput", typeText)
+      }
+    }
+  }
+
+  input["triggerOrders"] = triggerOrders
+  this.input = input
+  print(changes)
+  changes?.let { update(it) }
+  return StateResponse(state, changes, if (error != null) iListOf(error) else null)
+}
+
+fun TradingStateMachine.validTriggerOrdersInput(
+    triggerOrders: Map<String, Any>,
+    typeText: String?
+): Boolean {
+  return true
 }

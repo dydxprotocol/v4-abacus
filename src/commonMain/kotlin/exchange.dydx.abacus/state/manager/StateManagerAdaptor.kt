@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.candles
 import exchange.dydx.abacus.state.model.closePosition
@@ -56,6 +57,7 @@ import exchange.dydx.abacus.state.model.sparklines
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.model.transfer
+import exchange.dydx.abacus.state.model.triggerOrders
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
@@ -1697,6 +1699,21 @@ open class StateManagerAdaptor(
         isCctp: Boolean,
         requestId: String? = null,
     ) {
+    }
+
+    fun triggerOrders(
+        data: String?,
+        type: TriggerOrdersInputField?,
+    ) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                stateNotification?.stateChanged(
+                        stateResponse.state,
+                        stateResponse.changes,
+                )
+            }
+        }
     }
 
     internal open fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
