@@ -49,7 +49,7 @@ internal class ParentSubaccountsChannelMock {
                           "USDC":{
                              "symbol":"USDC",
                              "side":"LONG",
-                             "size":"100000000000",
+                             "size":"100000",
                              "assetId":"0"
                           }
                        },
@@ -61,11 +61,11 @@ internal class ParentSubaccountsChannelMock {
                        "equity":"500.000000",
                        "freeCollateral":"500.000000",
                        "openPerpetualPositions":{
-                          "SUSHI-USD":{
-                             "market":"SUSHI-USD",
+                          "RUNE-USD":{
+                             "market":"RUNE-USD",
                              "status":"OPEN",
                              "side":"LONG",
-                             "size":"12",
+                             "size":"120",
                              "maxSize":"12",
                              "entryPrice":"1.464000",
                              "exitPrice":"0.000000",

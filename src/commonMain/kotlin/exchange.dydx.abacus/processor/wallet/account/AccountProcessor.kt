@@ -1003,25 +1003,75 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         content: Map<String, Any>,
         height: BlockAndTime?,
     ): Map<String, Any>? {
+        var modified = existing?.mutable() ?: mutableMapOf()
         val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
-        return if (subaccountNumber != null) {
-            var modified = existing?.mutable() ?: mutableMapOf()
+        if (subaccountNumber != null) {
             val subaccount =
                 parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
             val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-
-            /* block trading rewards are only sent in subaccounts.0 channel */
-            val tradingRewardsPayload =
-                parser.value(content, "tradingReward")
-            if (tradingRewardsPayload != null) {
-                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
-            }
-
-            return modified
         } else {
-            existing
+            val parentSubaccountNumber = parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
+            if (parentSubaccountNumber != null) {
+                modified = subscribedParentSubaccount(modified, content, height).mutable()
+            }
         }
+
+        /* block trading rewards are only sent in subaccounts.0 channel */
+        val tradingRewardsPayload =
+            parser.value(content, "tradingReward")
+        if (tradingRewardsPayload != null) {
+            modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+        }
+        return modified
+    }
+
+    private fun subscribedParentSubaccount(
+        existing: Map<String, Any>,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): Map<String, Any> {
+        /*
+        We will go through all segments in the content, regroup them based on subaccountNumber,
+        and send to subaccountProcessor's existing code
+         */
+        val contentBySubaccountNumber = mutableMapOf<Int, MutableMap<String, Any>>()
+        for ((key, value) in content) {
+            val subpayloadList = when (key) {
+                "subaccount" -> parser.asNativeList(parser.value(value, "childSubaccounts"))
+                else -> parser.asNativeList(value)
+            }
+            if (subpayloadList != null) {
+                // Go through the list, and group by subaccountNumber
+                val subPayloadBySubaccount = mutableMapOf<Int, MutableList<Any>>()
+                for (subpayload in subpayloadList) {
+                    val subaccountNumber = parser.asInt(parser.value(subpayload, "subaccountNumber"))
+                    if (subaccountNumber != null) {
+                        val list = subPayloadBySubaccount.getOrPut(subaccountNumber) { mutableListOf() }
+                        list.add(subpayload)
+                    }
+                }
+                for ((subaccountNumber, subPayloadList) in subPayloadBySubaccount) {
+                    val subaccount = contentBySubaccountNumber.getOrPut(subaccountNumber) { mutableMapOf() }
+                    if (key == "subaccount") {
+                        // There should be a single subaccount object
+                        subaccount.safeSet(key, subPayloadList.firstOrNull())
+                    } else {
+                        subaccount[key] = subPayloadList
+                    }
+                }
+            }
+        }
+        /*
+        Now we have a map of subaccountNumber to content, we can send it to subaccountProcessor
+         */
+        val modified = existing.mutable()
+        for ((subaccountNumber, subaccountContent) in contentBySubaccountNumber) {
+            val subaccount = parser.asNativeMap(parser.value(modified, "subaccounts.$subaccountNumber"))
+            val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, subaccountContent, height)
+            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
+        }
+        return modified
     }
 
     @Suppress("FunctionName")

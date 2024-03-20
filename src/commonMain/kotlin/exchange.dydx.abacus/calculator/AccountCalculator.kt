@@ -15,12 +15,13 @@ class AccountCalculator(val parser: ParserProtocol) {
         periods: Set<CalculationPeriod>,
     ): Map<String, Any>? {
         return if (account != null) {
+            val subaccounts = parser.asMap(account["subaccounts"]) ?: return account
             val modified = account.mutable()
-            for (subaccountNumber in subaccountNumbers) {
-                val key = "subaccounts.$subaccountNumber"
-                val subaccount = parser.asMap(parser.value(account, key))
-                if (subaccount != null) {
-                    modified.safeSet(key, subaccountCalculator.calculate(subaccount, configs, markets, price, periods))
+            for ((subaccountNumber, subaccount) in subaccounts) {
+                val parentSubaccountNumber = subaccountNumber.toInt() % 128
+                if (parentSubaccountNumber in subaccountNumbers) {
+                    val key = "subaccounts.$subaccountNumber"
+                    modified.safeSet(key, subaccountCalculator.calculate(parser.asNativeMap(subaccount), configs, markets, price, periods))
                 }
             }
             modified
