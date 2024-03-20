@@ -220,48 +220,45 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         content: Map<String, Any>,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        return socket(existing, content, true, null, height)
+        return socket(existing, content, true, height)
     }
 
     @Suppress("FunctionName")
     internal fun channel_data(
         existing: Map<String, Any>?,
-        subaccountNumber: Int,
         content: Map<String, Any>,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        return socket(existing, content, false, subaccountNumber, height)
+        return socket(existing, content, false, height)
     }
 
     internal open fun socket(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         subscribed: Boolean,
-        subaccountNumber: Int?,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        var subaccounts = existing ?: mutableMapOf()
-        val subaccountPayload = subaccountPayload(content)
-        if (subaccountPayload != null) {
-            subaccounts = received(subaccounts, subaccountPayload, subscribed)
+        var subaccount = existing ?: mutableMapOf()
+        val accountPayload = subaccountPayload(content)
+        if (accountPayload != null) {
+            subaccount = received(subaccount, accountPayload, subscribed)
         }
 
         val ordersPayload = parser.asNativeList(content["orders"]) as? List<Map<String, Any>>
         if (ordersPayload != null) {
-            subaccounts = receivedOrders(subaccounts, ordersPayload, subaccountNumber, height)
+            subaccount = receivedOrders(subaccount, ordersPayload, height)
         }
 
         val perpetualPositionsPayload =
             parser.asNativeList(content["positions"])
                 ?: parser.asNativeList(content["perpetualPositions"])
         if (perpetualPositionsPayload != null) {
-            subaccounts =
-                receivedPerpetualPositions(subaccounts, perpetualPositionsPayload, subaccountNumber)
+            subaccount = receivedPerpetualPositions(subaccount, perpetualPositionsPayload)
         }
 
         val fillsPayload = parser.asNativeList(content["fills"])
         if (fillsPayload != null) {
-            subaccounts = receivedFills(subaccounts, fillsPayload, subaccountNumber, false)
+            subaccount = receivedFills(subaccount, fillsPayload, false)
         }
 
         val transfersPayload = content["transfers"]
@@ -273,22 +270,16 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         }
 
         if (transfersPayloadList != null) {
-            subaccounts =
-                receivedTransfers(subaccounts, transfersPayloadList, subaccountNumber, false)
+            subaccount = receivedTransfers(subaccount, transfersPayloadList, false)
         }
 
         val fundingPaymentsPayload =
             parser.asNativeList(content["fundingPayments"]) as? List<Map<String, Any>>
         if (fundingPaymentsPayload != null) {
-            subaccounts = receivedFundingPayments(
-                subaccounts,
-                fundingPaymentsPayload,
-                subaccountNumber,
-                false
-            )
+            subaccount = receivedFundingPayments(subaccount, fundingPaymentsPayload, false)
         }
 
-        return subaccounts
+        return subaccount
     }
 
     internal open fun subaccountPayload(content: Map<String, Any>): Map<String, Any>? {
@@ -297,29 +288,26 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     }
 
     internal fun received(
-        subaccounts: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
         payload: Map<String, Any>,
         firstTime: Boolean,
     ): Map<String, Any> {
-        val subaccountNumber =
-            parser.asInt(payload["subaccountNumber"]) ?: return subaccounts ?: mapOf()
-        val subaccount = parser.asNativeMap(subaccounts?.get("$subaccountNumber"))
-        var modifiedSubaccount = transform(subaccount, payload, accountKeyMap)
-        modifiedSubaccount = transform(modifiedSubaccount, payload, "current", currentAccountKeyMap)
+        var modified = transform(subaccount, payload, accountKeyMap)
+        modified = transform(modified, payload, "current", currentAccountKeyMap)
 
         if (firstTime) {
             val openPerpetualPositionsData =
                 (
-                        parser.asNativeMap(payload["openPositions"])
-                            ?: parser.asNativeMap(payload["openPerpetualPositions"])
-                        )
+                    parser.asNativeMap(payload["openPositions"])
+                        ?: parser.asNativeMap(payload["openPerpetualPositions"])
+                    )
 
             val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
-            modifiedSubaccount.safeSet(
+            modified.safeSet(
                 "positions",
                 positions,
             )
-            modifiedSubaccount.safeSet(
+            modified.safeSet(
                 "openPositions",
                 positions?.filterValues { it ->
                     val data = parser.asNativeMap(it)
@@ -328,27 +316,17 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             )
 
             val assetPositionsData = parser.asNativeMap(payload["assetPositions"])
-            modifiedSubaccount.safeSet(
-                "assetPositions",
-                assetPositionsProcessor.received(assetPositionsData)
-            )
+            modified.safeSet("assetPositions", assetPositionsProcessor.received(assetPositionsData))
 
-            modifiedSubaccount.remove("orders")
+            modified.remove("orders")
         } else {
             val assetPositionsPayload = payload["assetPositions"] as? List<Map<String, Any>>
             if (assetPositionsPayload != null) {
-                modifiedSubaccount =
-                    receivedAssetPositions(
-                        modifiedSubaccount,
-                        assetPositionsPayload,
-                        subaccountNumber
-                    ).mutable()
+                modified = receivedAssetPositions(modified, assetPositionsPayload).mutable()
             }
         }
-        modifiedSubaccount["quoteBalance"] = calculateQuoteBalance(modifiedSubaccount, payload)
+        modified["quoteBalance"] = calculateQuoteBalance(modified, payload)
 
-        val modified = subaccounts?.mutable() ?: mutableMapOf()
-        modified.safeSet("$subaccountNumber", modifiedSubaccount)
         return modified
     }
 
@@ -385,22 +363,21 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     }
 
     private fun receivedOrders(
-        subaccounts: Map<String, Any>,
+        subaccount: Map<String, Any>,
         payload: List<Any>?,
-        subaccountNumber: Int?,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        return if (payload != null && subaccountNumber != null) {
-            val modified = subaccounts.mutable()
+        return if (payload != null) {
+            val modified = subaccount.mutable()
             val transformed = ordersProcessor.received(
-                parser.asNativeMap(parser.value(subaccounts, "$subaccountNumber.orders")),
+                parser.asNativeMap(subaccount["orders"]),
                 payload,
                 height,
             )
-            modified.safeSet("$subaccountNumber.orders", transformed)
+            modified.safeSet("orders", transformed)
             modified
         } else {
-            subaccounts
+            subaccount
         }
     }
 
@@ -424,85 +401,57 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     }
 
     private fun receivedFills(
-        subaccounts: Map<String, Any>,
+        subaccount: Map<String, Any>,
         payload: List<Any>?,
-        subaccountNumber: Int?,
         reset: Boolean,
     ): Map<String, Any> {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
-        return receivedObject(
-            subaccounts,
-            "$subaccountNumber.fills",
-            payload
-        ) { existing, payload ->
+        return receivedObject(subaccount, "fills", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
                 fillsProcessor.received(if (reset) null else parser.asNativeList(existing), it)
             }
-        } ?: subaccounts
+        } ?: subaccount
     }
 
     private fun receivedTransfers(
-        subaccounts: Map<String, Any>,
+        subaccount: Map<String, Any>,
         payload: List<Any>?,
-        subaccountNumber: Int?,
         reset: Boolean,
     ): Map<String, Any> {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
-        return receivedObject(
-            subaccounts,
-            "$subaccountNumber.transfers",
-            payload
-        ) { existing, payload ->
+        return receivedObject(subaccount, "transfers", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
                 transfersProcessor.received(if (reset) null else parser.asNativeList(existing), it)
             }
-        } ?: subaccounts
+        } ?: subaccount
     }
 
     private fun receivedFundingPayments(
-        subaccounts: Map<String, Any>,
+        subaccount: Map<String, Any>,
         payload: List<Any>?,
-        subaccountNumber: Int?,
         reset: Boolean,
     ): Map<String, Any> {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
-        return receivedObject(
-            subaccounts,
-            "$subaccountNumber.fundingPayments",
-            payload
-        ) { existing, payload ->
+        return receivedObject(subaccount, "fundingPayments", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
                 fundingPaymentsProcessor.received(
                     if (reset) null else parser.asNativeList(existing),
                     it,
                 )
             }
-        } ?: subaccounts
+        } ?: subaccount
     }
 
     private fun receivedPerpetualPositions(
-        subaccounts: Map<String, Any>,
+        subaccount: Map<String, Any>,
         payload: List<Any>?,
-        subaccountNumber: Int?,
     ): Map<String, Any> {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
         return if (payload != null) {
-            val modified = subaccounts.mutable()
+            val modified = subaccount.mutable()
             val positions = perpetualPositionsProcessor.receivedChanges(
-                parser.asNativeMap(parser.value(subaccounts, "$subaccountNumber.positions")),
+                parser.asNativeMap(subaccount["positions"]),
                 payload,
             )
-            modified.safeSet("$subaccountNumber.positions", positions)
+            modified.safeSet("positions", positions)
             modified.safeSet(
-                "$subaccountNumber.openPositions",
+                "openPositions",
                 positions?.filterValues { it ->
                     val data = parser.asNativeMap(it)
                     parser.asString(data?.get("status")) == "OPEN"
@@ -510,28 +459,24 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             )
             modified
         } else {
-            subaccounts
+            subaccount
         }
     }
 
     private fun receivedAssetPositions(
-        subaccounts: Map<String, Any>,
+        subaccount: Map<String, Any>,
         payload: List<Map<String, Any>>?,
-        subaccountNumber: Int?,
     ): Map<String, Any> {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
         return if (payload != null) {
-            val modified = subaccounts.mutable()
+            val modified = subaccount.mutable()
             val transformed = assetPositionsProcessor.receivedChanges(
-                parser.asNativeMap(parser.value(subaccounts, "$subaccountNumber.assetPositions")),
+                parser.asNativeMap(subaccount["assetPositions"]),
                 payload,
             )
-            modified.safeSet("$subaccountNumber.assetPositions", transformed)
+            modified.safeSet("assetPositions", transformed)
             modified
         } else {
-            subaccounts
+            subaccount
         }
     }
 
@@ -551,37 +496,19 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     }
 
     internal fun receivedFills(
-        subaccounts: Map<String, Any>?,
+        existing: Map<String, Any>?,
         payload: Map<String, Any>?,
-        subaccountNumber: Int?,
     ): Map<String, Any>? {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
-        val modified = subaccounts?.mutable() ?: mutableMapOf()
-        return receivedFills(
-            modified,
-            parser.asNativeList(payload?.get("fills")),
-            subaccountNumber,
-            true
-        )
+        val modified = existing?.mutable() ?: mutableMapOf()
+        return receivedFills(modified, parser.asNativeList(payload?.get("fills")), true)
     }
 
     internal fun receivedTransfers(
-        subaccounts: Map<String, Any>?,
+        existing: Map<String, Any>?,
         payload: Map<String, Any>?,
-        subaccountNumber: Int?,
     ): Map<String, Any>? {
-        if (subaccountNumber == null) {
-            return subaccounts
-        }
-        val modified = subaccounts?.mutable() ?: mutableMapOf()
-        return receivedTransfers(
-            modified,
-            parser.asNativeList(payload?.get("transfers")),
-            subaccountNumber,
-            true
-        )
+        val modified = existing?.mutable() ?: mutableMapOf()
+        return receivedTransfers(modified, parser.asNativeList(payload?.get("transfers")), true)
     }
 
     private fun modify(
@@ -767,11 +694,9 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         subscribed: Boolean,
-        subaccountNumber: Int?,
-        height: BlockAndTime?
+        height: BlockAndTime?,
     ): Map<String, Any> {
-        val modified =
-            super.socket(existing, content, subscribed, subaccountNumber, height).mutable()
+        val modified = super.socket(existing, content, subscribed, height).mutable()
 
         val assetPositionsPayload =
             parser.asNativeList(content["assetPositions"]) as? List<Map<String, Any>>
@@ -1008,8 +933,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount =
-            subaccountsProcessor.receivedFills(subaccount, payload, subaccountNumber)
+        val modifiedsubaccount = subaccountsProcessor.receivedFills(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
@@ -1021,8 +945,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount =
-            subaccountsProcessor.receivedTransfers(subaccount, payload, subaccountNumber)
+        val modifiedsubaccount = subaccountsProcessor.receivedTransfers(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
@@ -1080,67 +1003,25 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         content: Map<String, Any>,
         height: BlockAndTime?,
     ): Map<String, Any>? {
-        var modified = existing?.mutable() ?: mutableMapOf()
-        /* block trading rewards are only sent in subaccounts.0 channel */
-        val subaccountPayload = parser.asNativeMap(parser.value(content, "subaccount"))
-        if (subaccountPayload != null) {
-            modified = receivedSubaccountsSubscribed(modified, content, height)
-        }
-//
-//        val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
-//        return if (subaccountNumber != null) {
-//            val subaccount =
-//                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-//            val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
-//            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-//
-//        } else {
-//            val parentSubaccountNumber = parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
-//            if (parentSubaccountNumber != null) {
-//                var modified = existing?.mutable() ?: mutableMapOf()
-//                val subaccountsPayload = parser.asNativeList(parser.value(content, "childSubaccounts"))
-//                val subaccount =
-//                    parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-//                val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
-//                modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
-//
-//                /* block trading rewards are only sent in subaccounts.0 channel */
-//                val tradingRewardsPayload =
-//                    parser.value(content, "tradingReward")
-//                if (tradingRewardsPayload != null) {
-//                    modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
-//                }
-//
-//                return modified
-//            } else existing
-//        }
-        /* block trading rewards are only sent in subaccounts.0 channel */
-        val tradingRewardsPayload =
-            parser.value(content, "tradingReward")
-        if (tradingRewardsPayload != null) {
-            modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
-        }
+        val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
+        return if (subaccountNumber != null) {
+            var modified = existing?.mutable() ?: mutableMapOf()
+            val subaccount =
+                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
+            val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
+            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
 
-        return modified
-    }
+            /* block trading rewards are only sent in subaccounts.0 channel */
+            val tradingRewardsPayload =
+                parser.value(content, "tradingReward")
+            if (tradingRewardsPayload != null) {
+                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+            }
 
-    private fun receivedSubaccountsSubscribed(
-        existing: Map<String, Any>,
-        content: Map<String, Any>,
-        height: BlockAndTime?,
-    ): MutableMap<String, Any> {
-        val modified = existing.mutable()
-        val subaccountNumber =
-            parser.asInt(parser.value(content, "subaccount.subaccountNumber")) ?: parser.asInt(
-                parser.value(content, "subaccount.parentSubaccountNumber")
-            )
-        if (subaccountNumber != null) {
-            val subaccounts =
-                parser.asNativeMap(parser.value(existing, "subaccounts"))
-            val modifiedsubaccount = subaccountsProcessor.subscribed(subaccounts, content, height)
-            modified.safeSet("subaccounts", modifiedsubaccount)
+            return modified
+        } else {
+            existing
         }
-        return modified
     }
 
     @Suppress("FunctionName")
@@ -1155,11 +1036,10 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
         return if (subaccountNumber != null) {
             var modified = existing?.toMutableMap() ?: mutableMapOf()
-            val subaccounts =
-                parser.asNativeMap(parser.value(existing, "subaccounts"))
-            val modifiedsubaccounts =
-                subaccountsProcessor.channel_data(subaccounts, subaccountNumber, content, height)
-            modified.safeSet("subaccounts", modifiedsubaccounts)
+            val subaccount =
+                parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
+            val modifiedsubaccount = subaccountsProcessor.channel_data(subaccount, content, height)
+            modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
 
             /* block trading rewards are only sent in subaccounts.0 channel */
             val tradingRewardsPayload = content["tradingReward"]

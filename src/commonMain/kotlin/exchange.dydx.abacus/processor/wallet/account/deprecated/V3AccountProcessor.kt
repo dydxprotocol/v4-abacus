@@ -34,7 +34,7 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.0"))
-        val modifiedsubaccount = subaccountProcessor.channel_data(subaccount, 0, content, height)
+        val modifiedsubaccount = subaccountProcessor.channel_data(subaccount, content, height)
         modified.safeSet("subaccounts.0", modifiedsubaccount)
         return modified
     }
@@ -58,7 +58,7 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountProcessor.receivedFills(subaccount, payload, 0)
+        val modifiedsubaccount = subaccountProcessor.receivedFills(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
@@ -70,7 +70,7 @@ internal class V3AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountProcessor.receivedTransfers(subaccount, payload, 0)
+        val modifiedsubaccount = subaccountProcessor.receivedTransfers(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
