@@ -127,6 +127,22 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                                 "current": 7962.44
                                             }
                                         }
+                                    },
+                                    "orders": {
+                                        "b812bea8-29d3-5841-9549-caa072f6f8a9": {
+                                            "clientId": "2194126269",
+                                            "clobPairId": "134",
+                                            "side": "SELL",
+                                            "size": "1.653451",
+                                            "totalFilled": "0.682633",
+                                            "price": "1255.927",
+                                            "type": "LIMIT",
+                                            "status": "BEST_EFFORT_CANCELED",
+                                            "timeInForce": "GTT",
+                                            "postOnly": false,
+                                            "reduceOnly": false,
+                                            "goodTilBlock": "5837"
+                                        }
                                     }
                                 }
                             }
