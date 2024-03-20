@@ -38,8 +38,9 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     val changes = iMutableListOf<Changes>()
 
     val idElements = info.id?.split("/")
-    val subaccountNumber = info.subaccountNumber ?:
+    val subaccountNumber =
         if (idElements?.size == 2) parser.asInt(idElements.lastOrNull()) ?: 0 else 0
+    val childSubaccountNumber = info.childSubaccountNumber
     if (payload["accounts"] != null ||
         payload["subaccounts"] != null ||
         payload["positions"] != null ||
@@ -63,7 +64,14 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     if (payload["tradingReward"] != null) {
         changes.add(Changes.tradingRewards)
     }
-    return StateChanges(changes, null, iListOf(subaccountNumber))
+    return StateChanges(
+        changes,
+        null,
+        if (childSubaccountNumber != null) iListOf(
+            subaccountNumber,
+            childSubaccountNumber
+        ) else iListOf(subaccountNumber)
+    )
 }
 
 internal fun TradingStateMachine.receivedBatchSubaccountsChanges(

@@ -165,26 +165,23 @@ class V4ParentSubaccountTests : V4BaseTests() {
                             "subaccounts": {
                                 "128": {
                                     "equity": {
-                                        "current": 829.16
+                                        "current": 9822.9
                                     },
                                     "freeCollateral": {
-                                        "current": 796.244
+                                        "current": 9740.61
                                     },
                                     "quoteBalance": {
                                         "current": 9000.0
                                     },
                                     "marginUsage": {
-                                        "current": 0.0397
+                                        "current": 0.0084
                                     },
                                     "openPositions": {
                                         "RUNE-USD": {
                                             "id": "RUNE-USD",
                                             "status": "OPEN",
-                                            "maxSize": 12.0,
+                                            "maxSize": 300.0,
                                             "netFunding": 0.271316,
-                                            "realizedPnl": {
-                                                "current": 0.271316
-                                            },
                                             "size": {
                                                 "current": 300.0
                                             },
@@ -192,19 +189,19 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "notionalTotal": {
-                                                "current": 329.16
+                                                "current": 822.9
                                             },
                                             "valueTotal": {
-                                                "current": 329.16
+                                                "current": 822.9
                                             },
                                             "initialRiskTotal": {
-                                                "current": 32.916
+                                                "current": 82.29
                                             },
                                             "leverage": {
-                                                "current": 0.397
+                                                "current": 0.084
                                             },
                                             "buyingPower": {
-                                                "current": 7962.44
+                                                "current": 97406.1
                                             }
                                         }
                                     }
