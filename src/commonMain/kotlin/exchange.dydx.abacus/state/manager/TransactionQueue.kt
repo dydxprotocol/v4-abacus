@@ -1,24 +1,28 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.utils.Numeric
 import kotlinx.datetime.Clock
 
 class TransactionParams(
     val type: TransactionType,
     val payload: String,
-    val callback: (response: String, uiDelayTimeMs: Double, submitTimeMs: Double) -> Unit,
-    val uiClickTimeMs: Double
+    val callback: (String?, Double, Double) -> Unit,
+    val uiClickTimeMs: Double? = null
 )
 
 class TransactionQueue(
     private val transaction: (
         type: TransactionType,
         paramsInJson: String?,
-        callback: (response: String) -> Unit)
+        callback: (response: String) -> Unit
+    )
     -> Unit
 ) {
     private val queue = mutableListOf<TransactionParams>()
-    private var isProcessing = false
+    internal var isProcessing = false
+    internal val size: Int
+        get() = queue.size
 
     fun enqueue(params: TransactionParams) {
         queue.add(params)
@@ -37,7 +41,8 @@ class TransactionQueue(
         val currentTransaction = queue.removeAt(0)
 
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
-        val uiDelayTimeMs = submitTimeMs - currentTransaction.uiClickTimeMs
+        val uiDelayTimeMs = if (currentTransaction.uiClickTimeMs != null)
+            submitTimeMs - currentTransaction.uiClickTimeMs else Numeric.double.ZERO
 
         transaction(currentTransaction.type, currentTransaction.payload) { response ->
             currentTransaction.callback(response, uiDelayTimeMs, submitTimeMs)

@@ -987,39 +987,47 @@ class V4StateManagerAdaptor(
                     else -> true
                 }
             }
+
             else -> false
         }
 
-        val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
-            val error = parseTransactionResponse(response)
-            if (error == null) {
-                tracking(
-                    AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
-                )
-                ioImplementations.threading?.async(ThreadingType.abacus) {
-                    this.placeOrderRecords.add(
-                        PlaceOrderRecord(
-                            subaccountNumber,
-                            payload.clientId,
-                            submitTimeMs,
-                        )
+        val transactionCallback =
+            { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
+                            ?.toIMap(),
                     )
-                    lastOrderClientId = clientId
+                    ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.placeOrderRecords.add(
+                            PlaceOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            )
+                        )
+                        lastOrderClientId = clientId
+                    }
                 }
+                send(error, callback, payload)
             }
-            send(error, callback, payload)
-        }
 
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            transaction(TransactionType.PlaceOrder, string) {
-                response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            transaction(TransactionType.PlaceOrder, string) { response ->
+                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
+                TransactionParams(
+                    TransactionType.PlaceOrder,
+                    string,
+                    transactionCallback,
+                    uiClickTimeMs
+                )
             )
         }
 
@@ -1046,7 +1054,10 @@ class V4StateManagerAdaptor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap()
+                    ParsingHelper.merge(
+                        uiTrackingParams(submitTimeMs - clickTimeMs),
+                        analyticsPayload
+                    )?.toIMap()
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -1057,7 +1068,7 @@ class V4StateManagerAdaptor(
                         )
                     )
                     lastOrderClientId = clientId
-                   }
+                }
             }
             send(error, callback, payload)
         }
@@ -1185,36 +1196,43 @@ class V4StateManagerAdaptor(
         tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
 
         val isShortTermOrder = payload.orderFlags == 0
-        val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
-            val error = parseTransactionResponse(response)
-            if (error == null) {
-                tracking(
-                    AnalyticsEvent.TradeCancelOrder.rawValue, 
-                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap()
-                )
-                ioImplementations.threading?.async(ThreadingType.abacus) {
-                    this.orderCanceled(orderId)
-                    this.cancelOrderRecords.add(
-                        CancelOrderRecord(
-                            subaccountNumber,
-                            payload.clientId,
-                            submitTimeMs,
-                        )
+        val transactionCallback =
+            { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradeCancelOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
+                            ?.toIMap()
                     )
+                    ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.orderCanceled(orderId)
+                        this.cancelOrderRecords.add(
+                            CancelOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            )
+                        )
+                    }
                 }
+                send(error, callback, payload)
             }
-            send(error, callback, payload)
-        }
 
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            transaction(TransactionType.CancelOrder, string) {
-                response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            transaction(TransactionType.CancelOrder, string) { response ->
+                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
+                TransactionParams(
+                    TransactionType.CancelOrder,
+                    string,
+                    transactionCallback,
+                    uiClickTimeMs
+                )
             )
         }
     }
@@ -1331,7 +1349,7 @@ class V4StateManagerAdaptor(
         fetchTransferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
-    private fun uiTrackingParmas(interval: Double): IMap<String, Any> {
+    private fun uiTrackingParams(interval: Double): IMap<String, Any> {
         return iMapOf(
             "clickToSubmitOrderDelayMs" to interval,
         )
@@ -1383,9 +1401,9 @@ class V4StateManagerAdaptor(
             val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
             val interval = if (indexerTime != null) {
                 (
-                    Clock.System.now().toEpochMilliseconds()
-                        .toDouble() - indexerTime
-                    )
+                        Clock.System.now().toEpochMilliseconds()
+                            .toDouble() - indexerTime
+                        )
             } else {
                 null
             }

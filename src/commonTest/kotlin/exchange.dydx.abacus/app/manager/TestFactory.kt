@@ -396,7 +396,6 @@ class TestChain : DYDXChainTransactionsProtocol {
             callback(placeOrderResponse)
         } else {
             this.transactionCallback = callback
-//            callback(dummyError)
         }
     }
 
@@ -405,7 +404,6 @@ class TestChain : DYDXChainTransactionsProtocol {
             callback(cancelOrderResponse)
         } else {
             this.transactionCallback = callback
-//            callback(dummyError)
         }
     }
 
@@ -414,7 +412,6 @@ class TestChain : DYDXChainTransactionsProtocol {
             callback(depositResponse)
         } else {
             this.transactionCallback = callback
-//            callback(dummyError)
         }
     }
 
@@ -423,13 +420,11 @@ class TestChain : DYDXChainTransactionsProtocol {
             callback(withdrawResponse)
         } else {
             this.transactionCallback = callback
-//            callback(dummyError)
         }
     }
 
     fun simulateTransactionResponse(response: String) {
         this.transactionCallback?.invoke(response)
-        this.transactionCallback = null
     }
 }
 
