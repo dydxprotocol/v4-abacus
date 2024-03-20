@@ -348,7 +348,7 @@ internal class SubaccountSupervisor(
         }
     }
 
-    private val transactionQueue = TransactionQueue(helper::transaction)
+    val transactionQueue = TransactionQueue(helper::transaction)
 
     private fun uiTrackingParmas(interval: Double): IMap<String, Any> {
         return iMapOf(

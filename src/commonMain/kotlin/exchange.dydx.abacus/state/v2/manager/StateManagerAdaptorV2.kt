@@ -33,6 +33,7 @@ import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.v2.supervisor.AccountsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.state.v2.supervisor.ConnectionDelegate
@@ -95,7 +96,7 @@ internal class StateManagerAdaptorV2(
     internal val parser = Parser()
     internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
 
-    private val networkHelper = NetworkHelper(
+    internal val networkHelper = NetworkHelper(
         deploymentUri,
         environment,
         uiImplementations,
@@ -188,7 +189,15 @@ internal class StateManagerAdaptorV2(
             return markets.marketId
         }
         set(value) {
-            markets.marketId = value
+            if (value != market) {
+                markets.marketId = value
+
+                if (value != null) {
+                    networkHelper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                        stateMachine.tradeInMarket(value, subaccountNumber)
+                    }
+                }
+            }
         }
 
     internal var candlesResolution: String
