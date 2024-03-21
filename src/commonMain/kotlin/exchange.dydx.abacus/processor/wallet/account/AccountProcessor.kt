@@ -298,9 +298,9 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         if (firstTime) {
             val openPerpetualPositionsData =
                 (
-                        parser.asNativeMap(payload["openPositions"])
-                            ?: parser.asNativeMap(payload["openPerpetualPositions"])
-                        )
+                    parser.asNativeMap(payload["openPositions"])
+                        ?: parser.asNativeMap(payload["openPerpetualPositions"])
+                    )
 
             val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
             modified.safeSet(

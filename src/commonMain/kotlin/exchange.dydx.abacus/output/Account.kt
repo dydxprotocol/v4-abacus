@@ -427,7 +427,7 @@ data class SubaccountPosition(
                             resources,
                             freeCollateral,
                             quoteBalance,
-                            equity
+                            equity,
                         )
                     } else {
                         existing

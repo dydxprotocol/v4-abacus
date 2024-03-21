@@ -31,7 +31,6 @@ class AccountCalculator(val parser: ParserProtocol) {
         }
     }
 
-
     private fun groupSubaccounts(existing: Map<String, Any>): MutableMap<String, Any> {
         val modified = existing.mutable()
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
@@ -61,11 +60,11 @@ class AccountCalculator(val parser: ParserProtocol) {
                                     parser.asMap(childOpenPosition)?.toMutableMap()
                                 modifiedChildOpenPosition?.safeSet(
                                     "quoteBalance",
-                                    subaccount["quoteBalance"]
+                                    subaccount["quoteBalance"],
                                 )
                                 modifiedChildOpenPosition?.safeSet(
                                     "freeCollateral",
-                                    subaccount["freeCollateral"]
+                                    subaccount["freeCollateral"],
                                 )
                                 modifiedChildOpenPosition?.safeSet("equity", subaccount["equity"])
                                 modifiedOpenPositions.safeSet(market, modifiedChildOpenPosition)
@@ -73,10 +72,13 @@ class AccountCalculator(val parser: ParserProtocol) {
                         }
                         val modifiedParentSubaccount = parentSubaccount.toMutableMap()
                         modifiedParentSubaccount.safeSet("openPositions", modifiedOpenPositions)
-                        modifiedParentSubaccount.safeSet("equity", sum(
-                            parser.asMap(parentSubaccount["equity"]),
-                            parser.asMap(subaccount["equity"])
-                        ))
+                        modifiedParentSubaccount.safeSet(
+                            "equity",
+                            sum(
+                                parser.asMap(parentSubaccount["equity"]),
+                                parser.asMap(subaccount["equity"]),
+                            ),
+                        )
                         groupedSubaccounts["$parentSubaccountNumber"] = modifiedParentSubaccount
                     }
                 }
@@ -110,5 +112,4 @@ class AccountCalculator(val parser: ParserProtocol) {
         }
         return result
     }
-
 }
