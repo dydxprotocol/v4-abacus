@@ -17,13 +17,19 @@ import kotlinx.serialization.Serializable
 enum class TriggerOrdersInputField(val rawValue: String) {
   size("size"),
 
-  stopLossPrice("stopLossPrice.triggerPrice"),
-  stopLossPercent("stopLossPrice.triggerPercent"),
-  stopLossLimitPrice("stopLossPrice.limitPrice"),
+  stopLossOrderType("stopLossOrder.type"),
+  stopLossLimitPrice("stopLossOrder.price.limitPrice"),
+  stopLossPrice("stopLossOrder.price.triggerPrice"),
+  stopLossPercentDiff("stopLossOrder.price.triggerPriceDiff.percent"),
+  stopLossUsdcDiff("stopLossOrder.price.triggerPriceDiff.usdc"),
+  stopLossPriceDiffInput("stopLossOrder.price.triggerPriceDiff.input"),
 
-  takeProfitPrice("takeProfitPrice.triggerPrice"),
-  takeProfitPercent("takeProfitPrice.triggerPercent"),
-  takeProfitLimitPrice("takeProfitPrice.limitPrice");
+  takeProfitOrderType("takeProfitOrder.type"),
+  takeProfitLimitPrice("takeProfitOrder.price.limitPrice"),
+  takeProfitPrice("takeProfitOrder.price.triggerPrice"),
+  takeProfitPercentDiff("takeProfitOrder.price.triggerPriceDiff.percent"),
+  takeProfitUsdcDiff("takeProfitOrder.price.triggerPriceDiff.usdc"),
+  takeProfitPriceDiffInput("takeProfitOrder.price.triggerPriceDiff.input");
 
   companion object {
     operator fun invoke(rawValue: String) =
@@ -36,7 +42,6 @@ fun TradingStateMachine.triggerOrders(
     type: TriggerOrdersInputField?,
     subaccountNumber: Int,
 ): StateResponse {
-  print("bloop")
   var changes: StateChanges? = null
   var error: ParsingError? = null
   val typeText = type?.rawValue
@@ -61,39 +66,50 @@ fun TradingStateMachine.triggerOrders(
 
   if (typeText != null) {
     if (validTriggerOrdersInput(triggerOrders, typeText)) {
-      print("bloop2")
       when (typeText) {
+        TriggerOrdersInputField.stopLossOrderType.rawValue,
+        TriggerOrdersInputField.takeProfitOrderType.rawValue -> {
+            triggerOrders.safeSet(typeText, parser.asString(data))
+            changes =
+                StateChanges(
+                    iListOf(Changes.input), 
+                    null,
+                    iListOf(subaccountNumber)
+                )
+        }
         TriggerOrdersInputField.size.rawValue,
         TriggerOrdersInputField.stopLossLimitPrice.rawValue,
-        TriggerOrdersInputField.takeProfitLimitPrice.rawValue, -> {
+        TriggerOrdersInputField.takeProfitLimitPrice.rawValue -> {
           triggerOrders.safeSet(typeText, parser.asDouble(data))
           changes =
               StateChanges(
-                  iListOf(Changes.input), // xcxc more?
+                  iListOf(Changes.input), 
                   null,
                   iListOf(subaccountNumber)
               )
         }
         TriggerOrdersInputField.stopLossPrice.rawValue,
-        TriggerOrdersInputField.stopLossPercent.rawValue -> {
+        TriggerOrdersInputField.stopLossPercentDiff.rawValue,
+        TriggerOrdersInputField.stopLossUsdcDiff.rawValue -> {
           stopLossPriceChanged =
               (parser.asDouble(data) != parser.asDouble(parser.value(triggerOrders, typeText)))
           triggerOrders.safeSet(typeText, parser.asDouble(data))
           changes =
               StateChanges(
-                  iListOf(Changes.input), // xcxc more?
+                  iListOf(Changes.input), 
                   null,
                   iListOf(subaccountNumber)
               )
         }
         TriggerOrdersInputField.takeProfitPrice.rawValue,
-        TriggerOrdersInputField.takeProfitPercent.rawValue -> {
+        TriggerOrdersInputField.takeProfitPercentDiff.rawValue,
+        TriggerOrdersInputField.takeProfitUsdcDiff.rawValue -> {
           takeProfitPriceChanged =
               (parser.asDouble(data) != parser.asDouble(parser.value(triggerOrders, typeText)))
           triggerOrders.safeSet(typeText, parser.asDouble(data))
           changes =
               StateChanges(
-                  iListOf(Changes.input), // xcxc more?
+                  iListOf(Changes.input),
                   null,
                   iListOf(subaccountNumber)
               )
@@ -106,7 +122,7 @@ fun TradingStateMachine.triggerOrders(
   } else {
     changes =
         StateChanges(
-            iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+            iListOf(Changes.input),
             null,
             iListOf(subaccountNumber)
         )
@@ -115,23 +131,24 @@ fun TradingStateMachine.triggerOrders(
   if (stopLossPriceChanged) {
     when (typeText) {
       TriggerOrdersInputField.stopLossPrice.rawValue,
-      TriggerOrdersInputField.stopLossPercent.rawValue, -> {
-        triggerOrders.safeSet("stopLossPrice.triggerInput", typeText)
+      TriggerOrdersInputField.stopLossPercentDiff.rawValue,
+      TriggerOrdersInputField.stopLossUsdcDiff.rawValue, -> {
+        triggerOrders.safeSet("stopLossOrder.price.triggerPriceDiff.input", typeText)
       }
     }
   }
   if (takeProfitPriceChanged) {
     when (typeText) {
       TriggerOrdersInputField.takeProfitPrice.rawValue,
-      TriggerOrdersInputField.takeProfitPercent.rawValue, -> {
-        triggerOrders.safeSet("takeProfitPrice.triggerInput", typeText)
+      TriggerOrdersInputField.takeProfitPercentDiff.rawValue,
+      TriggerOrdersInputField.takeProfitUsdcDiff.rawValue, -> {
+        triggerOrders.safeSet("takeProfitOrder.price.triggerPriceDiff.input", typeText)
       }
     }
   }
 
   input["triggerOrders"] = triggerOrders
   this.input = input
-  print(changes)
   changes?.let { update(it) }
   return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
