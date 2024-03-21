@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.model.onChainEquityTiers
 import exchange.dydx.abacus.state.model.onChainFeeTiers
 import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.model.onChainRewardsParams
+import exchange.dydx.abacus.state.model.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.ServerTime
@@ -61,6 +62,15 @@ internal class SystemSupervisor(
             if (configs.retrieveWithdrawSafetyChecks) {
                 retrieveWithdrawSafetyChecks()
             }
+        }
+    }
+
+    fun didSetTransferType() {
+        val type = stateMachine.state?.input?.transfer?.type
+        if (stateMachine.featureFlags.withdrawalSafetyEnabled
+            && configs.retrieveWithdrawSafetyChecks
+            && (type == TransferType.withdrawal || type == TransferType.transferOut)) {
+            retrieveWithdrawSafetyChecks()
         }
     }
 
@@ -149,7 +159,7 @@ internal class SystemSupervisor(
     }
 
 
-    private fun retrieveWithdrawSafetyChecks() {
+    fun retrieveWithdrawSafetyChecks() {
         when (stateMachine.state?.input?.transfer?.type) {
             TransferType.withdrawal -> {
                 updateWithdrawalCapacity()
@@ -179,7 +189,7 @@ internal class SystemSupervisor(
             val paramsInJson = Json.encodeToString(params)
             helper.getOnChain(QueryType.GetWithdrawalCapacityByDenom, paramsInJson) { response ->
                 val oldState = stateMachine.state
-                update(stateMachine.onChainWithdrawalGating(response), oldState)
+                update(stateMachine.onChainWithdrawalCapacity(response), oldState)
             }
         }
     }
@@ -187,6 +197,7 @@ internal class SystemSupervisor(
     private fun updateWithdrawalGating() {
         helper.getOnChain(QueryType.GetWithdrawalAndTransferGatingStatus, null) { response ->
             val oldState = stateMachine.state
+            update(stateMachine.onChainWithdrawalGating(response), oldState)
         }
     }
 }

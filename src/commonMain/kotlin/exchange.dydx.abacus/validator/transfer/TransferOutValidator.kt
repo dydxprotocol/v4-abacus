@@ -17,8 +17,9 @@ internal class TransferOutValidator(
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
+        configs: Map<String, Any>?,
         restricted: Boolean,
-        environment: V4Environment?,
+        environment: V4Environment?
     ): List<Any>? {
         val address = parser.asString(parser.value(transfer, "address"))
         val type = parser.asString(parser.value(transfer, "type"))

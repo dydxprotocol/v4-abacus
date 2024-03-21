@@ -37,6 +37,7 @@ internal class TransferInputValidator(
                         wallet,
                         subaccount,
                         transaction,
+                        configs,
                         restricted,
                         environment,
                     )

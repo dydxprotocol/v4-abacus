@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -476,8 +477,15 @@ internal class StateManagerAdaptorV2(
     internal fun transfer(data: String?, type: TransferInputField?) {
         val address = accountAddress
         val source = sourceAddress
+        //TODO: is it bad to call onboarding and system here? Should system interact with trading state machine?
         if (address != null && source != null) {
             onboarding.transfer(data, type, address, source, subaccountNumber)
+        }
+        data?.let {
+            TransferType(rawValue = data)?.let {
+                //modify state machine first
+                system.didSetTransferType()
+            }
         }
     }
 
