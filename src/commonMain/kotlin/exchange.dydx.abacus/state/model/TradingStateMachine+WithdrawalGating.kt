@@ -8,7 +8,7 @@ fun TradingStateMachine.onChainWithdrawalGating(payload: String): StateChanges {
     val json = parser.decodeJsonObject(payload)
     return json?.let {
         configs = configsProcessor.receivedWithdrawalGating(configs, it)
-        //TODO: input changes processing
+        //TODO: mmm input changes processing
         return StateChanges(iListOf(Changes.configs, Changes.input))
     } ?: StateChanges.noChange
 }
@@ -17,7 +17,7 @@ fun TradingStateMachine.onChainWithdrawalCapacity(payload: String): StateChanges
     val json = parser.decodeJsonObject(payload)
     return json?.let {
         configs = configsProcessor.receivedWithdrawalCapacity(configs, it)
-        //TODO: input changes processing
+        //TODO: mmm input changes processing
         return StateChanges(iListOf(Changes.configs, Changes.input))
     } ?: StateChanges.noChange
 }

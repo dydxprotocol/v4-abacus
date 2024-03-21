@@ -303,7 +303,7 @@ data class WithdrawalCapacity(
                         } else {
                             capacity = weeklyLimit
                         }
-                        //TODO: move to validator?
+                        //TODO: mmm move to validator?
 //                        val usdcDecimals = environment.tokens["usdc"]?.decimals ?: 6
 //                        capacity = capacity / (10 ** us)
                     }

@@ -22,14 +22,14 @@ internal class WithdrawalValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<Any>? {
-        //TODO: replace with actual validation values
+        //TODO: mmm replace with actual validation values
         val currentBlock = 15// parser.asInt(parser.value(environment, "currentBlock"))
-        //TODO: how to get withdrawalCapacity?
+        //TODO: mmm how to get withdrawalCapacity?
         val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(parser.value(configs, "withdrawalCapacity"))
         val withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture = (withdrawalsAndTransfersUnblockedAtBlock ?: 0) > currentBlock
         val type = parser.asString(parser.value(transfer, "type"))
 
-        //TODO: how to get withdrawalCapacity?
+        //TODO: mmm how to get withdrawalCapacity?
         if ((type == TransferType.withdrawal.rawValue || type == TransferType.transferOut.rawValue) && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
             return listOf(
                 error(

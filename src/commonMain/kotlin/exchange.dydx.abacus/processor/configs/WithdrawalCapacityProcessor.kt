@@ -28,7 +28,7 @@ internal class WithdrawalCapacityProcessor(parser: ParserProtocol) : BaseProcess
                     capacity = weeklyLimit
                 }
 
-                //TODO: move to validator?
+                //TODO: mmm move to validator?
                 val usdcDecimals = environment?.tokens?.get("usdc")?.decimals ?: 6
                 capacity /= BigDecimal.fromDouble(10.0.pow(usdcDecimals))
 
