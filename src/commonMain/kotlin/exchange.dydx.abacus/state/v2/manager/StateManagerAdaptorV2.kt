@@ -477,7 +477,7 @@ internal class StateManagerAdaptorV2(
     internal fun transfer(data: String?, type: TransferInputField?) {
         val address = accountAddress
         val source = sourceAddress
-        //TODO: is it bad to call onboarding and system here? Should system interact with trading state machine?
+        //TODO: mmm is it bad to call onboarding and system here? Should system interact with trading state machine?
         if (address != null && source != null) {
             onboarding.transfer(data, type, address, source, subaccountNumber)
         }
