@@ -52,7 +52,7 @@ class AsyncAbacusStateManager(
 
     private var _appSettings: AppSettings? = null
 
-    val appSettings: AppSettings?
+    override val appSettings: AppSettings?
         get() = _appSettings
 
     private var environments: IList<V4Environment> = iListOf()
