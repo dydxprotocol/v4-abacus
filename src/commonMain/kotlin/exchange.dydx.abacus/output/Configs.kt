@@ -1,5 +1,8 @@
 package exchange.dydx.abacus.output
 
+import com.ionspin.kotlin.bignum.BigNumber
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.integer.BigInteger
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
@@ -7,6 +10,7 @@ import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
+import kotlin.math.min
 
 @JsExport
 @Serializable
@@ -248,6 +252,70 @@ data class FeeTier(
 
 @JsExport
 @Serializable
+data class WithdrawalGating(
+    val withdrawalsAndTransfersUnblockedAtBlock: Int?
+) {
+    companion object {
+        internal fun create(
+            existing: WithdrawalGating?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): WithdrawalGating? {
+            data?.let {
+                val withdrawalsAndTransfersUnblockedAtBlock =
+                    parser.asInt(data["withdrawalsAndTransfersUnblockedAtBlock"])
+                return if (existing?.withdrawalsAndTransfersUnblockedAtBlock != withdrawalsAndTransfersUnblockedAtBlock ) {
+                    WithdrawalGating(
+                        withdrawalsAndTransfersUnblockedAtBlock,
+                    )
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.debug("Withdrawal Gating not valid")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class WithdrawalCapacity(
+    val capacity: String?
+) {
+    companion object {
+        internal fun create(
+            existing: WithdrawalCapacity?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): WithdrawalCapacity? {
+            return data?.let {
+                return parser.asList(data["limiterCapacityList"])?.let {
+                    if (it.size != 2) {
+                        return null
+                    }
+                    var dailyLimit = parser.asDecimal(parser.asMap(it[0])?.get("capacity"))
+                    var weeklyLimit = parser.asDecimal(parser.asMap(it[1])?.get("capacity"))
+                    var capacity: BigDecimal? = null
+                    if (dailyLimit != null && weeklyLimit != null) {
+                        if (dailyLimit < weeklyLimit) {
+                            capacity = dailyLimit
+                        } else {
+                            capacity = weeklyLimit
+                        }
+                        //TODO: move to validator?
+//                        val usdcDecimals = environment.tokens["usdc"]?.decimals ?: 6
+//                        capacity = capacity / (10 ** us)
+                    }
+                    return WithdrawalCapacity(parser.asString(capacity))
+                }
+            }
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class NetworkConfigs(
     val api: String?,
     val node: String?
@@ -283,7 +351,9 @@ data class NetworkConfigs(
 data class Configs(
     val network: NetworkConfigs?,
     val feeTiers: IList<FeeTier>?,
-    val feeDiscounts: IList<FeeDiscount>?
+    val feeDiscounts: IList<FeeDiscount>?,
+    val withdrawalGating: WithdrawalGating?,
+    val withdrawalCapacity: WithdrawalCapacity?,
 ) {
     companion object {
         internal fun create(
@@ -307,6 +377,16 @@ data class Configs(
                     parser.asList(data["feeDiscounts"]),
                     localizer,
                 )
+                var withdrawalGating = WithdrawalGating.create(
+                    existing?.withdrawalGating,
+                    parser,
+                    parser.asMap(data["withdrawalGating"])
+                )
+                var withdrawalCapacity = WithdrawalCapacity.create(
+                    existing?.withdrawalCapacity,
+                    parser,
+                    parser.asMap(data["withdrawalCapacity"])
+                )
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
                     existing?.feeDiscounts != feeDiscounts
@@ -315,12 +395,16 @@ data class Configs(
                         network,
                         feeTiers,
                         feeDiscounts,
+                        withdrawalGating,
+                        withdrawalCapacity
                     )
                 } else {
                     existing ?: Configs(
                         null,
                         null,
                         null,
+                        null,
+                        null
                     )
                 }
             }

@@ -293,10 +293,3 @@ fun TradingStateMachine.validTransferInput(transfer: Map<String, Any>, typeText:
         true
     }
 }
-
-fun TradingStateMachine.onChainWithdrawalGating(payload: String): StateChanges {
-    if (!featureFlags.withdrawalSafetyEnabled) { return StateChanges.noChange }
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    val map = parser.asMap(json)
-    return StateChanges(iListOf(Changes.configs, Changes.input))
-}

@@ -50,6 +50,7 @@ interface TransferValidatorProtocol {
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
+        configs: Map<String, Any>?,
         restricted: Boolean,
         environment: V4Environment?,
     ): List<Any>?

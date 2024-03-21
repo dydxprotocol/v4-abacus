@@ -10,6 +10,8 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     private val feeTiersProcessor = FeeTiersProcessor(parser)
     private val feeDiscountsProcessor = FeeDiscountsProcessor(parser)
     private val networkConfigsProcessor = NetworkConfigsProcessor(parser)
+    private val withdrawalGatingProcessor = WithdrawalGatingProcessor(parser)
+    private val withdrawalCapacityProcessor = WithdrawalCapacityProcessor(parser)
 
     internal fun receivedOnChainEquityTiers(
         existing: Map<String, Any>?,
@@ -79,6 +81,38 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
             val map = parser.asNativeMap(payload)
             if (map != null) {
                 networkConfigsProcessor.received(parser.asNativeMap(existing), map)
+            } else {
+                null
+            }
+        }
+    }
+
+    internal fun receivedWithdrawalGating(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        val modified = existing?.mutable() ?: mutableMapOf()
+        val map = parser.asNativeMap(payload)
+        modified.safeSet("withdrawalGating", map)
+
+        return receivedObject(existing, "withdrawalGating", modified) { existing, payload ->
+            val map = parser.asNativeMap(payload)
+            if (map != null) {
+                map
+            } else {
+                null
+            }
+        }
+    }
+
+    internal fun receivedWithdrawalCapacity(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ): Map<String, Any>? {
+        return receivedObject(existing, "withdrawalCapacity", payload) { existing, payload ->
+            val map = parser.asNativeMap(payload)
+            if (map != null) {
+                withdrawalCapacityProcessor.received(parser.asNativeMap(existing), map)
             } else {
                 null
             }
