@@ -214,24 +214,45 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(
 ) {
     val payload = withdrawPayloadJson()
 
-    transaction(
-        iListOf(Transaction(TransactionType.simulateWithdraw, payload))
-    ) { response ->
-        val error = parseTransactionResponse(response)
-        if (error != null) {
-            DebugLogger.error("simulateWithdrawal error: $error")
-            callback(null)
-            return@transaction
-        }
+    if (hasChainTransactionsV2Impl) {
+        transaction(
+            iListOf(Transaction(TransactionType.simulateWithdraw, payload))
+        ) { response ->
+            val error = parseTransactionResponse(response)
+            if (error != null) {
+                DebugLogger.error("simulateWithdrawal error: $error")
+                callback(null)
+                return@transaction
+            }
 
-        val result = parser.decodeJsonObject(response)
-        if (result != null) {
-            val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
-            val amount = parser.asDecimal(amountMap?.get("amount"))
-            val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-            callback(usdcAmount)
-        } else {
-            callback(null)
+            val result = parser.decodeJsonObject(response)
+            if (result != null) {
+                val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+                val amount = parser.asDecimal(amountMap?.get("amount"))
+                val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+                callback(usdcAmount)
+            } else {
+                callback(null)
+            }
+        }
+    } else {
+        transaction(TransactionType.simulateWithdraw, payload) { response ->
+            val error = parseTransactionResponse(response)
+            if (error != null) {
+                DebugLogger.error("simulateWithdrawal error: $error")
+                callback(null)
+                return@transaction
+            }
+
+            val result = parser.decodeJsonObject(response)
+            if (result != null) {
+                val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+                val amount = parser.asDecimal(amountMap?.get("amount"))
+                val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+                callback(usdcAmount)
+            } else {
+                callback(null)
+            }
         }
     }
 }
@@ -242,24 +263,45 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
 ) {
     val payload = transferNativeTokenPayloadJson()
 
-    transaction(
-        iListOf(Transaction(TransactionType.simulateTransferNativeToken, payload))
-    ) { response ->
-        val error = parseTransactionResponse(response)
-        if (error != null) {
-            DebugLogger.error("simulateTransferNativeToken error: $error")
-            callback(null)
-            return@transaction
-        }
+    if (hasChainTransactionsV2Impl) {
+        transaction(
+            iListOf(Transaction(TransactionType.simulateTransferNativeToken, payload))
+        ) { response ->
+            val error = parseTransactionResponse(response)
+            if (error != null) {
+                DebugLogger.error("simulateTransferNativeToken error: $error")
+                callback(null)
+                return@transaction
+            }
 
-        val result = parser.decodeJsonObject(response)
-        if (result != null) {
-            val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
-            val amount = parser.asDecimal(amountMap?.get("amount"))
-            val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-            callback(tokenAmount)
-        } else {
-            callback(null)
+            val result = parser.decodeJsonObject(response)
+            if (result != null) {
+                val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+                val amount = parser.asDecimal(amountMap?.get("amount"))
+                val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+                callback(tokenAmount)
+            } else {
+                callback(null)
+            }
+        }
+    } else {
+        transaction(TransactionType.simulateTransferNativeToken, payload) { response ->
+            val error = parseTransactionResponse(response)
+            if (error != null) {
+                DebugLogger.error("simulateTransferNativeToken error: $error")
+                callback(null)
+                return@transaction
+            }
+
+            val result = parser.decodeJsonObject(response)
+            if (result != null) {
+                val amountMap = parser.asMap(parser.asList(result["amount"])?.firstOrNull())
+                val amount = parser.asDecimal(amountMap?.get("amount"))
+                val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+                callback(tokenAmount)
+            } else {
+                callback(null)
+            }
         }
     }
 }
@@ -555,10 +597,26 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                 val ibcPayload =
                     parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
-                    transaction(iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload))) {
-                        val error = parseTransactionResponse(it)
-                        if (error != null) {
-                            DebugLogger.error("transferNobleBalance error: $error")
+                    if (hasChainTransactionsV2Impl) {
+                        transaction(
+                            iListOf(
+                                Transaction(
+                                    TransactionType.SendNobleIBC,
+                                    ibcPayload
+                                )
+                            )
+                        ) {
+                            val error = parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("transferNobleBalance error: $error")
+                            }
+                        }
+                    } else {
+                        transaction(TransactionType.SendNobleIBC, ibcPayload) {
+                            val error = parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("transferNobleBalance error: $error")
+                            }
                         }
                     }
                 }
@@ -634,16 +692,39 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                             "ibcPayload" to ibcPayload.encodeBase64(),
                         ),
                     )
-                    transaction(iListOf(Transaction(TransactionType.WithdrawToNobleIBC, payload))) {
-                        val error = parseTransactionResponse(it)
-                        if (error != null) {
-                            DebugLogger.error("withdrawToNobleIBC error: $error")
-                            send(error, callback)
-                        } else {
-                            pendingCctpWithdraw = CctpWithdrawState(
-                                state?.input?.transfer?.requestPayload?.data,
-                                callback,
+
+                    if (hasChainTransactionsV2Impl) {
+                        transaction(
+                            iListOf(
+                                Transaction(
+                                    TransactionType.WithdrawToNobleIBC,
+                                    payload
+                                )
                             )
+                        ) {
+                            val error = parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("withdrawToNobleIBC error: $error")
+                                send(error, callback)
+                            } else {
+                                pendingCctpWithdraw = CctpWithdrawState(
+                                    state?.input?.transfer?.requestPayload?.data,
+                                    callback,
+                                )
+                            }
+                        }
+                    } else {
+                        transaction(TransactionType.WithdrawToNobleIBC, payload) {
+                            val error = parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("withdrawToNobleIBC error: $error")
+                                send(error, callback)
+                            } else {
+                                pendingCctpWithdraw = CctpWithdrawState(
+                                    state?.input?.transfer?.requestPayload?.data,
+                                    callback,
+                                )
+                            }
                         }
                     }
                 } else {

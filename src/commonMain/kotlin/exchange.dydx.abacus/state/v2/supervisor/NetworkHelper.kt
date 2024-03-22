@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.v2.supervisor
 
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocolV2
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -53,6 +54,7 @@ class NetworkHelper(
     internal var lastValidatorCallTime: Instant? = null
     internal var lastIndexerCallTime: Instant? = null
     internal val jsonEncoder = JsonEncoder()
+    val hasChainTransactionsV2Impl: Boolean = ioImplementations.chain as? DYDXChainTransactionsProtocolV2 != null
 
     private var indexerRestriction: UsageRestriction? = null
         set(value) {
@@ -477,10 +479,38 @@ class NetworkHelper(
 
     @Throws(Exception::class)
     fun transaction(
-        transactions: IList<Transaction>,
+        transactionType: TransactionType,
+        paramsInJson: String?,
         callback: (response: String) -> Unit,
     ) {
         val transactionsImplementation = ioImplementations.chain
+        if (transactionsImplementation === null) {
+            throw Exception("chain is not DYDXChainTransactionsProtocol")
+        }
+        transactionsImplementation.transaction(transactionType, paramsInJson) { response ->
+            if (response != null) {
+                val time = if (!response.contains("error")) {
+                    Clock.System.now()
+                } else {
+                    null
+                }
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (time != null) {
+                        lastValidatorCallTime = time
+                    }
+                    callback(response)
+//                    trackValidatorCall()
+                }
+            }
+        }
+    }
+
+    @Throws(Exception::class)
+    fun transaction(
+        transactions: IList<Transaction>,
+        callback: (response: String) -> Unit,
+    ) {
+        val transactionsImplementation = ioImplementations.chain as? DYDXChainTransactionsProtocolV2
         if (transactionsImplementation === null) {
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }

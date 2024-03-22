@@ -31,6 +31,8 @@ import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.manager.TransactionParams
+import exchange.dydx.abacus.state.manager.TransactionParamsV2
+import exchange.dydx.abacus.state.manager.TransactionQueueV2
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -351,6 +353,7 @@ internal class SubaccountSupervisor(
     }
 
     val transactionQueue = TransactionQueue(helper::transaction)
+    val transactionQueueV2 = TransactionQueueV2(helper::transaction)
 
     private fun uiTrackingParmas(interval: Double): IMap<String, Any> {
         return iMapOf(
@@ -421,13 +424,25 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            helper.transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            if (helper.hasChainTransactionsV2Impl) {
+                helper.transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) {
+                        response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
+            } else {
+                helper.transaction(TransactionType.CancelOrder, string) {
+                        response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
             }
         } else {
-            transactionQueue.enqueue(
-                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
-            )
+            if (helper.hasChainTransactionsV2Impl) {
+                transactionQueueV2.enqueue(
+                    TransactionParamsV2(iListOf(Transaction(TransactionType.CancelOrder, string)), transactionCallback)
+                )
+            } else {
+                transactionQueue.enqueue(
+                    TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
+                )
+            }
         }
     }
 
@@ -484,13 +499,31 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+
+            if (helper.hasChainTransactionsV2Impl) {
+                helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) {
+                        response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
+            } else {
+                helper.transaction(TransactionType.PlaceOrder, string) {
+                        response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
             }
         } else {
-            transactionQueue.enqueue(
-                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
-            )
+            if (helper.hasChainTransactionsV2Impl) {
+                transactionQueueV2.enqueue(
+                    TransactionParamsV2(iListOf(Transaction(TransactionType.PlaceOrder, string)), transactionCallback)
+                )
+            } else {
+                transactionQueue.enqueue(
+                    TransactionParams(
+                        TransactionType.PlaceOrder,
+                        string,
+                        transactionCallback,
+                        uiClickTimeMs
+                    )
+                )
+            }
         }
 
         return payload
@@ -518,7 +551,33 @@ internal class SubaccountSupervisor(
 
         lastOrderClientId = null
 
-        helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
+        if (helper.hasChainTransactionsV2Impl) {
+            helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
+                val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+                val error = parseTransactionResponse(response)
+
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap()
+                    )
+                    helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.placeOrderRecords.add(
+                            PlaceOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            )
+                        )
+                        lastOrderClientId = clientId
+                    }
+                }
+                helper.send(error, callback, payload)
+            }
+
+            return payload
+        }
+        helper.transaction(TransactionType.PlaceOrder, string) { response ->
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val error = parseTransactionResponse(response)
 
@@ -540,6 +599,7 @@ internal class SubaccountSupervisor(
             }
             helper.send(error, callback, payload)
         }
+
         return payload
     }
 
@@ -747,10 +807,18 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
-        helper.transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
-            val error =
-                parseFaucetResponse(response, amount, submitTimeInMilliseconds)
-            helper.send(error, callback, payload)
+        if (helper.hasChainTransactionsV2Impl) {
+            helper.transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
+                val error =
+                    parseFaucetResponse(response, amount, submitTimeInMilliseconds)
+                helper.send(error, callback, payload)
+            }
+        } else {
+            helper.transaction(TransactionType.Faucet, string) { response ->
+                val error =
+                    parseFaucetResponse(response, amount, submitTimeInMilliseconds)
+                helper.send(error, callback, payload)
+            }
         }
     }
 

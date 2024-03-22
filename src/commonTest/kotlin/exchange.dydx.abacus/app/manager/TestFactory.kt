@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
+import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocolV2
 import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
@@ -356,6 +357,168 @@ class TestChain : DYDXChainTransactionsProtocol {
         }
     }
 
+    fun transaction(
+        transactions: IList<Transaction>,
+        callback: (response: String?) -> Unit
+    ) {
+        transactions.forEachIndexed { index, it ->
+            when (it.type) {
+                TransactionType.PlaceOrder -> {
+                    if (index == transactions.size - 1) {
+                        placeOrder(it.paramsInJson!!, callback)
+                    } else {
+                        placeOrder(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.CancelOrder -> {
+                    if (index == transactions.size - 1) {
+                        cancelOrder(it.paramsInJson!!, callback)
+                    } else {
+                        cancelOrder(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.Deposit -> {
+                    if (index == transactions.size - 1) {
+                        deposit(it.paramsInJson!!, callback)
+                    } else {
+                        deposit(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.Withdraw -> {
+                    if (index == transactions.size - 1) {
+                        withdraw(it.paramsInJson!!, callback)
+                    } else {
+                        withdraw(it.paramsInJson!!, null)
+                    }
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    override fun transaction(
+        type: TransactionType,
+        paramsInJson: String?,
+        callback: (response: String?) -> Unit
+    ) {
+        when (type) {
+            TransactionType.PlaceOrder -> {
+                placeOrder(paramsInJson!!, callback)
+            }
+
+            TransactionType.CancelOrder -> {
+                cancelOrder(paramsInJson!!, callback)
+            }
+
+            TransactionType.Deposit -> {
+                deposit(paramsInJson!!, callback)
+            }
+
+            TransactionType.Withdraw -> {
+                withdraw(paramsInJson!!, callback)
+            }
+
+            else -> {}
+        }
+    }
+
+    fun getHeight(callback: ((response: String?) -> Unit)?) {
+        if (heightResponse != null) {
+            callback?.invoke(heightResponse)
+        } else {
+            callback?.invoke(dummyError)
+        }
+    }
+
+    fun placeOrder(json: String, callback: ((response: String?) -> Unit)?) {
+        if (placeOrderResponse != null) {
+            callback?.invoke(placeOrderResponse)
+        } else {
+            callback?.invoke(dummyError)
+        }
+    }
+
+    fun cancelOrder(json: String, callback: ((response: String?) -> Unit)?) {
+        if (cancelOrderResponse != null) {
+            callback?.invoke(cancelOrderResponse)
+        } else {
+            callback?.invoke(dummyError)
+        }
+    }
+
+    fun deposit(json: String, callback: ((response: String?) -> Unit)?) {
+        if (depositResponse != null) {
+            callback?.invoke(depositResponse)
+        } else {
+            callback?.invoke(dummyError)
+        }
+    }
+
+    fun withdraw(json: String, callback: ((response: String?) -> Unit)?) {
+        if (withdrawResponse != null) {
+            callback?.invoke(withdrawResponse)
+        } else {
+            callback?.invoke(dummyError)
+        }
+    }
+
+    fun simulateTransactionResponse(response: String) {
+        this.transactionCallback?.invoke(response)
+    }
+}
+
+class TestChainV2 : DYDXChainTransactionsProtocolV2 {
+    var heightResponse: String? = null
+    var placeOrderResponse: String? = null
+    var cancelOrderResponse: String? = null
+    var depositResponse: String? = null
+    var withdrawResponse: String? = null
+
+    var transactionCallback: ((response: String?) -> Unit)? = null
+
+    var requests = mutableListOf<QueryType>()
+
+    val dummySuccess = """
+        {
+            "success": true
+        }
+    """.trimIndent()
+
+    val dummyError = """
+        {
+            "error": {
+                "code": 100,
+                "message": "dummy error"
+            }
+        }
+    """.trimIndent()
+
+    override fun connectNetwork(
+        paramsInJson: String,
+        callback: (response: String?) -> Unit,
+    ) {
+        callback(dummySuccess)
+    }
+
+    override fun get(
+        type: QueryType,
+        paramsInJson: String?,
+        callback: (response: String?) -> Unit
+    ) {
+        requests.add(type)
+        when (type) {
+            QueryType.Height -> {
+                getHeight(callback)
+            }
+
+            else -> {}
+        }
+    }
+
     override fun transaction(
         transactions: IList<Transaction>,
         callback: (response: String?) -> Unit
@@ -366,7 +529,7 @@ class TestChain : DYDXChainTransactionsProtocol {
                     if (index == transactions.size - 1) {
                         placeOrder(it.paramsInJson!!, callback)
                     } else {
-                        placeOrder(it.paramsInJson!!)
+                        placeOrder(it.paramsInJson!!, null)
                     }
                 }
 
@@ -374,7 +537,7 @@ class TestChain : DYDXChainTransactionsProtocol {
                     if (index == transactions.size - 1) {
                         cancelOrder(it.paramsInJson!!, callback)
                     } else {
-                        cancelOrder(it.paramsInJson!!)
+                        cancelOrder(it.paramsInJson!!, null)
                     }
                 }
 
@@ -382,7 +545,7 @@ class TestChain : DYDXChainTransactionsProtocol {
                     if (index == transactions.size - 1) {
                         deposit(it.paramsInJson!!, callback)
                     } else {
-                        deposit(it.paramsInJson!!)
+                        deposit(it.paramsInJson!!, null)
                     }
                 }
 
@@ -390,7 +553,7 @@ class TestChain : DYDXChainTransactionsProtocol {
                     if (index == transactions.size - 1) {
                         withdraw(it.paramsInJson!!, callback)
                     } else {
-                        withdraw(it.paramsInJson!!)
+                        withdraw(it.paramsInJson!!, null)
                     }
                 }
 
@@ -399,53 +562,51 @@ class TestChain : DYDXChainTransactionsProtocol {
         }
     }
 
-    fun getHeight(callback: ((response: String?) -> Unit)? = null) {
-        if (callback != null) {
-            if (heightResponse != null) {
-                callback(heightResponse)
-            } else {
-                callback(dummyError)
-            }
+    override fun transaction(
+        type: TransactionType,
+        paramsInJson: String?,
+        callback: (response: String?) -> Unit
+    ) {
+        throw Error("Not implemented on DYDXChainTransactionsProtocolV2")
+    }
+
+    fun getHeight(callback: ((response: String?) -> Unit)?) {
+        if (heightResponse != null) {
+            callback?.invoke(heightResponse)
+        } else {
+            callback?.invoke(dummyError)
         }
     }
 
-    fun placeOrder(json: String, callback: ((response: String?) -> Unit)? = null) {
-        if (callback != null) {
-            if (placeOrderResponse != null) {
-                callback(placeOrderResponse)
-            } else {
-                callback(dummyError)
-            }
+    fun placeOrder(json: String, callback: ((response: String?) -> Unit)?) {
+        if (placeOrderResponse != null) {
+            callback?.invoke(placeOrderResponse)
+        } else {
+            callback?.invoke(dummyError)
         }
     }
 
-    fun cancelOrder(json: String, callback: ((response: String?) -> Unit)? = null) {
-        if (callback != null) {
-            if (cancelOrderResponse != null) {
-                callback(cancelOrderResponse)
-            } else {
-                callback(dummyError)
-            }
+    fun cancelOrder(json: String, callback: ((response: String?) -> Unit)?) {
+        if (cancelOrderResponse != null) {
+            callback?.invoke(cancelOrderResponse)
+        } else {
+            callback?.invoke(dummyError)
         }
     }
 
-    fun deposit(json: String, callback: ((response: String?) -> Unit)? = null) {
-        if (callback != null) {
-            if (depositResponse != null) {
-                callback(depositResponse)
-            } else {
-                callback(dummyError)
-            }
+    fun deposit(json: String, callback: ((response: String?) -> Unit)?) {
+        if (depositResponse != null) {
+            callback?.invoke(depositResponse)
+        } else {
+            callback?.invoke(dummyError)
         }
     }
 
-    fun withdraw(json: String, callback: ((response: String?) -> Unit)? = null) {
-        if (callback != null) {
-            if (withdrawResponse != null) {
-                callback(withdrawResponse)
-            } else {
-                callback(dummyError)
-            }
+    fun withdraw(json: String, callback: ((response: String?) -> Unit)?) {
+        if (withdrawResponse != null) {
+            callback?.invoke(withdrawResponse)
+        } else {
+            callback?.invoke(dummyError)
         }
     }
 

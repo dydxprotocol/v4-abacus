@@ -3,6 +3,8 @@ package exchange.dydx.abacus.state.manager
 import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
+import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocolV2
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
@@ -498,17 +500,34 @@ class V4StateManagerAdaptor(
                     pendingCctpWithdraw?.let { walletState ->
                         processingCctpWithdraw = true
                         val callback = walletState.callback
-                        transaction(iListOf(Transaction(TransactionType.CctpWithdraw, walletState.payload))) { hash ->
-                            val error = parseTransactionResponse(hash)
-                            if (error != null) {
-                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
-                                callback?.let { it -> send(error, it, hash) }
-                            } else {
-                                callback?.let { it -> send(null, it, hash) }
+                        val hasChainTransactionsV2Impl = ioImplementations.chain as? DYDXChainTransactionsProtocolV2
+
+                        if (hasChainTransactionsV2Impl == null) {
+                            transaction(iListOf(Transaction(TransactionType.CctpWithdraw, walletState.payload))) { hash ->
+                                val error = parseTransactionResponse(hash)
+                                if (error != null) {
+                                    DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                    callback?.let { it -> send(error, it, hash) }
+                                } else {
+                                    callback?.let { it -> send(null, it, hash) }
+                                }
+                                pendingCctpWithdraw = null
+                                processingCctpWithdraw = false
                             }
-                            pendingCctpWithdraw = null
-                            processingCctpWithdraw = false
+                        } else {
+                            transaction(TransactionType.CctpWithdraw, walletState.payload) { hash ->
+                                val error = parseTransactionResponse(hash)
+                                if (error != null) {
+                                    DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                    callback?.let { it -> send(error, it, hash) }
+                                } else {
+                                    callback?.let { it -> send(null, it, hash) }
+                                }
+                                pendingCctpWithdraw = null
+                                processingCctpWithdraw = false
+                            }
                         }
+
                     } ?: run {
                         transferNobleBalance(amount)
                     }
@@ -942,10 +961,11 @@ class V4StateManagerAdaptor(
         transactions: IList<Transaction>,
         callback: (response: String) -> Unit,
     ) {
-        val transactionsImplementation = ioImplementations.chain
-        if (transactionsImplementation === null) {
+        val transactionsImplementation = ioImplementations.chain as? DYDXChainTransactionsProtocolV2
+        if (transactionsImplementation == null) {
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }
+
         transactionsImplementation.transaction(transactions) { response ->
             if (response != null) {
                 val time = if (!response.contains("error")) {
@@ -964,7 +984,37 @@ class V4StateManagerAdaptor(
         }
     }
 
+    @Throws(Exception::class)
+    fun transaction(
+        transactionType: TransactionType,
+        paramsInJson: String?,
+        callback: (response: String) -> Unit,
+    ) {
+        val transactionsImplementation = ioImplementations.chain
+        if (transactionsImplementation === null) {
+            throw Exception("chain is not DYDXChainTransactionsProtocol")
+        }
+        transactionsImplementation.transaction(transactionType, paramsInJson) { response ->
+            if (response != null) {
+                val time = if (!response.contains("error")) {
+                    Clock.System.now()
+                } else {
+                    null
+                }
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (time != null) {
+                        lastValidatorCallTime = time
+                    }
+                    callback(response)
+                    trackValidatorCall()
+                }
+            }
+        }
+    }
+
+    val hasChainTransactionsV2Impl = ioImplementations.chain as? DYDXChainTransactionsProtocolV2 != null
     val transactionQueue = TransactionQueue(this::transaction)
+    val transactionQueueV2 = TransactionQueueV2(this::transaction)
 
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val payload = placeOrderPayload()
@@ -1019,18 +1069,36 @@ class V4StateManagerAdaptor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
-                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+
+            if (hasChainTransactionsV2Impl) {
+                transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
+                    transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
+            } else {
+                transaction(TransactionType.PlaceOrder, string) { response ->
+                    transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
             }
         } else {
-            transactionQueue.enqueue(
-                TransactionParams(
-                    TransactionType.PlaceOrder,
-                    string,
-                    transactionCallback,
-                    uiClickTimeMs
+            if (hasChainTransactionsV2Impl) {
+                transactionQueueV2.enqueue(
+                    TransactionParamsV2(
+                        iListOf(Transaction(TransactionType.PlaceOrder,
+                        string)),
+                        transactionCallback,
+                        uiClickTimeMs
+                    )
                 )
-            )
+            } else {
+                transactionQueue.enqueue(
+                    TransactionParams(
+                        TransactionType.PlaceOrder,
+                        string,
+                        transactionCallback,
+                        uiClickTimeMs
+                    )
+                )
+            }
         }
 
         return payload
@@ -1050,30 +1118,59 @@ class V4StateManagerAdaptor(
         tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
 
         lastOrderClientId = null
-        transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
-            val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
-            val error = parseTransactionResponse(response)
-            if (error == null) {
-                tracking(
-                    AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(
-                        uiTrackingParams(submitTimeMs - clickTimeMs),
-                        analyticsPayload
-                    )?.toIMap()
-                )
-                ioImplementations.threading?.async(ThreadingType.abacus) {
-                    this.placeOrderRecords.add(
-                        PlaceOrderRecord(
-                            subaccountNumber,
-                            payload.clientId,
-                            submitTimeMs,
-                        )
+
+        if (hasChainTransactionsV2Impl) {
+            transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
+                val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrder.rawValue,
+                        ParsingHelper.merge(
+                            uiTrackingParams(submitTimeMs - clickTimeMs),
+                            analyticsPayload
+                        )?.toIMap()
                     )
-                    lastOrderClientId = clientId
+                    ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.placeOrderRecords.add(
+                            PlaceOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            )
+                        )
+                        lastOrderClientId = clientId
+                    }
                 }
+                send(error, callback, payload)
             }
-            send(error, callback, payload)
+        } else {
+            transaction(TransactionType.PlaceOrder, string) { response ->
+                val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrder.rawValue,
+                        ParsingHelper.merge(
+                            uiTrackingParams(submitTimeMs - clickTimeMs),
+                            analyticsPayload
+                        )?.toIMap()
+                    )
+                    ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.placeOrderRecords.add(
+                            PlaceOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            )
+                        )
+                        lastOrderClientId = clientId
+                    }
+                }
+                send(error, callback, payload)
+            }
         }
+
         return payload
     }
 
@@ -1100,9 +1197,16 @@ class V4StateManagerAdaptor(
         val payload = depositPayload()
         val string = Json.encodeToString(payload)
 
-        transaction(iListOf(Transaction(TransactionType.Deposit, string))) { response ->
-            val error = parseTransactionResponse(response)
-            send(error, callback, payload)
+        if (hasChainTransactionsV2Impl) {
+            transaction(iListOf(Transaction(TransactionType.Deposit, string))) { response ->
+                val error = parseTransactionResponse(response)
+                send(error, callback, payload)
+            }
+        } else {
+            transaction(TransactionType.Deposit, string) { response ->
+                val error = parseTransactionResponse(response)
+                send(error, callback, payload)
+            }
         }
     }
 
@@ -1110,9 +1214,16 @@ class V4StateManagerAdaptor(
         val payload = withdrawPayload()
         val string = Json.encodeToString(payload)
 
-        transaction(iListOf(Transaction(TransactionType.Withdraw, string))) { response ->
-            val error = parseTransactionResponse(response)
-            send(error, callback, payload)
+        if (hasChainTransactionsV2Impl) {
+            transaction(iListOf(Transaction(TransactionType.Withdraw, string))) { response ->
+                val error = parseTransactionResponse(response)
+                send(error, callback, payload)
+            }
+        } else {
+            transaction(TransactionType.Withdraw, string) { response ->
+                val error = parseTransactionResponse(response)
+                send(error, callback, payload)
+            }
         }
     }
 
@@ -1120,9 +1231,16 @@ class V4StateManagerAdaptor(
         val payload = subaccountTransferPayload()
         val string = Json.encodeToString(payload)
 
-        transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
-            val error = parseTransactionResponse(response)
-            send(error, callback, payload)
+        if (hasChainTransactionsV2Impl) {
+            transaction(iListOf(Transaction(TransactionType.SubaccountTransfer, string))) { response ->
+                val error = parseTransactionResponse(response)
+                send(error, callback, payload)
+            }
+        } else {
+            transaction(TransactionType.SubaccountTransfer, string) { response ->
+                val error = parseTransactionResponse(response)
+                send(error, callback, payload)
+            }
         }
     }
 
@@ -1154,10 +1272,18 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
-        transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
-            val error =
-                parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
-            send(error, callback, payload)
+        if (hasChainTransactionsV2Impl) {
+            transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
+                val error =
+                    parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
+                send(error, callback, payload)
+            }
+        } else {
+            transaction(TransactionType.Faucet, string) { response ->
+                val error =
+                    parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
+                send(error, callback, payload)
+            }
         }
     }
 
@@ -1224,18 +1350,35 @@ class V4StateManagerAdaptor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) { response ->
-                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+
+            if (hasChainTransactionsV2Impl) {
+                transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) { response ->
+                    transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
+            } else {
+                transaction(TransactionType.CancelOrder, string) { response ->
+                    transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
             }
         } else {
-            transactionQueue.enqueue(
-                TransactionParams(
-                    TransactionType.CancelOrder,
-                    string,
-                    transactionCallback,
-                    uiClickTimeMs
+            if (hasChainTransactionsV2Impl) {
+                transactionQueueV2.enqueue(
+                    TransactionParamsV2(
+                        iListOf(Transaction(TransactionType.CancelOrder, string)),
+                        transactionCallback,
+                        uiClickTimeMs
+                    )
                 )
-            )
+            } else {
+                transactionQueue.enqueue(
+                    TransactionParams(
+                        TransactionType.CancelOrder,
+                        string,
+                        transactionCallback,
+                        uiClickTimeMs
+                    )
+                )
+            }
         }
     }
 

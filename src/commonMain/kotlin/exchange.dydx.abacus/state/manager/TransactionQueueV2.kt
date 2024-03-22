@@ -1,30 +1,29 @@
 package exchange.dydx.abacus.state.manager
 
-import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.protocols.Transaction
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Numeric
 import kotlinx.datetime.Clock
 
-class TransactionParams(
-    val type: TransactionType,
-    val payload: String,
+class TransactionParamsV2(
+    val transactions: IList<Transaction>,
     val callback: (String?, Double, Double) -> Unit,
     val uiClickTimeMs: Double? = null
 )
 
-class TransactionQueue(
+class TransactionQueueV2(
     private val transaction: (
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
         callback: (response: String) -> Unit
     )
     -> Unit
 ) {
-    private val queue = mutableListOf<TransactionParams>()
+    private val queue = mutableListOf<TransactionParamsV2>()
     internal var isProcessing = false
     internal val size: Int
         get() = queue.size
 
-    fun enqueue(params: TransactionParams) {
+    fun enqueue(params: TransactionParamsV2) {
         queue.add(params)
         if (!isProcessing) {
             isProcessing = true
@@ -38,14 +37,14 @@ class TransactionQueue(
             return
         }
 
-        val currentTransaction = queue.removeAt(0)
+        val current = queue.removeAt(0)
 
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
-        val uiDelayTimeMs = if (currentTransaction.uiClickTimeMs != null)
-            submitTimeMs - currentTransaction.uiClickTimeMs else Numeric.double.ZERO
+        val uiDelayTimeMs = if (current.uiClickTimeMs != null)
+            submitTimeMs - current.uiClickTimeMs else Numeric.double.ZERO
 
-        transaction(currentTransaction.type, currentTransaction.payload) { response ->
-            currentTransaction.callback(response, uiDelayTimeMs, submitTimeMs)
+        transaction(current.transactions) { response ->
+            current.callback(response, uiDelayTimeMs, submitTimeMs)
             processNext()
         }
     }

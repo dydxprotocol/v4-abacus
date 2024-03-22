@@ -200,6 +200,15 @@ interface DYDXChainTransactionsProtocol {
 
     fun get(type: QueryType, paramsInJson: String?, callback: ((response: String?) -> Unit))
 
+    fun transaction(
+        type: TransactionType,
+        paramsInJson: String?,
+        callback: ((response: String?) -> Unit),
+    )
+}
+
+@JsExport
+interface DYDXChainTransactionsProtocolV2: DYDXChainTransactionsProtocol {
     /**
      * @param transactions: A list of transaction objects that include transaction type and their parameters
      * @param callback: A callback that will be called with the response of the transaction
