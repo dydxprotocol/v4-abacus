@@ -363,9 +363,10 @@ class TestChain : DYDXChainTransactionsProtocol {
         callback: (response: String?) -> Unit
     ) {
         transactions.forEachIndexed { index, it ->
+            val shouldInvokeCallback = index == transactions.size - 1
             when (it.type) {
                 TransactionType.PlaceOrder -> {
-                    if (index == transactions.size - 1) {
+                    if (shouldInvokeCallback) {
                         placeOrder(it.paramsInJson!!, callback)
                     } else {
                         placeOrder(it.paramsInJson!!, null)
@@ -373,7 +374,7 @@ class TestChain : DYDXChainTransactionsProtocol {
                 }
 
                 TransactionType.CancelOrder -> {
-                    if (index == transactions.size - 1) {
+                    if (shouldInvokeCallback) {
                         cancelOrder(it.paramsInJson!!, callback)
                     } else {
                         cancelOrder(it.paramsInJson!!, null)
@@ -381,7 +382,7 @@ class TestChain : DYDXChainTransactionsProtocol {
                 }
 
                 TransactionType.Deposit -> {
-                    if (index == transactions.size - 1) {
+                    if (shouldInvokeCallback) {
                         deposit(it.paramsInJson!!, callback)
                     } else {
                         deposit(it.paramsInJson!!, null)
@@ -389,7 +390,52 @@ class TestChain : DYDXChainTransactionsProtocol {
                 }
 
                 TransactionType.Withdraw -> {
-                    if (index == transactions.size - 1) {
+                    if (shouldInvokeCallback) {
+                        withdraw(it.paramsInJson!!, callback)
+                    } else {
+                        withdraw(it.paramsInJson!!, null)
+                    }
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    override fun simulateTransaction(
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
+        callback: (response: String?) -> Unit
+    ) {
+        transactions.forEachIndexed { index, it ->
+            val shouldInvokeCallback = index == transactions.size - 1
+            when (it.type) {
+                TransactionType.PlaceOrder -> {
+                    if (shouldInvokeCallback) {
+                        placeOrder(it.paramsInJson!!, callback)
+                    } else {
+                        placeOrder(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.CancelOrder -> {
+                    if (shouldInvokeCallback) {
+                        cancelOrder(it.paramsInJson!!, callback)
+                    } else {
+                        cancelOrder(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.Deposit -> {
+                    if (shouldInvokeCallback) {
+                        deposit(it.paramsInJson!!, callback)
+                    } else {
+                        deposit(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.Withdraw -> {
+                    if (shouldInvokeCallback) {
                         withdraw(it.paramsInJson!!, callback)
                     } else {
                         withdraw(it.paramsInJson!!, null)
