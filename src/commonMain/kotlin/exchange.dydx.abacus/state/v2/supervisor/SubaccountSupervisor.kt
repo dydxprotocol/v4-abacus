@@ -28,8 +28,8 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
-import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.manager.TransactionParams
+import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -37,10 +37,10 @@ import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
-import exchange.dydx.abacus.state.model.receivedAccountsChanges
-import exchange.dydx.abacus.state.model.receivedBatchAccountsChanges
+import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedFills
 import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedTransfers
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -261,8 +261,8 @@ internal class SubaccountSupervisor(
         parent: Boolean,
         subscribe: Boolean,
     ) {
-        val channel =
-            helper.configs.subaccountChannel(parent) ?: throw Exception("subaccount channel is null")
+        val channel = helper.configs.subaccountChannel(parent)
+            ?: throw Exception("subaccount channel is null")
         helper.socket(
             helper.socketAction(subscribe),
             channel,
@@ -400,7 +400,7 @@ internal class SubaccountSupervisor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap()
+                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -409,7 +409,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                 }
             }
@@ -420,11 +420,12 @@ internal class SubaccountSupervisor(
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
             helper.transaction(TransactionType.CancelOrder, string) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                    response ->
+                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
+                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs),
             )
         }
     }
@@ -471,7 +472,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -483,11 +484,12 @@ internal class SubaccountSupervisor(
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
             helper.transaction(TransactionType.PlaceOrder, string) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                    response ->
+                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
+                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs),
             )
         }
 
@@ -521,7 +523,7 @@ internal class SubaccountSupervisor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap()
+                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap(),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -529,7 +531,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -903,7 +905,7 @@ internal class SubaccountSupervisor(
                             ParsingErrorType.MissingContent,
                             payload.toString(),
                         )
-                    changes = stateMachine.receivedAccountsChanges(content, info, height)
+                    changes = stateMachine.receivedSubaccountsChanges(content, info, height)
                 }
 
                 "channel_batch_data" -> {
@@ -913,7 +915,7 @@ internal class SubaccountSupervisor(
                                 ParsingErrorType.MissingContent,
                                 payload.toString(),
                             )
-                    changes = stateMachine.receivedBatchAccountsChanges(content, info, height)
+                    changes = stateMachine.receivedBatchSubaccountsChanges(content, info, height)
                 }
 
                 else -> {
@@ -962,10 +964,15 @@ internal class SubaccountSupervisor(
                 }
             }
             if (socketConnected) {
-                subaccountChannelSubscription(
-                    configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
-                    true,
-                )
+                when (configs.subscribeToSubaccount) {
+                    SubaccountSubscriptionType.PARENT_SUBACCOUNT -> {
+                        subaccountChannelSubscription(true, true)
+                    }
+                    SubaccountSubscriptionType.SUBACCOUNT -> {
+                        subaccountChannelSubscription(false, true)
+                    }
+                    else -> {}
+                }
             }
         }
     }

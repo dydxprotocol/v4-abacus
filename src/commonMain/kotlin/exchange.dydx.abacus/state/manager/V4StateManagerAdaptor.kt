@@ -1006,7 +1006,7 @@ class V4StateManagerAdaptor(
                                 subaccountNumber,
                                 payload.clientId,
                                 submitTimeMs,
-                            )
+                            ),
                         )
                         lastOrderClientId = clientId
                     }
@@ -1026,8 +1026,8 @@ class V4StateManagerAdaptor(
                     TransactionType.PlaceOrder,
                     string,
                     transactionCallback,
-                    uiClickTimeMs
-                )
+                    uiClickTimeMs,
+                ),
             )
         }
 
@@ -1056,8 +1056,8 @@ class V4StateManagerAdaptor(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
                     ParsingHelper.merge(
                         uiTrackingParams(submitTimeMs - clickTimeMs),
-                        analyticsPayload
-                    )?.toIMap()
+                        analyticsPayload,
+                    )?.toIMap(),
                 )
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -1065,7 +1065,7 @@ class V4StateManagerAdaptor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -1203,7 +1203,7 @@ class V4StateManagerAdaptor(
                     tracking(
                         AnalyticsEvent.TradeCancelOrder.rawValue,
                         ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
-                            ?.toIMap()
+                            ?.toIMap(),
                     )
                     ioImplementations.threading?.async(ThreadingType.abacus) {
                         this.orderCanceled(orderId)
@@ -1212,7 +1212,7 @@ class V4StateManagerAdaptor(
                                 subaccountNumber,
                                 payload.clientId,
                                 submitTimeMs,
-                            )
+                            ),
                         )
                     }
                 }
@@ -1231,8 +1231,8 @@ class V4StateManagerAdaptor(
                     TransactionType.CancelOrder,
                     string,
                     transactionCallback,
-                    uiClickTimeMs
-                )
+                    uiClickTimeMs,
+                ),
             )
         }
     }
@@ -1355,7 +1355,6 @@ class V4StateManagerAdaptor(
         )
     }
 
-
     override fun trackingParams(interval: Double): IMap<String, Any> {
         val validatorUrl = this.validatorUrl
         return if (validatorUrl != null) {
@@ -1401,9 +1400,9 @@ class V4StateManagerAdaptor(
             val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
             val interval = if (indexerTime != null) {
                 (
-                        Clock.System.now().toEpochMilliseconds()
-                            .toDouble() - indexerTime
-                        )
+                    Clock.System.now().toEpochMilliseconds()
+                        .toDouble() - indexerTime
+                    )
             } else {
                 null
             }

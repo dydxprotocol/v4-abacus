@@ -378,7 +378,7 @@ internal class StateManagerAdaptorV2(
                             markets.receiveMarketCandlesChannelSocketData(info, payload)
                         }
 
-                        configs.subaccountChannel() -> {
+                        configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
                             accounts.receiveSubaccountChannelSocketData(info, payload, height())
                         }
 
