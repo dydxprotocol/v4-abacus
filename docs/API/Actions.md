@@ -200,7 +200,7 @@ Data input in string format
 
 ### size
 
-max(stopLossOrder size, takeProfitOrder size) // xcxc i don't think i ened this
+Size to apply to stop loss and take profit order. 
 
 ### stopLossOrderType
 
