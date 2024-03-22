@@ -11,8 +11,8 @@ class TriggerOrderInputTests : V4BaseTests() {
         print("--------First round----------\n")
 
         test(
-                { perp.triggerOrders("0", TriggerOrdersInputField.size, 0) },
-                """
+            { perp.triggerOrders("0", TriggerOrdersInputField.size, 0) },
+            """
     {
         "input": {
             "current": "triggerOrders",
@@ -22,7 +22,7 @@ class TriggerOrderInputTests : V4BaseTests() {
             "errors": null
         }
     }
-    """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

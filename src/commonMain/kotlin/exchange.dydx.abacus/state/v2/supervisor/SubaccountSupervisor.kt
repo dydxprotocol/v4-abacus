@@ -28,12 +28,12 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
-import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.manager.TransactionParams
+import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
@@ -396,8 +396,8 @@ internal class SubaccountSupervisor(
             val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(
-                        stateResponse.state,
-                        stateResponse.changes,
+                    stateResponse.state,
+                    stateResponse.changes,
                 )
             }
         }
@@ -417,7 +417,7 @@ internal class SubaccountSupervisor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap()
+                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -426,7 +426,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                 }
             }
@@ -437,11 +437,12 @@ internal class SubaccountSupervisor(
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
             helper.transaction(TransactionType.CancelOrder, string) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                    response ->
+                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
+                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs),
             )
         }
     }
@@ -488,7 +489,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }
@@ -500,11 +501,12 @@ internal class SubaccountSupervisor(
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
             helper.transaction(TransactionType.PlaceOrder, string) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                    response ->
+                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
+                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs),
             )
         }
 
@@ -538,7 +540,7 @@ internal class SubaccountSupervisor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap()
+                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap(),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -546,7 +548,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             payload.clientId,
                             submitTimeMs,
-                        )
+                        ),
                     )
                     lastOrderClientId = clientId
                 }

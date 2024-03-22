@@ -21,8 +21,8 @@ import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
@@ -247,7 +247,7 @@ internal fun AccountsSupervisor.closePosition(data: String?, type: ClosePosition
 internal fun AccountsSupervisor.triggerOrders(data: String?, type: TriggerOrdersInputField?) {
     account?.triggerOrders(data, type)
 }
-  
+
 internal fun AccountsSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
     return account?.placeOrderPayload(currentHeight)
 }

@@ -1709,8 +1709,8 @@ open class StateManagerAdaptor(
             val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
             ioImplementations.threading?.async(ThreadingType.main) {
                 stateNotification?.stateChanged(
-                        stateResponse.state,
-                        stateResponse.changes,
+                    stateResponse.state,
+                    stateResponse.changes,
                 )
             }
         }
