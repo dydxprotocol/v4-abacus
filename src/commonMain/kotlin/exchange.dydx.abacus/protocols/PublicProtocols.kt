@@ -26,7 +26,6 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmName
 
 @JsExport
 interface V3PrivateSignerProtocol {
