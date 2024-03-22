@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
-import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocolV2
 import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
@@ -359,125 +358,6 @@ class TestChain : DYDXChainTransactionsProtocol {
     }
 
     override fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
-        callback: (response: String?) -> Unit
-    ) {
-        when (type) {
-            TransactionType.PlaceOrder -> {
-                placeOrder(paramsInJson!!, callback)
-            }
-
-            TransactionType.CancelOrder -> {
-                cancelOrder(paramsInJson!!, callback)
-            }
-
-            TransactionType.Deposit -> {
-                deposit(paramsInJson!!, callback)
-            }
-
-            TransactionType.Withdraw -> {
-                withdraw(paramsInJson!!, callback)
-            }
-
-            else -> {}
-        }
-    }
-
-    fun getHeight(callback: ((response: String?) -> Unit)?) {
-        if (heightResponse != null) {
-            callback?.invoke(heightResponse)
-        } else {
-            callback?.invoke(dummyError)
-        }
-    }
-
-    fun placeOrder(json: String, callback: ((response: String?) -> Unit)?) {
-        if (placeOrderResponse != null) {
-            callback?.invoke(placeOrderResponse)
-        } else {
-            this.transactionCallback = callback
-        }
-    }
-
-    fun cancelOrder(json: String, callback: ((response: String?) -> Unit)?) {
-        if (cancelOrderResponse != null) {
-            callback?.invoke(cancelOrderResponse)
-        } else {
-            this.transactionCallback = callback
-        }
-    }
-
-    fun deposit(json: String, callback: ((response: String?) -> Unit)?) {
-        if (depositResponse != null) {
-            callback?.invoke(depositResponse)
-        } else {
-            this.transactionCallback = callback
-        }
-    }
-
-    fun withdraw(json: String, callback: ((response: String?) -> Unit)?) {
-        if (withdrawResponse != null) {
-            callback?.invoke(withdrawResponse)
-        } else {
-            this.transactionCallback = callback
-        }
-    }
-
-    fun simulateTransactionResponse(response: String) {
-        this.transactionCallback?.invoke(response)
-    }
-}
-
-class TestChainV2 : DYDXChainTransactionsProtocolV2 {
-    var heightResponse: String? = null
-    var placeOrderResponse: String? = null
-    var cancelOrderResponse: String? = null
-    var depositResponse: String? = null
-    var withdrawResponse: String? = null
-
-    var transactionCallback: ((response: String?) -> Unit)? = null
-
-    var requests = mutableListOf<QueryType>()
-
-    val dummySuccess = """
-        {
-            "success": true
-        }
-    """.trimIndent()
-
-    val dummyError = """
-        {
-            "error": {
-                "code": 100,
-                "message": "dummy error"
-            }
-        }
-    """.trimIndent()
-
-    override fun connectNetwork(
-        paramsInJson: String,
-        callback: (response: String?) -> Unit,
-    ) {
-        callback(dummySuccess)
-    }
-
-    override fun get(
-        type: QueryType,
-        paramsInJson: String?,
-        callback: (response: String?) -> Unit
-    ) {
-        requests.add(type)
-        when (type) {
-            QueryType.Height -> {
-                getHeight(callback)
-            }
-
-            else -> {}
-        }
-    }
-
-    override fun transactionV2(
         transactions: IList<Transaction>,
         targetChain: TargetChain,
         callback: (response: String?) -> Unit
@@ -519,14 +399,6 @@ class TestChainV2 : DYDXChainTransactionsProtocolV2 {
                 else -> {}
             }
         }
-    }
-
-    override fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
-        callback: (response: String?) -> Unit
-    ) {
-        throw Error("Not implemented on DYDXChainTransactionsProtocolV2")
     }
 
     fun getHeight(callback: ((response: String?) -> Unit)?) {

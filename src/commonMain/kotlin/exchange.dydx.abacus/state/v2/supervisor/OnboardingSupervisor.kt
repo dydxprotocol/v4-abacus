@@ -465,48 +465,26 @@ internal class OnboardingSupervisor(
     ) {
         val payload = withdrawPayloadJson(subaccountNumber)
 
-        if (helper.hasChainTransactionsV2Impl) {
-            helper.transaction(
-                iListOf(Transaction(TransactionType.simulateWithdraw, payload,)),
-                TargetChain.DYDX
-            ) { response ->
-                val error = helper.parseTransactionResponse(response)
-                if (error != null) {
-                    DebugLogger.error("simulateWithdrawal error: $error")
-                    callback(null)
-                    return@transaction
-                }
-
-                val result = helper.parser.decodeJsonObject(response)
-                if (result != null) {
-                    val amountMap =
-                        helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
-                    val amount = helper.parser.asDecimal(amountMap?.get("amount"))
-                    val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-                    callback(usdcAmount)
-                } else {
-                    callback(null)
-                }
+        helper.simulateTransaction(
+            iListOf(Transaction(TransactionType.Withdraw, payload,)),
+            TargetChain.DYDX
+        ) { response ->
+            val error = helper.parseTransactionResponse(response)
+            if (error != null) {
+                DebugLogger.error("simulateWithdrawal error: $error")
+                callback(null)
+                return@simulateTransaction
             }
-        } else {
-            helper.transaction(TransactionType.simulateWithdraw, payload) { response ->
-                val error = helper.parseTransactionResponse(response)
-                if (error != null) {
-                    DebugLogger.error("simulateWithdrawal error: $error")
-                    callback(null)
-                    return@transaction
-                }
 
-                val result = helper.parser.decodeJsonObject(response)
-                if (result != null) {
-                    val amountMap =
-                        helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
-                    val amount = helper.parser.asDecimal(amountMap?.get("amount"))
-                    val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-                    callback(usdcAmount)
-                } else {
-                    callback(null)
-                }
+            val result = helper.parser.decodeJsonObject(response)
+            if (result != null) {
+                val amountMap =
+                    helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
+                val amount = helper.parser.asDecimal(amountMap?.get("amount"))
+                val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+                callback(usdcAmount)
+            } else {
+                callback(null)
             }
         }
     }
@@ -518,48 +496,26 @@ internal class OnboardingSupervisor(
     ) {
         val payload = transferNativeTokenPayloadJson(subaccountNumber)
 
-        if (helper.hasChainTransactionsV2Impl) {
-            helper.transaction(
-                iListOf(Transaction(TransactionType.simulateTransferNativeToken, payload)),
-                TargetChain.DYDX
-            ) { response ->
-                val error = helper.parseTransactionResponse(response)
-                if (error != null) {
-                    DebugLogger.error("simulateTransferNativeToken error: $error")
-                    callback(null)
-                    return@transaction
-                }
-
-                val result = helper.parser.decodeJsonObject(response)
-                if (result != null) {
-                    val amountMap =
-                        helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
-                    val amount = helper.parser.asDecimal(amountMap?.get("amount"))
-                    val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-                    callback(tokenAmount)
-                } else {
-                    callback(null)
-                }
+        helper.simulateTransaction(
+            iListOf(Transaction(TransactionType.TransferNativeToken, payload)),
+            TargetChain.DYDX
+        ) { response ->
+            val error = helper.parseTransactionResponse(response)
+            if (error != null) {
+                DebugLogger.error("simulateTransferNativeToken error: $error")
+                callback(null)
+                return@simulateTransaction
             }
-        } else {
-            helper.transaction(TransactionType.simulateTransferNativeToken, payload) { response ->
-                val error = helper.parseTransactionResponse(response)
-                if (error != null) {
-                    DebugLogger.error("simulateTransferNativeToken error: $error")
-                    callback(null)
-                    return@transaction
-                }
 
-                val result = helper.parser.decodeJsonObject(response)
-                if (result != null) {
-                    val amountMap =
-                        helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
-                    val amount = helper.parser.asDecimal(amountMap?.get("amount"))
-                    val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
-                    callback(tokenAmount)
-                } else {
-                    callback(null)
-                }
+            val result = helper.parser.decodeJsonObject(response)
+            if (result != null) {
+                val amountMap =
+                    helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
+                val amount = helper.parser.asDecimal(amountMap?.get("amount"))
+                val tokenAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
+                callback(tokenAmount)
+            } else {
+                callback(null)
             }
         }
     }
@@ -893,22 +849,13 @@ internal class OnboardingSupervisor(
                             ),
                         )
                     if (ibcPayload != null) {
-                        if (helper.hasChainTransactionsV2Impl) {
-                            helper.transaction(
-                                iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)),
-                                TargetChain.NOBLE
-                            ) {
-                                val error = helper.parseTransactionResponse(it)
-                                if (error != null) {
-                                    DebugLogger.error("transferNobleBalance error: $error")
-                                }
-                            }
-                        } else {
-                            helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
-                                val error = helper.parseTransactionResponse(it)
-                                if (error != null) {
-                                    DebugLogger.error("transferNobleBalance error: $error")
-                                }
+                        helper.transaction(
+                            iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)),
+                            TargetChain.NOBLE
+                        ) {
+                            val error = helper.parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("transferNobleBalance error: $error")
                             }
                         }
                     }
@@ -1008,16 +955,9 @@ internal class OnboardingSupervisor(
         val payload = depositPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        if (helper.hasChainTransactionsV2Impl) {
-            helper.transaction(iListOf(Transaction(TransactionType.Deposit, string)), TargetChain.DYDX) { response ->
-                val error = parseTransactionResponse(response)
-                helper.send(error, callback, payload)
-            }
-        } else {
-            helper.transaction(TransactionType.Deposit, string) { response ->
-                val error = parseTransactionResponse(response)
-                helper.send(error, callback, payload)
-            }
+        helper.transaction(iListOf(Transaction(TransactionType.Deposit, string)), TargetChain.DYDX) { response ->
+            val error = parseTransactionResponse(response)
+            helper.send(error, callback, payload)
         }
     }
 
@@ -1025,16 +965,9 @@ internal class OnboardingSupervisor(
         val payload = withdrawPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        if (helper.hasChainTransactionsV2Impl) {
-            helper.transaction(iListOf(Transaction(TransactionType.Withdraw, string)), TargetChain.DYDX) { response ->
-                val error = parseTransactionResponse(response)
-                helper.send(error, callback, payload)
-            }
-        } else {
-            helper.transaction(TransactionType.Withdraw, string) { response ->
-                val error = parseTransactionResponse(response)
-                helper.send(error, callback, payload)
-            }
+        helper.transaction(iListOf(Transaction(TransactionType.Withdraw, string)), TargetChain.DYDX) { response ->
+            val error = parseTransactionResponse(response)
+            helper.send(error, callback, payload)
         }
     }
 
@@ -1042,16 +975,9 @@ internal class OnboardingSupervisor(
         val payload = subaccountTransferPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        if (helper.hasChainTransactionsV2Impl) {
-            helper.transaction(iListOf(Transaction(TransactionType.SubaccountTransfer, string)), TargetChain.DYDX) { response ->
-                val error = parseTransactionResponse(response)
-                helper.send(error, callback, payload)
-            }
-        } else {
-            helper.transaction(TransactionType.SubaccountTransfer, string) { response ->
-                val error = parseTransactionResponse(response)
-                helper.send(error, callback, payload)
-            }
+        helper.transaction(iListOf(Transaction(TransactionType.SubaccountTransfer, string)), TargetChain.DYDX) { response ->
+            val error = parseTransactionResponse(response)
+            helper.send(error, callback, payload)
         }
     }
 
@@ -1161,31 +1087,16 @@ internal class OnboardingSupervisor(
                             ),
                         )
 
-                        if (helper.hasChainTransactionsV2Impl) {
-                            helper.transaction(iListOf(Transaction(TransactionType.WithdrawToNobleIBC, payload)), TargetChain.DYDX) {
-                                val error = parseTransactionResponse(it)
-                                if (error != null) {
-                                    DebugLogger.error("withdrawToNobleIBC error: $error")
-                                    helper.send(error, callback)
-                                } else {
-                                    pendingCctpWithdraw = CctpWithdrawState(
-                                        state?.input?.transfer?.requestPayload?.data,
-                                        callback,
-                                    )
-                                }
-                            }
-                        } else {
-                            helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                                val error = parseTransactionResponse(it)
-                                if (error != null) {
-                                    DebugLogger.error("withdrawToNobleIBC error: $error")
-                                    helper.send(error, callback)
-                                } else {
-                                    pendingCctpWithdraw = CctpWithdrawState(
-                                        state?.input?.transfer?.requestPayload?.data,
-                                        callback,
-                                    )
-                                }
+                        helper.transaction(iListOf(Transaction(TransactionType.WithdrawToNobleIBC, payload)), TargetChain.DYDX) {
+                            val error = parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("withdrawToNobleIBC error: $error")
+                                helper.send(error, callback)
+                            } else {
+                                pendingCctpWithdraw = CctpWithdrawState(
+                                    state?.input?.transfer?.requestPayload?.data,
+                                    callback,
+                                )
                             }
                         }
                     } else {

@@ -402,38 +402,24 @@ internal open class AccountSupervisor(
                         processingCctpWithdraw = true
                         val callback = walletState.callback
 
-                        if (helper.hasChainTransactionsV2Impl) {
-                            helper.transaction(
-                                iListOf(
-                                    Transaction(
-                                        TransactionType.CctpWithdraw,
-                                        walletState.payload,
-                                    )
-                                ),
-                                TargetChain.DYDX,
-                            ) { hash ->
-                                val error = helper.parseTransactionResponse(hash)
-                                if (error != null) {
-                                    DebugLogger.error("TransactionType.CctpWithdraw error: $error")
-                                    callback?.let { it -> helper.send(error, it, hash) }
-                                } else {
-                                    callback?.let { it -> helper.send(null, it, hash) }
-                                }
-                                pendingCctpWithdraw = null
-                                processingCctpWithdraw = false
+                        helper.transaction(
+                            iListOf(
+                                Transaction(
+                                    TransactionType.CctpWithdraw,
+                                    walletState.payload,
+                                )
+                            ),
+                            TargetChain.DYDX,
+                        ) { hash ->
+                            val error = helper.parseTransactionResponse(hash)
+                            if (error != null) {
+                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                callback?.let { it -> helper.send(error, it, hash) }
+                            } else {
+                                callback?.let { it -> helper.send(null, it, hash) }
                             }
-                        } else {
-                            helper.transaction(TransactionType.CctpWithdraw, walletState.payload) { response ->
-                                val error = helper.parseTransactionResponse(response)
-                                if (error != null) {
-                                    DebugLogger.error("TransactionType.CctpWithdraw error: $error")
-                                    callback?.let { it -> helper.send(error, it, response) }
-                                } else {
-                                    callback?.let { it -> helper.send(null, it, response) }
-                                }
-                                pendingCctpWithdraw = null
-                                processingCctpWithdraw = false
-                            }
+                            pendingCctpWithdraw = null
+                            processingCctpWithdraw = false
                         }
                     } ?: run {
                         transferNobleBalance(amount)
@@ -575,19 +561,10 @@ internal open class AccountSupervisor(
                             ),
                         )
                     if (ibcPayload != null) {
-                        if (helper.hasChainTransactionsV2Impl) {
-                            helper.transaction(iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)), TargetChain.NOBLE) {
-                                val error = helper.parseTransactionResponse(it)
-                                if (error != null) {
-                                    DebugLogger.error("transferNobleBalance error: $error")
-                                }
-                            }
-                        } else {
-                            helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
-                                val error = helper.parseTransactionResponse(it)
-                                if (error != null) {
-                                    DebugLogger.error("transferNobleBalance error: $error")
-                                }
+                        helper.transaction(iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)), TargetChain.NOBLE) {
+                            val error = helper.parseTransactionResponse(it)
+                            if (error != null) {
+                                DebugLogger.error("transferNobleBalance error: $error")
                             }
                         }
                     }

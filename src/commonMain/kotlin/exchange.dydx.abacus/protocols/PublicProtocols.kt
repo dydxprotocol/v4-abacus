@@ -162,8 +162,7 @@ enum class TransactionType(val rawValue: String) {
     Withdraw("withdraw"),
     SubaccountTransfer("subaccountTransfer"),
     Faucet("faucet"),
-    simulateWithdraw("simulateWithdraw"),
-    simulateTransferNativeToken("simulateTransferNativeToken"),
+    TransferNativeToken("transferNativeToken"),
     SendNobleIBC("sendNobleIBC"),
     WithdrawToNobleIBC("withdrawToNobleIBC"),
     CctpWithdraw("cctpWithdraw");
@@ -212,20 +211,17 @@ interface DYDXChainTransactionsProtocol {
 
     fun get(type: QueryType, paramsInJson: String?, callback: ((response: String?) -> Unit))
 
-    fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
-        callback: ((response: String?) -> Unit),
-    )
-}
-
-@JsExport
-interface DYDXChainTransactionsProtocolV2: DYDXChainTransactionsProtocol {
     /**
      * @param transactions: A list of transaction objects that include transaction type and their parameters
      * @param callback: A callback that will be called with the response of the transaction
      */
-    fun transactionV2(
+    fun transaction(
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
+        callback: ((response: String?) -> Unit),
+    )
+
+    fun simulateTransaction(
         transactions: IList<Transaction>,
         targetChain: TargetChain,
         callback: ((response: String?) -> Unit),
