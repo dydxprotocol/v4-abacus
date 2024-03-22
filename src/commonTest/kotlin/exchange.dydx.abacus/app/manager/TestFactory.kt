@@ -438,7 +438,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (placeOrderResponse != null) {
             callback?.invoke(placeOrderResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -446,7 +446,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (cancelOrderResponse != null) {
             callback?.invoke(cancelOrderResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -454,7 +454,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (depositResponse != null) {
             callback?.invoke(depositResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -462,7 +462,7 @@ class TestChain : DYDXChainTransactionsProtocol {
         if (withdrawResponse != null) {
             callback?.invoke(withdrawResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -582,7 +582,7 @@ class TestChainV2 : DYDXChainTransactionsProtocolV2 {
         if (placeOrderResponse != null) {
             callback?.invoke(placeOrderResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -590,7 +590,7 @@ class TestChainV2 : DYDXChainTransactionsProtocolV2 {
         if (cancelOrderResponse != null) {
             callback?.invoke(cancelOrderResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -598,7 +598,7 @@ class TestChainV2 : DYDXChainTransactionsProtocolV2 {
         if (depositResponse != null) {
             callback?.invoke(depositResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
@@ -606,7 +606,7 @@ class TestChainV2 : DYDXChainTransactionsProtocolV2 {
         if (withdrawResponse != null) {
             callback?.invoke(withdrawResponse)
         } else {
-            callback?.invoke(dummyError)
+            this.transactionCallback = callback
         }
     }
 
