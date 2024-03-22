@@ -7,6 +7,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -408,7 +409,8 @@ internal open class AccountSupervisor(
                                         TransactionType.CctpWithdraw,
                                         walletState.payload,
                                     )
-                                )
+                                ),
+                                TargetChain.DYDX,
                             ) { hash ->
                                 val error = helper.parseTransactionResponse(hash)
                                 if (error != null) {
@@ -574,7 +576,7 @@ internal open class AccountSupervisor(
                         )
                     if (ibcPayload != null) {
                         if (helper.hasChainTransactionsV2Impl) {
-                            helper.transaction(iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload))) {
+                            helper.transaction(iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)), TargetChain.NOBLE) {
                                 val error = helper.parseTransactionResponse(it)
                                 if (error != null) {
                                     DebugLogger.error("transferNobleBalance error: $error")

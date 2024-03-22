@@ -12,6 +12,7 @@ import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.RestCallback
 import exchange.dydx.abacus.protocols.RestProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TimerProtocol
@@ -357,49 +358,6 @@ class TestChain : DYDXChainTransactionsProtocol {
         }
     }
 
-    fun transaction(
-        transactions: IList<Transaction>,
-        callback: (response: String?) -> Unit
-    ) {
-        transactions.forEachIndexed { index, it ->
-            when (it.type) {
-                TransactionType.PlaceOrder -> {
-                    if (index == transactions.size - 1) {
-                        placeOrder(it.paramsInJson!!, callback)
-                    } else {
-                        placeOrder(it.paramsInJson!!, null)
-                    }
-                }
-
-                TransactionType.CancelOrder -> {
-                    if (index == transactions.size - 1) {
-                        cancelOrder(it.paramsInJson!!, callback)
-                    } else {
-                        cancelOrder(it.paramsInJson!!, null)
-                    }
-                }
-
-                TransactionType.Deposit -> {
-                    if (index == transactions.size - 1) {
-                        deposit(it.paramsInJson!!, callback)
-                    } else {
-                        deposit(it.paramsInJson!!, null)
-                    }
-                }
-
-                TransactionType.Withdraw -> {
-                    if (index == transactions.size - 1) {
-                        withdraw(it.paramsInJson!!, callback)
-                    } else {
-                        withdraw(it.paramsInJson!!, null)
-                    }
-                }
-
-                else -> {}
-            }
-        }
-    }
-
     override fun transaction(
         type: TransactionType,
         paramsInJson: String?,
@@ -519,8 +477,9 @@ class TestChainV2 : DYDXChainTransactionsProtocolV2 {
         }
     }
 
-    override fun transaction(
+    override fun transactionV2(
         transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: (response: String?) -> Unit
     ) {
         transactions.forEachIndexed { index, it ->

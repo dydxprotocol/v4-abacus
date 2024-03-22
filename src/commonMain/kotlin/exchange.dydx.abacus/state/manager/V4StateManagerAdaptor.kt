@@ -9,6 +9,7 @@ import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -503,7 +504,7 @@ class V4StateManagerAdaptor(
                         val hasChainTransactionsV2Impl = ioImplementations.chain as? DYDXChainTransactionsProtocolV2
 
                         if (hasChainTransactionsV2Impl == null) {
-                            transaction(iListOf(Transaction(TransactionType.CctpWithdraw, walletState.payload))) { hash ->
+                            transaction(iListOf(Transaction(TransactionType.CctpWithdraw, walletState.payload)), TargetChain.DYDX) { hash ->
                                 val error = parseTransactionResponse(hash)
                                 if (error != null) {
                                     DebugLogger.error("TransactionType.CctpWithdraw error: $error")
@@ -959,6 +960,7 @@ class V4StateManagerAdaptor(
     @Throws(Exception::class)
     fun transaction(
         transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: (response: String) -> Unit,
     ) {
         val transactionsImplementation = ioImplementations.chain as? DYDXChainTransactionsProtocolV2
@@ -966,7 +968,7 @@ class V4StateManagerAdaptor(
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }
 
-        transactionsImplementation.transaction(transactions) { response ->
+        transactionsImplementation.transactionV2(transactions, targetChain) { response ->
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()
@@ -1071,7 +1073,7 @@ class V4StateManagerAdaptor(
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
 
             if (hasChainTransactionsV2Impl) {
-                transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
+                transaction(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX) { response ->
                     transactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             } else {
@@ -1085,6 +1087,7 @@ class V4StateManagerAdaptor(
                     TransactionParamsV2(
                         iListOf(Transaction(TransactionType.PlaceOrder,
                         string)),
+                        TargetChain.DYDX,
                         transactionCallback,
                         uiClickTimeMs
                     )
@@ -1120,7 +1123,7 @@ class V4StateManagerAdaptor(
         lastOrderClientId = null
 
         if (hasChainTransactionsV2Impl) {
-            transaction(iListOf(Transaction(TransactionType.PlaceOrder, string))) { response ->
+            transaction(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX) { response ->
                 val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
                 val error = parseTransactionResponse(response)
                 if (error == null) {
@@ -1198,7 +1201,7 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
 
         if (hasChainTransactionsV2Impl) {
-            transaction(iListOf(Transaction(TransactionType.Deposit, string))) { response ->
+            transaction(iListOf(Transaction(TransactionType.Deposit, string)), TargetChain.NOBLE) { response ->
                 val error = parseTransactionResponse(response)
                 send(error, callback, payload)
             }
@@ -1215,7 +1218,7 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
 
         if (hasChainTransactionsV2Impl) {
-            transaction(iListOf(Transaction(TransactionType.Withdraw, string))) { response ->
+            transaction(iListOf(Transaction(TransactionType.Withdraw, string)), TargetChain.DYDX) { response ->
                 val error = parseTransactionResponse(response)
                 send(error, callback, payload)
             }
@@ -1232,7 +1235,7 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
 
         if (hasChainTransactionsV2Impl) {
-            transaction(iListOf(Transaction(TransactionType.SubaccountTransfer, string))) { response ->
+            transaction(iListOf(Transaction(TransactionType.SubaccountTransfer, string)), TargetChain.DYDX) { response ->
                 val error = parseTransactionResponse(response)
                 send(error, callback, payload)
             }
@@ -1273,7 +1276,7 @@ class V4StateManagerAdaptor(
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
         if (hasChainTransactionsV2Impl) {
-            transaction(iListOf(Transaction(TransactionType.Faucet, string))) { response ->
+            transaction(iListOf(Transaction(TransactionType.Faucet, string)), TargetChain.DYDX) { response ->
                 val error =
                     parseFaucetResponse(response, subaccountNumber, amount, submitTimeInMilliseconds)
                 send(error, callback, payload)
@@ -1352,7 +1355,7 @@ class V4StateManagerAdaptor(
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
 
             if (hasChainTransactionsV2Impl) {
-                transaction(iListOf(Transaction(TransactionType.CancelOrder, string))) { response ->
+                transaction(iListOf(Transaction(TransactionType.CancelOrder, string)), TargetChain.DYDX) { response ->
                     transactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             } else {
@@ -1365,6 +1368,7 @@ class V4StateManagerAdaptor(
                 transactionQueueV2.enqueue(
                     TransactionParamsV2(
                         iListOf(Transaction(TransactionType.CancelOrder, string)),
+                        TargetChain.DYDX,
                         transactionCallback,
                         uiClickTimeMs
                     )

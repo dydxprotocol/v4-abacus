@@ -26,6 +26,7 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import kollections.JsExport
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmName
 
 @JsExport
 interface V3PrivateSignerProtocol {
@@ -174,6 +175,17 @@ enum class TransactionType(val rawValue: String) {
 }
 
 @JsExport
+enum class TargetChain(val rawValue: String) {
+    DYDX("DYDX"),
+    NOBLE("NOBLE");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            TargetChain.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
 data class Transaction(
     val type: TransactionType,
     val paramsInJson: String?,
@@ -213,8 +225,9 @@ interface DYDXChainTransactionsProtocolV2: DYDXChainTransactionsProtocol {
      * @param transactions: A list of transaction objects that include transaction type and their parameters
      * @param callback: A callback that will be called with the response of the transaction
      */
-    fun transaction(
+    fun transactionV2(
         transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: ((response: String?) -> Unit),
     )
 }

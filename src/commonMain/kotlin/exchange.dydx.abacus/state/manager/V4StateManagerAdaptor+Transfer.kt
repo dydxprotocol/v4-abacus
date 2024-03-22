@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.manager
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -216,7 +217,8 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(
 
     if (hasChainTransactionsV2Impl) {
         transaction(
-            iListOf(Transaction(TransactionType.simulateWithdraw, payload))
+            iListOf(Transaction(TransactionType.simulateWithdraw, payload)),
+            TargetChain.NOBLE,
         ) { response ->
             val error = parseTransactionResponse(response)
             if (error != null) {
@@ -265,7 +267,8 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
 
     if (hasChainTransactionsV2Impl) {
         transaction(
-            iListOf(Transaction(TransactionType.simulateTransferNativeToken, payload))
+            iListOf(Transaction(TransactionType.simulateTransferNativeToken, payload)),
+            TargetChain.DYDX,
         ) { response ->
             val error = parseTransactionResponse(response)
             if (error != null) {
@@ -604,7 +607,8 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                                     TransactionType.SendNobleIBC,
                                     ibcPayload
                                 )
-                            )
+                            ),
+                            TargetChain.NOBLE
                         ) {
                             val error = parseTransactionResponse(it)
                             if (error != null) {
@@ -700,7 +704,8 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                                     TransactionType.WithdrawToNobleIBC,
                                     payload
                                 )
-                            )
+                            ),
+                            TargetChain.DYDX
                         ) {
                             val error = parseTransactionResponse(it)
                             if (error != null) {

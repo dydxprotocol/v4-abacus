@@ -8,6 +8,7 @@ import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -508,13 +509,14 @@ class NetworkHelper(
     @Throws(Exception::class)
     fun transaction(
         transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: (response: String) -> Unit,
     ) {
         val transactionsImplementation = ioImplementations.chain as? DYDXChainTransactionsProtocolV2
         if (transactionsImplementation === null) {
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }
-        transactionsImplementation.transaction(transactions) { response ->
+        transactionsImplementation.transactionV2(transactions, targetChain) { response ->
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()

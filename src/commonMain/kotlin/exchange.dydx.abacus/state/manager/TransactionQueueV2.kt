@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Numeric
@@ -7,6 +8,7 @@ import kotlinx.datetime.Clock
 
 class TransactionParamsV2(
     val transactions: IList<Transaction>,
+    val targetChain: TargetChain,
     val callback: (String?, Double, Double) -> Unit,
     val uiClickTimeMs: Double? = null
 )
@@ -14,6 +16,7 @@ class TransactionParamsV2(
 class TransactionQueueV2(
     private val transaction: (
         transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: (response: String) -> Unit
     )
     -> Unit
@@ -43,7 +46,7 @@ class TransactionQueueV2(
         val uiDelayTimeMs = if (current.uiClickTimeMs != null)
             submitTimeMs - current.uiClickTimeMs else Numeric.double.ZERO
 
-        transaction(current.transactions) { response ->
+        transaction(current.transactions, current.targetChain) { response ->
             current.callback(response, uiDelayTimeMs, submitTimeMs)
             processNext()
         }
