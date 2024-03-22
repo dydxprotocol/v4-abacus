@@ -28,6 +28,8 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
+import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
@@ -348,6 +350,14 @@ internal class SubaccountSupervisor(
         }
     }
 
+    val transactionQueue = TransactionQueue(helper::transaction)
+
+    private fun uiTrackingParmas(interval: Double): IMap<String, Any> {
+        return iMapOf(
+            "clickToSubmitOrderDelayMs" to interval,
+        )
+    }
+
     fun closePosition(
         data: String?,
         type: ClosePositionInputField,
@@ -394,16 +404,20 @@ internal class SubaccountSupervisor(
     }
 
     fun cancelOrder(orderId: String, callback: TransactionCallback) {
-        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = cancelOrderPayload(orderId)
         val string = Json.encodeToString(payload)
+        val analyticsPayload = analyticsUtils.formatCancelOrderPayload(payload)
 
-        helper.transaction(TransactionType.CancelOrder, string) { response ->
-            val error = helper.parseTransactionResponse(response)
+        val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+        tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
+
+        val isShortTermOrder = payload.orderFlags == 0
+        val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+            val error = parseTransactionResponse(response)
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradeCancelOrder.rawValue,
-                    analyticsUtils.formatCancelOrderPayload(payload),
+                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap()
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.orderCanceled(orderId)
@@ -411,12 +425,24 @@ internal class SubaccountSupervisor(
                         CancelOrderRecord(
                             subaccountNumber,
                             payload.clientId,
-                            submitTimeInMilliseconds,
-                        ),
+                            submitTimeMs,
+                        )
                     )
                 }
             }
             helper.send(error, callback, payload)
+        }
+
+        if (isShortTermOrder) {
+            val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
+            helper.transaction(TransactionType.CancelOrder, string) {
+                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            }
+        } else {
+            transactionQueue.enqueue(
+                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs)
+            )
         }
     }
 
@@ -424,7 +450,6 @@ internal class SubaccountSupervisor(
         currentHeight: Int?,
         callback: TransactionCallback
     ): HumanReadablePlaceOrderPayload {
-        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = placeOrderPayload(currentHeight)
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
@@ -434,27 +459,55 @@ internal class SubaccountSupervisor(
             false,
         )
 
+        val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+        tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
+
         lastOrderClientId = null
-        helper.transaction(TransactionType.PlaceOrder, string) { response ->
-            val error = helper.parseTransactionResponse(response)
+
+        val isShortTermOrder = when (payload.type) {
+            "MARKET" -> true
+            "LIMIT" -> {
+                when (helper.parser.asString(payload.timeInForce)) {
+                    "GTT" -> false
+                    else -> true
+                }
+            }
+            else -> false
+        }
+
+        val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+            val error = parseTransactionResponse(response)
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    analyticsPayload,
+                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
                             subaccountNumber,
                             payload.clientId,
-                            submitTimeInMilliseconds,
-                        ),
+                            submitTimeMs,
+                        )
                     )
                     lastOrderClientId = clientId
                 }
             }
             helper.send(error, callback, payload)
         }
+
+        if (isShortTermOrder) {
+            val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
+            helper.transaction(TransactionType.PlaceOrder, string) {
+                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            }
+        } else {
+            transactionQueue.enqueue(
+                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs)
+            )
+        }
+
         return payload
     }
 
@@ -466,30 +519,34 @@ internal class SubaccountSupervisor(
         currentHeight: Int?,
         callback: TransactionCallback
     ): HumanReadablePlaceOrderPayload {
-        val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
         val payload = closePositionPayload(currentHeight)
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
+
+        val clickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
             payload,
             true,
         )
 
+        tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
+
         lastOrderClientId = null
         helper.transaction(TransactionType.PlaceOrder, string) { response ->
-            val error = helper.parseTransactionResponse(response)
+            val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            val error = parseTransactionResponse(response)
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    analyticsPayload,
+                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap()
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
                             subaccountNumber,
                             payload.clientId,
-                            submitTimeInMilliseconds,
-                        ),
+                            submitTimeMs,
+                        )
                     )
                     lastOrderClientId = clientId
                 }

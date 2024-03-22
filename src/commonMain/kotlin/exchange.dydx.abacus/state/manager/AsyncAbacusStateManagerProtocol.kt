@@ -30,6 +30,8 @@ interface AsyncAbacusStateManagerProtocol {
     var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod
     var candlesResolution: String
 
+    val appSettings: AppSettings?
+
     // input fields
     fun trade(data: String?, type: TradeInputField?)
     fun closePosition(data: String?, type: ClosePositionInputField)
