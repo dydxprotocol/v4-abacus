@@ -6,6 +6,9 @@ import exchange.dydx.abacus.utils.safeSet
 
 class AccountCalculator(val parser: ParserProtocol) {
     private val subaccountCalculator = SubaccountCalculator(parser)
+
+    private val kChildSubaccountMod = 128
+
     internal fun calculate(
         account: Map<String, Any>?,
         subaccountNumbers: List<Int>,
@@ -18,7 +21,7 @@ class AccountCalculator(val parser: ParserProtocol) {
             val subaccounts = parser.asMap(account["subaccounts"]) ?: return account
             val modified = account.mutable()
             for ((subaccountNumber, subaccount) in subaccounts) {
-                val parentSubaccountNumber = subaccountNumber.toInt() % 128
+                val parentSubaccountNumber = subaccountNumber.toInt() % kChildSubaccountMod
                 if (parentSubaccountNumber in subaccountNumbers) {
                     val key = "subaccounts.$subaccountNumber"
                     modified.safeSet(key, subaccountCalculator.calculate(parser.asNativeMap(subaccount), configs, markets, price, periods))
