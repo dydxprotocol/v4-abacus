@@ -40,14 +40,18 @@ class TransactionQueue(
             return
         }
 
-        val current = queue.removeAt(0)
+        val currentTransaction = queue.removeAt(0)
 
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
-        val uiDelayTimeMs = if (current.uiClickTimeMs != null)
-            submitTimeMs - current.uiClickTimeMs else Numeric.double.ZERO
 
-        transaction(current.transactions, current.targetChain) { response ->
-            current.callback(response, uiDelayTimeMs, submitTimeMs)
+        val uiDelayTimeMs = if (currentTransaction.uiClickTimeMs != null) {
+            submitTimeMs - currentTransaction.uiClickTimeMs
+        } else {
+            Numeric.double.ZERO
+        }
+
+        transaction(currentTransaction.transactions, currentTransaction.targetChain) { response ->
+            currentTransaction.callback(response, uiDelayTimeMs, submitTimeMs)
             processNext()
         }
     }

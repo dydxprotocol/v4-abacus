@@ -29,7 +29,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
 
-internal fun TradingStateMachine.receivedAccountsChanges(
+internal fun TradingStateMachine.receivedSubaccountsChanges(
     payload: Map<String, Any>,
     info: SocketInfo,
     height: BlockAndTime?,
@@ -66,7 +66,7 @@ internal fun TradingStateMachine.receivedAccountsChanges(
     return StateChanges(changes, null, iListOf(subaccountNumber))
 }
 
-internal fun TradingStateMachine.receivedBatchAccountsChanges(
+internal fun TradingStateMachine.receivedBatchSubaccountsChanges(
     payload: List<Any>,
     info: SocketInfo,
     height: BlockAndTime?
@@ -75,7 +75,7 @@ internal fun TradingStateMachine.receivedBatchAccountsChanges(
     var subaccountNumbers = iListOf<Int>()
     for (item in payload) {
         parser.asMap(item)?.let {
-            val itemChanges = receivedAccountsChanges(it, info, height)
+            val itemChanges = receivedSubaccountsChanges(it, info, height)
             val changedSubaccountNumbers = itemChanges.subaccountNumbers?.toList()
             if (changedSubaccountNumbers != null) {
                 subaccountNumbers = subaccountNumbers.union(changedSubaccountNumbers).toIList()
