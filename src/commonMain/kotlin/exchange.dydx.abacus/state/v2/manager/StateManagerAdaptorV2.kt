@@ -422,7 +422,7 @@ internal class StateManagerAdaptorV2(
     }
 
     internal fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
-        accounts.triggerOrders(data, type) // xcxc I think accountsSupervisor is correct here...
+        accounts.triggerOrders(data, type)
     }
 
     internal fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {

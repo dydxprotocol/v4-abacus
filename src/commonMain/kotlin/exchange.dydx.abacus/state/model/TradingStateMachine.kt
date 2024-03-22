@@ -849,7 +849,11 @@ open class TradingStateMachine(
                     }
                 }
 
-                "closePosition", "transfer", "triggerOrders" -> {
+                "triggerOrders" -> {
+                    // TODO: update price diffs based on price.input 
+                }
+
+                "closePosition", "transfer" -> {
                 }
             }
             modified.safeSet("receiptLines", calculateReceipt(modified))

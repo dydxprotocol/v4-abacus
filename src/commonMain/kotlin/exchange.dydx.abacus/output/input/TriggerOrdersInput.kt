@@ -7,78 +7,40 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
-data class TriggerOrdersInputPriceDiff(
-    val percent: Double?,
-    val usdc: Double?,
+data class TriggerPrice(
+    val limitPrice: Double?,
+    val triggerPrice: Double?,
+    val percentDiff: Double?,
+    val usdcDiff: Double?,
     val input: String?,
 ) {
     companion object {
         internal fun create(
-            existing: TriggerOrdersInputPriceDiff?,
+            existing: TriggerPrice?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-        ): TriggerOrdersInputPriceDiff? {
-            DebugLogger.log("creating Trigger Orders Input Price Diff\n")
-
-            data?.let {
-                val percent = parser.asDouble(data["percent"])
-                val usdc = parser.asDouble(data["usdc"])
-                val input = parser.asString(data["input"])
-
-                return if (existing?.percent != percent ||
-                    existing?.usdc != usdc ||
-                    existing?.input != input
-                ) {
-                    TriggerOrdersInputPriceDiff(percent, usdc, input)
-                } else {
-                    existing
-                }
-            }
-
-            DebugLogger.log("Trigger Orders Input Price Diff not valid\n")
-            return null
-        }
-    }
-}
-
-@JsExport
-@Serializable
-data class TriggerOrdersInputPrice(
-    val limitPrice: Double?,
-    val triggerPrice: Double?,
-    val triggerPriceDiff: TriggerOrdersInputPriceDiff?,
-    // val triggerPercent: Double?,
-    // val triggerInput: String?,
-) {
-    companion object {
-        internal fun create(
-            existing: TriggerOrdersInputPrice?,
-            parser: ParserProtocol,
-            data: Map<*, *>?,
-        ): TriggerOrdersInputPrice? {
-            DebugLogger.log("creating Trigger Orders Input Price\n")
+        ): TriggerPrice? {
+            DebugLogger.log("creating Trigger Price\n")
 
             data?.let {
                 val limitPrice = parser.asDouble(data["limitPrice"])
                 val triggerPrice = parser.asDouble(data["triggerPrice"])
-                val triggerPriceDiff = TriggerOrdersInputPriceDiff.create(
-                    existing?.triggerPriceDiff,
-                    parser,
-                    parser.asMap(data["triggerPriceDiff"]),
-                )
-                // val triggerPercent = parser.asDouble(data["triggerPercent"])
-                // val triggerInput = parser.asString(data["triggerInput"])
+                val percentDiff = parser.asDouble(data["percentDiff"])
+                val usdcDiff = parser.asDouble(data["usdcDiff"])
+                val input = parser.asString(data["input"])
 
                 return if (existing?.limitPrice != limitPrice ||
                     existing?.triggerPrice != triggerPrice ||
-                    existing?.triggerPriceDiff != triggerPriceDiff
+                    existing?.percentDiff != percentDiff ||
+                    existing?.usdcDiff != usdcDiff ||
+                    existing?.input != input
                 ) {
-                    TriggerOrdersInputPrice(limitPrice, triggerPrice, triggerPriceDiff)
+                    TriggerPrice(limitPrice, triggerPrice, percentDiff, usdcDiff, input)
                 } else {
                     existing
                 }
             }
-            DebugLogger.log("Trigger Orders Input Price not valid\n")
+            DebugLogger.log("Trigger Price not valid\n")
             return null
         }
     }
@@ -88,7 +50,7 @@ data class TriggerOrdersInputPrice(
 @Serializable
 data class TriggerOrder(
     val type: OrderType?,
-    val price: TriggerOrdersInputPrice?,
+    val price: TriggerPrice?,
 ) {
     companion object {
         internal fun create(
@@ -102,7 +64,7 @@ data class TriggerOrder(
                 val type = parser.asString(data["type"])?.let {
                     OrderType.invoke(it)
                 }
-                val price = TriggerOrdersInputPrice.create(
+                val price = TriggerPrice.create(
                     existing?.price,
                     parser,
                     parser.asMap(data["price"]),
@@ -130,8 +92,6 @@ data class TriggerOrdersInput(
     val size: Double?,
     val stopLossOrder: TriggerOrder?,
     val takeProfitOrder: TriggerOrder?,
-    // val stopLossPrice: TriggerOrdersInputPrice?,
-    // val takeProfitPrice: TriggerOrdersInputPrice?,
 ) {
     companion object {
         internal fun create(
@@ -158,7 +118,8 @@ data class TriggerOrdersInput(
                         parser.asMap(data["takeProfitOrder"]),
                     )
 
-                return if (existing?.marketId != marketId ||
+                return if (
+                    existing?.marketId != marketId ||
                     existing?.size != size ||
                     existing?.stopLossOrder != stopLossOrder ||
                     existing?.takeProfitOrder != takeProfitOrder

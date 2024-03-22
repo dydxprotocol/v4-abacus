@@ -20,16 +20,14 @@ enum class TriggerOrdersInputField(val rawValue: String) {
     stopLossOrderType("stopLossOrder.type"),
     stopLossLimitPrice("stopLossOrder.price.limitPrice"),
     stopLossPrice("stopLossOrder.price.triggerPrice"),
-    stopLossPercentDiff("stopLossOrder.price.triggerPriceDiff.percent"),
-    stopLossUsdcDiff("stopLossOrder.price.triggerPriceDiff.usdc"),
-    stopLossPriceDiffInput("stopLossOrder.price.triggerPriceDiff.input"),
+    stopLossPercentDiff("stopLossOrder.price.percentDiff"),
+    stopLossUsdcDiff("stopLossOrder.price.usdcDiff"),
 
     takeProfitOrderType("takeProfitOrder.type"),
     takeProfitLimitPrice("takeProfitOrder.price.limitPrice"),
     takeProfitPrice("takeProfitOrder.price.triggerPrice"),
-    takeProfitPercentDiff("takeProfitOrder.price.triggerPriceDiff.percent"),
-    takeProfitUsdcDiff("takeProfitOrder.price.triggerPriceDiff.usdc"),
-    takeProfitPriceDiffInput("takeProfitOrder.price.triggerPriceDiff.input");
+    takeProfitPercentDiff("takeProfitOrder.price.percentDiff"),
+    takeProfitUsdcDiff("takeProfitOrder.price.usdcDiff");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -133,7 +131,7 @@ fun TradingStateMachine.triggerOrders(
             TriggerOrdersInputField.stopLossPrice.rawValue,
             TriggerOrdersInputField.stopLossPercentDiff.rawValue,
             TriggerOrdersInputField.stopLossUsdcDiff.rawValue, -> {
-                triggerOrders.safeSet("stopLossOrder.price.triggerPriceDiff.input", typeText)
+                triggerOrders.safeSet("stopLossOrder.price.input", typeText)
             }
         }
     }
@@ -142,7 +140,7 @@ fun TradingStateMachine.triggerOrders(
             TriggerOrdersInputField.takeProfitPrice.rawValue,
             TriggerOrdersInputField.takeProfitPercentDiff.rawValue,
             TriggerOrdersInputField.takeProfitUsdcDiff.rawValue, -> {
-                triggerOrders.safeSet("takeProfitOrder.price.triggerPriceDiff.input", typeText)
+                triggerOrders.safeSet("takeProfitOrder.price.input", typeText)
             }
         }
     }

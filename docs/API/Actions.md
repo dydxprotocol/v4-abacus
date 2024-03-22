@@ -2,7 +2,7 @@
 
 When user select a market or position, FE app should call
 
-appStateMachine.setMarket(marketId)
+    appStateMachine.setMarket(marketId)
 
 This will retrieve the following data for this market:
 
@@ -10,180 +10,234 @@ This will retrieve the following data for this market:
     trades
     orderbook
 
-Then call trade(...) function to make trade the current input.
+Then call the `trade(...)` function to make trade the current input.
 
-    fun trade(data: String?, type: [TradeInputField](#TradeInputField)?): AppStateResponse
+    fun trade(data: String?, type: TradeInputField?): AppStateResponse
 
-All trading params are set up using the same function, using different type
+All trading params are set up using the same function, but with different types.
 
-When user brings up the trade input panel, use trade(null, null) to make it the active input, without changing data.
+When user brings up the trade input panel, use `trade(null, null)` to make it the active input, without changing data.
 
-Process the response like any other AppStateResponse
+Process the response like any other AppStateResponse.
 
-The input state is in response.state.input.trade as a [TradeInput](../Input/TradeInput.md)
+The input state is in `response.state.input.trade` as a [TradeInput](../Input/TradeInput.md).
 
-## data
+### data
 
 Data input in string format
 
-# TradeInputField
+## TradeInputField
 
-It is enum which specifies the type of the input
+An enum specifying the type of trade input
 
-## type
+### type
 
 Order type
 
-## side
+### side
 
 Order side
 
-## size
+### size
 
 Size of the order
 
-## usdcSize
+### usdcSize
 
 USDC amount of the order
 
-## leverage
+### leverage
 
 Leverage of the order
 
-## limitPrice
+### limitPrice
 
 Limit price
 
-## triggerPrice
+### triggerPrice
 
 Trigger/stop price
 
-## trailingPercent
+### trailingPercent
 
 Trailing percent for Trailing Stop order
 
-## timeInForceType
+### timeInForceType
 
 TimeInForce
 
-## goodTilDuration
+### goodTilDuration
 
 Numeric duration of GoodTil
 
-## goodTilUnit
+### goodTilUnit
 
 Time unit of the GoodTil
 
-## execution
+### execution
 
 Execution option
 
-## reduceOnly
+### reduceOnly
 
 Whether the order is reduce-only
 
-## postOnly
+### postOnly
 
 Whether the order is post-only
 
-## bracketsStopLossPrice
+### bracketsStopLossPrice
 
 Bracket order stop loss price
 
-## bracketsStopLossPercent
+### bracketsStopLossPercent
 
 Bracket order stop loss percentage
 
-## bracketsStopLossReduceOnly
+### bracketsStopLossReduceOnly
 
 Whether the stop loss bracket order is reduce only
 
-## bracketsTakeProfitPrice
+### bracketsTakeProfitPrice
 
 Bracket order take profit price
 
-## bracketsTakeProfitPercent
+### bracketsTakeProfitPercent
 
 Bracket order take profit percentage
 
-## bracketsTakeProfitReduceOnly
+### bracketsTakeProfitReduceOnly
 
 Whether the take profit bracket order is reduce only
 
-## bracketsGoodUntilDuration
+### bracketsGoodUntilDuration
 
 Bracket orders goodTil numeric duration
 
-## bracketsGoodUntilUnit
+### bracketsGoodUntilUnit
 
 Bracket order goodTil time unit
 
-## bracketsExecution
+### bracketsExecution
 
 Bracket order execution option
 
 # closePosition
 
-fun closePosition(data: String?, type: [ClosePositionInputField](#ClosePositionInputField)?): AppStateResponse
+    fun closePosition(data: String?, type: ClosePositionInputField?): AppStateResponse
 
-All closePosition params are set up using the same function, using different type
+All closePosition params are set up using the same function, but with different types.
 
-Process the response like any other AppStateResponse
+Process the response like any other AppStateResponse.
 
-The input state is in response.state.input.closePosition as a [ClosePositionInput](../Input/ClosePositionInput.md)
+The input state is in `response.state.input.closePosition` as a [ClosePositionInput](../Input/ClosePositionInput.md).
 
-## data
+### data
 
 Data input in string format
 
-# ClosePositionInputField
+## ClosePositionInputField
 
-## market
+### market
 
-The market ID of the position to be close
+The market ID of the position to be closed
 
-## size
+### size
 
 Size of the order
 
-## percent
+### percent
 
-Percent of the order relative to the position size. If user entered size directly, the percent is cleared
+Percent of the order relative to the position size. If the user directly edited `size`, `percent` is cleared
 
 # transfer
 
-fun transfer(data: String?, type: [TransferInputField](#TransferInputField)?): AppStateResponse
+    fun transfer(data: String?, type: TransferInputField?): AppStateResponse
 
-All transfer params are set up using the same function, using different type
+All transfer params are set up using the same function, but with different types.
 
-Process the response like any other AppStateResponse
+Process the response like any other AppStateResponse.
 
-The input state is in response.state.input.transfer as a [TransferInput](../Input/TransferInput.md)
+The input state is in `response.state.input.transfer` as a [TransferInput](../Input/TransferInput.md).
 
-## data
+### data
 
 Data input in string format
 
-# TransferInputField
+## TransferInputField
 
-## usdcSize
+### usdcSize
 
 Amount in USDC
 
-## usdcFee
+### usdcFee
 
 Fee in USDC
 
-## address
+### address
 
 Address input, used for transfer
 
-## fastSpeed
+### fastSpeed
 
 Option to use fastSpeed, used by v3 withdrawal
 
 # triggerOrders
 
-fun triggerOrders(data: String?, type: [TriggerOrdersInputField](#TriggerORdersInputField)?): AppStateResponse
+    fun triggerOrders(data: String?, TriggerOrdersInputField?): AppStateResponse
 
-# TriggerOrdersInputField
+All trigger order params are set up using the same function, but with different types.
+
+Process the response like any other AppStateResponse.
+
+The input state is in `response.state.input.triggerOrders` as a [TriggerOrdersInput](../Input/TriggerOrdersInput.md).
+
+### data
+
+Data input in string format
+
+## TriggerOrdersInputField
+
+### size
+
+max(stopLossOrder size, takeProfitOrder size) // xcxc i don't think i ened this
+
+### stopLossOrderType
+
+Stop loss order type
+
+### stopLossLimitPrice
+
+Stop loss order limit price
+
+### stopLossPrice
+
+Stop loss order trigger price
+
+### stopLossPercentDiff
+
+Stop loss order trigger price's percentage difference from the position's average entry price
+
+### stopLossUsdcDiff
+
+Stop loss order trigger price's usdc difference from the position's average entry price
+
+### takeProfitOrderType
+
+Take profit order type
+
+### takeProfitLimitPrice
+
+Take profit order limit price
+
+### takeProfitPrice
+
+Take profit order trigger price
+
+### takeProfitPercentDiff
+
+Take profit order trigger price's percentage difference from the position's average entry price
+
+### takeProfitUsdcDiff
+
+Take profit order trigger price's usdc difference from the position's average entry price
