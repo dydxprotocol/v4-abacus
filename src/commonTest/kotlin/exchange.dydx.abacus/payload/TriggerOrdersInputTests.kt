@@ -12,7 +12,7 @@ class TriggerOrderInputTests : V4BaseTests() {
         test(
             {
                 perp.triggerOrders("1.0", TriggerOrdersInputField.size, 0)
-            }, 
+            },
             """
             {
                 "input": {
@@ -22,7 +22,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                     }
                 }
             }
-            """
+            """,
         )
 
         testStopLossInput()
@@ -49,7 +49,7 @@ class TriggerOrderInputTests : V4BaseTests() {
         test(
             {
                 perp.triggerOrders("20", TriggerOrdersInputField.stopLossUsdcDiff, 0)
-            }, 
+            },
             """
             {
                 "input": {
@@ -92,7 +92,7 @@ class TriggerOrderInputTests : V4BaseTests() {
         test(
             {
                 perp.triggerOrders("20", TriggerOrdersInputField.takeProfitUsdcDiff, 0)
-            }, 
+            },
             """
             {
                 "input": {

@@ -850,7 +850,7 @@ open class TradingStateMachine(
                 }
 
                 "triggerOrders" -> {
-                    // TODO: update price diffs based on price.input 
+                    // TODO: update price diffs based on price.input
                 }
 
                 "closePosition", "transfer" -> {
