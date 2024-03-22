@@ -109,7 +109,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                             }
                         }
                     }
-                }g
+                }
             }
             """.trimIndent(),
         )
