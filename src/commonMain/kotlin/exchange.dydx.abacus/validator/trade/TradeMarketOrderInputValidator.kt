@@ -15,10 +15,10 @@ internal class TradeMarketOrderInputValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.02
+    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.1
 
     @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.005
+    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.05
 
     override fun validateTrade(
         subaccount: Map<String, Any>?,
