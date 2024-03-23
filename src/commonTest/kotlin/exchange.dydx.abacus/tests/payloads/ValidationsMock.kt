@@ -207,11 +207,11 @@ internal class ValidationsMock {
               },
               {
                 "size": "5.0",
-                "price": "1010.0"
+                "price": "1060.0"
               },
               {
                 "size": "10.0",
-                "price": "1100.0"
+                "price": "1800.0"
               }
             ],
             "bids": [
