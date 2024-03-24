@@ -91,14 +91,10 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        val modified = existing?.mutable() ?: mutableMapOf()
-        val map = parser.asNativeMap(payload)
-        modified.safeSet("withdrawalGating", map)
-
-        return receivedObject(existing, "withdrawalGating", modified) { existing, payload ->
+        return receivedObject(existing, "withdrawalGating", payload) { existing, payload ->
             val map = parser.asNativeMap(payload)
             if (map != null) {
-                map
+                withdrawalGatingProcessor.received(parser.asNativeMap(existing), map)
             } else {
                 null
             }
