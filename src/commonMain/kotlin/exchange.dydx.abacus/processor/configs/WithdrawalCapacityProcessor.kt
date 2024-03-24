@@ -1,42 +1,45 @@
 package exchange.dydx.abacus.processor.configs
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import exchange.dydx.abacus.output.WithdrawalCapacity
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import kotlin.math.pow
 
 @Suppress("UNCHECKED_CAST")
 internal class WithdrawalCapacityProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+    private val processor = LimiterCapacitiesProcessor(parser = parser)
+
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        val received = existing?.toMutableMap() ?: mutableMapOf()
-        parser.asList(payload["limiterCapacityList"])?.let {
-            if (it.size != 2) {
-                return null
+        val modified = mutableMapOf<String, Any>()
+        parser.asNativeList(payload?.get("limiterCapacityList"))?.let { limiterCapacityList ->
+            val processedLimiterCapacityList = processor.received(limiterCapacityList)
+            modified["limiterCapacityList"] = processedLimiterCapacityList
+            if (limiterCapacityList.size != 2) {
+                return existing
             }
-            var dailyLimit = parser.asDecimal(parser.asMap(it[0])?.get("capacity"))
-            var weeklyLimit = parser.asDecimal(parser.asMap(it[1])?.get("capacity"))
+            var dailyLimit = parser.asDecimal(parser.asMap(limiterCapacityList[0])?.get("capacity"))
+            var weeklyLimit = parser.asDecimal(parser.asMap(limiterCapacityList[1])?.get("capacity"))
             if (dailyLimit != null && weeklyLimit != null) {
-                var capacity: BigDecimal?
+                var maxWithdrawalCapacity: BigDecimal?
                 if (dailyLimit < weeklyLimit) {
-                    capacity = dailyLimit
+                    maxWithdrawalCapacity = dailyLimit
                 } else {
-                    capacity = weeklyLimit
+                    maxWithdrawalCapacity = weeklyLimit
                 }
 
-                //TODO: mmm move to validator?
                 val usdcDecimals = environment?.tokens?.get("usdc")?.decimals ?: 6
-                capacity /= BigDecimal.fromDouble(10.0.pow(usdcDecimals))
+                maxWithdrawalCapacity /= BigDecimal.fromDouble(10.0.pow(usdcDecimals))
 
-                parser.asString(capacity)?.let { capacityString ->
-                    received["capacity"] = capacityString
+                parser.asString(maxWithdrawalCapacity)?.let {
+                    modified["maxWithdrawalCapacity"] = it
                 }
             }
         }
-        return received
+
+
+        return modified
     }
 }

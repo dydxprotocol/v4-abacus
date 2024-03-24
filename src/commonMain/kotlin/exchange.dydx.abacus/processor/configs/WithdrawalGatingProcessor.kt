@@ -8,6 +8,8 @@ import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 internal class WithdrawalGatingProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val withdrawalGatingKeyMap = mapOf(
         "int" to mapOf(
+            "chainOutageSeenAtBlock" to "chainOutageSeenAtBlock",
+            "negativeTncSubaccountSeenAtBlock" to "negativeTncSubaccountSeenAtBlock",
             "withdrawalsAndTransfersUnblockedAtBlock" to "withdrawalsAndTransfersUnblockedAtBlock",
         ),
     )
