@@ -69,7 +69,9 @@ internal open class MarketSupervisor(
         }
 
     internal fun didSetCandlesResolution(oldValue: String) {
-        retrieveCandles()
+        if (configs.retrieveCandles) {
+            retrieveCandles()
+        }
 
         if (socketConnected) {
             candlesChannelSubscription(oldValue, false)
