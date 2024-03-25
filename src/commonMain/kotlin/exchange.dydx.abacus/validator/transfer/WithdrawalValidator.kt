@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.validator.BaseInputValidator
@@ -21,11 +22,11 @@ internal class WithdrawalValidator(
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         restricted: Boolean,
         environment: V4Environment?
     ): List<Any>? {
-        //TODO: mmm replace with actual validation values
-        val currentBlock = 50000000000// parser.asInt(parser.value(environment, "currentBlock"))
+        val currentBlock = currentBlockAndHeight?.block ?: Int.MAX_VALUE// parser.asInt(parser.value(environment, "currentBlock"))
         val withdrawalGating = parser.asMap(parser.value(configs, "withdrawalGating"))
         val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock"))
         val withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture = (withdrawalsAndTransfersUnblockedAtBlock ?: 0) > currentBlock

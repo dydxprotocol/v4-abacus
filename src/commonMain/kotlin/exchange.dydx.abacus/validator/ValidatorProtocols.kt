@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import kollections.JsExport
 import kotlinx.serialization.Serializable
@@ -27,6 +28,7 @@ interface ValidatorProtocol {
         subaccount: Map<String, Any>?,
         markets: Map<String, Any>?,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         transaction: Map<String, Any>,
         transactionType: String,
         environment: V4Environment?,
@@ -51,7 +53,8 @@ interface TransferValidatorProtocol {
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         restricted: Boolean,
         environment: V4Environment?,
-    ): List<Any>?
+        ): List<Any>?
 }
