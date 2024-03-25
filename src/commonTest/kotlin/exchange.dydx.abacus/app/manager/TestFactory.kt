@@ -11,9 +11,11 @@ import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.RestCallback
 import exchange.dydx.abacus.protocols.RestProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TimerProtocol
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.WebSocketProtocol
 import exchange.dydx.abacus.responses.ParsingError
@@ -356,66 +358,130 @@ class TestChain : DYDXChainTransactionsProtocol {
     }
 
     override fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: (response: String?) -> Unit
     ) {
-        when (type) {
-            TransactionType.PlaceOrder -> {
-                placeOrder(paramsInJson!!, callback)
-            }
+        transactions.forEachIndexed { index, it ->
+            val shouldInvokeCallback = index == transactions.size - 1
+            when (it.type) {
+                TransactionType.PlaceOrder -> {
+                    if (shouldInvokeCallback) {
+                        placeOrder(it.paramsInJson!!, callback)
+                    } else {
+                        placeOrder(it.paramsInJson!!, null)
+                    }
+                }
 
-            TransactionType.CancelOrder -> {
-                cancelOrder(paramsInJson!!, callback)
-            }
+                TransactionType.CancelOrder -> {
+                    if (shouldInvokeCallback) {
+                        cancelOrder(it.paramsInJson!!, callback)
+                    } else {
+                        cancelOrder(it.paramsInJson!!, null)
+                    }
+                }
 
-            TransactionType.Deposit -> {
-                deposit(paramsInJson!!, callback)
-            }
+                TransactionType.Deposit -> {
+                    if (shouldInvokeCallback) {
+                        deposit(it.paramsInJson!!, callback)
+                    } else {
+                        deposit(it.paramsInJson!!, null)
+                    }
+                }
 
-            TransactionType.Withdraw -> {
-                withdraw(paramsInJson!!, callback)
-            }
+                TransactionType.Withdraw -> {
+                    if (shouldInvokeCallback) {
+                        withdraw(it.paramsInJson!!, callback)
+                    } else {
+                        withdraw(it.paramsInJson!!, null)
+                    }
+                }
 
-            else -> {}
+                else -> {}
+            }
         }
     }
 
-    fun getHeight(callback: (response: String?) -> Unit) {
+    override fun simulateTransaction(
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
+        callback: (response: String?) -> Unit
+    ) {
+        transactions.forEachIndexed { index, it ->
+            val shouldInvokeCallback = index == transactions.size - 1
+            when (it.type) {
+                TransactionType.PlaceOrder -> {
+                    if (shouldInvokeCallback) {
+                        placeOrder(it.paramsInJson!!, callback)
+                    } else {
+                        placeOrder(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.CancelOrder -> {
+                    if (shouldInvokeCallback) {
+                        cancelOrder(it.paramsInJson!!, callback)
+                    } else {
+                        cancelOrder(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.Deposit -> {
+                    if (shouldInvokeCallback) {
+                        deposit(it.paramsInJson!!, callback)
+                    } else {
+                        deposit(it.paramsInJson!!, null)
+                    }
+                }
+
+                TransactionType.Withdraw -> {
+                    if (shouldInvokeCallback) {
+                        withdraw(it.paramsInJson!!, callback)
+                    } else {
+                        withdraw(it.paramsInJson!!, null)
+                    }
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    fun getHeight(callback: ((response: String?) -> Unit)?) {
         if (heightResponse != null) {
-            callback(heightResponse)
+            callback?.invoke(heightResponse)
         } else {
-            callback(dummyError)
+            callback?.invoke(dummyError)
         }
     }
 
-    fun placeOrder(json: String, callback: (response: String?) -> Unit) {
+    fun placeOrder(json: String, callback: ((response: String?) -> Unit)?) {
         if (placeOrderResponse != null) {
-            callback(placeOrderResponse)
+            callback?.invoke(placeOrderResponse)
         } else {
             this.transactionCallback = callback
         }
     }
 
-    fun cancelOrder(json: String, callback: (response: String?) -> Unit) {
+    fun cancelOrder(json: String, callback: ((response: String?) -> Unit)?) {
         if (cancelOrderResponse != null) {
-            callback(cancelOrderResponse)
+            callback?.invoke(cancelOrderResponse)
         } else {
             this.transactionCallback = callback
         }
     }
 
-    fun deposit(json: String, callback: (response: String?) -> Unit) {
+    fun deposit(json: String, callback: ((response: String?) -> Unit)?) {
         if (depositResponse != null) {
-            callback(depositResponse)
+            callback?.invoke(depositResponse)
         } else {
             this.transactionCallback = callback
         }
     }
 
-    fun withdraw(json: String, callback: (response: String?) -> Unit) {
+    fun withdraw(json: String, callback: ((response: String?) -> Unit)?) {
         if (withdrawResponse != null) {
-            callback(withdrawResponse)
+            callback?.invoke(withdrawResponse)
         } else {
             this.transactionCallback = callback
         }

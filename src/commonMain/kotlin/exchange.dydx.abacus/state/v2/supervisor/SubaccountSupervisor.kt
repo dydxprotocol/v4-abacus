@@ -5,7 +5,9 @@ import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
@@ -52,6 +54,7 @@ import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
+import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
@@ -419,13 +422,12 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            helper.transaction(TransactionType.CancelOrder, string) {
-                    response ->
-                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            helper.transaction(iListOf(Transaction(TransactionType.CancelOrder, string)), TargetChain.DYDX) {
+                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs),
+                TransactionParams(iListOf(Transaction(TransactionType.CancelOrder, string)), TargetChain.DYDX, transactionCallback)
             )
         }
     }
@@ -483,13 +485,12 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            helper.transaction(TransactionType.PlaceOrder, string) {
-                    response ->
-                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+            helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX) {
+                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs),
+                TransactionParams(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX, transactionCallback),
             )
         }
 
@@ -517,9 +518,11 @@ internal class SubaccountSupervisor(
         tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
 
         lastOrderClientId = null
-        helper.transaction(TransactionType.PlaceOrder, string) { response ->
+
+        helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX) { response ->
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val error = parseTransactionResponse(response)
+
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
@@ -538,7 +541,9 @@ internal class SubaccountSupervisor(
             }
             helper.send(error, callback, payload)
         }
+
         return payload
+
     }
 
     @Throws(Exception::class)
@@ -745,7 +750,7 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
         val submitTimeInMilliseconds = Clock.System.now().toEpochMilliseconds().toDouble()
 
-        helper.transaction(TransactionType.Faucet, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.Faucet, string)), TargetChain.DYDX) { response ->
             val error =
                 parseFaucetResponse(response, amount, submitTimeInMilliseconds)
             helper.send(error, callback, payload)

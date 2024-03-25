@@ -7,7 +7,9 @@ import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.run
@@ -19,6 +21,7 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.CoroutineTimer
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
@@ -475,15 +478,43 @@ class NetworkHelper(
 
     @Throws(Exception::class)
     fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: (response: String) -> Unit,
     ) {
         val transactionsImplementation = ioImplementations.chain
         if (transactionsImplementation === null) {
             throw Exception("chain is not DYDXChainTransactionsProtocol")
         }
-        transactionsImplementation.transaction(type, paramsInJson) { response ->
+        transactionsImplementation.transaction(transactions, targetChain) { response ->
+            if (response != null) {
+                val time = if (!response.contains("error")) {
+                    Clock.System.now()
+                } else {
+                    null
+                }
+                ioImplementations.threading?.async(ThreadingType.abacus) {
+                    if (time != null) {
+                        lastValidatorCallTime = time
+                    }
+                    callback(response)
+//                    trackValidatorCall()
+                }
+            }
+        }
+    }
+
+    @Throws(Exception::class)
+    fun simulateTransaction(
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
+        callback: (response: String) -> Unit,
+    ) {
+        val transactionsImplementation = ioImplementations.chain
+        if (transactionsImplementation === null) {
+            throw Exception("chain is not DYDXChainTransactionsProtocol")
+        }
+        transactionsImplementation.simulateTransaction(transactions, targetChain) { response ->
             if (response != null) {
                 val time = if (!response.contains("error")) {
                     Clock.System.now()

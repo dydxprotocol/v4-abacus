@@ -2,6 +2,8 @@ package exchange.dydx.abacus.state.manager
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.protocols.TargetChain
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
@@ -213,15 +215,15 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(
 ) {
     val payload = withdrawPayloadJson()
 
-    transaction(
-        TransactionType.simulateWithdraw,
-        payload,
+    simulateTransaction(
+        iListOf(Transaction(TransactionType.Withdraw, payload)),
+        TargetChain.NOBLE,
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
             DebugLogger.error("simulateWithdrawal error: $error")
             callback(null)
-            return@transaction
+            return@simulateTransaction
         }
 
         val result = parser.decodeJsonObject(response)
@@ -242,15 +244,15 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
 ) {
     val payload = transferNativeTokenPayloadJson()
 
-    transaction(
-        TransactionType.simulateTransferNativeToken,
-        payload,
+    simulateTransaction(
+        iListOf(Transaction(TransactionType.TransferNativeToken, payload)),
+        TargetChain.DYDX,
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
             DebugLogger.error("simulateTransferNativeToken error: $error")
             callback(null)
-            return@transaction
+            return@simulateTransaction
         }
 
         val result = parser.decodeJsonObject(response)
@@ -556,7 +558,15 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                 val ibcPayload =
                     parser.asString(parser.value(json, "route.transactionRequest.data"))
                 if (ibcPayload != null) {
-                    transaction(TransactionType.SendNobleIBC, ibcPayload) {
+                    transaction(
+                        iListOf(
+                            Transaction(
+                                TransactionType.SendNobleIBC,
+                                ibcPayload
+                            )
+                        ),
+                        TargetChain.NOBLE
+                    ) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
                             DebugLogger.error("transferNobleBalance error: $error")
@@ -635,7 +645,16 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                             "ibcPayload" to ibcPayload.encodeBase64(),
                         ),
                     )
-                    transaction(TransactionType.WithdrawToNobleIBC, payload) {
+
+                    transaction(
+                        iListOf(
+                            Transaction(
+                                TransactionType.WithdrawToNobleIBC,
+                                payload
+                            )
+                        ),
+                        TargetChain.DYDX
+                    ) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
                             DebugLogger.error("withdrawToNobleIBC error: $error")

@@ -161,8 +161,7 @@ enum class TransactionType(val rawValue: String) {
     Withdraw("withdraw"),
     SubaccountTransfer("subaccountTransfer"),
     Faucet("faucet"),
-    simulateWithdraw("simulateWithdraw"),
-    simulateTransferNativeToken("simulateTransferNativeToken"),
+    TransferNativeToken("transferNativeToken"),
     SendNobleIBC("sendNobleIBC"),
     WithdrawToNobleIBC("withdrawToNobleIBC"),
     CctpWithdraw("cctpWithdraw");
@@ -172,6 +171,23 @@ enum class TransactionType(val rawValue: String) {
             TransactionType.values().firstOrNull { it.rawValue == rawValue }
     }
 }
+
+@JsExport
+enum class TargetChain(val rawValue: String) {
+    DYDX("DYDX"),
+    NOBLE("NOBLE");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            TargetChain.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+data class Transaction(
+    val type: TransactionType,
+    val paramsInJson: String?,
+)
 
 @JsExport
 interface DYDXChainTransactionsProtocol {
@@ -194,9 +210,19 @@ interface DYDXChainTransactionsProtocol {
 
     fun get(type: QueryType, paramsInJson: String?, callback: ((response: String?) -> Unit))
 
+    /**
+     * @param transactions: A list of transaction objects that include transaction type and their parameters
+     * @param callback: A callback that will be called with the response of the transaction
+     */
     fun transaction(
-        type: TransactionType,
-        paramsInJson: String?,
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
+        callback: ((response: String?) -> Unit),
+    )
+
+    fun simulateTransaction(
+        transactions: IList<Transaction>,
+        targetChain: TargetChain,
         callback: ((response: String?) -> Unit),
     )
 }

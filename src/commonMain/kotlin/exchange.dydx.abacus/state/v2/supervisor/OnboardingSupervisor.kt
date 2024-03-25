@@ -3,7 +3,9 @@ package exchange.dydx.abacus.state.v2.supervisor
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
+import exchange.dydx.abacus.protocols.TargetChain
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.Transaction
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
@@ -463,15 +465,15 @@ internal class OnboardingSupervisor(
     ) {
         val payload = withdrawPayloadJson(subaccountNumber)
 
-        helper.transaction(
-            TransactionType.simulateWithdraw,
-            payload,
+        helper.simulateTransaction(
+            iListOf(Transaction(TransactionType.Withdraw, payload,)),
+            TargetChain.DYDX
         ) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error != null) {
                 DebugLogger.error("simulateWithdrawal error: $error")
                 callback(null)
-                return@transaction
+                return@simulateTransaction
             }
 
             val result = helper.parser.decodeJsonObject(response)
@@ -494,15 +496,15 @@ internal class OnboardingSupervisor(
     ) {
         val payload = transferNativeTokenPayloadJson(subaccountNumber)
 
-        helper.transaction(
-            TransactionType.simulateTransferNativeToken,
-            payload,
+        helper.simulateTransaction(
+            iListOf(Transaction(TransactionType.TransferNativeToken, payload)),
+            TargetChain.DYDX
         ) { response ->
             val error = helper.parseTransactionResponse(response)
             if (error != null) {
                 DebugLogger.error("simulateTransferNativeToken error: $error")
                 callback(null)
-                return@transaction
+                return@simulateTransaction
             }
 
             val result = helper.parser.decodeJsonObject(response)
@@ -847,7 +849,10 @@ internal class OnboardingSupervisor(
                             ),
                         )
                     if (ibcPayload != null) {
-                        helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
+                        helper.transaction(
+                            iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)),
+                            TargetChain.NOBLE
+                        ) {
                             val error = helper.parseTransactionResponse(it)
                             if (error != null) {
                                 DebugLogger.error("transferNobleBalance error: $error")
@@ -950,7 +955,7 @@ internal class OnboardingSupervisor(
         val payload = depositPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        helper.transaction(TransactionType.Deposit, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.Deposit, string)), TargetChain.DYDX) { response ->
             val error = parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
@@ -960,7 +965,7 @@ internal class OnboardingSupervisor(
         val payload = withdrawPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        helper.transaction(TransactionType.Withdraw, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.Withdraw, string)), TargetChain.DYDX) { response ->
             val error = parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
@@ -970,7 +975,7 @@ internal class OnboardingSupervisor(
         val payload = subaccountTransferPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        helper.transaction(TransactionType.PlaceOrder, string) { response ->
+        helper.transaction(iListOf(Transaction(TransactionType.SubaccountTransfer, string)), TargetChain.DYDX) { response ->
             val error = parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
@@ -1081,7 +1086,8 @@ internal class OnboardingSupervisor(
                                 "ibcPayload" to ibcPayload.encodeBase64(),
                             ),
                         )
-                        helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
+
+                        helper.transaction(iListOf(Transaction(TransactionType.WithdrawToNobleIBC, payload)), TargetChain.DYDX) {
                             val error = parseTransactionResponse(it)
                             if (error != null) {
                                 DebugLogger.error("withdrawToNobleIBC error: $error")
