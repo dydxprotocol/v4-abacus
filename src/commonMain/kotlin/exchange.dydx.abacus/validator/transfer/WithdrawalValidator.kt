@@ -41,32 +41,32 @@ internal class WithdrawalValidator(
             && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
             return listOf(
                 error(
-                    ErrorType.required.rawValue,
+                    ErrorType.error.rawValue,
                     "",
                     null,
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_ACTION" else "TRANSFERS_PAUSED_ACTION"}",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_TITLE" else "TRANSFERS_PAUSED_TITLE"}",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_DESCRIPTION" else "TRANSFERS_PAUSED_DESCRIPTION"}",
                     null,
+                    null,
+                    environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",
-                    //TODO: mmm replace with actual link
-                    "https://google.com"
-                ),
+                    ),
             )
         } else if (type == TransferType.withdrawal.rawValue && usdcSizeInputIsGreaterThanCapacity) {
             return listOf(
                 error(
-                    ErrorType.required.rawValue,
+                    ErrorType.error.rawValue,
                     "",
                     null,
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
                     null,
+                    null,
+                    environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",
-                    //TODO: mmm replace with actual link
-                    "https://google.com"
-                ),
+                    ),
             )
         } else {
             return null
