@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator.transfer
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -40,23 +41,31 @@ internal class WithdrawalValidator(
             && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
             return listOf(
                 error(
-                    "ERROR",
-                    "TEST1",
-                    listOf("address"),
-                    "TEST1",
-                    "TEST1",
-                    "TEST1",
+                    ErrorType.required.rawValue,
+                    "",
+                    null,
+                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_ACTION" else "TRANSFERS_PAUSED_ACTION"}",
+                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_TITLE" else "TRANSFERS_PAUSED_TITLE"}",
+                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_DESCRIPTION" else "TRANSFERS_PAUSED_DESCRIPTION"}",
+                    null,
+                    "APP.GENERAL.LEARN_MORE_ARROW",
+                    //TODO: mmm replace with actual link
+                    "https://google.com"
                 ),
             )
         } else if (type == TransferType.withdrawal.rawValue && usdcSizeInputIsGreaterThanCapacity) {
             return listOf(
                 error(
-                    "ERROR",
-                    "TEST2",
-                    listOf("address"),
-                    "TEST2",
-                    "TEST2",
-                    "TEST2",
+                    ErrorType.required.rawValue,
+                    "",
+                    null,
+                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
+                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
+                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
+                    null,
+                    "APP.GENERAL.LEARN_MORE_ARROW",
+                    //TODO: mmm replace with actual link
+                    "https://google.com"
                 ),
             )
         } else {
