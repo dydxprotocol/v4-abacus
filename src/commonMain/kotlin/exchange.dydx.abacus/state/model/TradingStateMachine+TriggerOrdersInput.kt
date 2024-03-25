@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 @JsExport
 @Serializable
 enum class TriggerOrdersInputField(val rawValue: String) {
+    marketId("marketId"),
     size("size"),
 
     stopLossOrderType("stopLossOrder.type"),
@@ -54,7 +55,7 @@ fun TradingStateMachine.triggerOrders(
                 val calculator = TriggerOrdersInputCalculator(parser)
                 val params = mutableMapOf<String, Any>()
                 params.safeSet("triggerOrders", triggerOrders)
-                val modified = calculator.calculate(params)
+                val modified = calculator.calculate(params, subaccountNumber)
 
                 parser.asMap(modified["triggerOrders"])?.mutable() ?: triggerOrders
             }
@@ -65,6 +66,15 @@ fun TradingStateMachine.triggerOrders(
     if (typeText != null) {
         if (validTriggerOrdersInput(triggerOrders, typeText)) {
             when (typeText) {
+                TriggerOrdersInputField.marketId.rawValue -> {
+                    triggerOrders.safeSet(typeText, parser.asString(data))
+                    changes =
+                        StateChanges(
+                            iListOf(Changes.input),
+                            null,
+                            iListOf(subaccountNumber),
+                        )
+                }
                 TriggerOrdersInputField.stopLossOrderType.rawValue,
                 TriggerOrdersInputField.takeProfitOrderType.rawValue -> {
                     triggerOrders.safeSet(typeText, parser.asString(data))
