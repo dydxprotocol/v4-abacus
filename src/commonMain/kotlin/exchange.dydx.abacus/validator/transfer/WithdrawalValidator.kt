@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.transfer
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -23,14 +24,20 @@ internal class WithdrawalValidator(
         environment: V4Environment?
     ): List<Any>? {
         //TODO: mmm replace with actual validation values
-        val currentBlock = 15// parser.asInt(parser.value(environment, "currentBlock"))
-        //TODO: mmm how to get withdrawalCapacity?
-        val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(parser.value(configs, "withdrawalCapacity"))
+        val currentBlock = 50000000000// parser.asInt(parser.value(environment, "currentBlock"))
+        val withdrawalGating = parser.asMap(parser.value(configs, "withdrawalGating"))
+        val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock"))
         val withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture = (withdrawalsAndTransfersUnblockedAtBlock ?: 0) > currentBlock
-        val type = parser.asString(parser.value(transfer, "type"))
 
-        //TODO: mmm how to get withdrawalCapacity?
-        if ((type == TransferType.withdrawal.rawValue || type == TransferType.transferOut.rawValue) && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
+        val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
+        val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.ZERO
+        val type = parser.asString(parser.value(transfer, "type"))
+        val size = parser.asMap(parser.value(transfer, "size"))
+        val usdcSize = parser.asDecimal(size?.get("usdcSize")) ?: BigDecimal.ZERO
+        val usdcSizeInputIsGreaterThanCapacity = usdcSize > maxWithdrawalCapacity
+
+        if ((type == TransferType.withdrawal.rawValue || type == TransferType.transferOut.rawValue)
+            && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
             return listOf(
                 error(
                     "ERROR",
@@ -41,7 +48,7 @@ internal class WithdrawalValidator(
                     "TEST1",
                 ),
             )
-        } else if (type == TransferType.withdrawal.rawValue && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
+        } else if (type == TransferType.withdrawal.rawValue && usdcSizeInputIsGreaterThanCapacity) {
             return listOf(
                 error(
                     "ERROR",
