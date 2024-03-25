@@ -5,14 +5,32 @@ import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.model.onChainWithdrawalGating
+import exchange.dydx.abacus.state.model.transfer
+import exchange.dydx.abacus.tests.extensions.loadAccounts
+import exchange.dydx.abacus.tests.extensions.loadFeeDiscounts
+import exchange.dydx.abacus.tests.extensions.loadFeeTiers
+import exchange.dydx.abacus.tests.extensions.loadOrderbook
+import exchange.dydx.abacus.tests.extensions.loadUser
 import kollections.iListOf
 import kotlin.test.Test
 
 class V4WithdrawalSafetyChecksTests: V4BaseTests() {
+    internal fun loadAccounts(): StateResponse {
+        return test({
+            perp.loadAccounts(mock)
+        }, null)
+    }
+
+    override fun setup() {
+        loadAccounts()
+    }
+
     @Test
     fun testGating() {
+
         test(
             {
                 perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
@@ -33,64 +51,65 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
 
     @Test
     fun testCapacity() {
+        setup()
+        perp.transfer("WITHDRAWAL", TransferInputField.type)
+        perp.transfer("1235.0", TransferInputField.usdcSize)
         test(
             {
                 perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
             },
             """
             {
-                "configs": {
-                    "withdrawalCapacity": {
-                        "limiterCapacityList": [
-                            {
-                                "seconds": "3600",
-                                "capacity": "1234567891",
-                                "baselineMinimum": "1000000000000",
-                                "nanos": 0.0,
-                                "baselineTvlPpm": 10000.0
-                            },
-                            {
-                                "seconds": "86400",
-                                "capacity": "1234567892",
-                                "baselineMinimum": "10000000000000",
-                                "nanos": 0.0,
-                                "baselineTvlPpm": 100000.0
-                            }
-                        ],
-                        "maxWithdrawalCapacity": "1234.567891"
+            "input": {
+                "transfer": {
+                    "type": "WITHDRAWAL",
+                    "size": {
+                        "usdcSize": 1235.0
                     }
+                },
+                "errors": [
+                    {
+                        "type": "ERROR",
+                        "code": "TEST2",
+                        "fields": [
+                            "address"
+                        ],
+                        "resources": {
+                            "title": {
+                                "stringKey": "TEST2"
+                            },
+                            "text": {
+                                "stringKey": "TEST2",
+                                "params": null
+                            },
+                            "action": {
+                                "stringKey": "TEST2"
+                            }
+                        }
+                    }
+                ]
+            },
+            "configs": {
+                "withdrawalCapacity": {
+                    "limiterCapacityList": [
+                        {
+                            "seconds": "3600",
+                            "capacity": "1234567891",
+                            "baselineMinimum": "1000000000000",
+                            "nanos": 0.0,
+                            "baselineTvlPpm": 10000.0
+                        },
+                        {
+                            "seconds": "86400",
+                            "capacity": "1234567892",
+                            "baselineMinimum": "10000000000000",
+                            "nanos": 0.0,
+                            "baselineTvlPpm": 100000.0
+                        }
+                    ],
+                    "maxWithdrawalCapacity": "1234.567891"
                 }
             }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_weekly_less_than_daily)
-            },
-            """
-            {
-                "configs": {
-                    "withdrawalCapacity": {
-                        "limiterCapacityList": [
-                            {
-                                "seconds": "3600",
-                                "capacity": "1234567891",
-                                "baselineMinimum": "1000000000000",
-                                "nanos": 0.0,
-                                "baselineTvlPpm": 10000.0
-                            },
-                            {
-                                "seconds": "86400",
-                                "capacity": "1234567890",
-                                "baselineMinimum": "10000000000000",
-                                "nanos": 0.0,
-                                "baselineTvlPpm": 100000.0
-                            }
-                        ],
-                        "maxWithdrawalCapacity": "1234.567890"
-                    }
-                }
             }
             """.trimIndent(),
         )
