@@ -4,6 +4,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.AppConfigs
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.TransferValidatorProtocol
@@ -18,6 +19,7 @@ internal class DepositValidator(
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         restricted: Boolean,
         environment: V4Environment?,
     ): List<Any>? {
