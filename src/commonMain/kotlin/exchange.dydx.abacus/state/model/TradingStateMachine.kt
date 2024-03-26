@@ -592,7 +592,7 @@ open class TradingStateMachine(
                 }
 
                 "triggerOrders" -> {
-                    calculateTriggerOrders()
+                    calculateTriggerOrders(subaccountNumber)
                 }
 
                 else -> {}
@@ -690,13 +690,17 @@ open class TradingStateMachine(
         this.input = input
     }
 
-    private fun calculateTriggerOrders() {
+    private fun calculateTriggerOrders(subaccountNumber: Int?) {
         val input = this.input?.mutable()
         val triggerOrders = parser.asNativeMap(input?.get("triggerOrders"))
         val calculator = TriggerOrdersInputCalculator(parser)
         val params = mutableMapOf<String, Any>()
+        params.safeSet("account", account)
+        params.safeSet("user", user)
+        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("triggerOrders", triggerOrders)
-        val modified = calculator.calculate(params)
+
+        val modified = calculator.calculate(params, subaccountNumber)
         input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
 
         this.input = input
