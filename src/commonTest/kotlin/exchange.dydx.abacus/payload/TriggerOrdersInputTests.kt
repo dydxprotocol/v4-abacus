@@ -36,9 +36,32 @@ class TriggerOrderInputTests : V4BaseTests() {
             """.trimIndent(),
         )
 
+        testDefaults()
         testStopLossInput()
         testTakeProfitInput()
         testSetPositionSize()
+    }
+
+    private fun testDefaults() {
+        test(
+            {
+                perp.triggerOrders("STOP_LIMIT", TriggerOrdersInputField.stopLossOrderType, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "marketId": "ETH-USD",
+                        "stopLossOrder": {
+                            "type": "STOP_LIMIT",
+                            "side": "SELL"
+                        }
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
     }
 
     private fun testSetPositionSize() {
@@ -68,6 +91,10 @@ class TriggerOrderInputTests : V4BaseTests() {
             perp.triggerOrders("300.0", TriggerOrdersInputField.stopLossLimitPrice, 0)
         }, null)
 
+        test({
+            perp.triggerOrders("1234", TriggerOrdersInputField.stopLossOrderId, 0)
+        }, null)
+
         test(
             {
                 perp.triggerOrders("400.0", TriggerOrdersInputField.stopLossPrice, 0)
@@ -78,6 +105,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                     "current": "triggerOrders",
                     "triggerOrders": {
                         "stopLossOrder": {
+                            "orderId": "1234",
                             "type": "STOP_LIMIT",
                             "price": {
                                 "limitPrice": "300.0",
@@ -103,6 +131,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                     "current": "triggerOrders",
                     "triggerOrders": {
                         "stopLossOrder": {
+                            "orderId": "1234",
                             "type": "STOP_LIMIT",
                             "price": {
                                 "limitPrice": "300.0",
@@ -128,6 +157,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                     "current": "triggerOrders",
                     "triggerOrders": {
                         "stopLossOrder": {
+                            "orderId": "1234",
                             "type": "STOP_LIMIT",
                             "price": {
                                 "limitPrice": "300.0",
@@ -146,11 +176,15 @@ class TriggerOrderInputTests : V4BaseTests() {
 
     private fun testTakeProfitInput() {
         test({
-            perp.triggerOrders("TAKE_PROFIT_LIMIT", TriggerOrdersInputField.takeProfitOrderType, 0)
+            perp.triggerOrders("TAKE_PROFIT", TriggerOrdersInputField.takeProfitOrderType, 0)
         }, null)
 
         test({
             perp.triggerOrders("2000.0", TriggerOrdersInputField.takeProfitLimitPrice, 0)
+        }, null)
+
+        test({
+            perp.triggerOrders("4321", TriggerOrdersInputField.takeProfitOrderId, 0)
         }, null)
 
         test(
@@ -163,14 +197,15 @@ class TriggerOrderInputTests : V4BaseTests() {
                     "current": "triggerOrders",
                     "triggerOrders": {
                         "takeProfitOrder": {
-                            "type": "TAKE_PROFIT_LIMIT",
+                            "orderId": "4321",
+                            "type": "TAKE_PROFIT",
                             "price": {
                                 "limitPrice": "2000.0",
                                 "triggerPrice": "1800.0",
                                 "percentDiff": "0.8",
                                 "usdcDiff": "800",
                                 "input": "takeProfitOrder.price.triggerPrice"
-                        }
+                            }
                         }
                     }
                 }
@@ -188,7 +223,8 @@ class TriggerOrderInputTests : V4BaseTests() {
                     "current": "triggerOrders",
                     "triggerOrders": {
                         "takeProfitOrder": {
-                            "type": "TAKE_PROFIT_LIMIT",
+                            "orderId": "4321",
+                            "type": "TAKE_PROFIT",
                             "price": {
                                 "limitPrice": "2000.0",
                                 "triggerPrice": "1400.0",
@@ -213,7 +249,8 @@ class TriggerOrderInputTests : V4BaseTests() {
                     "current": "triggerOrders",
                     "triggerOrders": {
                         "takeProfitOrder": {
-                            "type": "TAKE_PROFIT_LIMIT",
+                            "orderId": "4321",
+                            "type": "TAKE_PROFIT",
                             "price": {
                                 "limitPrice": "2000.0",
                                 "triggerPrice": "1200.0",
