@@ -28,8 +28,9 @@ internal class WithdrawalValidator(
     ): List<Any>? {
         val currentBlock = currentBlockAndHeight?.block ?: Int.MAX_VALUE// parser.asInt(parser.value(environment, "currentBlock"))
         val withdrawalGating = parser.asMap(parser.value(configs, "withdrawalGating"))
-        val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock"))
-        val withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture = (withdrawalsAndTransfersUnblockedAtBlock ?: 0) > currentBlock
+        val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock")) ?: 0
+        var blockDurationSeconds = if (environment?.isMainNet == true) 1.1 else 1.5
+        val secondsUntilUnblock = (withdrawalsAndTransfersUnblockedAtBlock - currentBlock) * blockDurationSeconds
 
         val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
         val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.ZERO
@@ -39,7 +40,8 @@ internal class WithdrawalValidator(
         val usdcSizeInputIsGreaterThanCapacity = usdcSize > maxWithdrawalCapacity
 
         if ((type == TransferType.withdrawal.rawValue || type == TransferType.transferOut.rawValue)
-            && withdrawalsAndTransfersUnblockedAtBlockIsInTheFuture) {
+            && secondsUntilUnblock > 0) {
+
             return listOf(
                 error(
                     ErrorType.error.rawValue,
@@ -48,7 +50,7 @@ internal class WithdrawalValidator(
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_ACTION" else "TRANSFERS_PAUSED_ACTION"}",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_TITLE" else "TRANSFERS_PAUSED_TITLE"}",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_DESCRIPTION" else "TRANSFERS_PAUSED_DESCRIPTION"}",
-                    null,
+                    mapOf("SECONDS" to secondsUntilUnblock),
                     null,
                     environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",
@@ -63,7 +65,7 @@ internal class WithdrawalValidator(
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
-                    null,
+                    mapOf("USDC_AMOUNT" to maxWithdrawalCapacity),
                     null,
                     environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",

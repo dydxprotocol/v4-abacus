@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.StateResponse
@@ -10,27 +11,20 @@ import exchange.dydx.abacus.state.model.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.tests.extensions.loadAccounts
-import exchange.dydx.abacus.tests.extensions.loadFeeDiscounts
-import exchange.dydx.abacus.tests.extensions.loadFeeTiers
-import exchange.dydx.abacus.tests.extensions.loadOrderbook
-import exchange.dydx.abacus.tests.extensions.loadUser
 import kollections.iListOf
 import kotlin.test.Test
 
 class V4WithdrawalSafetyChecksTests: V4BaseTests() {
-    internal fun loadAccounts(): StateResponse {
-        return test({
-            perp.loadAccounts(mock)
-        }, null)
-    }
 
     override fun setup() {
-        loadAccounts()
+        perp.loadAccounts(mock)
+        perp.currentBlockAndHeight = mock.heightMock.currentBlockAndHeight
+        perp.transfer("5", TransferInputField.usdcSize)
     }
 
     @Test
     fun testGating() {
-
+        setup()
         test(
             {
                 perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
@@ -41,7 +35,41 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
                     "withdrawalGating": {
                         "negativeTncSubaccountSeenAtBlock" : 8521777,
                         "chainOutageSeenAtBlock" : 8489769,
-                        "withdrawalsAndTransfersUnblockedAtBlock" : 8521827
+                        "withdrawalsAndTransfersUnblockedAtBlock" : 16750
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+        perp.currentBlockAndHeight = mock.heightMock.beforeCurrentBlockAndHeight
+        test(
+            {
+                perp.transfer(TransferType.withdrawal.rawValue, TransferInputField.type)
+            },
+            """
+            {
+                "configs": {
+                    "withdrawalGating": {
+                        "negativeTncSubaccountSeenAtBlock" : 8521777,
+                        "chainOutageSeenAtBlock" : 8489769,
+                        "withdrawalsAndTransfersUnblockedAtBlock" : 16750
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+        perp.currentBlockAndHeight = mock.heightMock.afterCurrentBlockAndHeight
+        test(
+            {
+                perp.transfer(TransferType.transferOut.rawValue, TransferInputField.type)
+            },
+            """
+            {
+                "configs": {
+                    "withdrawalGating": {
+                        "negativeTncSubaccountSeenAtBlock" : 8521777,
+                        "chainOutageSeenAtBlock" : 8489769,
+                        "withdrawalsAndTransfersUnblockedAtBlock" : 16750
                     }
                 }
             }

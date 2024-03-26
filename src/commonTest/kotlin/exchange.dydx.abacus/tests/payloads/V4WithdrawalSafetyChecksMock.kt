@@ -6,7 +6,7 @@ internal class V4WithdrawalSafetyChecksMock {
     {
         "negativeTncSubaccountSeenAtBlock" : 8521777,
         "chainOutageSeenAtBlock" : 8489769,
-        "withdrawalsAndTransfersUnblockedAtBlock" : 8521827
+        "withdrawalsAndTransfersUnblockedAtBlock" : 16750
     }
     """.trimIndent()
 
