@@ -149,7 +149,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                             "groupedSubaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 90187.79
+                                        "current": 90687.79
                                     },
                                     "freeCollateral": {
                                         "current": 88826.56
@@ -224,7 +224,22 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                                 "current": 796.244
                                             }
                                         }
-                                    }
+                                    },
+                                    "pendingPositions": [
+                                        {
+                                            "assetId": "RUNE",
+                                            "orderCount": 1,
+                                            "quoteBalance": {
+                                                "current": 500.0
+                                            },
+                                            "freeCollateral": {
+                                                "current": 500.0
+                                            },
+                                            "equity": {
+                                                "current": 500.0
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

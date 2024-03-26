@@ -87,12 +87,28 @@ internal class ParentSubaccountsChannelMock {
                           }
                        },
                        "marginEnabled":true
+                    },
+                    {
+                       "address":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4",
+                       "subaccountNumber":256,
+                       "equity":"500.000000",
+                       "freeCollateral":"500.000000",
+                       "assetPositions":{
+                          "USDC":{
+                             "symbol":"USDC",
+                             "side":"LONG",
+                             "size":"500",
+                             "assetId":"0"
+                          }
+                       },
+                       "marginEnabled":true
                     }
                  ]
               },
               "orders":[
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
+                    "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":0,
                     "clientId":"2194126268",
@@ -110,8 +126,27 @@ internal class ParentSubaccountsChannelMock {
                  },
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a9",
+                    "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":128,
+                    "clientId":"2194126269",
+                    "clobPairId":"134",
+                    "side":"SELL",
+                    "size":"1.653451",
+                    "totalFilled":"0.682633",
+                    "price":"1255.927",
+                    "type":"LIMIT",
+                    "status":"BEST_EFFORT_CANCELED",
+                    "timeInForce":"GTT",
+                    "postOnly":false,
+                    "reduceOnly":false,
+                    "goodTilBlock":"5837"
+                 },
+                 {
+                    "id":"b812bea8-29d3-5841-9549-caa072f6f8a9",
+                    "market":"RUNE-USD",
+                    "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
+                    "subaccountNumber":256,
                     "clientId":"2194126269",
                     "clobPairId":"134",
                     "side":"SELL",
@@ -164,6 +199,44 @@ internal class ParentSubaccountsChannelMock {
                     "denom":"USDC",
                     "side":"LONG",
                     "size":"9000"
+                 }
+              ],
+              "orders":[
+                 {
+                    "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
+                    "market":"RUNE-USD",
+                    "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
+                    "subaccountNumber":256,
+                    "clientId":"2194126268",
+                    "clobPairId":"1",
+                    "side":"SELL",
+                    "size":"1.653451",
+                    "totalFilled":"0.682633",
+                    "price":"1255.927",
+                    "type":"LIMIT",
+                    "status":"BEST_EFFORT_OPENED",
+                    "timeInForce":"GTT",
+                    "postOnly":false,
+                    "reduceOnly":false,
+                    "goodTilBlock":"5837"
+                 },
+                 {
+                    "id":"b812bea8-29d3-5841-9549-caa072f6f8a9",
+                    "market":"RUNE-USD",
+                    "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
+                    "subaccountNumber":512,
+                    "clientId":"2194126269",
+                    "clobPairId":"134",
+                    "side":"SELL",
+                    "size":"1.653451",
+                    "totalFilled":"0.682633",
+                    "price":"1255.927",
+                    "type":"LIMIT",
+                    "status":"BEST_EFFORT_CANCELED",
+                    "timeInForce":"GTT",
+                    "postOnly":false,
+                    "reduceOnly":false,
+                    "goodTilBlock":"5837"
                  }
               ]
            }
