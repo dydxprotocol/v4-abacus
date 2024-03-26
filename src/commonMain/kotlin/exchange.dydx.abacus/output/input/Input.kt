@@ -12,7 +12,8 @@ import kotlinx.serialization.Serializable
 enum class InputType(val rawValue: String) {
     TRADE("trade"),
     CLOSE_POSITION("closePosition"),
-    TRANSFER("transfer");
+    TRANSFER("transfer"),
+    TRIGGER_ORDERS("triggerOrders");
 
     companion object {
         operator fun invoke(rawValue: String?) =
@@ -27,6 +28,7 @@ data class Input(
     val trade: TradeInput?,
     val closePosition: ClosePositionInput?,
     val transfer: TransferInput?,
+    val triggerOrders: TriggerOrdersInput?,
     val receiptLines: IList<ReceiptLine>?,
     val errors: IList<ValidationError>?
 ) {
@@ -47,6 +49,8 @@ data class Input(
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
                 val transfer =
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment)
+                val triggerOrders =
+                    TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data["triggerOrders"]))
                 val errors =
                     ValidationError.create(existing?.errors, parser, parser.asList(data["errors"]))
                 val receiptLines = ReceiptLine.create(parser, parser.asList(data["receiptLines"]))
@@ -54,6 +58,7 @@ data class Input(
                     existing?.trade !== trade ||
                     existing?.closePosition !== closePosition ||
                     existing?.transfer !== transfer ||
+                    existing?.triggerOrders !== triggerOrders ||
                     existing?.receiptLines != receiptLines ||
                     existing?.errors != errors
                 ) {
@@ -62,6 +67,7 @@ data class Input(
                         trade,
                         closePosition,
                         transfer,
+                        triggerOrders,
                         receiptLines,
                         errors,
                     )
