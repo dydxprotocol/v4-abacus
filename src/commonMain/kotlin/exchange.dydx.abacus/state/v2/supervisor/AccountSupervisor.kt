@@ -26,6 +26,7 @@ import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
@@ -781,6 +782,10 @@ internal fun AccountSupervisor.trade(data: String?, type: TradeInputField?) {
 
 internal fun AccountSupervisor.closePosition(data: String?, type: ClosePositionInputField) {
     subaccount?.closePosition(data, type)
+}
+
+internal fun AccountSupervisor.triggerOrders(data: String?, type: TriggerOrdersInputField?) {
+    subaccount?.triggerOrders(data, type)
 }
 
 internal fun AccountSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
