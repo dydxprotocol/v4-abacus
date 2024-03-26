@@ -26,6 +26,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
     private fun testAccountsOnce() {
         var time = ServerTime.now()
         testSubaccountSubscribed()
+        testSubaccountChannelData()
         time = perp.log("Accounts Subscribed", time)
     }
 
@@ -141,6 +142,67 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                             "postOnly": false,
                                             "reduceOnly": false,
                                             "goodTilBlock": "5837"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testSubaccountChannelData() {
+        test(
+            {
+                perp.socket(testWsUrl, mock.parentSubaccountsChannel.channel_data, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "128": {
+                                    "equity": {
+                                        "current": 9822.9
+                                    },
+                                    "freeCollateral": {
+                                        "current": 9740.61
+                                    },
+                                    "quoteBalance": {
+                                        "current": 9000.0
+                                    },
+                                    "marginUsage": {
+                                        "current": 0.0084
+                                    },
+                                    "openPositions": {
+                                        "RUNE-USD": {
+                                            "id": "RUNE-USD",
+                                            "status": "OPEN",
+                                            "maxSize": 300.0,
+                                            "netFunding": 0.271316,
+                                            "size": {
+                                                "current": 300.0
+                                            },
+                                            "assetId": "RUNE",
+                                            "resources": {
+                                            },
+                                            "notionalTotal": {
+                                                "current": 822.9
+                                            },
+                                            "valueTotal": {
+                                                "current": 822.9
+                                            },
+                                            "initialRiskTotal": {
+                                                "current": 82.29
+                                            },
+                                            "leverage": {
+                                                "current": 0.084
+                                            },
+                                            "buyingPower": {
+                                                "current": 97406.1
+                                            }
                                         }
                                     }
                                 }

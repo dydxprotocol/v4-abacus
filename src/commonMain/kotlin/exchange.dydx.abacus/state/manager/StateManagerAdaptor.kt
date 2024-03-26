@@ -700,7 +700,7 @@ open class StateManagerAdaptor(
 
                 "channel_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -711,7 +711,7 @@ open class StateManagerAdaptor(
 
                 "channel_batch_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,

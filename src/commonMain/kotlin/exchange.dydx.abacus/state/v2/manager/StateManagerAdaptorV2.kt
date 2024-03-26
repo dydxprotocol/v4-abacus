@@ -356,7 +356,7 @@ internal class StateManagerAdaptorV2(
                     val channel = parser.asString(payload["channel"]) ?: return
                     val id = parser.asString(payload["id"])
 
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     when (channel) {
                         configs.marketsChannel() -> {
                             val subaccountNumber = accounts.connectedSubaccountNumber
