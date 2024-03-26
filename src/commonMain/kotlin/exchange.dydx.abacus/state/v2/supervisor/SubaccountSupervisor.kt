@@ -33,6 +33,7 @@ import exchange.dydx.abacus.state.manager.TransactionQueue
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
@@ -43,6 +44,7 @@ import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
 import exchange.dydx.abacus.state.model.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedTransfers
 import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.state.model.triggerOrders
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
@@ -377,6 +379,21 @@ internal class SubaccountSupervisor(
                 )
                 stateResponse = nextResponse.merge(stateResponse)
             }
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
+    fun triggerOrders(
+        data: String?,
+        type: TriggerOrdersInputField?,
+    ) {
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(
                     stateResponse.state,

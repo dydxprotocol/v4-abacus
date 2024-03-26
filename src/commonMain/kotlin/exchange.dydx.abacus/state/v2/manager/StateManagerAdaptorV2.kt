@@ -33,6 +33,7 @@ import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.v2.supervisor.AccountsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
@@ -64,6 +65,7 @@ import exchange.dydx.abacus.state.v2.supervisor.stopWatchingLastOrder
 import exchange.dydx.abacus.state.v2.supervisor.subaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.subaccountTransferPayload
 import exchange.dydx.abacus.state.v2.supervisor.trade
+import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
@@ -417,6 +419,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun closePosition(data: String?, type: ClosePositionInputField) {
         accounts.closePosition(data, type)
+    }
+
+    internal fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
+        accounts.triggerOrders(data, type)
     }
 
     internal fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {

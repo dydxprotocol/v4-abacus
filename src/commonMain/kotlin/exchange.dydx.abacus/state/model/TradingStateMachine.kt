@@ -6,6 +6,7 @@ import exchange.dydx.abacus.calculator.MarketCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
+import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
@@ -591,6 +592,10 @@ open class TradingStateMachine(
                     calculateTransfer(subaccountNumber)
                 }
 
+                "triggerOrders" -> {
+                    calculateTriggerOrders(subaccountNumber)
+                }
+
                 else -> {}
             }
         }
@@ -682,6 +687,22 @@ open class TradingStateMachine(
         this.setMarkets(parser.asNativeMap(modified["markets"]))
         this.wallet = parser.asNativeMap(modified["wallet"])
         input?.safeSet("transfer", parser.asNativeMap(modified["transfer"]))
+
+        this.input = input
+    }
+
+    private fun calculateTriggerOrders(subaccountNumber: Int?) {
+        val input = this.input?.mutable()
+        val triggerOrders = parser.asNativeMap(input?.get("triggerOrders"))
+        val calculator = TriggerOrdersInputCalculator(parser)
+        val params = mutableMapOf<String, Any>()
+        params.safeSet("account", account)
+        params.safeSet("user", user)
+        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+        params.safeSet("triggerOrders", triggerOrders)
+
+        val modified = calculator.calculate(params, subaccountNumber)
+        input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
 
         this.input = input
     }
@@ -831,6 +852,10 @@ open class TradingStateMachine(
                         else -> {
                         }
                     }
+                }
+
+                "triggerOrders" -> {
+                    // TODO: update price diffs based on price.input
                 }
 
                 "closePosition", "transfer" -> {
