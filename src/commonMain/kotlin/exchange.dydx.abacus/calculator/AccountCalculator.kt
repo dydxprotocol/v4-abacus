@@ -1,13 +1,12 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 class AccountCalculator(val parser: ParserProtocol) {
     private val subaccountCalculator = SubaccountCalculator(parser)
-
-    private val kChildSubaccountMod = 128
 
     internal fun calculate(
         account: Map<String, Any>?,
@@ -21,7 +20,7 @@ class AccountCalculator(val parser: ParserProtocol) {
             val subaccounts = parser.asMap(account["subaccounts"]) ?: return account
             var modified = account.mutable()
             for ((subaccountNumber, subaccount) in subaccounts) {
-                val parentSubaccountNumber = subaccountNumber.toInt() % kChildSubaccountMod
+                val parentSubaccountNumber = subaccountNumber.toInt() % NUM_PARENT_SUBACCOUNTS
                 if (parentSubaccountNumber in subaccountNumbers) {
                     val key = "subaccounts.$subaccountNumber"
                     modified.safeSet(key, subaccountCalculator.calculate(parser.asNativeMap(subaccount), configs, markets, price, periods))
@@ -43,11 +42,11 @@ class AccountCalculator(val parser: ParserProtocol) {
             for (subaccountNumber in subaccountNumbers) {
                 val subaccount =
                     parser.asNativeMap(parser.value(subaccounts, "$subaccountNumber")) ?: break
-                if (subaccountNumber < 128) {
+                if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
                     // this is a parent subaccount
                     groupedSubaccounts["$subaccountNumber"] = subaccount
                 } else {
-                    val parentSubaccountNumber = subaccountNumber % 128
+                    val parentSubaccountNumber = subaccountNumber % NUM_PARENT_SUBACCOUNTS
                     val parentSubaccount =
                         parser.asNativeMap(parser.value(subaccounts, "$parentSubaccountNumber"))
                     if (parentSubaccount != null) {
