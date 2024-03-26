@@ -98,23 +98,23 @@ class TriggerOrderInputTests : V4BaseTests() {
                 perp.triggerOrders("0.4", TriggerOrdersInputField.stopLossPercentDiff, 0)
             },
             """
-        {
-            "input": {
-                "current": "triggerOrders",
-                "triggerOrders": {
-                    "stopLossOrder": {
-                        "type": "STOP_LIMIT",
-                        "price": {
-                            "limitPrice": "300.0",
-                            "triggerPrice": "600.0",
-                            "percentDiff": "0.4",
-                            "usdcDiff": "400",
-                            "input": "stopLossOrder.price.percentDiff"
-                    }
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "stopLossOrder": {
+                            "type": "STOP_LIMIT",
+                            "price": {
+                                "limitPrice": "300.0",
+                                "triggerPrice": "600.0",
+                                "percentDiff": "0.4",
+                                "usdcDiff": "400",
+                                "input": "stopLossOrder.price.percentDiff"
+                        }
+                        }
                     }
                 }
             }
-        }
             """.trimIndent(),
         )
 
@@ -158,23 +158,23 @@ class TriggerOrderInputTests : V4BaseTests() {
                 perp.triggerOrders("1800.0", TriggerOrdersInputField.takeProfitPrice, 0)
             },
             """
-        {
-            "input": {
-                "current": "triggerOrders",
-                "triggerOrders": {
-                    "takeProfitOrder": {
-                        "type": "TAKE_PROFIT_LIMIT",
-                        "price": {
-                            "limitPrice": "2000.0",
-                            "triggerPrice": "1800.0",
-                            "percentDiff": "0.8",
-                            "usdcDiff": "800",
-                            "input": "takeProfitOrder.price.triggerPrice"
-                    }
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "takeProfitOrder": {
+                            "type": "TAKE_PROFIT_LIMIT",
+                            "price": {
+                                "limitPrice": "2000.0",
+                                "triggerPrice": "1800.0",
+                                "percentDiff": "0.8",
+                                "usdcDiff": "800",
+                                "input": "takeProfitOrder.price.triggerPrice"
+                        }
+                        }
                     }
                 }
             }
-        }
             """.trimIndent(),
         )
 
@@ -183,23 +183,23 @@ class TriggerOrderInputTests : V4BaseTests() {
                 perp.triggerOrders("0.4", TriggerOrdersInputField.takeProfitPercentDiff, 0)
             },
             """
-        {
-            "input": {
-                "current": "triggerOrders",
-                "triggerOrders": {
-                    "takeProfitOrder": {
-                        "type": "TAKE_PROFIT_LIMIT",
-                        "price": {
-                            "limitPrice": "2000.0",
-                            "triggerPrice": "1400.0",
-                            "percentDiff": "0.4",
-                            "usdcDiff": "400",
-                            "input": "takeProfitOrder.price.percentDiff"
-                    }
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "takeProfitOrder": {
+                            "type": "TAKE_PROFIT_LIMIT",
+                            "price": {
+                                "limitPrice": "2000.0",
+                                "triggerPrice": "1400.0",
+                                "percentDiff": "0.4",
+                                "usdcDiff": "400",
+                                "input": "takeProfitOrder.price.percentDiff"
+                        }
+                        }
                     }
                 }
             }
-        }
             """.trimIndent(),
         )
 

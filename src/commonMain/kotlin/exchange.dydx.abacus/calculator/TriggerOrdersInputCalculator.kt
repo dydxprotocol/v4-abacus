@@ -68,11 +68,13 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "price.input"))
 
-        when (inputType) {
-            "stopLossOrder.price.triggerPrice" -> {
-                val triggerPrice = parser.asDouble(parser.value(modified, "price.triggerPrice"))
+        if (entryPrice != null) {
+            val triggerPrice = parser.asDouble(parser.value(modified, "price.triggerPrice"))
+            val usdcDiff = parser.asDouble(parser.value(modified, "price.usdcDiff"))
+            val percentDiff = parser.asDouble(parser.value(modified, "price.percentDiff"))
 
-                if (entryPrice != null) {
+            when (inputType) {
+                "stopLossOrder.price.triggerPrice" -> {
                     modified.safeSet(
                         "price.usdcDiff",
                         if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
@@ -82,11 +84,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         if (triggerPrice != null) Numeric.double.ONE.minus(triggerPrice.div(entryPrice)) else null,
                     )
                 }
-            }
-            "takeProfitOrder.price.triggerPrice" -> {
-                val triggerPrice = parser.asDouble(parser.value(modified, "price.triggerPrice"))
-
-                if (entryPrice != null) {
+                "takeProfitOrder.price.triggerPrice" -> {
                     modified.safeSet(
                         "price.usdcDiff",
                         if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
@@ -96,11 +94,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         if (triggerPrice != null) triggerPrice.div(entryPrice).minus(Numeric.double.ONE) else null,
                     )
                 }
-            }
-            "stopLossOrder.price.usdcDiff" -> {
-                val usdcDiff = parser.asDouble(parser.value(modified, "price.usdcDiff"))
-
-                if (entryPrice != null) {
+                "stopLossOrder.price.usdcDiff" -> {
                     modified.safeSet(
                         "price.triggerPrice",
                         if (usdcDiff != null) entryPrice.minus(usdcDiff) else null,
@@ -110,11 +104,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
                     )
                 }
-            }
-            "takeProfitOrder.price.usdcDiff" -> {
-                val usdcDiff = parser.asDouble(parser.value(modified, "price.usdcDiff"))
-
-                if (entryPrice != null) {
+                "takeProfitOrder.price.usdcDiff" -> {
                     modified.safeSet(
                         "price.triggerPrice",
                         if (usdcDiff != null) entryPrice.plus(usdcDiff) else null,
@@ -124,11 +114,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
                     )
                 }
-            }
-            "stopLossOrder.price.percentDiff" -> {
-                val percentDiff = parser.asDouble(parser.value(modified, "price.percentDiff"))
-
-                if (entryPrice != null) {
+                "stopLossOrder.price.percentDiff" -> {
                     modified.safeSet(
                         "price.triggerPrice",
                         if (percentDiff != null) entryPrice * Numeric.double.ONE.minus(percentDiff) else null,
@@ -138,11 +124,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         if (percentDiff != null) entryPrice * percentDiff else null,
                     )
                 }
-            }
-            "takeProfitOrder.price.percentDiff" -> {
-                val percentDiff = parser.asDouble(parser.value(modified, "price.percentDiff"))
-
-                if (entryPrice != null) {
+                "takeProfitOrder.price.percentDiff" -> {
                     modified.safeSet(
                         "price.triggerPrice",
                         if (percentDiff != null) entryPrice * Numeric.double.ONE.plus(percentDiff) else null,
@@ -152,8 +134,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         if (percentDiff != null) entryPrice * percentDiff else null,
                     )
                 }
+                else -> {}
             }
-            else -> {}
         }
         return modified
     }
