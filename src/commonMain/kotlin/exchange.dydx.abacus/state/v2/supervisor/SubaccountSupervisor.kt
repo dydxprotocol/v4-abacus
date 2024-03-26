@@ -38,10 +38,10 @@ import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
-import exchange.dydx.abacus.state.model.receivedAccountsChanges
-import exchange.dydx.abacus.state.model.receivedBatchAccountsChanges
+import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedFills
 import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedTransfers
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.triggerOrders
@@ -263,8 +263,8 @@ internal class SubaccountSupervisor(
         parent: Boolean,
         subscribe: Boolean,
     ) {
-        val channel =
-            helper.configs.subaccountChannel(parent) ?: throw Exception("subaccount channel is null")
+        val channel = helper.configs.subaccountChannel(parent)
+            ?: throw Exception("subaccount channel is null")
         helper.socket(
             helper.socketAction(subscribe),
             channel,
@@ -922,7 +922,7 @@ internal class SubaccountSupervisor(
                             ParsingErrorType.MissingContent,
                             payload.toString(),
                         )
-                    changes = stateMachine.receivedAccountsChanges(content, info, height)
+                    changes = stateMachine.receivedSubaccountsChanges(content, info, height)
                 }
 
                 "channel_batch_data" -> {
@@ -932,7 +932,7 @@ internal class SubaccountSupervisor(
                                 ParsingErrorType.MissingContent,
                                 payload.toString(),
                             )
-                    changes = stateMachine.receivedBatchAccountsChanges(content, info, height)
+                    changes = stateMachine.receivedBatchSubaccountsChanges(content, info, height)
                 }
 
                 else -> {
@@ -981,10 +981,15 @@ internal class SubaccountSupervisor(
                 }
             }
             if (socketConnected) {
-                subaccountChannelSubscription(
-                    configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
-                    true,
-                )
+                when (configs.subscribeToSubaccount) {
+                    SubaccountSubscriptionType.PARENT_SUBACCOUNT -> {
+                        subaccountChannelSubscription(true, true)
+                    }
+                    SubaccountSubscriptionType.SUBACCOUNT -> {
+                        subaccountChannelSubscription(false, true)
+                    }
+                    else -> {}
+                }
             }
         }
     }

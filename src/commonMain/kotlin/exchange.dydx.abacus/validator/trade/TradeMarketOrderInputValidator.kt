@@ -15,10 +15,10 @@ internal class TradeMarketOrderInputValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.02
+    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.1
 
     @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.005
+    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.05
 
     override fun validateTrade(
         subaccount: Map<String, Any>?,
@@ -57,10 +57,6 @@ internal class TradeMarketOrderInputValidator(
                 errors.add(error)
             }
             error = orderbookSlippage(trade, restricted)
-            if (error != null) {
-                errors.add(error)
-            }
-            error = indexPriceSlippage(trade, restricted)
             if (error != null) {
                 errors.add(error)
             }
@@ -128,53 +124,6 @@ internal class TradeMarketOrderInputValidator(
                         null,
                         "WARNINGS.TRADE_BOX_TITLE.MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
                         "WARNINGS.TRADE_BOX.MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
-                        mapOf(
-                            "SLIPPAGE" to mapOf(
-                                "value" to slippageValue,
-                                "format" to "percent",
-                            ),
-                        ),
-                    )
-                }
-            }
-        }
-        return null
-    }
-
-    private fun indexPriceSlippage(
-        trade: Map<String, Any>,
-        restricted: Boolean
-    ): Map<String, Any>? {
-        /*
-        MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE
-        MARKET_ORDER_ERROR_INDEX_PRICE_SLIPPAGE
-         */
-        parser.asNativeMap(trade["summary"])?.let { summary ->
-            parser.asDouble(summary["indexSlippage"])?.let { slippage ->
-                val slippageValue = slippage
-                if (slippageValue >= MARKET_ORDER_ERROR_SLIPPAGE) {
-                    return error(
-                        if (restricted) "WARNING" else "ERROR",
-                        "MARKET_ORDER_ERROR_INDEX_SLIPPAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_ERROR_INDEX_PRICE_SLIPPAGE",
-                        "ERRORS.TRADE_BOX.MARKET_ORDER_ERROR_INDEX_PRICE_SLIPPAGE",
-                        mapOf(
-                            "SLIPPAGE" to mapOf(
-                                "value" to slippageValue,
-                                "format" to "percent",
-                            ),
-                        ),
-                    )
-                } else if (slippageValue >= MARKET_ORDER_WARNING_SLIPPAGE) {
-                    return error(
-                        "WARNING",
-                        "MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE",
-                        listOf("size.size"),
-                        null,
-                        "WARNINGS.TRADE_BOX_TITLE.MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE",
-                        "WARNINGS.TRADE_BOX.MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE",
                         mapOf(
                             "SLIPPAGE" to mapOf(
                                 "value" to slippageValue,

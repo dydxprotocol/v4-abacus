@@ -36,7 +36,6 @@ import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
-import exchange.dydx.abacus.state.model.receivedAccountsChanges
 import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
 import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
 import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
@@ -49,6 +48,7 @@ import exchange.dydx.abacus.state.model.receivedMarkets
 import exchange.dydx.abacus.state.model.receivedMarketsChanges
 import exchange.dydx.abacus.state.model.receivedOrderbook
 import exchange.dydx.abacus.state.model.receivedSubaccountSubscribed
+import exchange.dydx.abacus.state.model.receivedSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedTrades
 import exchange.dydx.abacus.state.model.receivedTradesChanges
 import exchange.dydx.abacus.state.model.receivedTransfers
@@ -647,7 +647,7 @@ open class StateManagerAdaptor(
         subscribe: Boolean = true,
     ) {
         val channel =
-            configs.subaccountChannel() ?: throw Exception("subaccount channel is null")
+            configs.subaccountChannel(false) ?: throw Exception("subaccount channel is null")
         socket(
             socketAction(subscribe),
             channel,
@@ -922,7 +922,7 @@ open class StateManagerAdaptor(
                 changes
             }
 
-            configs.subaccountChannel() -> {
+            configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
                 stateMachine.receivedSubaccountSubscribed(content, height())
             }
 
@@ -984,8 +984,8 @@ open class StateManagerAdaptor(
                 stateMachine.receivedMarketsChanges(content, subaccountNumber ?: 0)
             }
 
-            configs.subaccountChannel() -> {
-                stateMachine.receivedAccountsChanges(content, info, height())
+            configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
+                stateMachine.receivedSubaccountsChanges(content, info, height())
             }
 
             configs.marketOrderbookChannel() -> {

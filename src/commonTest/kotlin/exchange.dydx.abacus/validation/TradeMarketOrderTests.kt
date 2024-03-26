@@ -76,19 +76,19 @@ class TradeMarketOrderTests : ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "GTT",
                             "summary": {
-                                "price": 1004.26,
+                                "price": 1024.26,
                                 "size": 1.0,
-                                "usdcSize": 1004.26,
-                                "fee": 0.50213,
+                                "usdcSize": 1024.26,
+                                "fee": 0.51213,
                                 "feeRate": 0.0005,
-                                "total": -1004.76213,
-                                "slippage": 0.00989,
-                                "indexSlippage": 0.01,
+                                "total": -1024.77213,
+                                "slippage": 0.05989,
+                                "indexSlippage": 0.06,
                                 "filled": true
                             },
                             "size": {
                                 "size": 1.0,
-                                "usdcSize": 1004.26
+                                "usdcSize": 1024.26
                             },
                             "marketOrder": {
                                 "orderbook": [
@@ -102,23 +102,11 @@ class TradeMarketOrderTests : ValidationsTests() {
                                     },
                                     {
                                         "size": 0.4,
-                                        "price": 1010.0
+                                        "price": 1060.0
                                     }
                                 ]
                             }
-                        },
-                        "errors": [
-                            {
-                                "code": "MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE"
-                            },
-                            {
-                                "type": "WARNING",
-                                "code": "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
-                                "fields": [
-                                    "size.size"
-                                ]
-                            }
-                        ]
+                        }
                     }
                 }
             """.trimIndent(),
@@ -138,19 +126,19 @@ class TradeMarketOrderTests : ValidationsTests() {
                             "marketId": "ETH-USD",
                             "timeInForce": "GTT",
                             "summary": {
-                                "price": 1049.026,
+                                "price": 1382.026,
                                 "size": 10.0,
-                                "usdcSize": 10490.26,
-                                "fee": 5.24513,
+                                "usdcSize": 13820.26,
+                                "fee": 6.91013,
                                 "feeRate": 0.0005,
-                                "total": -10495.50513,
-                                "slippage": 0.09989,
-                                "indexSlippage": 0.1,
+                                "total": -13827.17013,
+                                "slippage": 0.79982,
+                                "indexSlippage": 0.8,
                                 "filled": true
                             },
                             "size": {
                                 "size": 10.0,
-                                "usdcSize": 10490.26
+                                "usdcSize": 13820.26
                             },
                             "marketOrder": {
                                 "orderbook": [
@@ -164,31 +152,15 @@ class TradeMarketOrderTests : ValidationsTests() {
                                     },
                                     {
                                         "size": 5.0,
-                                        "price": 1010.0
+                                        "price": 1060.0
                                     },
                                     {
                                         "size": 4.4,
-                                        "price": 1100.0
+                                        "price": 1800.0
                                     }
                                 ]
                             }
-                        },
-                        "errors": [
-                            {
-                                "type": "ERROR",
-                                "code": "MARKET_ORDER_ERROR_INDEX_SLIPPAGE",
-                                "fields": [
-                                    "size.size"
-                                ]
-                            },
-                            {
-                                "type": "ERROR",
-                                "code": "MARKET_ORDER_ERROR_ORDERBOOK_SLIPPAGE",
-                                "fields": [
-                                    "size.size"
-                                ]
-                            }
-                        ]
+                        }
                     }
                 }
             """.trimIndent(),

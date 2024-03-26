@@ -277,7 +277,7 @@ open class TradingStateMachine(
                             changes = receivedMarkets(content, subaccountNumber)
                         }
 
-                        "v3_accounts", "v4_subaccounts" -> {
+                        "v3_accounts", "v4_subaccounts", "v4_parent_subaccounts" -> {
                             changes = receivedSubaccountSubscribed(content, height)
                         }
 
@@ -319,8 +319,8 @@ open class TradingStateMachine(
                             changes = receivedMarketsChanges(content, subaccountNumber)
                         }
 
-                        "v3_accounts", "v4_subaccounts" -> {
-                            changes = receivedAccountsChanges(content, info, height)
+                        "v3_accounts", "v4_subaccounts", "v4_parent_subaccounts" -> {
+                            changes = receivedSubaccountsChanges(content, info, height)
                         }
 
                         "v3_orderbook", "v4_orderbook" -> {
@@ -382,8 +382,8 @@ open class TradingStateMachine(
                             )
                         }
 
-                        "v3_accounts", "v4_subaccounts" -> {
-                            changes = receivedBatchAccountsChanges(content, info, height)
+                        "v3_accounts", "v4_subaccounts", "v4_parent_subaccounts" -> {
+                            changes = receivedBatchSubaccountsChanges(content, info, height)
                         }
 
                         else -> {
