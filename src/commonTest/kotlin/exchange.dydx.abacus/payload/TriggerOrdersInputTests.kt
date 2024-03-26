@@ -41,28 +41,6 @@ class TriggerOrderInputTests : V4BaseTests() {
         testSetPositionSize()
     }
 
-    private fun testDefaultPositionSize() {
-        test(
-            {
-                perp.triggerOrders("STOP_LIMIT", TriggerOrdersInputField.stopLossOrderType, 0)
-            },
-            """
-        {
-            "input": {
-                "current": "triggerOrders",
-                "triggerOrders": {
-                    "marketId": "ETH-USD",
-                    "stopLossOrder": {
-                        "type": "STOP_LIMIT",
-                        "size": "1.0"
-                    }
-                }
-            }
-        }
-            """.trimIndent(),
-        )
-    }
-
     private fun testSetPositionSize() {
         test(
             {
