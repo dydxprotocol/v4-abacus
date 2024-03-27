@@ -50,6 +50,8 @@ import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
@@ -432,6 +434,82 @@ internal class SubaccountSupervisor(
         }
     }
 
+    /**
+     * @description Get the childSubaccount number that is available for the given marketId
+     * @param marketId
+     */
+    @Throws(Exception::class)
+    internal fun getChildSubaccountNumberForIsolatedMarginTrade(marketId: String): Int {
+        val subaccounts = stateMachine.state?.account?.subaccounts
+
+        val utilizedSubaccountsMarketIdMap = subaccounts?.mapValues {
+            val openPositions = it.value.openPositions
+            val openOrders = it.value.orders?.filter {order ->
+                val status = helper.parser.asString(order.status)
+                status == "OPEN"
+            }
+
+            val postionMarketIds = openPositions?.map { position ->
+                val positionMarketId = helper.parser.asString(position.id)
+                positionMarketId
+            }
+
+            val openOrderMarketIds = openOrders?.map { order ->
+                val orderMarketId = helper.parser.asString(order.marketId)
+                orderMarketId
+            }
+
+            // Return the combined list of marketIds w/o duplicates
+            ((postionMarketIds ?: iListOf()) + (openOrderMarketIds ?: iListOf())).toSet()
+        }
+
+        // Check if an existing childSubaccount is available to use for Isolated Margin Trade
+        utilizedSubaccountsMarketIdMap?.forEach { (key, marketIds) ->
+            val subaccountNumberToCheck = key.toInt()
+            if (subaccountNumberToCheck != subaccountNumber) {
+                if (marketIds.contains(marketId) && marketIds.size <= 1) {
+                    return subaccountNumberToCheck
+                } else if (marketIds.isEmpty()) {
+                    return subaccountNumberToCheck
+                }
+            }
+        }
+
+        // Find new childSubaccount number available for Isolated Margin Trade
+        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber)
+        for (offset in NUM_PARENT_SUBACCOUNTS..MAX_SUBACCOUNT_NUMBER step NUM_PARENT_SUBACCOUNTS) {
+            val tentativeSubaccountNumber = offset + subaccountNumber
+            if (!existingSubaccountNumbers.contains(tentativeSubaccountNumber.toString())) {
+                return tentativeSubaccountNumber
+            }
+        }
+
+        // User has reached the maximum number of childSubaccounts for their current parentSubaccount
+        throw Exception("No available subaccount number")
+    }
+
+    @Throws(Exception::class)
+    internal fun getTransactionsForIsolatedOrder(orderPayload: HumanReadablePlaceOrderPayload): IList<Transaction> {
+        val trade = stateMachine.state?.input?.trade
+
+        // Derive transfer params from trade input
+        val targetLeverage = trade?.targetLeverage ?: throw Exception("targetLeverage is null")
+        val size = orderPayload.size
+        val price = orderPayload.price
+        val notionalUsdc = price * size
+        val amountToTransfer = (notionalUsdc / targetLeverage).toString()
+        val childSubaccountNumber = orderPayload.subaccountNumber
+
+        val transferPayload = HumanReadableSubaccountTransferPayload(
+            subaccountNumber,
+            amountToTransfer,
+            accountAddress,
+            childSubaccountNumber,
+        )
+
+        return iListOf(Transaction(TransactionType.SubaccountTransfer, Json.encodeToString(transferPayload)), Transaction(TransactionType.PlaceOrder, Json.encodeToString(orderPayload)))
+    }
+
     internal fun commitPlaceOrder(
         currentHeight: Int?,
         callback: TransactionCallback
@@ -449,6 +527,8 @@ internal class SubaccountSupervisor(
         tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
 
         lastOrderClientId = null
+
+        val isIsolatedMarginOrder = helper.parser.asInt(payload.subaccountNumber) != subaccountNumber
 
         val isShortTermOrder = when (payload.type) {
             "MARKET" -> true
@@ -485,13 +565,34 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX) {
+
+            if (isIsolatedMarginOrder) {
+                helper.transaction(getTransactionsForIsolatedOrder(payload), TargetChain.DYDX) {
                     response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
+            } else {
+                helper.transaction(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX) {
+                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                }
             }
         } else {
-            transactionQueue.enqueue(
-                TransactionParams(iListOf(Transaction(TransactionType.PlaceOrder, string)), TargetChain.DYDX, transactionCallback),
-            )
+            if (isIsolatedMarginOrder) {
+                transactionQueue.enqueue(
+                    TransactionParams(
+                        getTransactionsForIsolatedOrder(payload),
+                        TargetChain.DYDX,
+                        transactionCallback
+                    ),
+                )
+            } else {
+                transactionQueue.enqueue(
+                    TransactionParams(
+                        iListOf(Transaction(TransactionType.PlaceOrder, string)),
+                        TargetChain.DYDX,
+                        transactionCallback
+                    ),
+                )
+            }
         }
 
         return payload
@@ -552,6 +653,7 @@ internal class SubaccountSupervisor(
         val marketId = trade?.marketId ?: throw Exception("marketId is null")
         val summary = trade.summary ?: throw Exception("summary is null")
         val clientId = Random.nextInt(0, Int.MAX_VALUE)
+        val marginMode = trade.marginMode?.rawValue ?: throw Exception("marginMode is null")
         val type = trade.type?.rawValue ?: throw Exception("type is null")
         val side = trade.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
@@ -591,8 +693,15 @@ internal class SubaccountSupervisor(
             )?.toInt()
 
         val marketInfo = marketInfo(marketId)
+
+        val subaccountNumberForOrder = if (marginMode == "ISOLATED") {
+            getChildSubaccountNumberForIsolatedMarginTrade(marketId)
+        } else {
+            subaccountNumber
+        }
+
         return HumanReadablePlaceOrderPayload(
-            subaccountNumber,
+            subaccountNumberForOrder,
             marketId,
             clientId,
             type,

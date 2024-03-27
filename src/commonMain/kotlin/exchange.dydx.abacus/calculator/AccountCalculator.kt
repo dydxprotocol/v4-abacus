@@ -1,13 +1,14 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 class AccountCalculator(val parser: ParserProtocol) {
     private val subaccountCalculator = SubaccountCalculator(parser)
 
-    private val kChildSubaccountMod = 128
+    private val kChildSubaccountMod = NUM_PARENT_SUBACCOUNTS
 
     internal fun calculate(
         account: Map<String, Any>?,
