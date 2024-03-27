@@ -49,7 +49,9 @@ data class TriggerPrice(
 @JsExport
 @Serializable
 data class TriggerOrder(
+    val orderId: String?,
     val type: OrderType?,
+    val side: OrderSide?,
     val price: TriggerPrice?,
 ) {
     companion object {
@@ -61,8 +63,12 @@ data class TriggerOrder(
             DebugLogger.log("creating Trigger Order\n")
 
             data?.let {
+                val orderId = parser.asString(data["orderId"])
                 val type = parser.asString(data["type"])?.let {
                     OrderType.invoke(it)
+                }
+                val side = parser.asString(data["side"])?.let {
+                    OrderSide.invoke(it)
                 }
                 val price = TriggerPrice.create(
                     existing?.price,
@@ -71,10 +77,12 @@ data class TriggerOrder(
                 )
 
                 return if (
+                    existing?.orderId != orderId ||
                     existing?.type != type ||
+                    existing?.side != side ||
                     existing?.price != price
                 ) {
-                    TriggerOrder(type, price)
+                    TriggerOrder(orderId, type, side, price)
                 } else {
                     existing
                 }

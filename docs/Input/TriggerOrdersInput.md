@@ -1,4 +1,4 @@
-# TriggerOrdersInput 
+# TriggerOrdersInput
 
 data class TriggerOrdersInput(  
 &emsp;val marketId: String?,  
@@ -26,13 +26,23 @@ Take profit order for the position
 # TriggerOrder
 
 data class TriggerOrderInput(  
+&emsp;val orderId: String?,  
 &emsp;val type: OrderType?,  
+&emsp;val side: Side?,  
 &emsp;val price: [TriggerPrice](#TriggerPrice)?  
 )
+
+## orderId
+
+The associated order ID, if the order already exists
 
 ## type
 
 OrderType. See [SubaccountOrder](../Account.md)
+
+## side
+
+BUY or SELL
 
 ## price
 

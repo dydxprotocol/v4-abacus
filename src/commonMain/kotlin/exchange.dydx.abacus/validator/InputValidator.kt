@@ -80,7 +80,9 @@ internal class InputValidator(
         TransferInputValidator(localizer, formatter, parser),
     )
 
-    private val triggerOrdersValidators = listOf<ValidatorProtocol>()
+    private val triggerOrdersValidators = listOf<ValidatorProtocol>(
+        TriggerOrdersInputValidator(localizer, formatter, parser),
+    )
 
     fun validate(
         wallet: Map<String, Any>?,
