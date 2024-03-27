@@ -30,8 +30,8 @@ class AccountCalculator(val parser: ParserProtocol) {
                             configs,
                             markets,
                             price,
-                            periods
-                        )
+                            periods,
+                        ),
                     )
                 }
             }
@@ -62,8 +62,8 @@ class AccountCalculator(val parser: ParserProtocol) {
                     val parentSubaccount = parser.asNativeMap(
                         parser.value(
                             groupedSubaccounts,
-                            "$parentSubaccountNumber"
-                        )
+                            "$parentSubaccountNumber",
+                        ),
                     ) ?: parser.asNativeMap(parser.value(subaccounts, "$parentSubaccountNumber"))
                     if (parentSubaccount != null) {
                         val openPositions =
@@ -134,7 +134,6 @@ class AccountCalculator(val parser: ParserProtocol) {
                                     modifiedPendingPositions.add(modifiedPendingPosition)
                                 }
                             }
-
                         }
                         val modifiedParentSubaccount = parentSubaccount.toMutableMap()
                         modifiedParentSubaccount.safeSet("openPositions", modifiedOpenPositions)
@@ -143,9 +142,12 @@ class AccountCalculator(val parser: ParserProtocol) {
                             modifiedPendingPositions.sortedWith { pending1, pending2 ->
                                 val marketId1 = parser.asString(parser.value(pending1, "assetId"))
                                 val marketId2 = parser.asString(parser.value(pending2, "assetId"))
-                                if (marketId1 != null && marketId2 != null)
-                                    marketId1.compareTo(marketId2) else 0
-                            }
+                                if (marketId1 != null && marketId2 != null) {
+                                    marketId1.compareTo(marketId2)
+                                } else {
+                                    0
+                                }
+                            },
                         )
                         modifiedParentSubaccount.safeSet(
                             "equity",
