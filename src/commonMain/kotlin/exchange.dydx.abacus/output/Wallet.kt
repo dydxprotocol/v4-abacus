@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iMutableMapOf
 import kotlinx.serialization.Serializable
@@ -31,7 +31,7 @@ data class User(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): User? {
-            DebugLogger.log("creating Account User\n")
+            Logger.d { "creating Account User\n" }
             data?.let {
                 val isRegistered = parser.asBool(data["isRegistered"]) ?: false
                 val email = parser.asString(data["email"])
@@ -81,7 +81,7 @@ data class User(
                     }
                 }
             }
-            DebugLogger.debug("Account User not valid")
+            Logger.d { "Account User not valid" }
             return null
         }
     }
@@ -99,7 +99,7 @@ data class LaunchIncentivePoint(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): LaunchIncentivePoint? {
-            DebugLogger.log("creating LaunchIncentivePoint\n")
+            Logger.d { "creating LaunchIncentivePoint\n" }
 
             data?.let {
                 val incentivePoints = parser.asDouble(data["incentivePoints"])
@@ -117,7 +117,7 @@ data class LaunchIncentivePoint(
                     }
                 }
             }
-            DebugLogger.debug("LaunchIncentivePoint not valid")
+            Logger.d { "LaunchIncentivePoint not valid" }
             return null
         }
     }
@@ -134,7 +134,7 @@ data class LaunchIncentivePoints(
             parser: ParserProtocol,
             data: Map<String, Any>?
         ): LaunchIncentivePoints? {
-            DebugLogger.log("creating LaunchIncentivePoints\n")
+            Logger.d { "creating LaunchIncentivePoints\n" }
 
             var diff = false
             val points = iMutableMapOf<String, LaunchIncentivePoint>()
@@ -179,7 +179,7 @@ data class Wallet(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): Wallet? {
-            DebugLogger.log("creating Wallet\n")
+            Logger.d { "creating Wallet\n" }
 
             data?.let {
                 val walletAddress = parser.asString(data["walletAddress"])
@@ -193,7 +193,7 @@ data class Wallet(
                 )
                 return wallet
             }
-            DebugLogger.debug("Wallet not valid")
+            Logger.d { "Wallet not valid" }
             return null
         }
     }

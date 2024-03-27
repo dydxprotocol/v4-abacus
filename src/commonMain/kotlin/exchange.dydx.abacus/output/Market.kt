@@ -7,10 +7,10 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableMap
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.typedSafeSet
@@ -240,7 +240,7 @@ data class MarketHistoricalFunding(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): MarketHistoricalFunding? {
-            DebugLogger.log("creating Market Historical Funding\n")
+            Logger.d { "creating Market Historical Funding\n" }
             data?.let {
                 val rate = parser.asDouble(data["rate"])
                 val price = parser.asDouble(data["price"])
@@ -350,7 +350,7 @@ data class CandleOption(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): CandleOption? {
-            DebugLogger.log("creating Candle Option\n")
+            Logger.d { "creating Candle Option\n" }
             data?.let {
                 val value = parser.asString(data["value"])
                 val stringKey = parser.asString(data["stringKey"])
@@ -419,7 +419,7 @@ data class MarketCandle(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): MarketCandle? {
-            DebugLogger.log("creating Market Candle\n")
+            Logger.d { "creating Market Candle\n" }
             data?.let {
                 val startedAtMilliseconds =
                     parser.asDatetime(data["startedAt"])?.toEpochMilliseconds()?.toDouble()
@@ -493,7 +493,7 @@ data class MarketCandles(
             parser: ParserProtocol,
             data: Map<String, Any>?,
         ): MarketCandles? {
-            DebugLogger.log("creating Market Candles\n")
+            Logger.d { "creating Market Candles\n" }
             data?.let {
                 val candlesMap = iMutableMapOf<String, IList<MarketCandle>>()
                 for ((key, value) in data) {
@@ -544,7 +544,7 @@ data class MarketTradeResources(val sideString: String?, val sideStringKey: Stri
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): MarketTradeResources? {
-            DebugLogger.log("creating Market Trade Resources\n")
+            Logger.d { "creating Market Trade Resources\n" }
             data?.let {
                 val sideStringKey = parser.asString(data["sideStringKey"])
 
@@ -560,7 +560,7 @@ data class MarketTradeResources(val sideString: String?, val sideStringKey: Stri
                     }
                 }
             }
-            DebugLogger.debug("Market Trade Resources not valid")
+            Logger.d { "Market Trade Resources not valid" }
             return null
         }
     }
@@ -584,7 +584,7 @@ data class MarketTrade(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): MarketTrade? {
-            DebugLogger.log("creating Market Trade\n")
+            Logger.d { "creating Market Trade\n" }
             data?.let {
                 val id = parser.asString(data["id"])
                 val size = parser.asDouble(data["size"])
@@ -660,7 +660,7 @@ data class OrderbookLine(
             data: Map<*, *>?,
             previousDepthCost: Double? = null,
         ): OrderbookLine? {
-            DebugLogger.log("creating Orderbook Line\n")
+            Logger.d { "creating Orderbook Line\n" }
             data?.let {
                 val size = parser.asDouble(data["size"])
                 val price = parser.asDouble(data["price"])
@@ -698,7 +698,7 @@ data class MarketOrderbookGrouping(val multiplier: OrderbookGrouping, val tickSi
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): MarketOrderbookGrouping? {
-            DebugLogger.log("creating Market Grouping\n")
+            Logger.d { "creating Market Grouping\n" }
             if (data != null) {
                 val tickSize = parser.asDouble(data["tickSize"])
                 val multiplier = OrderbookGrouping.invoke(parser.asInt(data["multiplier"]) ?: 1)
@@ -726,7 +726,7 @@ data class MarketOrderbook(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): MarketOrderbook? {
-            DebugLogger.log("creating Market Orderbook\n")
+            Logger.d { "creating Market Orderbook\n" }
             data?.let {
                 val midPrice = parser.asDouble(data["midPrice"])
                 val spreadPercent = parser.asDouble(data["spreadPercent"])
@@ -932,7 +932,7 @@ data class PerpetualMarketSummary(
             data: Map<String, Any>,
             assets: Map<String, Any>?
         ): PerpetualMarketSummary? {
-            DebugLogger.log("creating Perpetual Market Summary\n")
+            Logger.d { "creating Perpetual Market Summary\n" }
 
             val markets: IMutableMap<String, PerpetualMarket> =
                 iMutableMapOf()

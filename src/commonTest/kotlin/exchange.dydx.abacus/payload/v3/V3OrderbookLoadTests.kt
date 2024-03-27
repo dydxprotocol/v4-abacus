@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v3
 
-import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.Logger
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
@@ -59,7 +59,7 @@ class V3OrderbookLoadTests : V3BaseTests() {
                 assertNotNull(bids)
                 val asksCount = asks.count()
                 val bidsCount = bids.count()
-                DebugLogger.log("Asks: $asksCount, Bids: $bidsCount")
+                Logger.d { "Asks: $asksCount, Bids: $bidsCount" }
             },
         )
     }

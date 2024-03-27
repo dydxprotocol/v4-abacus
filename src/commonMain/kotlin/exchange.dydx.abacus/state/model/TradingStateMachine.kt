@@ -48,8 +48,8 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
@@ -633,7 +633,7 @@ open class TradingStateMachine(
 
                 // Restriction is handled separately and shouldn't have gone through here
                 Changes.restriction -> {
-                    DebugLogger.log("Restriction is handled separately and shouldn't have gone through here")
+                    Logger.d { "Restriction is handled separately and shouldn't have gone through here" }
                     false
                 }
             }
