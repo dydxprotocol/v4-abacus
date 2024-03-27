@@ -33,7 +33,7 @@ internal class WithdrawalValidator(
         val secondsUntilUnblock = (withdrawalsAndTransfersUnblockedAtBlock - currentBlock) * blockDurationSeconds
 
         val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
-        val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.ZERO
+        val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
         val type = parser.asString(parser.value(transfer, "type"))
         val size = parser.asMap(parser.value(transfer, "size"))
         val usdcSize = parser.asDecimal(size?.get("usdcSize")) ?: BigDecimal.ZERO
@@ -50,7 +50,10 @@ internal class WithdrawalValidator(
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_ACTION" else "TRANSFERS_PAUSED_ACTION"}",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_TITLE" else "TRANSFERS_PAUSED_TITLE"}",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_DESCRIPTION" else "TRANSFERS_PAUSED_DESCRIPTION"}",
-                    mapOf("SECONDS" to secondsUntilUnblock),
+                    mapOf("SECONDS" to mapOf(
+                        "value" to secondsUntilUnblock,
+                        "format" to "string",
+                    )),
                     null,
                     environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",
@@ -65,8 +68,10 @@ internal class WithdrawalValidator(
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
-                    mapOf("USDC_AMOUNT" to maxWithdrawalCapacity),
-                    null,
+                    mapOf("USDC_AMOUNT" to mapOf(
+                        "value" to maxWithdrawalCapacity.doubleValue(false),
+                        "format" to "price",
+                    )),                    null,
                     environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",
                     ),
