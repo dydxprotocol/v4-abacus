@@ -61,6 +61,10 @@ class AccountCalculator(val parser: ParserProtocol) {
                                 val modifiedChildOpenPosition =
                                     parser.asMap(childOpenPosition)?.toMutableMap()
                                 modifiedChildOpenPosition?.safeSet(
+                                    "childSubaccountNumber",
+                                    subaccountNumber,
+                                )
+                                modifiedChildOpenPosition?.safeSet(
                                     "quoteBalance",
                                     subaccount["quoteBalance"],
                                 )
