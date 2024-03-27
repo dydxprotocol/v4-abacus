@@ -28,6 +28,7 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             "size" to "amount",
         ),
         "int" to mapOf(
+            "subaccountNumber" to "subaccountNumber",
             "createdAtHeight" to "updatedAtBlock",
         ),
     )

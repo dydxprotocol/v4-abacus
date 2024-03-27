@@ -844,6 +844,7 @@ enum class FillLiquidity(val rawValue: String) {
 @Serializable
 data class SubaccountFill(
     val id: String,
+    val subaccountNumber: Int?,
     val marketId: String,
     val orderId: String?,
     val side: OrderSide,
@@ -865,6 +866,7 @@ data class SubaccountFill(
             DebugLogger.log("creating Account Fill\n")
             data?.let {
                 val id = parser.asString(data["id"])
+                val subaccountNumber = parser.asInt(data["subaccountNumber"])
                 val marketId = parser.asString(data["marketId"])
                 val orderId = parser.asString(data["orderId"])
                 val sideString = parser.asString(data["side"])
@@ -886,6 +888,7 @@ data class SubaccountFill(
                 ) {
                     val fee = parser.asDouble(data["fee"])
                     if (existing?.id != id ||
+                        existing.subaccountNumber != subaccountNumber ||
                         existing.marketId != marketId ||
                         existing.orderId != orderId ||
                         existing.side !== side ||
@@ -898,6 +901,7 @@ data class SubaccountFill(
                     ) {
                         SubaccountFill(
                             id,
+                            subaccountNumber,
                             marketId,
                             orderId,
                             side,
@@ -1026,6 +1030,7 @@ debit and credit info are set depending on the type of transfer
 @Serializable
 data class SubaccountTransfer(
     val id: String,
+    val subaccountNumber: Int?,
     val type: TransferRecordType,
     val asset: String?,
     val amount: Double?,
@@ -1052,6 +1057,7 @@ data class SubaccountTransfer(
                     SubaccountTransferResources.create(existing?.resources, parser, it)
                 }
                 if (id != null && updatedAtMilliseconds != null && resources != null) {
+                    val subaccountNumber = parser.asInt(data["subaccountNumber"])
                     val type =
                         TransferRecordType.invoke(parser.asString(data["type"])) ?: return null
                     val asset = parser.asString(data["asset"])
@@ -1061,6 +1067,7 @@ data class SubaccountTransfer(
                     val updatedAtBlock = parser.asInt(data["updatedAtBlock"])
                     val transactionHash = parser.asString(data["transactionHash"])
                     return if (existing?.id != id ||
+                        existing.subaccountNumber != subaccountNumber ||
                         existing.type !== type ||
                         existing.asset != asset ||
                         existing.amount != amount ||
@@ -1073,6 +1080,7 @@ data class SubaccountTransfer(
                     ) {
                         SubaccountTransfer(
                             id,
+                            subaccountNumber,
                             type,
                             asset,
                             amount,
