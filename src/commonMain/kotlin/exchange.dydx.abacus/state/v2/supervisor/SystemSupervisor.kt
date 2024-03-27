@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.model.onChainRewardsParams
 import exchange.dydx.abacus.state.model.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 import kotlinx.serialization.encodeToString
@@ -65,7 +66,7 @@ internal class SystemSupervisor(
         }
     }
 
-    fun didSetTransferType() {
+    internal fun didSetTransferType() {
         val type = stateMachine.state?.input?.transfer?.type
         if (stateMachine.featureFlags.withdrawalSafetyEnabled
             && configs.retrieveWithdrawSafetyChecks
@@ -160,6 +161,7 @@ internal class SystemSupervisor(
 
 
     fun retrieveWithdrawSafetyChecks() {
+        val transferType = stateMachine.state?.input?.transfer?.type
         when (stateMachine.state?.input?.transfer?.type) {
             TransferType.withdrawal -> {
                 updateWithdrawalCapacity()
@@ -181,12 +183,13 @@ internal class SystemSupervisor(
     // how to hand response errors
     // why the name "adaptor?"
     private fun updateWithdrawalCapacity() {
-        val state = stateMachine.state
-        if (state?.input?.transfer?.type == TransferType.withdrawal) {
+        val transferType = stateMachine.state?.input?.transfer?.type
+        if (transferType == TransferType.withdrawal) {
+            var denom = helper.environment.tokens["usdc"]?.denom
             val params = iMapOf(
-                "denom" to state.input.transfer.address,
+                "denom" to denom,
             )
-            val paramsInJson = Json.encodeToString(params)
+            val paramsInJson = helper.jsonEncoder.encode(params)
             helper.getOnChain(QueryType.GetWithdrawalCapacityByDenom, paramsInJson) { response ->
                 val oldState = stateMachine.state
                 update(stateMachine.onChainWithdrawalCapacity(response), oldState)
