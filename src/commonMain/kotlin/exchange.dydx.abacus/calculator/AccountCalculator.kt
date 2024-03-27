@@ -65,7 +65,7 @@ class AccountCalculator(val parser: ParserProtocol) {
                             "$parentSubaccountNumber",
                         ),
                     ) ?: parser.asNativeMap(parser.value(subaccounts, "$parentSubaccountNumber"))
-                    ?: mapOf("subaccountNumber" to parentSubaccountNumber)
+                        ?: mapOf("subaccountNumber" to parentSubaccountNumber)
 
                     val childOpenPositions =
                         parser.asNativeMap(parser.value(subaccount, "openPositions"))
@@ -141,7 +141,6 @@ class AccountCalculator(val parser: ParserProtocol) {
         childOrders: Map<String, Any>,
         markets: Map<String, Any>?,
     ): Map<String, Any> {
-
         // Each empty subaccount should have order for one market only
         // Just in case it has more than one market, we will create
         // two separate pending positions.
@@ -159,7 +158,7 @@ class AccountCalculator(val parser: ParserProtocol) {
             } else {
                 pendingByMarketId.safeSet(
                     "orderCount",
-                    (parser.asInt(pending["orderCount"]) ?: 0) + 1
+                    (parser.asInt(pending["orderCount"]) ?: 0) + 1,
                 )
                 pendingByMarketId.safeSet(marketId, pending)
             }
@@ -174,11 +173,11 @@ class AccountCalculator(val parser: ParserProtocol) {
             modifiedPendingPosition.safeSet("assetId", assetId)
             modifiedPendingPosition.safeSet(
                 "firstOrderId",
-                parser.value(pending, "firstOrderId")
+                parser.value(pending, "firstOrderId"),
             )
             modifiedPendingPosition.safeSet(
                 "orderCount",
-                parser.value(pending, "orderCount")
+                parser.value(pending, "orderCount"),
             )
             modifiedPendingPosition.safeSet(
                 "quoteBalance",

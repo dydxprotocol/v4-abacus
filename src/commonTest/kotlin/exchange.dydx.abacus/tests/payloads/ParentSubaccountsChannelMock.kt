@@ -170,18 +170,18 @@ internal class ParentSubaccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":120,
-           "id":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4/0",
+           "id":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4/1",
            "channel":"v4_parent_subaccounts",
-           "subaccountNumber":128,
+           "subaccountNumber":129,
            "contents":{
               "subaccounts":{
                  "address":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4",
-                 "subaccountNumber":128
+                 "subaccountNumber":129
               },
               "perpetualPositions":[
                  {
                     "address":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4",
-                    "subaccountNumber":128,
+                    "subaccountNumber":129,
                     "positionId":"1bb14a35-db8b-57c0-a39c-dc6b80b995e0",
                     "market":"RUNE-USD",
                     "side":"LONG",
@@ -193,7 +193,7 @@ internal class ParentSubaccountsChannelMock {
               "assetPositions":[
                  {
                     "address":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4",
-                    "subaccountNumber":128,
+                    "subaccountNumber":129,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
                     "denom":"USDC",
@@ -206,7 +206,7 @@ internal class ParentSubaccountsChannelMock {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
-                    "subaccountNumber":256,
+                    "subaccountNumber":257,
                     "clientId":"2194126268",
                     "clobPairId":"1",
                     "side":"SELL",
@@ -224,7 +224,7 @@ internal class ParentSubaccountsChannelMock {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a9",
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
-                    "subaccountNumber":512,
+                    "subaccountNumber":513,
                     "clientId":"2194126269",
                     "clobPairId":"134",
                     "side":"SELL",

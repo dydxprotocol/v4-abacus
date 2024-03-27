@@ -260,7 +260,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                     "wallet": {
                         "account": {
                             "subaccounts": {
-                                "128": {
+                                "129": {
                                     "equity": {
                                         "current": 9822.9
                                     },
@@ -278,7 +278,41 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                             "id": "RUNE-USD",
                                             "status": "OPEN",
                                             "maxSize": 300.0,
-                                            "netFunding": 0.271316,
+                                            "size": {
+                                                "current": 300.0
+                                            },
+                                            "assetId": "RUNE",
+                                            "resources": {
+                                            },
+                                            "notionalTotal": {
+                                                "current": 822.9
+                                            },
+                                            "valueTotal": {
+                                                "current": 822.9
+                                            },
+                                            "initialRiskTotal": {
+                                                "current": 82.29
+                                            },
+                                            "leverage": {
+                                                "current": 0.084
+                                            },
+                                            "buyingPower": {
+                                                "current": 97406.1
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "groupedSubaccounts": {
+                                "1": {
+                                    "equity": {
+                                        "current": 9822.9
+                                    },
+                                    "openPositions": {
+                                        "RUNE-USD": {
+                                            "id": "RUNE-USD",
+                                            "status": "OPEN",
+                                            "maxSize": 300.0,
                                             "size": {
                                                 "current": 300.0
                                             },
