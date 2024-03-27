@@ -65,99 +65,33 @@ class AccountCalculator(val parser: ParserProtocol) {
                             "$parentSubaccountNumber",
                         ),
                     ) ?: parser.asNativeMap(parser.value(subaccounts, "$parentSubaccountNumber"))
-                    if (parentSubaccount != null) {
-                        val openPositions =
-                            parser.asNativeMap(parser.value(parentSubaccount, "openPositions"))
-                        val modifiedOpenPositions = openPositions?.toMutableMap() ?: mutableMapOf()
-                        val modifiedPendingPositions = mutableListOf<Any>()
+                    ?: mapOf("subaccountNumber" to parentSubaccountNumber)
 
-                        val childOpenPositions =
-                            parser.asNativeMap(parser.value(subaccount, "openPositions"))
-                        if (childOpenPositions?.size == 1) {
-                            for ((market, childOpenPosition) in childOpenPositions) {
-                                val modifiedChildOpenPosition =
-                                    parser.asMap(childOpenPosition)?.toMutableMap()
-                                modifiedChildOpenPosition?.safeSet(
-                                    "childSubaccountNumber",
-                                    subaccountNumber,
-                                )
-                                modifiedChildOpenPosition?.safeSet(
-                                    "quoteBalance",
-                                    subaccount["quoteBalance"],
-                                )
-                                modifiedChildOpenPosition?.safeSet(
-                                    "freeCollateral",
-                                    subaccount["freeCollateral"],
-                                )
-                                modifiedChildOpenPosition?.safeSet("equity", subaccount["equity"])
-                                modifiedOpenPositions.safeSet(market, modifiedChildOpenPosition)
-                            }
+                    val childOpenPositions =
+                        parser.asNativeMap(parser.value(subaccount, "openPositions"))
+                    val modifiedParentSubaccount = if (childOpenPositions != null) {
+                        mergeChildOpenPositions(
+                            parentSubaccount,
+                            subaccountNumber,
+                            subaccount,
+                            childOpenPositions,
+                        )
+                    } else {
+                        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
+                        if (orders != null) {
+                            mergeChildPendingPositions(
+                                parentSubaccount,
+                                subaccountNumber,
+                                subaccount,
+                                orders,
+                                markets,
+                            )
                         } else {
-                            val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
-                            if (orders != null) {
-                                // Each empty subaccount should have order for one market only
-                                // Just in case it has more than one market, we will create
-                                // two separate pending positions.
-                                val pendingByMarketId = mutableMapOf<String, Any>()
-                                for ((orderId, order) in orders) {
-                                    val marketId =
-                                        parser.asString(parser.value(order, "marketId")) ?: continue
-                                    val pending = pendingByMarketId[marketId] as? MutableMap<String, Any>
-                                    if (pending == null) {
-                                        pendingByMarketId[marketId] = mutableMapOf(
-                                            "firstOrderId" to orderId,
-                                            "orderCount" to 1,
-                                        )
-                                    } else {
-                                        pendingByMarketId.safeSet("orderCount", (parser.asInt(pending["orderCount"]) ?: 0) + 1)
-                                        pendingByMarketId.safeSet(marketId, pending)
-                                    }
-                                }
-
-                                for ((marketId, pending) in pendingByMarketId) {
-                                    val market = parser.asMap(markets?.get(marketId)) ?: continue
-                                    val assetId = parser.asString(market["assetId"]) ?: continue
-
-                                    val modifiedPendingPosition = mutableMapOf<String, Any>()
-                                    modifiedPendingPosition.safeSet("assetId", assetId)
-                                    modifiedPendingPosition.safeSet("firstOrderId", parser.value(pending, "firstOrderId"))
-                                    modifiedPendingPosition.safeSet("orderCount", parser.value(pending, "orderCount"))
-                                    modifiedPendingPosition.safeSet(
-                                        "quoteBalance",
-                                        subaccount["quoteBalance"],
-                                    )
-                                    modifiedPendingPosition.safeSet(
-                                        "freeCollateral",
-                                        subaccount["freeCollateral"],
-                                    )
-                                    modifiedPendingPosition.safeSet("equity", subaccount["equity"])
-                                    modifiedPendingPositions.add(modifiedPendingPosition)
-                                }
-                            }
+                            parentSubaccount
                         }
-                        val modifiedParentSubaccount = parentSubaccount.toMutableMap()
-                        modifiedParentSubaccount.safeSet("openPositions", modifiedOpenPositions)
-                        modifiedParentSubaccount.safeSet(
-                            "pendingPositions",
-                            modifiedPendingPositions.sortedWith { pending1, pending2 ->
-                                val marketId1 = parser.asString(parser.value(pending1, "assetId"))
-                                val marketId2 = parser.asString(parser.value(pending2, "assetId"))
-                                if (marketId1 != null && marketId2 != null) {
-                                    marketId1.compareTo(marketId2)
-                                } else {
-                                    0
-                                }
-                            },
-                        )
-                        modifiedParentSubaccount.safeSet(
-                            "equity",
-                            sum(
-                                parser.asMap(parentSubaccount["equity"]),
-                                parser.asMap(subaccount["equity"]),
-                            ),
-                        )
-                        groupedSubaccounts["$parentSubaccountNumber"] = modifiedParentSubaccount
                     }
+                    groupedSubaccounts["$parentSubaccountNumber"] =
+                        sumEquity(modifiedParentSubaccount, subaccount)
                 }
             }
             modified.safeSet("groupedSubaccounts", groupedSubaccounts)
@@ -165,6 +99,127 @@ class AccountCalculator(val parser: ParserProtocol) {
             modified.safeSet("groupedSubaccounts", null)
         }
         return modified
+    }
+
+    private fun mergeChildOpenPositions(
+        parentSubaccount: Map<String, Any>,
+        childSubaccountNumber: Int,
+        childSubaccount: Map<String, Any>,
+        childOpenPositions: Map<String, Any>,
+    ): Map<String, Any> {
+        val openPositions =
+            parser.asNativeMap(parser.value(parentSubaccount, "openPositions"))
+        val modifiedOpenPositions = openPositions?.toMutableMap() ?: mutableMapOf()
+        for ((market, childOpenPosition) in childOpenPositions) {
+            val modifiedChildOpenPosition =
+                parser.asMap(childOpenPosition)?.toMutableMap()
+            modifiedChildOpenPosition?.safeSet(
+                "childSubaccountNumber",
+                childSubaccountNumber,
+            )
+            modifiedChildOpenPosition?.safeSet(
+                "quoteBalance",
+                childSubaccount["quoteBalance"],
+            )
+            modifiedChildOpenPosition?.safeSet(
+                "freeCollateral",
+                childSubaccount["freeCollateral"],
+            )
+            modifiedChildOpenPosition?.safeSet("equity", childSubaccount["equity"])
+            modifiedOpenPositions.safeSet(market, modifiedChildOpenPosition)
+        }
+
+        val modifiedParentSubaccount = parentSubaccount.toMutableMap()
+        modifiedParentSubaccount.safeSet("openPositions", modifiedOpenPositions)
+        return modifiedParentSubaccount
+    }
+
+    private fun mergeChildPendingPositions(
+        parentSubaccount: Map<String, Any>,
+        childSubaccountNumber: Int,
+        childSubaccount: Map<String, Any>,
+        childOrders: Map<String, Any>,
+        markets: Map<String, Any>?,
+    ): Map<String, Any> {
+
+        // Each empty subaccount should have order for one market only
+        // Just in case it has more than one market, we will create
+        // two separate pending positions.
+        val pendingByMarketId = mutableMapOf<String, Any>()
+        for ((orderId, order) in childOrders) {
+            val marketId =
+                parser.asString(parser.value(order, "marketId")) ?: continue
+            val pending =
+                pendingByMarketId[marketId] as? MutableMap<String, Any>
+            if (pending == null) {
+                pendingByMarketId[marketId] = mutableMapOf(
+                    "firstOrderId" to orderId,
+                    "orderCount" to 1,
+                )
+            } else {
+                pendingByMarketId.safeSet(
+                    "orderCount",
+                    (parser.asInt(pending["orderCount"]) ?: 0) + 1
+                )
+                pendingByMarketId.safeSet(marketId, pending)
+            }
+        }
+
+        val modifiedPendingPositions = mutableListOf<Any>()
+        for ((marketId, pending) in pendingByMarketId) {
+            val market = parser.asMap(markets?.get(marketId)) ?: continue
+            val assetId = parser.asString(market["assetId"]) ?: continue
+
+            val modifiedPendingPosition = mutableMapOf<String, Any>()
+            modifiedPendingPosition.safeSet("assetId", assetId)
+            modifiedPendingPosition.safeSet(
+                "firstOrderId",
+                parser.value(pending, "firstOrderId")
+            )
+            modifiedPendingPosition.safeSet(
+                "orderCount",
+                parser.value(pending, "orderCount")
+            )
+            modifiedPendingPosition.safeSet(
+                "quoteBalance",
+                childSubaccount["quoteBalance"],
+            )
+            modifiedPendingPosition.safeSet(
+                "freeCollateral",
+                childSubaccount["freeCollateral"],
+            )
+            modifiedPendingPosition.safeSet("equity", childSubaccount["equity"])
+            modifiedPendingPositions.add(modifiedPendingPosition)
+        }
+        val modifiedParentSubaccount = parentSubaccount.toMutableMap()
+        modifiedParentSubaccount.safeSet(
+            "pendingPositions",
+            modifiedPendingPositions.sortedWith { pending1, pending2 ->
+                val marketId1 = parser.asString(parser.value(pending1, "assetId"))
+                val marketId2 = parser.asString(parser.value(pending2, "assetId"))
+                if (marketId1 != null && marketId2 != null) {
+                    marketId1.compareTo(marketId2)
+                } else {
+                    0
+                }
+            },
+        )
+        return modifiedParentSubaccount
+    }
+
+    private fun sumEquity(
+        parentSubaccount: Map<String, Any>,
+        childSubaccount: Map<String, Any>
+    ): Map<String, Any> {
+        val modifiedParentSubaccount = parentSubaccount.toMutableMap()
+        modifiedParentSubaccount.safeSet(
+            "equity",
+            sum(
+                parser.asMap(parentSubaccount["equity"]),
+                parser.asMap(childSubaccount["equity"]),
+            ),
+        )
+        return modifiedParentSubaccount
     }
 
     private fun sum(value1: Map<String, Any>?, value2: Map<String, Any>?): Map<String, Any> {
