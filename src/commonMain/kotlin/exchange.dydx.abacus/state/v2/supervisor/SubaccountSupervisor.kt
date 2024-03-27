@@ -438,7 +438,6 @@ internal class SubaccountSupervisor(
      * @description Get the childSubaccount number that is available for the given marketId
      * @param marketId
      */
-    @Throws(Exception::class)
     internal fun getChildSubaccountNumberForIsolatedMarginTrade(marketId: String): Int {
         val subaccounts = stateMachine.state?.account?.subaccounts
 
@@ -485,15 +484,14 @@ internal class SubaccountSupervisor(
         }
 
         // User has reached the maximum number of childSubaccounts for their current parentSubaccount
-        throw Exception("No available subaccount number")
+        error("No available subaccount number")
     }
 
-    @Throws(Exception::class)
     internal fun getTransactionsForIsolatedOrder(orderPayload: HumanReadablePlaceOrderPayload): IList<Transaction> {
         val trade = stateMachine.state?.input?.trade
 
         // Derive transfer params from trade input
-        val targetLeverage = trade?.targetLeverage ?: throw Exception("targetLeverage is null")
+        val targetLeverage = trade?.targetLeverage ?: error("targetLeverage is null")
         val size = orderPayload.size
         val price = orderPayload.price
         val notionalUsdc = price * size
