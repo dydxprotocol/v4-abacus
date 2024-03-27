@@ -214,6 +214,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                             "buyingPower": {
                                                 "current": 7962.44
                                             },
+                                            "childSubaccountNumber": 128,
                                             "equity": {
                                                 "current": 829.16
                                             },

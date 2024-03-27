@@ -451,13 +451,13 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
                 payload,
             )
             modified.safeSet("positions", positions)
-            val openPositins = positions?.filterValues { it ->
+            val openPositions = positions?.filterValues { it ->
                 val data = parser.asNativeMap(it)
                 parser.asString(data?.get("status")) == "OPEN"
             }
             modified.safeSet(
                 "openPositions",
-                openPositins,
+                openPositions,
             )
             modified
         } else {

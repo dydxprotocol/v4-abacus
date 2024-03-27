@@ -248,6 +248,7 @@ data class SubaccountPosition(
     val buyingPower: TradeStatesWithDoubleValues?,
     val liquidationPrice: TradeStatesWithDoubleValues?,
     val resources: SubaccountPositionResources,
+    val childSubaccountNumber: Int?,
     val freeCollateral: TradeStatesWithDoubleValues?,
     val quoteBalance: TradeStatesWithDoubleValues?, // available for isolated market position
     val equity: TradeStatesWithDoubleValues?, // available for isolated market position
@@ -358,6 +359,7 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["liquidationPrice"]),
                     )
+                    val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
                     val freeCollateral = TradeStatesWithDoubleValues.create(
                         null,
                         parser,
@@ -396,6 +398,7 @@ data class SubaccountPosition(
                         existing.buyingPower !== buyingPower ||
                         existing.liquidationPrice !== liquidationPrice ||
                         existing.resources !== resources ||
+                        existing.childSubaccountNumber !== childSubaccountNumber ||
                         existing.freeCollateral !== freeCollateral ||
                         existing.quoteBalance !== quoteBalance ||
                         existing.equity !== equity
@@ -425,6 +428,7 @@ data class SubaccountPosition(
                             buyingPower,
                             liquidationPrice,
                             resources,
+                            childSubaccountNumber,
                             freeCollateral,
                             quoteBalance,
                             equity,
