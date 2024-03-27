@@ -19,7 +19,7 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
     override fun setup() {
         perp.loadAccounts(mock)
         perp.currentBlockAndHeight = mock.heightMock.currentBlockAndHeight
-        perp.transfer("5", TransferInputField.usdcSize)
+        perp.transfer(TransferType.deposit.rawValue, TransferInputField.type)
     }
 
     @Test
@@ -42,9 +42,10 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
             """.trimIndent(),
         )
         perp.currentBlockAndHeight = mock.heightMock.beforeCurrentBlockAndHeight
+        perp.transfer(TransferType.withdrawal.rawValue, TransferInputField.type)
         test(
             {
-                perp.transfer(TransferType.withdrawal.rawValue, TransferInputField.type)
+                perp.transfer("1235.0", TransferInputField.usdcSize)
             },
             """
             {
@@ -54,14 +55,42 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
                         "chainOutageSeenAtBlock" : 8489769,
                         "withdrawalsAndTransfersUnblockedAtBlock" : 16750
                     }
+                },
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "",
+                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_TITLE"
+                                },
+                                "text": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_DESCRIPTION",
+                                    "params": [
+                                        {
+                                            "value": 1.5,
+                                            "format": "string",
+                                            "key": "SECONDS"
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_ACTION"
+                                }
+                            }
+                        }
+                    ]
                 }
             }
             """.trimIndent(),
         )
         perp.currentBlockAndHeight = mock.heightMock.afterCurrentBlockAndHeight
+        perp.transfer(TransferType.transferOut.rawValue, TransferInputField.type)
         test(
             {
-                perp.transfer(TransferType.transferOut.rawValue, TransferInputField.type)
+                perp.transfer("1235.0", TransferInputField.usdcSize)
             },
             """
             {
@@ -71,6 +100,22 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
                         "chainOutageSeenAtBlock" : 8489769,
                         "withdrawalsAndTransfersUnblockedAtBlock" : 16750
                     }
+                },
+                "input": {
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_ADDRESS",
+                            "fields": [
+                                "address"
+                            ],
+                            "resources": {
+                                "action": {
+                                    "stringKey": "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
+                                }
+                            }
+                        }
+                    ]
                 }
             }
             """.trimIndent(),
@@ -88,56 +133,54 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
             },
             """
             {
-            "input": {
-                "transfer": {
-                    "type": "WITHDRAWAL",
-                    "size": {
-                        "usdcSize": 1235.0
-                    }
-                },
-                "errors": [
-                    {
-                        "type": "ERROR",
-                        "code": "TEST2",
-                        "fields": [
-                            "address"
-                        ],
-                        "resources": {
-                            "title": {
-                                "stringKey": "TEST2"
-                            },
-                            "text": {
-                                "stringKey": "TEST2",
-                                "params": null
-                            },
-                            "action": {
-                                "stringKey": "TEST2"
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "",
+                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE"
+                                },
+                                "text": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
+                                    "params": [
+                                        {
+                                            "value": 1234.567891,
+                                            "format": "price",
+                                            "key": "USDC_AMOUNT"
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION"
+                                }
                             }
                         }
+                    ]
+                },
+                "configs": {
+                    "withdrawalCapacity": {
+                        "limiterCapacityList": [
+                            {
+                                "seconds": "3600",
+                                "capacity": "1234567891",
+                                "baselineMinimum": "1000000000000",
+                                "nanos": 0.0,
+                                "baselineTvlPpm": 10000.0
+                            },
+                            {
+                                "seconds": "86400",
+                                "capacity": "1234567892",
+                                "baselineMinimum": "10000000000000",
+                                "nanos": 0.0,
+                                "baselineTvlPpm": 100000.0
+                            }
+                        ],
+                        "maxWithdrawalCapacity": "1234.567891"
                     }
-                ]
-            },
-            "configs": {
-                "withdrawalCapacity": {
-                    "limiterCapacityList": [
-                        {
-                            "seconds": "3600",
-                            "capacity": "1234567891",
-                            "baselineMinimum": "1000000000000",
-                            "nanos": 0.0,
-                            "baselineTvlPpm": 10000.0
-                        },
-                        {
-                            "seconds": "86400",
-                            "capacity": "1234567892",
-                            "baselineMinimum": "10000000000000",
-                            "nanos": 0.0,
-                            "baselineTvlPpm": 100000.0
-                        }
-                    ],
-                    "maxWithdrawalCapacity": "1234.567891"
                 }
-            }
             }
             """.trimIndent(),
         )
