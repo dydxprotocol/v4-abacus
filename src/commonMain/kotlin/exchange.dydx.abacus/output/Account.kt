@@ -248,6 +248,10 @@ data class SubaccountPosition(
     val buyingPower: TradeStatesWithDoubleValues?,
     val liquidationPrice: TradeStatesWithDoubleValues?,
     val resources: SubaccountPositionResources,
+    val childSubaccountNumber: Int?,
+    val freeCollateral: TradeStatesWithDoubleValues?,
+    val quoteBalance: TradeStatesWithDoubleValues?, // available for isolated market position
+    val equity: TradeStatesWithDoubleValues?, // available for isolated market position
 ) {
     companion object {
         internal fun create(
@@ -355,6 +359,22 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["liquidationPrice"]),
                     )
+                    val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
+                    val freeCollateral = TradeStatesWithDoubleValues.create(
+                        null,
+                        parser,
+                        parser.asMap(data["freeCollateral"]),
+                    )
+                    val quoteBalance = TradeStatesWithDoubleValues.create(
+                        null,
+                        parser,
+                        parser.asMap(data["quoteBalance"]),
+                    )
+                    val equity = TradeStatesWithDoubleValues.create(
+                        null,
+                        parser,
+                        parser.asMap(data["equity"]),
+                    )
 
                     return if (existing?.id != id ||
                         existing.assetId != assetId ||
@@ -377,7 +397,11 @@ data class SubaccountPosition(
                         existing.maxLeverage !== maxLeverage ||
                         existing.buyingPower !== buyingPower ||
                         existing.liquidationPrice !== liquidationPrice ||
-                        existing.resources !== resources
+                        existing.resources !== resources ||
+                        existing.childSubaccountNumber !== childSubaccountNumber ||
+                        existing.freeCollateral !== freeCollateral ||
+                        existing.quoteBalance !== quoteBalance ||
+                        existing.equity !== equity
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
@@ -404,6 +428,10 @@ data class SubaccountPosition(
                             buyingPower,
                             liquidationPrice,
                             resources,
+                            childSubaccountNumber,
+                            freeCollateral,
+                            quoteBalance,
+                            equity,
                         )
                     } else {
                         existing
@@ -1812,6 +1840,7 @@ data class Account(
     var balances: IMap<String, AccountBalance>?,
     var stakingBalances: IMap<String, AccountBalance>?,
     var subaccounts: IMap<String, Subaccount>?,
+    var groupedSubaccounts: IMap<String, Subaccount>?,
     var tradingRewards: TradingRewards?,
     val launchIncentivePoints: LaunchIncentivePoints?,
 ) {
@@ -1898,10 +1927,30 @@ data class Account(
                 }
             }
 
+            val groupedSubaccounts: IMutableMap<String, Subaccount> =
+                iMutableMapOf()
+
+            val groupedSubaccountsData = parser.asMap(data["groupedSubaccounts"])
+            if (groupedSubaccountsData != null) {
+                for ((key, value) in groupedSubaccountsData) {
+                    val subaccountData = parser.asMap(value) ?: iMapOf()
+                    Subaccount.create(
+                        existing?.subaccounts?.get(key),
+                        parser,
+                        subaccountData,
+                        localizer,
+                    )
+                        ?.let { subaccount ->
+                            groupedSubaccounts[key] = subaccount
+                        }
+                }
+            }
+
             return Account(
                 balances,
                 stakingBalances,
                 subaccounts,
+                groupedSubaccounts,
                 tradingRewards,
                 launchIncentivePoints,
             )

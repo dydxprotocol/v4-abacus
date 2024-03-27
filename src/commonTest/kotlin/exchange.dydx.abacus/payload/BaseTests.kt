@@ -848,6 +848,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.subaccounts,
                 "$trace.subaccounts",
             )
+            verifyAccountSubaccountsState(
+                parser.asNativeMap(data["groupedSubaccounts"]),
+                obj.groupedSubaccounts,
+                "$trace.groupedSubaccounts",
+            )
             verifyLaunchIncentivePointsState(
                 parser.asNativeMap(data["launchIncentivePoints"]),
                 obj.launchIncentivePoints,
@@ -1083,6 +1088,16 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asNativeMap(data["valueTotal"]),
                 obj.valueTotal,
                 "$trace.valueTotal",
+            )
+            verifyDoubleValues(
+                parser.asNativeMap(data["quoteBalance"]),
+                obj.quoteBalance,
+                "$trace.quoteBalance",
+            )
+            verifyDoubleValues(
+                parser.asNativeMap(data["equity"]),
+                obj.equity,
+                "$trace.equity",
             )
         } else {
             assertNull(obj)
