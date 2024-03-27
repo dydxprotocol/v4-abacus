@@ -139,10 +139,39 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
 
         test(
             {
+                perp.triggerOrders("2000", TriggerOrdersInputField.stopLossLimitPrice, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "stopLossOrder": {
+                            "type": "STOP_LIMIT",
+                            "side": "SELL",
+                            "price": {
+                                "limitPrice": "2000"
+                            }
+                        }
+                    },
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_TRIGGER_PRICE"
+                        }
+                    ]        
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
                 perp.triggerOrders("1000", TriggerOrdersInputField.stopLossPrice, 0)
             },
             null,
         )
+
 
         test(
             {
@@ -204,6 +233,34 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         test({
             perp.triggerOrders("TAKE_PROFIT", TriggerOrdersInputField.takeProfitOrderType, 0)
         }, null)
+
+        test(
+            {
+                perp.triggerOrders("3000", TriggerOrdersInputField.takeProfitLimitPrice, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "takeProfitOrder": {
+                            "type": "TAKE_PROFIT",
+                            "side": "SELL",
+                            "price": {
+                                "limitPrice": 3000
+                            }
+                        }
+                    },
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_TRIGGER_PRICE"
+                        }
+                    ]        
+                }
+            }
+            """.trimIndent(),
+        )
 
         test(
             {

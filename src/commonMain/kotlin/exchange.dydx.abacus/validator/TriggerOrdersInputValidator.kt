@@ -129,6 +129,12 @@ internal class TriggerOrdersInputValidator(
     ): MutableList<Any>? {
         val triggerErrors = mutableListOf<Any>()
 
+        validateRequiredInput(triggerOrder)?.let {
+            /*
+                REQUIRED_TRIGGER_PRICE
+             */
+            triggerErrors.addAll(it)
+        }
         validateTriggerPrice(triggerOrder, oraclePrice, tickSize)?.let {
             /*
                 TRIGGER_MUST_ABOVE_INDEX_PRICE
@@ -293,6 +299,23 @@ internal class TriggerOrdersInputValidator(
 
             else -> true
         }
+    }
+
+    private fun validateRequiredInput(
+        triggerOrder: Map<String, Any>,
+    ): List<Any>? {
+        val errors = mutableListOf<Map<String, Any>>()
+
+        val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
+        val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
+
+        if (triggerPrice == null && limitPrice != null) {
+            errors.add(
+                required("REQUIRED_TRIGGER_PRICE", "price.triggerPrice", "APP.TRADE.ENTER_TRIGGER_PRICE")
+            )
+        }
+
+        return if (errors.size > 0) errors else null
     }
 
     private fun validateTriggerPrice(
