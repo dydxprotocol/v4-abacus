@@ -90,7 +90,6 @@ kotlin {
 
     sourceSets {
         val ktorVersion = "2.1.1"
-        val napierVersion = "2.6.1"
         all {
             // Since commonMain needs the opt-in, all dependent sets also need it.
             languageSettings.apply {
@@ -102,7 +101,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-                implementation("io.github.aakira:napier:$napierVersion")
                 implementation("co.touchlab:stately-common:1.2.0")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")

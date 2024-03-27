@@ -2,8 +2,8 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
@@ -22,7 +22,7 @@ data class FeeDiscountResources(
             localizer: LocalizerProtocol?,
         ): FeeDiscountResources? {
             if (data == null) {
-                DebugLogger.debug("Fee Discount Resources not valid")
+                Logger.d { "Fee Discount Resources not valid" }
                 return null
             }
             val stringKey = parser.asString(data["stringKey"])
@@ -73,7 +73,7 @@ data class FeeDiscount(
                 }
                 return feeDiscounts
             }
-            DebugLogger.debug("Fee Discounts not valid")
+            Logger.d { "Fee Discounts not valid" }
             return null
         }
 
@@ -111,7 +111,7 @@ data class FeeDiscount(
                     }
                 }
             }
-            DebugLogger.debug("Fee Discount not valid")
+            Logger.d { "Fee Discount not valid" }
             return null
         }
     }
@@ -147,7 +147,7 @@ data class FeeTierResources(
                     null
                 }
             }
-            DebugLogger.debug("Fee Tier Resources not valid")
+            Logger.d { "Fee Tier Resources not valid" }
             return null
         }
     }
@@ -186,7 +186,7 @@ data class FeeTier(
                 }
                 return feeTiers
             }
-            DebugLogger.debug("Fee Tiers not valid")
+            Logger.d { "Fee Tiers not valid" }
             return null
         }
 
@@ -240,7 +240,7 @@ data class FeeTier(
                     }
                 }
             }
-            DebugLogger.debug("Fee Tier not valid")
+            Logger.d { "Fee Tier not valid" }
             return null
         }
     }
@@ -272,7 +272,7 @@ data class NetworkConfigs(
                     existing
                 }
             }
-            DebugLogger.debug("Network Configs not valid")
+            Logger.d { "Network Configs not valid" }
             return null
         }
     }
@@ -324,7 +324,7 @@ data class Configs(
                     )
                 }
             }
-            DebugLogger.debug("Configs not valid")
+            Logger.d { "Configs not valid" }
             return null
         }
     }

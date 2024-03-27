@@ -2,8 +2,8 @@ package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -39,7 +39,7 @@ data class Input(
             data: Map<*, *>?,
             environment: V4Environment?
         ): Input? {
-            DebugLogger.log("creating Input\n")
+            Logger.d { "creating Input\n" }
 
             data?.let {
                 val current = InputType.invoke(parser.asString(data["current"]))
@@ -75,7 +75,7 @@ data class Input(
                     existing
                 }
             }
-            DebugLogger.debug("Input not valid")
+            Logger.d { "Input not valid" }
             return null
         }
     }

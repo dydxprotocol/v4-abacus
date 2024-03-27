@@ -6,8 +6,8 @@ import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.mutableMapOf
 
@@ -124,11 +124,11 @@ class DynamicLocalizer(
                 if (language != "en") {
                     setLanguage("en") { successful, _ ->
                         if (!successful) {
-                            DebugLogger.error("Unable to set language: $language", null)
+                            Logger.e { "Unable to set language: $language" }
                         }
                     }
                 } else {
-                    DebugLogger.error("Unable to set language: $language", null)
+                    Logger.e { "Unable to set language: $language" }
                 }
             }
         }
@@ -277,10 +277,10 @@ class DynamicLocalizer(
                     return value
                 }
             }
-            DebugLogger.debug("Unable to localize path: $path")
+            Logger.d { "Unable to localize path: $path" }
             return path
         } else {
-            DebugLogger.debug("Unable to localize path: $path")
+            Logger.d { "Unable to localize path: $path" }
             return path
         }
     }

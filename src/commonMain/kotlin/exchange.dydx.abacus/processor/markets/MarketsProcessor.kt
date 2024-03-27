@@ -2,7 +2,7 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -101,7 +101,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         for ((market, data) in payload) {
             val marketPayload = parser.asNativeMap(data)
             if (marketPayload == null) {
-                DebugLogger.warning("Market payload is null")
+                Logger.d { "Market payload is null" }
             } else {
                 val receivedMarket = marketProcessor.receivedConfigurations(
                     parser.asNativeMap(existing?.get(market)),
