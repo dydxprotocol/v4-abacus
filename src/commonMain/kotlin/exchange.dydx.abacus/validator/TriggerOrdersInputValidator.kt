@@ -311,7 +311,7 @@ internal class TriggerOrdersInputValidator(
 
         if (triggerPrice == null && limitPrice != null) {
             errors.add(
-                required("REQUIRED_TRIGGER_PRICE", "price.triggerPrice", "APP.TRADE.ENTER_TRIGGER_PRICE")
+                required("REQUIRED_TRIGGER_PRICE", "price.triggerPrice", "APP.TRADE.ENTER_TRIGGER_PRICE"),
             )
         }
 

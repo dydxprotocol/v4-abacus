@@ -172,7 +172,6 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
             null,
         )
 
-
         test(
             {
                 perp.triggerOrders("2000", TriggerOrdersInputField.stopLossLimitPrice, 0)
