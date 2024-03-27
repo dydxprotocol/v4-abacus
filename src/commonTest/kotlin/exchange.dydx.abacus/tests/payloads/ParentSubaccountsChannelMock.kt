@@ -238,7 +238,61 @@ internal class ParentSubaccountsChannelMock {
                     "reduceOnly":false,
                     "goodTilBlock":"5837"
                  }
-              ]
+              ],
+              "fills":[
+                {
+                   "id":"180c2462-eb3b-5985-a702-32c503462a37",
+                   "subaccountNumber": 129,
+                   "side":"BUY",
+                   "size":"0.01",
+                   "type":"LIMIT",
+                   "price":"1878",
+                   "eventId":"0001781f0000000200000011",
+                   "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
+                   "createdAt":"2023-07-07T17:20:10.369Z",
+                   "liquidity":"TAKER",
+                   "clobPairId":"1",
+                   "quoteAmount":"18.78",
+                   "subaccountId":"8586bcf6-1f58-5ec9-a0bc-e53db273e7b0",
+                   "createdAtHeight":"96287",
+                   "transactionHash":"49AFD6A9FA9D4F973F2CF764FD0A297358F2C3B557252C51E9D4E8794543E1B2",
+                   "ticker":"ETH-USD"
+                }
+             ]
+           }
+        }
+    """.trimIndent()
+
+
+    internal val channel_data_with_fill_only = """
+        {
+           "type":"channel_data",
+           "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
+           "message_id":120,
+           "id":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4/1",
+           "channel":"v4_parent_subaccounts",
+           "subaccountNumber":1,
+           "contents":{
+              "fills":[
+                {
+                   "id":"180c2462-eb3b-5985-a702-32c503462a37",
+                   "subaccountNumber": 1,
+                   "side":"BUY",
+                   "size":"0.01",
+                   "type":"LIMIT",
+                   "price":"1878",
+                   "eventId":"0001781f0000000200000011",
+                   "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
+                   "createdAt":"2023-07-07T17:11:10.369Z",
+                   "liquidity":"TAKER",
+                   "clobPairId":"1",
+                   "quoteAmount":"18.78",
+                   "subaccountId":"8586bcf6-1f58-5ec9-a0bc-e53db273e7b0",
+                   "createdAtHeight":"96287",
+                   "transactionHash":"49AFD6A9FA9D4F973F2CF764FD0A297358F2C3B557252C51E9D4E8794543E1B2",
+                   "ticker":"ETH-USD"
+                }
+             ]
            }
         }
     """.trimIndent()
