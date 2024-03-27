@@ -30,7 +30,7 @@ internal class WithdrawalValidator(
         val withdrawalGating = parser.asMap(parser.value(configs, "withdrawalGating"))
         val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock")) ?: 0
         var blockDurationSeconds = if (environment?.isMainNet == true) 1.1 else 1.5
-        val secondsUntilUnblock = (withdrawalsAndTransfersUnblockedAtBlock - currentBlock) * blockDurationSeconds
+        val secondsUntilUnblock = ((withdrawalsAndTransfersUnblockedAtBlock - currentBlock) * blockDurationSeconds).toInt()
 
         val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
         val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
@@ -68,7 +68,7 @@ internal class WithdrawalValidator(
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
-                    mapOf("USDC_AMOUNT" to mapOf(
+                    mapOf("USDC_LIMIT" to mapOf(
                         "value" to maxWithdrawalCapacity.doubleValue(false),
                         "format" to "price",
                     )),                    null,
