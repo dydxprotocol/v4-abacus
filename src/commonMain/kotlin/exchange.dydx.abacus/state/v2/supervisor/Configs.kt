@@ -10,6 +10,7 @@ data class SystemConfigs(
     val retrieveFeeTiers: Boolean,
     val retrieveRewardsParams: Boolean,
     val retrieveLaunchIncentiveSeasons: Boolean,
+    val retrieveWithdrawSafetyChecks: Boolean,
 ) {
     companion object {
         val forApp = SystemConfigs(
@@ -19,6 +20,7 @@ data class SystemConfigs(
             retrieveFeeTiers = true,
             retrieveRewardsParams = true,
             retrieveLaunchIncentiveSeasons = true,
+            retrieveWithdrawSafetyChecks = true,
         )
         val forProgrammaticTraders = SystemConfigs(
             retrieveServerTime = true,
@@ -27,6 +29,7 @@ data class SystemConfigs(
             retrieveFeeTiers = true,
             retrieveRewardsParams = false,
             retrieveLaunchIncentiveSeasons = false,
+            retrieveWithdrawSafetyChecks = false,
         )
     }
 }

@@ -166,6 +166,7 @@ data class ValidationError(
     val fields: IList<String>?,
     val action: ErrorAction?,
     val link: String?,
+    val linkText: String?,
     val resources: ErrorResources
 ) {
     companion object {
@@ -220,6 +221,7 @@ data class ValidationError(
                                     val action =
                                         if (actionString != null) ErrorAction.invoke(actionString) else null
                                     val link = parser.asString(data["link"])
+                                    val linkText = parser.asString(data["linkText"])
                                     return if (existing?.code != code ||
                                         existing.type !== type ||
                                         existing.fields != fields ||
@@ -231,6 +233,7 @@ data class ValidationError(
                                             fields,
                                             action,
                                             link,
+                                            linkText,
                                             resources,
                                         )
                                     } else {

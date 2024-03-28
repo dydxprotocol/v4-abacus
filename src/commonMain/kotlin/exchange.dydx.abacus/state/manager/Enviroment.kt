@@ -64,6 +64,7 @@ data class EnvironmentLinks(
     val help: String?,
     val launchIncentive: String?,
     val statusPage: String?,
+    val withdrawalGateLearnMore: String?,
 ) {
     companion object {
         fun parse(
@@ -80,6 +81,7 @@ data class EnvironmentLinks(
             val help = parser.asString(data["help"])
             val launchIncentive = parser.asString(data["launchIncentive"])
             val statusPage = parser.asString(data["statusPage"])
+            val withdrawalGateLearnMore = parser.asString(data["withdrawalGateLearnMore"])
             return EnvironmentLinks(
                 tos,
                 privacy,
@@ -91,6 +93,7 @@ data class EnvironmentLinks(
                 help,
                 launchIncentive,
                 statusPage,
+                withdrawalGateLearnMore
             )
         }
     }
@@ -100,6 +103,7 @@ data class EnvironmentLinks(
 data class EnvironmentFeatureFlags(
     val reduceOnlySupported: Boolean,
     val usePessimisticCollateralCheck: Boolean,
+    val withdrawalSafetyEnabled: Boolean,
 ) {
     companion object {
         fun parse(
@@ -108,10 +112,12 @@ data class EnvironmentFeatureFlags(
         ): EnvironmentFeatureFlags {
             val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
             val usePessimisticCollateralCheck = parser.asBool(data?.get("usePessimisticCollateralCheck")) ?: false
+            val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
 
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
                 usePessimisticCollateralCheck,
+                withdrawalSafetyEnabled
             )
         }
     }

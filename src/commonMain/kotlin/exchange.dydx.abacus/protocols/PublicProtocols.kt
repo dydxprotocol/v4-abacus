@@ -145,7 +145,10 @@ enum class QueryType(val rawValue: String) {
     GetMarketPrice("getMarketPrice"),
     GetDelegations("getDelegatorDelegations"),
     RewardsParams("getRewardsParams"),
-    GetNobleBalance("getNobleBalance");
+    GetNobleBalance("getNobleBalance"),
+    GetWithdrawalAndTransferGatingStatus("getWithdrawalAndTransferGatingStatus"),
+    GetWithdrawalCapacityByDenom("getWithdrawalCapacityByDenom");
+
 
     companion object {
         operator fun invoke(rawValue: String) =
