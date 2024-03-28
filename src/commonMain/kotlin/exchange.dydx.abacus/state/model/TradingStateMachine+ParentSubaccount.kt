@@ -10,7 +10,8 @@ import exchange.dydx.abacus.utils.safeSet
 internal fun TradingStateMachine.mergeFills(
     account: Map<String, Any>?,
     subaccountNumbers: List<Int>,
-): Map<String, Any> {
+): Map<String, Any>? {
+    if (subaccountNumbers.isEmpty()) return account
     val modifiedAccount = account?.mutable() ?: mutableMapOf()
     for (subaccountNumber in subaccountNumbers) {
         val parentSubaccountNumber = subaccountNumber % NUM_PARENT_SUBACCOUNTS
@@ -48,7 +49,8 @@ internal fun TradingStateMachine.mergeFills(
 internal fun TradingStateMachine.mergeTransfers(
     account: Map<String, Any>?,
     subaccountNumbers: List<Int>,
-): Map<String, Any> {
+): Map<String, Any>? {
+    if (subaccountNumbers.isEmpty()) return account
     val modifiedAccount = account?.mutable() ?: mutableMapOf()
     for (subaccountNumber in subaccountNumbers) {
         val parentSubaccountNumber = subaccountNumber % NUM_PARENT_SUBACCOUNTS

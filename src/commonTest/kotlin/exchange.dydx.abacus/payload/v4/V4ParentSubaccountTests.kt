@@ -318,17 +318,18 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                         }
                                      ],
                                      "transfers": [
-                                     {
-                                         "id": "89586775-0646-582e-9b36-4f131715644d",
-                                         "type": "WITHDRAWAL",
-                                         "asset": "USDC",
-                                         "transactionHash": "MOCKHASH1",
-                                         "createdAt": "2023-08-21T21:37:53.373Z",
-                                         "amount": 419.98472,
-                                         "updatedAtBlock": 404014,
-                                         "fromAddress": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
-                                         "toAddress": "dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8",
-                                         "status": "CONFIRMED"
+                                         {
+                                             "id": "89586775-0646-582e-9b36-4f131715644d",
+                                             "type": "WITHDRAWAL",
+                                             "asset": "USDC",
+                                             "transactionHash": "MOCKHASH1",
+                                             "createdAt": "2023-08-21T21:37:53.373Z",
+                                             "amount": 419.98472,
+                                             "updatedAtBlock": 404014,
+                                             "fromAddress": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                                             "toAddress": "dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8",
+                                             "status": "CONFIRMED"
+                                         }
                                      ]
                                 }
                             },
