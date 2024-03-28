@@ -303,11 +303,9 @@ data class WithdrawalCapacity(
                         } else {
                             capacity = weeklyLimit
                         }
-                        //TODO: mmm move to validator?
-//                        val usdcDecimals = environment.tokens["usdc"]?.decimals ?: 6
-//                        capacity = capacity / (10 ** us)
                     }
-                    return WithdrawalCapacity(parser.asString(capacity))
+                    var capacityAsString = parser.asString(capacity)
+                    return if (existing?.capacity != capacityAsString) WithdrawalCapacity(capacityAsString) else existing
                 }
             }
         }

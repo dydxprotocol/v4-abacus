@@ -177,11 +177,6 @@ internal class SystemSupervisor(
             }
         }
     }
-    // best way to test incrementally?
-    // best way to call both methods in parallel but wait for both responses
-    // how to update transferInput
-    // how to hand response errors
-    // why the name "adaptor?"
     private fun updateWithdrawalCapacity() {
         var denom = helper.environment.tokens["usdc"]?.denom
         val params = iMapOf(
