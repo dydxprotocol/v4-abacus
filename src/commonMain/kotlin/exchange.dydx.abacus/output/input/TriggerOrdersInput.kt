@@ -7,6 +7,34 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
+data class TriggerOrderInputSummary(
+    val price: Double?,
+) {
+    companion object {
+        internal fun create(
+            existing: TriggerOrderInputSummary?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
+        ): TriggerOrderInputSummary? {
+            DebugLogger.log("creating Trigger Order Input Summary\n")
+
+            data?.let {
+                val price = parser.asDouble(data["price"])
+
+                return if (existing?.price != price) {
+                    TriggerOrderInputSummary(price)
+                } else {
+                    existing
+                }
+            }
+            DebugLogger.log("creating Trigger Order Input not valid\n")
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class TriggerPrice(
     val limitPrice: Double?,
     val triggerPrice: Double?,
@@ -53,6 +81,7 @@ data class TriggerOrder(
     val type: OrderType?,
     val side: OrderSide?,
     val price: TriggerPrice?,
+    val summary: TriggerOrderInputSummary?,
 ) {
     companion object {
         internal fun create(
@@ -75,14 +104,20 @@ data class TriggerOrder(
                     parser,
                     parser.asMap(data["price"]),
                 )
+                val summary = TriggerOrderInputSummary.create(
+                    existing?.summary,
+                    parser,
+                    parser.asMap(data["summary"]),
+                )
 
                 return if (
                     existing?.orderId != orderId ||
                     existing?.type != type ||
                     existing?.side != side ||
-                    existing?.price != price
+                    existing?.price != price ||
+                    existing?.summary != summary
                 ) {
-                    TriggerOrder(orderId, type, side, price)
+                    TriggerOrder(orderId, type, side, price, summary)
                 } else {
                     existing
                 }

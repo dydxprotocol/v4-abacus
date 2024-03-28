@@ -49,6 +49,7 @@ interface AsyncAbacusStateManagerProtocol {
     // these functions provide payload
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload?
     fun closePositionPayload(): HumanReadablePlaceOrderPayload?
+    fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload?
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload?
     fun depositPayload(): HumanReadableDepositPayload?
     fun withdrawPayload(): HumanReadableWithdrawPayload?
@@ -57,6 +58,7 @@ interface AsyncAbacusStateManagerProtocol {
     // Commit changes with input objects
     fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
     fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
+    fun commitTriggerOrders(callback: TransactionCallback): List<HumanReadablePlaceOrderPayload>?
     fun stopWatchingLastOrder()
     fun commitTransfer(callback: TransactionCallback)
     fun commitCCTPWithdraw(callback: TransactionCallback)

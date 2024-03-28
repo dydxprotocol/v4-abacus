@@ -2,6 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
@@ -9,6 +10,18 @@ import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("UNCHECKED_CAST")
 internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
+    @Suppress("LocalVariableName", "PropertyName")
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+
+    @Suppress("LocalVariableName", "PropertyName")
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+
+    @Suppress("LocalVariableName", "PropertyName")
+    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+
+    @Suppress("LocalVariableName", "PropertyName")
+    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+
     internal fun calculate(
         state: Map<String, Any>,
         subaccountNumber: Int?,
@@ -57,9 +70,139 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         triggerOrder: Map<String, Any>,
         position: Map<String, Any>,
     ): Map<String, Any> {
-        val modified = calculatePrice(triggerOrder, position)
+        val modified = triggerOrder.mutable()
+        val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position) }
+        modified.safeSet("price", triggerPrices)
+
+        return finalizeOrderFromPriceInputs(modified, position)
+    }
+
+    private fun calculateTriggerPrices(
+        triggerPrices: Map<String, Any>,
+        position: Map<String, Any>,
+    ): MutableMap<String, Any> {
+        val modified = triggerPrices.mutable()
+        val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
+        val inputType = parser.asString(parser.value(modified, "input"))
+
+        if (entryPrice != null) {
+            val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
+            val usdcDiff = parser.asDouble(parser.value(modified, "usdcDiff"))
+            val percentDiff = parser.asDouble(parser.value(modified, "percentDiff"))
+
+            when (inputType) {
+                "stopLossOrder.price.triggerPrice" -> {
+                    modified.safeSet(
+                        "usdcDiff",
+                        if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
+                    )
+                    modified.safeSet(
+                        "percentDiff",
+                        if (triggerPrice != null) Numeric.double.ONE.minus(triggerPrice.div(entryPrice)) else null,
+                    )
+                }
+                "takeProfitOrder.price.triggerPrice" -> {
+                    modified.safeSet(
+                        "usdcDiff",
+                        if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
+                    )
+                    modified.safeSet(
+                        "percentDiff",
+                        if (triggerPrice != null) triggerPrice.div(entryPrice).minus(Numeric.double.ONE) else null,
+                    )
+                }
+                "stopLossOrder.price.usdcDiff" -> {
+                    modified.safeSet(
+                        "triggerPrice",
+                        if (usdcDiff != null) entryPrice.minus(usdcDiff) else null,
+                    )
+                    modified.safeSet(
+                        "percentDiff",
+                        if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
+                    )
+                }
+                "takeProfitOrder.price.usdcDiff" -> {
+                    modified.safeSet(
+                        "triggerPrice",
+                        if (usdcDiff != null) entryPrice.plus(usdcDiff) else null,
+                    )
+                    modified.safeSet(
+                        "percentDiff",
+                        if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
+                    )
+                }
+                "stopLossOrder.price.percentDiff" -> {
+                    modified.safeSet(
+                        "triggerPrice",
+                        if (percentDiff != null) entryPrice * Numeric.double.ONE.minus(percentDiff) else null,
+                    )
+                    modified.safeSet(
+                        "usdcDiff",
+                        if (percentDiff != null) entryPrice * percentDiff else null,
+                    )
+                }
+                "takeProfitOrder.price.percentDiff" -> {
+                    modified.safeSet(
+                        "triggerPrice",
+                        if (percentDiff != null) entryPrice * Numeric.double.ONE.plus(percentDiff) else null,
+                    )
+                    modified.safeSet(
+                        "usdcDiff",
+                        if (percentDiff != null) entryPrice * percentDiff else null,
+                    )
+                }
+                else -> {}
+            }
+        }
+        return modified
+    }
+
+    private fun finalizeOrderFromPriceInputs(triggerOrder: Map<String, Any>, position: Map<String, Any>): MutableMap<String, Any> {
+        val modified = triggerOrder.mutable()
+
         val side = getOrderSide(position)
         modified.safeSet("side", side?.rawValue)
+
+        val type = getOrderType(triggerOrder)
+        modified.safeSet("type", type?.rawValue)
+
+        when (type) {
+            OrderType.takeProfitMarket, OrderType.stopMarket -> {
+                val triggerPrice =
+                    parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
+                val majorMarket = when (parser.asString(triggerOrder["marketId"])) {
+                    "BTC-USD", "ETH-USD" -> true
+                    else -> false
+                }
+                val slippagePercentage = if (majorMarket) {
+                    if (type == OrderType.stopMarket) {
+                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                    } else {
+                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                    }
+                } else {
+                    if (type == OrderType.stopMarket) {
+                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                    } else {
+                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                    }
+                }
+                val calculatedLimitPrice = if (triggerPrice != null) {
+                    if (parser.asString(triggerOrder["side"]) == "BUY") {
+                        triggerPrice * (Numeric.double.ONE + slippagePercentage)
+                    } else {
+                        triggerPrice * (Numeric.double.ONE - slippagePercentage)
+                    }
+                } else {
+                    null
+                }
+                modified.safeSet("summary.price", calculatedLimitPrice)
+            }
+            OrderType.takeProfitLimit, OrderType.stopLimit -> {
+                modified.safeSet("summary.price", parser.asDouble(parser.value(triggerOrder, "price.limitPrice")))
+            }
+            else -> {}
+        }
         return modified
     }
 
@@ -75,83 +218,23 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         }
     }
 
-    private fun calculatePrice(
-        triggerOrder: Map<String, Any>,
-        position: Map<String, Any>,
-    ): MutableMap<String, Any> {
-        val modified = triggerOrder.mutable()
-        val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
-        val inputType = parser.asString(parser.value(modified, "price.input"))
-
-        if (entryPrice != null) {
-            val triggerPrice = parser.asDouble(parser.value(modified, "price.triggerPrice"))
-            val usdcDiff = parser.asDouble(parser.value(modified, "price.usdcDiff"))
-            val percentDiff = parser.asDouble(parser.value(modified, "price.percentDiff"))
-
-            when (inputType) {
-                "stopLossOrder.price.triggerPrice" -> {
-                    modified.safeSet(
-                        "price.usdcDiff",
-                        if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
-                    )
-                    modified.safeSet(
-                        "price.percentDiff",
-                        if (triggerPrice != null) Numeric.double.ONE.minus(triggerPrice.div(entryPrice)) else null,
-                    )
-                }
-                "takeProfitOrder.price.triggerPrice" -> {
-                    modified.safeSet(
-                        "price.usdcDiff",
-                        if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
-                    )
-                    modified.safeSet(
-                        "price.percentDiff",
-                        if (triggerPrice != null) triggerPrice.div(entryPrice).minus(Numeric.double.ONE) else null,
-                    )
-                }
-                "stopLossOrder.price.usdcDiff" -> {
-                    modified.safeSet(
-                        "price.triggerPrice",
-                        if (usdcDiff != null) entryPrice.minus(usdcDiff) else null,
-                    )
-                    modified.safeSet(
-                        "price.percentDiff",
-                        if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
-                    )
-                }
-                "takeProfitOrder.price.usdcDiff" -> {
-                    modified.safeSet(
-                        "price.triggerPrice",
-                        if (usdcDiff != null) entryPrice.plus(usdcDiff) else null,
-                    )
-                    modified.safeSet(
-                        "price.percentDiff",
-                        if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
-                    )
-                }
-                "stopLossOrder.price.percentDiff" -> {
-                    modified.safeSet(
-                        "price.triggerPrice",
-                        if (percentDiff != null) entryPrice * Numeric.double.ONE.minus(percentDiff) else null,
-                    )
-                    modified.safeSet(
-                        "price.usdcDiff",
-                        if (percentDiff != null) entryPrice * percentDiff else null,
-                    )
-                }
-                "takeProfitOrder.price.percentDiff" -> {
-                    modified.safeSet(
-                        "price.triggerPrice",
-                        if (percentDiff != null) entryPrice * Numeric.double.ONE.plus(percentDiff) else null,
-                    )
-                    modified.safeSet(
-                        "price.usdcDiff",
-                        if (percentDiff != null) entryPrice * percentDiff else null,
-                    )
-                }
-                else -> {}
+    private fun getOrderType(triggerOrder: Map<String, Any>): OrderType? {
+        val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
+        val type = parser.asString(triggerOrder["type"])?.let {
+            OrderType.invoke(it)
+        }
+        if (limitPrice != null) {
+            return when (type) {
+                OrderType.takeProfitMarket, OrderType.takeProfitLimit -> OrderType.takeProfitLimit
+                OrderType.stopMarket, OrderType.stopLimit -> OrderType.stopLimit
+                else -> null
+            }
+        } else {
+            return when (type) {
+                OrderType.takeProfitMarket, OrderType.takeProfitLimit -> OrderType.takeProfitMarket
+                OrderType.stopMarket, OrderType.stopLimit -> OrderType.stopMarket
+                else -> null
             }
         }
-        return modified
     }
 }

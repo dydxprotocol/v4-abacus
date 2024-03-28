@@ -30,6 +30,7 @@ data class TriggerOrderInput(
 &emsp;val type: OrderType?,  
 &emsp;val side: Side?,  
 &emsp;val price: [TriggerPrice](#TriggerPrice)?  
+&emsp;val summary: [TriggerOrderInputSummary](#TriggerOrderInputSummary)?  
 )
 
 ## orderId
@@ -47,6 +48,10 @@ BUY or SELL
 ## price
 
 Price information for the order
+
+## summary
+
+A summary of the order
 
 # TriggerPrice
 
@@ -77,3 +82,13 @@ Usdc price difference of the trigger price relative to the position's average en
 ## input
 
 The price field last modified by the user: triggerPrice, percentDiff, usdcDiff
+
+# TriggerOrderInputSummary
+
+data class TriggerOrderInputSummary(  
+&emsp;val price: Double?  
+)
+
+## price
+
+Price of the trade
