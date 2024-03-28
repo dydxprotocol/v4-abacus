@@ -258,7 +258,23 @@ internal class ParentSubaccountsChannelMock {
                    "transactionHash":"49AFD6A9FA9D4F973F2CF764FD0A297358F2C3B557252C51E9D4E8794543E1B2",
                    "ticker":"ETH-USD"
                 }
-             ]
+             ],
+             "transfers": {
+                "id":"89586775-0646-582e-9b36-4f131715644d",
+                "sender": {
+                    "address":"dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                    "subaccountNumber":129
+                },
+                "recipient":{
+                    "address":"dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8"
+                 },
+                "size":"419.98472",
+                "createdAt":"2023-08-21T21:37:53.373Z",
+                "createdAtHeight":"404014",
+                "symbol":"USDC",
+                "type":"WITHDRAWAL",
+                "transactionHash": "MOCKHASH1"
+            }
            }
         }
     """.trimIndent()
@@ -292,7 +308,23 @@ internal class ParentSubaccountsChannelMock {
                    "transactionHash":"49AFD6A9FA9D4F973F2CF764FD0A297358F2C3B557252C51E9D4E8794543E1B2",
                    "ticker":"ETH-USD"
                 }
-             ]
+             ],
+             "transfers": {
+                "id":"89586775-0646-582e-9b36-4f133445644d",
+                "sender": {
+                    "address":"dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                    "subaccountNumber":1
+                },
+                "recipient":{
+                    "address":"dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8"
+                 },
+                "size":"419.98472",
+                "createdAt":"2023-08-22T21:37:53.373Z",
+                "createdAtHeight":"404014",
+                "symbol":"USDC",
+                "type":"WITHDRAWAL",
+                "transactionHash": "MOCKHASH2"
+            }
            }
         }
     """.trimIndent()
