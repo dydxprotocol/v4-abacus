@@ -64,6 +64,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.MARKET_ORDER_DURATION
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.ServerTime
@@ -1088,7 +1089,10 @@ open class StateManagerAdaptor(
         callback: (url: String, response: String?, code: Int, headers: Map<String, Any>?) -> Unit,
     ) {
         ioImplementations.threading?.async(ThreadingType.network) {
-            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headersAsJsonString ->
+            ioImplementations.rest?.get(
+                fullUrl,
+                headers?.toIMap()
+            ) { response, httpCode, headersAsJsonString ->
                 val time = if (configs.isIndexer(fullUrl) && success(httpCode)) {
                     Clock.System.now()
                 } else {
@@ -1136,7 +1140,11 @@ open class StateManagerAdaptor(
         callback: (String, String?, Int, Map<String, Any>?) -> Unit,
     ) {
         ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.rest?.post(url, headers, body) { response, httpCode, headersAsJsonString ->
+            ioImplementations.rest?.post(
+                url,
+                headers,
+                body
+            ) { response, httpCode, headersAsJsonString ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     val headers = parser.decodeJsonObject(headersAsJsonString)
                     callback(url, response, httpCode, headers)
@@ -1298,8 +1306,8 @@ open class StateManagerAdaptor(
         val nanosecond = time.nanosecond
         val duration =
             nanosecond.toDuration(DurationUnit.NANOSECONDS) +
-                second.toDuration(DurationUnit.SECONDS) +
-                minute.toDuration(DurationUnit.MINUTES)
+                    second.toDuration(DurationUnit.SECONDS) +
+                    minute.toDuration(DurationUnit.MINUTES)
 
         return now.minus(duration).plus(1.hours)
     }
@@ -1311,7 +1319,7 @@ open class StateManagerAdaptor(
         val nanosecond = time.nanosecond
         val duration =
             nanosecond.toDuration(DurationUnit.NANOSECONDS) +
-                second.toDuration(DurationUnit.SECONDS)
+                    second.toDuration(DurationUnit.SECONDS)
 
         return now.minus(duration).plus(1.minutes)
     }
@@ -1767,19 +1775,25 @@ open class StateManagerAdaptor(
         }
 
         val goodTilTimeInSeconds = (
-            (
-                if (trade.options?.goodTilUnitOptions != null) {
-                    val timeInterval =
-                        GoodTil.duration(trade.goodTil) ?: throw Exception("goodTil is null")
-                    timeInterval / 1.seconds
-                } else {
-                    null
-                }
-                )
-            )?.toInt()
+                (
+                        if (trade.options?.goodTilUnitOptions != null) {
+                            val timeInterval =
+                                GoodTil.duration(trade.goodTil)
+                                    ?: throw Exception("goodTil is null")
+                            timeInterval / 1.seconds
+                        } else {
+                            null
+                        }
+                        )
+                )?.toInt()
+
 
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
+
+        val goodTilBlock =
+            if (trade.type == OrderType.market) currentHeight?.plus(MARKET_ORDER_DURATION) else null
+
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1794,6 +1808,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
@@ -1827,6 +1842,9 @@ open class StateManagerAdaptor(
         val reduceOnly = environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
+        val currentHeight = calculateCurrentHeight()
+        val goodTilBlock = currentHeight?.plus(MARKET_ORDER_DURATION)
+
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1841,6 +1859,8 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock
+
         )
     }
 

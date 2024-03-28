@@ -52,6 +52,7 @@ data class HumanReadablePlaceOrderPayload(
     val timeInForce: String?,
     val execution: String?,
     val goodTilTimeInSeconds: Int?,
+    val goodTilBlock: Int?,
     val marketInfo: PlaceOrderMarketInfo? = null,
     val currentHeight: Int? = null,
 )

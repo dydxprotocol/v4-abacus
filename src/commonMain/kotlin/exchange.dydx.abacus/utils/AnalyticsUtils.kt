@@ -19,6 +19,7 @@ class AnalyticsUtils {
             "currentHeight" to payload.currentHeight,
             "execution" to payload.execution,
             "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
+            "goodTilBlock" to payload.goodTilBlock,
             "isClosePosition" to isClosePosition,
             "marketId" to payload.marketId,
             "postOnly" to payload.postOnly,

@@ -1,7 +1,9 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.utils.MARKET_ORDER_DURATION
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
@@ -78,7 +80,10 @@ class V4AccountOrdersSortingTest : V4BaseTests() {
                 assertNotNull(orders)
                 val sortedOrders = orders.sortedBy {
                     it.createdAtHeight
-                        ?: (if (it.goodTilBlock != null) it.goodTilBlock!! - SHORT_TERM_ORDER_DURATION else 0)
+                        ?: (if (it.goodTilBlock != null) it.goodTilBlock!! - (when (it.type) {
+                            OrderType.market -> MARKET_ORDER_DURATION
+                            else -> SHORT_TERM_ORDER_DURATION
+                        }) else 0)
                 }.reversed()
                 for (i in 0 until orders.size) {
                     assertEquals(orders[i].id, sortedOrders[i].id)
