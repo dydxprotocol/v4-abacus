@@ -421,7 +421,7 @@ open class StateManagerAdaptor(
             retrieveFeeTiers()
             if (market != null) {
                 retrieveMarketHistoricalFundings()
-                retrieveMarketCandles()
+                maybeRetrieveMarketCandles()
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
@@ -1211,7 +1211,8 @@ open class StateManagerAdaptor(
         return null
     }
 
-    private fun retrieveMarketCandles() {
+    private fun maybeRetrieveMarketCandles() {
+        if (!appConfigs.subscribeToCandles) return
         val market = market ?: return
         val url = configs.publicApiUrl("candles") ?: return
         val candleResolution = candlesResolution
@@ -1243,7 +1244,7 @@ open class StateManagerAdaptor(
                 val changes = stateMachine.candles(response)
                 update(changes, oldState)
                 if (changes.changes.contains(candles)) {
-                    retrieveMarketCandles()
+                    maybeRetrieveMarketCandles()
                 }
             }
         }
@@ -1585,7 +1586,7 @@ open class StateManagerAdaptor(
     }
 
     internal open fun didSetCandlesResolution(oldValue: String) {
-        retrieveMarketCandles()
+        maybeRetrieveMarketCandles()
     }
 
     fun didSetHistoricalTradingRewardsPeriod(period: String) {
@@ -1614,7 +1615,7 @@ open class StateManagerAdaptor(
                 }
             }
             retrieveMarketHistoricalFundings()
-            retrieveMarketCandles()
+            maybeRetrieveMarketCandles()
         }
     }
 

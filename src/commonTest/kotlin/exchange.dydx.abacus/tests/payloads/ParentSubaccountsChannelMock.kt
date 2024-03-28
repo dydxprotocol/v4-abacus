@@ -279,7 +279,6 @@ internal class ParentSubaccountsChannelMock {
         }
     """.trimIndent()
 
-
     internal val channel_data_with_fill_only = """
         {
            "type":"channel_data",

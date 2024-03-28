@@ -6,7 +6,6 @@ import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-
 internal fun TradingStateMachine.mergeFills(
     account: Map<String, Any>?,
     subaccountNumbers: List<Int>,
