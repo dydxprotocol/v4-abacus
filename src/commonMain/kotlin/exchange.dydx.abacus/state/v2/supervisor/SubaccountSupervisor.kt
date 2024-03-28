@@ -55,6 +55,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.MARKET_ORDER_DURATION
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
@@ -829,6 +830,9 @@ internal class SubaccountSupervisor(
                 )
             )?.toInt()
 
+        val goodTilBlock =
+            if (trade.type == OrderType.market) currentHeight?.plus(MARKET_ORDER_DURATION) else null
+
         val marketInfo = marketInfo(marketId)
 
         val subaccountNumberForOrder = if (marginMode == "ISOLATED") {
@@ -851,6 +855,7 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
@@ -982,6 +987,7 @@ internal class SubaccountSupervisor(
         val reduceOnly = helper.environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
+        val goodTilBlock = currentHeight?.plus(MARKET_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
@@ -997,6 +1003,7 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
