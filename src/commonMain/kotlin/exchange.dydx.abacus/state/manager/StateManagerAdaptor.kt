@@ -421,7 +421,7 @@ open class StateManagerAdaptor(
             retrieveFeeTiers()
             if (market != null) {
                 retrieveMarketHistoricalFundings()
-                retrieveMarketCandles()
+                if (appConfigs.subscribeToCandles) retrieveMarketCandles()
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
@@ -1614,7 +1614,7 @@ open class StateManagerAdaptor(
                 }
             }
             retrieveMarketHistoricalFundings()
-            retrieveMarketCandles()
+            if (appConfigs.subscribeToCandles) retrieveMarketCandles()
         }
     }
 
