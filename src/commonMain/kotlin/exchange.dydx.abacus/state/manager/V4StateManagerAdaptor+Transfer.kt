@@ -15,8 +15,8 @@ import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
@@ -136,7 +136,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
                     update(stateMachine.squidRoute(response, subaccountNumber, requestId), oldState)
                 }
             } else {
-                DebugLogger.error("retrieveDepositRouteV1 error, code: $code")
+                Logger.e { "retrieveDepositRouteV1 error, code: $code" }
             }
         }
     }
@@ -203,7 +203,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
                     update(stateMachine.squidRouteV2(response, subaccountNumber, requestId), oldState)
                 }
             } else {
-                DebugLogger.error("retrieveDepositRouteV2 error, code: $code")
+                Logger.e { "retrieveDepositRouteV2 error, code: $code" }
             }
         }
     }
@@ -221,7 +221,7 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
-            DebugLogger.error("simulateWithdrawal error: $error")
+            Logger.e { "simulateWithdrawal error: $error" }
             callback(null)
             return@simulateTransaction
         }
@@ -250,7 +250,7 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
     ) { response ->
         val error = parseTransactionResponse(response)
         if (error != null) {
-            DebugLogger.error("simulateTransferNativeToken error: $error")
+            Logger.e { "simulateTransferNativeToken error: $error" }
             callback(null)
             return@simulateTransaction
         }
@@ -474,7 +474,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRouteV2(
                     update(stateMachine.squidRouteV2(response, subaccountNumber, requestId), oldState)
                 }
             } else {
-                DebugLogger.error("retrieveWithdrawalRouteV2 error, code: $code")
+                Logger.e { "retrieveWithdrawalRouteV2 error, code: $code" }
             }
         }
     }
@@ -505,7 +505,7 @@ internal fun V4StateManagerAdaptor.fetchTransferStatus(
             if (response != null) {
                 update(stateMachine.squidStatus(response, hash), oldState)
             } else {
-                DebugLogger.error("fetchTransferStatus error, code: $httpCode")
+                Logger.e { "fetchTransferStatus error, code: $httpCode" }
             }
         }
     }
@@ -569,12 +569,12 @@ internal fun V4StateManagerAdaptor.transferNobleBalance(amount: BigDecimal) {
                     ) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
-                            DebugLogger.error("transferNobleBalance error: $error")
+                            Logger.e { "transferNobleBalance error: $error" }
                         }
                     }
                 }
             } else {
-                DebugLogger.error("transferNobleBalance error, code: $code")
+                Logger.e { "transferNobleBalance error, code: $code" }
             }
         }
     }
@@ -657,7 +657,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     ) {
                         val error = parseTransactionResponse(it)
                         if (error != null) {
-                            DebugLogger.error("withdrawToNobleIBC error: $error")
+                            Logger.e { "withdrawToNobleIBC error: $error" }
                             send(error, callback)
                         } else {
                             pendingCctpWithdraw = CctpWithdrawState(
@@ -667,7 +667,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                         }
                     }
                 } else {
-                    DebugLogger.error("cctpToNoble error, code: $code")
+                    Logger.e { "cctpToNoble error, code: $code" }
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
                         "Missing squid response",
@@ -675,7 +675,7 @@ internal fun V4StateManagerAdaptor.cctpToNoble(
                     send(error, callback)
                 }
             } else {
-                DebugLogger.error("cctpToNoble error, code: $code")
+                Logger.e { "cctpToNoble error, code: $code" }
                 val error = ParsingError(
                     ParsingErrorType.MissingContent,
                     "Missing squid response",

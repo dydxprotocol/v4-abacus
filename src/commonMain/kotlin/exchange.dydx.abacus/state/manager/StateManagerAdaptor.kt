@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.candles
 import exchange.dydx.abacus.state.model.closePosition
@@ -56,6 +57,7 @@ import exchange.dydx.abacus.state.model.sparklines
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.model.transfer
+import exchange.dydx.abacus.state.model.triggerOrders
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.GoodTil
@@ -419,7 +421,7 @@ open class StateManagerAdaptor(
             retrieveFeeTiers()
             if (market != null) {
                 retrieveMarketHistoricalFundings()
-                retrieveMarketCandles()
+                maybeRetrieveMarketCandles()
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
@@ -698,7 +700,7 @@ open class StateManagerAdaptor(
 
                 "channel_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -709,7 +711,7 @@ open class StateManagerAdaptor(
 
                 "channel_batch_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -1209,7 +1211,8 @@ open class StateManagerAdaptor(
         return null
     }
 
-    private fun retrieveMarketCandles() {
+    private fun maybeRetrieveMarketCandles() {
+        if (!appConfigs.subscribeToCandles) return
         val market = market ?: return
         val url = configs.publicApiUrl("candles") ?: return
         val candleResolution = candlesResolution
@@ -1241,7 +1244,7 @@ open class StateManagerAdaptor(
                 val changes = stateMachine.candles(response)
                 update(changes, oldState)
                 if (changes.changes.contains(candles)) {
-                    retrieveMarketCandles()
+                    maybeRetrieveMarketCandles()
                 }
             }
         }
@@ -1583,7 +1586,7 @@ open class StateManagerAdaptor(
     }
 
     internal open fun didSetCandlesResolution(oldValue: String) {
-        retrieveMarketCandles()
+        maybeRetrieveMarketCandles()
     }
 
     fun didSetHistoricalTradingRewardsPeriod(period: String) {
@@ -1612,7 +1615,7 @@ open class StateManagerAdaptor(
                 }
             }
             retrieveMarketHistoricalFundings()
-            retrieveMarketCandles()
+            maybeRetrieveMarketCandles()
         }
     }
 
@@ -1697,6 +1700,21 @@ open class StateManagerAdaptor(
         isCctp: Boolean,
         requestId: String? = null,
     ) {
+    }
+
+    fun triggerOrders(
+        data: String?,
+        type: TriggerOrdersInputField?,
+    ) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
     }
 
     internal open fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {

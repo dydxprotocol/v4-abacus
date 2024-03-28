@@ -4,3 +4,5 @@ package exchange.dydx.abacus.utils
 internal const val SHORT_TERM_ORDER_DURATION = 3
 
 internal const val QUANTUM_MULTIPLIER = 1_000_000
+
+internal const val NUM_PARENT_SUBACCOUNTS = 128

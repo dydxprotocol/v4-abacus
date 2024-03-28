@@ -1699,16 +1699,16 @@ internal class TradeInputCalculator(
         }
     }
 
-    private fun priceIfLessThan(price: Double, priceLimit: Double?): Double {
+    private fun priceIfLessThan(price: Double, priceLimit: Double?): Double? {
         return priceLimit?.let {
             if (price < priceLimit) price else null
-        } ?: price
+        }
     }
 
-    private fun priceIfLargerThan(price: Double, priceLimit: Double?): Double {
+    private fun priceIfLargerThan(price: Double, priceLimit: Double?): Double? {
         return priceLimit?.let {
             if (price > priceLimit) price else null
-        } ?: price
+        }
     }
 
     private fun maxLeverage(

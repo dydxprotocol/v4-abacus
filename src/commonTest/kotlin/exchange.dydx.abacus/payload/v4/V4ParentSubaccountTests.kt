@@ -26,6 +26,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
     private fun testAccountsOnce() {
         var time = ServerTime.now()
         testSubaccountSubscribed()
+        testSubaccountChannelData()
         time = perp.log("Accounts Subscribed", time)
     }
 
@@ -141,6 +142,149 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                             "postOnly": false,
                                             "reduceOnly": false,
                                             "goodTilBlock": "5837"
+                                        }
+                                    }
+                                }
+                            },
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "equity": {
+                                        "current": 90187.79
+                                    },
+                                    "freeCollateral": {
+                                        "current": 88826.56
+                                    },
+                                    "quoteBalance": {
+                                        "current": 100000.0
+                                    },
+                                    "openPositions": {
+                                        "BTC-USD": {
+                                            "id": "BTC-USD",
+                                            "status": "OPEN",
+                                            "maxSize": 0.442388027,
+                                            "netFunding": 0.0,
+                                            "size": {
+                                                "current": -0.442371112
+                                            },
+                                            "assetId": "BTC",
+                                            "resources": {
+                                            },
+                                            "valueTotal": {
+                                                "current": -10641.37
+                                            },
+                                            "notionalTotal": {
+                                                "current": 10641.37
+                                            },
+                                            "adjustedImf": {
+                                                "current": 5.0E-2
+                                            },
+                                            "initialRiskTotal": {
+                                                "current": 532.07
+                                            },
+                                            "leverage": {
+                                                "current": -0.12
+                                            }
+                                        },
+                                        "RUNE-USD": {
+                                            "id": "RUNE-USD",
+                                            "status": "OPEN",
+                                            "maxSize": 12.0,
+                                            "netFunding": 0.271316,
+                                            "realizedPnl": {
+                                                "current": 0.271316
+                                            },
+                                            "size": {
+                                                "current": 120.0
+                                            },
+                                            "assetId": "RUNE",
+                                            "resources": {
+                                            },
+                                            "notionalTotal": {
+                                                "current": 329.16
+                                            },
+                                            "valueTotal": {
+                                                "current": 329.16
+                                            },
+                                            "initialRiskTotal": {
+                                                "current": 32.916
+                                            },
+                                            "leverage": {
+                                                "current": 0.397
+                                            },
+                                            "buyingPower": {
+                                                "current": 7962.44
+                                            },
+                                            "childSubaccountNumber": 128,
+                                            "equity": {
+                                                "current": 829.16
+                                            },
+                                            "quoteBalance": {
+                                                "current": 500.0
+                                            },
+                                            "freeCollateral": {
+                                                "current": 796.244
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testSubaccountChannelData() {
+        test(
+            {
+                perp.socket(testWsUrl, mock.parentSubaccountsChannel.channel_data, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "128": {
+                                    "equity": {
+                                        "current": 9822.9
+                                    },
+                                    "freeCollateral": {
+                                        "current": 9740.61
+                                    },
+                                    "quoteBalance": {
+                                        "current": 9000.0
+                                    },
+                                    "marginUsage": {
+                                        "current": 0.0084
+                                    },
+                                    "openPositions": {
+                                        "RUNE-USD": {
+                                            "id": "RUNE-USD",
+                                            "status": "OPEN",
+                                            "maxSize": 300.0,
+                                            "netFunding": 0.271316,
+                                            "size": {
+                                                "current": 300.0
+                                            },
+                                            "assetId": "RUNE",
+                                            "resources": {
+                                            },
+                                            "notionalTotal": {
+                                                "current": 822.9
+                                            },
+                                            "valueTotal": {
+                                                "current": 822.9
+                                            },
+                                            "initialRiskTotal": {
+                                                "current": 82.29
+                                            },
+                                            "leverage": {
+                                                "current": 0.084
+                                            },
+                                            "buyingPower": {
+                                                "current": 97406.1
+                                            }
                                         }
                                     }
                                 }

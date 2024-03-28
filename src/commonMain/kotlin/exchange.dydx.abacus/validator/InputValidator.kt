@@ -80,6 +80,8 @@ internal class InputValidator(
         TransferInputValidator(localizer, formatter, parser),
     )
 
+    private val triggerOrdersValidators = listOf<ValidatorProtocol>()
+
     fun validate(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
@@ -154,6 +156,7 @@ internal class InputValidator(
             "closePosition" -> closePositionValidators
             "transfer" -> transferValidators
             "trade" -> tradeValidators
+            "triggerOrders" -> triggerOrdersValidators
             else -> null
         }
     }

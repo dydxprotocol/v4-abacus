@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
@@ -37,8 +38,8 @@ import exchange.dydx.abacus.state.model.onChainUserStats
 import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.toNobleAddress
@@ -413,7 +414,7 @@ internal open class AccountSupervisor(
                         ) { hash ->
                             val error = helper.parseTransactionResponse(hash)
                             if (error != null) {
-                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                Logger.e { "TransactionType.CctpWithdraw error: $error" }
                                 callback?.let { it -> helper.send(error, it, hash) }
                             } else {
                                 callback?.let { it -> helper.send(null, it, hash) }
@@ -425,7 +426,7 @@ internal open class AccountSupervisor(
                         transferNobleBalance(amount)
                     }
                 } else if (balance["error"] != null) {
-                    DebugLogger.error("Error checking noble balance: $response")
+                    Logger.e { "Error checking noble balance: $response" }
                 }
             }
         }
@@ -564,12 +565,12 @@ internal open class AccountSupervisor(
                         helper.transaction(iListOf(Transaction(TransactionType.SendNobleIBC, ibcPayload)), TargetChain.NOBLE) {
                             val error = helper.parseTransactionResponse(it)
                             if (error != null) {
-                                DebugLogger.error("transferNobleBalance error: $error")
+                                Logger.e { "transferNobleBalance error: $error" }
                             }
                         }
                     }
                 } else {
-                    DebugLogger.error("transferNobleBalance error, code: $code")
+                    Logger.e { "transferNobleBalance error, code: $code" }
                 }
             }
         }
@@ -789,6 +790,10 @@ internal fun AccountSupervisor.trade(data: String?, type: TradeInputField?) {
 
 internal fun AccountSupervisor.closePosition(data: String?, type: ClosePositionInputField) {
     subaccount?.closePosition(data, type)
+}
+
+internal fun AccountSupervisor.triggerOrders(data: String?, type: TriggerOrdersInputField?) {
+    subaccount?.triggerOrders(data, type)
 }
 
 internal fun AccountSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
