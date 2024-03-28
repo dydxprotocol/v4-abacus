@@ -3,7 +3,6 @@ package exchange.dydx.abacus.processor.configs
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-@Suppress("UNCHECKED_CAST")
 internal class LimiterCapacitiesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = LimiterCapacityProcessor(parser = parser)
 

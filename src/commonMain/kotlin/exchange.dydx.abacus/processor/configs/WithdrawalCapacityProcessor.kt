@@ -5,7 +5,6 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import kotlin.math.pow
 
-@Suppress("UNCHECKED_CAST")
 internal class WithdrawalCapacityProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val processor = LimiterCapacitiesProcessor(parser = parser)
 
