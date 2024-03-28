@@ -481,7 +481,7 @@ data class SubaccountPendingPosition(
             parser: ParserProtocol,
             data: Map<String, Any>?,
         ): SubaccountPendingPosition? {
-            DebugLogger.log("creating Account Pending Position\n")
+            Logger.d { "creating Account Pending Position\n" }
             data?.let {
                 val assetId = parser.asString(data["assetId"]) ?: return null
                 val firstOrderId = parser.asString(data["firstOrderId"]) ?: return null
@@ -521,7 +521,7 @@ data class SubaccountPendingPosition(
                     existing
                 }
             }
-            DebugLogger.debug("Account Pending Position not valid")
+            Logger.d { "Account Pending Position not valid" }
             return null
         }
 
