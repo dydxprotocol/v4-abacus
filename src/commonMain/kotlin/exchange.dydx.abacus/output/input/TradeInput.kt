@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -24,7 +24,7 @@ data class SelectionOption(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): SelectionOption? {
-            DebugLogger.log("creating Selection Option\n")
+            Logger.d { "creating Selection Option\n" }
 
             data?.let {
                 parser.asString(data["type"])?.let { type ->
@@ -44,7 +44,7 @@ data class SelectionOption(
                     }
                 }
             }
-            DebugLogger.debug("Selection Option not valid")
+            Logger.d { "Selection Option not valid" }
             return null
         }
     }
@@ -165,7 +165,7 @@ data class TradeInputOptions(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputOptions? {
-            DebugLogger.log("creating Trade Input Options\n")
+            Logger.d { "creating Trade Input Options\n" }
 
             data?.let {
                 val needsSize = parser.asBool(data["needsSize"]) ?: false
@@ -276,7 +276,7 @@ data class TradeInputOptions(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Options not valid")
+            Logger.d { "Trade Input Options not valid" }
             return null
         }
 
@@ -311,7 +311,7 @@ data class TradeInputSummary(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputSummary? {
-            DebugLogger.log("creating Trade Input Summary\n")
+            Logger.d { "creating Trade Input Summary\n" }
 
             data?.let {
                 val price = parser.asDouble(data["price"])
@@ -355,7 +355,7 @@ data class TradeInputSummary(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Summary not valid")
+            Logger.d { "Trade Input Summary not valid" }
             return null
         }
     }
@@ -374,7 +374,7 @@ data class OrderbookUsage(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): OrderbookUsage? {
-            DebugLogger.log("creating Orderbook Line\n")
+            Logger.d { "creating Orderbook Line\n" }
             data?.let {
                 val size = parser.asDouble(data["size"])
                 val price = parser.asDouble(data["price"])
@@ -410,7 +410,7 @@ data class TradeInputMarketOrder(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputMarketOrder? {
-            DebugLogger.log("creating Trade Input Market Order\n")
+            Logger.d { "creating Trade Input Market Order\n" }
 
             data?.let {
                 val size = parser.asDouble(data["size"])
@@ -451,7 +451,7 @@ data class TradeInputMarketOrder(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Market Order not valid")
+            Logger.d { "Trade Input Market Order not valid" }
             return null
         }
     }
@@ -471,7 +471,7 @@ data class TradeInputSize(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputSize? {
-            DebugLogger.log("creating Trade Input Size\n")
+            Logger.d { "creating Trade Input Size\n" }
 
             data?.let {
                 val size = parser.asDouble(data["size"])
@@ -488,7 +488,7 @@ data class TradeInputSize(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Size not valid")
+            Logger.d { "Trade Input Size not valid" }
             return null
         }
     }
@@ -507,7 +507,7 @@ data class TradeInputPrice(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputPrice? {
-            DebugLogger.log("creating Trade Input Price\n")
+            Logger.d { "creating Trade Input Price\n" }
 
             data?.let {
                 val limitPrice = parser.asDouble(data["limitPrice"])
@@ -522,7 +522,7 @@ data class TradeInputPrice(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Price not valid")
+            Logger.d { "Trade Input Price not valid" }
             return null
         }
     }
@@ -540,7 +540,7 @@ data class TradeInputGoodUntil(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputGoodUntil? {
-            DebugLogger.log("creating Trade Input Good Until\n")
+            Logger.d { "creating Trade Input Good Until\n" }
 
             data?.let {
                 val duration = parser.asDouble(data["duration"])
@@ -553,7 +553,7 @@ data class TradeInputGoodUntil(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Price not valid")
+            Logger.d { "Trade Input Price not valid" }
             return null
         }
     }
@@ -572,7 +572,7 @@ data class TradeInputBracketSide(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputBracketSide? {
-            DebugLogger.log("creating Trade Input Good Until\n")
+            Logger.d { "creating Trade Input Good Until\n" }
 
             data?.let {
                 val triggerPrice = parser.asDouble(data["triggerPrice"])
@@ -587,7 +587,7 @@ data class TradeInputBracketSide(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Price not valid")
+            Logger.d { "Trade Input Price not valid" }
             return null
         }
     }
@@ -607,7 +607,7 @@ data class TradeInputBracket(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInputBracket? {
-            DebugLogger.log("creating Trade Input Bracket\n")
+            Logger.d { "creating Trade Input Bracket\n" }
 
             data?.let {
                 val stopLoss = TradeInputBracketSide.create(
@@ -637,7 +637,7 @@ data class TradeInputBracket(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Bracket not valid")
+            Logger.d { "Trade Input Bracket not valid" }
             return null
         }
     }
@@ -786,7 +786,7 @@ data class TradeInput(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TradeInput? {
-            DebugLogger.log("creating Trade Input\n")
+            Logger.d { "creating Trade Input\n" }
 
             data?.let {
                 val type = parser.asString(data["type"])?.let {
@@ -883,7 +883,7 @@ data class TradeInput(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input not valid")
+            Logger.d { "Trade Input not valid" }
             return null
         }
     }

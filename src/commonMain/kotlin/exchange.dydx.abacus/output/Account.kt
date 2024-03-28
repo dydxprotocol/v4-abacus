@@ -8,11 +8,11 @@ import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.TokenInfo
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IMutableMap
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -48,7 +48,7 @@ data class SubaccountHistoricalPNL(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): SubaccountHistoricalPNL? {
-            DebugLogger.log("creating Account Historical PNL\n")
+            Logger.d { "creating Account Historical PNL\n" }
             data?.let {
                 val equity = parser.asDouble(data["equity"])
                 val totalPnl = parser.asDouble(data["totalPnl"])
@@ -72,7 +72,7 @@ data class SubaccountHistoricalPNL(
                     }
                 }
             }
-            DebugLogger.debug("Account Historical PNL not valid")
+            Logger.d { "Account Historical PNL not valid" }
             return null
         }
 
@@ -123,7 +123,7 @@ data class SubaccountPositionResources(
             data: IMap<*, *>?,
             localizer: LocalizerProtocol? = null,
         ): SubaccountPositionResources? {
-            DebugLogger.log("creating Account Position Resources\n")
+            Logger.d { "creating Account Position Resources\n" }
             data?.let {
                 val sideStringKey: TradeStatesWithStringValues =
                     TradeStatesWithStringValues.create(
@@ -158,7 +158,7 @@ data class SubaccountPositionResources(
                     existing
                 }
             }
-            DebugLogger.debug("Account Position Resources not valid")
+            Logger.d { "Account Position Resources not valid" }
             return null
         }
     }
@@ -259,7 +259,7 @@ data class SubaccountPosition(
             parser: ParserProtocol,
             data: Map<String, Any>?,
         ): SubaccountPosition? {
-            DebugLogger.log("creating Account Position\n")
+            Logger.d { "creating Account Position\n" }
             data?.let {
                 val id = parser.asString(data["id"])
                 val assetId = parser.asString(data["assetId"])
@@ -438,7 +438,7 @@ data class SubaccountPosition(
                     }
                 }
             }
-            DebugLogger.debug("Account Position not valid")
+            Logger.d { "Account Position not valid" }
             return null
         }
 
@@ -571,7 +571,7 @@ data class SubaccountOrderResources(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): SubaccountOrderResources? {
-            DebugLogger.log("creating Account Order Resources\n")
+            Logger.d { "creating Account Order Resources\n" }
 
             data?.let {
                 val sideStringKey = parser.asString(data["sideStringKey"])
@@ -612,7 +612,7 @@ data class SubaccountOrderResources(
                     }
                 }
             }
-            DebugLogger.debug("Account Order Resources not valid")
+            Logger.d { "Account Order Resources not valid" }
             return null
         }
     }
@@ -655,7 +655,7 @@ data class SubaccountOrder(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): SubaccountOrder? {
-            DebugLogger.log("creating Account Order\n")
+            Logger.d { "creating Account Order\n" }
             data?.let {
                 val id = parser.asString(data["id"])
                 val clientId = parser.asInt(data["clientId"])
@@ -759,7 +759,7 @@ data class SubaccountOrder(
                         existing
                     }
                 } else {
-                    DebugLogger.debug("Account Order not valid")
+                    Logger.d { "Account Order not valid" }
                 }
             }
             return null
@@ -789,7 +789,7 @@ data class SubaccountFillResources(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?
         ): SubaccountFillResources? {
-            DebugLogger.log("creating Account Fill Resources\n")
+            Logger.d { "creating Account Fill Resources\n" }
 
             data?.let {
                 val sideStringKey = parser.asString(data["sideStringKey"])
@@ -818,7 +818,7 @@ data class SubaccountFillResources(
                         iconLocal,
                     )
                 } else {
-                    DebugLogger.debug("Account Fill Resources not valid")
+                    Logger.d { "Account Fill Resources not valid" }
                     existing
                 }
             }
@@ -863,7 +863,7 @@ data class SubaccountFill(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): SubaccountFill? {
-            DebugLogger.log("creating Account Fill\n")
+            Logger.d { "creating Account Fill\n" }
             data?.let {
                 val id = parser.asString(data["id"])
                 val subaccountNumber = parser.asInt(data["subaccountNumber"])
@@ -917,7 +917,7 @@ data class SubaccountFill(
                         existing
                     }
                 } else {
-                    DebugLogger.debug("Account Fill not valid")
+                    Logger.d { "Account Fill not valid" }
                     null
                 }
             }
@@ -971,7 +971,7 @@ data class SubaccountTransferResources(
             data: Map<*, *>?,
             localizer: LocalizerProtocol? = null,
         ): SubaccountTransferResources? {
-            DebugLogger.log("creating Account Transfer Resources\n")
+            Logger.d { "creating Account Transfer Resources\n" }
 
             data?.let {
                 val typeStringKey = parser.asString(data["typeStringKey"])
@@ -1003,7 +1003,7 @@ data class SubaccountTransferResources(
                 }
             }
 
-            DebugLogger.debug("Account Transfer Resources not valid")
+            Logger.d { "Account Transfer Resources not valid" }
             return null
         }
     }
@@ -1047,7 +1047,7 @@ data class SubaccountTransfer(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): SubaccountTransfer? {
-            DebugLogger.log("creating Account Transfer\n")
+            Logger.d { "creating Account Transfer\n" }
             data?.let {
                 val id = parser.asString(data["id"])
                 val updatedAt =
@@ -1096,7 +1096,7 @@ data class SubaccountTransfer(
                     }
                 }
             }
-            DebugLogger.debug("Account Transfer not valid")
+            Logger.d { "Account Transfer not valid" }
             return null
         }
 
@@ -1141,7 +1141,7 @@ data class SubaccountFundingPayment(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): SubaccountFundingPayment? {
-            DebugLogger.log("creating Account Funding Payment\n")
+            Logger.d { "creating Account Funding Payment\n" }
 
             data?.let {
                 val marketId = parser.asString(data["marketId"])
@@ -1172,7 +1172,7 @@ data class SubaccountFundingPayment(
                     }
                 }
             }
-            DebugLogger.debug("Account Funding Payment not valid")
+            Logger.d { "Account Funding Payment not valid" }
             return null
         }
 
@@ -1232,7 +1232,7 @@ data class Subaccount(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): Subaccount? {
-            DebugLogger.log("creating Account\n")
+            Logger.d { "creating Account\n" }
 
             data?.let {
                 val ethereumeAddress = parser.asString(data["ethereumeAddress"])
@@ -1535,7 +1535,7 @@ data class AccountBalance(
             data: Map<String, Any>,
             decimals: Int,
         ): AccountBalance? {
-            DebugLogger.log("creating Account Balance\n")
+            Logger.d { "creating Account Balance\n" }
 
             val denom = parser.asString(data["denom"])
             val amount = parser.asDecimal(data["amount"])
@@ -1548,7 +1548,7 @@ data class AccountBalance(
                     existing
                 }
             }
-            DebugLogger.debug("Account Balance not valid")
+            Logger.d { "Account Balance not valid" }
             return null
         }
     }
@@ -1605,7 +1605,7 @@ data class HistoricalTradingReward(
                     }
                 }
             }
-            DebugLogger.debug("HistoricalTradingReward not valid")
+            Logger.d { "HistoricalTradingReward not valid" }
             return null
         }
 
@@ -1654,7 +1654,7 @@ data class BlockReward(
                     }
                 }
             }
-            DebugLogger.debug("BlockReward not valid")
+            Logger.d { "BlockReward not valid" }
             return null
         }
     }
@@ -1712,7 +1712,7 @@ data class TradingRewards(
             parser: ParserProtocol,
             data: Map<String, Any>?
         ): TradingRewards? {
-            DebugLogger.log("creating TradingRewards\n")
+            Logger.d { "creating TradingRewards\n" }
             data?.let {
                 val total = parser.asDouble(data["total"])
                 val historical = createHistoricalTradingRewards(
@@ -1737,7 +1737,7 @@ data class TradingRewards(
                     existing
                 }
             }
-            DebugLogger.debug("TradingRewards not valid")
+            Logger.d { "TradingRewards not valid" }
             return null
         }
 
@@ -1933,7 +1933,7 @@ data class TradingRewards(
                 DayOfWeek.SATURDAY -> today.minus(5.days)
                 DayOfWeek.SUNDAY -> today.minus(6.days)
                 else -> {
-                    DebugLogger.debug("Invalid day of week")
+                    Logger.d { "Invalid day of week" }
                     today
                 }
             }
@@ -1970,7 +1970,7 @@ data class Account(
             tokensInfo: Map<String, TokenInfo>,
             localizer: LocalizerProtocol?,
         ): Account {
-            DebugLogger.log("creating Account\n")
+            Logger.d { "creating Account\n" }
 
             val balances: IMutableMap<String, AccountBalance> =
                 iMutableMapOf()

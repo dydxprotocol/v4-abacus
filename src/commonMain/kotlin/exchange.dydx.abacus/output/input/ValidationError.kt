@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
@@ -21,7 +21,7 @@ data class ErrorParam(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): ErrorParam? {
-            DebugLogger.log("creating Error Param\n")
+            Logger.d { "creating Error Param\n" }
 
             data?.let {
                 parser.asString(data["key"])?.let { key ->
@@ -41,7 +41,7 @@ data class ErrorParam(
                     }
                 }
             }
-            DebugLogger.debug("Error Param not valid")
+            Logger.d { "Error Param not valid" }
             return null
         }
     }
@@ -60,7 +60,7 @@ data class ErrorString(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): ErrorString? {
-            DebugLogger.log("creating Error String\n")
+            Logger.d { "creating Error String\n" }
 
             data?.let {
                 parser.asString(data["stringKey"])?.let { stringKey ->
@@ -90,7 +90,7 @@ data class ErrorString(
                     }
                 }
             }
-            DebugLogger.debug("Error String not valid")
+            Logger.d { "Error String not valid" }
             return null
         }
     }
@@ -109,7 +109,7 @@ data class ErrorResources(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): ErrorResources? {
-            DebugLogger.log("creating Error Resources\n")
+            Logger.d { "creating Error Resources\n" }
 
             data?.let {
                 val title = ErrorString.create(existing?.title, parser, parser.asMap(data["title"]))
@@ -127,7 +127,7 @@ data class ErrorResources(
                     }
                 }
             }
-            DebugLogger.debug("Error Resources not valid")
+            Logger.d { "Error Resources not valid" }
             return null
         }
     }
@@ -174,7 +174,7 @@ data class ValidationError(
             parser: ParserProtocol,
             data: List<Any>?
         ): IList<ValidationError>? {
-            DebugLogger.log("creating Validation Errors\n")
+            Logger.d { "creating Validation Errors\n" }
             return if (data != null) {
                 val errors = iMutableListOf<ValidationError>()
                 for (i in data.indices) {
@@ -195,7 +195,7 @@ data class ValidationError(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): ValidationError? {
-            DebugLogger.log("creating Validation Error\n")
+            Logger.d { "creating Validation Error\n" }
 
             data?.let {
                 parser.asString(data["code"])?.let { code ->
@@ -241,7 +241,7 @@ data class ValidationError(
                     }
                 }
             }
-            DebugLogger.debug("Validation Error not valid")
+            Logger.d { "Validation Error not valid" }
             return null
         }
     }

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -19,7 +19,7 @@ data class ClosePositionInputSize(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): ClosePositionInputSize? {
-            DebugLogger.log("creating Trade Input Size\n")
+            Logger.d { "creating Trade Input Size\n" }
 
             data?.let {
                 val size = parser.asDouble(data["size"])
@@ -36,7 +36,7 @@ data class ClosePositionInputSize(
                     existing
                 }
             }
-            DebugLogger.debug("Trade Input Size not valid")
+            Logger.d { "Trade Input Size not valid" }
             return null
         }
     }
@@ -60,7 +60,7 @@ data class ClosePositionInput(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): ClosePositionInput? {
-            DebugLogger.log("creating Close Position Input\n")
+            Logger.d { "creating Close Position Input\n" }
 
             data?.let {
                 val type = parser.asString(data["type"])?.let {
@@ -117,7 +117,7 @@ data class ClosePositionInput(
                     existing
                 }
             }
-            DebugLogger.debug("Close Position Input not valid")
+            Logger.d { "Close Position Input not valid" }
             return null
         }
     }
