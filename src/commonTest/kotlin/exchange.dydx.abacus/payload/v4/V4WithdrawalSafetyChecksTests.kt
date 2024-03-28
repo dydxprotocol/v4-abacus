@@ -70,7 +70,7 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
                                     "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_DESCRIPTION",
                                     "params": [
                                         {
-                                            "value": 1.5,
+                                            "value": 1.0,
                                             "format": "string",
                                             "key": "SECONDS"
                                         }
@@ -149,7 +149,7 @@ class V4WithdrawalSafetyChecksTests: V4BaseTests() {
                                         {
                                             "value": 1234.567891,
                                             "format": "price",
-                                            "key": "USDC_AMOUNT"
+                                            "key": "USDC_LIMIT"
                                         }
                                     ]
                                 },
