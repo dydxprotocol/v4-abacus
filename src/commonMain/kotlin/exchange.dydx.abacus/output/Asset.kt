@@ -2,8 +2,8 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -58,7 +58,7 @@ data class AssetResources(
                     existing
                 }
             }
-            DebugLogger.debug("Asset Resources not valid")
+            Logger.d { "Asset Resources not valid" }
             return null
         }
     }
@@ -107,7 +107,7 @@ data class Asset(
                     }
                 }
             }
-            DebugLogger.debug("Asset not valid")
+            Logger.d { "Asset not valid" }
             return null
         }
     }

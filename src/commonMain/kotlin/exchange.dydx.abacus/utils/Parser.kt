@@ -108,7 +108,8 @@ class Parser : ParserProtocol {
                 try {
                     withDecimalPoint.toBigDecimal(null, Numeric.decimal.mode).doubleValue(false)
                 } catch (e: Exception) {
-                    DebugLogger.error("Failed to parse double: $string", e)
+                    Logger.e { "Failed to parse double: $string" }
+                    Logger.e { "Exception: $e" }
                     null
                 }
             }
@@ -128,7 +129,8 @@ class Parser : ParserProtocol {
             return try {
                 string.toBigDecimal(null, null)
             } catch (e: Exception) {
-                DebugLogger.error("Failed to parse decimal: $string", e)
+                Logger.e { "Failed to parse double: $string" }
+                Logger.e { "Exception: $e" }
                 null
             }
         }
@@ -366,7 +368,8 @@ class Parser : ParserProtocol {
         val map = try {
             Json.parseToJsonElement(text).jsonObject.toMap().toIMap()
         } catch (e: Exception) {
-            DebugLogger.error("Unable to decode json object: $text", e)
+            Logger.e { "Unable to decode json object: $text" }
+            Logger.e { "Exception: $e" }
             null
         }
         return map
@@ -377,7 +380,8 @@ class Parser : ParserProtocol {
         val list = try {
             Json.parseToJsonElement(text).jsonArray.toIList()
         } catch (e: Exception) {
-            DebugLogger.error("Unable to decode json array: $text", e)
+            Logger.e { "Unable to decode json object: $text" }
+            Logger.e { "Exception: $e" }
             null
         }
         return list

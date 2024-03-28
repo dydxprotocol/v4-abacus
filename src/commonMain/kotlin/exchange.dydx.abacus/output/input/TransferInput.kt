@@ -4,10 +4,10 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.iMapOf
 import kollections.JsExport
 import kollections.iListOf
@@ -32,7 +32,7 @@ data class DepositInputOptions(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): DepositInputOptions? {
-            DebugLogger.log("creating Deposit Input Options\n")
+            Logger.d { "creating Deposit Input Options\n" }
 
             data?.let {
                 val needsSize = parser.asBool(data["needsSize"])
@@ -97,7 +97,7 @@ data class DepositInputOptions(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Deposit Options not valid")
+            Logger.d { "Transfer Deposit Options not valid" }
             return null
         }
     }
@@ -119,7 +119,7 @@ data class WithdrawalInputOptions(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): WithdrawalInputOptions? {
-            DebugLogger.log("creating Withdrawal Input Options\n")
+            Logger.d { "creating Withdrawal Input Options\n" }
 
             data?.let {
                 val needsSize = parser.asBool(data["needsSize"])
@@ -183,7 +183,7 @@ data class WithdrawalInputOptions(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Withdrawal Options not valid")
+            Logger.d { "Transfer Withdrawal Options not valid" }
             return null
         }
     }
@@ -204,7 +204,7 @@ data class TransferOutInputOptions(
             data: Map<*, *>?,
             environment: V4Environment?
         ): TransferOutInputOptions? {
-            DebugLogger.log("creating TransferOut Input Options\n")
+            Logger.d { "creating TransferOut Input Options\n" }
 
             val needsSize = parser.asBool(data?.get("needsSize")) ?: false
             val needsAddress = parser.asBool(data?.get("needsAddress")) ?: false
@@ -265,7 +265,7 @@ data class TransferInputChainResource(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): TransferInputChainResource? {
-            DebugLogger.log("creating Transfer Input Chain Resource\n")
+            Logger.d { "creating Transfer Input Chain Resource\n" }
 
             data?.let {
                 val chainName = parser.asString(data["chainName"])
@@ -291,7 +291,7 @@ data class TransferInputChainResource(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input Chain Resource not valid")
+            Logger.d { "Transfer Input Chain Resource not valid" }
             return null
         }
     }
@@ -312,7 +312,7 @@ data class TransferInputTokenResource(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): TransferInputTokenResource? {
-            DebugLogger.log("creating Transfer Input Token Resource\n")
+            Logger.d { "creating Transfer Input Token Resource\n" }
 
             data?.let {
                 val name = parser.asString(data["name"])
@@ -338,7 +338,7 @@ data class TransferInputTokenResource(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input Token Resource not valid")
+            Logger.d { "Transfer Input Token Resource not valid" }
             return null
         }
     }
@@ -356,7 +356,7 @@ data class TransferInputResources(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): TransferInputResources? {
-            DebugLogger.log("creating Transfer Input Resources\n")
+            Logger.d { "creating Transfer Input Resources\n" }
 
             data?.let {
                 val chainResourcesMap = parser.asMap(data["chainResources"])
@@ -391,7 +391,7 @@ data class TransferInputResources(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input Resources not valid")
+            Logger.d { "Transfer Input Resources not valid" }
             return null
         }
     }
@@ -421,7 +421,7 @@ data class TransferInputRequestPayload(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): TransferInputRequestPayload? {
-            DebugLogger.log("creating Transfer Input Request Payload\n")
+            Logger.d { "creating Transfer Input Request Payload\n" }
 
             data?.let {
                 val routeType = parser.asString(data["routeType"])
@@ -475,7 +475,7 @@ data class TransferInputRequestPayload(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input Request Payload not valid")
+            Logger.d { "Transfer Input Request Payload not valid" }
             return null
         }
     }
@@ -503,7 +503,7 @@ data class TransferInputSummary(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): TransferInputSummary? {
-            DebugLogger.log("creating Transfer Input Summary\n")
+            Logger.d { "creating Transfer Input Summary\n" }
 
             data?.let {
                 val usdcSize = parser.asDouble(data["usdcSize"])
@@ -550,7 +550,7 @@ data class TransferInputSummary(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input Summary not valid")
+            Logger.d { "Transfer Input Summary not valid" }
             return null
         }
     }
@@ -568,7 +568,7 @@ data class TransferInputSize(
             parser: ParserProtocol,
             data: Map<*, *>?
         ): TransferInputSize? {
-            DebugLogger.log("creating Transfer Input Size\n")
+            Logger.d { "creating Transfer Input Size\n" }
 
             data?.let {
                 val usdcSize = parser.asString(data["usdcSize"])
@@ -583,7 +583,7 @@ data class TransferInputSize(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input Size not valid")
+            Logger.d { "Transfer Input Size not valid" }
             return null
         }
     }
@@ -632,7 +632,7 @@ data class TransferInput(
             data: Map<*, *>?,
             environment: V4Environment?
         ): TransferInput? {
-            DebugLogger.log("creating Transfer Input\n")
+            Logger.d { "creating Transfer Input\n" }
 
             data?.let {
                 val type = parser.asString(data["type"])?.let {
@@ -745,7 +745,7 @@ data class TransferInput(
                     existing
                 }
             }
-            DebugLogger.debug("Transfer Input not valid")
+            Logger.d { "Transfer Input not valid" }
             return null
         }
     }

@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.toIList
 import kotlinx.serialization.Serializable
@@ -31,7 +31,7 @@ data class LaunchIncentiveSeason(val label: String, val startTimeInMilliseconds:
                     existing
                 }
             }
-            DebugLogger.debug("LaunchIncentiveSeason not valid")
+            Logger.d { "LaunchIncentiveSeason not valid" }
             return null
         }
     }
@@ -54,7 +54,7 @@ data class LaunchIncentiveSeasons(val seasons: IList<LaunchIncentiveSeason>) {
                     existing
                 }
             }
-            DebugLogger.debug("LaunchIncentiveSeasons not valid")
+            Logger.d { "LaunchIncentiveSeasons not valid" }
             return null
         }
     }
@@ -76,7 +76,7 @@ data class LaunchIncentive(val seasons: LaunchIncentiveSeasons) {
                     LaunchIncentiveSeasons.create(null, parser, seasonsData) ?: return null
                 return LaunchIncentive(seasons)
             }
-            DebugLogger.debug("LaunchIncentive not valid")
+            Logger.d { "LaunchIncentive not valid" }
             return null
         }
     }
