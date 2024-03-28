@@ -61,17 +61,18 @@ internal class SystemSupervisor(
                 retrieveRewardsParams()
             }
             if (configs.retrieveWithdrawSafetyChecks) {
-                retrieveWithdrawSafetyChecks()
+                stateMachine.state?.input?.transfer?.type?.let { transferType ->
+                    retrieveWithdrawSafetyChecks(transferType)
+                }
             }
         }
     }
 
-    internal fun didSetTransferType() {
-        val type = stateMachine.state?.input?.transfer?.type
+    internal fun didSetTransferType(transferType: TransferType) {
         if (stateMachine.featureFlags.withdrawalSafetyEnabled
             && configs.retrieveWithdrawSafetyChecks
-            && (type == TransferType.withdrawal || type == TransferType.transferOut)) {
-            retrieveWithdrawSafetyChecks()
+            && (transferType == TransferType.withdrawal || transferType == TransferType.transferOut)) {
+            retrieveWithdrawSafetyChecks(transferType)
         }
     }
 
@@ -160,9 +161,8 @@ internal class SystemSupervisor(
     }
 
 
-    fun retrieveWithdrawSafetyChecks() {
-        val transferType = stateMachine.state?.input?.transfer?.type
-        when (stateMachine.state?.input?.transfer?.type) {
+    fun retrieveWithdrawSafetyChecks(transferType: TransferType) {
+        when (transferType) {
             TransferType.withdrawal -> {
                 updateWithdrawalCapacity()
                 updateWithdrawalGating()
@@ -183,17 +183,14 @@ internal class SystemSupervisor(
     // how to hand response errors
     // why the name "adaptor?"
     private fun updateWithdrawalCapacity() {
-        val transferType = stateMachine.state?.input?.transfer?.type
-        if (transferType == TransferType.withdrawal) {
-            var denom = helper.environment.tokens["usdc"]?.denom
-            val params = iMapOf(
-                "denom" to denom,
-            )
-            val paramsInJson = helper.jsonEncoder.encode(params)
-            helper.getOnChain(QueryType.GetWithdrawalCapacityByDenom, paramsInJson) { response ->
-                val oldState = stateMachine.state
-                update(stateMachine.onChainWithdrawalCapacity(response), oldState)
-            }
+        var denom = helper.environment.tokens["usdc"]?.denom
+        val params = iMapOf(
+            "denom" to denom,
+        )
+        val paramsInJson = helper.jsonEncoder.encode(params)
+        helper.getOnChain(QueryType.GetWithdrawalCapacityByDenom, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainWithdrawalCapacity(response), oldState)
         }
     }
 

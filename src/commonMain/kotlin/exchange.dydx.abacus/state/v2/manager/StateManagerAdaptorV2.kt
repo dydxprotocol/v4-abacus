@@ -482,7 +482,7 @@ internal class StateManagerAdaptorV2(
         }
         data?.let {
             TransferType(rawValue = data)?.let {
-                system.didSetTransferType()
+                system.didSetTransferType(it)
             }
         }
     }
