@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -20,7 +20,7 @@ data class TriggerPrice(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TriggerPrice? {
-            DebugLogger.log("creating Trigger Price\n")
+            Logger.d { "creating Trigger Price\n" }
 
             data?.let {
                 val limitPrice = parser.asDouble(data["limitPrice"])
@@ -40,7 +40,7 @@ data class TriggerPrice(
                     existing
                 }
             }
-            DebugLogger.log("Trigger Price not valid\n")
+            Logger.d { "Trigger Price not valid\n" }
             return null
         }
     }
@@ -58,7 +58,7 @@ data class TriggerOrder(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TriggerOrder? {
-            DebugLogger.log("creating Trigger Order\n")
+            Logger.d { "creating Trigger Order\n" }
 
             data?.let {
                 val type = parser.asString(data["type"])?.let {
@@ -79,7 +79,7 @@ data class TriggerOrder(
                     existing
                 }
             }
-            DebugLogger.log("Trigger Order not valid\n")
+            Logger.d { "Trigger Order not valid\n" }
             return null
         }
     }
@@ -99,7 +99,7 @@ data class TriggerOrdersInput(
             parser: ParserProtocol,
             data: Map<*, *>?,
         ): TriggerOrdersInput? {
-            DebugLogger.log("creating Trigger Orders Input\n")
+            Logger.d { "creating Trigger Orders Input\n" }
 
             data?.let {
                 val marketId = parser.asString(data["marketId"])
@@ -129,7 +129,7 @@ data class TriggerOrdersInput(
                     existing
                 }
             }
-            DebugLogger.log("Trigger Orders Input not valid\n")
+            Logger.d { "Trigger Orders Input not valid\n" }
             return null
         }
     }
