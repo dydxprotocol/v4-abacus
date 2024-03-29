@@ -245,4 +245,14 @@ class V4TransactionTests : NetworkTests() {
         assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
         assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
+
+    @Test
+    fun testCancelOrderForChildSubaccount() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        val transactionCallback: TransactionCallback = { _, _, _ -> }
+
+        val cancelPayload = subaccountSupervisor?.cancelOrder("b812bea8-29d3-5841-9549-caa072f6f8a9", transactionCallback)
+        assertNotNull(cancelPayload, "Cancel payload should not be null")
+        assertEquals(128, cancelPayload?.subaccountNumber)
+    }
 }

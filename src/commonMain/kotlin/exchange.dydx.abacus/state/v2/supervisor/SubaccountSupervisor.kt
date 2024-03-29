@@ -406,7 +406,7 @@ internal class SubaccountSupervisor(
         }
     }
 
-    fun cancelOrder(orderId: String, callback: TransactionCallback) {
+    fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val string = Json.encodeToString(payload)
         val analyticsPayload = analyticsUtils.formatCancelOrderPayload(payload)
@@ -448,6 +448,8 @@ internal class SubaccountSupervisor(
                 TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs),
             )
         }
+
+        return payload
     }
 
     /**
@@ -810,9 +812,10 @@ internal class SubaccountSupervisor(
         val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
+        val orderSubaccountNumber = order.subaccountNumber
 
         return HumanReadableCancelOrderPayload(
-            subaccountNumber,
+            orderSubaccountNumber,
             orderId,
             clientId,
             orderFlags,
