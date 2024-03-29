@@ -6,7 +6,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V4ParentSubaccountTests : V4BaseTests() {
+class V4ParentSubaccountTests : V4BaseTests(true) {
     @Test
     fun testDataFeed() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result

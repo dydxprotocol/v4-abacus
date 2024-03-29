@@ -5,7 +5,7 @@ import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-class AccountCalculator(val parser: ParserProtocol) {
+class AccountCalculator(val parser: ParserProtocol, private val useParentSubaccount: Boolean) {
     private val subaccountCalculator = SubaccountCalculator(parser)
 
     internal fun calculate(
@@ -35,7 +35,9 @@ class AccountCalculator(val parser: ParserProtocol) {
                     )
                 }
             }
-            modified = groupSubaccounts(modified, markets)
+            if (useParentSubaccount) {
+                modified = groupSubaccounts(modified, markets)
+            }
             modified
         } else {
             null

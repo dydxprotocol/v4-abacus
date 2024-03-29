@@ -140,6 +140,7 @@ internal class SubaccountSupervisor(
         helper.environment,
         helper.parser,
         helper.jsonEncoder,
+        configs.useParentSubaccount,
     )
 
     internal var notifications: IMap<String, Notification> = iMapOf()
