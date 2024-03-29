@@ -240,7 +240,9 @@ class V4TransactionTests : NetworkTests() {
         assertNotNull(orderPayload, "Order payload should not be null")
         assertEquals(256, orderPayload?.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
 
-        val transactions = subaccountSupervisor?.getTransactionsForIsolatedOrder(orderPayload)
-        assertEquals(transactions?.size, 2, "Should have 2 transactions")
+        val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
+        assertNotNull(transferPayload, "Transfer payload should not be null")
+        assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
+        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
 }

@@ -454,7 +454,6 @@ internal class SubaccountSupervisor(
      * @description Get the childSubaccount number that is available for the given marketId
      * @param marketId
      */
-    @Throws(Exception::class)
     internal fun getChildSubaccountNumberForIsolatedMarginTrade(marketId: String): Int {
         val subaccounts = stateMachine.state?.account?.subaccounts
 
@@ -501,14 +500,14 @@ internal class SubaccountSupervisor(
         }
 
         // User has reached the maximum number of childSubaccounts for their current parentSubaccount
-        throw Exception("No available subaccount number")
+        error("No available subaccount number")
     }
 
-    internal fun getTransferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): String {
+    internal fun getTransferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): HumanReadableSubaccountTransferPayload {
         val trade = stateMachine.state?.input?.trade
 
         // Derive transfer params from trade input
-        val targetLeverage = trade?.targetLeverage ?: throw Exception("targetLeverage is null")
+        val targetLeverage = trade?.targetLeverage ?: error("targetLeverage is null")
         val size = orderPayload.size
         val price = orderPayload.price
         val notionalUsdc = price * size
@@ -522,7 +521,7 @@ internal class SubaccountSupervisor(
             childSubaccountNumber,
         )
 
-        return Json.encodeToString(transferPayload)
+        return transferPayload
     }
 
     internal fun commitPlaceOrder(
@@ -596,8 +595,9 @@ internal class SubaccountSupervisor(
 
             if (isIsolatedMarginOrder) {
                 val transferPayload = getTransferPayloadForIsolatedMarginTrade(payload)
+                val transferPayloadString = Json.encodeToString(transferPayload)
 
-                helper.transaction(TransactionType.SubaccountTransfer, transferPayload) {
+                helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) {
                     response -> isolatedMarginTransactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             } else {
@@ -608,11 +608,12 @@ internal class SubaccountSupervisor(
         } else {
             if (isIsolatedMarginOrder) {
                 val transferPayload = getTransferPayloadForIsolatedMarginTrade(payload)
+                val transferPayloadString = Json.encodeToString(transferPayload)
 
                 transactionQueue.enqueue(
                     TransactionParams(
                         TransactionType.SubaccountTransfer,
-                        transferPayload,
+                        transferPayloadString,
                         isolatedMarginTransactionCallback
                     ),
                 )
