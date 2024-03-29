@@ -11,7 +11,6 @@ import exchange.dydx.abacus.state.model.onChainRewardsParams
 import exchange.dydx.abacus.state.model.onChainWithdrawalCapacity
 import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.utils.AnalyticsUtils
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 import kotlinx.serialization.encodeToString

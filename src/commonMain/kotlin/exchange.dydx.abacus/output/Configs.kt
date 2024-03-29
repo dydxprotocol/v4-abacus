@@ -272,7 +272,6 @@ data class WithdrawalGating(
                     existing
                 }
             }
-            DebugLogger.debug("Withdrawal Gating not valid")
             return null
         }
     }
