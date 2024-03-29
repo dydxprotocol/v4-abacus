@@ -76,6 +76,9 @@ internal class SubaccountSupervisor(
     private val accountAddress: String,
     internal val subaccountNumber: Int
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
+    @Suppress("LocalVariableName", "PropertyName")
+    private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
+
     /*
     Because faucet is done at subaccount level, we need SubaccountSupervisor even
     before the subaccount is realized on protocol/indexer.
@@ -524,7 +527,7 @@ internal class SubaccountSupervisor(
 
         payloads.cancelOrderPayloads.forEach {
             val string = Json.encodeToString(it)
-            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it)
+            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it, true)
 
             val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
@@ -562,6 +565,7 @@ internal class SubaccountSupervisor(
             val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
                 it,
                 false,
+                true,
             )
 
             val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
@@ -732,7 +736,7 @@ internal class SubaccountSupervisor(
             else -> throw Exception("invalid triggerOrderType")
         }
 
-        val duration = GoodTil.duration(TradeInputGoodUntil(28.0, "D")) ?: throw Exception("invalid duration")
+        val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
 
         val marketInfo = marketInfo(marketId)

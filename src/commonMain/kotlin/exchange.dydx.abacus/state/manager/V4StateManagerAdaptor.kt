@@ -1039,7 +1039,7 @@ class V4StateManagerAdaptor(
 
         payloads.cancelOrderPayloads.forEach {
             val string = Json.encodeToString(it)
-            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it)
+            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it, true)
 
             val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
@@ -1084,6 +1084,7 @@ class V4StateManagerAdaptor(
             val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
                 it,
                 false,
+                true,
             )
 
             val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()

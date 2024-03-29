@@ -110,6 +110,9 @@ open class StateManagerAdaptor(
     var stateNotification: StateNotificationProtocol?,
     var dataNotification: DataNotificationProtocol?,
 ) {
+    @Suppress("LocalVariableName", "PropertyName")
+    private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
+
     var stateMachine: TradingStateMachine = PerpTradingStateMachine(
         environment,
         uiImplementations.localizer,
@@ -1780,7 +1783,7 @@ open class StateManagerAdaptor(
             else -> throw Exception("invalid triggerOrderType")
         }
 
-        val duration = GoodTil.duration(TradeInputGoodUntil(28.0, "D")) ?: throw Exception("invalid duration")
+        val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
 
         val marketInfo = marketInfo(marketId)

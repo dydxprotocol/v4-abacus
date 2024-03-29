@@ -12,7 +12,8 @@ class AnalyticsUtils {
      */
     fun formatPlaceOrderPayload(
         payload: HumanReadablePlaceOrderPayload,
-        isClosePosition: Boolean? = false
+        isClosePosition: Boolean? = false,
+        fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "clientId" to payload.clientId,
@@ -20,6 +21,7 @@ class AnalyticsUtils {
             "execution" to payload.execution,
             "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
             "isClosePosition" to isClosePosition,
+            "fromSlTpDialog" to fromSlTpDialog,
             "marketId" to payload.marketId,
             "postOnly" to payload.postOnly,
             "price" to payload.price,
@@ -36,9 +38,11 @@ class AnalyticsUtils {
     /**
      * Format Cancel Order Payload for `TradeCancelOrder` Analytic Event
      * @param payload HumanReadableCancelOrderPayload
+     * @param fromSlTpDialog Boolean
      */
-    fun formatCancelOrderPayload(payload: HumanReadableCancelOrderPayload): IMap<String, Any>? {
+    fun formatCancelOrderPayload(payload: HumanReadableCancelOrderPayload, fromSlTpDialog: Boolean? = false,): IMap<String, Any>? {
         return iMapOf(
+            "fromSlTpDialog" to fromSlTpDialog,
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,
