@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.trade.TradeAccountStateValidator
@@ -33,6 +34,7 @@ internal class TradeInputValidator(
         subaccount: Map<String, Any>?,
         markets: Map<String, Any>?,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         transaction: Map<String, Any>,
         transactionType: String,
         environment: V4Environment?,
