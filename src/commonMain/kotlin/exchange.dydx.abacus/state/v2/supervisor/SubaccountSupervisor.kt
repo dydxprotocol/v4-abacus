@@ -807,12 +807,12 @@ internal class SubaccountSupervisor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
-        val clientId = order.clientId ?: throw Exception("clientId is null")
-        val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
-        val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
+        val clientId = order.clientId ?: error("clientId is null")
+        val orderFlags = order.orderFlags ?: error("orderFlags is null")
+        val clobPairId = order.clobPairId ?: error("clobPairId is null")
+        val orderSubaccountNumber = order.subaccountNumber?: error("order subaccountNumber is null")
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
-        val orderSubaccountNumber = order.subaccountNumber
 
         return HumanReadableCancelOrderPayload(
             orderSubaccountNumber,

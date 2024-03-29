@@ -3,9 +3,12 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.transfer.DepositValidator
 import exchange.dydx.abacus.validator.transfer.TransferOutValidator
+import exchange.dydx.abacus.validator.transfer.WithdrawalCapacityValidator
+import exchange.dydx.abacus.validator.transfer.WithdrawalGatingValidator
 
 internal class TransferInputValidator(
     localizer: LocalizerProtocol?,
@@ -16,6 +19,8 @@ internal class TransferInputValidator(
     private val transferValidators = listOf<TransferValidatorProtocol>(
         DepositValidator(localizer, formatter, parser),
         TransferOutValidator(localizer, formatter, parser),
+        WithdrawalGatingValidator(localizer, formatter, parser),
+        WithdrawalCapacityValidator(localizer, formatter, parser),
     )
 
     override fun validate(
@@ -24,6 +29,7 @@ internal class TransferInputValidator(
         subaccount: Map<String, Any>?,
         markets: Map<String, Any>?,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         transaction: Map<String, Any>,
         transactionType: String,
         environment: V4Environment?,
@@ -37,9 +43,11 @@ internal class TransferInputValidator(
                         wallet,
                         subaccount,
                         transaction,
+                        configs,
+                        currentBlockAndHeight,
                         restricted,
                         environment,
-                    )
+                )
                 if (validatorErrors != null) {
                     errors.addAll(validatorErrors)
                 }

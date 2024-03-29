@@ -1,6 +1,25 @@
 package exchange.dydx.abacus.tests.payloads
 
+import exchange.dydx.abacus.state.manager.BlockAndTime
+import kotlinx.datetime.Instant
+import kotlin.time.Duration
+
 internal class HeightMock {
+    val currentBlockAndHeight = BlockAndTime(
+        block = 16750,
+        time = Instant.fromEpochSeconds(16750)
+    )
+
+    val afterCurrentBlockAndHeight = BlockAndTime(
+        block = currentBlockAndHeight.block + 1,
+        time = Instant.fromEpochSeconds(currentBlockAndHeight.time.epochSeconds + 1)
+    )
+
+    val beforeCurrentBlockAndHeight = BlockAndTime(
+        block = currentBlockAndHeight.block - 1,
+        time = Instant.fromEpochSeconds(currentBlockAndHeight.time.epochSeconds - 1)
+    )
+
     val indexerHeight = """
         {
         	"height": "16750",
