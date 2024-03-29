@@ -111,8 +111,9 @@ internal class ParentSubaccountsChannelMock {
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":0,
-                    "clientId":"2194126268",
+                    "clientId":"194126268",
                     "clobPairId":"1",
+                    "orderFlags": "0",
                     "side":"SELL",
                     "size":"1.653451",
                     "totalFilled":"0.682633",
@@ -129,8 +130,9 @@ internal class ParentSubaccountsChannelMock {
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":128,
-                    "clientId":"2194126269",
+                    "clientId":"194126269",
                     "clobPairId":"134",
+                    "orderFlags": "0",
                     "side":"SELL",
                     "size":"1.653451",
                     "totalFilled":"0.682633",
@@ -143,12 +145,13 @@ internal class ParentSubaccountsChannelMock {
                     "goodTilBlock":"5837"
                  },
                  {
-                    "id":"b812bea8-29d3-5841-9549-caa072f6f8a9",
+                    "id":"b812bea8-29d3-5841-9549-caa072f6f8b9",
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":256,
-                    "clientId":"2194126269",
+                    "clientId":"194126270",
                     "clobPairId":"134",
+                    "orderFlags": "0",
                     "side":"SELL",
                     "size":"1.653451",
                     "totalFilled":"0.682633",
@@ -207,8 +210,9 @@ internal class ParentSubaccountsChannelMock {
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":257,
-                    "clientId":"2194126268",
+                    "clientId":"94126268",
                     "clobPairId":"1",
+                    "orderFlags": "0",
                     "side":"SELL",
                     "size":"1.653451",
                     "totalFilled":"0.682633",
@@ -225,8 +229,9 @@ internal class ParentSubaccountsChannelMock {
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "subaccountNumber":513,
-                    "clientId":"2194126269",
+                    "clientId":"94126269",
                     "clobPairId":"134",
+                    "orderFlags": "0",
                     "side":"SELL",
                     "size":"1.653451",
                     "totalFilled":"0.682633",
@@ -238,7 +243,92 @@ internal class ParentSubaccountsChannelMock {
                     "reduceOnly":false,
                     "goodTilBlock":"5837"
                  }
-              ]
+              ],
+              "fills":[
+                {
+                   "id":"180c2462-eb3b-5985-a702-32c503462a37",
+                   "subaccountNumber": 129,
+                   "side":"BUY",
+                   "size":"0.01",
+                   "type":"LIMIT",
+                   "price":"1878",
+                   "eventId":"0001781f0000000200000011",
+                   "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
+                   "createdAt":"2023-07-07T17:20:10.369Z",
+                   "liquidity":"TAKER",
+                   "clobPairId":"1",
+                   "quoteAmount":"18.78",
+                   "subaccountId":"8586bcf6-1f58-5ec9-a0bc-e53db273e7b0",
+                   "createdAtHeight":"96287",
+                   "transactionHash":"49AFD6A9FA9D4F973F2CF764FD0A297358F2C3B557252C51E9D4E8794543E1B2",
+                   "ticker":"ETH-USD"
+                }
+             ],
+             "transfers": {
+                "id":"89586775-0646-582e-9b36-4f131715644d",
+                "sender": {
+                    "address":"dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                    "subaccountNumber":129
+                },
+                "recipient":{
+                    "address":"dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8"
+                 },
+                "size":"419.98472",
+                "createdAt":"2023-08-21T21:37:53.373Z",
+                "createdAtHeight":"404014",
+                "symbol":"USDC",
+                "type":"WITHDRAWAL",
+                "transactionHash": "MOCKHASH1"
+            }
+           }
+        }
+    """.trimIndent()
+
+    internal val channel_data_with_fill_only = """
+        {
+           "type":"channel_data",
+           "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
+           "message_id":120,
+           "id":"dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4/1",
+           "channel":"v4_parent_subaccounts",
+           "subaccountNumber":1,
+           "contents":{
+              "fills":[
+                {
+                   "id":"180c2462-eb3b-5985-a702-32c503462a37",
+                   "subaccountNumber": 1,
+                   "side":"BUY",
+                   "size":"0.01",
+                   "type":"LIMIT",
+                   "price":"1878",
+                   "eventId":"0001781f0000000200000011",
+                   "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
+                   "createdAt":"2023-07-07T17:11:10.369Z",
+                   "liquidity":"TAKER",
+                   "clobPairId":"1",
+                   "quoteAmount":"18.78",
+                   "subaccountId":"8586bcf6-1f58-5ec9-a0bc-e53db273e7b0",
+                   "createdAtHeight":"96287",
+                   "transactionHash":"49AFD6A9FA9D4F973F2CF764FD0A297358F2C3B557252C51E9D4E8794543E1B2",
+                   "ticker":"ETH-USD"
+                }
+             ],
+             "transfers": {
+                "id":"89586775-0646-582e-9b36-4f133445644d",
+                "sender": {
+                    "address":"dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
+                    "subaccountNumber":1
+                },
+                "recipient":{
+                    "address":"dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8"
+                 },
+                "size":"419.98472",
+                "createdAt":"2023-08-22T21:37:53.373Z",
+                "createdAtHeight":"404014",
+                "symbol":"USDC",
+                "type":"WITHDRAWAL",
+                "transactionHash": "MOCKHASH2"
+            }
            }
         }
     """.trimIndent()

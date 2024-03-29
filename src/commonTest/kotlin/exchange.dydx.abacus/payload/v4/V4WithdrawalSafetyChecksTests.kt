@@ -14,7 +14,7 @@ import exchange.dydx.abacus.tests.extensions.loadAccounts
 import kollections.iListOf
 import kotlin.test.Test
 
-class V4WithdrawalSafetyChecksTests: V4BaseTests() {
+class V4WithdrawalSafetyChecksTests : V4BaseTests() {
 
     override fun setup() {
         perp.loadAccounts(mock)
@@ -202,7 +202,6 @@ private fun TradingStateMachine.parseOnChainWithdrawalCapacity(payload: String):
     val errors = if (error != null) iListOf(error) else null
     return StateResponse(state, changes, errors)
 }
-
 
 private fun TradingStateMachine.parseOnChainWithdrawalGating(payload: String): StateResponse {
     var changes: StateChanges? = null

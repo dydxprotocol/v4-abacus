@@ -8,7 +8,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.TransferValidatorProtocol
 
@@ -42,13 +41,16 @@ internal class WithdrawalCapacityValidator(
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
                     "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
-                    mapOf("USDC_LIMIT" to mapOf(
-                        "value" to maxWithdrawalCapacity.doubleValue(false),
-                        "format" to "price",
-                    )),                    null,
+                    mapOf(
+                        "USDC_LIMIT" to mapOf(
+                            "value" to maxWithdrawalCapacity.doubleValue(false),
+                            "format" to "price",
+                        ),
+                    ),
+                    null,
                     environment?.links?.withdrawalGateLearnMore,
                     "APP.GENERAL.LEARN_MORE_ARROW",
-                    ),
+                ),
             )
         } else {
             return null

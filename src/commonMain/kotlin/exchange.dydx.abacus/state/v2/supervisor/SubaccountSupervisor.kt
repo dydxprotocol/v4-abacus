@@ -143,6 +143,7 @@ internal class SubaccountSupervisor(
         helper.environment,
         helper.parser,
         helper.jsonEncoder,
+        configs.useParentSubaccount,
     )
 
     internal var notifications: IMap<String, Notification> = iMapOf()
@@ -170,9 +171,9 @@ internal class SubaccountSupervisor(
 
     override fun didSetSocketConnected(socketConnected: Boolean) {
         super.didSetSocketConnected(socketConnected)
-        if (configs.subscribeToSubaccount != SubaccountSubscriptionType.NONE && realized) {
+        if (configs.subscribeToSubaccount && realized) {
             subaccountChannelSubscription(
-                configs.subscribeToSubaccount == SubaccountSubscriptionType.PARENT_SUBACCOUNT,
+                configs.useParentSubaccount,
                 socketConnected,
             )
         }
@@ -180,7 +181,8 @@ internal class SubaccountSupervisor(
 
     private fun retrieveFills() {
         val oldState = stateMachine.state
-        val url = helper.configs.privateApiUrl("fills")
+        val url =
+            helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-fills" else "fills")
         val params = subaccountParams()
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
@@ -205,7 +207,7 @@ internal class SubaccountSupervisor(
 
     private fun retrieveTransfers() {
         val oldState = stateMachine.state
-        val url = helper.configs.privateApiUrl("transfers")
+        val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-transfers" else "transfers")
         val params = subaccountParams()
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
@@ -415,37 +417,43 @@ internal class SubaccountSupervisor(
         tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
 
         val isShortTermOrder = payload.orderFlags == 0
-        val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
-            val error = parseTransactionResponse(response)
-            if (error == null) {
-                tracking(
-                    AnalyticsEvent.TradeCancelOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
-                )
-                helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-                    this.orderCanceled(orderId)
-                    this.cancelOrderRecords.add(
-                        CancelOrderRecord(
-                            subaccountNumber,
-                            payload.clientId,
-                            submitTimeMs,
-                        ),
+        val transactionCallback =
+            { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradeCancelOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)
+                            ?.toIMap(),
                     )
+                    helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.orderCanceled(orderId)
+                        this.cancelOrderRecords.add(
+                            CancelOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            ),
+                        )
+                    }
                 }
+                helper.send(error, callback, payload)
             }
-            helper.send(error, callback, payload)
-        }
 
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-            helper.transaction(TransactionType.CancelOrder, string) {
-                    response ->
+            helper.transaction(TransactionType.CancelOrder, string) { response ->
                 transactionCallback(response, uiDelayTimeMs, submitTimeMs)
             }
         } else {
             transactionQueue.enqueue(
-                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs),
+                TransactionParams(
+                    TransactionType.CancelOrder,
+                    string,
+                    transactionCallback,
+                    uiClickTimeMs,
+                ),
             )
         }
 
@@ -461,7 +469,7 @@ internal class SubaccountSupervisor(
 
         val utilizedSubaccountsMarketIdMap = subaccounts?.mapValues {
             val openPositions = it.value.openPositions
-            val openOrders = it.value.orders?.filter {order ->
+            val openOrders = it.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
                 status == "OPEN"
             }
@@ -554,29 +562,32 @@ internal class SubaccountSupervisor(
                     else -> true
                 }
             }
+
             else -> false
         }
 
-        val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
-            val error = parseTransactionResponse(response)
-            if (error == null) {
-                tracking(
-                    AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
-                )
-                helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-                    this.placeOrderRecords.add(
-                        PlaceOrderRecord(
-                            subaccountNumber,
-                            payload.clientId,
-                            submitTimeMs,
-                        ),
+        val transactionCallback =
+            { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)
+                            ?.toIMap(),
                     )
-                    lastOrderClientId = clientId
+                    helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.placeOrderRecords.add(
+                            PlaceOrderRecord(
+                                subaccountNumber,
+                                payload.clientId,
+                                submitTimeMs,
+                            ),
+                        )
+                        lastOrderClientId = clientId
+                    }
                 }
+                helper.send(error, callback, payload)
             }
-            helper.send(error, callback, payload)
-        }
 
         // If the transfer is successful, place the order
         val isolatedMarginTransactionCallback =
@@ -594,17 +605,18 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-
             if (isIsolatedMarginOrder) {
                 val transferPayload = getTransferPayloadForIsolatedMarginTrade(payload)
                 val transferPayloadString = Json.encodeToString(transferPayload)
 
                 helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) {
-                    response -> isolatedMarginTransactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                        response ->
+                    isolatedMarginTransactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             } else {
                 helper.transaction(TransactionType.PlaceOrder, string) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                        response ->
+                    transactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             }
         } else {
@@ -616,7 +628,7 @@ internal class SubaccountSupervisor(
                     TransactionParams(
                         TransactionType.SubaccountTransfer,
                         transferPayloadString,
-                        isolatedMarginTransactionCallback
+                        isolatedMarginTransactionCallback,
                     ),
                 )
             } else {
@@ -624,7 +636,7 @@ internal class SubaccountSupervisor(
                     TransactionParams(
                         TransactionType.PlaceOrder,
                         string,
-                        transactionCallback
+                        transactionCallback,
                     ),
                 )
             }
@@ -660,7 +672,10 @@ internal class SubaccountSupervisor(
             if (error == null) {
                 tracking(
                     AnalyticsEvent.TradePlaceOrder.rawValue,
-                    ParsingHelper.merge(uiTrackingParmas(submitTimeMs - clickTimeMs), analyticsPayload)?.toIMap(),
+                    ParsingHelper.merge(
+                        uiTrackingParmas(submitTimeMs - clickTimeMs),
+                        analyticsPayload,
+                    )?.toIMap(),
                 )
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
@@ -1110,14 +1125,8 @@ internal class SubaccountSupervisor(
                 }
             }
             if (socketConnected) {
-                when (configs.subscribeToSubaccount) {
-                    SubaccountSubscriptionType.PARENT_SUBACCOUNT -> {
-                        subaccountChannelSubscription(true, true)
-                    }
-                    SubaccountSubscriptionType.SUBACCOUNT -> {
-                        subaccountChannelSubscription(false, true)
-                    }
-                    else -> {}
+                if (configs.subscribeToSubaccount) {
+                    subaccountChannelSubscription(configs.useParentSubaccount, true)
                 }
             }
         }
