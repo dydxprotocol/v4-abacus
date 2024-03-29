@@ -13,7 +13,6 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.MARKET_ORDER_DURATION
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -1477,10 +1476,7 @@ data class Subaccount(
 
         private inline fun block(order: SubaccountOrder): Int? {
             return order.createdAtHeight ?: if (order.goodTilBlock != null) {
-                order.goodTilBlock - when (order.type) {
-                    OrderType.market -> MARKET_ORDER_DURATION
-                    else -> SHORT_TERM_ORDER_DURATION
-                }
+                order.goodTilBlock - SHORT_TERM_ORDER_DURATION
             } else {
                 null
             }

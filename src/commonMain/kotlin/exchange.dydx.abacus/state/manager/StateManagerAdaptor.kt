@@ -68,9 +68,9 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
-import exchange.dydx.abacus.utils.MARKET_ORDER_DURATION
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
@@ -707,7 +707,8 @@ open class StateManagerAdaptor(
 
                 "channel_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
+                    val info =
+                        SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -718,7 +719,8 @@ open class StateManagerAdaptor(
 
                 "channel_batch_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
+                    val info =
+                        SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -1887,6 +1889,20 @@ open class StateManagerAdaptor(
         )
     }
 
+    private fun isShortTermOrder(type: OrderType, timeInForce: String?): Boolean {
+        return when (type) {
+            OrderType.market -> true
+            OrderType.limit -> {
+                when (timeInForce) {
+                    "GTT" -> false
+                    else -> true
+                }
+            }
+
+            else -> false
+        }
+    }
+
     @Throws(Exception::class)
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload {
         val subaccountNumber =
@@ -1938,7 +1954,9 @@ open class StateManagerAdaptor(
         val currentHeight = calculateCurrentHeight()
 
         val goodTilBlock =
-            if (trade.type == OrderType.market) currentHeight?.plus(MARKET_ORDER_DURATION) else null
+            if (isShortTermOrder(trade.type, trade.timeInForce)) currentHeight?.plus(
+                SHORT_TERM_ORDER_DURATION
+            ) else null
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
@@ -1989,7 +2007,7 @@ open class StateManagerAdaptor(
         val postOnly = false
         val goodTilTimeInSeconds = null
         val currentHeight = calculateCurrentHeight()
-        val goodTilBlock = currentHeight?.plus(MARKET_ORDER_DURATION)
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
