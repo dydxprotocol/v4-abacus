@@ -465,6 +465,89 @@ data class SubaccountPosition(
     }
 }
 
+@JsExport
+@Serializable
+data class SubaccountPendingPosition(
+    val assetId: String,
+    val firstOrderId: String,
+    val orderCount: Int,
+    val freeCollateral: TradeStatesWithDoubleValues?,
+    val quoteBalance: TradeStatesWithDoubleValues?, // available for isolated market position
+    val equity: TradeStatesWithDoubleValues?, // available for isolated market position
+) {
+    companion object {
+        internal fun create(
+            existing: SubaccountPendingPosition?,
+            parser: ParserProtocol,
+            data: Map<String, Any>?,
+        ): SubaccountPendingPosition? {
+            Logger.d { "creating Account Pending Position\n" }
+            data?.let {
+                val assetId = parser.asString(data["assetId"]) ?: return null
+                val firstOrderId = parser.asString(data["firstOrderId"]) ?: return null
+                val orderCount = parser.asInt(data["orderCount"]) ?: return null
+                val freeCollateral = TradeStatesWithDoubleValues.create(
+                    null,
+                    parser,
+                    parser.asMap(data["freeCollateral"]),
+                )
+                val quoteBalance = TradeStatesWithDoubleValues.create(
+                    null,
+                    parser,
+                    parser.asMap(data["quoteBalance"]),
+                )
+                val equity = TradeStatesWithDoubleValues.create(
+                    null,
+                    parser,
+                    parser.asMap(data["equity"]),
+                )
+
+                return if (existing?.assetId != assetId ||
+                    existing.firstOrderId != firstOrderId ||
+                    existing.orderCount != orderCount ||
+                    existing.freeCollateral !== freeCollateral ||
+                    existing.quoteBalance !== quoteBalance ||
+                    existing.equity !== equity
+                ) {
+                    SubaccountPendingPosition(
+                        assetId,
+                        firstOrderId,
+                        orderCount,
+                        freeCollateral,
+                        quoteBalance,
+                        equity,
+                    )
+                } else {
+                    existing
+                }
+            }
+            Logger.d { "Account Pending Position not valid" }
+            return null
+        }
+
+        private fun positionSide(size: TradeStatesWithDoubleValues): TradeStatesWithPositionSides {
+            val current = positionSide(size.current)
+            val postOrder = positionSide(size.postOrder)
+            val postAllOrders = positionSide(size.postAllOrders)
+            return TradeStatesWithPositionSides(current, postOrder, postAllOrders)
+        }
+
+        private fun positionSide(size: Double?): PositionSide? {
+            return if (size != null) {
+                if (size > 0) {
+                    PositionSide.LONG
+                } else if (size < 0) {
+                    PositionSide.SHORT
+                } else {
+                    PositionSide.NONE
+                }
+            } else {
+                null
+            }
+        }
+    }
+}
+
 /*
 typeStringKey and statusStringKey are set to optional, in case
 BE returns new enum values which Abacus doesn't recognize
@@ -1130,6 +1213,7 @@ data class Subaccount(
     val marginUsage: TradeStatesWithDoubleValues?,
     val buyingPower: TradeStatesWithDoubleValues?,
     val openPositions: IList<SubaccountPosition>?,
+    val pendingPositions: IList<SubaccountPendingPosition>?,
     val orders: IList<SubaccountOrder>?,
     val marginEnabled: Boolean?,
 ) {
@@ -1230,6 +1314,11 @@ data class Subaccount(
                     parser,
                     parser.asMap(data["openPositions"]),
                 )
+                val pendingPositions = pendingPositions(
+                    existing?.pendingPositions,
+                    parser,
+                    parser.asList(data["pendingPositions"]),
+                )
                 val orders =
                     orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
 
@@ -1262,6 +1351,7 @@ data class Subaccount(
                     existing.marginUsage !== marginUsage ||
                     existing.buyingPower !== buyingPower ||
                     existing.openPositions != openPositions ||
+                    existing.pendingPositions != pendingPositions ||
                     existing.orders != orders ||
                     existing.marginEnabled != marginEnabled
                 ) {
@@ -1282,6 +1372,7 @@ data class Subaccount(
                         marginUsage,
                         buyingPower,
                         openPositions,
+                        pendingPositions,
                         orders,
                         marginEnabled,
                     )
@@ -1311,6 +1402,25 @@ data class Subaccount(
                     SubaccountPosition.create(obj as? SubaccountPosition, parser, it)
                 }
             })?.toIList()
+        }
+
+        private fun pendingPositions(
+            existing: IList<SubaccountPendingPosition>?,
+            parser: ParserProtocol,
+            data: List<*>?,
+        ): IList<SubaccountPendingPosition>? {
+            return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
+                val orderId1 = (obj as SubaccountPendingPosition).firstOrderId
+                val orderId2 =
+                    parser.asString(itemData["firstOrderId"])
+                ParsingHelper.compare(orderId1, orderId2, false)
+            }, { _, obj, itemData ->
+                SubaccountPendingPosition.create(
+                    obj as? SubaccountPendingPosition,
+                    parser,
+                    parser.asMap(itemData),
+                )
+            }, true)?.toIList()
         }
 
         private fun orders(
