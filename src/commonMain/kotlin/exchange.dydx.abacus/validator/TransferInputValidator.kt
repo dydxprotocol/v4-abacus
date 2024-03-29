@@ -7,7 +7,8 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.transfer.DepositValidator
 import exchange.dydx.abacus.validator.transfer.TransferOutValidator
-import exchange.dydx.abacus.validator.transfer.WithdrawalValidator
+import exchange.dydx.abacus.validator.transfer.WithdrawalCapacityValidator
+import exchange.dydx.abacus.validator.transfer.WithdrawalGatingValidator
 
 internal class TransferInputValidator(
     localizer: LocalizerProtocol?,
@@ -18,7 +19,8 @@ internal class TransferInputValidator(
     private val transferValidators = listOf<TransferValidatorProtocol>(
         DepositValidator(localizer, formatter, parser),
         TransferOutValidator(localizer, formatter, parser),
-        WithdrawalValidator(localizer, formatter, parser),
+        WithdrawalGatingValidator(localizer, formatter, parser),
+        WithdrawalCapacityValidator(localizer, formatter, parser),
     )
 
     override fun validate(

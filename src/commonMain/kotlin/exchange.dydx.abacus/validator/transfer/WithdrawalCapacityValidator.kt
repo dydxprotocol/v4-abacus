@@ -12,7 +12,7 @@ import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.TransferValidatorProtocol
 
-internal class WithdrawalValidator(
+internal class WithdrawalCapacityValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
@@ -26,12 +26,6 @@ internal class WithdrawalValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<Any>? {
-        val currentBlock = currentBlockAndHeight?.block ?: Int.MAX_VALUE// parser.asInt(parser.value(environment, "currentBlock"))
-        val withdrawalGating = parser.asMap(parser.value(configs, "withdrawalGating"))
-        val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock")) ?: 0
-        var blockDurationSeconds = if (environment?.isMainNet == true) 1.1 else 1.5
-        val secondsUntilUnblock = ((withdrawalsAndTransfersUnblockedAtBlock - currentBlock) * blockDurationSeconds).toInt()
-
         val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
         val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
         val type = parser.asString(parser.value(transfer, "type"))
@@ -39,27 +33,7 @@ internal class WithdrawalValidator(
         val usdcSize = parser.asDecimal(size?.get("usdcSize")) ?: BigDecimal.ZERO
         val usdcSizeInputIsGreaterThanCapacity = usdcSize > maxWithdrawalCapacity
 
-        if ((type == TransferType.withdrawal.rawValue || type == TransferType.transferOut.rawValue)
-            && secondsUntilUnblock > 0) {
-
-            return listOf(
-                error(
-                    ErrorType.error.rawValue,
-                    "",
-                    null,
-                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_ACTION" else "TRANSFERS_PAUSED_ACTION"}",
-                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_TITLE" else "TRANSFERS_PAUSED_TITLE"}",
-                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.${if (type == TransferType.withdrawal.rawValue) "WITHDRAWAL_PAUSED_DESCRIPTION" else "TRANSFERS_PAUSED_DESCRIPTION"}",
-                    mapOf("SECONDS" to mapOf(
-                        "value" to secondsUntilUnblock,
-                        "format" to "string",
-                    )),
-                    null,
-                    environment?.links?.withdrawalGateLearnMore,
-                    "APP.GENERAL.LEARN_MORE_ARROW",
-                    ),
-            )
-        } else if (type == TransferType.withdrawal.rawValue && usdcSizeInputIsGreaterThanCapacity) {
+        if (type == TransferType.withdrawal.rawValue && usdcSizeInputIsGreaterThanCapacity) {
             return listOf(
                 error(
                     ErrorType.error.rawValue,
