@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 
 buildscript {
     repositories {
@@ -47,7 +48,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.6.20"
+version = "1.6.22"
 
 repositories {
     google()
@@ -71,7 +72,16 @@ kotlin {
         browser()
         generateTypeScriptDefinitions()
         binaries.library()
-        browser()
+
+        binaries.withType<JsIrBinary>().all {
+            linkTask.configure {
+                kotlinOptions {
+                    sourceMap = true
+                    sourceMapEmbedSources = "always"
+                }
+            }
+        }
+
     }
 
     val xcf = XCFramework()

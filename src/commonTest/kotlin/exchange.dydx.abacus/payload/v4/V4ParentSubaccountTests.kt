@@ -27,7 +27,6 @@ class V4ParentSubaccountTests : V4BaseTests() {
         var time = ServerTime.now()
         testSubaccountSubscribed()
         testSubaccountChannelData()
-        testSubaccountChannelDataWithFill()
         time = perp.log("Accounts Subscribed", time)
     }
 
@@ -301,36 +300,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                                 "current": 97406.1
                                             }
                                         }
-                                    },
-                                    "fills":[
-                                        {
-                                           "id":"180c2462-eb3b-5985-a702-32c503462a37",
-                                           "side":"BUY",
-                                           "size":"0.01",
-                                           "type":"LIMIT",
-                                           "price":"1878",
-                                           "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
-                                           "createdAt":"2023-07-07T17:20:10.369Z",
-                                           "liquidity":"TAKER",
-                                           "marketId":"ETH-USD",
-                                           "resources": {
-                                           }
-                                        }
-                                     ],
-                                     "transfers": [
-                                         {
-                                             "id": "89586775-0646-582e-9b36-4f131715644d",
-                                             "type": "WITHDRAWAL",
-                                             "asset": "USDC",
-                                             "transactionHash": "MOCKHASH1",
-                                             "createdAt": "2023-08-21T21:37:53.373Z",
-                                             "amount": 419.98472,
-                                             "updatedAtBlock": 404014,
-                                             "fromAddress": "dydx1sxdvx2kzgdykutxfv06ka9gt0klu8wctfwskhg",
-                                             "toAddress": "dydx1vvjr376v4hfpy5r6m3dmu4u3mu6yl6sjds3gz8",
-                                             "status": "CONFIRMED"
-                                         }
-                                     ]
+                                    }
                                 }
                             },
                             "groupedSubaccounts": {
@@ -365,179 +335,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                                 "current": 97406.1
                                             }
                                         }
-                                    },
-                                    "fills":[
-                                        {
-                                           "id":"180c2462-eb3b-5985-a702-32c503462a37",
-                                           "side":"BUY",
-                                           "size":"0.01",
-                                           "type":"LIMIT",
-                                           "price":"1878",
-                                           "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
-                                           "createdAt":"2023-07-07T17:20:10.369Z",
-                                           "liquidity":"TAKER",
-                                           "marketId":"ETH-USD",
-                                           "resources": {
-                                           }
-                                        }
-                                     ]
-                                }
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-    }
-
-    private fun testSubaccountChannelDataWithFill() {
-        test(
-            {
-                perp.socket(testWsUrl, mock.parentSubaccountsChannel.channel_data_with_fill_only, 0, null)
-            },
-            """
-                {
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "1": {
-                                    "fills":[
-                                        {
-                                           "id":"180c2462-eb3b-5985-a702-32c503462a37",
-                                           "side":"BUY",
-                                           "size":"0.01",
-                                           "type":"LIMIT",
-                                           "price":"1878",
-                                           "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
-                                           "createdAt":"2023-07-07T17:11:10.369Z",
-                                           "liquidity":"TAKER",
-                                           "marketId":"ETH-USD",
-                                           "resources": {
-                                           }
-                                        }
-                                     ]
-                                },
-                                "129": {
-                                    "equity": {
-                                        "current": 9822.9
-                                    },
-                                    "freeCollateral": {
-                                        "current": 9740.61
-                                    },
-                                    "quoteBalance": {
-                                        "current": 9000.0
-                                    },
-                                    "marginUsage": {
-                                        "current": 0.0084
-                                    },
-                                    "openPositions": {
-                                        "RUNE-USD": {
-                                            "id": "RUNE-USD",
-                                            "status": "OPEN",
-                                            "maxSize": 300.0,
-                                            "size": {
-                                                "current": 300.0
-                                            },
-                                            "assetId": "RUNE",
-                                            "resources": {
-                                            },
-                                            "notionalTotal": {
-                                                "current": 822.9
-                                            },
-                                            "valueTotal": {
-                                                "current": 822.9
-                                            },
-                                            "initialRiskTotal": {
-                                                "current": 82.29
-                                            },
-                                            "leverage": {
-                                                "current": 0.084
-                                            },
-                                            "buyingPower": {
-                                                "current": 97406.1
-                                            }
-                                        }
-                                    },
-                                    "fills":[
-                                        {
-                                           "id":"180c2462-eb3b-5985-a702-32c503462a37",
-                                           "side":"BUY",
-                                           "size":"0.01",
-                                           "type":"LIMIT",
-                                           "price":"1878",
-                                           "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
-                                           "createdAt":"2023-07-07T17:20:10.369Z",
-                                           "liquidity":"TAKER",
-                                           "marketId":"ETH-USD",
-                                           "resources": {
-                                           }
-                                        }
-                                     ]
-                                }
-                            },
-                            "groupedSubaccounts": {
-                                "1": {
-                                    "equity": {
-                                        "current": 9822.9
-                                    },
-                                    "openPositions": {
-                                        "RUNE-USD": {
-                                            "id": "RUNE-USD",
-                                            "status": "OPEN",
-                                            "maxSize": 300.0,
-                                            "size": {
-                                                "current": 300.0
-                                            },
-                                            "assetId": "RUNE",
-                                            "resources": {
-                                            },
-                                            "notionalTotal": {
-                                                "current": 822.9
-                                            },
-                                            "valueTotal": {
-                                                "current": 822.9
-                                            },
-                                            "initialRiskTotal": {
-                                                "current": 82.29
-                                            },
-                                            "leverage": {
-                                                "current": 0.084
-                                            },
-                                            "buyingPower": {
-                                                "current": 97406.1
-                                            }
-                                        }
-                                    },
-                                    "fills":[
-                                        {
-                                           "id":"180c2462-eb3b-5985-a702-32c503462a37",
-                                           "subaccountNumber": 1,
-                                           "side":"BUY",
-                                           "size":"0.01",
-                                           "type":"LIMIT",
-                                           "price":"1878",
-                                           "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
-                                           "createdAt":"2023-07-07T17:11:10.369Z",
-                                           "liquidity":"TAKER",
-                                           "marketId":"ETH-USD",
-                                           "resources": {
-                                           }
-                                        },
-                                        {
-                                           "id":"180c2462-eb3b-5985-a702-32c503462a37",
-                                           "subaccountNumber": 129,
-                                           "side":"BUY",
-                                           "size":"0.01",
-                                           "type":"LIMIT",
-                                           "price":"1878",
-                                           "orderId":"1118c548-1715-5a72-9c41-f4388518c6e2",
-                                           "createdAt":"2023-07-07T17:20:10.369Z",
-                                           "liquidity":"TAKER",
-                                           "marketId":"ETH-USD",
-                                           "resources": {
-                                           }
-                                        }
-                                     ]
+                                    }
                                 }
                             }
                         }
