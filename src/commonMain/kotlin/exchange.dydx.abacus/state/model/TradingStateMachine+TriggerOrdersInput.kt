@@ -18,12 +18,14 @@ enum class TriggerOrdersInputField(val rawValue: String) {
     marketId("marketId"),
     size("size"),
 
+    stopLossOrderId("stopLossOrder.orderId"),
     stopLossOrderType("stopLossOrder.type"),
     stopLossLimitPrice("stopLossOrder.price.limitPrice"),
     stopLossPrice("stopLossOrder.price.triggerPrice"),
     stopLossPercentDiff("stopLossOrder.price.percentDiff"),
     stopLossUsdcDiff("stopLossOrder.price.usdcDiff"),
 
+    takeProfitOrderId("takeProfitOrder.orderId"),
     takeProfitOrderType("takeProfitOrder.type"),
     takeProfitLimitPrice("takeProfitOrder.price.limitPrice"),
     takeProfitPrice("takeProfitOrder.price.triggerPrice"),
@@ -75,6 +77,8 @@ fun TradingStateMachine.triggerOrders(
                             iListOf(subaccountNumber),
                         )
                 }
+                TriggerOrdersInputField.stopLossOrderId.rawValue,
+                TriggerOrdersInputField.takeProfitOrderId.rawValue,
                 TriggerOrdersInputField.stopLossOrderType.rawValue,
                 TriggerOrdersInputField.takeProfitOrderType.rawValue -> {
                     triggerOrders.safeSet(typeText, parser.asString(data))
