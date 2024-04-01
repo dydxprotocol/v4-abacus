@@ -1919,7 +1919,7 @@ internal class AccountsChannelMock {
                     "type": "LIMIT",
                     "status": "OPEN",
                     "timeInForce": "GTT",
-                    "reduceOnly": false,
+                    "reduceOnly": true,
                     "orderFlags": "64",
                     "goodTilBlockTime": "2024-04-02T15:57:16.000Z",
                     "createdAtHeight": "8489771",
