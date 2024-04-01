@@ -151,7 +151,7 @@ internal class TriggerOrdersInputValidator(
         }
         validateCalculatedPricesPositive(triggerOrder)?.let {
             /*
-                TODO: CT-704 add error strings 
+                TODO: CT-704 add error strings
              */
             triggerErrors.addAll(it)
         }
@@ -326,14 +326,14 @@ internal class TriggerOrdersInputValidator(
     private fun validateCalculatedPricesPositive(
         triggerOrder: Map<String, Any>,
     ): List<Any>? {
-        val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice")) 
+        val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
         val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
 
         if (triggerPrice != null && triggerPrice <= 0 || (limitPrice != null && limitPrice <= 0)) {
             return listOf(
                 error(
                     "ERROR",
-                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE", // TODO: CT-704 fix with proper error strings 
+                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE", // TODO: CT-704 fix with proper error strings
                     listOf("price.triggerPrice"),
                     "APP.TRADE.MODIFY_TRIGGER_PRICE",
                     "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
