@@ -468,7 +468,7 @@ class AsyncAbacusStateManager(
         }
     }
 
-    override fun commitTriggerOrders(callback: TransactionCallback): List<HumanReadablePlaceOrderPayload>? {
+    override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         return try {
             adaptor?.commitTriggerOrders(callback)
         } catch (e: Exception) {

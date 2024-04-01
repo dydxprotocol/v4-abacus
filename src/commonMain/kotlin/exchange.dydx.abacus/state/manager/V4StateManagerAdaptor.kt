@@ -1034,7 +1034,7 @@ class V4StateManagerAdaptor(
         return payload
     }
 
-    override fun commitTriggerOrders(callback: TransactionCallback): List<HumanReadablePlaceOrderPayload>? {
+    override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         val payloads = triggerOrdersPayload()
 
         payloads.cancelOrderPayloads.forEach {
@@ -1126,7 +1126,7 @@ class V4StateManagerAdaptor(
 
         send(null, callback, payloads)
 
-        return payloads.placeOrderPayloads
+        return payloads
     }
 
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {

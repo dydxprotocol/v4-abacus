@@ -58,7 +58,7 @@ interface AsyncAbacusStateManagerProtocol {
     // Commit changes with input objects
     fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
     fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
-    fun commitTriggerOrders(callback: TransactionCallback): List<HumanReadablePlaceOrderPayload>?
+    fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload?
     fun stopWatchingLastOrder()
     fun commitTransfer(callback: TransactionCallback)
     fun commitCCTPWithdraw(callback: TransactionCallback)

@@ -522,7 +522,7 @@ internal class SubaccountSupervisor(
     internal fun commitTriggerOrders(
         currentHeight: Int?,
         callback: TransactionCallback
-    ): List<HumanReadablePlaceOrderPayload> {
+    ): HumanReadableTriggerOrdersPayload {
         val payloads = triggerOrdersPayload(currentHeight)
 
         payloads.cancelOrderPayloads.forEach {
@@ -601,7 +601,7 @@ internal class SubaccountSupervisor(
 
         helper.send(null, callback, payloads)
 
-        return payloads.placeOrderPayloads
+        return payloads
     }
 
     internal fun stopWatchingLastOrder() {

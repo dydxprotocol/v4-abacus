@@ -460,7 +460,7 @@ internal class StateManagerAdaptorV2(
         return accounts.commitPlaceOrder(currentHeight, callback)
     }
 
-    internal fun commitTriggerOrders(callback: TransactionCallback): List<HumanReadablePlaceOrderPayload>? {
+    internal fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         return accounts.commitTriggerOrders(currentHeight, callback)
     }
 

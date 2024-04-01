@@ -84,6 +84,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val modified = triggerPrices.mutable()
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
+        val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
 
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
@@ -94,27 +95,47 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 "stopLossOrder.price.triggerPrice" -> {
                     modified.safeSet(
                         "usdcDiff",
-                        if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
+                        if (triggerPrice != null) when (positionSide) {
+                            "long" -> entryPrice.minus(triggerPrice) 
+                            "short" -> triggerPrice.minus(entryPrice)
+                            else -> null
+                        } else null,
                     )
                     modified.safeSet(
                         "percentDiff",
-                        if (triggerPrice != null) Numeric.double.ONE.minus(triggerPrice.div(entryPrice)) else null,
+                        if (triggerPrice != null) when (positionSide) {
+                            "long" -> Numeric.double.ONE.minus(triggerPrice.div(entryPrice))
+                            "short" -> triggerPrice.div(entryPrice).minus(Numeric.double.ONE)
+                            else -> null
+                         } else null,
                     )
                 }
                 "takeProfitOrder.price.triggerPrice" -> {
                     modified.safeSet(
                         "usdcDiff",
-                        if (triggerPrice != null) entryPrice.minus(triggerPrice).abs() else null,
+                        if (triggerPrice != null) when (positionSide) {
+                            "long" -> triggerPrice.minus(entryPrice)
+                            "short" -> entryPrice.minus(triggerPrice)
+                            else -> null 
+                        }else null,
                     )
                     modified.safeSet(
                         "percentDiff",
-                        if (triggerPrice != null) triggerPrice.div(entryPrice).minus(Numeric.double.ONE) else null,
+                        if (triggerPrice != null) when (positionSide) {
+                            "long" -> triggerPrice.div(entryPrice).minus(Numeric.double.ONE) 
+                            "short" -> Numeric.double.ONE.minus(triggerPrice.div(entryPrice))
+                            else -> null
+                        }else null,
                     )
                 }
                 "stopLossOrder.price.usdcDiff" -> {
                     modified.safeSet(
                         "triggerPrice",
-                        if (usdcDiff != null) entryPrice.minus(usdcDiff) else null,
+                        if (usdcDiff != null) when (positionSide) {
+                            "long" -> entryPrice.minus(usdcDiff)
+                            "short" -> entryPrice.plus(usdcDiff)
+                            else -> null
+                        } else null,
                     )
                     modified.safeSet(
                         "percentDiff",
@@ -124,7 +145,11 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 "takeProfitOrder.price.usdcDiff" -> {
                     modified.safeSet(
                         "triggerPrice",
-                        if (usdcDiff != null) entryPrice.plus(usdcDiff) else null,
+                        if (usdcDiff != null) when (positionSide) {
+                            "long" -> entryPrice.plus(usdcDiff) 
+                            "short" -> entryPrice.minus(usdcDiff) 
+                            else -> null 
+                        } else null,
                     )
                     modified.safeSet(
                         "percentDiff",
@@ -134,7 +159,11 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 "stopLossOrder.price.percentDiff" -> {
                     modified.safeSet(
                         "triggerPrice",
-                        if (percentDiff != null) entryPrice * Numeric.double.ONE.minus(percentDiff) else null,
+                        if (percentDiff != null) when (positionSide) {
+                            "long" -> entryPrice * Numeric.double.ONE.minus(percentDiff) 
+                            "short" -> entryPrice * Numeric.double.ONE.plus(percentDiff) 
+                            else -> null
+                        } else null,
                     )
                     modified.safeSet(
                         "usdcDiff",
@@ -144,7 +173,11 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 "takeProfitOrder.price.percentDiff" -> {
                     modified.safeSet(
                         "triggerPrice",
-                        if (percentDiff != null) entryPrice * Numeric.double.ONE.plus(percentDiff) else null,
+                        if (percentDiff != null) when (positionSide) {
+                            "long" -> entryPrice * Numeric.double.ONE.plus(percentDiff) 
+                            "short" -> entryPrice * Numeric.double.ONE.minus(percentDiff) 
+                            else -> null
+                        } else null,
                     )
                     modified.safeSet(
                         "usdcDiff",

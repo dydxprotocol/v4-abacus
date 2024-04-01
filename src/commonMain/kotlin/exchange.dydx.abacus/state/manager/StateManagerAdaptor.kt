@@ -1726,7 +1726,7 @@ open class StateManagerAdaptor(
         return null
     }
 
-    internal open fun commitTriggerOrders(callback: TransactionCallback): List<HumanReadablePlaceOrderPayload>? {
+    internal open fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
         return null
     }

@@ -287,7 +287,7 @@ internal fun AccountsSupervisor.commitPlaceOrder(
 internal fun AccountsSupervisor.commitTriggerOrders(
     currentHeight: Int?,
     callback: TransactionCallback
-): List<HumanReadablePlaceOrderPayload>? {
+): HumanReadableTriggerOrdersPayload? {
     return account?.commitTriggerOrders(currentHeight, callback)
 }
 
