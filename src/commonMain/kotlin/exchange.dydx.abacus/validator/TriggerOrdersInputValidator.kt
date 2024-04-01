@@ -151,7 +151,7 @@ internal class TriggerOrdersInputValidator(
         }
         validateCalculatedPricesPositive(triggerOrder)?.let {
             /*
-                xcxc
+                TODO: CT-704 add error strings 
              */
             triggerErrors.addAll(it)
         }
@@ -333,7 +333,7 @@ internal class TriggerOrdersInputValidator(
             return listOf(
                 error(
                     "ERROR",
-                    "LIMITED_ORDERS_FOR_PAIR", //xcxc
+                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE", // TODO: CT-704 fix with proper error strings 
                     listOf("price.triggerPrice"),
                     "APP.TRADE.MODIFY_TRIGGER_PRICE",
                     "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
