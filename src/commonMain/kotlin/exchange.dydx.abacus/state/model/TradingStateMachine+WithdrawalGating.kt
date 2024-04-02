@@ -1,8 +1,5 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.responses.ParsingError
-import exchange.dydx.abacus.responses.ParsingException
-import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf

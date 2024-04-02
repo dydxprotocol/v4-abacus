@@ -93,7 +93,7 @@ data class EnvironmentLinks(
                 help,
                 launchIncentive,
                 statusPage,
-                withdrawalGateLearnMore
+                withdrawalGateLearnMore,
             )
         }
     }
@@ -117,7 +117,7 @@ data class EnvironmentFeatureFlags(
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
                 usePessimisticCollateralCheck,
-                withdrawalSafetyEnabled
+                withdrawalSafetyEnabled,
             )
         }
     }

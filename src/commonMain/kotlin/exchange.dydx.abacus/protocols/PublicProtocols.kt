@@ -149,7 +149,6 @@ enum class QueryType(val rawValue: String) {
     GetWithdrawalAndTransferGatingStatus("getWithdrawalAndTransferGatingStatus"),
     GetWithdrawalCapacityByDenom("getWithdrawalCapacityByDenom");
 
-
     companion object {
         operator fun invoke(rawValue: String) =
             QueryType.values().firstOrNull { it.rawValue == rawValue }

@@ -1,8 +1,6 @@
 package exchange.dydx.abacus.output
 
-import com.ionspin.kotlin.bignum.BigNumber
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.ionspin.kotlin.bignum.integer.BigInteger
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
@@ -10,7 +8,6 @@ import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
-import kotlin.math.min
 
 @JsExport
 @Serializable
@@ -264,7 +261,7 @@ data class WithdrawalGating(
             data?.let {
                 val withdrawalsAndTransfersUnblockedAtBlock =
                     parser.asInt(data["withdrawalsAndTransfersUnblockedAtBlock"])
-                return if (existing?.withdrawalsAndTransfersUnblockedAtBlock != withdrawalsAndTransfersUnblockedAtBlock ) {
+                return if (existing?.withdrawalsAndTransfersUnblockedAtBlock != withdrawalsAndTransfersUnblockedAtBlock) {
                     WithdrawalGating(
                         withdrawalsAndTransfersUnblockedAtBlock,
                     )
@@ -377,12 +374,12 @@ data class Configs(
                 var withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
-                    parser.asMap(data["withdrawalGating"])
+                    parser.asMap(data["withdrawalGating"]),
                 )
                 var withdrawalCapacity = WithdrawalCapacity.create(
                     existing?.withdrawalCapacity,
                     parser,
-                    parser.asMap(data["withdrawalCapacity"])
+                    parser.asMap(data["withdrawalCapacity"]),
                 )
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
@@ -393,7 +390,7 @@ data class Configs(
                         feeTiers,
                         feeDiscounts,
                         withdrawalGating,
-                        withdrawalCapacity
+                        withdrawalCapacity,
                     )
                 } else {
                     existing ?: Configs(
@@ -401,7 +398,7 @@ data class Configs(
                         null,
                         null,
                         null,
-                        null
+                        null,
                     )
                 }
             }

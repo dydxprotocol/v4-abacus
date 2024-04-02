@@ -2,7 +2,6 @@ package exchange.dydx.abacus.processor.configs
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 
 internal class WithdrawalGatingProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val withdrawalGatingKeyMap = mapOf(

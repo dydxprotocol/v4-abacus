@@ -459,7 +459,7 @@ internal class SubaccountSupervisor(
 
         val utilizedSubaccountsMarketIdMap = subaccounts?.mapValues {
             val openPositions = it.value.openPositions
-            val openOrders = it.value.orders?.filter {order ->
+            val openOrders = it.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
                 status == "OPEN"
             }
@@ -598,11 +598,13 @@ internal class SubaccountSupervisor(
                 val transferPayloadString = Json.encodeToString(transferPayload)
 
                 helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) {
-                    response -> isolatedMarginTransactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                        response ->
+                    isolatedMarginTransactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             } else {
                 helper.transaction(TransactionType.PlaceOrder, string) {
-                    response -> transactionCallback(response, uiDelayTimeMs, submitTimeMs)
+                        response ->
+                    transactionCallback(response, uiDelayTimeMs, submitTimeMs)
                 }
             }
         } else {
@@ -614,7 +616,7 @@ internal class SubaccountSupervisor(
                     TransactionParams(
                         TransactionType.SubaccountTransfer,
                         transferPayloadString,
-                        isolatedMarginTransactionCallback
+                        isolatedMarginTransactionCallback,
                     ),
                 )
             } else {
@@ -622,7 +624,7 @@ internal class SubaccountSupervisor(
                     TransactionParams(
                         TransactionType.PlaceOrder,
                         string,
-                        transactionCallback
+                        transactionCallback,
                     ),
                 )
             }
