@@ -58,7 +58,7 @@ internal class TriggerOrdersInputValidator(
                 ),
             ) ?: return null
 
-            validateTriggerOrders(transaction, subaccount, configs, environment)?.let {
+            validateTriggerOrders(transaction, subaccount, configs, market, environment)?.let {
                 errors.addAll(it)
             }
 
@@ -102,6 +102,7 @@ internal class TriggerOrdersInputValidator(
 
     private fun validateTriggerOrders(
         triggerOrders: Map<String, Any>,
+        market: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         configs: Map<String, Any>?,
         environment: V4Environment?,
@@ -113,7 +114,13 @@ internal class TriggerOrdersInputValidator(
              */
             triggerErrors.addAll(it)
         }
-
+        validateSize(parser.asDouble(triggerOrders["size"]), market)?.let {
+            /*
+                AMOUNT_INPUT_STEP_SIZE
+                ORDER_SIZE_BELOW_MIN_SIZE
+             */
+            triggerErrors.addAll(it)
+        }
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
@@ -131,7 +138,7 @@ internal class TriggerOrdersInputValidator(
              */
             triggerErrors.addAll(it)
         }
-        validateSize(triggerOrder, market)?.let {
+        validateSize(parser.asDouble(parser.value(triggerOrder, "summary.size")), market)?.let {
             /*
                 AMOUNT_INPUT_STEP_SIZE
                 ORDER_SIZE_BELOW_MIN_SIZE
@@ -432,12 +439,12 @@ internal class TriggerOrdersInputValidator(
     }
 
     private fun validateSize(
-        triggerOrder: Map<String, Any>,
+        orderSize: Double?,
         market: Map<String, Any>?,
     ): List<Any>? {
         val symbol = parser.asString(market?.get("assetId")) ?: return null
 
-        parser.asDouble(parser.value(triggerOrder, "summary.size"))?.let { size ->
+        orderSize?.let { size ->
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
                 val errors = mutableListOf<Map<String, Any>>()
 
