@@ -13,8 +13,6 @@ import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.AppSettings
-import exchange.dydx.abacus.state.manager.AsyncAbacusStateManagerProtocol
-import exchange.dydx.abacus.state.manager.AsyncAbacusStateManagerSingletonProtocol
 import exchange.dydx.abacus.state.manager.ConfigFile
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
@@ -25,6 +23,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
+import exchange.dydx.abacus.state.manager.SingletonAsyncAbacusStateManagerProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.ClosePositionInputField
@@ -56,7 +55,7 @@ class AsyncAbacusStateManagerV2(
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
-) : AsyncAbacusStateManagerProtocol, AsyncAbacusStateManagerSingletonProtocol {
+) : SingletonAsyncAbacusStateManagerProtocol {
     init {
         if (appConfigs.enableLogger) {
             Logger.isDebugEnabled = true
