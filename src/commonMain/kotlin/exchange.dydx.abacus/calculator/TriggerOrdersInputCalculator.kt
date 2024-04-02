@@ -91,7 +91,10 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
-        val absSize = size ?: return modified;
+
+        if (size == null) {
+            return modified;
+        }
 
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
@@ -104,8 +107,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "usdcDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absSize.times(entryPrice.minus(triggerPrice))
-                                "short" -> absSize.times(triggerPrice.minus(entryPrice))
+                                "long" -> size.times(entryPrice.minus(triggerPrice))
+                                "short" -> size.times(triggerPrice.minus(entryPrice))
                                 else -> null
                             }
                         } else {
@@ -118,8 +121,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "usdcDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absSize.times(triggerPrice.minus(entryPrice))
-                                "short" -> absSize.times(entryPrice.minus(triggerPrice))
+                                "long" -> size.times(triggerPrice.minus(entryPrice))
+                                "short" -> size.times(entryPrice.minus(triggerPrice))
                                 else -> null
                             }
                         } else {
@@ -132,8 +135,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (usdcDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice.minus(usdcDiff.div(absSize))
-                                "short" -> entryPrice.plus(usdcDiff.div(absSize))
+                                "long" -> entryPrice.minus(usdcDiff.div(size))
+                                "short" -> entryPrice.plus(usdcDiff.div(size))
                                 else -> null
                             }
                         } else {
@@ -146,8 +149,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (usdcDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice.plus(usdcDiff.div(absSize))
-                                "short" -> entryPrice.minus(usdcDiff.div(absSize))
+                                "long" -> entryPrice.plus(usdcDiff.div(size))
+                                "short" -> entryPrice.minus(usdcDiff.div(size))
                                 else -> null
                             }
                         } else {
