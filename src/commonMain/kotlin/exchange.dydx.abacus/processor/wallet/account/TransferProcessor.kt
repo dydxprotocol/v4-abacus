@@ -28,7 +28,6 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
             "size" to "amount",
         ),
         "int" to mapOf(
-            "subaccountNumber" to "subaccountNumber",
             "createdAtHeight" to "updatedAtBlock",
         ),
     )
@@ -65,11 +64,9 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
 
         sender?.let {
             modified.safeSet("fromAddress", parser.asString(it["address"]))
-            modified.safeSet("fromSubaccountNumber", parser.asString(it["subaccountNumber"]))
         }
         recipient?.let {
             modified.safeSet("toAddress", parser.asString(it["address"]))
-            modified.safeSet("toSubaccountNumber", parser.asString(it["subaccountNumber"]))
         }
 
         // for v3

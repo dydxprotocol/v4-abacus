@@ -86,30 +86,26 @@ data class SubaccountConfigs(
     val retrieveFills: Boolean,
     val retrieveTransfers: Boolean,
     val retrieveHistoricalPnls: Boolean,
-    val subscribeToSubaccount: Boolean,
-    val useParentSubaccount: Boolean,
+    val subscribeToSubaccount: SubaccountSubscriptionType,
 ) {
     companion object {
         val forApp = SubaccountConfigs(
             retrieveFills = true,
             retrieveTransfers = true,
             retrieveHistoricalPnls = true,
-            subscribeToSubaccount = true,
-            useParentSubaccount = false,
+            subscribeToSubaccount = SubaccountSubscriptionType.SUBACCOUNT,
         )
         val forAppWithIsolatedMargins = SubaccountConfigs(
             retrieveFills = true,
             retrieveTransfers = true,
             retrieveHistoricalPnls = true,
-            subscribeToSubaccount = true,
-            useParentSubaccount = true,
+            subscribeToSubaccount = SubaccountSubscriptionType.PARENT_SUBACCOUNT,
         )
         val forProgrammaticTraders = SubaccountConfigs(
             retrieveFills = false,
             retrieveTransfers = false,
             retrieveHistoricalPnls = false,
-            subscribeToSubaccount = true,
-            useParentSubaccount = false,
+            subscribeToSubaccount = SubaccountSubscriptionType.SUBACCOUNT,
         )
     }
 }

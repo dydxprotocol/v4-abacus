@@ -12,6 +12,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
+import exchange.dydx.abacus.state.v2.supervisor.SubaccountSubscriptionType
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import kotlin.test.BeforeTest
@@ -39,7 +40,7 @@ class V4TransactionTests : NetworkTests() {
                 v4Adapter!!.stateMachine,
                 v4Adapter!!.networkHelper,
                 v4Adapter!!.analyticsUtils,
-                SubaccountConfigs(true, true, true, true, false),
+                SubaccountConfigs(true, true, true, SubaccountSubscriptionType.SUBACCOUNT),
                 testCosmoAddress,
                 0,
             )

@@ -814,14 +814,6 @@ open class TradingStateMachine(
                 }
             }
         }
-        if (parser.value(account, "groupedSubaccounts") != null) {
-            if (changes.changes.contains(Changes.fills)) {
-                this.account = mergeFills(this.account, subaccountNumbers)
-            }
-            if (changes.changes.contains(Changes.transfers)) {
-                this.account = mergeTransfers(this.account, subaccountNumbers)
-            }
-        }
         if (changes.changes.contains(Changes.input)) {
             val modified = this.input?.mutable() ?: return
             when (parser.asString(modified["current"])) {
@@ -1120,7 +1112,8 @@ open class TradingStateMachine(
             transfers = null
             fundingPayments = null
         }
-        for (subaccountNumber in subaccountNumbers) {
+        if (subaccountNumbers.size == 1) {
+            val subaccountNumber = subaccountNumbers.first()
             val subaccountText = "$subaccountNumber"
             val subaccount =
                 parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber"))
