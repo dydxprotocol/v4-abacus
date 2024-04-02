@@ -25,6 +25,7 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         ),
         "int" to mapOf(
             "clientMetadata" to "clientMetadata",
+            "subaccountNumber" to "subaccountNumber",
         ),
     )
 
