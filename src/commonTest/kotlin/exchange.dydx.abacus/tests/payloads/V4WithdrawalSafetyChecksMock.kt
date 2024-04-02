@@ -67,5 +67,4 @@ internal class V4WithdrawalSafetyChecksMock {
         ]
     }
     """.trimIndent()
-
 }

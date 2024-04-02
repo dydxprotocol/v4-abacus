@@ -56,5 +56,5 @@ interface TransferValidatorProtocol {
         currentBlockAndHeight: BlockAndTime?,
         restricted: Boolean,
         environment: V4Environment?,
-        ): List<Any>?
+    ): List<Any>?
 }

@@ -13,8 +13,6 @@ import exchange.dydx.abacus.state.model.onChainWithdrawalGating
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 internal class SystemSupervisor(
     stateMachine: TradingStateMachine,
@@ -68,9 +66,10 @@ internal class SystemSupervisor(
     }
 
     internal fun didSetTransferType(transferType: TransferType) {
-        if (stateMachine.featureFlags.withdrawalSafetyEnabled
-            && configs.retrieveWithdrawSafetyChecks
-            && (transferType == TransferType.withdrawal || transferType == TransferType.transferOut)) {
+        if (stateMachine.featureFlags.withdrawalSafetyEnabled &&
+            configs.retrieveWithdrawSafetyChecks &&
+            (transferType == TransferType.withdrawal || transferType == TransferType.transferOut)
+        ) {
             retrieveWithdrawSafetyChecks(transferType)
         }
     }
@@ -158,7 +157,6 @@ internal class SystemSupervisor(
             }
         }
     }
-
 
     fun retrieveWithdrawSafetyChecks(transferType: TransferType) {
         when (transferType) {

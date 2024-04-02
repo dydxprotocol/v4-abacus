@@ -47,7 +47,7 @@ internal class TransferInputValidator(
                         currentBlockAndHeight,
                         restricted,
                         environment,
-                )
+                    )
                 if (validatorErrors != null) {
                     errors.addAll(validatorErrors)
                 }

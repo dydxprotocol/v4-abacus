@@ -38,7 +38,6 @@ internal class WithdrawalCapacityProcessor(parser: ParserProtocol) : BaseProcess
             }
         }
 
-
         return modified
     }
 }
