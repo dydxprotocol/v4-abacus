@@ -94,7 +94,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
             val usdcDiff = parser.asDouble(parser.value(modified, "usdcDiff"))
-            val percentDiff = parser.asDouble(parser.value(modified, "percentDiff"))
+            // val percentDiff = parser.asDouble(parser.value(modified, "percentDiff")) TODO: CT-694
 
             when (inputType) {
                 "stopLossOrder.price.triggerPrice" -> {
@@ -104,18 +104,6 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                             when (positionSide) {
                                 "long" -> absOrderSize.times(entryPrice.minus(triggerPrice))
                                 "short" -> absOrderSize.times(triggerPrice.minus(entryPrice))
-                                else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
-                    modified.safeSet(
-                        "percentDiff",
-                        if (triggerPrice != null) {
-                            when (positionSide) {
-                                "long" -> Numeric.double.ONE.minus(triggerPrice.div(entryPrice))
-                                "short" -> triggerPrice.div(entryPrice).minus(Numeric.double.ONE)
                                 else -> null
                             }
                         } else {
@@ -136,18 +124,6 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                             null
                         },
                     )
-                    modified.safeSet(
-                        "percentDiff",
-                        if (triggerPrice != null) {
-                            when (positionSide) {
-                                "long" -> triggerPrice.div(entryPrice).minus(Numeric.double.ONE)
-                                "short" -> Numeric.double.ONE.minus(triggerPrice.div(entryPrice))
-                                else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
                 }
                 "stopLossOrder.price.usdcDiff" -> {
                     modified.safeSet(
@@ -161,10 +137,6 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         } else {
                             null
                         },
-                    )
-                    modified.safeSet(
-                        "percentDiff",
-                        if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
                     )
                 }
                 "takeProfitOrder.price.usdcDiff" -> {
@@ -180,46 +152,10 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                             null
                         },
                     )
-                    modified.safeSet(
-                        "percentDiff",
-                        if (usdcDiff != null) usdcDiff.div(entryPrice) else null,
-                    )
                 }
-                "stopLossOrder.price.percentDiff" -> {
-                    modified.safeSet(
-                        "triggerPrice",
-                        if (percentDiff != null) {
-                            when (positionSide) {
-                                "long" -> entryPrice * (Numeric.double.ONE.minus(percentDiff))
-                                "short" -> entryPrice * (Numeric.double.ONE.plus(percentDiff))
-                                else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
-                    modified.safeSet(
-                        "usdcDiff",
-                        if (percentDiff != null) entryPrice * percentDiff.times(absOrderSize) else null,
-                    )
-                }
+                "stopLossOrder.price.percentDiff",
                 "takeProfitOrder.price.percentDiff" -> {
-                    modified.safeSet(
-                        "triggerPrice",
-                        if (percentDiff != null) {
-                            when (positionSide) {
-                                "long" -> entryPrice * (Numeric.double.ONE.plus(percentDiff))
-                                "short" -> entryPrice * (Numeric.double.ONE.minus(percentDiff))
-                                else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
-                    modified.safeSet(
-                        "usdcDiff",
-                        if (percentDiff != null) entryPrice * percentDiff.times(absOrderSize) else null,
-                    )
+                    // TODO: CT-694
                 }
                 else -> {}
             }
