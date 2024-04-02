@@ -602,21 +602,6 @@ internal class SubaccountSupervisor(
         if (isShortTermOrder) {
             val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
-<<<<<<< HEAD
-            helper.transaction(TransactionType.PlaceOrder, string) { response ->
-                transactionCallback(response, uiDelayTimeMs, submitTimeMs)
-            }
-        } else {
-            transactionQueue.enqueue(
-                TransactionParams(
-                    TransactionType.PlaceOrder,
-                    string,
-                    transactionCallback,
-                    uiClickTimeMs,
-                ),
-            )
-=======
-
             if (isIsolatedMarginOrder) {
                 val transferPayload = getTransferPayloadForIsolatedMarginTrade(payload)
                 val transferPayloadString = Json.encodeToString(transferPayload)
@@ -652,7 +637,6 @@ internal class SubaccountSupervisor(
                     ),
                 )
             }
->>>>>>> main
         }
 
         return payload
