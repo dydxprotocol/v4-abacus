@@ -111,8 +111,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-                implementation("co.touchlab:stately-common:1.2.0")
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("io.ktor:ktor-http:$ktorVersion")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
                 implementation("tz.co.asoft:kollections-interoperable:2.0.16")
             }
