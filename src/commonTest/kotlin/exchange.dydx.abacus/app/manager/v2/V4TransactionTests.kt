@@ -18,6 +18,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class V4TransactionTests : NetworkTests() {
@@ -86,7 +87,7 @@ class V4TransactionTests : NetworkTests() {
         stateManager.setAddresses(null, testCosmoAddress)
     }
 
-    fun tradeInput(isShortTerm: Boolean, size: String = "0.01", limitPrice: String = "2000") {
+    private fun tradeInput(isShortTerm: Boolean, size: String = "0.01", limitPrice: String = "2000") {
         if (isShortTerm) {
             stateManager.trade("MARKET", TradeInputField.type)
         } else {
@@ -97,12 +98,12 @@ class V4TransactionTests : NetworkTests() {
         stateManager.trade(size, TradeInputField.size)
     }
 
-    fun assertTransactionQueueStarted(message: String? = null) {
+    private fun assertTransactionQueueStarted(message: String? = null) {
         assertEquals(0, subaccountSupervisor?.transactionQueue?.size)
         assertTrue(subaccountSupervisor?.transactionQueue?.isProcessing ?: false, message)
     }
 
-    fun assertTransactionQueueEmpty(message: String? = null) {
+    private fun assertTransactionQueueEmpty(message: String? = null) {
         assertEquals(0, subaccountSupervisor?.transactionQueue?.size)
         assertFalse(subaccountSupervisor?.transactionQueue?.isProcessing ?: false, message)
     }
@@ -200,5 +201,47 @@ class V4TransactionTests : NetworkTests() {
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(2, transactionCalledCount)
         assertTransactionQueueEmpty()
+    }
+
+    private fun setStateMachineForIsolatedMarginTests(stateManager: AsyncAbacusStateManagerV2) {
+        stateManager.readyToConnect = true
+        testWebSocket?.simulateConnected(true)
+        testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
+        testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
+
+        stateManager.setAddresses(null, "dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4")
+        testWebSocket?.simulateReceived(mock.parentSubaccountsChannel.subscribed)
+        testWebSocket?.simulateReceived(mock.parentSubaccountsChannel.channel_data)
+
+        stateManager.market = "ETH-USD"
+    }
+
+    private fun prepareIsolatedMarginTrade(isShortTerm: Boolean) {
+        stateManager.trade("2000", TradeInputField.limitPrice)
+        stateManager.trade("0.01", TradeInputField.size)
+        stateManager.trade("ISOLATED", TradeInputField.marginMode)
+        stateManager.trade("2", TradeInputField.targetLeverage)
+
+        if (isShortTerm) {
+            stateManager.trade("MARKET", TradeInputField.timeInForceType)
+        } else {
+            stateManager.trade("LIMIT", TradeInputField.type)
+            stateManager.trade("GTT", TradeInputField.timeInForceType)
+        }
+    }
+
+    @Test
+    fun testIsolatedMarginPlaceOrderTransactions() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(false)
+
+        val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
+        assertNotNull(orderPayload, "Order payload should not be null")
+        assertEquals(256, orderPayload?.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+
+        val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
+        assertNotNull(transferPayload, "Transfer payload should not be null")
+        assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
+        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
 }

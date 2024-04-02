@@ -106,6 +106,8 @@ open class TradingStateMachine(
     internal val featureFlags: EnvironmentFeatureFlags
         get() = environment?.featureFlags!!
 
+    internal var currentBlockAndHeight: BlockAndTime? = null
+
     internal var groupingMultiplier: Int
         get() = marketsProcessor.groupingMultiplier
         set(value) {
@@ -576,6 +578,7 @@ open class TradingStateMachine(
                 parser.asNativeMap(this.marketsSummary?.get("markets")),
                 this.input,
                 this.configs,
+                this.currentBlockAndHeight,
                 this.environment,
             )
 
@@ -1188,6 +1191,7 @@ open class TradingStateMachine(
                     parser.asNativeMap(this.marketsSummary?.get("markets")),
                     this.input,
                     this.configs,
+                    this.currentBlockAndHeight,
                     this.environment,
                 )
                 this.input?.let {

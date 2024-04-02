@@ -15,7 +15,7 @@ plugins {
     kotlin("native.cocoapods") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
-    id("dev.petuska.npm.publish") version "3.1.0"
+    id("dev.petuska.npm.publish") version "3.4.2"
     id("com.diffplug.spotless") version "6.25.0"
 }
 
@@ -48,7 +48,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.6.22"
+version = "1.6.24"
 
 repositories {
     google()
