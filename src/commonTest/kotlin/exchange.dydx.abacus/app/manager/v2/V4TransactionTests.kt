@@ -257,29 +257,29 @@ class V4TransactionTests : NetworkTests() {
         clearTransactions(2)
 
         // Updating Existing Order
-        // testWebSocket?.simulateReceived(mock.accountsChannel.v4_subaccounts_update_1)
-        // simulateStopLimitOrderReplacement() // No action here since new order matches the existing order
-        // assertEquals(0, transactionQueue?.size)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_subaccounts_update_1)
+        simulateStopLimitOrderReplacement() // No action here since new order matches the existing order
+        assertEquals(0, transactionQueue?.size)
 
-        // simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
-        // assertEquals(2, transactionQueue?.size)
-        // clearTransactions(2)
+        simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
+        assertEquals(2, transactionQueue?.size)
+        clearTransactions(2)
 
-        // simulateStopLimitOrderReplacement(limitPrice = "2200") // Replaces order due to different limit price
-        // assertEquals(2, transactionQueue?.size)
-        // clearTransactions(2)
+        simulateStopLimitOrderReplacement(limitPrice = "2200") // Replaces order due to different limit price
+        assertEquals(2, transactionQueue?.size)
+        clearTransactions(2)
 
-        // simulateStopLimitOrderReplacement(triggerPrice = "3400") // Replaces order due to different trigger price
-        // assertEquals(2, transactionQueue?.size)
-        // clearTransactions(2)
+        simulateStopLimitOrderReplacement(triggerPrice = "3400") // Replaces order due to different trigger price
+        assertEquals(2, transactionQueue?.size)
+        clearTransactions(2)
 
-        // simulateStopLimitOrderReplacement(size = "0.2") // Replaces order due to different size
-        // assertEquals(2, transactionQueue?.size)
-        // clearTransactions(2)
+        simulateStopLimitOrderReplacement(size = "0.2") // Replaces order due to different size
+        assertEquals(2, transactionQueue?.size)
+        clearTransactions(2)
 
-        // // Canceling Existing Orders
-        // simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
-        // assertEquals(1, transactionQueue?.size)
+        // Canceling Existing Orders
+        simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
+        assertEquals(1, transactionQueue?.size)
     }
 
     @Test
