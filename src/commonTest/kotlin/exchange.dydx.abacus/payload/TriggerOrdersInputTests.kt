@@ -37,9 +37,9 @@ class TriggerOrderInputTests : V4BaseTests() {
         )
 
         testDefaults()
+        testSetPositionSize()
         testStopLossInput()
         testTakeProfitInput()
-        testSetPositionSize()
     }
 
     private fun testDefaults() {
@@ -140,7 +140,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "400.0",
                                 "percentDiff": "0.6",
-                                "usdcDiff": "600",
+                                "usdcDiff": "300",
                                 "input": "stopLossOrder.price.triggerPrice"
                             },
                             "summary": {
@@ -170,7 +170,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "600.0",
                                 "percentDiff": "0.4",
-                                "usdcDiff": "400",
+                                "usdcDiff": "200",
                                 "input": "stopLossOrder.price.percentDiff"
                             },
                             "summary": {
@@ -185,7 +185,7 @@ class TriggerOrderInputTests : V4BaseTests() {
 
         test(
             {
-                perp.triggerOrders("200", TriggerOrdersInputField.stopLossUsdcDiff, 0)
+                perp.triggerOrders("400", TriggerOrdersInputField.stopLossUsdcDiff, 0)
             },
             """
             {
@@ -198,9 +198,9 @@ class TriggerOrderInputTests : V4BaseTests() {
                             "side": "SELL",
                             "price": {
                                 "limitPrice": "300.0",
-                                "triggerPrice": "800.0",
-                                "percentDiff": "0.2",
-                                "usdcDiff": "200",
+                                "triggerPrice": "200.0",
+                                "percentDiff": "0.4",
+                                "usdcDiff": "400",
                                 "input": "stopLossOrder.price.usdcDiff"
                             },
                             "summary": {
@@ -272,7 +272,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1800.0",
                                 "percentDiff": "0.8",
-                                "usdcDiff": "800",
+                                "usdcDiff": "400",
                                 "input": "takeProfitOrder.price.triggerPrice"
                             },
                             "summary": {
@@ -302,7 +302,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1400.0",
                                 "percentDiff": "0.4",
-                                "usdcDiff": "400",
+                                "usdcDiff": "200",
                                 "input": "takeProfitOrder.price.percentDiff"
                             },
                             "summary": {
@@ -317,7 +317,7 @@ class TriggerOrderInputTests : V4BaseTests() {
 
         test(
             {
-                perp.triggerOrders("200.0", TriggerOrdersInputField.takeProfitUsdcDiff, 0)
+                perp.triggerOrders("400.0", TriggerOrdersInputField.takeProfitUsdcDiff, 0)
             },
             """
             {
@@ -330,9 +330,9 @@ class TriggerOrderInputTests : V4BaseTests() {
                             "side": "SELL",
                             "price": {
                                 "limitPrice": "1600.0",
-                                "triggerPrice": "1200.0",
-                                "percentDiff": "0.2",
-                                "usdcDiff": "200.0",
+                                "triggerPrice": "1800.0",
+                                "percentDiff": "0.4",
+                                "usdcDiff": "400.0",
                                 "input": "takeProfitOrder.price.usdcDiff"
                             },
                             "summary": {

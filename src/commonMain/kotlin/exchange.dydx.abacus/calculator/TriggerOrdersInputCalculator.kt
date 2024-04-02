@@ -40,6 +40,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         }
         val triggerOrders = parser.asNativeMap(state["triggerOrders"])
         val marketId = parser.asString(triggerOrders?.get("marketId"))
+        val orderSize = parser.asDouble(triggerOrders?.get("size"))
         val stopLossOrder = parser.asNativeMap(triggerOrders?.get("stopLossOrder"))
         val takeProfitOrder = parser.asNativeMap(triggerOrders?.get("takeProfitOrder"))
         val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
@@ -47,12 +48,12 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         return if (triggerOrders != null && position != null) {
             val modified = state.mutable()
             val modifiedStopLossOrder = if (stopLossOrder != null) {
-                calculateTriggerOrderTrade(stopLossOrder, position)
+                calculateTriggerOrderTrade(stopLossOrder, position, orderSize)
             } else {
                 stopLossOrder
             }
             val modifiedTakeProfitOrder = if (takeProfitOrder != null) {
-                calculateTriggerOrderTrade(takeProfitOrder, position)
+                calculateTriggerOrderTrade(takeProfitOrder, position, orderSize)
             } else {
                 takeProfitOrder
             }
@@ -70,9 +71,10 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
     private fun calculateTriggerOrderTrade(
         triggerOrder: Map<String, Any>,
         position: Map<String, Any>,
+        orderSize: Double?,
     ): Map<String, Any> {
         val modified = triggerOrder.mutable()
-        val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position) }
+        val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position, orderSize) }
         modified.safeSet("price", triggerPrices)
 
         return finalizeOrderFromPriceInputs(modified, position)
@@ -81,13 +83,13 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
     private fun calculateTriggerPrices(
         triggerPrices: Map<String, Any>,
         position: Map<String, Any>,
+        orderSize: Double?,
     ): MutableMap<String, Any> {
         val modified = triggerPrices.mutable()
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
-        val positionSize = parser.asDouble(parser.value(position, "size.current")) ?: return modified
-        val absPositionSize = positionSize.abs()
+        val absOrderSize = orderSize?.abs() ?: return modified
 
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
@@ -100,8 +102,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "usdcDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absPositionSize.times(entryPrice.minus(triggerPrice))
-                                "short" -> absPositionSize.times(triggerPrice.minus(entryPrice))
+                                "long" -> absOrderSize.times(entryPrice.minus(triggerPrice))
+                                "short" -> absOrderSize.times(triggerPrice.minus(entryPrice))
                                 else -> null
                             }
                         } else {
@@ -112,8 +114,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "percentDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absPositionSize.times(Numeric.double.ONE.minus(triggerPrice.div(entryPrice)))
-                                "short" -> absPositionSize.times(triggerPrice.div(entryPrice).minus(Numeric.double.ONE))
+                                "long" -> Numeric.double.ONE.minus(triggerPrice.div(entryPrice))
+                                "short" -> triggerPrice.div(entryPrice).minus(Numeric.double.ONE)
                                 else -> null
                             }
                         } else {
@@ -126,8 +128,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "usdcDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absPositionSize.times(triggerPrice.minus(entryPrice))
-                                "short" -> absPositionSize.times(entryPrice.minus(triggerPrice))
+                                "long" -> absOrderSize.times(triggerPrice.minus(entryPrice))
+                                "short" -> absOrderSize.times(entryPrice.minus(triggerPrice))
                                 else -> null
                             }
                         } else {
@@ -138,8 +140,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "percentDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absPositionSize.times(triggerPrice.div(entryPrice).minus(Numeric.double.ONE))
-                                "short" -> absPositionSize.times(Numeric.double.ONE.minus(triggerPrice.div(entryPrice)))
+                                "long" -> triggerPrice.div(entryPrice).minus(Numeric.double.ONE)
+                                "short" -> Numeric.double.ONE.minus(triggerPrice.div(entryPrice))
                                 else -> null
                             }
                         } else {
@@ -152,8 +154,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (usdcDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice.minus(usdcDiff.div(absPositionSize))
-                                "short" -> entryPrice.plus(usdcDiff.div(absPositionSize))
+                                "long" -> entryPrice.minus(usdcDiff.div(absOrderSize))
+                                "short" -> entryPrice.plus(usdcDiff.div(absOrderSize))
                                 else -> null
                             }
                         } else {
@@ -170,8 +172,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (usdcDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice.plus(usdcDiff.div(absPositionSize))
-                                "short" -> entryPrice.minus(usdcDiff.div(absPositionSize))
+                                "long" -> entryPrice.plus(usdcDiff.div(absOrderSize))
+                                "short" -> entryPrice.minus(usdcDiff.div(absOrderSize))
                                 else -> null
                             }
                         } else {
@@ -188,8 +190,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (percentDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice * (Numeric.double.ONE.minus(percentDiff)).div(absPositionSize)
-                                "short" -> entryPrice * (Numeric.double.ONE.plus(percentDiff)).div(absPositionSize)
+                                "long" -> entryPrice * (Numeric.double.ONE.minus(percentDiff))
+                                "short" -> entryPrice * (Numeric.double.ONE.plus(percentDiff))
                                 else -> null
                             }
                         } else {
@@ -198,7 +200,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                     )
                     modified.safeSet(
                         "usdcDiff",
-                        if (percentDiff != null) entryPrice * percentDiff else null,
+                        if (percentDiff != null) entryPrice * percentDiff.times(absOrderSize) else null,
                     )
                 }
                 "takeProfitOrder.price.percentDiff" -> {
@@ -206,8 +208,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (percentDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice * (Numeric.double.ONE.plus(percentDiff)).div(absPositionSize)
-                                "short" -> entryPrice * (Numeric.double.ONE.minus(percentDiff)).div(absPositionSize)
+                                "long" -> entryPrice * (Numeric.double.ONE.plus(percentDiff))
+                                "short" -> entryPrice * (Numeric.double.ONE.minus(percentDiff))
                                 else -> null
                             }
                         } else {
@@ -216,7 +218,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                     )
                     modified.safeSet(
                         "usdcDiff",
-                        if (percentDiff != null) entryPrice * percentDiff else null,
+                        if (percentDiff != null) entryPrice * percentDiff.times(absOrderSize) else null,
                     )
                 }
                 else -> {}
