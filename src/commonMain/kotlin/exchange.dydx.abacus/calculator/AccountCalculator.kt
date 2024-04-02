@@ -59,7 +59,7 @@ class AccountCalculator(val parser: ParserProtocol) {
                     groupedSubaccounts["$subaccountNumber"] = subaccount
                 } else {
                     val parentSubaccountNumber = subaccountNumber % NUM_PARENT_SUBACCOUNTS
-                    val parentSubaccount = parser.asNativeMap(
+                    var parentSubaccount = parser.asNativeMap(
                         parser.value(
                             groupedSubaccounts,
                             "$parentSubaccountNumber",
@@ -69,7 +69,7 @@ class AccountCalculator(val parser: ParserProtocol) {
 
                     val childOpenPositions =
                         parser.asNativeMap(parser.value(subaccount, "openPositions"))
-                    val modifiedParentSubaccount = if (childOpenPositions != null) {
+                    parentSubaccount = if (childOpenPositions != null) {
                         mergeChildOpenPositions(
                             parentSubaccount,
                             subaccountNumber,
@@ -90,8 +90,8 @@ class AccountCalculator(val parser: ParserProtocol) {
                             parentSubaccount
                         }
                     }
-                    groupedSubaccounts["$parentSubaccountNumber"] =
-                        sumEquity(modifiedParentSubaccount, subaccount)
+                    parentSubaccount = sumEquity(parentSubaccount, subaccount)
+                    groupedSubaccounts["$parentSubaccountNumber"] = parentSubaccount
                 }
             }
             modified.safeSet("groupedSubaccounts", groupedSubaccounts)
