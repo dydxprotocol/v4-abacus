@@ -70,6 +70,13 @@ data class HumanReadableCancelOrderPayload(
 
 @JsExport
 @Serializable
+data class HumanReadableTriggerOrdersPayload(
+    val placeOrderPayloads: List<HumanReadablePlaceOrderPayload>,
+    val cancelOrderPayloads: List<HumanReadableCancelOrderPayload>,
+)
+
+@JsExport
+@Serializable
 data class HumanReadableSubaccountTransferPayload(
     val subaccountNumber: Int,
     val amount: String,

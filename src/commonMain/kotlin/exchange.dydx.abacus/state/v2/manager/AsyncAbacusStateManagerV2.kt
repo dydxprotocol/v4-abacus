@@ -22,6 +22,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.manager.V4Environment
@@ -452,6 +453,10 @@ class AsyncAbacusStateManagerV2(
         return adaptor?.cancelOrderPayload(orderId)
     }
 
+    override fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
+        return adaptor?.triggerOrdersPayload()
+    }
+
     override fun depositPayload(): HumanReadableDepositPayload? {
         return adaptor?.depositPayload()
     }
@@ -467,6 +472,16 @@ class AsyncAbacusStateManagerV2(
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return try {
             adaptor?.commitPlaceOrder(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+            null
+        }
+    }
+
+    override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
+        return try {
+            adaptor?.commitTriggerOrders(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
