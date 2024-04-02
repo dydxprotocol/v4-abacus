@@ -40,7 +40,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         }
         val triggerOrders = parser.asNativeMap(state["triggerOrders"])
         val marketId = parser.asString(triggerOrders?.get("marketId"))
-        val orderSize = parser.asDouble(triggerOrders?.get("size"))
+        val inputSize = parser.asDouble(triggerOrders?.get("size"))
         val stopLossOrder = parser.asNativeMap(triggerOrders?.get("stopLossOrder"))
         val takeProfitOrder = parser.asNativeMap(triggerOrders?.get("takeProfitOrder"))
         val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
@@ -48,12 +48,12 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         return if (triggerOrders != null && position != null) {
             val modified = state.mutable()
             val modifiedStopLossOrder = if (stopLossOrder != null) {
-                calculateTriggerOrderTrade(stopLossOrder, position, orderSize)
+                calculateTriggerOrderTrade(stopLossOrder, position, inputSize)
             } else {
                 stopLossOrder
             }
             val modifiedTakeProfitOrder = if (takeProfitOrder != null) {
-                calculateTriggerOrderTrade(takeProfitOrder, position, orderSize)
+                calculateTriggerOrderTrade(takeProfitOrder, position, inputSize)
             } else {
                 takeProfitOrder
             }
@@ -71,25 +71,27 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
     private fun calculateTriggerOrderTrade(
         triggerOrder: Map<String, Any>,
         position: Map<String, Any>,
-        orderSize: Double?,
+        inputSize: Double?,
     ): Map<String, Any> {
         val modified = triggerOrder.mutable()
-        val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position, orderSize) }
+        val orderSize = parser.asDouble(triggerOrder["size"])
+        val absSize = (inputSize ?: orderSize)?.abs()
+        val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position, absSize) }
         modified.safeSet("price", triggerPrices)
 
-        return finalizeOrderFromPriceInputs(modified, position)
+        return finalizeOrderFromPriceInputs(modified, position, absSize)
     }
 
     private fun calculateTriggerPrices(
         triggerPrices: Map<String, Any>,
         position: Map<String, Any>,
-        orderSize: Double?,
+        size: Double?,
     ): MutableMap<String, Any> {
         val modified = triggerPrices.mutable()
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
-        val absOrderSize = orderSize?.abs() ?: return modified
+        val absSize = size ?: return modified;
 
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
@@ -102,8 +104,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "usdcDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absOrderSize.times(entryPrice.minus(triggerPrice))
-                                "short" -> absOrderSize.times(triggerPrice.minus(entryPrice))
+                                "long" -> absSize.times(entryPrice.minus(triggerPrice))
+                                "short" -> absSize.times(triggerPrice.minus(entryPrice))
                                 else -> null
                             }
                         } else {
@@ -116,8 +118,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "usdcDiff",
                         if (triggerPrice != null) {
                             when (positionSide) {
-                                "long" -> absOrderSize.times(triggerPrice.minus(entryPrice))
-                                "short" -> absOrderSize.times(entryPrice.minus(triggerPrice))
+                                "long" -> absSize.times(triggerPrice.minus(entryPrice))
+                                "short" -> absSize.times(entryPrice.minus(triggerPrice))
                                 else -> null
                             }
                         } else {
@@ -130,8 +132,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (usdcDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice.minus(usdcDiff.div(absOrderSize))
-                                "short" -> entryPrice.plus(usdcDiff.div(absOrderSize))
+                                "long" -> entryPrice.minus(usdcDiff.div(absSize))
+                                "short" -> entryPrice.plus(usdcDiff.div(absSize))
                                 else -> null
                             }
                         } else {
@@ -144,8 +146,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         "triggerPrice",
                         if (usdcDiff != null) {
                             when (positionSide) {
-                                "long" -> entryPrice.plus(usdcDiff.div(absOrderSize))
-                                "short" -> entryPrice.minus(usdcDiff.div(absOrderSize))
+                                "long" -> entryPrice.plus(usdcDiff.div(absSize))
+                                "short" -> entryPrice.minus(usdcDiff.div(absSize))
                                 else -> null
                             }
                         } else {
@@ -163,7 +165,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         return modified
     }
 
-    private fun finalizeOrderFromPriceInputs(triggerOrder: Map<String, Any>, position: Map<String, Any>): MutableMap<String, Any> {
+    private fun finalizeOrderFromPriceInputs(triggerOrder: Map<String, Any>, position: Map<String, Any>, size: Double?): MutableMap<String, Any> {
         val modified = triggerOrder.mutable()
 
         val side = getOrderSide(position)
@@ -209,6 +211,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
             }
             else -> {}
         }
+
+        modified.safeSet("summary.size", size)
         return modified
     }
 

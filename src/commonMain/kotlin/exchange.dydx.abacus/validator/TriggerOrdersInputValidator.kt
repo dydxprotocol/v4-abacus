@@ -58,7 +58,7 @@ internal class TriggerOrdersInputValidator(
                 ),
             ) ?: return null
 
-            validateTriggerOrders(transaction, market, subaccount, configs, environment)?.let {
+            validateTriggerOrders(transaction, subaccount, configs, environment)?.let {
                 errors.addAll(it)
             }
 
@@ -68,6 +68,7 @@ internal class TriggerOrdersInputValidator(
             val takeProfitError = if (takeProfitOrder != null) {
                 validateTriggerOrder(
                     takeProfitOrder,
+                    market,
                     oraclePrice,
                     tickSize,
                 )
@@ -82,6 +83,7 @@ internal class TriggerOrdersInputValidator(
             val stopLossError = if (stopLossOrder != null) {
                 validateTriggerOrder(
                     stopLossOrder,
+                    market,
                     oraclePrice,
                     tickSize,
                 )
@@ -100,7 +102,6 @@ internal class TriggerOrdersInputValidator(
 
     private fun validateTriggerOrders(
         triggerOrders: Map<String, Any>,
-        market: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         configs: Map<String, Any>?,
         environment: V4Environment?,
@@ -113,19 +114,12 @@ internal class TriggerOrdersInputValidator(
             triggerErrors.addAll(it)
         }
 
-        validateSize(triggerOrders, market)?.let {
-            /*
-                AMOUNT_INPUT_STEP_SIZE
-                ORDER_SIZE_BELOW_MIN_SIZE
-             */
-            triggerErrors.addAll(it)
-        }
-
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
     private fun validateTriggerOrder(
         triggerOrder: Map<String, Any>,
+        market: Map<String, Any>?,
         oraclePrice: Double,
         tickSize: String,
     ): MutableList<Any>? {
@@ -134,6 +128,13 @@ internal class TriggerOrdersInputValidator(
         validateRequiredInput(triggerOrder)?.let {
             /*
                 REQUIRED_TRIGGER_PRICE
+             */
+            triggerErrors.addAll(it)
+        }
+        validateSize(triggerOrder, market)?.let {
+            /*
+                AMOUNT_INPUT_STEP_SIZE
+                ORDER_SIZE_BELOW_MIN_SIZE
              */
             triggerErrors.addAll(it)
         }
@@ -431,12 +432,12 @@ internal class TriggerOrdersInputValidator(
     }
 
     private fun validateSize(
-        triggerOrders: Map<String, Any>,
+        triggerOrder: Map<String, Any>,
         market: Map<String, Any>?,
     ): List<Any>? {
         val symbol = parser.asString(market?.get("assetId")) ?: return null
 
-        parser.asDouble(triggerOrders["size"])?.let { size ->
+        parser.asDouble(parser.value(triggerOrder, "summary.size"))?.let { size ->
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
                 val errors = mutableListOf<Map<String, Any>>()
 
