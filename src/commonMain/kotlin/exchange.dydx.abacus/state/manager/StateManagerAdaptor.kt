@@ -426,7 +426,7 @@ open class StateManagerAdaptor(
             retrieveFeeTiers()
             if (market != null) {
                 retrieveMarketHistoricalFundings()
-                retrieveMarketCandles()
+                maybeRetrieveMarketCandles()
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
@@ -705,7 +705,7 @@ open class StateManagerAdaptor(
 
                 "channel_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asMap(payload["contents"])
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -716,7 +716,7 @@ open class StateManagerAdaptor(
 
                 "channel_batch_data" -> {
                     val channel = parser.asString(payload["channel"]) ?: return
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     val content = parser.asList(payload["contents"]) as? IList<IMap<String, Any>>
                         ?: throw ParsingException(
                             ParsingErrorType.MissingContent,
@@ -1216,7 +1216,8 @@ open class StateManagerAdaptor(
         return null
     }
 
-    private fun retrieveMarketCandles() {
+    private fun maybeRetrieveMarketCandles() {
+        if (!appConfigs.subscribeToCandles) return
         val market = market ?: return
         val url = configs.publicApiUrl("candles") ?: return
         val candleResolution = candlesResolution
@@ -1248,7 +1249,7 @@ open class StateManagerAdaptor(
                 val changes = stateMachine.candles(response)
                 update(changes, oldState)
                 if (changes.changes.contains(candles)) {
-                    retrieveMarketCandles()
+                    maybeRetrieveMarketCandles()
                 }
             }
         }
@@ -1590,7 +1591,7 @@ open class StateManagerAdaptor(
     }
 
     internal open fun didSetCandlesResolution(oldValue: String) {
-        retrieveMarketCandles()
+        maybeRetrieveMarketCandles()
     }
 
     fun didSetHistoricalTradingRewardsPeriod(period: String) {
@@ -1619,7 +1620,7 @@ open class StateManagerAdaptor(
                 }
             }
             retrieveMarketHistoricalFundings()
-            retrieveMarketCandles()
+            maybeRetrieveMarketCandles()
         }
     }
 

@@ -30,10 +30,10 @@ import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.UIImplementations
@@ -498,7 +498,7 @@ class V4StateManagerAdaptor(
                         transaction(TransactionType.CctpWithdraw, walletState.payload) { hash ->
                             val error = parseTransactionResponse(hash)
                             if (error != null) {
-                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                Logger.e { "TransactionType.CctpWithdraw error: $error" }
                                 callback?.let { it -> send(error, it, hash) }
                             } else {
                                 callback?.let { it -> send(null, it, hash) }
@@ -510,7 +510,7 @@ class V4StateManagerAdaptor(
                         transferNobleBalance(amount)
                     }
                 } else if (balance["error"] != null) {
-                    DebugLogger.error("Error checking noble balance: $response")
+                    Logger.e { "Error checking noble balance: $response" }
                 }
             }
         }

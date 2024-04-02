@@ -1,9 +1,10 @@
 package exchange.dydx.abacus.output
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
@@ -22,7 +23,7 @@ data class FeeDiscountResources(
             localizer: LocalizerProtocol?,
         ): FeeDiscountResources? {
             if (data == null) {
-                DebugLogger.debug("Fee Discount Resources not valid")
+                Logger.d { "Fee Discount Resources not valid" }
                 return null
             }
             val stringKey = parser.asString(data["stringKey"])
@@ -73,7 +74,7 @@ data class FeeDiscount(
                 }
                 return feeDiscounts
             }
-            DebugLogger.debug("Fee Discounts not valid")
+            Logger.d { "Fee Discounts not valid" }
             return null
         }
 
@@ -111,7 +112,7 @@ data class FeeDiscount(
                     }
                 }
             }
-            DebugLogger.debug("Fee Discount not valid")
+            Logger.d { "Fee Discount not valid" }
             return null
         }
     }
@@ -147,7 +148,7 @@ data class FeeTierResources(
                     null
                 }
             }
-            DebugLogger.debug("Fee Tier Resources not valid")
+            Logger.d { "Fee Tier Resources not valid" }
             return null
         }
     }
@@ -186,7 +187,7 @@ data class FeeTier(
                 }
                 return feeTiers
             }
-            DebugLogger.debug("Fee Tiers not valid")
+            Logger.d { "Fee Tiers not valid" }
             return null
         }
 
@@ -240,8 +241,69 @@ data class FeeTier(
                     }
                 }
             }
-            DebugLogger.debug("Fee Tier not valid")
+            Logger.d { "Fee Tier not valid" }
             return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class WithdrawalGating(
+    val withdrawalsAndTransfersUnblockedAtBlock: Int?
+) {
+    companion object {
+        internal fun create(
+            existing: WithdrawalGating?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): WithdrawalGating? {
+            data?.let {
+                val withdrawalsAndTransfersUnblockedAtBlock =
+                    parser.asInt(data["withdrawalsAndTransfersUnblockedAtBlock"])
+                return if (existing?.withdrawalsAndTransfersUnblockedAtBlock != withdrawalsAndTransfersUnblockedAtBlock) {
+                    WithdrawalGating(
+                        withdrawalsAndTransfersUnblockedAtBlock,
+                    )
+                } else {
+                    existing
+                }
+            }
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class WithdrawalCapacity(
+    val capacity: String?
+) {
+    companion object {
+        internal fun create(
+            existing: WithdrawalCapacity?,
+            parser: ParserProtocol,
+            data: Map<*, *>?
+        ): WithdrawalCapacity? {
+            return data?.let {
+                return parser.asList(data["limiterCapacityList"])?.let {
+                    if (it.size != 2) {
+                        return null
+                    }
+                    var dailyLimit = parser.asDecimal(parser.asMap(it[0])?.get("capacity"))
+                    var weeklyLimit = parser.asDecimal(parser.asMap(it[1])?.get("capacity"))
+                    var capacity: BigDecimal? = null
+                    if (dailyLimit != null && weeklyLimit != null) {
+                        if (dailyLimit < weeklyLimit) {
+                            capacity = dailyLimit
+                        } else {
+                            capacity = weeklyLimit
+                        }
+                    }
+                    var capacityAsString = parser.asString(capacity)
+                    return if (existing?.capacity != capacityAsString) WithdrawalCapacity(capacityAsString) else existing
+                }
+            }
         }
     }
 }
@@ -272,7 +334,7 @@ data class NetworkConfigs(
                     existing
                 }
             }
-            DebugLogger.debug("Network Configs not valid")
+            Logger.d { "Network Configs not valid" }
             return null
         }
     }
@@ -283,7 +345,9 @@ data class NetworkConfigs(
 data class Configs(
     val network: NetworkConfigs?,
     val feeTiers: IList<FeeTier>?,
-    val feeDiscounts: IList<FeeDiscount>?
+    val feeDiscounts: IList<FeeDiscount>?,
+    val withdrawalGating: WithdrawalGating?,
+    val withdrawalCapacity: WithdrawalCapacity?,
 ) {
     companion object {
         internal fun create(
@@ -307,6 +371,16 @@ data class Configs(
                     parser.asList(data["feeDiscounts"]),
                     localizer,
                 )
+                var withdrawalGating = WithdrawalGating.create(
+                    existing?.withdrawalGating,
+                    parser,
+                    parser.asMap(data["withdrawalGating"]),
+                )
+                var withdrawalCapacity = WithdrawalCapacity.create(
+                    existing?.withdrawalCapacity,
+                    parser,
+                    parser.asMap(data["withdrawalCapacity"]),
+                )
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
                     existing?.feeDiscounts != feeDiscounts
@@ -315,16 +389,20 @@ data class Configs(
                         network,
                         feeTiers,
                         feeDiscounts,
+                        withdrawalGating,
+                        withdrawalCapacity,
                     )
                 } else {
                     existing ?: Configs(
                         null,
                         null,
                         null,
+                        null,
+                        null,
                     )
                 }
             }
-            DebugLogger.debug("Configs not valid")
+            Logger.d { "Configs not valid" }
             return null
         }
     }

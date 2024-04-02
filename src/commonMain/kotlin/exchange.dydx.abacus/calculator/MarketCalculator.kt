@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.DebugLogger
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -15,7 +15,7 @@ internal class MarketCalculator(val parser: ParserProtocol) {
     ): Map<String, Any>? {
         val markets = parser.asNativeMap(marketsSummary?.get("markets"))
         if (markets == null) {
-            DebugLogger.warning("Cannot calculate markets with null data")
+            Logger.d { "Cannot calculate markets with null data" }
             return marketsSummary
         }
 
@@ -30,11 +30,11 @@ internal class MarketCalculator(val parser: ParserProtocol) {
         for ((key, value) in markets) {
             val market = parser.asNativeMap(value)
             if (market == null) {
-                DebugLogger.warning("Expected a map, got: $value")
+                Logger.d { "Expected a map, got: $value" }
                 continue
             }
             if (assets == null) {
-                DebugLogger.warning("Expecting assets")
+                Logger.d { "Expecting assets" }
             } else {
                 val marketCaps = calculateMarketCaps(market, assets)
                 modifiedMarkets?.safeSet(key, marketCaps)

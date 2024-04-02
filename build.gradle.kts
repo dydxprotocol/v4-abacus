@@ -1,15 +1,12 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 
 buildscript {
-    val agp_version by extra("7.2.2")
     repositories {
-        //gradlePluginPortal()
-        //google()
         mavenCentral()
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
-        classpath("com.android.tools.build:gradle:$agp_version")
     }
 }
 
@@ -18,7 +15,7 @@ plugins {
     kotlin("native.cocoapods") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
-    id("dev.petuska.npm.publish") version "3.1.0"
+    id("dev.petuska.npm.publish") version "3.4.2"
     id("com.diffplug.spotless") version "6.25.0"
 }
 
@@ -51,7 +48,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.6.16"
+version = "1.6.24"
 
 repositories {
     google()
@@ -59,8 +56,6 @@ repositories {
 }
 
 kotlin {
-    //android()
-
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
@@ -74,46 +69,39 @@ kotlin {
 
     js(IR) {
         moduleName = "abacusjs"
-        browser {
-            testTask {
-                useMocha {
-                    timeout = "10s"
+        browser()
+        generateTypeScriptDefinitions()
+        binaries.library()
+
+        binaries.withType<JsIrBinary>().all {
+            linkTask.configure {
+                kotlinOptions {
+                    sourceMap = true
+                    sourceMapEmbedSources = "always"
                 }
             }
         }
-        generateTypeScriptDefinitions()
-        binaries.library()
-        browser()
+
     }
 
     val xcf = XCFramework()
 
-    iosArm64 {
-        binaries.framework {
+    val iosTargets = listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    )
+
+    iosTargets.forEach {
+        it.binaries.framework {
             baseName = "abacus"
             xcf.add(this)
         }
     }
-
-    iosX64 {
-        binaries.framework {
-            baseName = "abacus"
-            xcf.add(this)
-        }
-    }
-
-    iosSimulatorArm64 {
-        binaries.framework {
-            baseName = "abacus"
-            xcf.add(this)
-        }
-    }
-
 
     sourceSets {
         val ktorVersion = "2.1.1"
-        val napierVersion = "2.6.1"
         all {
+            // Since commonMain needs the opt-in, all dependent sets also need it.
             languageSettings.apply {
                 optIn("kotlin.js.ExperimentalJsExport")
             }
@@ -123,7 +111,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-                implementation("io.github.aakira:napier:$napierVersion")
                 implementation("co.touchlab:stately-common:1.2.0")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
@@ -137,23 +124,13 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
-        val jvmTest by getting
         val jsMain by getting
-        val jsTest by getting
-
-        val androidMain by creating {
-            dependsOn(commonMain)
-        }
-        val jvmMain by getting {
-            dependsOn(androidMain)
-        }
+        val jvmMain by getting
+        val jvmTest by getting
         val iosMain by creating {
             dependsOn(commonMain)
         }
         val iosArm64Main by getting {
-            dependsOn(iosMain)
-        }
-        val iosX64Main by getting {
             dependsOn(iosMain)
         }
         val iosSimulatorArm64Main by getting {
@@ -165,14 +142,6 @@ kotlin {
         gradleVersion = "7.5.1"
         distributionType = Wrapper.DistributionType.ALL
     }
-
-
-    /*
-    tasks.named<KotlinJsCompile>("compileKotlinJs").configure {
-        kotlinOptions.moduleKind = "plain"
-    }
-
-     */
 
     cocoapods {
         // Required properties
@@ -226,7 +195,7 @@ npmPublish {
 }
 
 //
-// For Android app
+// JVM publishing
 //
 
 publishing {

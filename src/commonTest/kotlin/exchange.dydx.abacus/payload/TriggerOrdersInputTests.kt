@@ -221,6 +221,10 @@ class TriggerOrderInputTests : V4BaseTests() {
             perp.triggerOrders("4321", TriggerOrdersInputField.takeProfitOrderId, 0)
         }, null)
 
+        test({
+            perp.triggerOrders("4321", TriggerOrdersInputField.takeProfitOrderId, 0)
+        }, null)
+
         test(
             {
                 perp.triggerOrders("1800.0", TriggerOrdersInputField.takeProfitPrice, 0)

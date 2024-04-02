@@ -48,8 +48,8 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
@@ -105,6 +105,8 @@ open class TradingStateMachine(
 
     internal val featureFlags: EnvironmentFeatureFlags
         get() = environment?.featureFlags!!
+
+    internal var currentBlockAndHeight: BlockAndTime? = null
 
     internal var groupingMultiplier: Int
         get() = marketsProcessor.groupingMultiplier
@@ -262,7 +264,8 @@ open class TradingStateMachine(
         val type = parser.asString(payload["type"])
         val channel = parser.asString(payload["channel"])
         val id = parser.asString(payload["id"])
-        val info = SocketInfo(type, channel, id)
+        val childSubaccountNumber = parser.asInt(payload["subaccountNumber"])
+        val info = SocketInfo(type, channel, id, childSubaccountNumber)
 
         try {
             when (type) {
@@ -575,6 +578,7 @@ open class TradingStateMachine(
                 parser.asNativeMap(this.marketsSummary?.get("markets")),
                 this.input,
                 this.configs,
+                this.currentBlockAndHeight,
                 this.environment,
             )
 
@@ -632,7 +636,7 @@ open class TradingStateMachine(
 
                 // Restriction is handled separately and shouldn't have gone through here
                 Changes.restriction -> {
-                    DebugLogger.log("Restriction is handled separately and shouldn't have gone through here")
+                    Logger.d { "Restriction is handled separately and shouldn't have gone through here" }
                     false
                 }
             }
@@ -710,52 +714,36 @@ open class TradingStateMachine(
         return parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
     }
 
-    private fun setSubaccount(subaccount: Map<String, Any>?, subaccountNumber: Int) {
-        val modifiedAccount = account?.mutable() ?: mutableMapOf()
-        modifiedAccount.safeSet("subaccounts.$subaccountNumber", subaccount)
-        this.account = modifiedAccount
-    }
-
     private fun subaccountList(subaccountNumber: Int, name: String): IList<Any>? {
         return parser.asList(subaccount(subaccountNumber)?.get(name))
     }
 
-    private fun setSubaccountList(list: IList<Any>?, subaccountNumber: Int, name: String) {
-        val modifiedSubaccount = subaccount(subaccountNumber)?.mutable() ?: mutableMapOf()
-        modifiedSubaccount.safeSet(name, list)
-        setSubaccount(modifiedSubaccount, subaccountNumber)
+    private fun groupedSubaccount(subaccountNumber: Int): Map<String, Any>? {
+        return parser.asNativeMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
+    }
+
+    private fun groupedSubaccountList(subaccountNumber: Int, name: String): IList<Any>? {
+        return parser.asList(groupedSubaccount(subaccountNumber)?.get(name))
     }
 
     private fun subaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
+        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "historicalPnl")
     }
 
-    private fun setSubaccountHistoricalPnl(historicalPnl: IList<Any>?, subaccountNumber: Int) {
-        setSubaccountList(historicalPnl, subaccountNumber, "historicalPnl")
-    }
-
     private fun subaccountFills(subaccountNumber: Int): IList<Any>? {
+        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "fills")
     }
 
-    private fun setSubaccountFills(fills: IList<Any>?, subaccountNumber: Int) {
-        setSubaccountList(fills, subaccountNumber, "fills")
-    }
-
     private fun subaccountTransfers(subaccountNumber: Int): IList<Any>? {
+        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "transfers")
     }
 
-    private fun setSubaccountTransfers(transfers: IList<Any>?, subaccountNumber: Int) {
-        setSubaccountList(transfers, subaccountNumber, "transfers")
-    }
-
     private fun subaccountFundingPayments(subaccountNumber: Int): IList<Any>? {
+        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "fundingPayments")
-    }
-
-    private fun setSubaccountFundingPayments(fundingPayments: IList<Any>?, subaccountNumber: Int) {
-        setSubaccountList(fundingPayments, subaccountNumber, "fundingPayments")
     }
 
     private fun allSubaccountNumbers(): IList<Int> {
@@ -1091,10 +1079,21 @@ open class TradingStateMachine(
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
+                    val groupedSubaccounts = account.groupedSubaccounts?.toIMutableMap() ?: mutableMapOf()
+                    for (subaccountNumber in subaccountNumbers) {
+                        val subaccount = Subaccount.create(
+                            account.groupedSubaccounts?.get("$subaccountNumber"),
+                            parser,
+                            groupedSubaccount(subaccountNumber),
+                            localizer,
+                        )
+                        groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
+                    }
                     Account(
                         account.balances,
                         account.stakingBalances,
                         subaccounts,
+                        groupedSubaccounts,
                         account.tradingRewards,
                         account.launchIncentivePoints,
                     )
@@ -1187,6 +1186,7 @@ open class TradingStateMachine(
                     parser.asNativeMap(this.marketsSummary?.get("markets")),
                     this.input,
                     this.configs,
+                    this.currentBlockAndHeight,
                     this.environment,
                 )
                 this.input?.let {

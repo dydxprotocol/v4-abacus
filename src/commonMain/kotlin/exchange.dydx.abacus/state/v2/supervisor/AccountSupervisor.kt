@@ -37,8 +37,8 @@ import exchange.dydx.abacus.state.model.onChainUserStats
 import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.toNobleAddress
@@ -407,7 +407,7 @@ internal open class AccountSupervisor(
                         ) { hash ->
                             val error = helper.parseTransactionResponse(hash)
                             if (error != null) {
-                                DebugLogger.error("TransactionType.CctpWithdraw error: $error")
+                                Logger.e { "TransactionType.CctpWithdraw error: $error" }
                                 callback?.let { it -> helper.send(error, it, hash) }
                             } else {
                                 callback?.let { it -> helper.send(null, it, hash) }
@@ -419,7 +419,7 @@ internal open class AccountSupervisor(
                         transferNobleBalance(amount)
                     }
                 } else if (balance["error"] != null) {
-                    DebugLogger.error("Error checking noble balance: $response")
+                    Logger.e { "Error checking noble balance: $response" }
                 }
             }
         }
@@ -558,12 +558,12 @@ internal open class AccountSupervisor(
                         helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
                             val error = helper.parseTransactionResponse(it)
                             if (error != null) {
-                                DebugLogger.error("transferNobleBalance error: $error")
+                                Logger.e { "transferNobleBalance error: $error" }
                             }
                         }
                     }
                 } else {
-                    DebugLogger.error("transferNobleBalance error, code: $code")
+                    Logger.e { "transferNobleBalance error, code: $code" }
                 }
             }
         }

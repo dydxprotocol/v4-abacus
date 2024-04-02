@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.modify
 
@@ -91,6 +92,7 @@ internal class InputValidator(
         markets: Map<String, Any>?,
         input: Map<String, Any>?,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         environment: V4Environment?,
     ): Map<String, Any>? {
         return if (input != null) {
@@ -103,6 +105,7 @@ internal class InputValidator(
                     subaccount,
                     markets,
                     configs,
+                    currentBlockAndHeight,
                     transaction,
                     transactionType,
                     environment,
@@ -124,6 +127,7 @@ internal class InputValidator(
         subaccount: Map<String, Any>?,
         markets: Map<String, Any>?,
         configs: Map<String, Any>?,
+        currentBlockAndHeight: BlockAndTime?,
         transaction: Map<String, Any>,
         transactionType: String,
         environment: V4Environment?,
@@ -139,6 +143,7 @@ internal class InputValidator(
                         subaccount,
                         markets,
                         configs,
+                        currentBlockAndHeight,
                         transaction,
                         transactionType,
                         environment,

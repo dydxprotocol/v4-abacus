@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -359,7 +360,7 @@ internal class StateManagerAdaptorV2(
                     val channel = parser.asString(payload["channel"]) ?: return
                     val id = parser.asString(payload["id"])
 
-                    val info = SocketInfo(type, channel, id)
+                    val info = SocketInfo(type, channel, id, parser.asInt(payload["subaccountNumber"]))
                     when (channel) {
                         configs.marketsChannel() -> {
                             val subaccountNumber = accounts.connectedSubaccountNumber
@@ -489,6 +490,11 @@ internal class StateManagerAdaptorV2(
         val source = sourceAddress
         if (address != null && source != null) {
             onboarding.transfer(data, type, address, source, subaccountNumber)
+        }
+        data?.let {
+            TransferType(rawValue = data)?.let {
+                system.didSetTransferType(it)
+            }
         }
     }
 

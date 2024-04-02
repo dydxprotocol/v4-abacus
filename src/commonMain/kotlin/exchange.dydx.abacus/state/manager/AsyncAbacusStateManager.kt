@@ -18,11 +18,11 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.CoroutineTimer
-import exchange.dydx.abacus.utils.DebugLogger
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IOImplementations
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ProtocolNativeImpFactory
 import exchange.dydx.abacus.utils.Threading
@@ -44,7 +44,7 @@ class AsyncAbacusStateManager(
 ) : AsyncAbacusStateManagerProtocol, AsyncAbacusStateManagerSingletonProtocol {
     init {
         if (appConfigs.enableLogger) {
-            DebugLogger.enable()
+            Logger.isDebugEnabled = true
         }
     }
 

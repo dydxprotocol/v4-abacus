@@ -30,6 +30,7 @@ import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountFundingPayment
 import exchange.dydx.abacus.output.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.SubaccountPendingPosition
 import exchange.dydx.abacus.output.SubaccountPosition
 import exchange.dydx.abacus.output.SubaccountTransfer
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
@@ -58,6 +59,7 @@ import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Parser
@@ -848,6 +850,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 obj.subaccounts,
                 "$trace.subaccounts",
             )
+            verifyAccountSubaccountsState(
+                parser.asNativeMap(data["groupedSubaccounts"]),
+                obj.groupedSubaccounts,
+                "$trace.groupedSubaccounts",
+            )
             verifyLaunchIncentivePointsState(
                 parser.asNativeMap(data["launchIncentivePoints"]),
                 obj.launchIncentivePoints,
@@ -951,6 +958,11 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asNativeMap(data["openPositions"]),
                 obj.openPositions,
                 "$trace.openPositions",
+            )
+            verifyAccountSubaccountPendingPositions(
+                parser.asNativeList(data["pendingPositions"]),
+                obj.pendingPositions,
+                "$trace.pendingPositions",
             )
         } else {
             assertNull(obj)
@@ -1083,6 +1095,64 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
                 parser.asNativeMap(data["valueTotal"]),
                 obj.valueTotal,
                 "$trace.valueTotal",
+            )
+            verifyDoubleValues(
+                parser.asNativeMap(data["quoteBalance"]),
+                obj.quoteBalance,
+                "$trace.quoteBalance",
+            )
+            verifyDoubleValues(
+                parser.asNativeMap(data["equity"]),
+                obj.equity,
+                "$trace.equity",
+            )
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyAccountSubaccountPendingPositions(
+        data: List<Any>?,
+        obj: IList<SubaccountPendingPosition>?,
+        trace: String,
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
+            for (i in 0 until obj.size) {
+                val position = obj[i]
+                val positionId = position.assetId
+                val itemData = parser.asNativeMap(data[i])
+                assertNotNull(itemData)
+                verifyAccountSubaccountPendingPosition(
+                    itemData,
+                    position,
+                    "$trace.$positionId",
+                )
+            }
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyAccountSubaccountPendingPosition(
+        data: Map<String, Any>?,
+        obj: SubaccountPendingPosition?,
+        trace: String,
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(parser.asString(data["assetId"]), obj.assetId, "$trace.assetId")
+            assertEquals(parser.asInt(data["orderCount"]), obj.orderCount, "$trace.orderCount")
+            verifyDoubleValues(
+                parser.asNativeMap(data["quoteBalance"]),
+                obj.quoteBalance,
+                "$trace.quoteBalance",
+            )
+            verifyDoubleValues(
+                parser.asNativeMap(data["equity"]),
+                obj.equity,
+                "$trace.equity",
             )
         } else {
             assertNull(obj)

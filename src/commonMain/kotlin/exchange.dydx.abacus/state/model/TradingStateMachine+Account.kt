@@ -29,6 +29,7 @@ internal fun TradingStateMachine.receivedAccount(
 internal fun TradingStateMachine.updateHeight(
     height: BlockAndTime,
 ): StateResponse {
+    this.currentBlockAndHeight = height
     val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(wallet, height)
     return if (updated) {
         this.wallet = modifiedWallet
