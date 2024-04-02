@@ -827,11 +827,13 @@ open class TradingStateMachine(
                 }
             }
         }
-        if (changes.changes.contains(Changes.fills) && useParentSubaccount) {
-            this.account = mergeFills(this.account, subaccountNumbers)
-        }
-        if (changes.changes.contains(Changes.transfers) && useParentSubaccount) {
-            this.account = mergeTransfers(this.account, subaccountNumbers)
+        if (parser.value(account, "groupedSubaccounts") != null) {
+            if (changes.changes.contains(Changes.fills)) {
+                this.account = mergeFills(this.account, subaccountNumbers)
+            }
+            if (changes.changes.contains(Changes.transfers)) {
+                this.account = mergeTransfers(this.account, subaccountNumbers)
+            }
         }
         if (changes.changes.contains(Changes.input)) {
             val modified = this.input?.mutable() ?: return

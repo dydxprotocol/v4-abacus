@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
@@ -57,7 +58,21 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         position: Map<String, Any>,
     ): Map<String, Any> {
         val modified = calculatePrice(triggerOrder, position)
+        val side = getOrderSide(position)
+        modified.safeSet("side", side?.rawValue)
         return modified
+    }
+
+    private fun getOrderSide(
+        position: Map<String, Any>,
+    ): OrderSide? {
+        val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
+
+        return when (positionSide) {
+            "short" -> OrderSide.buy
+            "long" -> OrderSide.sell
+            else -> null
+        }
     }
 
     private fun calculatePrice(
