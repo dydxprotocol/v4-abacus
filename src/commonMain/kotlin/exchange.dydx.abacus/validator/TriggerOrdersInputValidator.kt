@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Rounder
+import exchange.dydx.abacus.utils.Logger
 
 internal data class EquityTier(
     val requiredTotalNetCollateralUSD: Double,
@@ -58,7 +59,7 @@ internal class TriggerOrdersInputValidator(
                 ),
             ) ?: return null
 
-            validateTriggerOrders(transaction, subaccount, configs, market, environment)?.let {
+            validateTriggerOrders(transaction, market, subaccount, configs, environment)?.let {
                 errors.addAll(it)
             }
 
@@ -184,10 +185,10 @@ internal class TriggerOrdersInputValidator(
         val numOrders = orderCount(subaccount)
         var numOrdersToCreate = 0
 
-        if (triggerOrders["stopLossOrder"] != null && parser.value(triggerOrders, "stopLossOrder.orderId") == null) {
+        if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") != null && parser.value(triggerOrders, "stopLossOrder.orderId") == null) {
             numOrdersToCreate += 1
         }
-        if (triggerOrders["takeProfitOrder"] != null && parser.value(triggerOrders, "takeProfitOrder.orderId") == null) {
+        if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") != null && parser.value(triggerOrders, "takeProfitOrder.orderId") == null) {
             numOrdersToCreate += 1
         }
 
