@@ -67,6 +67,27 @@ class TriggerOrderInputTests : V4BaseTests() {
     private fun testSetPositionSize() {
         test(
             {
+                perp.triggerOrders("2.0", TriggerOrdersInputField.stopLossOrderSize, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "stopLossOrder": {
+                            "size": "2.0",
+                            "summary": {
+                                "size": "2.0"
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
                 perp.triggerOrders("0.5", TriggerOrdersInputField.size, 0)
             },
             """
@@ -74,7 +95,41 @@ class TriggerOrderInputTests : V4BaseTests() {
                 "input": {
                     "current": "triggerOrders",
                     "triggerOrders": {
-                        "size": "0.5"
+                        "size": "0.5",
+                        "stopLossOrder": {
+                            "size": "2.0",
+                            "summary": {
+                                "size": "0.5"
+                            }
+                        }
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.triggerOrders("1.0", TriggerOrdersInputField.takeProfitOrderSize, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "size": "0.5",
+                        "stopLossOrder": {
+                            "size": "2.0",
+                            "summary": {
+                                "size": "0.5"
+                            }
+                        },
+                        "takeProfitOrder": {
+                            "size": "1.0",
+                            "summary": {
+                                "size": "0.5"
+                            }
+                        }
                     }
                 }
             }
