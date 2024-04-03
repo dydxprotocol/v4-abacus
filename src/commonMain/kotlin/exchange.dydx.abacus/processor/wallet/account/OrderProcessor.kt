@@ -11,6 +11,7 @@ import exchange.dydx.abacus.utils.safeSet
 /*
 
       {
+        "subaccountNumber: 0, // new field
         "id": "3c5193d7a49805ffcf231af1ed446188f04aaa6756bf9df7b5913568b2763d7",
         "clientId": "69967309621008383",
         "market": "ETH-USD",
@@ -41,6 +42,7 @@ import exchange.dydx.abacus.utils.safeSet
       to
 
         {
+          "subaccountNumber": 0,
           "id": "45537274a3ef9afca657d9de73fb5fe5762f97336ce5502da0581e394dccdeb",
           "marketId": "ETH-USD",
           "price": 1192.5,
@@ -138,6 +140,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "reduceOnly" to "reduceOnly",
         ),
         "int" to mapOf(
+            "subaccountNumber" to "subaccountNumber",
             "clobPairId" to "clobPairId",
             "orderFlags" to "orderFlags",
             "goodTilBlock" to "goodTilBlock",

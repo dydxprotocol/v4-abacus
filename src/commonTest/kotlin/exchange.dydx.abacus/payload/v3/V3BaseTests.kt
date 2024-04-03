@@ -10,7 +10,7 @@ import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadUser
 
-open class V3BaseTests : BaseTests(0) {
+open class V3BaseTests : BaseTests(0, false) {
     internal fun loadMarkets(): StateResponse {
         return test({
             perp.loadMarkets(mock)
