@@ -78,6 +78,7 @@ open class TradingStateMachine(
     private val localizer: LocalizerProtocol?,
     private val formatter: Formatter?,
     private val maxSubaccountNumber: Int,
+    private val useParentSubaccount: Boolean,
 ) {
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
@@ -93,7 +94,7 @@ open class TradingStateMachine(
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
-    internal val accountCalculator = AccountCalculator(parser)
+    internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
     internal val inputValidator = InputValidator(localizer, formatter, parser)
 
     internal var data: Map<String, Any>? = null
@@ -727,23 +728,35 @@ open class TradingStateMachine(
     }
 
     private fun subaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "historicalPnl")
     }
 
     private fun subaccountFills(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "fills")
     }
 
     private fun subaccountTransfers(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "transfers")
     }
 
     private fun subaccountFundingPayments(subaccountNumber: Int): IList<Any>? {
-        // TODO change to groupedSubaccountList when ready
         return subaccountList(subaccountNumber, "fundingPayments")
+    }
+
+    private fun groupedSubaccountHistoricalPnl(subaccountNumber: Int): IList<Any>? {
+        return groupedSubaccountList(subaccountNumber, "historicalPnl")
+    }
+
+    private fun groupedSubaccountFills(subaccountNumber: Int): IList<Any>? {
+        return groupedSubaccountList(subaccountNumber, "fills")
+    }
+
+    private fun groupedSubaccountTransfers(subaccountNumber: Int): IList<Any>? {
+        return groupedSubaccountList(subaccountNumber, "transfers")
+    }
+
+    private fun groupedSubaccountFundingPayments(subaccountNumber: Int): IList<Any>? {
+        return groupedSubaccountList(subaccountNumber, "fundingPayments")
     }
 
     private fun allSubaccountNumbers(): IList<Int> {

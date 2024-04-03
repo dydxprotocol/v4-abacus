@@ -78,13 +78,13 @@ import kotlin.time.Duration.Companion.days
 internal typealias LoadingFunction = () -> StateResponse
 internal typealias VerificationFunction = (response: StateResponse) -> Unit
 
-open class BaseTests(private val maxSubaccountNumber: Int) {
+open class BaseTests(private val maxSubaccountNumber: Int, internal val useParentSubaccount: Boolean) {
     open val doAsserts = true
     internal val deploymentUri = "https://api.examples.com"
     internal val doesntMatchText = "doesn't match"
     internal val parser = Parser()
     internal val mock = AbacusMockData()
-    internal var perp = createState()
+    internal var perp = createState(useParentSubaccount)
 
     companion object {
         fun testIOImplementations(): IOImplementations {
@@ -113,13 +113,14 @@ open class BaseTests(private val maxSubaccountNumber: Int) {
         }
     }
 
-    internal open fun createState(): PerpTradingStateMachine {
+    internal open fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
             mock.v4Environment,
             testLocalizer(ioImplementations),
             null,
             maxSubaccountNumber,
+            useParentSubaccount,
         )
     }
 

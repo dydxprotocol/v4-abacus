@@ -621,6 +621,7 @@ data class SubaccountOrderResources(
 @JsExport
 @Serializable
 data class SubaccountOrder(
+    val subaccountNumber: Int?,
     val id: String,
     val clientId: Int?,
     val type: OrderType,
@@ -657,6 +658,8 @@ data class SubaccountOrder(
         ): SubaccountOrder? {
             Logger.d { "creating Account Order\n" }
             data?.let {
+                // TODO: Remove default to 0 for subaccountNumber once new indexer response is consumed. Prevents breaking change
+                val subaccountNumber = parser.asInt(data["subaccountNumber"])?: 0
                 val id = parser.asString(data["id"])
                 val clientId = parser.asInt(data["clientId"])
                 val marketId = parser.asString(data["marketId"])
@@ -701,7 +704,9 @@ data class SubaccountOrder(
                     val reduceOnly = parser.asBool(data["reduceOnly"]) ?: false
                     val cancelReason = parser.asString(data["cancelReason"])
 
-                    return if (existing?.id != id ||
+                    return if (
+                        existing?.subaccountNumber != subaccountNumber ||
+                        existing.id != id ||
                         existing.clientId != clientId ||
                         existing.type !== type ||
                         existing.side !== side ||
@@ -728,6 +733,7 @@ data class SubaccountOrder(
                         existing.resources !== resources
                     ) {
                         SubaccountOrder(
+                            subaccountNumber,
                             id,
                             clientId,
                             type,

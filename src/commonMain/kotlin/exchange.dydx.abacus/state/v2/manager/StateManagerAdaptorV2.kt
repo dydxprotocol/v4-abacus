@@ -96,6 +96,7 @@ internal class StateManagerAdaptorV2(
         uiImplementations.localizer,
         Formatter(uiImplementations.formatter),
         127,
+        appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
     )
 
     internal val jsonEncoder = JsonEncoder()

@@ -6,7 +6,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V4ParentSubaccountTests : V4BaseTests() {
+class V4ParentSubaccountTests : V4BaseTests(true) {
     @Test
     fun testDataFeed() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
@@ -130,7 +130,7 @@ class V4ParentSubaccountTests : V4BaseTests() {
                                     },
                                     "orders": {
                                         "b812bea8-29d3-5841-9549-caa072f6f8a9": {
-                                            "clientId": "2194126269",
+                                            "clientId": "194126269",
                                             "clobPairId": "134",
                                             "side": "SELL",
                                             "size": "1.653451",

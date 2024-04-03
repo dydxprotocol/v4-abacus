@@ -41,7 +41,7 @@ class AsyncAbacusStateManager(
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
-) : AsyncAbacusStateManagerProtocol, AsyncAbacusStateManagerSingletonProtocol {
+) : SingletonAsyncAbacusStateManagerProtocol {
     init {
         if (appConfigs.enableLogger) {
             Logger.isDebugEnabled = true
