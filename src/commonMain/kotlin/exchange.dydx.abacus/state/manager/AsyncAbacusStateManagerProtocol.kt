@@ -40,7 +40,13 @@ interface AsyncAbacusStateManagerProtocol {
 
     // helper functions
     fun isMarketValid(marketId: String?): Boolean
-    fun transferStatus(hash: String, fromChainId: String?, toChainId: String?, isCctp: Boolean, requestId: String?)
+    fun transferStatus(
+        hash: String,
+        fromChainId: String?,
+        toChainId: String?,
+        isCctp: Boolean,
+        requestId: String?
+    )
 
     // Refresh some part of the state
     fun refresh(data: ApiData)
@@ -49,6 +55,7 @@ interface AsyncAbacusStateManagerProtocol {
     // these functions provide payload
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload?
     fun closePositionPayload(): HumanReadablePlaceOrderPayload?
+    fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload?
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload?
     fun depositPayload(): HumanReadableDepositPayload?
     fun withdrawPayload(): HumanReadableWithdrawPayload?
@@ -57,6 +64,7 @@ interface AsyncAbacusStateManagerProtocol {
     // Commit changes with input objects
     fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
     fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
+    fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload?
     fun stopWatchingLastOrder()
     fun commitTransfer(callback: TransactionCallback)
     fun commitCCTPWithdraw(callback: TransactionCallback)
@@ -81,6 +89,11 @@ interface AsyncAbacusStateManagerSingletonProtocol {
     var subaccountNumber: Int
     var market: String?
 }
+
+@JsExport
+interface SingletonAsyncAbacusStateManagerProtocol :
+    AsyncAbacusStateManagerProtocol,
+    AsyncAbacusStateManagerSingletonProtocol
 
 @JsExport
 fun AsyncAbacusStateManagerSingletonProtocol.setAddresses(

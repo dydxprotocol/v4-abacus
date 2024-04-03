@@ -1034,6 +1034,101 @@ class V4StateManagerAdaptor(
         return payload
     }
 
+    override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
+        val payloads = triggerOrdersPayload()
+
+        payloads.cancelOrderPayloads.forEach {
+            val string = Json.encodeToString(it)
+            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it, true)
+
+            val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
+
+            val transactionCallback =
+                { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                    val error = parseTransactionResponse(response)
+                    if (error == null) {
+                        tracking(
+                            AnalyticsEvent.TradeCancelOrder.rawValue,
+                            ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
+                                ?.toIMap(),
+                        )
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            this.orderCanceled(it.orderId)
+                            this.cancelOrderRecords.add(
+                                CancelOrderRecord(
+                                    subaccountNumber,
+                                    it.clientId,
+                                    submitTimeMs,
+                                ),
+                            )
+                        }
+                    }
+                    send(error, callback, it)
+                }
+
+            transactionQueue.enqueue(
+                TransactionParams(
+                    TransactionType.CancelOrder,
+                    string,
+                    transactionCallback,
+                    uiClickTimeMs,
+                ),
+            )
+        }
+
+        payloads.placeOrderPayloads.forEach {
+            val clientId = it.clientId
+            val string = Json.encodeToString(it)
+
+            val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+                it,
+                false,
+                true,
+            )
+
+            val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
+
+            lastOrderClientId = null
+
+            val transactionCallback =
+                { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                    val error = parseTransactionResponse(response)
+                    if (error == null) {
+                        tracking(
+                            AnalyticsEvent.TradePlaceOrder.rawValue,
+                            ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
+                                ?.toIMap(),
+                        )
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            this.placeOrderRecords.add(
+                                PlaceOrderRecord(
+                                    subaccountNumber,
+                                    clientId,
+                                    submitTimeMs,
+                                ),
+                            )
+                            lastOrderClientId = clientId
+                        }
+                    }
+                    send(error, callback, it)
+                }
+            transactionQueue.enqueue(
+                TransactionParams(
+                    TransactionType.PlaceOrder,
+                    string,
+                    transactionCallback,
+                    uiClickTimeMs,
+                ),
+            )
+        }
+
+        send(null, callback, payloads)
+
+        return payloads
+    }
+
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         val payload = closePositionPayload()
         val clientId = payload.clientId

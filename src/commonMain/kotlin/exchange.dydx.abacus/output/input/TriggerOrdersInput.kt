@@ -7,6 +7,34 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
+data class TriggerOrderInputSummary(
+    val price: Double?,
+) {
+    companion object {
+        internal fun create(
+            existing: TriggerOrderInputSummary?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
+        ): TriggerOrderInputSummary? {
+            Logger.d { "creating Trigger Order Input Summary\n" }
+
+            data?.let {
+                val price = parser.asDouble(data["price"])
+
+                return if (existing?.price != price) {
+                    TriggerOrderInputSummary(price)
+                } else {
+                    existing
+                }
+            }
+            Logger.d { "Trigger Order Input not valid\n" }
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class TriggerPrice(
     val limitPrice: Double?,
     val triggerPrice: Double?,
@@ -49,8 +77,11 @@ data class TriggerPrice(
 @JsExport
 @Serializable
 data class TriggerOrder(
+    val orderId: String?,
     val type: OrderType?,
+    val side: OrderSide?,
     val price: TriggerPrice?,
+    val summary: TriggerOrderInputSummary?,
 ) {
     companion object {
         internal fun create(
@@ -61,20 +92,32 @@ data class TriggerOrder(
             Logger.d { "creating Trigger Order\n" }
 
             data?.let {
+                val orderId = parser.asString(data["orderId"])
                 val type = parser.asString(data["type"])?.let {
                     OrderType.invoke(it)
+                }
+                val side = parser.asString(data["side"])?.let {
+                    OrderSide.invoke(it)
                 }
                 val price = TriggerPrice.create(
                     existing?.price,
                     parser,
                     parser.asMap(data["price"]),
                 )
+                val summary = TriggerOrderInputSummary.create(
+                    existing?.summary,
+                    parser,
+                    parser.asMap(data["summary"]),
+                )
 
                 return if (
+                    existing?.orderId != orderId ||
                     existing?.type != type ||
-                    existing?.price != price
+                    existing?.side != side ||
+                    existing?.price != price ||
+                    existing?.summary != summary
                 ) {
-                    TriggerOrder(type, price)
+                    TriggerOrder(orderId, type, side, price, summary)
                 } else {
                     existing
                 }

@@ -1919,7 +1919,7 @@ internal class AccountsChannelMock {
                     "type": "LIMIT",
                     "status": "OPEN",
                     "timeInForce": "GTT",
-                    "reduceOnly": false,
+                    "reduceOnly": true,
                     "orderFlags": "64",
                     "goodTilBlockTime": "2024-04-02T15:57:16.000Z",
                     "createdAtHeight": "8489771",
@@ -2006,16 +2006,16 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":119,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "subaccounts":{
-                 "address":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq",
+                 "address":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                  "subaccountNumber":0
               },
               "perpetualPositions":[
                  {
-                    "address":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq",
+                    "address":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "subaccountNumber":0,
                     "positionId":"1bb14a35-db8b-57c0-a39c-dc6b80b995e0",
                     "market":"ETH-USD",
@@ -2027,7 +2027,7 @@ internal class AccountsChannelMock {
               ],
               "assetPositions":[
                  {
-                    "address":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq",
+                    "address":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
@@ -2045,16 +2045,16 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":120,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "subaccounts":{
-                 "address":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq",
+                 "address":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                  "subaccountNumber":0
               },
               "perpetualPositions":[
                  {
-                    "address":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq",
+                    "address":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "subaccountNumber":0,
                     "positionId":"1bb14a35-db8b-57c0-a39c-dc6b80b995e0",
                     "market":"ETH-USD",
@@ -2066,7 +2066,7 @@ internal class AccountsChannelMock {
               ],
               "assetPositions":[
                  {
-                    "address":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq",
+                    "address":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
@@ -2084,7 +2084,7 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":121,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "orders":[
@@ -2152,7 +2152,7 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":122,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "orders":[
@@ -2202,7 +2202,7 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":156,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "orders":[
@@ -2228,7 +2228,7 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":157,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "orders":[
@@ -2253,7 +2253,7 @@ internal class AccountsChannelMock {
            "type":"channel_data",
            "connection_id":"f7a21cc6-4a9f-42d7-8bbd-215f11614571",
            "message_id":157,
-           "id":"cosmos140tmxre67zelczxz2fe7j0hnzm2jwrfrl8a7vq/0",
+           "id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
            "channel":"v4_subaccounts",
            "contents":{
               "orders":[
