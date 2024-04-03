@@ -184,18 +184,23 @@ internal class TriggerOrdersInputValidator(
             equityTier?.nextLevelRequiredTotalNetCollateralUSD
         val numOrders = orderCount(subaccount)
         var numOrdersToCreate = 0
+        var numOrdersToCancel = 0
 
         if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") != null && parser.value(triggerOrders, "stopLossOrder.orderId") == null) {
             numOrdersToCreate += 1
+        } else if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") == null && parser.value(triggerOrders, "stopLossOrder.orderId") != null) {
+            numOrdersToCancel += 1
         }
         if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") != null && parser.value(triggerOrders, "takeProfitOrder.orderId") == null) {
             numOrdersToCreate += 1
+        } else if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") == null && parser.value(triggerOrders, "takeProfitOrder.orderId") != null) {
+            numOrdersToCancel += 1
         }
 
         val documentation = environment?.links?.documentation
         val link = if (documentation != null) "$documentation/trading/other_limits" else null
 
-        return if ((numOrders + numOrdersToCreate) > equityTierLimit) {
+        return if ((numOrders + numOrdersToCreate - numOrdersToCancel) > equityTierLimit) {
             listOf(
                 if (nextLevelRequiredTotalNetCollateralUSD != null) {
                     error(
