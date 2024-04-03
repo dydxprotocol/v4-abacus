@@ -31,7 +31,8 @@ class NotificationsProvider(
     private val uiImplementations: UIImplementations,
     private val environment: V4Environment,
     private val parser: ParserProtocol,
-    private val jsonEncoder: JsonEncoder
+    private val jsonEncoder: JsonEncoder,
+    private val useParentSubaccount: Boolean = false,
 ) {
     internal fun buildNotifications(
         stateMachine: TradingStateMachine,
@@ -412,7 +413,11 @@ class NotificationsProvider(
         val positions = parser.asMap(
             parser.value(
                 stateMachine.data,
-                "wallet.account.subaccounts.$subaccountNumber.positions",
+                if (useParentSubaccount) {
+                    "wallet.account.groupedSubaccounts.$subaccountNumber.positions"
+                } else {
+                    "wallet.account.subaccounts.$subaccountNumber.positions"
+                },
             ),
         )
 
@@ -469,8 +474,7 @@ class NotificationsProvider(
         2. Order doesn't have an average filled price
          */
         val notifications = mutableMapOf<String, Notification>()
-        val subaccount =
-            stateMachine.state?.subaccount(subaccountNumber) ?: return kollections.iMapOf()
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return kollections.iMapOf()
         subaccount.orders
 
         val subaccountOrders = subaccount.orders

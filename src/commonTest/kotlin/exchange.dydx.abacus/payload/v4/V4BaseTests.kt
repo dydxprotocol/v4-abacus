@@ -22,13 +22,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-open class V4BaseTests : BaseTests(127) {
+open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, useParentSubaccount) {
     internal val testWsUrl =
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
-    override fun createState(): PerpTradingStateMachine {
-        return PerpTradingStateMachine(mock.v4Environment, null, null, 127)
+    override fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
+        return PerpTradingStateMachine(mock.v4Environment, null, null, 127, useParentSubaccount)
     }
 
     internal open fun loadMarkets(): StateResponse {

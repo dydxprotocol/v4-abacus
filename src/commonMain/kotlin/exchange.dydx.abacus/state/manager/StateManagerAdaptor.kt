@@ -118,6 +118,7 @@ open class StateManagerAdaptor(
         uiImplementations.localizer,
         Formatter(uiImplementations.formatter),
         127,
+        false,
     )
 
     internal var indexerConfig: IndexerURIs?
