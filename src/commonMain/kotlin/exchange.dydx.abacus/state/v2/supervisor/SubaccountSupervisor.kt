@@ -56,6 +56,7 @@ import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
@@ -784,6 +785,19 @@ internal class SubaccountSupervisor(
         return payload
     }
 
+    private fun isShortTermOrder(type: OrderType, timeInForce: String?): Boolean {
+        return when (type) {
+             OrderType.market -> true
+             OrderType.limit -> {
+                 when (timeInForce) {
+                     "GTT" -> false
+                     else -> true
+                 }
+             }
+             else -> false
+         }
+     }
+
     @Throws(Exception::class)
     fun placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {
         val trade = stateMachine.state?.input?.trade
@@ -829,6 +843,9 @@ internal class SubaccountSupervisor(
                 )
             )?.toInt()
 
+        val goodTilBlock =
+            if (isShortTermOrder(trade.type, trade.timeInForce)) currentHeight?.plus(SHORT_TERM_ORDER_DURATION) else null
+
         val marketInfo = marketInfo(marketId)
 
         val subaccountNumberForOrder = if (marginMode == "ISOLATED") {
@@ -851,6 +868,7 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
@@ -982,6 +1000,7 @@ internal class SubaccountSupervisor(
         val reduceOnly = helper.environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
@@ -997,6 +1016,7 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
