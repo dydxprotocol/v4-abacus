@@ -52,6 +52,7 @@ data class HumanReadablePlaceOrderPayload(
     val timeInForce: String?,
     val execution: String?,
     val goodTilTimeInSeconds: Int?,
+    val goodTilBlock: Int?,
     val marketInfo: PlaceOrderMarketInfo? = null,
     val currentHeight: Int? = null,
 )
@@ -66,6 +67,13 @@ data class HumanReadableCancelOrderPayload(
     val clobPairId: Int,
     val goodTilBlock: Int?,
     val goodTilBlockTime: Int?,
+)
+
+@JsExport
+@Serializable
+data class HumanReadableTriggerOrdersPayload(
+    val placeOrderPayloads: List<HumanReadablePlaceOrderPayload>,
+    val cancelOrderPayloads: List<HumanReadableCancelOrderPayload>,
 )
 
 @JsExport

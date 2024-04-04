@@ -24,6 +24,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NetworkState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
@@ -52,6 +53,7 @@ import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
+import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.depositPayload
 import exchange.dydx.abacus.state.v2.supervisor.faucet
@@ -67,6 +69,7 @@ import exchange.dydx.abacus.state.v2.supervisor.subaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.subaccountTransferPayload
 import exchange.dydx.abacus.state.v2.supervisor.trade
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
+import exchange.dydx.abacus.state.v2.supervisor.triggerOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
@@ -439,6 +442,10 @@ internal class StateManagerAdaptorV2(
         return accounts.cancelOrderPayload(orderId)
     }
 
+    internal fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
+        return accounts.triggerOrdersPayload(currentHeight)
+    }
+
     internal fun depositPayload(): HumanReadableDepositPayload? {
         return accounts.depositPayload()
     }
@@ -453,6 +460,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return accounts.commitPlaceOrder(currentHeight, callback)
+    }
+
+    internal fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
+        return accounts.commitTriggerOrders(currentHeight, callback)
     }
 
     internal fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {

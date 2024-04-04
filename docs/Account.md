@@ -237,7 +237,8 @@ An array of [SubaccountOrder](#SubaccountOrder)
 
 # SubaccountOrder
 
-data class SubaccountOrder(  
+data class SubaccountOrder(
+&emsp;val subaccountNumber: Int,
 &emsp;val id: String,  
 &emsp;val clientId: Int?,  
 &emsp;val type: OrderType,  
@@ -260,6 +261,10 @@ data class SubaccountOrder(
 &emsp;val cancelReason: String?,  
 &emsp;val resources: [SubaccountOrderResources](#SubaccountOrderResources)  
 )
+
+## subaccountNumber
+
+The subaccount number that placed the order
 
 ## id
 
