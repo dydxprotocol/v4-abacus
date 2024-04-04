@@ -65,7 +65,9 @@ data class PerpetualState(
     }
 
     fun subaccount(subaccountNumber: Int): Subaccount? {
-        return account?.subaccounts?.get("$subaccountNumber")
+        // if useParentSubaccount is false in SubaccountConfigs, groupedSubaccounts will be null
+        return account?.groupedSubaccounts?.get("$subaccountNumber")
+            ?: account?.subaccounts?.get("$subaccountNumber")
     }
 
     fun subaccountHistoricalPnl(subaccountNumber: Int): IList<SubaccountHistoricalPNL>? {

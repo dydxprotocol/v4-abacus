@@ -4,6 +4,8 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.TradeInputGoodUntil
+import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -24,6 +26,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
@@ -53,6 +56,7 @@ import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
@@ -76,6 +80,9 @@ internal class SubaccountSupervisor(
     private val accountAddress: String,
     internal val subaccountNumber: Int
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
+    @Suppress("LocalVariableName", "PropertyName")
+    private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
+
     /*
     Because faucet is done at subaccount level, we need SubaccountSupervisor even
     before the subaccount is realized on protocol/indexer.
@@ -143,6 +150,7 @@ internal class SubaccountSupervisor(
         helper.environment,
         helper.parser,
         helper.jsonEncoder,
+        configs.useParentSubaccount,
     )
 
     internal var notifications: IMap<String, Notification> = iMapOf()
@@ -407,7 +415,7 @@ internal class SubaccountSupervisor(
         }
     }
 
-    fun cancelOrder(orderId: String, callback: TransactionCallback) {
+    fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val string = Json.encodeToString(payload)
         val analyticsPayload = analyticsUtils.formatCancelOrderPayload(payload)
@@ -455,6 +463,8 @@ internal class SubaccountSupervisor(
                 ),
             )
         }
+
+        return payload
     }
 
     /**
@@ -642,6 +652,91 @@ internal class SubaccountSupervisor(
         return payload
     }
 
+    internal fun commitTriggerOrders(
+        currentHeight: Int?,
+        callback: TransactionCallback
+    ): HumanReadableTriggerOrdersPayload {
+        val payloads = triggerOrdersPayload(currentHeight)
+
+        payloads.cancelOrderPayloads.forEach { orderPayload ->
+            val string = Json.encodeToString(orderPayload)
+            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(orderPayload, true)
+
+            val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
+
+            val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradeCancelOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
+                    )
+                    helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.orderCanceled(orderPayload.orderId)
+                        this.cancelOrderRecords.add(
+                            CancelOrderRecord(
+                                subaccountNumber,
+                                orderPayload.clientId,
+                                submitTimeMs,
+                            ),
+                        )
+                    }
+                }
+                helper.send(error, callback, HumanReadableTriggerOrdersPayload(emptyList(), listOf(orderPayload)))
+            }
+
+            transactionQueue.enqueue(
+                TransactionParams(TransactionType.CancelOrder, string, transactionCallback, uiClickTimeMs),
+            )
+        }
+
+        payloads.placeOrderPayloads.forEach { orderPayload ->
+            val clientId = orderPayload.clientId
+            val string = Json.encodeToString(orderPayload)
+
+            val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
+                orderPayload,
+                false,
+                true,
+            )
+
+            val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
+            tracking(AnalyticsEvent.TradePlaceOrderClick.rawValue, analyticsPayload)
+
+            lastOrderClientId = null
+
+            val transactionCallback = { response: String?, uiDelayTimeMs: Double, submitTimeMs: Double ->
+                val error = parseTransactionResponse(response)
+                if (error == null) {
+                    tracking(
+                        AnalyticsEvent.TradePlaceOrder.rawValue,
+                        ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
+                    )
+                    helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                        this.placeOrderRecords.add(
+                            PlaceOrderRecord(
+                                subaccountNumber,
+                                orderPayload.clientId,
+                                submitTimeMs,
+                            ),
+                        )
+                        lastOrderClientId = clientId
+                    }
+                }
+                helper.send(error, callback, HumanReadableTriggerOrdersPayload(listOf(orderPayload), emptyList()))
+            }
+
+            transactionQueue.enqueue(
+                TransactionParams(TransactionType.PlaceOrder, string, transactionCallback, uiClickTimeMs),
+            )
+        }
+
+        helper.send(null, callback, payloads)
+
+        return payloads
+    }
+
     internal fun stopWatchingLastOrder() {
         lastOrderClientId = null
     }
@@ -690,6 +785,19 @@ internal class SubaccountSupervisor(
         return payload
     }
 
+    private fun isShortTermOrder(type: OrderType, timeInForce: String?): Boolean {
+        return when (type) {
+             OrderType.market -> true
+             OrderType.limit -> {
+                 when (timeInForce) {
+                     "GTT" -> false
+                     else -> true
+                 }
+             }
+             else -> false
+         }
+     }
+
     @Throws(Exception::class)
     fun placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {
         val trade = stateMachine.state?.input?.trade
@@ -735,6 +843,9 @@ internal class SubaccountSupervisor(
                 )
             )?.toInt()
 
+        val goodTilBlock =
+            if (isShortTermOrder(trade.type, trade.timeInForce)) currentHeight?.plus(SHORT_TERM_ORDER_DURATION) else null
+
         val marketInfo = marketInfo(marketId)
 
         val subaccountNumberForOrder = if (marginMode == "ISOLATED") {
@@ -757,9 +868,124 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
+    }
+
+    private fun triggerOrderPayload(triggerOrder: TriggerOrder, marketId: String, currentHeight: Int?): HumanReadablePlaceOrderPayload {
+        val clientId = Random.nextInt(0, Int.MAX_VALUE)
+        val type = triggerOrder.type?.rawValue ?: throw Exception("type is null")
+        val side = triggerOrder.side?.rawValue ?: throw Exception("side is null")
+        val size = triggerOrder.summary?.size ?: throw Exception("size is null")
+
+        val price = triggerOrder.summary?.price ?: throw Exception("summary.price is null")
+        val triggerPrice = triggerOrder.price?.triggerPrice ?: throw Exception("triggerPrice is null")
+
+        val reduceOnly = true
+        val postOnly = false
+
+        val timeInForce = when (triggerOrder.type) {
+            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
+            OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
+            else -> throw Exception("invalid triggerOrderType")
+        }
+
+        val execution = when (triggerOrder.type) {
+            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
+            OrderType.stopLimit, OrderType.takeProfitLimit -> "Default"
+            else -> throw Exception("invalid triggerOrderType")
+        }
+
+        val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
+        val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
+        val goodTilBlock = null
+
+        val marketInfo = marketInfo(marketId)
+
+        return HumanReadablePlaceOrderPayload(
+            subaccountNumber,
+            marketId,
+            clientId,
+            type,
+            side,
+            price,
+            triggerPrice,
+            size,
+            reduceOnly,
+            postOnly,
+            timeInForce,
+            execution,
+            goodTilTimeInSeconds,
+            goodTilBlock,
+            marketInfo,
+            currentHeight,
+        )
+    }
+
+    private fun isTriggerOrderEqualToExistingOrder(triggerOrder: TriggerOrder, existingOrder: SubaccountOrder): Boolean {
+        val limitPriceCheck = when (triggerOrder.type) {
+            OrderType.stopLimit, OrderType.takeProfitLimit -> triggerOrder.price?.limitPrice == existingOrder.price
+            else -> true
+        }
+        val size = triggerOrder.summary?.size
+
+        return size == existingOrder.size &&
+            triggerOrder.type == existingOrder.type &&
+            triggerOrder.side == existingOrder.side &&
+            triggerOrder.price?.triggerPrice == existingOrder.triggerPrice &&
+            limitPriceCheck
+    }
+
+    @Throws(Exception::class)
+    fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload {
+        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
+        val triggerOrders = stateMachine.state?.input?.triggerOrders
+
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
+
+        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
+
+        fun updateTriggerOrder(triggerOrder: TriggerOrder) {
+            // Cases
+            // 1. Existing order -> update
+            // 2. Existing order -> nothing should be done
+            // 3. Existing order -> should delete
+            // 4. No existing order -> create a new one
+            // 5. No existing order -> nothing should be done
+
+            if (triggerOrder.orderId != null) {
+                val existingOrder = subaccount.orders?.firstOrNull { it.id == triggerOrder.orderId }
+                    ?: throw Exception("order is null")
+                if (triggerOrder.price?.triggerPrice != null) {
+                    if (!isTriggerOrderEqualToExistingOrder(triggerOrder, existingOrder)) {
+                        // (1) Existing order -> update
+                        cancelOrderPayloads.add(cancelOrderPayload(triggerOrder.orderId))
+                        placeOrderPayloads.add(triggerOrderPayload(triggerOrder, marketId, currentHeight))
+                    } // (2) Existing order -> nothing changed
+                } else {
+                    // (3) Existing order -> should delete
+                    cancelOrderPayloads.add(cancelOrderPayload(triggerOrder.orderId))
+                }
+            } else {
+                if (triggerOrder.price?.triggerPrice != null) {
+                    // (4) No existing order -> create a new one
+                    placeOrderPayloads.add(triggerOrderPayload(triggerOrder, marketId, currentHeight))
+                } // (5)
+            }
+        }
+
+        if (triggerOrders.stopLossOrder != null) {
+            updateTriggerOrder(triggerOrders.stopLossOrder)
+        }
+
+        if (triggerOrders.takeProfitOrder != null) {
+            updateTriggerOrder(triggerOrders.takeProfitOrder)
+        }
+
+        return HumanReadableTriggerOrdersPayload(placeOrderPayloads, cancelOrderPayloads)
     }
 
     @Throws(Exception::class)
@@ -776,6 +1002,7 @@ internal class SubaccountSupervisor(
         val reduceOnly = helper.environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
@@ -791,6 +1018,7 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
@@ -819,14 +1047,15 @@ internal class SubaccountSupervisor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
-        val clientId = order.clientId ?: throw Exception("clientId is null")
-        val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
-        val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
+        val clientId = order.clientId ?: error("clientId is null")
+        val orderFlags = order.orderFlags ?: error("orderFlags is null")
+        val clobPairId = order.clobPairId ?: error("clobPairId is null")
+        val orderSubaccountNumber = order.subaccountNumber ?: error("order subaccountNumber is null")
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
 
         return HumanReadableCancelOrderPayload(
-            subaccountNumber,
+            orderSubaccountNumber,
             orderId,
             clientId,
             orderFlags,

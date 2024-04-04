@@ -13,7 +13,7 @@ Selected Market ID
 
 ## size
 
-Optional size input which overrides the sizes of both the existing take profit and stop loss orders (if non-null).
+Optional size input which overrides the sizes of both the existing take profit and stop loss order sizes (if non-null).
 
 ## stopLossOrder
 
@@ -27,14 +27,20 @@ Take profit order for the position
 
 data class TriggerOrderInput(  
 &emsp;val orderId: String?,  
+&emsp;val size: Double?,
 &emsp;val type: OrderType?,  
 &emsp;val side: Side?,  
 &emsp;val price: [TriggerPrice](#TriggerPrice)?  
+&emsp;val summary: [TriggerOrderInputSummary](#TriggerOrderInputSummary)?  
 )
 
 ## orderId
 
 The associated order ID, if the order already exists
+
+## size
+
+Size of order
 
 ## type
 
@@ -47,6 +53,10 @@ BUY or SELL
 ## price
 
 Price information for the order
+
+## summary
+
+A summary of the order
 
 # TriggerPrice
 
@@ -77,3 +87,18 @@ Usdc price difference of the trigger price relative to the position's average en
 ## input
 
 The price field last modified by the user: triggerPrice, percentDiff, usdcDiff
+
+# TriggerOrderInputSummary
+
+data class TriggerOrderInputSummary(  
+&emsp;val price: Double?  
+&emsp;val size: Double?  
+)
+
+## price
+
+Price of the order
+
+## price
+
+Size of the order

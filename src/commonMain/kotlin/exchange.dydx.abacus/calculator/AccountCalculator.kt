@@ -2,10 +2,11 @@ package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-class AccountCalculator(val parser: ParserProtocol) {
+class AccountCalculator(val parser: ParserProtocol, private val useParentSubaccount: Boolean) {
     private val subaccountCalculator = SubaccountCalculator(parser)
 
     internal fun calculate(
@@ -35,7 +36,9 @@ class AccountCalculator(val parser: ParserProtocol) {
                     )
                 }
             }
-            modified = groupSubaccounts(modified, markets)
+            if (useParentSubaccount) {
+                modified = groupSubaccounts(modified, markets)
+            }
             modified
         } else {
             null
@@ -90,6 +93,7 @@ class AccountCalculator(val parser: ParserProtocol) {
                             parentSubaccount
                         }
                     }
+                    parentSubaccount = mergeOrders(parentSubaccount, subaccount)
                     parentSubaccount = sumEquity(parentSubaccount, subaccount)
                     groupedSubaccounts["$parentSubaccountNumber"] = parentSubaccount
                 }
@@ -144,6 +148,7 @@ class AccountCalculator(val parser: ParserProtocol) {
         // Each empty subaccount should have order for one market only
         // Just in case it has more than one market, we will create
         // two separate pending positions.
+
         val pendingByMarketId = mutableMapOf<String, Any>()
         for ((orderId, order) in childOrders) {
             val marketId =
@@ -202,6 +207,28 @@ class AccountCalculator(val parser: ParserProtocol) {
                     0
                 }
             },
+        )
+        return modifiedParentSubaccount
+    }
+
+    private fun mergeOrders(
+        parentSubaccount: Map<String, Any>,
+        childSubaccount: Map<String, Any>,
+    ): Map<String, Any> {
+        // Each empty subaccount should have order for one market only
+        // Just in case it has more than one market, we will create
+        // two separate pending positions.
+
+        val mergedOrders = ParsingHelper.merge(parser.asNativeMap(
+            parser.value(parentSubaccount, "orders"),
+        ), parser.asNativeMap(
+            parser.value(childSubaccount, "orders"),
+        ))
+
+        val modifiedParentSubaccount = parentSubaccount.toMutableMap()
+        modifiedParentSubaccount.safeSet(
+            "orders",
+            mergedOrders,
         )
         return modifiedParentSubaccount
     }

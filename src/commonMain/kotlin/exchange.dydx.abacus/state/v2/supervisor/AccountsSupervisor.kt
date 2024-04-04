@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -256,6 +257,10 @@ internal fun AccountsSupervisor.closePositionPayload(currentHeight: Int?): Human
     return account?.closePositionPayload(currentHeight)
 }
 
+internal fun AccountsSupervisor.triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload? {
+    return account?.triggerOrdersPayload(currentHeight)
+}
+
 internal fun AccountsSupervisor.cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
     return account?.cancelOrderPayload(orderId)
 }
@@ -277,6 +282,13 @@ internal fun AccountsSupervisor.commitPlaceOrder(
     callback: TransactionCallback
 ): HumanReadablePlaceOrderPayload? {
     return account?.commitPlaceOrder(currentHeight, callback)
+}
+
+internal fun AccountsSupervisor.commitTriggerOrders(
+    currentHeight: Int?,
+    callback: TransactionCallback
+): HumanReadableTriggerOrdersPayload? {
+    return account?.commitTriggerOrders(currentHeight, callback)
 }
 
 internal fun AccountsSupervisor.commitClosePosition(

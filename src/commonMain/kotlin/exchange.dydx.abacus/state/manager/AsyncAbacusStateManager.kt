@@ -41,7 +41,7 @@ class AsyncAbacusStateManager(
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
     val dataNotification: DataNotificationProtocol? = null
-) : AsyncAbacusStateManagerProtocol, AsyncAbacusStateManagerSingletonProtocol {
+) : SingletonAsyncAbacusStateManagerProtocol {
     init {
         if (appConfigs.enableLogger) {
             Logger.isDebugEnabled = true
@@ -432,6 +432,10 @@ class AsyncAbacusStateManager(
         return adaptor?.cancelOrderPayload(orderId)
     }
 
+    override fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
+        return adaptor?.triggerOrdersPayload()
+    }
+
     override fun depositPayload(): HumanReadableDepositPayload? {
         return adaptor?.depositPayload()
     }
@@ -457,6 +461,16 @@ class AsyncAbacusStateManager(
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return try {
             adaptor?.commitClosePosition(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+            null
+        }
+    }
+
+    override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
+        return try {
+            adaptor?.commitTriggerOrders(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)

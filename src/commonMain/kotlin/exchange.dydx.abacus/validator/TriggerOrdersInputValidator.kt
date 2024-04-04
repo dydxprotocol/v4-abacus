@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Rounder
+import exchange.dydx.abacus.utils.Logger
 
 internal data class EquityTier(
     val requiredTotalNetCollateralUSD: Double,
@@ -68,6 +69,7 @@ internal class TriggerOrdersInputValidator(
             val takeProfitError = if (takeProfitOrder != null) {
                 validateTriggerOrder(
                     takeProfitOrder,
+                    market,
                     oraclePrice,
                     tickSize,
                 )
@@ -82,6 +84,7 @@ internal class TriggerOrdersInputValidator(
             val stopLossError = if (stopLossOrder != null) {
                 validateTriggerOrder(
                     stopLossOrder,
+                    market,
                     oraclePrice,
                     tickSize,
                 )
@@ -112,20 +115,19 @@ internal class TriggerOrdersInputValidator(
              */
             triggerErrors.addAll(it)
         }
-
-        validateSize(triggerOrders, market)?.let {
+        validateSize(parser.asDouble(triggerOrders["size"]), market)?.let {
             /*
                 AMOUNT_INPUT_STEP_SIZE
                 ORDER_SIZE_BELOW_MIN_SIZE
              */
             triggerErrors.addAll(it)
         }
-
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
     private fun validateTriggerOrder(
         triggerOrder: Map<String, Any>,
+        market: Map<String, Any>?,
         oraclePrice: Double,
         tickSize: String,
     ): MutableList<Any>? {
@@ -134,6 +136,13 @@ internal class TriggerOrdersInputValidator(
         validateRequiredInput(triggerOrder)?.let {
             /*
                 REQUIRED_TRIGGER_PRICE
+             */
+            triggerErrors.addAll(it)
+        }
+        validateSize(parser.asDouble(parser.value(triggerOrder, "summary.size")), market)?.let {
+            /*
+                AMOUNT_INPUT_STEP_SIZE
+                ORDER_SIZE_BELOW_MIN_SIZE
              */
             triggerErrors.addAll(it)
         }
@@ -151,7 +160,12 @@ internal class TriggerOrdersInputValidator(
              */
             triggerErrors.addAll(it)
         }
-
+        validateCalculatedPricesPositive(triggerOrder)?.let {
+            /*
+                TODO: CT-704 add error strings
+             */
+            triggerErrors.addAll(it)
+        }
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
@@ -170,18 +184,23 @@ internal class TriggerOrdersInputValidator(
             equityTier?.nextLevelRequiredTotalNetCollateralUSD
         val numOrders = orderCount(subaccount)
         var numOrdersToCreate = 0
+        var numOrdersToCancel = 0
 
-        if (triggerOrders["stopLossOrder"] != null && parser.value(triggerOrders, "stopLossOrder.orderId") == null) {
+        if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") != null && parser.value(triggerOrders, "stopLossOrder.orderId") == null) {
             numOrdersToCreate += 1
+        } else if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") == null && parser.value(triggerOrders, "stopLossOrder.orderId") != null) {
+            numOrdersToCancel += 1
         }
-        if (triggerOrders["takeProfitOrder"] != null && parser.value(triggerOrders, "takeProfitOrder.orderId") == null) {
+        if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") != null && parser.value(triggerOrders, "takeProfitOrder.orderId") == null) {
             numOrdersToCreate += 1
+        } else if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") == null && parser.value(triggerOrders, "takeProfitOrder.orderId") != null) {
+            numOrdersToCancel += 1
         }
 
         val documentation = environment?.links?.documentation
         val link = if (documentation != null) "$documentation/trading/other_limits" else null
 
-        return if ((numOrders + numOrdersToCreate) > equityTierLimit) {
+        return if ((numOrders + numOrdersToCreate - numOrdersToCancel) > equityTierLimit) {
             listOf(
                 if (nextLevelRequiredTotalNetCollateralUSD != null) {
                     error(
@@ -320,6 +339,27 @@ internal class TriggerOrdersInputValidator(
         return if (errors.size > 0) errors else null
     }
 
+    private fun validateCalculatedPricesPositive(
+        triggerOrder: Map<String, Any>,
+    ): List<Any>? {
+        val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
+        val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
+
+        if (triggerPrice != null && triggerPrice <= 0 || (limitPrice != null && limitPrice <= 0)) {
+            return listOf(
+                error(
+                    "ERROR",
+                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE", // TODO: CT-704 fix with proper error strings
+                    listOf("price.triggerPrice"),
+                    "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                    "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                    "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                ),
+            )
+        }
+        return null
+    }
+
     private fun validateTriggerPrice(
         triggerOrder: Map<String, Any>,
         oraclePrice: Double,
@@ -405,12 +445,12 @@ internal class TriggerOrdersInputValidator(
     }
 
     private fun validateSize(
-        triggerOrders: Map<String, Any>,
+        orderSize: Double?,
         market: Map<String, Any>?,
     ): List<Any>? {
         val symbol = parser.asString(market?.get("assetId")) ?: return null
 
-        parser.asDouble(triggerOrders["size"])?.let { size ->
+        orderSize?.let { size ->
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
                 val errors = mutableListOf<Map<String, Any>>()
 
