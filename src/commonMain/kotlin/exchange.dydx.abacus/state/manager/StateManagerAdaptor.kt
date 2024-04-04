@@ -70,6 +70,7 @@ import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
@@ -1879,6 +1880,20 @@ open class StateManagerAdaptor(
         )
     }
 
+    private fun isShortTermOrder(type: OrderType, timeInForce: String?): Boolean {
+        return when (type) {
+            OrderType.market -> true
+            OrderType.limit -> {
+                when (timeInForce) {
+                    "GTT" -> false
+                    else -> true
+                }
+            }
+
+            else -> false
+        }
+    }
+
     @Throws(Exception::class)
     fun placeOrderPayload(): HumanReadablePlaceOrderPayload {
         val subaccountNumber =
@@ -1926,6 +1941,12 @@ open class StateManagerAdaptor(
 
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
+
+        val goodTilBlock =
+            if (isShortTermOrder(trade.type, trade.timeInForce)) currentHeight?.plus(
+                SHORT_TERM_ORDER_DURATION
+            ) else null
+
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1940,6 +1961,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
@@ -1973,6 +1995,9 @@ open class StateManagerAdaptor(
         val reduceOnly = environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
+        val currentHeight = calculateCurrentHeight()
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
+
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1987,6 +2012,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock
         )
     }
 
