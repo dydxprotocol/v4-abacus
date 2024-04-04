@@ -682,7 +682,7 @@ internal class SubaccountSupervisor(
                         )
                     }
                 }
-                helper.send(error, callback, it)
+                helper.send(error, callback, HumanReadableTriggerOrdersPayload(emptyList(), listOf(it)))
             }
 
             transactionQueue.enqueue(
@@ -723,7 +723,7 @@ internal class SubaccountSupervisor(
                         lastOrderClientId = clientId
                     }
                 }
-                helper.send(error, callback, it)
+                helper.send(error, callback, HumanReadableTriggerOrdersPayload(listOf(it), emptyList()))
             }
 
             transactionQueue.enqueue(

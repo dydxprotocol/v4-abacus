@@ -1064,7 +1064,7 @@ class V4StateManagerAdaptor(
                             )
                         }
                     }
-                    send(error, callback, it)
+                    send(error, callback, HumanReadableTriggerOrdersPayload(emptyList(), listOf(it)))
                 }
 
             transactionQueue.enqueue(
@@ -1112,7 +1112,7 @@ class V4StateManagerAdaptor(
                             lastOrderClientId = clientId
                         }
                     }
-                    send(error, callback, it)
+                    send(error, callback, HumanReadableTriggerOrdersPayload(listOf(it), emptyList()))
                 }
             transactionQueue.enqueue(
                 TransactionParams(
