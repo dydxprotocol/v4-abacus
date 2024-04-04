@@ -1037,9 +1037,9 @@ class V4StateManagerAdaptor(
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         val payloads = triggerOrdersPayload()
 
-        payloads.cancelOrderPayloads.forEach {
-            val string = Json.encodeToString(it)
-            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it, true)
+        payloads.cancelOrderPayloads.forEach { orderPayload ->
+            val string = Json.encodeToString(orderPayload)
+            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(orderPayload, true)
 
             val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
@@ -1054,17 +1054,17 @@ class V4StateManagerAdaptor(
                                 ?.toIMap(),
                         )
                         ioImplementations.threading?.async(ThreadingType.abacus) {
-                            this.orderCanceled(it.orderId)
+                            this.orderCanceled(orderPayload.orderId)
                             this.cancelOrderRecords.add(
                                 CancelOrderRecord(
                                     subaccountNumber,
-                                    it.clientId,
+                                    orderPayload.clientId,
                                     submitTimeMs,
                                 ),
                             )
                         }
                     }
-                    send(error, callback, it)
+                    send(error, callback, HumanReadableTriggerOrdersPayload(emptyList(), listOf(orderPayload)))
                 }
 
             transactionQueue.enqueue(
@@ -1077,12 +1077,12 @@ class V4StateManagerAdaptor(
             )
         }
 
-        payloads.placeOrderPayloads.forEach {
-            val clientId = it.clientId
-            val string = Json.encodeToString(it)
+        payloads.placeOrderPayloads.forEach { orderPayload ->
+            val clientId = orderPayload.clientId
+            val string = Json.encodeToString(orderPayload)
 
             val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
-                it,
+                orderPayload,
                 false,
                 true,
             )
@@ -1112,7 +1112,7 @@ class V4StateManagerAdaptor(
                             lastOrderClientId = clientId
                         }
                     }
-                    send(error, callback, it)
+                    send(error, callback, HumanReadableTriggerOrdersPayload(listOf(orderPayload), emptyList()))
                 }
             transactionQueue.enqueue(
                 TransactionParams(

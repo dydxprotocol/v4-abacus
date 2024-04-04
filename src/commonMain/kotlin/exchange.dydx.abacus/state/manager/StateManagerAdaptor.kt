@@ -70,6 +70,7 @@ import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
@@ -1762,10 +1763,11 @@ open class StateManagerAdaptor(
         return null
     }
 
-    private fun triggerOrderPayload(triggerOrder: TriggerOrder, subaccountNumber: Int, marketId: String, size: Double): HumanReadablePlaceOrderPayload {
+    private fun triggerOrderPayload(triggerOrder: TriggerOrder, subaccountNumber: Int, marketId: String): HumanReadablePlaceOrderPayload {
         val clientId = Random.nextInt(0, Int.MAX_VALUE)
         val type = triggerOrder.type?.rawValue ?: throw Exception("type is null")
         val side = triggerOrder.side?.rawValue ?: throw Exception("side is null")
+        val size = triggerOrder.summary?.size ?: throw Exception("size is null")
 
         val price = triggerOrder.summary?.price ?: throw Exception("summary.price is null")
         val triggerPrice = triggerOrder.price?.triggerPrice ?: throw Exception("triggerPrice is null")
@@ -1787,6 +1789,7 @@ open class StateManagerAdaptor(
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
+        val goodTilBlock = null
 
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
@@ -1805,16 +1808,19 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
     }
 
-    private fun isTriggerOrderEqualToExistingOrder(triggerOrder: TriggerOrder, existingOrder: SubaccountOrder, size: Double): Boolean {
+    private fun isTriggerOrderEqualToExistingOrder(triggerOrder: TriggerOrder, existingOrder: SubaccountOrder): Boolean {
         val limitPriceCheck = when (triggerOrder.type) {
             OrderType.stopLimit, OrderType.takeProfitLimit -> triggerOrder.price?.limitPrice == existingOrder.price
             else -> true
         }
+        val size = triggerOrder.summary?.size
+
         return size == existingOrder.size &&
             triggerOrder.type == existingOrder.type &&
             triggerOrder.side == existingOrder.side &&
@@ -1832,7 +1838,6 @@ open class StateManagerAdaptor(
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
 
         val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
-        val size = triggerOrders.size ?: throw Exception("size is null")
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -1846,10 +1851,10 @@ open class StateManagerAdaptor(
                 val existingOrder = subaccount.orders?.firstOrNull { it.id == triggerOrder.orderId }
                     ?: throw Exception("order is null")
                 if (triggerOrder.price?.triggerPrice != null) {
-                    if (!isTriggerOrderEqualToExistingOrder(triggerOrder, existingOrder, size)) {
+                    if (!isTriggerOrderEqualToExistingOrder(triggerOrder, existingOrder)) {
                         // (1) Existing order -> update
                         cancelOrderPayloads.add(cancelOrderPayload(triggerOrder.orderId))
-                        placeOrderPayloads.add(triggerOrderPayload(triggerOrder, subaccountNumber, marketId, size))
+                        placeOrderPayloads.add(triggerOrderPayload(triggerOrder, subaccountNumber, marketId))
                     } // (2) Existing order -> nothing changed
                 } else {
                     // (3) Existing order -> should delete
@@ -1858,7 +1863,7 @@ open class StateManagerAdaptor(
             } else {
                 if (triggerOrder.price?.triggerPrice != null) {
                     // (4) No existing order -> create a new one
-                    placeOrderPayloads.add(triggerOrderPayload(triggerOrder, subaccountNumber, marketId, size))
+                    placeOrderPayloads.add(triggerOrderPayload(triggerOrder, subaccountNumber, marketId))
                 } // (5)
             }
         }
@@ -1875,6 +1880,20 @@ open class StateManagerAdaptor(
             placeOrderPayloads,
             cancelOrderPayloads,
         )
+    }
+
+    private fun isShortTermOrder(type: OrderType, timeInForce: String?): Boolean {
+        return when (type) {
+            OrderType.market -> true
+            OrderType.limit -> {
+                when (timeInForce) {
+                    "GTT" -> false
+                    else -> true
+                }
+            }
+
+            else -> false
+        }
     }
 
     @Throws(Exception::class)
@@ -1924,6 +1943,12 @@ open class StateManagerAdaptor(
 
         val marketInfo = marketInfo(marketId)
         val currentHeight = calculateCurrentHeight()
+
+        val goodTilBlock =
+            if (isShortTermOrder(trade.type, trade.timeInForce)) currentHeight?.plus(
+                SHORT_TERM_ORDER_DURATION
+            ) else null
+
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1938,6 +1963,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
@@ -1971,6 +1997,9 @@ open class StateManagerAdaptor(
         val reduceOnly = environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
+        val currentHeight = calculateCurrentHeight()
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
+
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
             marketId,
@@ -1985,6 +2014,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock
         )
     }
 

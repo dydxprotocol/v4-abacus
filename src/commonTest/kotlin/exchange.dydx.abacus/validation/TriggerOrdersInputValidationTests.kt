@@ -100,6 +100,30 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
             }
             """.trimIndent(),
         )
+
+        test(
+            {
+                perp.triggerOrders("2.12333321", TriggerOrdersInputField.stopLossOrderSize, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "stopLossOrder": {
+                            "size": "2.12333321"
+                        }
+                    },
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "AMOUNT_INPUT_STEP_SIZE"
+                        }
+                    ]        
+                }
+            }
+            """.trimIndent(),
+        )
     }
 
     private fun testTriggerOrderInputStopMarketType() {

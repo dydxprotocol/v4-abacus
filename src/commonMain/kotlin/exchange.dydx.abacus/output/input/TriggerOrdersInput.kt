@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TriggerOrderInputSummary(
     val price: Double?,
+    val size: Double?,
 ) {
     companion object {
         internal fun create(
@@ -20,9 +21,10 @@ data class TriggerOrderInputSummary(
 
             data?.let {
                 val price = parser.asDouble(data["price"])
+                val size = parser.asDouble(data["size"])
 
-                return if (existing?.price != price) {
-                    TriggerOrderInputSummary(price)
+                return if (existing?.price != price || existing?.size != size) {
+                    TriggerOrderInputSummary(price, size)
                 } else {
                     existing
                 }
@@ -78,6 +80,7 @@ data class TriggerPrice(
 @Serializable
 data class TriggerOrder(
     val orderId: String?,
+    val size: Double?,
     val type: OrderType?,
     val side: OrderSide?,
     val price: TriggerPrice?,
@@ -93,6 +96,8 @@ data class TriggerOrder(
 
             data?.let {
                 val orderId = parser.asString(data["orderId"])
+                val size = parser.asDouble(data["size"])
+
                 val type = parser.asString(data["type"])?.let {
                     OrderType.invoke(it)
                 }
@@ -112,12 +117,13 @@ data class TriggerOrder(
 
                 return if (
                     existing?.orderId != orderId ||
+                    existing?.size != size ||
                     existing?.type != type ||
                     existing?.side != side ||
                     existing?.price != price ||
                     existing?.summary != summary
                 ) {
-                    TriggerOrder(orderId, type, side, price, summary)
+                    TriggerOrder(orderId, size, type, side, price, summary)
                 } else {
                     existing
                 }
