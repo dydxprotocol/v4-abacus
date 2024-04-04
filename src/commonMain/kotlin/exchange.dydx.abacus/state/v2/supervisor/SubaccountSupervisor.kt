@@ -900,6 +900,7 @@ internal class SubaccountSupervisor(
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
+        val goodTilBlock = null
 
         val marketInfo = marketInfo(marketId)
 
@@ -917,6 +918,7 @@ internal class SubaccountSupervisor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
+            goodTilBlock,
             marketInfo,
             currentHeight,
         )
