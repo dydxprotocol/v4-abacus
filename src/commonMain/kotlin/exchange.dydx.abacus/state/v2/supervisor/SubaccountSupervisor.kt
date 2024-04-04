@@ -657,9 +657,9 @@ internal class SubaccountSupervisor(
     ): HumanReadableTriggerOrdersPayload {
         val payloads = triggerOrdersPayload(currentHeight)
 
-        payloads.cancelOrderPayloads.forEach {
-            val string = Json.encodeToString(it)
-            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it, true)
+        payloads.cancelOrderPayloads.forEach { orderPayload ->
+            val string = Json.encodeToString(orderPayload)
+            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(orderPayload, true)
 
             val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
             tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
@@ -672,17 +672,17 @@ internal class SubaccountSupervisor(
                         ParsingHelper.merge(uiTrackingParmas(uiDelayTimeMs), analyticsPayload)?.toIMap(),
                     )
                     helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-                        this.orderCanceled(it.orderId)
+                        this.orderCanceled(orderPayload.orderId)
                         this.cancelOrderRecords.add(
                             CancelOrderRecord(
                                 subaccountNumber,
-                                it.clientId,
+                                orderPayload.clientId,
                                 submitTimeMs,
                             ),
                         )
                     }
                 }
-                helper.send(error, callback, HumanReadableTriggerOrdersPayload(emptyList(), listOf(it)))
+                helper.send(error, callback, HumanReadableTriggerOrdersPayload(emptyList(), listOf(orderPayload)))
             }
 
             transactionQueue.enqueue(
@@ -690,12 +690,12 @@ internal class SubaccountSupervisor(
             )
         }
 
-        payloads.placeOrderPayloads.forEach {
-            val clientId = it.clientId
-            val string = Json.encodeToString(it)
+        payloads.placeOrderPayloads.forEach { orderPayload ->
+            val clientId = orderPayload.clientId
+            val string = Json.encodeToString(orderPayload)
 
             val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
-                it,
+                orderPayload,
                 false,
                 true,
             )
@@ -716,14 +716,14 @@ internal class SubaccountSupervisor(
                         this.placeOrderRecords.add(
                             PlaceOrderRecord(
                                 subaccountNumber,
-                                it.clientId,
+                                orderPayload.clientId,
                                 submitTimeMs,
                             ),
                         )
                         lastOrderClientId = clientId
                     }
                 }
-                helper.send(error, callback, HumanReadableTriggerOrdersPayload(listOf(it), emptyList()))
+                helper.send(error, callback, HumanReadableTriggerOrdersPayload(listOf(orderPayload), emptyList()))
             }
 
             transactionQueue.enqueue(
@@ -1028,7 +1028,7 @@ internal class SubaccountSupervisor(
         val clientId = order.clientId ?: error("clientId is null")
         val orderFlags = order.orderFlags ?: error("orderFlags is null")
         val clobPairId = order.clobPairId ?: error("clobPairId is null")
-        val orderSubaccountNumber = order.subaccountNumber?: error("order subaccountNumber is null")
+        val orderSubaccountNumber = order.subaccountNumber ?: error("order subaccountNumber is null")
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
 
