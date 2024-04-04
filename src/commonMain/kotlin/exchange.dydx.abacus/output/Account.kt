@@ -1107,9 +1107,9 @@ data class SubaccountTransfer(
                 val time1 = (obj as SubaccountTransfer).updatedAtMilliseconds
                 val time2 =
                     (
-                            parser.asDatetime(itemData["confirmedAt"])
-                                ?: parser.asDatetime(itemData["createdAt"])
-                            )?.toEpochMilliseconds()
+                        parser.asDatetime(itemData["confirmedAt"])
+                            ?: parser.asDatetime(itemData["createdAt"])
+                        )?.toEpochMilliseconds()
                         ?.toDouble()
                 ParsingHelper.compare(time1, time2 ?: 0.0, false)
             }, { _, obj, itemData ->
