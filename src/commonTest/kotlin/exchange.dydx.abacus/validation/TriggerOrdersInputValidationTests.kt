@@ -183,7 +183,18 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "PRICE_MUST_POSITIVE"
+                            "code": "PRICE_MUST_POSITIVE",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.PRICE_MUST_POSITIVE"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.PRICE_MUST_POSITIVE"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_PRICE"
+                                }
+                            }
                         }
                     ]        
                 }
