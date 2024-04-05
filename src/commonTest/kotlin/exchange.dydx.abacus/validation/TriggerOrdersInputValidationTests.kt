@@ -159,7 +159,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
             {
                 perp.triggerOrders("1", TriggerOrdersInputField.size, 0)
             },
-            null
+            null,
         )
 
         test(
@@ -291,7 +291,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
             {
                 perp.triggerOrders("1", TriggerOrdersInputField.size, 0)
             },
-            null
+            null,
         )
     }
 
