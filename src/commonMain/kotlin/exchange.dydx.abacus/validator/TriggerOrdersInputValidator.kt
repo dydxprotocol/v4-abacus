@@ -349,11 +349,11 @@ internal class TriggerOrdersInputValidator(
             return listOf(
                 error(
                     "ERROR",
-                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE", // TODO: CT-704 fix with proper error strings
+                    "PRICE_MUST_POSITIVE",
                     listOf("price.triggerPrice"),
-                    "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                    "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                    "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                    "APP.TRADE.MODIFY_PRICE",
+                    "ERRORS.TRIGGERS_FORM_TITLE.PRICE_MUST_POSITIVE",
+                    "ERRORS.TRIGGERS_FORM.PRICE_MUST_POSITIVE",
                 ),
             )
         }

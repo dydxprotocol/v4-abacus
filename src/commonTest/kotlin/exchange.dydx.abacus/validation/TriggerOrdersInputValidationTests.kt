@@ -154,6 +154,42 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
             }
             """.trimIndent(),
         )
+
+        test(
+            {
+                perp.triggerOrders("1", TriggerOrdersInputField.size, 0)
+            },
+            null
+        )
+
+        test(
+            {
+                perp.triggerOrders("4000", TriggerOrdersInputField.stopLossUsdcDiff, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "size": "1",
+                        "stopLossOrder": {
+                            "type": "STOP_MARKET",
+                            "price": {
+                                "triggerPrice": -3000,
+                                "usdcDiff": 4000
+                            }
+                        }
+                    },
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "PRICE_MUST_POSITIVE"
+                        }
+                    ]        
+                }
+            }
+            """.trimIndent(),
+        )
     }
 
     private fun testTriggerOrderInputStopLimitType() {
@@ -249,6 +285,13 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.triggerOrders("1", TriggerOrdersInputField.size, 0)
+            },
+            null
         )
     }
 
