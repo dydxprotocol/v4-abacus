@@ -94,7 +94,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val notionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: return modified
         val leverage = parser.asDouble(parser.value(position, "leverage.current")) ?: return modified
 
-        if (size == null) {
+        if (size == null || size == Numeric.double.ZERO || notionalTotal == Numeric.double.ZERO || leverage == Numeric.double.ZERO) {
+            // A valid position size should never have 0 size, notional value or leverage.
             return modified;
         }
 
