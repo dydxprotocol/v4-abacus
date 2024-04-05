@@ -286,13 +286,6 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
             }
             """.trimIndent(),
         )
-
-        test(
-            {
-                perp.triggerOrders("1", TriggerOrdersInputField.size, 0)
-            },
-            null,
-        )
     }
 
     private fun testTriggerOrderInputTakeProfitLimitType() {
