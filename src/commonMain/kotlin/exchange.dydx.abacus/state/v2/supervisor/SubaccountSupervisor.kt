@@ -592,7 +592,7 @@ internal class SubaccountSupervisor(
                     useTransactionQueue,
                 )
             } else {
-                helper.send(error, callback, payload)
+                helper.send(error, callback, transferPayload)
             }
         }
 
