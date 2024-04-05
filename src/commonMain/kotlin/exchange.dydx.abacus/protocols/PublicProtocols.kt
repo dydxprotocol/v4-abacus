@@ -208,20 +208,20 @@ enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
 
-    // UI Clicks
+    // Trade Events
     TradePlaceOrderClick("TradePlaceOrderClick"),
     TradeCancelOrderClick("TradeCancelOrderClick"),
-
-    // Transactions
     TradePlaceOrder("TradePlaceOrder"),
     TradeCancelOrder("TradeCancelOrder"),
+    TradePlaceOrderSubmissionConfirmed("TradePlaceOrderSubmissionConfirmed"),
+    TradeCancelOrderSubmissionConfirmed("TradeCancelOrderSubmissionConfirmed"),
+    TradePlaceOrderSubmissionFailed("TradePlaceOrderSubmissionFailed"),
+    TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
+    TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
+    TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
 
     // Transfers
-    TransferFaucetConfirmed("TransferFaucetConfirmed"),
-
-    // Trading
-    TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
-    TradePlaceOrderConfirmed("TradePlaceOrderConfirmed");
+    TransferFaucetConfirmed("TransferFaucetConfirmed");
 
     companion object {
         operator fun invoke(rawValue: String) =

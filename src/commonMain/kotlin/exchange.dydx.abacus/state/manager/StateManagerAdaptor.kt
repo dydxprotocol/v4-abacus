@@ -1882,10 +1882,10 @@ open class StateManagerAdaptor(
         )
     }
 
-    private fun isShortTermOrder(type: OrderType, timeInForce: String?): Boolean {
+    internal fun isShortTermOrder(type: String, timeInForce: String?): Boolean {
         return when (type) {
-            OrderType.market -> true
-            OrderType.limit -> {
+            "MARKET" -> true
+            "LIMIT" -> {
                 when (timeInForce) {
                     "GTT" -> false
                     else -> true
@@ -1945,7 +1945,7 @@ open class StateManagerAdaptor(
         val currentHeight = calculateCurrentHeight()
 
         val goodTilBlock =
-            if (isShortTermOrder(trade.type, trade.timeInForce)) currentHeight?.plus(
+            if (isShortTermOrder(trade.type.rawValue, trade.timeInForce)) currentHeight?.plus(
                 SHORT_TERM_ORDER_DURATION
             ) else null
 
