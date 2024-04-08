@@ -91,76 +91,123 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
+        val notionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: return modified
+        val leverage = parser.asDouble(parser.value(position, "leverage.current")) ?: return modified
 
-        if (size == null) {
+        if (size == null || size == Numeric.double.ZERO || notionalTotal == Numeric.double.ZERO || leverage == Numeric.double.ZERO) {
+            // A valid position size should never have 0 size, notional value or leverage.
             return modified;
         }
 
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
             val usdcDiff = parser.asDouble(parser.value(modified, "usdcDiff"))
-            // val percentDiff = parser.asDouble(parser.value(modified, "percentDiff")) TODO: CT-694
+            val percentDiff = parser.asDouble(parser.value(modified, "percentDiff"))
 
             when (inputType) {
                 "stopLossOrder.price.triggerPrice" -> {
-                    modified.safeSet(
-                        "usdcDiff",
-                        if (triggerPrice != null) {
+                    if (triggerPrice != null) {
+                        modified.safeSet(
+                            "usdcDiff",
                             when (positionSide) {
                                 "long" -> size.times(entryPrice.minus(triggerPrice))
                                 "short" -> size.times(triggerPrice.minus(entryPrice))
                                 else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
+                            },
+                        )
+                        modified.safeSet(
+                            "percentDiff",
+                            when (positionSide) {
+                                "long" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal)
+                                "short" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal)
+                                else -> null
+                            },
+                        )
+                    }
                 }
                 "takeProfitOrder.price.triggerPrice" -> {
-                    modified.safeSet(
-                        "usdcDiff",
-                        if (triggerPrice != null) {
+                    if (triggerPrice != null) {
+                        modified.safeSet(
+                            "usdcDiff",
                             when (positionSide) {
                                 "long" -> size.times(triggerPrice.minus(entryPrice))
                                 "short" -> size.times(entryPrice.minus(triggerPrice))
                                 else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
+                            },
+                        )
+                        modified.safeSet(
+                            "percentDiff",
+                            when (positionSide) {
+                                "long" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal)
+                                "short" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal)
+                                else -> null
+                            },
+                        )
+                    }
                 }
                 "stopLossOrder.price.usdcDiff" -> {
-                    modified.safeSet(
-                        "triggerPrice",
-                        if (usdcDiff != null) {
+                    if (usdcDiff != null) {
+                        modified.safeSet(
+                            "triggerPrice",
                             when (positionSide) {
                                 "long" -> entryPrice.minus(usdcDiff.div(size))
                                 "short" -> entryPrice.plus(usdcDiff.div(size))
                                 else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
+                            },
+                        )
+                        modified.safeSet(
+                            "percentDiff",
+                            leverage.times(usdcDiff).div(notionalTotal),
+                        )
+                    }
                 }
                 "takeProfitOrder.price.usdcDiff" -> {
-                    modified.safeSet(
-                        "triggerPrice",
-                        if (usdcDiff != null) {
+                    if (usdcDiff != null) {
+                        modified.safeSet(
+                            "triggerPrice",
                             when (positionSide) {
                                 "long" -> entryPrice.plus(usdcDiff.div(size))
                                 "short" -> entryPrice.minus(usdcDiff.div(size))
                                 else -> null
-                            }
-                        } else {
-                            null
-                        },
-                    )
+                            },
+                        )
+                        modified.safeSet(
+                            "percentDiff",
+                            leverage.times(usdcDiff).div(notionalTotal),
+                        )
+                    }
                 }
-                "stopLossOrder.price.percentDiff",
+                "stopLossOrder.price.percentDiff" -> {
+                    if (percentDiff != null) {
+                        modified.safeSet(
+                            "triggerPrice",
+                            when (positionSide) {
+                                "long" -> entryPrice.minus(percentDiff.times(notionalTotal).div(size.times(leverage)))
+                                "short" -> entryPrice.plus(percentDiff.times(notionalTotal).div(size.times(leverage)))
+                                else -> null
+                            },
+                        )
+                        modified.safeSet(
+                            "usdcDiff",
+                            percentDiff.times(notionalTotal).div(leverage),
+                        )
+                    }
+                }
                 "takeProfitOrder.price.percentDiff" -> {
-                    // TODO: CT-694
+                    if (percentDiff != null) {
+                        modified.safeSet(
+                            "triggerPrice",
+                            when (positionSide) {
+                                "long" -> entryPrice.plus(percentDiff.times(notionalTotal).div(size.times(leverage)))
+                                "short" -> entryPrice.minus(percentDiff.times(notionalTotal).div(size.times(leverage)))
+                                else -> null
+                            },
+                        )
+                        modified.safeSet(
+                            "usdcDiff",
+                            percentDiff.times(notionalTotal).div(leverage),
+                        )
+                    }
                 }
                 else -> {}
             }
