@@ -147,7 +147,18 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "TRIGGER_MUST_BELOW_INDEX_PRICE"
+                            "code": "TRIGGER_MUST_BELOW_INDEX_PRICE",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_TRIGGER_PRICE"
+                                }
+                            }
                         }
                     ]        
                 }
@@ -260,7 +271,18 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                            "code": "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_TRIGGER_PRICE"
+                                }
+                            }
                         }
                     ]        
                 }
@@ -290,7 +312,18 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                            "code": "TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_TRIGGER_PRICE"
+                                }
+                            }
                         }
                     ]        
                 }
@@ -360,7 +393,18 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                            "code": "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_TRIGGER_PRICE"
+                                }
+                            }
                         }
                     ]        
                 }
