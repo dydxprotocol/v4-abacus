@@ -378,6 +378,7 @@ internal class TriggerOrdersInputValidator(
                             triggerToIndex,
                             oraclePrice,
                             tickSize,
+                            type,
                         ),
                     )
                 }
@@ -390,6 +391,7 @@ internal class TriggerOrdersInputValidator(
                             triggerToIndex,
                             oraclePrice,
                             tickSize,
+                            type,
                         ),
                     )
                 }
@@ -403,7 +405,8 @@ internal class TriggerOrdersInputValidator(
     private fun validateLimitPrice(
         triggerOrder: Map<String, Any>,
     ): List<Any>? {
-        return when (parser.asString(triggerOrder["type"])) {
+        val type = parser.asString(triggerOrder["type"])
+        return when (type) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
                 parser.asString(parser.value(triggerOrder, "side"))?.let { side ->
                     parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
@@ -417,8 +420,8 @@ internal class TriggerOrdersInputValidator(
                                                 "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                                 listOf("price.triggerPrice"),
                                                 "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                             ),
                                         )
                                     } else if (side == "SELL" && limitPrice > triggerPrice) {
@@ -428,8 +431,8 @@ internal class TriggerOrdersInputValidator(
                                                 "LIMIT_MUST_BELOW_TRIGGER_PRICE",
                                                 listOf("price.triggerPrice"),
                                                 "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
                                             ),
                                         )
                                     } else {
@@ -528,6 +531,7 @@ internal class TriggerOrdersInputValidator(
         triggerToIndex: RelativeToPrice,
         oraclePrice: Double,
         tickSize: String,
+        type: String,
     ): Map<String, Any> {
         val fields = listOf("price.triggerPrice")
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
@@ -545,8 +549,8 @@ internal class TriggerOrdersInputValidator(
                 "TRIGGER_MUST_ABOVE_INDEX_PRICE",
                 fields,
                 action,
-                "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                "ERRORS.TRADE_BOX.TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
                 params,
             )
 
@@ -555,8 +559,8 @@ internal class TriggerOrdersInputValidator(
                 "TRIGGER_MUST_BELOW_INDEX_PRICE",
                 fields,
                 action,
-                "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_BELOW_INDEX_PRICE",
-                "ERRORS.TRADE_BOX.TRIGGER_MUST_BELOW_INDEX_PRICE",
+                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
+                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
                 params,
             )
         }

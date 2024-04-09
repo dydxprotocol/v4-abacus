@@ -242,6 +242,19 @@ class V4StateManagerAdaptor(
         return configs.publicApiUrl("screen")
     }
 
+    override fun geoUrl(): String {
+        return "https://api.dydx.exchange/v4/geo"
+    }
+
+    override fun complianceScreenUrl(address: String): String? {
+        val url = configs.publicApiUrl("complianceScreen") ?: return null
+        return "$url/$address"
+    }
+
+    override fun complianceGeoblockUrl(): String? {
+        return configs.publicApiUrl("complianceGeoblock")
+    }
+
     override fun historicalTradingRewardAggregationsUrl(): String? {
         val url = configs.privateApiUrl("historicalTradingRewardAggregations")
         return if (accountAddress != null && url != null) {

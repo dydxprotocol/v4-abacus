@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.Compliance
+import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -250,6 +252,14 @@ open class StateManagerAdaptor(
             }
         }
 
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT)
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetCompliance(value)
+            }
+        }
+
     var subaccountNumber: Int = 0
         internal set(value) {
             if (field != value) {
@@ -402,6 +412,7 @@ open class StateManagerAdaptor(
     open fun didSetReadyToConnect(readyToConnect: Boolean) {
         if (readyToConnect) {
             bestEffortConnectIndexer()
+            fetchGeo()
         } else {
             indexerConfig = null
         }
@@ -432,9 +443,11 @@ open class StateManagerAdaptor(
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
+                sourceAddress?.let { complianceScreen(it) }
             }
             if (accountAddress != null) {
                 screenAccountAddress()
+                accountAddress?.let { complianceScreen(it) }
                 retrieveAccount()
                 retrieveAccountHistoricalTradingRewards()
             }
@@ -480,6 +493,7 @@ open class StateManagerAdaptor(
 
         subaccountsTimer = null
         screenAccountAddress()
+        accountAddress?.let { complianceScreen(it) }
         retrieveAccountHistoricalTradingRewards()
     }
 
@@ -491,6 +505,7 @@ open class StateManagerAdaptor(
         sourceAddressTimer = null
         sourceAddressRestriction = null
         screenSourceAddress()
+        sourceAddress?.let { complianceScreen(it) }
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
@@ -1391,6 +1406,18 @@ open class StateManagerAdaptor(
     }
 
     open fun screenUrl(): String? {
+        return null
+    }
+
+    open fun complianceScreenUrl(address: String): String? {
+        return null
+    }
+
+    open fun complianceGeoblockUrl(): String? {
+        return null
+    }
+
+    open fun geoUrl(): String? {
         return null
     }
 
@@ -2346,6 +2373,58 @@ open class StateManagerAdaptor(
         }
     }
 
+    open fun fetchGeo() {
+        val url = geoUrl()
+        if (url != null) {
+            get(
+                url,
+                null,
+                null,
+                callback = { _, response, httpCode, _ ->
+                    compliance = if (success(httpCode) && response != null) {
+                        val payload = parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val country = parser.asString(parser.value(payload, "geo.country"))
+                            Compliance(country, compliance.status)
+                        } else {
+                            Compliance(null, compliance.status)
+                        }
+                    } else {
+                        Compliance(null, compliance.status)
+                    }
+                },
+            )
+        }
+    }
+
+    open fun complianceCheck() {
+    }
+
+    open fun complianceScreen(address: String) {
+        val url = complianceScreenUrl(address)
+        if (url != null) {
+            get(
+                url,
+                null,
+                null,
+                callback = { _, response, httpCode, _ ->
+                    compliance = if (success(httpCode) && response != null) {
+                        val payload = parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val status = parser.asString(payload["status"])
+                            val complianceStatus = ComplianceStatus.invoke(status) ?: ComplianceStatus.UNKNOWN
+                            Compliance(compliance?.geo, complianceStatus)
+                        } else {
+                            Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                        }
+                    } else {
+                        Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                    }
+                },
+            )
+        }
+    }
+
     open fun screenAccountAddress() {
         val address = accountAddress
         if (address != null) {
@@ -2472,12 +2551,46 @@ open class StateManagerAdaptor(
             state?.transferStatuses,
             restriction,
             state?.launchIncentive,
+            state?.compliance,
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
                 stateMachine.state,
                 StateChanges(
                     iListOf(Changes.restriction),
+                ),
+            )
+        }
+    }
+
+    private fun didSetCompliance(compliance: Compliance?) {
+        val state = stateMachine.state
+        stateMachine.state = PerpetualState(
+            state?.assets,
+            state?.marketsSummary,
+            state?.orderbooks,
+            state?.candles,
+            state?.trades,
+            state?.historicalFundings,
+            state?.wallet,
+            state?.account,
+            state?.historicalPnl,
+            state?.fills,
+            state?.transfers,
+            state?.fundingPayments,
+            state?.configs,
+            state?.input,
+            state?.availableSubaccountNumbers ?: iListOf(),
+            state?.transferStatuses,
+            state?.restriction,
+            state?.launchIncentive,
+            compliance,
+        )
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.stateChanged(
+                stateMachine.state,
+                StateChanges(
+                    iListOf(Changes.compliance),
                 ),
             )
         }
