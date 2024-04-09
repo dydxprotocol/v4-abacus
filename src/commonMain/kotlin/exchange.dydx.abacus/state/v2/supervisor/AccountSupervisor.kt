@@ -743,6 +743,7 @@ internal open class AccountSupervisor(
             state?.transferStatuses,
             restriction,
             state?.launchIncentive,
+            state?.compliance,
         )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
