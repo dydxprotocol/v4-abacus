@@ -659,7 +659,7 @@ data class SubaccountOrder(
             Logger.d { "creating Account Order\n" }
             data?.let {
                 // TODO: Remove default to 0 for subaccountNumber once new indexer response is consumed. Prevents breaking change
-                val subaccountNumber = parser.asInt(data["subaccountNumber"])?: 0
+                val subaccountNumber = parser.asInt(data["subaccountNumber"]) ?: 0
                 val id = parser.asString(data["id"])
                 val clientId = parser.asInt(data["clientId"])
                 val marketId = parser.asString(data["marketId"])

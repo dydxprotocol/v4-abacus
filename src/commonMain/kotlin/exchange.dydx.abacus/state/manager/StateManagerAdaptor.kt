@@ -1945,9 +1945,13 @@ open class StateManagerAdaptor(
         val currentHeight = calculateCurrentHeight()
 
         val goodTilBlock =
-            if (isShortTermOrder(trade.type.rawValue, trade.timeInForce)) currentHeight?.plus(
-                SHORT_TERM_ORDER_DURATION
-            ) else null
+            if (isShortTermOrder(trade.type.rawValue, trade.timeInForce)) {
+                currentHeight?.plus(
+                    SHORT_TERM_ORDER_DURATION,
+                )
+            } else {
+                null
+            }
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
@@ -2014,7 +2018,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
-            goodTilBlock
+            goodTilBlock,
         )
     }
 

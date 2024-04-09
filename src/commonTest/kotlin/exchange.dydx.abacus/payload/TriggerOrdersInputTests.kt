@@ -195,7 +195,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "400.0",
                                 "usdcDiff": "300",
-                                "percentDiff": "0.3515790352",
+                                "percentDiff": "35.15790352",
                                 "input": "stopLossOrder.price.triggerPrice"
                             },
                             "summary": {
@@ -225,7 +225,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "200.0",
                                 "usdcDiff": "400",
-                                "percentDiff": "0.4687720469",
+                                "percentDiff": "46.87720469",
                                 "input": "stopLossOrder.price.usdcDiff"
                             },
                             "summary": {
@@ -240,7 +240,7 @@ class TriggerOrderInputTests : V4BaseTests() {
 
         test(
             {
-                perp.triggerOrders("0.25", TriggerOrdersInputField.stopLossPercentDiff, 0)
+                perp.triggerOrders("25.00", TriggerOrdersInputField.stopLossPercentDiff, 0)
             },
             """
             {
@@ -255,7 +255,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "573.3534",
                                 "usdcDiff": "213.3233",
-                                "percentDiff": "0.25",
+                                "percentDiff": "25.0",
                                 "input": "stopLossOrder.price.percentDiff"
                             },
                             "summary": {
@@ -331,7 +331,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1800.0",
                                 "usdcDiff": "400",
-                                "percentDiff": "0.4687720469",
+                                "percentDiff": "46.87720469",
                                 "input": "takeProfitOrder.price.triggerPrice"
                             },
                             "summary": {
@@ -361,7 +361,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1600.0",
                                 "usdcDiff": "300.0",
-                                "percentDiff": "0.3515790352",
+                                "percentDiff": "35.15790352",
                                 "input": "takeProfitOrder.price.usdcDiff"
                             },
                             "summary": {
@@ -376,7 +376,7 @@ class TriggerOrderInputTests : V4BaseTests() {
 
         test(
             {
-                perp.triggerOrders("0.25", TriggerOrdersInputField.takeProfitPercentDiff, 0)
+                perp.triggerOrders("25.0", TriggerOrdersInputField.takeProfitPercentDiff, 0)
             },
             """
             {
@@ -391,7 +391,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1426.6466",
                                 "usdcDiff": "213.3233",
-                                "percentDiff": "0.25",
+                                "percentDiff": "25.0",
                                 "input": "takeProfitOrder.price.percentDiff"
                             },
                             "summary": {

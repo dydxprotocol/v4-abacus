@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 class AppConfigs(
-    val subscribeToCandles: Boolean,
-    val loadRemote: Boolean = true,
-    val enableLogger: Boolean = false,
+    var subscribeToCandles: Boolean,
+    var loadRemote: Boolean = true,
+    var enableLogger: Boolean = false,
 ) {
     enum class SquidVersion {
         V1,

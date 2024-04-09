@@ -102,7 +102,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
             val usdcDiff = parser.asDouble(parser.value(modified, "usdcDiff"))
-            val percentDiff = parser.asDouble(parser.value(modified, "percentDiff"))
+            val percentDiff = parser.asDouble(parser.value(modified, "percentDiff"))?.let { it / 100.0 }
 
             when (inputType) {
                 "stopLossOrder.price.triggerPrice" -> {
@@ -118,8 +118,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "percentDiff",
                             when (positionSide) {
-                                "long" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal)
-                                "short" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal)
+                                "long" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal).times(100)
+                                "short" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal).times(100)
                                 else -> null
                             },
                         )
@@ -138,8 +138,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "percentDiff",
                             when (positionSide) {
-                                "long" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal)
-                                "short" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal)
+                                "long" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal).times(100)
+                                "short" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal).times(100)
                                 else -> null
                             },
                         )
@@ -157,7 +157,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            leverage.times(usdcDiff).div(notionalTotal),
+                            leverage.times(usdcDiff).div(notionalTotal).times(100),
                         )
                     }
                 }
@@ -173,7 +173,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            leverage.times(usdcDiff).div(notionalTotal),
+                            leverage.times(usdcDiff).div(notionalTotal).times(100),
                         )
                     }
                 }

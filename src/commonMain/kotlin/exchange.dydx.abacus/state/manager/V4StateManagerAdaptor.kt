@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.UsageRestriction
-import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -149,9 +148,6 @@ class V4StateManagerAdaptor(
                 didSetIndexerRestriction(field)
             }
         }
-
-    @Suppress("PropertyName")
-    private val MAX_NUM_BLOCK_DELAY = 15
 
     private var lastValidatorCallTime: Instant? = null
 
@@ -978,7 +974,7 @@ class V4StateManagerAdaptor(
                     transactionType,
                     transactionPayloadString,
                     transactionCallback,
-                    onSubmitTransaction
+                    onSubmitTransaction,
                 ),
             )
         } else {
@@ -1009,8 +1005,8 @@ class V4StateManagerAdaptor(
                         PlaceOrderRecord(
                             subaccountNumber,
                             clientId,
-                            submitTimeMs
-                        )
+                            submitTimeMs,
+                        ),
                     )
                 }
             },
@@ -1029,10 +1025,14 @@ class V4StateManagerAdaptor(
                 send(
                     error,
                     callback,
-                    if (isTriggerOrder) HumanReadableTriggerOrdersPayload(
-                        listOf(payload),
-                        emptyList(),
-                    ) else payload
+                    if (isTriggerOrder) {
+                        HumanReadableTriggerOrdersPayload(
+                            listOf(payload),
+                            emptyList(),
+                        )
+                    } else {
+                        payload
+                    },
                 )
             },
             useTransactionQueue = !isShortTermOrder(payload.type, payload.timeInForce),
@@ -1086,10 +1086,14 @@ class V4StateManagerAdaptor(
                 send(
                     error,
                     callback,
-                    if (isTriggerOrder) HumanReadableTriggerOrdersPayload(
-                        emptyList(),
-                        listOf(payload),
-                    ) else payload
+                    if (isTriggerOrder) {
+                        HumanReadableTriggerOrdersPayload(
+                            emptyList(),
+                            listOf(payload),
+                        )
+                    } else {
+                        payload
+                    },
                 )
             },
             useTransactionQueue = !isShortTermOrder,
@@ -1103,7 +1107,7 @@ class V4StateManagerAdaptor(
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         tracking(
             if (isCancel) AnalyticsEvent.TradeCancelOrderClick.rawValue else AnalyticsEvent.TradePlaceOrderClick.rawValue,
-            analyticsPayload
+            analyticsPayload,
         )
         return uiClickTimeMs
     }
@@ -1173,7 +1177,7 @@ class V4StateManagerAdaptor(
             val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
                 it,
                 isClosePosition = false,
-                fromSlTpDialog = true
+                fromSlTpDialog = true,
             )
             submitPlaceOrder(callback, it, analyticsPayload, true)
         }
@@ -1618,5 +1622,10 @@ class V4StateManagerAdaptor(
         userStatsTimer = null
         accountBalancesTimer?.cancel()
         accountBalancesTimer = null
+    }
+
+    companion object {
+        @Suppress("PropertyName")
+        private const val MAX_NUM_BLOCK_DELAY = 15
     }
 }
