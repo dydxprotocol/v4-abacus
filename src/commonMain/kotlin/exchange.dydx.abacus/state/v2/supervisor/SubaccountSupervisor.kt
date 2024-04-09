@@ -509,7 +509,7 @@ internal class SubaccountSupervisor(
                     transactionType,
                     transactionPayloadString,
                     transactionCallback,
-                    onSubmitTransaction
+                    onSubmitTransaction,
                 ),
             )
         } else {
@@ -553,7 +553,7 @@ internal class SubaccountSupervisor(
                         subaccountNumber,
                         clientId,
                         submitTimeMs,
-                    )
+                    ),
                 )
             }
         }
@@ -572,13 +572,16 @@ internal class SubaccountSupervisor(
             helper.send(
                 error,
                 callback,
-                if (isTriggerOrder) HumanReadableTriggerOrdersPayload(
-                    listOf(payload),
-                    emptyList(),
-                ) else payload
+                if (isTriggerOrder) {
+                    HumanReadableTriggerOrdersPayload(
+                        listOf(payload),
+                        emptyList(),
+                    )
+                } else {
+                    payload
+                },
             )
         }
-
 
         // If the transfer is successful, place the order
         val isolatedMarginTransactionCallback = { response: String? ->
@@ -596,27 +599,26 @@ internal class SubaccountSupervisor(
             }
         }
 
-
         stopWatchingLastOrder()
 
-       if (transferPayloadString != null) {
-           // isolated margin order
-           submitTransaction(
-               TransactionType.SubaccountTransfer,
-               transferPayloadString,
-               null,
-               isolatedMarginTransactionCallback,
-               useTransactionQueue,
-           )
-       } else {
-           submitTransaction(
-               TransactionType.PlaceOrder,
-               string,
-               onSubmitOrderTransaction,
-               orderTransactionCallback,
-               useTransactionQueue,
-           )
-       }
+        if (transferPayloadString != null) {
+            // isolated margin order
+            submitTransaction(
+                TransactionType.SubaccountTransfer,
+                transferPayloadString,
+                null,
+                isolatedMarginTransactionCallback,
+                useTransactionQueue,
+            )
+        } else {
+            submitTransaction(
+                TransactionType.PlaceOrder,
+                string,
+                onSubmitOrderTransaction,
+                orderTransactionCallback,
+                useTransactionQueue,
+            )
+        }
 
         return payload
     }
@@ -628,7 +630,7 @@ internal class SubaccountSupervisor(
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         tracking(
             if (isCancel) AnalyticsEvent.TradeCancelOrderClick.rawValue else AnalyticsEvent.TradePlaceOrderClick.rawValue,
-            analyticsPayload
+            analyticsPayload,
         )
         return uiClickTimeMs
     }
@@ -714,10 +716,14 @@ internal class SubaccountSupervisor(
                 helper.send(
                     error,
                     callback,
-                    if (isTriggerOrder) HumanReadableTriggerOrdersPayload(
-                        emptyList(),
-                        listOf(payload),
-                    ) else payload
+                    if (isTriggerOrder) {
+                        HumanReadableTriggerOrdersPayload(
+                            emptyList(),
+                            listOf(payload),
+                        )
+                    } else {
+                        payload
+                    },
                 )
             },
             useTransactionQueue = !isShortTermOrder,
@@ -772,7 +778,7 @@ internal class SubaccountSupervisor(
             val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
                 payload,
                 isClosePosition = false,
-                fromSlTpDialog = true
+                fromSlTpDialog = true,
             )
             submitPlaceOrder(callback, payload, analyticsPayload, true)
         }
@@ -787,16 +793,16 @@ internal class SubaccountSupervisor(
 
     private fun isShortTermOrder(type: String, timeInForce: String?): Boolean {
         return when (type) {
-             "MARKET" -> true
-             "LIMIT" -> {
-                 when (timeInForce) {
-                     "GTT" -> false
-                     else -> true
-                 }
-             }
-             else -> false
-         }
-     }
+            "MARKET" -> true
+            "LIMIT" -> {
+                when (timeInForce) {
+                    "GTT" -> false
+                    else -> true
+                }
+            }
+            else -> false
+        }
+    }
 
     @Throws(Exception::class)
     fun placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {

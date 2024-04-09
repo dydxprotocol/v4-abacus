@@ -1,6 +1,13 @@
 package exchange.dydx.abacus.state.manager
 
-import exchange.dydx.abacus.output.*
+import exchange.dydx.abacus.output.Compliance
+import exchange.dydx.abacus.output.ComplianceStatus
+import exchange.dydx.abacus.output.Notification
+import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.output.Restriction
+import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
@@ -1965,9 +1972,13 @@ open class StateManagerAdaptor(
         val currentHeight = calculateCurrentHeight()
 
         val goodTilBlock =
-            if (isShortTermOrder(trade.type.rawValue, trade.timeInForce)) currentHeight?.plus(
-                SHORT_TERM_ORDER_DURATION
-            ) else null
+            if (isShortTermOrder(trade.type.rawValue, trade.timeInForce)) {
+                currentHeight?.plus(
+                    SHORT_TERM_ORDER_DURATION,
+                )
+            } else {
+                null
+            }
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber,
@@ -2034,7 +2045,7 @@ open class StateManagerAdaptor(
             timeInForce,
             execution,
             goodTilTimeInSeconds,
-            goodTilBlock
+            goodTilBlock,
         )
     }
 
@@ -2387,9 +2398,7 @@ open class StateManagerAdaptor(
     }
 
     open fun complianceCheck() {
-
     }
-
 
     open fun complianceScreen(address: String) {
         val url = complianceScreenUrl(address)
