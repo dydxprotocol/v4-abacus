@@ -553,6 +553,7 @@ internal class StateManagerAdaptorV2(
             state?.transferStatuses,
             restriction,
             state?.launchIncentive,
+            state?.compliance,
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
