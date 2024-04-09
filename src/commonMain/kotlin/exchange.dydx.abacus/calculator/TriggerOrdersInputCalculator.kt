@@ -118,8 +118,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "percentDiff",
                             when (positionSide) {
-                                "long" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal).times(100)
-                                "short" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal).times(100)
+                                "long" -> leverage.times(entryPrice.minus(triggerPrice)).div(notionalTotal).times(100)
+                                "short" -> leverage.times(triggerPrice.minus(entryPrice)).div(notionalTotal).times(100)
                                 else -> null
                             },
                         )
@@ -138,8 +138,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "percentDiff",
                             when (positionSide) {
-                                "long" -> leverage.times(size.times(triggerPrice.minus(entryPrice))).div(notionalTotal).times(100)
-                                "short" -> leverage.times(size.times(entryPrice.minus(triggerPrice))).div(notionalTotal).times(100)
+                                "long" -> leverage.times(triggerPrice.minus(entryPrice)).div(notionalTotal).times(100)
+                                "short" -> leverage.times(entryPrice.minus(triggerPrice)).div(notionalTotal).times(100)
                                 else -> null
                             },
                         )
@@ -157,7 +157,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            leverage.times(usdcDiff).div(notionalTotal).times(100),
+                            leverage.times(usdcDiff).div(size.times(notionalTotal)).times(100),
                         )
                     }
                 }
@@ -173,7 +173,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            leverage.times(usdcDiff).div(notionalTotal).times(100),
+                            leverage.times(usdcDiff).div(size.times(notionalTotal)).times(100),
                         )
                     }
                 }
@@ -182,14 +182,14 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "triggerPrice",
                             when (positionSide) {
-                                "long" -> entryPrice.minus(percentDiff.times(notionalTotal).div(size.times(leverage)))
-                                "short" -> entryPrice.plus(percentDiff.times(notionalTotal).div(size.times(leverage)))
+                                "long" -> entryPrice.minus(percentDiff.times(notionalTotal).div(leverage))
+                                "short" -> entryPrice.plus(percentDiff.times(notionalTotal).div(leverage))
                                 else -> null
                             },
                         )
                         modified.safeSet(
                             "usdcDiff",
-                            percentDiff.times(notionalTotal).div(leverage),
+                            size.times(percentDiff.times(notionalTotal)).div(leverage),
                         )
                     }
                 }
@@ -198,14 +198,14 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "triggerPrice",
                             when (positionSide) {
-                                "long" -> entryPrice.plus(percentDiff.times(notionalTotal).div(size.times(leverage)))
-                                "short" -> entryPrice.minus(percentDiff.times(notionalTotal).div(size.times(leverage)))
+                                "long" -> entryPrice.plus(percentDiff.times(notionalTotal).div(leverage))
+                                "short" -> entryPrice.minus(percentDiff.times(notionalTotal).div(leverage))
                                 else -> null
                             },
                         )
                         modified.safeSet(
                             "usdcDiff",
-                            percentDiff.times(notionalTotal).div(leverage),
+                            size.times(percentDiff.times(notionalTotal)).div(leverage),
                         )
                     }
                 }
