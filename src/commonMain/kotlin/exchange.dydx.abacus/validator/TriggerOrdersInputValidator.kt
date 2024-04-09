@@ -161,7 +161,7 @@ internal class TriggerOrdersInputValidator(
         }
         validateCalculatedPricesPositive(triggerOrder)?.let {
             /*
-                TODO: CT-704 add error strings
+                PRICE_MUST_POSITIVE
              */
             triggerErrors.addAll(it)
         }
