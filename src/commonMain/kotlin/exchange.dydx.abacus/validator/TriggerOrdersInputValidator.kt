@@ -5,7 +5,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Rounder
 
 internal data class EquityTier(
@@ -367,8 +366,6 @@ internal class TriggerOrdersInputValidator(
     ): List<Any>? {
         val type = parser.asString(triggerOrder["type"]) ?: return null
         val side = parser.asString(triggerOrder["side"]) ?: return null
-
-        Logger.e { "xcxc ${triggerOrder}"}
 
         val triggerPrice =
             parser.asDouble(parser.value(triggerOrder, "price.triggerPrice")) ?: return null
