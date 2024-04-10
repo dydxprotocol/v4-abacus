@@ -1203,7 +1203,7 @@ internal class TradeInputCalculator(
             } else {
                 options.safeSet("postOnlyPromptStringKey", postOnlyPromptFromTrade(trade))
             }
-            if (parser.asString(parser.value(trade, "marginMode")) === "ISOLATED") {
+            if (parser.asString(parser.value(trade, "marginMode")) == "ISOLATED") {
                 options.safeSet("needsTargetLeverage", true)
             } else {
                 options.safeSet("needsTargetLeverage", false)

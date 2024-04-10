@@ -420,8 +420,8 @@ internal class TriggerOrdersInputValidator(
                                                 "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                                 listOf("price.triggerPrice"),
                                                 "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                             ),
                                         )
                                     } else if (side == "SELL" && limitPrice > triggerPrice) {
@@ -431,8 +431,8 @@ internal class TriggerOrdersInputValidator(
                                                 "LIMIT_MUST_BELOW_TRIGGER_PRICE",
                                                 listOf("price.triggerPrice"),
                                                 "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                if (type === "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
                                             ),
                                         )
                                     } else {
@@ -549,8 +549,8 @@ internal class TriggerOrdersInputValidator(
                 "TRIGGER_MUST_ABOVE_INDEX_PRICE",
                 fields,
                 action,
-                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
                 params,
             )
 
@@ -559,8 +559,8 @@ internal class TriggerOrdersInputValidator(
                 "TRIGGER_MUST_BELOW_INDEX_PRICE",
                 fields,
                 action,
-                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
-                if (type === "STOP_LIMIT" || type === "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
+                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
+                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
                 params,
             )
         }
