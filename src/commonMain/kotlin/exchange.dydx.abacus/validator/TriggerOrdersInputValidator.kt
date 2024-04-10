@@ -25,9 +25,9 @@ enum class RelativeToPrice(val rawValue: String) {
 }
 
 enum class TriggerInputField(val rawValue: String) {
-    TP_TRIGGER_PRICE("TP_PRICE"),
+    TP_TRIGGER_PRICE("TP_TRIGGER_PRICE"),
     TP_GAIN_LOSS("TP_GAIN_LOSS"),
-    SL_TRIGGER_PRICE("SL_PRICE"),
+    SL_TRIGGER_PRICE("SL_TRIGGER_PRICE"),
     SL_GAIN_LOSS("SL_GAIN_LOSS"),
     ORDER_SIZE("ORDER_SIZE"),
     TP_LIMIT_PRICE("TP_LIMIT_PRICE"),
