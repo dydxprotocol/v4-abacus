@@ -91,6 +91,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
+        val positionSize = parser.asDouble(parser.value(position, "size.current"))?.abs() ?: return modified
         val notionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: return modified
         val leverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs() ?: return modified
 
@@ -98,6 +99,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
             // A valid position size should never have 0 size, notional value or leverage.
             return modified;
         }
+
+        val scaledNotionalTotal = size.div(positionSize).times(notionalTotal);
 
         if (entryPrice != null) {
             val triggerPrice = parser.asDouble(parser.value(modified, "triggerPrice"))
@@ -118,8 +121,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "percentDiff",
                             when (positionSide) {
-                                "long" -> leverage.times(entryPrice.minus(triggerPrice)).div(notionalTotal).times(100)
-                                "short" -> leverage.times(triggerPrice.minus(entryPrice)).div(notionalTotal).times(100)
+                                "long" -> size.times(leverage.times(entryPrice.minus(triggerPrice))).div(scaledNotionalTotal).times(100)
+                                "short" -> size.times(leverage.times(triggerPrice.minus(entryPrice))).div(scaledNotionalTotal).times(100)
                                 else -> null
                             },
                         )
@@ -147,8 +150,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "percentDiff",
                             when (positionSide) {
-                                "long" -> leverage.times(triggerPrice.minus(entryPrice)).div(notionalTotal).times(100)
-                                "short" -> leverage.times(entryPrice.minus(triggerPrice)).div(notionalTotal).times(100)
+                                "long" -> size.times(leverage.times(triggerPrice.minus(entryPrice))).div(scaledNotionalTotal).times(100)
+                                "short" -> size.times(leverage.times(entryPrice.minus(triggerPrice))).div(scaledNotionalTotal).times(100)
                                 else -> null
                             },
                         )
@@ -175,7 +178,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            leverage.times(usdcDiff).div(size.times(notionalTotal)).times(100),
+                            usdcDiff.div(scaledNotionalTotal).times(leverage).times(100),
                         )
                     } else {
                         modified.safeSet(
@@ -200,7 +203,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            leverage.times(usdcDiff).div(size.times(notionalTotal)).times(100),
+                            usdcDiff.div(scaledNotionalTotal).times(leverage).times(100),
                         )
                     } else {
                         modified.safeSet(
@@ -218,14 +221,14 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "triggerPrice",
                             when (positionSide) {
-                                "long" -> entryPrice.minus(percentDiff.times(notionalTotal).div(leverage))
-                                "short" -> entryPrice.plus(percentDiff.times(notionalTotal).div(leverage))
+                                "long" -> entryPrice.minus(percentDiff.times(scaledNotionalTotal).div(leverage.times(size)))
+                                "short" -> entryPrice.plus(percentDiff.times(scaledNotionalTotal).div(leverage.times(size)))
                                 else -> null
                             },
                         )
                         modified.safeSet(
                             "usdcDiff",
-                            size.times(percentDiff.times(notionalTotal)).div(leverage),
+                            percentDiff.times(scaledNotionalTotal).div(leverage),
                         )
                     } else {
                         modified.safeSet(
@@ -243,14 +246,14 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         modified.safeSet(
                             "triggerPrice",
                             when (positionSide) {
-                                "long" -> entryPrice.plus(percentDiff.times(notionalTotal).div(leverage))
-                                "short" -> entryPrice.minus(percentDiff.times(notionalTotal).div(leverage))
+                                "long" -> entryPrice.plus(percentDiff.times(scaledNotionalTotal).div(leverage.times(size)))
+                                "short" -> entryPrice.minus(percentDiff.times(scaledNotionalTotal).div(leverage.times(size)))
                                 else -> null
                             },
                         )
                         modified.safeSet(
                             "usdcDiff",
-                            size.times(percentDiff.times(notionalTotal)).div(leverage),
+                            percentDiff.times(scaledNotionalTotal).div(leverage),
                         )
                     } else {
                         modified.safeSet(

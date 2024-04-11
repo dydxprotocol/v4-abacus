@@ -1195,7 +1195,10 @@ class V4StateManagerAdaptor(
             submitPlaceOrder(callback, it, analyticsPayload, true)
         }
 
-        send(null, callback, payloads)
+        if (payloads.cancelOrderPayloads.isEmpty() && payloads.placeOrderPayloads.isEmpty()) {
+            send(null, callback, payloads)
+        }
+
         return payloads
     }
 

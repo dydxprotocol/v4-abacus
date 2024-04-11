@@ -783,7 +783,10 @@ internal class SubaccountSupervisor(
             submitPlaceOrder(callback, payload, analyticsPayload, true)
         }
 
-        helper.send(null, callback, payloads)
+        if (payloads.cancelOrderPayloads.isEmpty() && payloads.placeOrderPayloads.isEmpty()) {
+            helper.send(null, callback, payloads)
+        }
+
         return payloads
     }
 

@@ -224,13 +224,14 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueStarted()
 
         // Creating New Orders
-        simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 2 new market orders created
+        simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 1 new market order created
         assertEquals(2, transactionQueue?.size)
-        assertEquals(3, transactionCalledCount)
+        assertEquals(1, transactionCalledCount)
         clearTransactions(2)
 
         simulateNewBtcOrder() // 2 new limit orders created
         assertEquals(2, transactionQueue?.size)
+        assertEquals(3, transactionCalledCount)
         clearTransactions(2)
 
         // Updating Existing Order
@@ -281,14 +282,14 @@ class V4TransactionTests : NetworkTests() {
         assertEquals(2, v4Adapter?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(2, transactionCalledCount)
+        assertEquals(1, transactionCalledCount)
         assertEquals(1, v4Adapter?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(3, transactionCalledCount)
+        assertEquals(2, transactionCalledCount)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(4, transactionCalledCount)
+        assertEquals(3, transactionCalledCount)
         assertTransactionQueueEmpty()
     }
 }
