@@ -135,7 +135,7 @@ open class V4TradeInputTests : V4BaseTests() {
                             "0": {
                                 "equity": {
                                     "current": 100000.0,
-                                    "postOrder": 98300.0
+                                    "postOrder": 100000.0
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -212,7 +212,7 @@ open class V4TradeInputTests : V4BaseTests() {
                             "0": {
                                 "equity": {
                                     "current": 100000.0,
-                                    "postOrder": 99700.2
+                                    "postOrder": 100000.0
                                 },
                                 "openPositions": {
                                     "ETH-USD": {

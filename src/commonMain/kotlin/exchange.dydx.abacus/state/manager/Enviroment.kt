@@ -103,6 +103,7 @@ data class EnvironmentLinks(
 data class EnvironmentFeatureFlags(
     val reduceOnlySupported: Boolean,
     val usePessimisticCollateralCheck: Boolean,
+    val useOptimisticCollateralCheck: Boolean,
     val withdrawalSafetyEnabled: Boolean,
 ) {
     companion object {
@@ -112,11 +113,13 @@ data class EnvironmentFeatureFlags(
         ): EnvironmentFeatureFlags {
             val reduceOnlySupported = parser.asBool(data?.get("reduceOnlySupported")) ?: false
             val usePessimisticCollateralCheck = parser.asBool(data?.get("usePessimisticCollateralCheck")) ?: false
+            val useOptimisticCollateralCheck = parser.asBool(data?.get("useOptimisticCollateralCheck")) ?: false
             val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
 
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
                 usePessimisticCollateralCheck,
+                useOptimisticCollateralCheck,
                 withdrawalSafetyEnabled,
             )
         }

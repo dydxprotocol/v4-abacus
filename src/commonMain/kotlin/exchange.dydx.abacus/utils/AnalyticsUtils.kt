@@ -93,6 +93,7 @@ class AnalyticsUtils {
      * @param existingOrder SubaccountOrder?
      * @param fromSlTpDialog Boolean
      */
+<<<<<<< HEAD
     fun cancelOrderAnalyticsPayload(
         payload: HumanReadableCancelOrderPayload,
         existingOrder: SubaccountOrder?,
@@ -105,6 +106,9 @@ class AnalyticsUtils {
     }
 
     private fun formatCancelOrderPayload(
+=======
+    fun formatCancelOrderPayload(
+>>>>>>> 1718d08 (use optimistic execution price)
         payload: HumanReadableCancelOrderPayload,
         fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
