@@ -23,8 +23,8 @@ class AnalyticsUtils {
             formatPlaceOrderPayload(payload, isClosePosition, fromSlTpDialog),
             iMapOf(
                 "inferredTimeInForce" to calculateOrderTimeInForce(payload),
-                "midMarketPrice" to midMarketPrice
-            ) as IMap<String, Any>?
+                "midMarketPrice" to midMarketPrice,
+            ) as IMap<String, Any>?,
         )?.toIMap()
     }
 
@@ -97,7 +97,7 @@ class AnalyticsUtils {
         payload: HumanReadableCancelOrderPayload,
         existingOrder: SubaccountOrder?,
         fromSlTpDialog: Boolean? = false,
-    ): IMap<String,Any>? {
+    ): IMap<String, Any>? {
         return ParsingHelper.merge(
             formatCancelOrderPayload(payload, fromSlTpDialog),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),

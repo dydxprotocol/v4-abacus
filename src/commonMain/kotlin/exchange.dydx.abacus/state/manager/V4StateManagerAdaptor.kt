@@ -1180,7 +1180,7 @@ class V4StateManagerAdaptor(
         val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
-            existingOrder
+            existingOrder,
         )
 
         submitCancelOrder(orderId, callback, payload, analyticsPayload)
@@ -1189,13 +1189,13 @@ class V4StateManagerAdaptor(
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload {
         val payloads = triggerOrdersPayload()
 
-        payloads.cancelOrderPayloads.forEach {payload ->
+        payloads.cancelOrderPayloads.forEach { payload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             val existingOrder = subaccount?.orders?.firstOrNull { it.id == payload.orderId }
             val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 payload,
                 existingOrder,
-                true
+                true,
             )
             submitCancelOrder(payload.orderId, callback, payload, analyticsPayload, true)
         }
