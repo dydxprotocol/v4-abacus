@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.Rounder
 
 internal data class EquityTier(
@@ -22,16 +23,6 @@ enum class RelativeToPrice(val rawValue: String) {
         operator fun invoke(rawValue: String) =
             values().firstOrNull { it.rawValue == rawValue }
     }
-}
-
-enum class TriggerInputField(val rawValue: String) {
-    TP_TRIGGER_PRICE("TP_TRIGGER_PRICE"),
-    TP_GAIN_LOSS("TP_GAIN_LOSS"),
-    SL_TRIGGER_PRICE("SL_TRIGGER_PRICE"),
-    SL_GAIN_LOSS("SL_GAIN_LOSS"),
-    ORDER_SIZE("ORDER_SIZE"),
-    TP_LIMIT_PRICE("TP_LIMIT_PRICE"),
-    SL_LIMIT_PRICE("SL_LIMIT_PRICE"),
 }
 
 internal class TriggerOrdersInputValidator(
@@ -215,7 +206,7 @@ internal class TriggerOrdersInputValidator(
                     error(
                         "ERROR",
                         "USER_MAX_ORDERS",
-                        null,           // No input field since the error is not related to a specific field
+                        null, // No input field since the error is not related to a specific field
                         null,
                         "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
                         "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_CURRENT_EQUITY_TIER",
@@ -236,7 +227,7 @@ internal class TriggerOrdersInputValidator(
                     error(
                         "ERROR",
                         "USER_MAX_ORDERS",
-                        null,    // No input field since the error is not related to a specific field
+                        null, // No input field since the error is not related to a specific field
                         null,
                         "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
                         "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_TOP_EQUITY_TIER",
@@ -354,26 +345,23 @@ internal class TriggerOrdersInputValidator(
         val type = parser.asString(triggerOrder["type"])
         val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
         val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
+        val inputField = parser.asString(parser.value(triggerOrder, "price.input"))
         val fields = if (type == "STOP_LIMIT" || type == "STOP_MARKET") {
-            var list: MutableList<String> = mutableListOf()
             if (triggerPrice != null && triggerPrice <= 0) {
-                list.add(TriggerInputField.SL_TRIGGER_PRICE.rawValue)
-                list.add(TriggerInputField.SL_GAIN_LOSS.rawValue)
+                listOfNotNull(inputField)
+            } else if (limitPrice != null && limitPrice <= 0) {
+                listOf(TriggerOrdersInputField.stopLossLimitPrice.rawValue)
+            } else {
+                null
             }
-            if (limitPrice != null && limitPrice <= 0) {
-                list.add(TriggerInputField.SL_LIMIT_PRICE.rawValue)
-            }
-            list
         } else if (type == "TAKE_PROFIT" || type == "TAKE_PROFIT_MARKET") {
-            var list: MutableList<String> = mutableListOf()
             if (triggerPrice != null && triggerPrice <= 0) {
-                list.add(TriggerInputField.TP_TRIGGER_PRICE.rawValue)
-                list.add(TriggerInputField.TP_GAIN_LOSS.rawValue)
+                listOfNotNull(inputField)
+            } else if (limitPrice != null && limitPrice <= 0) {
+                listOf(TriggerOrdersInputField.takeProfitLimitPrice.rawValue)
+            } else {
+                null
             }
-            if (limitPrice != null && limitPrice <= 0) {
-                list.add(TriggerInputField.TP_LIMIT_PRICE.rawValue)
-            }
-            list
         } else {
             null
         }
@@ -403,6 +391,7 @@ internal class TriggerOrdersInputValidator(
 
         val triggerPrice =
             parser.asDouble(parser.value(triggerOrder, "price.triggerPrice")) ?: return null
+        val inputField = parser.asString(parser.value(triggerOrder, "price.input"))
 
         when (val triggerToIndex = requiredTriggerToIndexPrice(type, side)) {
             RelativeToPrice.ABOVE -> {
@@ -413,6 +402,7 @@ internal class TriggerOrdersInputValidator(
                             oraclePrice,
                             tickSize,
                             type,
+                            inputField,
                         ),
                     )
                 }
@@ -426,6 +416,7 @@ internal class TriggerOrdersInputValidator(
                             oraclePrice,
                             tickSize,
                             type,
+                            inputField,
                         ),
                     )
                 }
@@ -442,11 +433,11 @@ internal class TriggerOrdersInputValidator(
         val type = parser.asString(triggerOrder["type"])
         val fields = if (type == "STOP_LIMIT") {
             listOf(
-                TriggerInputField.SL_LIMIT_PRICE.rawValue,
+                TriggerOrdersInputField.stopLossLimitPrice.rawValue,
             )
         } else if (type == "TAKE_PROFIT") {
             listOf(
-                TriggerInputField.TP_LIMIT_PRICE.rawValue,
+                TriggerOrdersInputField.takeProfitLimitPrice.rawValue,
             )
         } else {
             null
@@ -508,7 +499,7 @@ internal class TriggerOrdersInputValidator(
                             error(
                                 "ERROR",
                                 "AMOUNT_INPUT_STEP_SIZE",
-                                listOf(TriggerInputField.ORDER_SIZE.rawValue),
+                                listOf(TriggerOrdersInputField.size.rawValue),
                                 null,
                                 "ERRORS.TRADE_BOX_TITLE.AMOUNT_INPUT_STEP_SIZE",
                                 "ERRORS.TRADE_BOX.AMOUNT_INPUT_STEP_SIZE",
@@ -528,7 +519,7 @@ internal class TriggerOrdersInputValidator(
                             error(
                                 "ERROR",
                                 "ORDER_SIZE_BELOW_MIN_SIZE",
-                                listOf(TriggerInputField.ORDER_SIZE.rawValue),
+                                listOf(TriggerOrdersInputField.size.rawValue),
                                 null,
                                 "ERRORS.TRADE_BOX_TITLE.ORDER_SIZE_BELOW_MIN_SIZE",
                                 "ERRORS.TRADE_BOX.ORDER_SIZE_BELOW_MIN_SIZE",
@@ -577,6 +568,7 @@ internal class TriggerOrdersInputValidator(
         oraclePrice: Double,
         tickSize: String,
         type: String,
+        inputField: String?,
     ): Map<String, Any> {
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
         val params = mapOf(
@@ -587,19 +579,8 @@ internal class TriggerOrdersInputValidator(
                     "tickSize" to tickSize,
                 ),
         )
-        val fields = if (type == "STOP_LIMIT" || type == "STOP_MARKET") {
-            listOf(
-                TriggerInputField.SL_TRIGGER_PRICE.rawValue,
-                TriggerInputField.SL_GAIN_LOSS.rawValue
-            )
-        } else if (type == "TAKE_PROFIT" || type == "TAKE_PROFIT_MARKET") {
-            listOf(
-                TriggerInputField.TP_TRIGGER_PRICE.rawValue,
-                TriggerInputField.TP_GAIN_LOSS.rawValue
-            )
-        } else {
-            null
-        }
+        val fields = listOfNotNull(inputField)
+
         return when (triggerToIndex) {
             RelativeToPrice.ABOVE -> error(
                 "ERROR",
