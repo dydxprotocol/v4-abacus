@@ -16,15 +16,6 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         )
     }
 
-    @Test
-    fun testDataFeed() {
-        setup()
-
-        print("--------First round----------\n")
-
-        testTriggerOrdersInputOnce()
-    }
-
     override fun reset() {
         super.reset()
         test({
@@ -32,24 +23,11 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         }, null)
     }
 
-    private fun testTriggerOrdersInputOnce() {
+    @Test
+    fun testTriggerOrderInputs() {
+        setup()
         reset()
-        testTriggerOrderInputs()
 
-        reset()
-        testTriggerOrderInputStopMarketType()
-
-        reset()
-        testTriggerOrderInputStopLimitType()
-
-        reset()
-        testTriggerOrderInputTakeProfitMarketType()
-
-        reset()
-        testTriggerOrderInputTakeProfitLimitType()
-    }
-
-    private fun testTriggerOrderInputs() {
         test(
             {
                 perp.triggerOrders("STOP_MARKET", TriggerOrdersInputField.stopLossOrderType, 0)
@@ -71,7 +49,8 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "ORDER_SIZE_BELOW_MIN_SIZE"
+                            "code": "ORDER_SIZE_BELOW_MIN_SIZE",
+                            "fields": ["size"]
                         }
                     ]        
                 }
@@ -93,7 +72,8 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "AMOUNT_INPUT_STEP_SIZE"
+                            "code": "AMOUNT_INPUT_STEP_SIZE",
+                            "fields": ["size"]
                         }
                     ]        
                 }
@@ -117,7 +97,8 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "AMOUNT_INPUT_STEP_SIZE"
+                            "code": "AMOUNT_INPUT_STEP_SIZE",
+                            "fields": ["size"]
                         }
                     ]        
                 }
@@ -126,7 +107,11 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         )
     }
 
-    private fun testTriggerOrderInputStopMarketType() {
+    @Test
+    fun testTriggerOrderInputStopMarketType() {
+        setup()
+        reset()
+
         test({
             perp.triggerOrders("STOP_MARKET", TriggerOrdersInputField.stopLossOrderType, 0)
         }, null)
@@ -148,6 +133,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                         {
                             "type": "ERROR",
                             "code": "TRIGGER_MUST_BELOW_INDEX_PRICE",
+                            "fields": ["stopLossOrder.price.triggerPrice"],
                             "resources": {
                                 "title": {
                                     "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
@@ -195,6 +181,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                         {
                             "type": "ERROR",
                             "code": "PRICE_MUST_POSITIVE",
+                            "fields": ["stopLossOrder.price.usdcDiff"],
                             "resources": {
                                 "title": {
                                     "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.PRICE_MUST_POSITIVE"
@@ -214,7 +201,11 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         )
     }
 
-    private fun testTriggerOrderInputStopLimitType() {
+    @Test
+    fun testTriggerOrderInputStopLimitType() {
+        setup()
+        reset()
+
         test({
             perp.triggerOrders("STOP_LIMIT", TriggerOrdersInputField.stopLossOrderType, 0)
         }, null)
@@ -272,6 +263,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                         {
                             "type": "ERROR",
                             "code": "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                            "fields": ["stopLossOrder.price.limitPrice"],
                             "resources": {
                                 "title": {
                                     "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE"
@@ -291,7 +283,11 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         )
     }
 
-    private fun testTriggerOrderInputTakeProfitMarketType() {
+    @Test
+    fun testTriggerOrderInputTakeProfitMarketType() {
+        setup()
+        reset()
+
         test({
             perp.triggerOrders("TAKE_PROFIT_MARKET", TriggerOrdersInputField.takeProfitOrderType, 0)
         }, null)
@@ -313,6 +309,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                         {
                             "type": "ERROR",
                             "code": "TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                            "fields": ["takeProfitOrder.price.triggerPrice"],
                             "resources": {
                                 "title": {
                                     "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
@@ -332,7 +329,11 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
         )
     }
 
-    private fun testTriggerOrderInputTakeProfitLimitType() {
+    @Test
+    fun testTriggerOrderInputTakeProfitLimitType() {
+        setup()
+        reset()
+
         test({
             perp.triggerOrders("TAKE_PROFIT", TriggerOrdersInputField.takeProfitOrderType, 0)
         }, null)
@@ -394,6 +395,7 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                         {
                             "type": "ERROR",
                             "code": "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                            "fields": ["takeProfitOrder.price.limitPrice"],
                             "resources": {
                                 "title": {
                                     "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"
