@@ -51,21 +51,17 @@ The Android app (https://github.com/dydxprotocol/native-android) has the Gradle 
 
 # Web #
 
-Abacuas generates Javascript and Typescript files with the following command:
+Abaacus generates a Javascript / Typescript UMD module with the following command:
 
 > ./gradlew assembleJsPackage
 
-This outputs into **build/distributions**, and references the packages in the **build/js** directory.
+This outputs into **build/packages/js**.
 
-Sample integration from a html page can be find in **integration/Web**.
+A local npm package can be built with:
 
-You can export the build to a package locally with the following commands:
+> ./gradlew packJsPackage
 
-> cd ./build/packages/js
-
-> npm pack
-
-A tarball of the package should be created and you can install it to your project for local testing:
+A tarball of the package should be created in **build/packages** and you can install it to your project for local testing:
 
 > npm install PATH_TO_TARBALL
 
