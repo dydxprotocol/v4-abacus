@@ -31,9 +31,38 @@ class AnalyticsUtils {
             "size" to payload.size,
             "subaccountNumber" to payload.subaccountNumber,
             "timeInForce" to payload.timeInForce,
+            "inferredTimeInForce" to calculateOrderTimeInForce(payload),
             "triggerPrice" to payload.triggerPrice,
             "type" to payload.type,
         ) as IMap<String, Any>?
+    }
+
+    /**
+     * Infer time in force from order params for analytics, mirroring v4-clients
+     * @param payload HumanReadablePlaceOrderPayload
+     */
+    private fun calculateOrderTimeInForce(
+        payload: HumanReadablePlaceOrderPayload
+    ): String? {
+        return when (payload.type) {
+            "MARKET" -> payload.timeInForce ?: "FOK"
+            "LIMIT" -> {
+                when (payload.timeInForce) {
+                    "GTT" -> if (payload.postOnly == true) "POST_ONLY" else "GTT"
+                    else -> payload.timeInForce
+                }
+            }
+
+            "STOP_LIMIT", "TAKE_PROFIT" -> {
+                when (payload.execution) {
+                    "DEFAULT" -> "GTT"
+                    else -> payload.execution
+                }
+            }
+
+            "STOP_MARKET", "TAKE_PROFIT_MARKET" -> payload.execution
+            else -> payload.timeInForce ?: payload.execution
+        }
     }
 
     /**

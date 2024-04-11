@@ -1174,7 +1174,13 @@ class V4StateManagerAdaptor(
 
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         val payload = cancelOrderPayload(orderId)
-        val analyticsPayload = analyticsUtils.formatCancelOrderPayload(payload)
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
+        val analyticsPayload = ParsingHelper.merge(
+            analyticsUtils.formatCancelOrderPayload(payload),
+            if (existingOrder != null) analyticsUtils.formatOrder(existingOrder) else mapOf()
+        )?.toIMap()
+
         submitCancelOrder(orderId, callback, payload, analyticsPayload)
     }
 
