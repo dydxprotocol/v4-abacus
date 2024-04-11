@@ -48,11 +48,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-<<<<<<< HEAD
-version = "1.6.41"
-=======
-version = "1.6.40"
->>>>>>> a330d50 (bump version)
+version = "1.6.42"
 
 repositories {
     google()
