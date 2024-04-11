@@ -1162,13 +1162,15 @@ class V4StateManagerAdaptor(
 
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = placeOrderPayload()
-        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(payload)
+        val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice)
         return submitPlaceOrder(callback, payload, analyticsPayload)
     }
 
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload()
-        val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(payload, true)
+        val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, true)
         return submitPlaceOrder(callback, payload, analyticsPayload)
     }
 
@@ -1176,10 +1178,10 @@ class V4StateManagerAdaptor(
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
         val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
-        val analyticsPayload = ParsingHelper.merge(
-            analyticsUtils.formatCancelOrderPayload(payload),
-            if (existingOrder != null) analyticsUtils.formatOrder(existingOrder) else mapOf(),
-        )?.toIMap()
+        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
+            payload,
+            existingOrder
+        )
 
         submitCancelOrder(orderId, callback, payload, analyticsPayload)
     }
@@ -1187,18 +1189,26 @@ class V4StateManagerAdaptor(
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload {
         val payloads = triggerOrdersPayload()
 
-        payloads.cancelOrderPayloads.forEach {
-            val analyticsPayload = analyticsUtils.formatCancelOrderPayload(it, true)
-            submitCancelOrder(it.orderId, callback, it, analyticsPayload, true)
+        payloads.cancelOrderPayloads.forEach {payload ->
+            val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == payload.orderId }
+            val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
+                payload,
+                existingOrder,
+                true
+            )
+            submitCancelOrder(payload.orderId, callback, payload, analyticsPayload, true)
         }
 
-        payloads.placeOrderPayloads.forEach {
-            val analyticsPayload = analyticsUtils.formatPlaceOrderPayload(
-                it,
+        payloads.placeOrderPayloads.forEach { payload ->
+            val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
+            val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
+                payload,
+                midMarketPrice,
                 isClosePosition = false,
                 fromSlTpDialog = true,
             )
-            submitPlaceOrder(callback, it, analyticsPayload, true)
+            submitPlaceOrder(callback, payload, analyticsPayload, true)
         }
 
         if (payloads.cancelOrderPayloads.isEmpty() && payloads.placeOrderPayloads.isEmpty()) {
