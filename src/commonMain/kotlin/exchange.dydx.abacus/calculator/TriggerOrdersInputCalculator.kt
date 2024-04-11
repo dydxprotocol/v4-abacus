@@ -178,7 +178,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            usdcDiff.div(scaledNotionalTotal).times(leverage).times(100)
+                            usdcDiff.div(scaledNotionalTotal).times(leverage).times(100),
                         )
                     } else {
                         modified.safeSet(
@@ -203,7 +203,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                         )
                         modified.safeSet(
                             "percentDiff",
-                            usdcDiff.div(scaledNotionalTotal).times(leverage).times(100)
+                            usdcDiff.div(scaledNotionalTotal).times(leverage).times(100),
                         )
                     } else {
                         modified.safeSet(
