@@ -1178,7 +1178,7 @@ class V4StateManagerAdaptor(
         val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
         val analyticsPayload = ParsingHelper.merge(
             analyticsUtils.formatCancelOrderPayload(payload),
-            if (existingOrder != null) analyticsUtils.formatOrder(existingOrder) else mapOf()
+            if (existingOrder != null) analyticsUtils.formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
 
         submitCancelOrder(orderId, callback, payload, analyticsPayload)

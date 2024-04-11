@@ -70,7 +70,10 @@ class AnalyticsUtils {
      * @param payload HumanReadableCancelOrderPayload
      * @param fromSlTpDialog Boolean
      */
-    fun formatCancelOrderPayload(payload: HumanReadableCancelOrderPayload, fromSlTpDialog: Boolean? = false,): IMap<String, Any>? {
+    fun formatCancelOrderPayload(
+        payload: HumanReadableCancelOrderPayload,
+        fromSlTpDialog: Boolean? = false,
+    ): IMap<String, Any>? {
         return iMapOf(
             "fromSlTpDialog" to fromSlTpDialog,
             "subaccountNumber" to payload.subaccountNumber,
