@@ -3,14 +3,37 @@ package exchange.dydx.abacus.utils
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
+import kollections.toIMap
 
 class AnalyticsUtils {
+    /**
+     * Format Place Order Payload and add additional details for `TradePlaceOrder` Analytic Events
+     * @param payload HumanReadablePlaceOrderPayload
+     * @param midMarketPrice Double?
+     * @param isClosePosition Boolean?
+     * @param fromSlTpDialog Boolean?
+     */
+    fun placeOrderAnalyticsPayload(
+        payload: HumanReadablePlaceOrderPayload,
+        midMarketPrice: Double?,
+        isClosePosition: Boolean? = false,
+        fromSlTpDialog: Boolean? = false,
+    ): IMap<String, Any>? {
+        return ParsingHelper.merge(
+            formatPlaceOrderPayload(payload, isClosePosition, fromSlTpDialog),
+            iMapOf(
+                "inferredTimeInForce" to calculateOrderTimeInForce(payload),
+                "midMarketPrice" to midMarketPrice,
+            ) as IMap<String, Any>?,
+        )?.toIMap()
+    }
+
     /**
      * Format Place Order Payload for `TradePlaceOrder` Analytic Event
      * @param payload HumanReadablePlaceOrderPayload
      * @param isClosePosition Boolean
      */
-    fun formatPlaceOrderPayload(
+    private fun formatPlaceOrderPayload(
         payload: HumanReadablePlaceOrderPayload,
         isClosePosition: Boolean? = false,
         fromSlTpDialog: Boolean? = false,
@@ -37,11 +60,54 @@ class AnalyticsUtils {
     }
 
     /**
-     * Format Cancel Order Payload for `TradeCancelOrder` Analytic Event
+     * Infer time in force from order params for analytics, mirroring v4-clients
+     * @param payload HumanReadablePlaceOrderPayload
+     */
+    private fun calculateOrderTimeInForce(
+        payload: HumanReadablePlaceOrderPayload
+    ): String? {
+        return when (payload.type) {
+            "MARKET" -> payload.timeInForce ?: "FOK"
+            "LIMIT" -> {
+                when (payload.timeInForce) {
+                    "GTT" -> if (payload.postOnly == true) "POST_ONLY" else "GTT"
+                    else -> payload.timeInForce
+                }
+            }
+
+            "STOP_LIMIT", "TAKE_PROFIT" -> {
+                when (payload.execution) {
+                    "DEFAULT" -> "GTT"
+                    else -> payload.execution
+                }
+            }
+
+            "STOP_MARKET", "TAKE_PROFIT_MARKET" -> payload.execution
+            else -> payload.timeInForce ?: payload.execution
+        }
+    }
+
+    /**
+     * Format Cancel Order Payload and add order details for `TradeCancelOrder` Analytic Events
      * @param payload HumanReadableCancelOrderPayload
+     * @param existingOrder SubaccountOrder?
      * @param fromSlTpDialog Boolean
      */
-    fun formatCancelOrderPayload(payload: HumanReadableCancelOrderPayload, fromSlTpDialog: Boolean? = false,): IMap<String, Any>? {
+    fun cancelOrderAnalyticsPayload(
+        payload: HumanReadableCancelOrderPayload,
+        existingOrder: SubaccountOrder?,
+        fromSlTpDialog: Boolean? = false,
+    ): IMap<String, Any>? {
+        return ParsingHelper.merge(
+            formatCancelOrderPayload(payload, fromSlTpDialog),
+            if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
+        )?.toIMap()
+    }
+
+    private fun formatCancelOrderPayload(
+        payload: HumanReadableCancelOrderPayload,
+        fromSlTpDialog: Boolean? = false,
+    ): IMap<String, Any>? {
         return iMapOf(
             "fromSlTpDialog" to fromSlTpDialog,
             "subaccountNumber" to payload.subaccountNumber,
