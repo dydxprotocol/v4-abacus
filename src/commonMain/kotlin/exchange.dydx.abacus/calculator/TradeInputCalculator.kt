@@ -118,6 +118,7 @@ internal class TradeInputCalculator(
                     parser,
                     "postOrder",
                     featureFlags.usePessimisticCollateralCheck,
+                    featureFlags.useOptimisticCollateralCheck,
                 ),
             )
             modified

@@ -87,7 +87,8 @@ class EnvironmentsMock {
                  },
                  "featureFlags":{
                      "reduceOnlySupported":true,
-                     "usePessimisticCollateralCheck":false
+                     "usePessimisticCollateralCheck":false,
+                     "useOptimisticCollateralCheck":true
                  },
                  "governance": {
                     "newMarketProposal": {
@@ -120,7 +121,8 @@ class EnvironmentsMock {
                  },
                  "featureFlags":{
                      "reduceOnlySupported":false,
-                     "usePessimisticCollateralCheck":true
+                     "usePessimisticCollateralCheck":true,
+                     "useOptimisticCollateralCheck":false
                   },
                  "governance": {
                     "newMarketProposal": {

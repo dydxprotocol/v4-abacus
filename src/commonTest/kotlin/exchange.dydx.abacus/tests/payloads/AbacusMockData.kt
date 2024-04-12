@@ -104,7 +104,8 @@ class AbacusMockData {
         null,
         EnvironmentFeatureFlags(
             reduceOnlySupported = true,
-            usePessimisticCollateralCheck = true,
+            usePessimisticCollateralCheck = false,
+            useOptimisticCollateralCheck = true,
             withdrawalSafetyEnabled = true,
         ),
     )

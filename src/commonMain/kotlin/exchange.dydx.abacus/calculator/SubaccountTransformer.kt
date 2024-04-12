@@ -29,14 +29,21 @@ internal class SubaccountTransformer {
         limitPrice: Double?,
         isBuying: Boolean,
         usePessimisticPrice: Boolean,
+        useOptimisticPrice: Boolean,
     ): Double? {
-        if (usePessimisticPrice) {
-            oraclePrice?.let { oraclePrice ->
-                limitPrice?.let { limitPrice ->
+        oraclePrice?.let { oraclePrice ->
+            limitPrice?.let { limitPrice ->
+                if (usePessimisticPrice) {
                     return if (isBuying) {
                         max(oraclePrice, limitPrice)
                     } else {
                         min(oraclePrice, limitPrice)
+                    }
+                } else if (useOptimisticPrice) {
+                    return if (isBuying) {
+                        min(oraclePrice, limitPrice)
+                    } else {
+                        max(oraclePrice, limitPrice)
                     }
                 }
             }
@@ -49,6 +56,7 @@ internal class SubaccountTransformer {
         trade: Map<String, Any>,
         market: Map<String, Any>?,
         usePessimisticCollateralCheck: Boolean,
+        useOptimisticCollateralCheck: Boolean,
     ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
         val side = parser.asString(trade["side"])
@@ -64,6 +72,7 @@ internal class SubaccountTransformer {
                             originalPrice,
                             side == "BUY",
                             usePessimisticCollateralCheck,
+                            useOptimisticCollateralCheck,
                         )
                     } ?: originalPrice
                     val size = (
@@ -196,10 +205,17 @@ internal class SubaccountTransformer {
         market: Map<String, Any>?,
         parser: ParserProtocol,
         period: String,
-        usePessimisticCollateralCheck: Boolean
+        usePessimisticCollateralCheck: Boolean,
+        useOptimisticCollateralCheck: Boolean,
     ): Map<String, Any>? {
         if (subaccount != null) {
-            val delta = deltaFromTrade(parser, trade, market, usePessimisticCollateralCheck)
+            val delta = deltaFromTrade(
+                parser,
+                trade,
+                market,
+                usePessimisticCollateralCheck,
+                useOptimisticCollateralCheck,
+            )
             return applyDeltaToSubaccount(subaccount, delta, parser, period)
         }
         return subaccount
