@@ -43,7 +43,7 @@ Debugging on iOS directly from XCode is possible with a plugin (https://github.c
 
 # Android #
 
-Abacus builds and pushes the JVM target as a Github packagewith the followinng command:
+Abacus builds and pushes the JVM target as a Github package with the following command:
 
 > ./publish_android.sh
 
@@ -51,7 +51,9 @@ The Android app (https://github.com/dydxprotocol/native-android) has the Gradle 
 
 # Web #
 
-Abaacus generates a Javascript / Typescript UMD module with the following command:
+## If you are using v4-abacus with the v4-web repo, follow local development instructions [here.](https://github.com/dydxprotocol/v4-web?tab=readme-ov-file#local-abacus-development) 
+
+Abacus generates a Javascript / Typescript UMD module with the following command:
 
 > ./gradlew assembleJsPackage
 
