@@ -81,7 +81,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": -62697.28,
-                                    "postOrder": -24012.93
+                                    "postOrder": -21684.24
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -131,7 +131,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": -62697.28,
-                                    "postOrder": -37884.91
+                                    "postOrder": -36397.88
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -206,7 +206,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": 68257.22,
-                                    "postOrder": 21717.8
+                                    "postOrder": 24308.3
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
@@ -256,7 +256,7 @@ class V3ClosePositionTests : V3BaseTests() {
                             "0": {
                                 "quoteBalance": {
                                     "current": 68257.22,
-                                    "postOrder": 41957.82
+                                    "postOrder": 43421.72
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
