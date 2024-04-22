@@ -101,7 +101,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.times
 import kotlin.time.toDuration
-import exchange.dydx.abacus.utils.Logger
 
 @JsExport
 open class StateManagerAdaptor(
@@ -1804,19 +1803,12 @@ open class StateManagerAdaptor(
         val postOnly = false
 
         val timeInForce = null;
-        // when (triggerOrder.type) {
-        //     OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-        //     OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
-        //     else -> throw Exception("invalid triggerOrderType")
-        // }
 
         val execution = when (triggerOrder.type) {
             OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "Default"
+            OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT"
             else -> throw Exception("invalid triggerOrderType")
         }
-
-        Logger.e { "xcxc error: ${type} ${execution}"}
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
@@ -1955,13 +1947,10 @@ open class StateManagerAdaptor(
         }
 
         val execution = if (trade.options?.executionOptions != null) {
-            trade.execution ?: "Default"
+            trade.execution ?: "DEFAULT"
         } else {
             null
         }
-
-        Logger.e { "xcxc ${timeInForce} ${execution}"}
-
 
         val goodTilTimeInSeconds = (
             (
@@ -2031,7 +2020,7 @@ open class StateManagerAdaptor(
         val price = summary.payloadPrice ?: throw Exception("price is null")
         val size = summary.size ?: throw Exception("size is null")
         val timeInForce = "IOC"
-        val execution = "Default"
+        val execution = "DEFAULT"
         val reduceOnly = environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null

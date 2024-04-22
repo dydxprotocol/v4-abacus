@@ -71,7 +71,6 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
-import exchange.dydx.abacus.utils.Logger
 
 internal class SubaccountSupervisor(
     stateMachine: TradingStateMachine,
@@ -842,15 +841,11 @@ internal class SubaccountSupervisor(
             null
         }
 
-
-
         val execution = if (trade.options?.executionOptions != null) {
-            trade.execution ?: "Default"
+            trade.execution ?: "DEFAULT"
         } else {
             null
         }
-
-        Logger.e { "xcxc ${timeInForce} ${execution}"}
 
         val goodTilTimeInSeconds = (
             (
@@ -910,19 +905,11 @@ internal class SubaccountSupervisor(
 
         val timeInForce = null;
 
-        // when (triggerOrder.type) {
-        //     OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-        //     OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
-        //     else -> throw Exception("invalid triggerOrderType")
-        // }
-
         val execution = when (triggerOrder.type) {
             OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "Default"
+            OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT"
             else -> throw Exception("invalid triggerOrderType")
         }
-
-        Logger.e { "xcxc error: ${type} ${execution}"}
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
@@ -1004,7 +991,7 @@ internal class SubaccountSupervisor(
         }
 
         if (triggerOrders.stopLossOrder != null) {
-        updateTriggerOrder(triggerOrders.stopLossOrder)
+            updateTriggerOrder(triggerOrders.stopLossOrder)
         }
 
         if (triggerOrders.takeProfitOrder != null) {
@@ -1024,7 +1011,7 @@ internal class SubaccountSupervisor(
         val price = summary.payloadPrice ?: throw Exception("price is null")
         val size = summary.size ?: throw Exception("size is null")
         val timeInForce = "IOC"
-        val execution = "Default"
+        val execution = "DEFAULT"
         val reduceOnly = helper.environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null
