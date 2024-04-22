@@ -850,7 +850,7 @@ internal class SubaccountSupervisor(
         }
 
         val execution = if (trade.options?.executionOptions != null) {
-            trade.execution ?: "Default"
+            trade.execution ?: "DEFAULT"
         } else {
             null
         }
@@ -911,15 +911,16 @@ internal class SubaccountSupervisor(
         val reduceOnly = true
         val postOnly = false
 
-        val timeInForce = when (triggerOrder.type) {
-            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
-            else -> throw Exception("invalid triggerOrderType")
-        }
+        // TP/SL orders always have a null timeInForce. IOC/FOK/PostOnly/GTD is distinguished by the execution field.
+        val timeInForce = null;
 
+        /**
+         * TP/SL market orders default to IOC execution.
+         * TP/SL limit orders default to GTD (default) execution.
+         */
         val execution = when (triggerOrder.type) {
             OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "Default"
+            OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT"
             else -> throw Exception("invalid triggerOrderType")
         }
 
@@ -1023,7 +1024,7 @@ internal class SubaccountSupervisor(
         val price = summary.payloadPrice ?: throw Exception("price is null")
         val size = summary.size ?: throw Exception("size is null")
         val timeInForce = "IOC"
-        val execution = "Default"
+        val execution = "DEFAULT"
         val reduceOnly = helper.environment.featureFlags.reduceOnlySupported
         val postOnly = false
         val goodTilTimeInSeconds = null

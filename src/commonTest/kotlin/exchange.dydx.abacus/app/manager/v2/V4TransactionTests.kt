@@ -7,6 +7,8 @@ import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
@@ -222,14 +224,29 @@ class V4TransactionTests : NetworkTests() {
         val ethStopLimitTriggerPrice = "3300"
         val ethStopLimitLimitPrice = "2100"
 
-        fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice) {
+        fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice): HumanReadableTriggerOrdersPayload? {
             triggerOrdersInput("BTC-USD", slTriggerPrice, tpTriggerPrice, slLimitPrice, tpLimitPrice)
-            subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
+            return subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
         }
 
-        fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize) {
+        fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize): HumanReadableTriggerOrdersPayload? {
             triggerOrdersInput(marketId = "ETH-USD", stopLossTriggerPrice = triggerPrice, stopLossLimitPrice = limitPrice, stopLossOrderId = ethStopLimitOrderId, size = size)
-            subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
+            return subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
+        }
+
+        fun validateMarketOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
+            assertEquals(payload.execution, "IOC")
+            assertEquals(payload.timeInForce, null)
+            assertEquals(payload.reduceOnly, true)
+            assertEquals(payload.postOnly, false)
+        }
+
+        fun validateLimitOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
+            assertEquals(payload.execution, "DEFAULT")
+            assertEquals(payload.timeInForce, null)
+            assertEquals(payload.goodTilTimeInSeconds, 2419200)
+            assertEquals(payload.reduceOnly, true)
+            assertEquals(payload.postOnly, false)
         }
 
         fun clearTransactions(numTimes: Int) {
@@ -247,12 +264,18 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueStarted()
 
         // Creating New Orders
-        simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 1 new market order created
+        val marketOrders = simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 2 new market orders created
+        assertEquals(2, marketOrders?.placeOrderPayloads?.size)
+        marketOrders?.placeOrderPayloads?.forEach { it -> validateMarketOrderDefaults(it) }
+
         assertEquals(2, transactionQueue?.size)
         assertEquals(1, transactionCalledCount)
         clearTransactions(2)
 
-        simulateNewBtcOrder() // 2 new limit orders created
+        val limitOrders = simulateNewBtcOrder() // 2 new limit orders created
+        assertEquals(2, limitOrders?.placeOrderPayloads?.size)
+        limitOrders?.placeOrderPayloads?.forEach { it -> validateLimitOrderDefaults(it) }
+
         assertEquals(2, transactionQueue?.size)
         assertEquals(3, transactionCalledCount)
         clearTransactions(2)
@@ -262,7 +285,10 @@ class V4TransactionTests : NetworkTests() {
         simulateStopLimitOrderReplacement() // No action here since new order matches the existing order
         assertEquals(0, transactionQueue?.size)
 
-        simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
+        val replacedOrders = simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
+        assertEquals(1, replacedOrders?.placeOrderPayloads?.size)
+        assertEquals(1, replacedOrders?.cancelOrderPayloads?.size)
+
         assertEquals(2, transactionQueue?.size)
         clearTransactions(2)
 
@@ -279,7 +305,8 @@ class V4TransactionTests : NetworkTests() {
         clearTransactions(2)
 
         // Canceling Existing Orders
-        simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
+        val cancelledOrders = simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
+        assertEquals(1, cancelledOrders?.cancelOrderPayloads?.size)
         assertEquals(1, transactionQueue?.size)
     }
 
@@ -349,7 +376,7 @@ class V4TransactionTests : NetworkTests() {
 
         val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
         assertNotNull(orderPayload, "Order payload should not be null")
-        assertEquals(256, orderPayload?.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
 
         val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
         assertNotNull(transferPayload, "Transfer payload should not be null")
@@ -364,6 +391,6 @@ class V4TransactionTests : NetworkTests() {
 
         val cancelPayload = subaccountSupervisor?.cancelOrder("b812bea8-29d3-5841-9549-caa072f6f8a9", transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
-        assertEquals(128, cancelPayload?.subaccountNumber)
+        assertEquals(128, cancelPayload.subaccountNumber)
     }
 }
