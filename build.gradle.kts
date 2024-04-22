@@ -17,6 +17,7 @@ plugins {
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.4.2"
     id("com.diffplug.spotless") version "6.25.0"
+    id("io.gitlab.arturbosch.detekt") version("1.23.3")
 }
 
 allprojects {
@@ -172,6 +173,13 @@ kotlin {
         //xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         //xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
     }
+}
+
+detekt {
+    toolVersion = "1.23.3"
+    config.setFrom(file("detekt.yml"))
+    baseline = file("detekt-baseline.xml")
+    buildUponDefaultConfig = true
 }
 
 npmPublish {

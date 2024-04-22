@@ -1,4 +1,4 @@
-name: SpotlessCheck
+name: CI
 
 on: 
   pull_request:
@@ -6,7 +6,7 @@ on:
       - '**/*.kt'
 
 jobs:
-  spotlessCheck:
+  setup:
     runs-on: macos-latest
 
     steps:
@@ -19,6 +19,18 @@ jobs:
         java-version: '17'
         distribution: 'adopt'
 
-    - name: Lint Kotlin Files
+  spotless:
+    runs-on: macos-latest
+    needs: setup
+    steps:
+    - name: spotless
       run: |
         ./gradlew spotlessCheck
+
+  detekt:
+    runs-on: macos-latest
+    needs: setup
+    steps:
+      - name: detekt
+        run: |
+          ./gradlew detektMetadataMain
