@@ -17,7 +17,7 @@ The library generates Swift framework for iOS, JVM library for Android, and Java
 
 ![giphy](https://user-images.githubusercontent.com/102453770/175617972-a2a727fc-b154-4770-9b39-c6372d7777ce.gif)
 
-# Install Java 11 #
+# Install Java 11
 
 https://www.oracle.com/java/technologies/downloads/#java11
 
@@ -25,7 +25,7 @@ https://www.oracle.com/java/technologies/downloads/#java11
 
 [API Documentations](docs/Abacus.md)
 
-# iOS #
+# iOS
 
 Abacus uses Cocoapods to integrate with iOS project.  The gradle configuration contains the steps needed to generate the .podspec file.  Run 
 
@@ -41,7 +41,7 @@ This generates the iOS framework in **build/XCFrameworks** folder.
 
 Debugging on iOS directly from XCode is possible with a plugin (https://github.com/touchlab/xcode-kotlin)  
 
-# Android #
+# Android
 
 Abacus builds and pushes the JVM target as a Github package with the following command:
 
@@ -49,9 +49,11 @@ Abacus builds and pushes the JVM target as a Github package with the following c
 
 The Android app (https://github.com/dydxprotocol/native-android) has the Gradle build step to pull the Abacus target from GithubPackage.
 
-# Web #
+# v4-web
 
-## If you are using v4-abacus with the v4-web repo, follow local development instructions [here.](https://github.com/dydxprotocol/v4-web?tab=readme-ov-file#local-abacus-development) 
+**If you are using v4-abacus with the v4-web repo, follow local development instructions [here](https://github.com/dydxprotocol/v4-web?tab=readme-ov-file#local-abacus-development).**
+
+# Other JavaScript / TypeScript 
 
 Abacus generates a Javascript / Typescript UMD module with the following command:
 
@@ -67,7 +69,7 @@ A tarball of the package should be created in **build/packages** and you can ins
 
 > npm install PATH_TO_TARBALL
 
-# Publishing to NPM #
+# Publishing to NPM
 
 Abacus publishes using a library (https://github.com/mpetuska/npm-publish) with the following steps.
 1. Add a "npm_token" environment variable that contains your NPM access token
@@ -75,21 +77,21 @@ Abacus publishes using a library (https://github.com/mpetuska/npm-publish) with 
 3. Run publish_js.sh to publish
 4. Check published version (https://www.npmjs.com/package/@dydxprotocol/abacus)
 
-# Unit Tests #
+# Unit Tests
 
 Shared code should have unit tests written in Kotlin residing in the src/CommonTest directory.  Run the tests with the following command
 
 > ./gradlew test
 
-# Integration Tests #
+# Integration Tests
 
 Integration tests can be written to call Abacus from non-Kotlin code (i.e., Swift, JS).  Sample integration projects can be found in the **integration** directory.
 
-# Version Bump #
+# Version Bump
 
 > ./bump_version.sh
 
-# How to use #
+# How to use
 
 // create a state machine
 val stateMachine = PerpTradingStateMachine()
