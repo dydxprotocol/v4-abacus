@@ -1448,10 +1448,11 @@ class V4StateManagerAdaptor(
         )
     }
 
-    private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
+    private fun errorTrackingParams(error: ParsingError): IMap<String, Any?> {
         return iMapOf(
             "errorType" to error.type.rawValue,
             "errorMessage" to error.message,
+            "errorStringKey" to error.stringKey,
         )
     }
 
