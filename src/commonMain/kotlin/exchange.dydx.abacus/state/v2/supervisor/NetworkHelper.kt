@@ -526,7 +526,7 @@ class NetworkHelper(
             if (error != null) {
                 callback(false, error, data)
             } else {
-                callback(false, null, data)
+                callback(true, null, data)
             }
         }
     }
