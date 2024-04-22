@@ -71,6 +71,7 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
+import exchange.dydx.abacus.utils.Logger
 
 internal class SubaccountSupervisor(
     stateMachine: TradingStateMachine,
@@ -841,11 +842,15 @@ internal class SubaccountSupervisor(
             null
         }
 
+
+
         val execution = if (trade.options?.executionOptions != null) {
             trade.execution ?: "Default"
         } else {
             null
         }
+
+        Logger.e { "xcxc ${timeInForce} ${execution}"}
 
         val goodTilTimeInSeconds = (
             (
@@ -903,17 +908,21 @@ internal class SubaccountSupervisor(
         val reduceOnly = true
         val postOnly = false
 
-        val timeInForce = when (triggerOrder.type) {
-            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
-            else -> throw Exception("invalid triggerOrderType")
-        }
+        val timeInForce = null;
+
+        // when (triggerOrder.type) {
+        //     OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
+        //     OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
+        //     else -> throw Exception("invalid triggerOrderType")
+        // }
 
         val execution = when (triggerOrder.type) {
             OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
             OrderType.stopLimit, OrderType.takeProfitLimit -> "Default"
             else -> throw Exception("invalid triggerOrderType")
         }
+
+        Logger.e { "xcxc error: ${type} ${execution}"}
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
@@ -995,7 +1004,7 @@ internal class SubaccountSupervisor(
         }
 
         if (triggerOrders.stopLossOrder != null) {
-            updateTriggerOrder(triggerOrders.stopLossOrder)
+        updateTriggerOrder(triggerOrders.stopLossOrder)
         }
 
         if (triggerOrders.takeProfitOrder != null) {

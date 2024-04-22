@@ -101,6 +101,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.times
 import kotlin.time.toDuration
+import exchange.dydx.abacus.utils.Logger
 
 @JsExport
 open class StateManagerAdaptor(
@@ -1802,17 +1803,20 @@ open class StateManagerAdaptor(
         val reduceOnly = true
         val postOnly = false
 
-        val timeInForce = when (triggerOrder.type) {
-            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
-            else -> throw Exception("invalid triggerOrderType")
-        }
+        val timeInForce = null;
+        // when (triggerOrder.type) {
+        //     OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
+        //     OrderType.stopLimit, OrderType.takeProfitLimit -> "GTT"
+        //     else -> throw Exception("invalid triggerOrderType")
+        // }
 
         val execution = when (triggerOrder.type) {
             OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
             OrderType.stopLimit, OrderType.takeProfitLimit -> "Default"
             else -> throw Exception("invalid triggerOrderType")
         }
+
+        Logger.e { "xcxc error: ${type} ${execution}"}
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
@@ -1955,6 +1959,9 @@ open class StateManagerAdaptor(
         } else {
             null
         }
+
+        Logger.e { "xcxc ${timeInForce} ${execution}"}
+
 
         val goodTilTimeInSeconds = (
             (
