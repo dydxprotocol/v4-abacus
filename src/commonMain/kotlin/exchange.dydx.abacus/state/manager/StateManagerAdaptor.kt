@@ -1802,11 +1802,16 @@ open class StateManagerAdaptor(
         val reduceOnly = true
         val postOnly = false
 
-        val timeInForce = null; // TP/SL orders always have a null timeInForce. IOC/FOK/PostOnly/GTD is distinguished by the execution field.
+        // TP/SL orders always have a null timeInForce. IOC/FOK/PostOnly/GTD is distinguished by the execution field.
+        val timeInForce = null;
 
+        /**
+         * TP/SL market orders default to IOC execution.
+         * TP/SL limit orders default to GTD (default) execution.
+         */
         val execution = when (triggerOrder.type) {
-            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC" // All TP/SL market orders currently default to IOC execution.
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT" // All TP/SL limit orders currently default to GTD (default) execution.
+            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
+            OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT"
             else -> throw Exception("invalid triggerOrderType")
         }
 
