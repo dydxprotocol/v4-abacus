@@ -31,6 +31,7 @@ enum class Changes(val rawValue: String) {
     transferStatuses("transferStatuses"),
     input("input"),
     restriction("restriction"),
+    compliance("compliance"),
 
     launchIncentive("launchIncentive"),
     ;

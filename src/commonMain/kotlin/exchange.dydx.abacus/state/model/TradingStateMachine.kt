@@ -640,6 +640,10 @@ open class TradingStateMachine(
                     Logger.d { "Restriction is handled separately and shouldn't have gone through here" }
                     false
                 }
+                Changes.compliance -> {
+                    Logger.d { "Compliance is handled separately and shouldn't have gone through here" }
+                    false
+                }
             }
             if (didChange) {
                 realChanges.add(change)
@@ -969,6 +973,7 @@ open class TradingStateMachine(
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
         val restriction = state?.restriction
         var launchIncentive = state?.launchIncentive
+        val geo = state?.compliance
 
         if (changes.changes.contains(Changes.markets)) {
             parser.asNativeMap(data?.get("markets"))?.let {
@@ -1255,6 +1260,7 @@ open class TradingStateMachine(
             transferStatuses,
             restriction,
             launchIncentive,
+            geo,
         )
     }
 

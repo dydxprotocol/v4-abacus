@@ -26,6 +26,8 @@ class V4StateManagerConfigs(
                          "account":"/v4/addresses",
                          "time":"/v4/time",
                          "screen":"/v4/screen",
+                         "complianceScreen":"/v4/compliance/screen",
+                         "complianceGeoblock":"/v4/compliance/geoblock",
                          "height":"/v4/height"
                       },
                       "private":{

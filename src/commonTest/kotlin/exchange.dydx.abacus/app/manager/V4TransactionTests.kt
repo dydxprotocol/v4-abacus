@@ -4,6 +4,8 @@ import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
+import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
 import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -199,14 +201,29 @@ class V4TransactionTests : NetworkTests() {
         val ethStopLimitTriggerPrice = "3300"
         val ethStopLimitLimitPrice = "2100"
 
-        fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice) {
+        fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice): HumanReadableTriggerOrdersPayload? {
             triggerOrdersInput("BTC-USD", slTriggerPrice, tpTriggerPrice, slLimitPrice, tpLimitPrice)
-            v4Adapter?.commitTriggerOrders(transactionCallback)
+            return v4Adapter?.commitTriggerOrders(transactionCallback)
         }
 
-        fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize) {
+        fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize): HumanReadableTriggerOrdersPayload? {
             triggerOrdersInput(marketId = "ETH-USD", stopLossTriggerPrice = triggerPrice, stopLossLimitPrice = limitPrice, stopLossOrderId = ethStopLimitOrderId, size = size)
-            v4Adapter?.commitTriggerOrders(transactionCallback)
+            return v4Adapter?.commitTriggerOrders(transactionCallback)
+        }
+
+        fun validateMarketOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
+            assertEquals(payload.execution, "IOC")
+            assertEquals(payload.timeInForce, null)
+            assertEquals(payload.reduceOnly, true)
+            assertEquals(payload.postOnly, false)
+        }
+
+        fun validateLimitOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
+            assertEquals(payload.execution, "DEFAULT")
+            assertEquals(payload.timeInForce, null)
+            assertEquals(payload.goodTilTimeInSeconds, 2419200)
+            assertEquals(payload.reduceOnly, true)
+            assertEquals(payload.postOnly, false)
         }
 
         fun clearTransactions(numTimes: Int) {
@@ -224,13 +241,20 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueStarted()
 
         // Creating New Orders
-        simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 2 new market orders created
+        val marketOrders = simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 2 new market orders created
+        assertEquals(2, marketOrders?.placeOrderPayloads?.size)
+        marketOrders?.placeOrderPayloads?.forEach { it -> validateMarketOrderDefaults(it) }
+
         assertEquals(2, transactionQueue?.size)
-        assertEquals(3, transactionCalledCount)
+        assertEquals(1, transactionCalledCount)
         clearTransactions(2)
 
-        simulateNewBtcOrder() // 2 new limit orders created
+        val limitOrders = simulateNewBtcOrder() // 2 new limit orders created
+        assertEquals(2, limitOrders?.placeOrderPayloads?.size)
+        limitOrders?.placeOrderPayloads?.forEach { it -> validateLimitOrderDefaults(it) }
+
         assertEquals(2, transactionQueue?.size)
+        assertEquals(3, transactionCalledCount)
         clearTransactions(2)
 
         // Updating Existing Order
@@ -239,7 +263,10 @@ class V4TransactionTests : NetworkTests() {
         simulateStopLimitOrderReplacement() // No action here since new order matches the existing order
         assertEquals(0, transactionQueue?.size)
 
-        simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
+        val replacedOrders = simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
+        assertEquals(1, replacedOrders?.placeOrderPayloads?.size)
+        assertEquals(1, replacedOrders?.cancelOrderPayloads?.size)
+
         assertEquals(2, transactionQueue?.size)
         clearTransactions(2)
 
@@ -256,7 +283,8 @@ class V4TransactionTests : NetworkTests() {
         clearTransactions(2)
 
         // Canceling Existing Orders
-        simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
+        val cancelledOrders = simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
+        assertEquals(1, cancelledOrders?.cancelOrderPayloads?.size)
         assertEquals(1, transactionQueue?.size)
     }
 
@@ -281,14 +309,14 @@ class V4TransactionTests : NetworkTests() {
         assertEquals(2, v4Adapter?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(2, transactionCalledCount)
+        assertEquals(1, transactionCalledCount)
         assertEquals(1, v4Adapter?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(3, transactionCalledCount)
+        assertEquals(2, transactionCalledCount)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(4, transactionCalledCount)
+        assertEquals(3, transactionCalledCount)
         assertTransactionQueueEmpty()
     }
 }

@@ -187,9 +187,9 @@ class AppConfigsV2(
     val systemConfigs: SystemConfigs,
     val marketConfigs: MarketsConfigs,
     val accountConfigs: AccountConfigs,
-    val onboardingConfigs: OnboardingConfigs,
-    val loadRemote: Boolean = true,
-    val enableLogger: Boolean = false,
+    var onboardingConfigs: OnboardingConfigs,
+    var loadRemote: Boolean = true,
+    var enableLogger: Boolean = false,
 ) {
     companion object {
         val forApp = AppConfigsV2(

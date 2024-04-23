@@ -219,11 +219,14 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
         // Just in case it has more than one market, we will create
         // two separate pending positions.
 
-        val mergedOrders = ParsingHelper.merge(parser.asNativeMap(
-            parser.value(parentSubaccount, "orders"),
-        ), parser.asNativeMap(
-            parser.value(childSubaccount, "orders"),
-        ))
+        val mergedOrders = ParsingHelper.merge(
+            parser.asNativeMap(
+                parser.value(parentSubaccount, "orders"),
+            ),
+            parser.asNativeMap(
+                parser.value(childSubaccount, "orders"),
+            ),
+        )
 
         val modifiedParentSubaccount = parentSubaccount.toMutableMap()
         modifiedParentSubaccount.safeSet(
