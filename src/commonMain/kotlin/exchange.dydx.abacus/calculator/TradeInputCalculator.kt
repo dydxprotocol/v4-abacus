@@ -31,12 +31,12 @@ enum class TradeCalculation(val rawValue: String) {
     }
 }
 
-object SlippageConstants {
-    internal const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
-    internal const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-    internal const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-    internal const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
-    internal const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+internal object SlippageConstants {
+    const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
 }
 
 @Suppress("UNCHECKED_CAST")
