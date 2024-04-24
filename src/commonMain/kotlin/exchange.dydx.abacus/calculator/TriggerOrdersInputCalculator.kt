@@ -1,6 +1,10 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -279,15 +283,15 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 }
                 val slippagePercentage = if (majorMarket) {
                     if (type == OrderType.stopMarket) {
-                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     } else {
-                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     }
                 } else {
                     if (type == OrderType.stopMarket) {
-                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER
                     } else {
-                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
                     }
                 }
                 val calculatedLimitPrice = if (triggerPrice != null) {

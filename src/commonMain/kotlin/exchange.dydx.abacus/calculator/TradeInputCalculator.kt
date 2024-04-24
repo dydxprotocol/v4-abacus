@@ -1,6 +1,11 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.Numeric
@@ -1408,9 +1413,9 @@ internal class TradeInputCalculator(
                     val side = parser.asString(trade["side"])
                     val payloadPrice = if (price != null) {
                         when (side) {
-                            "BUY" -> price * (Numeric.double.ONE + SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE)
+                            "BUY" -> price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE)
 
-                            else -> price * (Numeric.double.ONE - SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE)
+                            else -> price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE)
                         }
                     } else {
                         null
@@ -1510,16 +1515,15 @@ internal class TradeInputCalculator(
                         }
                         if (majorMarket) {
                             if (type == "STOP_MARKET") {
-                                slippagePercentage + SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                             } else {
-                                slippagePercentage +
-                                    SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                             }
                         } else {
                             if (type == "STOP_MARKET") {
-                                slippagePercentage + SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER
                             } else {
-                                slippagePercentage + SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
                             }
                         }
                     } else {
