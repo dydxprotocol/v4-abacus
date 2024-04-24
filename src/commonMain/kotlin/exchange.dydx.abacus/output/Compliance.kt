@@ -21,6 +21,21 @@ enum class ComplianceStatus(val rawValue: String?) {
 
 @JsExport
 @Serializable
+enum class ComplianceAction(val rawValue: String?) {
+    ONBOARD("ONBOARD"),
+    CONNECT("CONNECT"),
+    VALID_SURVEY("VALID_SURVEY"),
+    INVALID_SURVEY("INVALID_SURVEY"),
+    ;
+
+    companion object {
+        operator fun invoke(rawValue: String?) =
+            ComplianceStatus.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
 data class Compliance(
     val geo: String?,
     val status: ComplianceStatus,
