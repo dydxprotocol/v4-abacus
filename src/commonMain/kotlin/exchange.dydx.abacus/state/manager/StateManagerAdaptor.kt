@@ -2393,7 +2393,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun fetchGeo() {
+    private fun fetchGeo() {
         val url = geoUrl()
         if (url != null) {
             get(
@@ -2417,7 +2417,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun handleComplianceResponse(response: String?, httpCode: Int, callback: ((ComplianceStatus) -> Unit)?) {
+    private fun handleComplianceResponse(response: String?, httpCode: Int, callback: ((ComplianceStatus) -> Unit)?) {
         compliance = if (success(httpCode) && response != null) {
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
@@ -2434,7 +2434,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun updateCompliance(address: String, status: ComplianceStatus) {
+    private fun updateCompliance(address: String, status: ComplianceStatus) {
         val message = "Compliance verification message"
         val action = if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
             ComplianceAction.CONNECT
@@ -2495,7 +2495,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun complianceScreen(address: String, callback: ((ComplianceStatus) -> Unit)?) {
+    private fun complianceScreen(address: String, callback: ((ComplianceStatus) -> Unit)?) {
         val url = complianceScreenUrl(address)
         if (url != null) {
             get(
