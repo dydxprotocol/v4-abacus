@@ -103,57 +103,57 @@ val state = stateMachine.socket(payloadText)
 # Structure
 
 Misc:
-Utils
-Protocols
+- Utils
+- Protocols
 
 state (top state)
-app -> AppStateMachine (contains network logic)
-modal -> StateMachine (contains business logic)
-changes -> Changes (utilities to identify which part of the state has changed)
+- app -> AppStateMachine (contains network logic)
+- modal -> StateMachine (contains business logic)
+- changes -> Changes (utilities to identify which part of the state has changed)
 
 processing:
 
 step 1: processor (dynamic objects - dictionaries, list, not typed)
-markets
-orderbook
-trades
-funding
-asset (referenced from markets, such as icon, url etc)
-wallet (user info)
-account
-subaccount
-assetPositions
-openPositions
-orders
-fills
-transfers
-historicalPnl
-configs (from Veronica mostly)
+- markets
+  - orderbook
+  - trades
+  - funding
+- asset (referenced from markets, such as icon, url etc)
+- wallet (user info)
+  - account
+    - subaccount
+      - assetPositions
+      - openPositions
+      - orders
+      - fills
+      - transfers
+      - historicalPnl
+- configs (from Veronica mostly)
 
 step 2 calculator (dynamic)
-market (summary info)
-account (step 3)
-subaccount
-3.1 calculate positon notionalTotal/valueTotal etc
-3.2 calculate account equity etc, leverage, margin usage, buyingpower
-3.3 calcualte position levereage, buyingpower
-account transformer (step 2)
-calculate postOrder and postAllOrderStates for account (total from trade input)
+- market (summary info)
+- account (step 3)
+  - subaccount
+    - 3.1 calculate positon notionalTotal/valueTotal etc
+    - 3.2 calculate account equity etc, leverage, margin usage, buyingpower
+    - 3.3 calcualte position levereage, buyingpower
+- account transformer (step 2)
+  - calculate postOrder and postAllOrderStates for account (total from trade input)
 and positions (size from trade input)
-input (step 1)
-trade input
-size (size, usdcSize, leverage)
-transfer input (not complete)
+- input (step 1)
+  - trade input
+    - size (size, usdcSize, leverage)
+  - transfer input (not complete)
 
 step 3 validator (from postOrder and postAllOrders states)
-trade
-transfer
+- trade
+- transfer
 
 step 4 output (structs, typed data)
-converts dynamic data to typed
+- converts dynamic data to typed
 
 step 5 responses
-Construct response object from output
+- Construct response object from output
 
 # CommonTest
 
@@ -161,10 +161,10 @@ test (supporting classes, mostly mocks)
 utils (just utilities)
 
 AppStateMachine (app)
-StateMachine (payload and validation folder)
+- StateMachine (payload and validation folder)
 
 payload (test StateMachine payload and interaction)
-API -> expected state
+- API -> expected state
 validation (separated from payload, to target validation tests)
 
 app (test AppStateMachine IO requests)
