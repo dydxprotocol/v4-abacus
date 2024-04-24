@@ -7,6 +7,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.Rounder
+import exchange.dydx.abacus.utils.Logger
 
 internal data class EquityTier(
     val requiredTotalNetCollateralUSD: Double,
@@ -51,6 +52,7 @@ internal class TriggerOrdersInputValidator(
 
             val marketId = parser.asString(transaction["marketId"]) ?: return null
             val market = parser.asNativeMap(markets?.get(marketId))
+            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId")) ?: return null
             val tickSize = parser.asString(parser.value(market, "configs.tickSize")) ?: "0.01"
             val oraclePrice = parser.asDouble(
                 parser.value(
@@ -72,6 +74,7 @@ internal class TriggerOrdersInputValidator(
                     market,
                     oraclePrice,
                     tickSize,
+                    validateTakeProfitTriggerToLiquidationPrice(takeProfitOrder, position, tickSize)
                 )
             } else {
                 null
@@ -87,6 +90,7 @@ internal class TriggerOrdersInputValidator(
                     market,
                     oraclePrice,
                     tickSize,
+                    validateStopLossTriggerToLiquidationPrice(stopLossOrder, position, tickSize)
                 )
             } else {
                 null
@@ -125,13 +129,134 @@ internal class TriggerOrdersInputValidator(
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
+    private fun validateStopLossTriggerToLiquidationPrice(
+        triggerOrder: Map<String, Any>,
+        position: Map<String, Any>,
+        tickSize: String,
+    ): List<Any>? {
+        val liquidationPrice = parser.asDouble(parser.value(position, "size.liquidationPrice")) ?: return null
+        val triggerPrice =
+            parser.asDouble(parser.value(triggerOrder, "price.triggerPrice")) ?: return null
+        
+        val side = parser.value(triggerOrder, "side")
+
+        Logger.e { "xcxc stop loss, ${liquidationPrice}, ${triggerPrice}, ${side}"}
+        return when (parser.value(triggerOrder, "side")) {
+            "SELL" -> {
+                if (triggerPrice > liquidationPrice) {
+                    listOf(error(
+                        "ERROR",
+                        "BRACKET_ORDER_STOP_LOSS_BELOW_LIQUIDATION_PRICE",
+                        listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
+                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                        "ERRORS.TRADE_BOX_TITLE.BRACKET_ORDER_STOP_LOSS_BELOW_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX.BRACKET_ORDER_STOP_LOSS_BELOW_LIQUIDATION_PRICE",
+                        mapOf(
+                            "TRIGGER_PRICE_LIMIT" to mapOf(
+                                "value" to liquidationPrice,
+                                "format" to "price",
+                                "tickSize" to tickSize,
+                            ),
+                        ),
+                    ))
+                } else {
+                    null
+                }
+            }
+            "BUY" -> {
+                if (triggerPrice < liquidationPrice) {
+                    listOf(error(
+                        "ERROR",
+                        "BRACKET_ORDER_STOP_LOSS_ABOVE_LIQUIDATION_PRICE",
+                        listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
+                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                        "ERRORS.TRADE_BOX_TITLE.BRACKET_ORDER_STOP_LOSS_ABOVE_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX.BRACKET_ORDER_STOP_LOSS_ABOVE_LIQUIDATION_PRICE",
+                        mapOf(
+                            "TRIGGER_PRICE_LIMIT" to mapOf(
+                                "value" to liquidationPrice,
+                                "format" to "price",
+                                "tickSize" to tickSize,
+                            ),
+                        ),
+                    ))
+                } else {
+                    null
+                }
+            }
+            else -> null
+        }
+    }
+
+    private fun validateTakeProfitTriggerToLiquidationPrice(
+        triggerOrder: Map<String, Any>,
+        position: Map<String, Any>,
+        tickSize: String,
+    ): List<Any>? {
+        
+        val liquidationPrice = parser.asDouble(parser.value(position, "size.liquidationPrice")) ?: return null
+        val triggerPrice =
+            parser.asDouble(parser.value(triggerOrder, "price.triggerPrice")) ?: return null
+
+        val side = parser.value(triggerOrder, "side")
+        Logger.e { "xcxc take profit, ${liquidationPrice}, ${triggerPrice}, ${side}"}
+        return when (parser.value(triggerOrder, "side")) {
+            "SELL" -> {
+                if (triggerPrice < liquidationPrice) {
+                    listOf(error(
+                        "ERROR",
+                        "BRACKET_ORDER_TAKE_PROFIT_ABOVE_LIQUIDATION_PRICE",
+                        listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
+                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                        "ERRORS.TRADE_BOX_TITLE.BRACKET_ORDER_TAKE_PROFIT_ABOVE_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX.BRACKET_ORDER_TAKE_PROFIT_ABOVE_LIQUIDATION_PRICE",
+                        mapOf(
+                            "TRIGGER_PRICE_LIMIT" to mapOf(
+                                "value" to liquidationPrice,
+                                "format" to "price",
+                                "tickSize" to tickSize,
+                            ),
+                        ),
+                    ))
+                } else {
+                    null
+                }
+            }
+            "BUY" -> {
+                if (triggerPrice > liquidationPrice) {
+                    listOf(error(
+                        "ERROR",
+                        "BRACKET_ORDER_TAKE_PROFIT_BELOW_LIQUIDATION_PRICE",
+                        listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
+                        "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                        "ERRORS.TRADE_BOX_TITLE.BRACKET_ORDER_TAKE_PROFIT_BELOW_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX.BRACKET_ORDER_TAKE_PROFIT_BELOW_LIQUIDATION_PRICE",
+                        mapOf(
+                            "TRIGGER_PRICE_LIMIT" to mapOf(
+                                "value" to liquidationPrice,
+                                "format" to "price",
+                                "tickSize" to tickSize,
+                            ),
+                        ),
+                    ))
+                } else {
+                    null
+                }
+            }
+            else -> null
+        }
+    }
+
     private fun validateTriggerOrder(
         triggerOrder: Map<String, Any>,
         market: Map<String, Any>?,
         oraclePrice: Double,
         tickSize: String,
+        liquidationPriceErrors: List<Any>?,
     ): MutableList<Any>? {
         val triggerErrors = mutableListOf<Any>()
+
+        Logger.e { "xcxc validating trigger order "}
 
         validateRequiredInput(triggerOrder)?.let {
             /*
@@ -166,6 +291,15 @@ internal class TriggerOrdersInputValidator(
              */
             triggerErrors.addAll(it)
         }
+        
+        liquidationPriceErrors?.let {
+            /*
+                xcxc
+             */
+            Logger.e { "xcxc, ${it} "}
+            triggerErrors.addAll(it)
+        }
+
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
