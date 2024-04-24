@@ -5,33 +5,21 @@ import kotlin.js.JsExport
 
 @JsExport
 @Serializable
-enum class ComplianceStatus(val rawValue: String?) {
-    COMPLIANT("COMPLIANT"),
-    FIRST_STRIKE("FIRST_STRIKE"),
-    CLOSE_ONLY("CLOSE_ONLY"),
-    BLOCKED("BLOCKED"),
-    UNKNOWN("UNKNOWN"),
-    ;
-
-    companion object {
-        operator fun invoke(rawValue: String?) =
-            ComplianceStatus.values().firstOrNull { it.rawValue == rawValue }
-    }
+enum class ComplianceStatus {
+    COMPLIANT,
+    FIRST_STRIKE,
+    CLOSE_ONLY,
+    BLOCKED,
+    UNKNOWN;
 }
 
 @JsExport
 @Serializable
-enum class ComplianceAction(val rawValue: String?) {
-    ONBOARD("ONBOARD"),
-    CONNECT("CONNECT"),
-    VALID_SURVEY("VALID_SURVEY"),
-    INVALID_SURVEY("INVALID_SURVEY"),
-    ;
-
-    companion object {
-        operator fun invoke(rawValue: String?) =
-            ComplianceStatus.values().firstOrNull { it.rawValue == rawValue }
-    }
+enum class ComplianceAction {
+    ONBOARD,
+    CONNECT,
+    VALID_SURVEY,
+    INVALID_SURVEY;
 }
 
 @JsExport

@@ -2422,7 +2422,7 @@ open class StateManagerAdaptor(
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
                 val status = parser.asString(res["status"])
-                val complianceStatus = ComplianceStatus.invoke(status) ?: ComplianceStatus.UNKNOWN
+                val complianceStatus = if (status != null) ComplianceStatus.valueOf(status) else ComplianceStatus.UNKNOWN
                 callback?.invoke(complianceStatus)
 
                 Compliance(compliance?.geo, complianceStatus)
@@ -2444,8 +2444,8 @@ open class StateManagerAdaptor(
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,
-                "action" to action.rawValue,
-                "status" to status.rawValue,
+                "action" to action,
+                "status" to status,
             ),
         )
         transaction(
@@ -2462,15 +2462,14 @@ open class StateManagerAdaptor(
                 val timestamp = parser.asString(result["timestamp"])
 
                 val isUrlAndKeysPresent = url != null && signedMessage != null && publicKey != null && timestamp != null
-                val isActionAndStatusValid = action.rawValue != null && status.rawValue != null
-                val isStatusValid = status.rawValue != ComplianceStatus.UNKNOWN.rawValue
+                val isStatusValid = status != ComplianceStatus.UNKNOWN
 
-                if (isUrlAndKeysPresent && isActionAndStatusValid && isStatusValid) {
+                if (isUrlAndKeysPresent && isStatusValid) {
                     val body: IMap<String, String> = iMapOf(
                         "address" to address,
                         "message" to message,
-                        "currentStatus" to status.rawValue!!,
-                        "action" to action.rawValue!!,
+                        "currentStatus" to status.toString(),
+                        "action" to action.toString(),
                         "signedMessage" to signedMessage!!,
                         "pubkey" to publicKey!!,
                         "timestamp" to timestamp!!,
