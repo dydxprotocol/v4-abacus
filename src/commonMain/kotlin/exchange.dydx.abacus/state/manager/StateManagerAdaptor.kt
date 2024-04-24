@@ -2417,12 +2417,14 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun handleComplianceResponse(response: String?, httpCode: Int) {
+    open fun handleComplianceResponse(response: String?, httpCode: Int, callback: ((ComplianceStatus) -> Unit)?) {
         compliance = if (success(httpCode) && response != null) {
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
                 val status = parser.asString(res["status"])
                 val complianceStatus = ComplianceStatus.invoke(status) ?: ComplianceStatus.UNKNOWN
+                callback?.invoke(complianceStatus)
+
                 Compliance(compliance?.geo, complianceStatus)
             } else {
                 Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
@@ -2481,7 +2483,7 @@ open class StateManagerAdaptor(
                         header,
                         body.toJsonPrettyPrint(),
                         callback = { _, response, httpCode, _ ->
-                            handleComplianceResponse(response, httpCode)
+                            handleComplianceResponse(response, httpCode, null)
                         },
                     )
                 } else {
@@ -2501,7 +2503,7 @@ open class StateManagerAdaptor(
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    handleComplianceResponse(response, httpCode)
+                    handleComplianceResponse(response, httpCode, callback)
                 },
             )
         }
