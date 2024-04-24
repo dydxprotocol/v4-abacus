@@ -11,18 +11,6 @@ import kotlin.math.abs
 
 @Suppress("UNCHECKED_CAST")
 internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
-
     internal fun calculate(
         state: Map<String, Any>,
         subaccountNumber: Int?,
@@ -291,15 +279,15 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 }
                 val slippagePercentage = if (majorMarket) {
                     if (type == OrderType.stopMarket) {
-                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     } else {
-                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     }
                 } else {
                     if (type == OrderType.stopMarket) {
-                        STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                        SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
                     } else {
-                        TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                        SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
                     }
                 }
                 val calculatedLimitPrice = if (triggerPrice != null) {

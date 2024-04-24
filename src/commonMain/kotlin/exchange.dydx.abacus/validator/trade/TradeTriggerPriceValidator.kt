@@ -120,10 +120,6 @@ internal class TradeTriggerPriceValidator(
                         }
                     }
                 }
-                when (type) {
-                    "STOP_MARKET" -> errors.add(stopMarketExecutionWarning(parser))
-                    else -> {}
-                }
             }
             return errors
         }
@@ -265,19 +261,5 @@ internal class TradeTriggerPriceValidator(
                 params,
             )
         }
-    }
-
-    private fun stopMarketExecutionWarning(
-        parser: ParserProtocol,
-    ): Map<String, Any> {
-        return error(
-            "WARNING",
-            "STOP_MARKET_ORDER_MAY_NOT_EXECUTE",
-            null,
-            null,
-            "WARNINGS.TRADE_BOX_TITLE.STOP_MARKET_ORDER_MAY_NOT_EXECUTE",
-            "WARNINGS.TRADE_BOX.STOP_MARKET_ORDER_MAY_NOT_EXECUTE",
-            null,
-        )
     }
 }

@@ -1720,7 +1720,7 @@ class TradeInputTests : V3BaseTests() {
                                 "size": 1.0,
                                 "usdcSize": 2000.0,
                                 "price": 2000.0,
-                                "payloadPrice": 2100.0,
+                                "payloadPrice": 2200.0,
                                 "total": -2001.0,
                                 "filled": true
                             },

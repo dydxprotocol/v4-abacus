@@ -26,6 +26,15 @@ enum class TradeCalculation(val rawValue: String) {
     }
 }
 
+object SlippageConstants {
+    internal const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
+    internal const val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01
+    internal const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    internal const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    internal const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+    internal const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+}
+
 @Suppress("UNCHECKED_CAST")
 internal class TradeInputCalculator(
     val parser: ParserProtocol,
@@ -33,24 +42,6 @@ internal class TradeInputCalculator(
     val featureFlags: EnvironmentFeatureFlags,
 ) {
     private val accountTransformer = AccountTransformer()
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_MAX_SLIPPAGE = 0.05
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
 
     internal fun calculate(
         state: Map<String, Any>,
@@ -1418,9 +1409,9 @@ internal class TradeInputCalculator(
                     val side = parser.asString(trade["side"])
                     val payloadPrice = if (price != null) {
                         when (side) {
-                            "BUY" -> price * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE)
+                            "BUY" -> price * (Numeric.double.ONE + SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE)
 
-                            else -> price * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE)
+                            else -> price * (Numeric.double.ONE - SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE)
                         }
                     } else {
                         null
@@ -1520,15 +1511,16 @@ internal class TradeInputCalculator(
                         }
                         if (majorMarket) {
                             if (type == "STOP_MARKET") {
-                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                                slippagePercentage + SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                             } else {
-                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+                                slippagePercentage +
+                                    SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                             }
                         } else {
                             if (type == "STOP_MARKET") {
-                                slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+                                slippagePercentage + SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
                             } else {
-                                slippagePercentage + TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+                                slippagePercentage + SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
                             }
                         }
                     } else {
