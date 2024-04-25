@@ -2447,8 +2447,8 @@ open class StateManagerAdaptor(
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,
-                "action" to action,
-                "status" to status,
+                "action" to action.toString(),
+                "status" to status.toString(),
             ),
         )
         transaction(
