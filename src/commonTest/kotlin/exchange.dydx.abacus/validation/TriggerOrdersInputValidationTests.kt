@@ -136,10 +136,10 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                             "fields": ["stopLossOrder.price.triggerPrice"],
                             "resources": {
                                 "title": {
-                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE"
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE"
                                 },
                                 "text": {
-                                    "stringKey": "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE"
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE_NO_LIMIT"
                                 },
                                 "action": {
                                     "stringKey": "APP.TRADE.MODIFY_TRIGGER_PRICE"
