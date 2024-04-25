@@ -2416,7 +2416,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    private fun handleComplianceResponse(response: String?, httpCode: Int) {
+    private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
         compliance = if (success(httpCode) && response != null) {
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
@@ -2434,6 +2434,7 @@ open class StateManagerAdaptor(
         } else {
             Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
         }
+        return compliance.status
     }
 
     private fun updateCompliance(address: String, status: ComplianceStatus) {
@@ -2505,15 +2506,8 @@ open class StateManagerAdaptor(
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    handleComplianceResponse(response, httpCode)
-                    val res = parser.decodeJsonObject(response)?.toIMap()
-                    if (address is DydxAddress && res != null) {
-                        val status = parser.asString(res["status"])
-                        if (status != null) {
-                            val complianceStatus = ComplianceStatus.valueOf(status)
-                            updateCompliance(address.rawAddress, complianceStatus)
-                        }
-                    }
+                    val complianceStatus = handleComplianceResponse(response, httpCode)
+                    updateCompliance(address.rawAddress, complianceStatus)
                 },
             )
         }
