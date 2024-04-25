@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.Compliance
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
@@ -17,6 +18,7 @@ import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -27,6 +29,9 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.manager.utils.Address
+import exchange.dydx.abacus.state.manager.utils.DydxAddress
+import exchange.dydx.abacus.state.manager.utils.EvmAddress
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -77,6 +82,7 @@ import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import exchange.dydx.abacus.utils.values
 import kollections.JsExport
 import kollections.iListOf
@@ -92,6 +98,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.collections.mutableMapOf
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -443,11 +450,13 @@ open class StateManagerAdaptor(
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
-                sourceAddress?.let { complianceScreen(it) }
+                sourceAddress?.let { complianceScreen(EvmAddress(it)) }
             }
             if (accountAddress != null) {
                 screenAccountAddress()
-                accountAddress?.let { complianceScreen(it) }
+                accountAddress?.let {
+                    complianceScreen(DydxAddress(it))
+                }
                 retrieveAccount()
                 retrieveAccountHistoricalTradingRewards()
             }
@@ -493,7 +502,9 @@ open class StateManagerAdaptor(
 
         subaccountsTimer = null
         screenAccountAddress()
-        accountAddress?.let { complianceScreen(it) }
+        accountAddress?.let {
+            complianceScreen(DydxAddress(it))
+        }
         retrieveAccountHistoricalTradingRewards()
     }
 
@@ -505,7 +516,7 @@ open class StateManagerAdaptor(
         sourceAddressTimer = null
         sourceAddressRestriction = null
         screenSourceAddress()
-        sourceAddress?.let { complianceScreen(it) }
+        sourceAddress?.let { complianceScreen(EvmAddress(it)) }
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
@@ -1139,6 +1150,13 @@ open class StateManagerAdaptor(
             }
         }
     }
+
+    @Throws(Exception::class)
+    internal open fun transaction(
+        type: TransactionType,
+        paramsInJson: String?,
+        callback: (response: String) -> Unit,
+    ) {}
 
     internal open fun trackApiCall() {
     }
@@ -2374,7 +2392,7 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun fetchGeo() {
+    private fun fetchGeo() {
         val url = geoUrl()
         if (url != null) {
             get(
@@ -2398,28 +2416,99 @@ open class StateManagerAdaptor(
         }
     }
 
-    open fun complianceCheck() {
+    private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
+        compliance = if (success(httpCode) && response != null) {
+            val res = parser.decodeJsonObject(response)?.toIMap()
+            if (res != null) {
+                val status = parser.asString(res["status"])
+                val complianceStatus =
+                    if (status != null) {
+                        ComplianceStatus.valueOf(status)
+                    } else {
+                        ComplianceStatus.UNKNOWN
+                    }
+                Compliance(compliance?.geo, complianceStatus)
+            } else {
+                Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+            }
+        } else {
+            Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+        }
+        return compliance.status
     }
 
-    open fun complianceScreen(address: String) {
-        val url = complianceScreenUrl(address)
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus) {
+        val message = "Compliance verification message"
+        val action = if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
+            ComplianceAction.CONNECT
+        } else {
+            ComplianceAction.ONBOARD
+        }
+        val payload = jsonEncoder.encode(
+            mapOf(
+                "message" to message,
+                "action" to action.toString(),
+                "status" to status.toString(),
+            ),
+        )
+        transaction(
+            TransactionType.SignCompliancePayload,
+            payload,
+        ) { additionalPayload ->
+            val error = parseTransactionResponse(additionalPayload)
+            val result = parser.decodeJsonObject(additionalPayload)
+
+            if (error == null && result != null) {
+                val url = complianceGeoblockUrl()
+                val signedMessage = parser.asString(result["signedMessage"])
+                val publicKey = parser.asString(result["publicKey"])
+                val timestamp = parser.asString(result["timestamp"])
+
+                val isUrlAndKeysPresent =
+                    url != null && signedMessage != null && publicKey != null && timestamp != null
+                val isStatusValid = status != ComplianceStatus.UNKNOWN
+
+                if (isUrlAndKeysPresent && isStatusValid) {
+                    val body: IMap<String, String> = iMapOf(
+                        "address" to address.rawAddress,
+                        "message" to message,
+                        "currentStatus" to status.toString(),
+                        "action" to action.toString(),
+                        "signedMessage" to signedMessage!!,
+                        "pubkey" to publicKey!!,
+                        "timestamp" to timestamp!!,
+                    )
+                    val header = iMapOf(
+                        "Content-Type" to "application/json",
+                    )
+                    post(
+                        url!!,
+                        header,
+                        body.toJsonPrettyPrint(),
+                        callback = { _, response, httpCode, _ ->
+                            handleComplianceResponse(response, httpCode)
+                        },
+                    )
+                } else {
+                    compliance = Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                }
+            } else {
+                compliance = Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+            }
+        }
+    }
+
+    private fun complianceScreen(address: Address) {
+        val url = complianceScreenUrl(address.rawAddress)
         if (url != null) {
             get(
                 url,
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    compliance = if (success(httpCode) && response != null) {
-                        val payload = parser.decodeJsonObject(response)?.toIMap()
-                        if (payload != null) {
-                            val status = parser.asString(payload["status"])
-                            val complianceStatus = ComplianceStatus.invoke(status) ?: ComplianceStatus.UNKNOWN
-                            Compliance(compliance?.geo, complianceStatus)
-                        } else {
-                            Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
-                        }
-                    } else {
-                        Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                    val complianceStatus = handleComplianceResponse(response, httpCode)
+                    if (address is DydxAddress) {
+                        updateCompliance(address, complianceStatus)
                     }
                 },
             )
