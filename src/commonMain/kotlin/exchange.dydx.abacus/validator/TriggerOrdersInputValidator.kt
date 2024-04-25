@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.validator
 import abs
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderStatus
+import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -9,6 +11,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.Rounder
+import exchange.dydx.abacus.validator.trade.AccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
 import exchange.dydx.abacus.validator.trade.EquityTier
 
 enum class RelativeToPrice(val rawValue: String) {
@@ -27,9 +30,6 @@ internal class TriggerOrdersInputValidator(
     parser: ParserProtocol
 ) :
     BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
-
-    @Suppress("PropertyName")
-    private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS: Int = 20
 
     override fun validate(
         wallet: Map<String, Any>?,
@@ -365,40 +365,18 @@ internal class TriggerOrdersInputValidator(
         parser.asNativeMap(subaccount?.get("orders"))?.let { orders ->
             for ((_, item) in orders) {
                 parser.asNativeMap(item)?.let { order ->
-                    val status = parser.asString(order["status"])
-                    val orderType = parser.asString(order["type"])
-                    val timeInForce = parser.asString(order["timeInForce"])
-                    if (orderType != null && timeInForce != null) {
-                        val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
-                        // Short term with IOC or FOK should not be counted
-                        val isShortTermAndRequiresImmediateExecution =
-                            !isCurrentOrderStateful && (timeInForce == "IOC" || timeInForce == "FOK")
-                        if (!isShortTermAndRequiresImmediateExecution &&
-                            (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED" || status == "PARTIALLY_FILLED")
-                        ) {
+                    val status = parser.asString(order["status"])?.let { OrderStatus.invoke(it) }
+                    val orderType = parser.asString(order["type"])?.let { OrderType.invoke(it) }
+                    val timeInForce = parser.asString(order["timeInForce"])?.let { OrderTimeInForce.invoke(it) }
+                    if (orderType != null && timeInForce != null && status != null) {
+                        if (isOrderIncludedInEquityTierLimit(orderType, timeInForce, status)) {
                             count += 1
                         }
                     }
                 }
             }
         }
-
         return count
-    }
-
-    private fun isStatefulOrder(orderType: String, timeInForce: String): Boolean {
-        return when (orderType) {
-            "MARKET" -> false
-
-            "LIMIT" -> {
-                when (parser.asString(timeInForce)) {
-                    "GTT" -> true
-                    else -> false
-                }
-            }
-
-            else -> true
-        }
     }
 
     private fun validateRequiredInput(
@@ -657,34 +635,6 @@ internal class TriggerOrdersInputValidator(
         return null
     }
 
-    private fun requiredTriggerToLiquidationPrice(type: OrderType?, side: OrderSide): RelativeToPrice? {
-        return when (type) {
-            OrderType.stopMarket ->
-                when (side) {
-                    OrderSide.buy -> RelativeToPrice.BELOW
-                    OrderSide.sell -> RelativeToPrice.ABOVE
-                }
-            else -> null
-        }
-    }
-
-    private fun requiredTriggerToIndexPrice(type: OrderType, side: OrderSide): RelativeToPrice? {
-        return when (type) {
-            OrderType.stopLimit, OrderType.stopMarket ->
-                when (side) {
-                    OrderSide.buy -> RelativeToPrice.ABOVE
-                    OrderSide.sell -> RelativeToPrice.BELOW
-                }
-
-            OrderType.takeProfitLimit, OrderType.takeProfitMarket ->
-                when (side) {
-                    OrderSide.buy -> RelativeToPrice.BELOW
-                    OrderSide.sell -> RelativeToPrice.ABOVE
-                }
-            else -> null
-        }
-    }
-
     private fun triggerToIndexError(
         triggerToIndex: RelativeToPrice,
         oraclePrice: Double,
@@ -741,5 +691,66 @@ internal class TriggerOrdersInputValidator(
                 params,
             )
         }
+    }
+}
+
+private fun isOrderIncludedInEquityTierLimit(
+    orderType: OrderType,
+    timeInForce: OrderTimeInForce,
+    status: OrderStatus
+): Boolean {
+    val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
+    // Short term with IOC or FOK should not be counted
+    val isShortTermAndRequiresImmediateExecution =
+        !isCurrentOrderStateful && (timeInForce == OrderTimeInForce.IOC || timeInForce == OrderTimeInForce.FOK)
+
+    return if (!isShortTermAndRequiresImmediateExecution) {
+        when (status) {
+            OrderStatus.open, OrderStatus.pending, OrderStatus.untriggered, OrderStatus.partiallyFilled -> true
+            else -> false
+        }
+    } else {
+        false
+    }
+}
+
+private fun isStatefulOrder(orderType: OrderType, timeInForce: OrderTimeInForce): Boolean {
+    return when (orderType) {
+        OrderType.market -> false
+        OrderType.limit -> {
+            when (timeInForce) {
+                OrderTimeInForce.GTT -> true
+                else -> false
+            }
+        }
+        else -> true
+    }
+}
+
+private fun requiredTriggerToLiquidationPrice(type: OrderType?, side: OrderSide): RelativeToPrice? {
+    return when (type) {
+        OrderType.stopMarket ->
+            when (side) {
+                OrderSide.buy -> RelativeToPrice.BELOW
+                OrderSide.sell -> RelativeToPrice.ABOVE
+            }
+        else -> null
+    }
+}
+
+private fun requiredTriggerToIndexPrice(type: OrderType, side: OrderSide): RelativeToPrice? {
+    return when (type) {
+        OrderType.stopLimit, OrderType.stopMarket ->
+            when (side) {
+                OrderSide.buy -> RelativeToPrice.ABOVE
+                OrderSide.sell -> RelativeToPrice.BELOW
+            }
+
+        OrderType.takeProfitLimit, OrderType.takeProfitMarket ->
+            when (side) {
+                OrderSide.buy -> RelativeToPrice.BELOW
+                OrderSide.sell -> RelativeToPrice.ABOVE
+            }
+        else -> null
     }
 }

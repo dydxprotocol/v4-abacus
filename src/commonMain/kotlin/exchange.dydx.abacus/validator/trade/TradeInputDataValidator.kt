@@ -10,6 +10,7 @@ import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
+import exchange.dydx.abacus.validator.trade.AccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
 import kotlin.time.Duration.Companion.days
 
 /*
@@ -35,15 +36,16 @@ internal data class EquityTier(
     var nextLevelRequiredTotalNetCollateralUSD: Double? = null
 }
 
+internal object AccountLimitConstants {
+    const val MAX_NUM_OPEN_UNTRIGGERED_ORDERS = 20
+}
+
 internal class TradeInputDataValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
 ) :
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
-
-    @Suppress("PropertyName")
-    private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS: Int = 20
 
     override fun validateTrade(
         subaccount: Map<String, Any>?,
