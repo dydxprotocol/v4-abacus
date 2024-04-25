@@ -2437,7 +2437,7 @@ open class StateManagerAdaptor(
         return compliance.status
     }
 
-    private fun updateCompliance(address: String, status: ComplianceStatus) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus) {
         val message = "Compliance verification message"
         val action = if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
             ComplianceAction.CONNECT
@@ -2470,7 +2470,7 @@ open class StateManagerAdaptor(
 
                 if (isUrlAndKeysPresent && isStatusValid) {
                     val body: IMap<String, String> = iMapOf(
-                        "address" to address,
+                        "address" to address.rawAddress,
                         "message" to message,
                         "currentStatus" to status.toString(),
                         "action" to action.toString(),
@@ -2507,7 +2507,9 @@ open class StateManagerAdaptor(
                 null,
                 callback = { _, response, httpCode, _ ->
                     val complianceStatus = handleComplianceResponse(response, httpCode)
-                    updateCompliance(address.rawAddress, complianceStatus)
+                    if (address is DydxAddress) {
+                        updateCompliance(address, complianceStatus)
+                    }
                 },
             )
         }
