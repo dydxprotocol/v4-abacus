@@ -197,8 +197,8 @@ internal class TriggerOrdersInputValidator(
                 if (triggerPrice <= liquidationPrice) {
                     liquidationPriceError(
                         "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                        "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                        "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRIGGERS_FORM_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRIGGERS_FORM.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE_NO_LIMIT",
                         liquidationPrice,
                         tickSize,
                     )
@@ -210,8 +210,8 @@ internal class TriggerOrdersInputValidator(
                 if (triggerPrice >= liquidationPrice) {
                     liquidationPriceError(
                         "BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                        "ERRORS.TRADE_BOX_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                        "ERRORS.TRADE_BOX.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRIGGERS_FORM_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRIGGERS_FORM.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE_NO_LIMIT",
                         liquidationPrice,
                         tickSize,
                     )
