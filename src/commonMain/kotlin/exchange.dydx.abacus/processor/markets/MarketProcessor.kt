@@ -139,7 +139,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         }
         output["status"] = status(payload)
         output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)
-        output["perpetual"] = perpetual(null, payload, oraclePrice)
+        output["perpetual"] = perpetual(parser.asNativeMap(existing?.get("perpetual")), payload, oraclePrice)
         output.safeSet("line", line(output))
         return calculate(output)
     }
