@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.validator
 import abs
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -7,13 +9,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.Rounder
-
-internal data class EquityTier(
-    val requiredTotalNetCollateralUSD: Double,
-    val maxOrders: Int,
-) {
-    var nextLevelRequiredTotalNetCollateralUSD: Double? = null
-}
+import exchange.dydx.abacus.validator.trade.EquityTier
 
 enum class RelativeToPrice(val rawValue: String) {
     ABOVE("ABOVE"),
@@ -73,6 +69,7 @@ internal class TriggerOrdersInputValidator(
                     market,
                     oraclePrice,
                     tickSize,
+                    position,
                 )
             } else {
                 null
@@ -88,7 +85,7 @@ internal class TriggerOrdersInputValidator(
                     market,
                     oraclePrice,
                     tickSize,
-                    validateStopLossTriggerToLiquidationPrice(stopLossOrder, position, tickSize),
+                    position,
                 )
             } else {
                 null
@@ -132,7 +129,7 @@ internal class TriggerOrdersInputValidator(
         market: Map<String, Any>?,
         oraclePrice: Double,
         tickSize: String,
-        liquidationPriceErrors: List<Any>? = null,
+        position: Map<String, Any>,
     ): MutableList<Any>? {
         val triggerErrors = mutableListOf<Any>()
 
@@ -170,7 +167,7 @@ internal class TriggerOrdersInputValidator(
             triggerErrors.addAll(it)
         }
 
-        liquidationPriceErrors?.let {
+        validateTriggerToLiquidationPrice(triggerOrder, position, tickSize)?.let {
             /*
                 SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE
                 BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE
@@ -181,40 +178,29 @@ internal class TriggerOrdersInputValidator(
         return if (triggerErrors.size > 0) triggerErrors else null
     }
 
-    private fun validateStopLossTriggerToLiquidationPrice(
+    private fun validateTriggerToLiquidationPrice(
         triggerOrder: Map<String, Any>,
         position: Map<String, Any>,
         tickSize: String,
     ): List<Any>? {
         val liquidationPrice = parser.asDouble(parser.value(position, "liquidationPrice.current"))
         val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
+        val type = parser.asString(triggerOrder["type"])?.let { OrderType.invoke(it) }
+        val side = parser.asString(triggerOrder["side"])?.let { OrderSide.invoke(it) }
 
-        if (liquidationPrice == null || triggerPrice == null) {
+        if (side == null || liquidationPrice == null || triggerPrice == null) {
             return null
         }
-
-        val type = parser.asString(triggerOrder["type"])
-        val side = parser.asString(triggerOrder["side"])
 
         return when (requiredTriggerToLiquidationPrice(type, side)) {
             RelativeToPrice.ABOVE -> {
                 if (triggerPrice <= liquidationPrice) {
-                    listOf(
-                        error(
-                            "ERROR",
-                            "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                            listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
-                            "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                            "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                            "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                            mapOf(
-                                "TRIGGER_PRICE_LIMIT" to mapOf(
-                                    "value" to liquidationPrice,
-                                    "format" to "price",
-                                    "tickSize" to tickSize,
-                                ),
-                            ),
-                        ),
+                    liquidationPriceError(
+                        "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        liquidationPrice,
+                        tickSize,
                     )
                 } else {
                     null
@@ -222,22 +208,12 @@ internal class TriggerOrdersInputValidator(
             }
             RelativeToPrice.BELOW -> {
                 if (triggerPrice >= liquidationPrice) {
-                    listOf(
-                        error(
-                            "ERROR",
-                            "BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                            listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
-                            "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                            "ERRORS.TRADE_BOX_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                            "ERRORS.TRADE_BOX.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                            mapOf(
-                                "TRIGGER_PRICE_LIMIT" to mapOf(
-                                    "value" to liquidationPrice,
-                                    "format" to "price",
-                                    "tickSize" to tickSize,
-                                ),
-                            ),
-                        ),
+                    liquidationPriceError(
+                        "BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        "ERRORS.TRADE_BOX.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                        liquidationPrice,
+                        tickSize,
                     )
                 } else {
                     null
@@ -245,6 +221,31 @@ internal class TriggerOrdersInputValidator(
             }
             else -> null
         }
+    }
+
+    private fun liquidationPriceError(
+        errorCode: String,
+        titleStringKey: String,
+        textStringKey: String,
+        liquidationPrice: Double?,
+        tickSize: String,
+    ): List<Any>? {
+        return listOf(
+            error(
+                "ERROR",
+                errorCode,
+                listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
+                "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                titleStringKey,
+                textStringKey,
+                mapOf(
+                    "TRIGGER_PRICE_LIMIT" to mapOf(
+                        "value" to liquidationPrice,
+                        "tickSize" to tickSize,
+                    ),
+                ),
+            ),
+        )
     }
 
     private fun validateOrderCount(
@@ -420,11 +421,13 @@ internal class TriggerOrdersInputValidator(
     private fun validateCalculatedPricesPositive(
         triggerOrder: Map<String, Any>,
     ): List<Any>? {
-        val type = parser.asString(triggerOrder["type"])
+        val type = parser.asString(triggerOrder["type"])?.let {
+            OrderType.invoke(it)
+        }
         val triggerPrice = parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
         val limitPrice = parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
         val inputField = parser.asString(parser.value(triggerOrder, "price.input"))
-        val fields = if (type == "STOP_LIMIT" || type == "STOP_MARKET") {
+        val fields = if (type == OrderType.stopLimit || type == OrderType.stopMarket) {
             if (triggerPrice != null && triggerPrice <= 0) {
                 listOfNotNull(inputField)
             } else if (limitPrice != null && limitPrice <= 0) {
@@ -432,7 +435,7 @@ internal class TriggerOrdersInputValidator(
             } else {
                 null
             }
-        } else if (type == "TAKE_PROFIT" || type == "TAKE_PROFIT_MARKET") {
+        } else if (type == OrderType.takeProfitLimit || type == OrderType.takeProfitMarket) {
             if (triggerPrice != null && triggerPrice <= 0) {
                 listOfNotNull(inputField)
             } else if (limitPrice != null && limitPrice <= 0) {
@@ -464,8 +467,16 @@ internal class TriggerOrdersInputValidator(
         oraclePrice: Double,
         tickSize: String,
     ): List<Any>? {
-        val type = parser.asString(triggerOrder["type"]) ?: return null
-        val side = parser.asString(triggerOrder["side"]) ?: return null
+        val type = parser.asString(triggerOrder["type"])?.let {
+            OrderType.invoke(it)
+        }
+        val side = parser.asString(triggerOrder["side"])?.let {
+            OrderSide.invoke(it)
+        }
+
+        if (type == null || side == null) {
+            return null
+        }
 
         val triggerPrice =
             parser.asDouble(parser.value(triggerOrder, "price.triggerPrice")) ?: return null
@@ -508,56 +519,81 @@ internal class TriggerOrdersInputValidator(
     private fun validateLimitPrice(
         triggerOrder: Map<String, Any>,
     ): List<Any>? {
-        val type = parser.asString(triggerOrder["type"])
-        val fields = if (type == "STOP_LIMIT") {
-            listOf(
-                TriggerOrdersInputField.stopLossLimitPrice.rawValue,
-            )
-        } else if (type == "TAKE_PROFIT") {
-            listOf(
-                TriggerOrdersInputField.takeProfitLimitPrice.rawValue,
-            )
-        } else {
-            null
+        val type = parser.asString(triggerOrder["type"])?.let { OrderType.invoke(it) }
+        val side = parser.asString(triggerOrder["side"])?.let { OrderSide.invoke(it) }
+
+        if (type == null || side == null) {
+            return null
         }
+
+        val fields = when (type) {
+            OrderType.stopLimit -> listOf(TriggerOrdersInputField.stopLossLimitPrice.rawValue)
+            OrderType.takeProfitLimit -> listOf(TriggerOrdersInputField.takeProfitLimitPrice.rawValue)
+            else -> null
+        }
+
         return when (type) {
-            "STOP_LIMIT", "TAKE_PROFIT" -> {
-                parser.asString(parser.value(triggerOrder, "side"))?.let { side ->
-                    parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
-                        ?.let { limitPrice ->
-                            parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
-                                ?.let { triggerPrice ->
-                                    if (side == "BUY" && limitPrice < triggerPrice) {
-                                        return listOf(
-                                            error(
-                                                "ERROR",
-                                                "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                fields,
-                                                "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                            ),
-                                        )
-                                    } else if (side == "SELL" && limitPrice > triggerPrice) {
-                                        return listOf(
-                                            error(
-                                                "ERROR",
-                                                "LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                fields,
-                                                "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                            ),
-                                        )
-                                    } else {
-                                        null
-                                    }
+            OrderType.stopLimit, OrderType.takeProfitLimit -> {
+                parser.asDouble(parser.value(triggerOrder, "price.limitPrice"))
+                    ?.let { limitPrice ->
+                        parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
+                            ?.let { triggerPrice ->
+                                if (side == OrderSide.buy && limitPrice < triggerPrice) {
+                                    return limitPriceError(
+                                        "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                        fields,
+                                        if (type == OrderType.stopLimit) {
+                                            "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                        } else {
+                                            "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                        },
+                                        if (type == OrderType.stopLimit) {
+                                            "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                        } else {
+                                            "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE"
+                                        },
+                                    )
+                                } else if (side == OrderSide.sell && limitPrice > triggerPrice) {
+                                    return limitPriceError(
+                                        "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                        fields,
+                                        if (type == OrderType.stopLimit) {
+                                            "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                        } else {
+                                            "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                        },
+                                        if (type == OrderType.stopLimit) {
+                                            "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                        } else {
+                                            "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"
+                                        },
+                                    )
+                                } else {
+                                    null
                                 }
-                        }
-                }
+                            }
+                    }
             }
             else -> null
         }
+    }
+
+    private fun limitPriceError(
+        errorCode: String,
+        fields: List<String>?,
+        titleStringKey: String,
+        textStringKey: String,
+    ): List<Any>? {
+        return listOf(
+            error(
+                "ERROR",
+                errorCode,
+                fields,
+                "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                titleStringKey,
+                textStringKey,
+            ),
+        )
     }
 
     private fun validateSize(
@@ -621,35 +657,30 @@ internal class TriggerOrdersInputValidator(
         return null
     }
 
-    private fun requiredTriggerToLiquidationPrice(type: String?, side: String?): RelativeToPrice? {
+    private fun requiredTriggerToLiquidationPrice(type: OrderType?, side: OrderSide): RelativeToPrice? {
         return when (type) {
-            "STOP_MARKET" ->
+            OrderType.stopMarket ->
                 when (side) {
-                    "BUY" -> RelativeToPrice.BELOW
-                    "SELL" -> RelativeToPrice.ABOVE
-                    else -> null
+                    OrderSide.buy -> RelativeToPrice.BELOW
+                    OrderSide.sell -> RelativeToPrice.ABOVE
                 }
-
             else -> null
         }
     }
 
-    private fun requiredTriggerToIndexPrice(type: String, side: String): RelativeToPrice? {
+    private fun requiredTriggerToIndexPrice(type: OrderType, side: OrderSide): RelativeToPrice? {
         return when (type) {
-            "STOP_LIMIT", "STOP_MARKET" ->
+            OrderType.stopLimit, OrderType.stopMarket ->
                 when (side) {
-                    "BUY" -> RelativeToPrice.ABOVE
-                    "SELL" -> RelativeToPrice.BELOW
-                    else -> null
+                    OrderSide.buy -> RelativeToPrice.ABOVE
+                    OrderSide.sell -> RelativeToPrice.BELOW
                 }
 
-            "TAKE_PROFIT", "TAKE_PROFIT_MARKET" ->
+            OrderType.takeProfitLimit, OrderType.takeProfitMarket ->
                 when (side) {
-                    "BUY" -> RelativeToPrice.BELOW
-                    "SELL" -> RelativeToPrice.ABOVE
-                    else -> null
+                    OrderSide.buy -> RelativeToPrice.BELOW
+                    OrderSide.sell -> RelativeToPrice.ABOVE
                 }
-
             else -> null
         }
     }
@@ -658,7 +689,7 @@ internal class TriggerOrdersInputValidator(
         triggerToIndex: RelativeToPrice,
         oraclePrice: Double,
         tickSize: String,
-        type: String,
+        type: OrderType,
         inputField: String?,
     ): Map<String, Any> {
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
@@ -671,6 +702,7 @@ internal class TriggerOrdersInputValidator(
                 ),
         )
         val fields = listOfNotNull(inputField)
+        val isStopLoss = type == OrderType.stopLimit || type == OrderType.stopMarket
 
         return when (triggerToIndex) {
             RelativeToPrice.ABOVE -> error(
@@ -678,8 +710,16 @@ internal class TriggerOrdersInputValidator(
                 "TRIGGER_MUST_ABOVE_INDEX_PRICE",
                 fields,
                 action,
-                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                if (isStopLoss) {
+                    "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                } else {
+                    "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                },
+                if (isStopLoss) {
+                    "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                } else {
+                    "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
+                },
                 params,
             )
 
@@ -688,8 +728,16 @@ internal class TriggerOrdersInputValidator(
                 "TRIGGER_MUST_BELOW_INDEX_PRICE",
                 fields,
                 action,
-                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
-                if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE",
+                if (isStopLoss) {
+                    "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
+                } else {
+                    "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE"
+                },
+                if (isStopLoss) {
+                    "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
+                } else {
+                    "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE"
+                },
                 params,
             )
         }
