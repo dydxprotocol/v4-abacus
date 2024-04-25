@@ -1,6 +1,11 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.Numeric
@@ -26,6 +31,14 @@ enum class TradeCalculation(val rawValue: String) {
     }
 }
 
+internal object SlippageConstants {
+    const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+}
+
 @Suppress("UNCHECKED_CAST")
 internal class TradeInputCalculator(
     val parser: ParserProtocol,
@@ -33,24 +46,6 @@ internal class TradeInputCalculator(
     val featureFlags: EnvironmentFeatureFlags,
 ) {
     private val accountTransformer = AccountTransformer()
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_MAX_SLIPPAGE = 0.05
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
 
     internal fun calculate(
         state: Map<String, Any>,
