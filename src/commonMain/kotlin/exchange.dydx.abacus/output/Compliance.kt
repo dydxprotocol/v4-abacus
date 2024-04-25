@@ -8,6 +8,7 @@ import kotlin.js.JsExport
 enum class ComplianceStatus {
     COMPLIANT,
     FIRST_STRIKE,
+    FIRST_STRIKE_CLOSE_ONLY,
     CLOSE_ONLY,
     BLOCKED,
     UNKNOWN;

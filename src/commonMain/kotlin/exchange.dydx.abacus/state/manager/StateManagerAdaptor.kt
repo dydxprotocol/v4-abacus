@@ -29,6 +29,9 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.manager.utils.Address
+import exchange.dydx.abacus.state.manager.utils.DydxAddress
+import exchange.dydx.abacus.state.manager.utils.EvmAddress
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -447,14 +450,12 @@ open class StateManagerAdaptor(
             }
             if (sourceAddress != null) {
                 screenSourceAddress()
-                sourceAddress?.let { complianceScreen(it, null) }
+                sourceAddress?.let { complianceScreen(EvmAddress(it)) }
             }
             if (accountAddress != null) {
                 screenAccountAddress()
                 accountAddress?.let {
-                    complianceScreen(it) { complianceStatus ->
-                        updateCompliance(it, complianceStatus)
-                    }
+                    complianceScreen(DydxAddress(it))
                 }
                 retrieveAccount()
                 retrieveAccountHistoricalTradingRewards()
@@ -502,9 +503,7 @@ open class StateManagerAdaptor(
         subaccountsTimer = null
         screenAccountAddress()
         accountAddress?.let {
-            complianceScreen(it) { complianceStatus ->
-                updateCompliance(it, complianceStatus)
-            }
+            complianceScreen(DydxAddress(it))
         }
         retrieveAccountHistoricalTradingRewards()
     }
@@ -517,7 +516,7 @@ open class StateManagerAdaptor(
         sourceAddressTimer = null
         sourceAddressRestriction = null
         screenSourceAddress()
-        sourceAddress?.let { complianceScreen(it, null) }
+        sourceAddress?.let { complianceScreen(EvmAddress(it)) }
     }
 
     internal open fun didSetSubaccountNumber(subaccountNumber: Int) {
@@ -2417,14 +2416,17 @@ open class StateManagerAdaptor(
         }
     }
 
-    private fun handleComplianceResponse(response: String?, httpCode: Int, callback: ((ComplianceStatus) -> Unit)?) {
+    private fun handleComplianceResponse(response: String?, httpCode: Int) {
         compliance = if (success(httpCode) && response != null) {
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
                 val status = parser.asString(res["status"])
-                val complianceStatus = if (status != null) ComplianceStatus.valueOf(status) else ComplianceStatus.UNKNOWN
-                callback?.invoke(complianceStatus)
-
+                val complianceStatus =
+                    if (status != null) {
+                        ComplianceStatus.valueOf(status)
+                    } else {
+                        ComplianceStatus.UNKNOWN
+                    }
                 Compliance(compliance?.geo, complianceStatus)
             } else {
                 Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
@@ -2461,7 +2463,8 @@ open class StateManagerAdaptor(
                 val publicKey = parser.asString(result["publicKey"])
                 val timestamp = parser.asString(result["timestamp"])
 
-                val isUrlAndKeysPresent = url != null && signedMessage != null && publicKey != null && timestamp != null
+                val isUrlAndKeysPresent =
+                    url != null && signedMessage != null && publicKey != null && timestamp != null
                 val isStatusValid = status != ComplianceStatus.UNKNOWN
 
                 if (isUrlAndKeysPresent && isStatusValid) {
@@ -2482,7 +2485,7 @@ open class StateManagerAdaptor(
                         header,
                         body.toJsonPrettyPrint(),
                         callback = { _, response, httpCode, _ ->
-                            handleComplianceResponse(response, httpCode, null)
+                            handleComplianceResponse(response, httpCode)
                         },
                     )
                 } else {
@@ -2494,15 +2497,23 @@ open class StateManagerAdaptor(
         }
     }
 
-    private fun complianceScreen(address: String, callback: ((ComplianceStatus) -> Unit)?) {
-        val url = complianceScreenUrl(address)
+    private fun complianceScreen(address: Address) {
+        val url = complianceScreenUrl(address.rawAddress)
         if (url != null) {
             get(
                 url,
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    handleComplianceResponse(response, httpCode, callback)
+                    handleComplianceResponse(response, httpCode)
+                    val res = parser.decodeJsonObject(response)?.toIMap()
+                    if (address is DydxAddress && res != null) {
+                        val status = parser.asString(res["status"])
+                        if (status != null) {
+                            val complianceStatus = ComplianceStatus.valueOf(status)
+                            updateCompliance(address.rawAddress, complianceStatus)
+                        }
+                    }
                 },
             )
         }
