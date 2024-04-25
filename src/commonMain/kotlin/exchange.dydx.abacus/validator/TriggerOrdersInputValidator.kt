@@ -11,8 +11,8 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.Rounder
-import exchange.dydx.abacus.validator.trade.AccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
 import exchange.dydx.abacus.validator.trade.EquityTier
+import exchange.dydx.abacus.validator.trade.SubaccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
 
 enum class RelativeToPrice(val rawValue: String) {
     ABOVE("ABOVE"),

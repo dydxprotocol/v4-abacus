@@ -10,7 +10,7 @@ import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
-import exchange.dydx.abacus.validator.trade.AccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
+import exchange.dydx.abacus.validator.trade.SubaccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
 import kotlin.time.Duration.Companion.days
 
 /*
@@ -36,7 +36,7 @@ internal data class EquityTier(
     var nextLevelRequiredTotalNetCollateralUSD: Double? = null
 }
 
-internal object AccountLimitConstants {
+internal object SubaccountLimitConstants {
     const val MAX_NUM_OPEN_UNTRIGGERED_ORDERS = 20
 }
 
