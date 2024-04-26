@@ -29,6 +29,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.manager.utils.Address
 import exchange.dydx.abacus.state.manager.utils.DydxAddress
 import exchange.dydx.abacus.state.manager.utils.EvmAddress
