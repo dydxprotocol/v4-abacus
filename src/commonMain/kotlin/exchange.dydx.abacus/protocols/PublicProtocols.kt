@@ -167,7 +167,8 @@ enum class TransactionType(val rawValue: String) {
     simulateTransferNativeToken("simulateTransferNativeToken"),
     SendNobleIBC("sendNobleIBC"),
     WithdrawToNobleIBC("withdrawToNobleIBC"),
-    CctpWithdraw("cctpWithdraw");
+    CctpWithdraw("cctpWithdraw"),
+    SignCompliancePayload("signCompliancePayload");
 
     companion object {
         operator fun invoke(rawValue: String) =

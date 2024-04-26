@@ -945,7 +945,7 @@ class V4StateManagerAdaptor(
     }
 
     @Throws(Exception::class)
-    fun transaction(
+    override fun transaction(
         type: TransactionType,
         paramsInJson: String?,
         callback: (response: String) -> Unit,
