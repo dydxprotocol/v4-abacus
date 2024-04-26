@@ -63,6 +63,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun withdrawPayload(): HumanReadableWithdrawPayload?
     fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload?
     fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload?
+
     // Commit changes with input objects
     fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
     fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
