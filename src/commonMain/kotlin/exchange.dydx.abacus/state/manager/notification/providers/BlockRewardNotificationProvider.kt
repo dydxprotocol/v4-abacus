@@ -15,12 +15,12 @@ import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.toIMap
 
 class BlockRewardNotificationProvider(
+    private val stateMachine: TradingStateMachine,
     private val uiImplementations: UIImplementations,
     private val environment: V4Environment,
     private val jsonEncoder: JsonEncoder,
 ) : NotificationsProviderProtocol {
     override fun buildNotifications(
-        stateMachine: TradingStateMachine,
         subaccountNumber: Int
     ): IMap<String, Notification> {
         /*
@@ -36,7 +36,7 @@ class BlockRewardNotificationProvider(
         val token = environment.tokens["chain"]?.name
         if (accountBlockRewards != null && token != null) {
             for (blockReward in accountBlockRewards) {
-                createBlockRewardNotification(stateMachine, blockReward, token)?.let {
+                createBlockRewardNotification(blockReward, token)?.let {
                     notifications.typedSafeSet(
                         it.id,
                         it,
@@ -48,7 +48,6 @@ class BlockRewardNotificationProvider(
     }
 
     private fun createBlockRewardNotification(
-        stateMachine: TradingStateMachine,
         blockReward: BlockReward,
         token: String,
     ): Notification? {

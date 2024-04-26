@@ -18,12 +18,12 @@ import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.toIMap
 
 class OrderStatusChangesNotificationProvider(
+    private val stateMachine: TradingStateMachine,
     private val uiImplementations: UIImplementations,
     private val parser: ParserProtocol,
     private val jsonEncoder: JsonEncoder,
 ) : NotificationsProviderProtocol {
     override fun buildNotifications(
-        stateMachine: TradingStateMachine,
         subaccountNumber: Int
     ): IMap<String, Notification> {
         /*

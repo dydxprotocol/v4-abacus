@@ -146,6 +146,7 @@ internal class SubaccountSupervisor(
         }
 
     private val notificationsProvider = NotificationsProvider(
+        stateMachine,
         helper.uiImplementations,
         helper.environment,
         helper.parser,
@@ -1243,7 +1244,7 @@ internal class SubaccountSupervisor(
     }
 
     override fun updateNotifications() {
-        val notifications = notificationsProvider.buildNotifications(stateMachine, subaccountNumber)
+        val notifications = notificationsProvider.buildNotifications(subaccountNumber)
         consolidateNotifications(notifications)
     }
 

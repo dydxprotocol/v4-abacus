@@ -850,12 +850,13 @@ class V4AccountTests : V4BaseTests() {
                 val uiImplementations = BaseTests.testUIImplementations(localizer)
                 val notificationsProvider =
                     NotificationsProvider(
+                        perp,
                         uiImplementations,
                         environment = mock.v4Environment,
                         Parser(),
                         JsonEncoder(),
                     )
-                val notifications = notificationsProvider.buildNotifications(perp, 0)
+                val notifications = notificationsProvider.buildNotifications(0)
                 assertEquals(
                     6,
                     notifications.size,

@@ -15,7 +15,6 @@ import kollections.toIMap
 
 interface NotificationsProviderProtocol {
     fun buildNotifications(
-        stateMachine: TradingStateMachine,
         subaccountNumber: Int
     ): IMap<String, Notification>
 
@@ -27,45 +26,48 @@ interface NotificationsProviderProtocol {
 }
 
 class NotificationsProvider(
+    private val stateMachine: TradingStateMachine,
     private val uiImplementations: UIImplementations,
     private val environment: V4Environment,
     private val parser: ParserProtocol,
     private val jsonEncoder: JsonEncoder,
     private val useParentSubaccount: Boolean = false,
-) : NotificationsProviderProtocol {
-
-    private val providers = listOf(
+    private val providers: List<NotificationsProviderProtocol> = listOf(
         BlockRewardNotificationProvider(
+            stateMachine,
             uiImplementations,
             environment,
             jsonEncoder,
         ),
         FillsNotificationProvider(
+            stateMachine,
             uiImplementations,
             parser,
             jsonEncoder,
         ),
         PositionsNotificationProvider(
+            stateMachine,
             uiImplementations,
             parser,
             jsonEncoder,
             useParentSubaccount,
         ),
         OrderStatusChangesNotificationProvider(
+            stateMachine,
             uiImplementations,
             parser,
             jsonEncoder,
         ),
-    )
+    ),
+) : NotificationsProviderProtocol {
 
     override fun buildNotifications(
-        stateMachine: TradingStateMachine,
         subaccountNumber: Int
     ): IMap<String, Notification> {
         var merged: Map<String, Notification>? = null
 
         providers.forEach { provider ->
-            val notifications = provider.buildNotifications(stateMachine, subaccountNumber)
+            val notifications = provider.buildNotifications(subaccountNumber)
             merged = ParsingHelper.merge(merged, notifications) as? Map<String, Notification>
         }
 

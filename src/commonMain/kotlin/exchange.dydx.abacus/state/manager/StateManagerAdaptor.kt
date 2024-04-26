@@ -124,7 +124,7 @@ open class StateManagerAdaptor(
     @Suppress("LocalVariableName", "PropertyName")
     private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
 
-    var stateMachine: TradingStateMachine = PerpTradingStateMachine(
+    val stateMachine: TradingStateMachine = PerpTradingStateMachine(
         environment,
         uiImplementations.localizer,
         Formatter(uiImplementations.formatter),
@@ -152,7 +152,7 @@ open class StateManagerAdaptor(
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
     private val notificationsProvider =
-        NotificationsProvider(uiImplementations, environment, parser, jsonEncoder)
+        NotificationsProvider(stateMachine, uiImplementations, environment, parser, jsonEncoder)
 
     private var subaccountsTimer: LocalTimerProtocol? = null
         set(value) {
@@ -2197,7 +2197,7 @@ open class StateManagerAdaptor(
     }
 
     private fun updateNotifications() {
-        val notifications = notificationsProvider.buildNotifications(stateMachine, subaccountNumber)
+        val notifications = notificationsProvider.buildNotifications(subaccountNumber)
         consolidateNotifications(notifications)
     }
 

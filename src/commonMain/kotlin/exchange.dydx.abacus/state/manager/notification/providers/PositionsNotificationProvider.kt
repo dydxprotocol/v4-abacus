@@ -12,13 +12,13 @@ import exchange.dydx.abacus.utils.iMapOf
 import kollections.toIMap
 
 class PositionsNotificationProvider(
+    private val stateMachine: TradingStateMachine,
     private val uiImplementations: UIImplementations,
     private val parser: ParserProtocol,
     private val jsonEncoder: JsonEncoder,
     private val useParentSubaccount: Boolean = false,
 ) : NotificationsProviderProtocol {
     override fun buildNotifications(
-        stateMachine: TradingStateMachine,
         subaccountNumber: Int
     ): IMap<String, Notification> {
         /*
