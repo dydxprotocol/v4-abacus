@@ -13,7 +13,8 @@ enum class InputType(val rawValue: String) {
     TRADE("trade"),
     CLOSE_POSITION("closePosition"),
     TRANSFER("transfer"),
-    TRIGGER_ORDERS("triggerOrders");
+    TRIGGER_ORDERS("triggerOrders"),
+    ADJUST_ISOLATED_MARGIN("adjustIsolatedMargin");
 
     companion object {
         operator fun invoke(rawValue: String?) =
@@ -29,6 +30,7 @@ data class Input(
     val closePosition: ClosePositionInput?,
     val transfer: TransferInput?,
     val triggerOrders: TriggerOrdersInput?,
+    val adjustIsolatedMargin: AdjustIsolatedMarginInput?,
     val receiptLines: IList<ReceiptLine>?,
     val errors: IList<ValidationError>?
 ) {
@@ -51,6 +53,8 @@ data class Input(
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment)
                 val triggerOrders =
                     TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data["triggerOrders"]))
+                val adjustIsolatedMargin =
+                    AdjustIsolatedMarginInput.create(existing?.adjustIsolatedMargin, parser, parser.asMap(data["adjustIsolatedMargin"]))
                 val errors =
                     ValidationError.create(existing?.errors, parser, parser.asList(data["errors"]))
                 val receiptLines = ReceiptLine.create(parser, parser.asList(data["receiptLines"]))
@@ -59,6 +63,7 @@ data class Input(
                     existing?.closePosition !== closePosition ||
                     existing?.transfer !== transfer ||
                     existing?.triggerOrders !== triggerOrders ||
+                    existing?.adjustIsolatedMargin !== adjustIsolatedMargin ||
                     existing?.receiptLines != receiptLines ||
                     existing?.errors != errors
                 ) {
@@ -68,6 +73,7 @@ data class Input(
                         closePosition,
                         transfer,
                         triggerOrders,
+                        adjustIsolatedMargin,
                         receiptLines,
                         errors,
                     )

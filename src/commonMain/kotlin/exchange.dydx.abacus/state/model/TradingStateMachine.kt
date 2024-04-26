@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.AccountCalculator
+import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarketCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
@@ -600,6 +601,10 @@ open class TradingStateMachine(
                     calculateTriggerOrders(subaccountNumber)
                 }
 
+                "adjustIsolatedMargin" -> {
+                    calculateAdjustIsolatedMargin(subaccountNumber)
+                }
+
                 else -> {}
             }
         }
@@ -711,6 +716,25 @@ open class TradingStateMachine(
 
         val modified = calculator.calculate(params, subaccountNumber)
         input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
+
+        this.input = input
+    }
+
+    private fun calculateAdjustIsolatedMargin(subaccountNumber: Int?) {
+        val input = this.input?.mutable()
+        val adjustIsolatedMargin = parser.asNativeMap(input?.get("adjustIsolatedMargin"))
+        val calculator = AdjustIsolatedMarginInputCalculator(parser)
+        val params = mutableMapOf<String, Any>()
+        params.safeSet("wallet", wallet)
+        params.safeSet("account", account)
+        params.safeSet("user", user)
+        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+        params.safeSet("adjustIsolatedMargin", adjustIsolatedMargin)
+
+        val modified = calculator.calculate(params, subaccountNumber)
+        this.setMarkets(parser.asNativeMap(modified["markets"]))
+        this.wallet = parser.asNativeMap(modified["wallet"])
+        input?.safeSet("adjustIsolatedMargin", parser.asNativeMap(modified["adjustIsolatedMargin"]))
 
         this.input = input
     }

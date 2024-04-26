@@ -13,6 +13,7 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -403,6 +404,10 @@ class AsyncAbacusStateManager(
         adaptor?.triggerOrders(data, type)
     }
 
+    override fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?) {
+        adaptor?.adjustIsolatedMargin(data, type)
+    }
+
     override fun isMarketValid(marketId: String?): Boolean {
         return if (marketId == null) {
             true
@@ -444,6 +449,10 @@ class AsyncAbacusStateManager(
         return adaptor?.withdrawPayload()
     }
 
+    override fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
+        return adaptor?.adjustIsolatedMarginPayload()
+    }
+
     override fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload? {
         return adaptor?.subaccountTransferPayload()
     }
@@ -471,6 +480,16 @@ class AsyncAbacusStateManager(
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         return try {
             adaptor?.commitTriggerOrders(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+            null
+        }
+    }
+
+    override fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload? {
+        return try {
+            adaptor?.commitAdjustIsolatedMargin(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)

@@ -33,10 +33,12 @@ import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
@@ -430,6 +432,21 @@ internal class SubaccountSupervisor(
         }
     }
 
+    fun adjustIsolatedMargin(
+        data: String?,
+        type: AdjustIsolatedMarginInputField?,
+    ) {
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.adjustIsolatedMargin(data, type, subaccountNumber)
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
     /**
      * @description Get the childSubaccount number that is available for the given marketId
      * @param marketId
@@ -806,6 +823,30 @@ internal class SubaccountSupervisor(
         return payloads
     }
 
+    internal fun commitAdjustIsolatedMargin(
+        callback: TransactionCallback
+    ): HumanReadableSubaccountTransferPayload {
+        val payload = adjustIsolatedMarginPayload()
+        val transferPayloadString = Json.encodeToString(payload)
+
+        submitTransaction(
+            TransactionType.SubaccountTransfer,
+            transferPayloadString,
+            null,
+            transactionCallback = { response: String? ->
+              val error = parseTransactionResponse(response)
+              helper.send(
+                  error,
+                  callback,
+                  payload
+              )
+            },
+            false,
+        )
+
+        return payload
+    }
+
     internal fun stopWatchingLastOrder() {
         lastOrderClientId = null
     }
@@ -1132,6 +1173,20 @@ internal class SubaccountSupervisor(
             size,
             destinationAddress,
             0,
+        )
+    }
+
+    @Throws(Exception::class)
+    fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload {
+        val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin ?: error("AdjustIsolatedMarginInput is null")
+        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber ?: error("childSubaccountNumber is null")
+
+        return HumanReadableSubaccountTransferPayload(
+            subaccountNumber,
+            amount,
+            accountAddress,
+            childSubaccountNumber,
         )
     }
 

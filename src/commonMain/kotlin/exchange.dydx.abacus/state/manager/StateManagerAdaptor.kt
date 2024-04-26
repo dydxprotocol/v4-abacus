@@ -27,6 +27,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -34,6 +35,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
+import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.state.model.candles
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
@@ -1751,12 +1753,32 @@ open class StateManagerAdaptor(
         }
     }
 
+    fun adjustIsolatedMargin(
+        data: String?,
+        type: AdjustIsolatedMarginInputField?,
+    ) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.adjustIsolatedMargin(data, type, subaccountNumber)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
     internal open fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
         return null
     }
 
     internal open fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+        return null
+    }
+
+    internal open fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload? {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
         return null
     }
@@ -2166,6 +2188,27 @@ open class StateManagerAdaptor(
                 }
             }
         }
+    }
+
+    @Throws(Exception::class)
+    fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload {
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+            ?: error("subaccount is null")
+        val parentSubaccountNumber = subaccount.subaccountNumber
+        val wallet = stateMachine.state?.wallet ?: error("wallet is null")
+        val walletAddress = wallet.walletAddress ?: error("walletAddress is null")
+        val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin
+            ?: error("isolatedMarginAdjustment is null")
+        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber
+            ?: error("childSubaccountNumber is null")
+
+        return HumanReadableSubaccountTransferPayload(
+            parentSubaccountNumber,
+            amount,
+            walletAddress,
+            childSubaccountNumber
+        )
     }
 
     private fun updateTracking(changes: StateChanges) {
