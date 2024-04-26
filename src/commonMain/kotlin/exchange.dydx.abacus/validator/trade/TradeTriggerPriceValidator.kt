@@ -242,7 +242,13 @@ internal class TradeTriggerPriceValidator(
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
         // Localizations uses TRIGGER_PRICE_LIMIT as paramater name
         val params =
-            mapOf("TRIGGER_PRICE_LIMIT" to mapOf("value" to triggerLiquidation, "tickSize" to tickSize))
+            mapOf(
+                "TRIGGER_PRICE_LIMIT" to mapOf(
+                    "value" to triggerLiquidation,
+                    "format" to "price",
+                    "tickSize" to tickSize,
+                ),
+            )
         return when (triggerToLiquidation) {
             RelativeToPrice.ABOVE -> error(
                 "ERROR",

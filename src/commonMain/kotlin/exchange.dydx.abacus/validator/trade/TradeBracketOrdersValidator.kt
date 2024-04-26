@@ -163,6 +163,7 @@ internal class TradeBracketOrdersValidator(
                         mapOf(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
+                                "format" to "price",
                                 "tickSize" to tickSize,
                             ),
                         ),
@@ -185,6 +186,7 @@ internal class TradeBracketOrdersValidator(
                         mapOf(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
+                                "format" to "price",
                                 "tickSize" to tickSize,
                             ),
                         ),
@@ -326,6 +328,7 @@ internal class TradeBracketOrdersValidator(
                         mapOf(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
+                                "format" to "price",
                                 "tickSize" to tickSize,
                             ),
                         ),
@@ -345,6 +348,7 @@ internal class TradeBracketOrdersValidator(
                         mapOf(
                             "TRIGGER_PRICE_LIMIT" to mapOf(
                                 "value" to liquidationPrice,
+                                "format" to "price",
                                 "tickSize" to tickSize,
                             ),
                         ),
