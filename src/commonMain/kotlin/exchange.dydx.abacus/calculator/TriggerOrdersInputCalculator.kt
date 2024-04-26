@@ -1,6 +1,10 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
+import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -11,18 +15,6 @@ import kotlin.math.abs
 
 @Suppress("UNCHECKED_CAST")
 internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
-
     internal fun calculate(
         state: Map<String, Any>,
         subaccountNumber: Int?,

@@ -56,6 +56,9 @@ class V4MarketsTests : V4BaseTests() {
         testMarketsSparklinesChanged()
         time = perp.log("Sparklines Changed", time)
 
+        testMarketsSubscribed()
+        time = perp.log("Markets Subscribed", time)
+
         testMarketsChanged()
         time = perp.log("Markets Changed", time)
 
@@ -254,7 +257,11 @@ class V4MarketsTests : V4BaseTests() {
                            "volume24H":493681565.92757831256,
                            "openInterest":3531.250439547,
                            "nextFundingRate":0.0,
-                           "trades24H":922900
+                           "trades24H":922900,
+                            "line": [
+                                    "29308",
+                                    "29373"
+                                ]
                         }
                      },
                      "ETH-USD":{
@@ -277,7 +284,11 @@ class V4MarketsTests : V4BaseTests() {
                            "volume24H":493203231.416110155,
                            "openInterest":46115.767606,
                            "nextFundingRate":0.0,
-                           "trades24H":939491
+                           "trades24H":939491,
+                           "line": [
+                                    "1900.3",
+                                    "1902.6"
+                                ]
                         }
                      }
                   }

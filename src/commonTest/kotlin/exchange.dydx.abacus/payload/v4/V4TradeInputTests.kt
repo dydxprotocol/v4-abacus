@@ -809,7 +809,7 @@ open class V4TradeInputTests : V4BaseTests() {
                 "input": {
                     "trade": {
                         "summary": {
-                            "payloadPrice": 950.0
+                            "payloadPrice": 900.0
                         }
                     }
                 }

@@ -436,6 +436,7 @@
     <ID>InvalidPackageDeclaration:MarketsProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
     <ID>InvalidPackageDeclaration:MarketsSummaryProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
     <ID>InvalidPackageDeclaration:MarketsSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
+    <ID>InvalidPackageDeclaration:Address.kt$package exchange.dydx.abacus.state.manager.utils</ID>
     <ID>InvalidPackageDeclaration:Network.kt$package exchange.dydx.abacus.state.manager</ID>
     <ID>InvalidPackageDeclaration:NetworkConfigsProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
     <ID>InvalidPackageDeclaration:NetworkHelper.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>

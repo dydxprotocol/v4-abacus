@@ -213,12 +213,7 @@ class TradeRequiredInputTests : V3BaseTests() {
                         "trade": {
                             "type": "STOP_MARKET"
                         },
-                        "errors": [
-                            {
-                                "type": "WARNING",
-                                "code": "STOP_MARKET_ORDER_MAY_NOT_EXECUTE"
-                            }
-                        ]
+                        "errors": null
                     }
                 }
             """.trimIndent(),
