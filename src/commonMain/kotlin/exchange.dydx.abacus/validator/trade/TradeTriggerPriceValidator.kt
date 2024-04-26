@@ -103,6 +103,7 @@ internal class TradeTriggerPriceValidator(
                                     triggerToLiquidationError(
                                         triggerToLiquidation,
                                         liquidationPrice,
+                                        tickSize,
                                     ),
                                 )
                             }
@@ -114,6 +115,7 @@ internal class TradeTriggerPriceValidator(
                                     triggerToLiquidationError(
                                         triggerToLiquidation,
                                         liquidationPrice,
+                                        tickSize,
                                     ),
                                 )
                             }
@@ -234,12 +236,19 @@ internal class TradeTriggerPriceValidator(
     private fun triggerToLiquidationError(
         triggerToLiquidation: RelativeToPrice,
         triggerLiquidation: Double,
+        tickSize: String,
     ): Map<String, Any> {
         val fields = listOf("price.triggerPrice")
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
         // Localizations uses TRIGGER_PRICE_LIMIT as paramater name
         val params =
-            mapOf("TRIGGER_PRICE_LIMIT" to mapOf("value" to triggerLiquidation, "format" to "price"))
+            mapOf(
+                "TRIGGER_PRICE_LIMIT" to mapOf(
+                    "value" to triggerLiquidation,
+                    "format" to "price",
+                    "tickSize" to tickSize,
+                ),
+            )
         return when (triggerToLiquidation) {
             RelativeToPrice.ABOVE -> error(
                 "ERROR",

@@ -118,6 +118,42 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
 
         test(
             {
+                perp.triggerOrders("900", TriggerOrdersInputField.stopLossPrice, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "stopLossOrder": {
+                            "type": "STOP_MARKET"
+                        }
+                    },
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                            "fields": ["stopLossOrder.price.triggerPrice"],
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRIGGERS_FORM.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE_NO_LIMIT"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_TRIGGER_PRICE"
+                                }
+                            }
+                        }
+                    ]        
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
                 perp.triggerOrders("2000", TriggerOrdersInputField.stopLossPrice, 0)
             },
             """
@@ -233,6 +269,34 @@ class TriggerOrdersInputValidationTests : V4BaseTests() {
                             "code": "REQUIRED_TRIGGER_PRICE"
                         }
                     ]        
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test({
+            perp.triggerOrders("800", TriggerOrdersInputField.stopLossLimitPrice, 0)
+        }, null)
+
+        test(
+            {
+                perp.triggerOrders("900", TriggerOrdersInputField.stopLossPrice, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "triggerOrders",
+                    "triggerOrders": {
+                        "stopLossOrder": {
+                            "type": "STOP_LIMIT",
+                            "side": "SELL",
+                            "price": {
+                                "triggerPrice": "900",
+                                "limitPrice": "800"
+                            }
+                        }
+                    },
+                    "errors": null        
                 }
             }
             """.trimIndent(),
