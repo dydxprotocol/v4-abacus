@@ -107,6 +107,7 @@ class AbacusMockData {
             usePessimisticCollateralCheck = false,
             useOptimisticCollateralCheck = true,
             withdrawalSafetyEnabled = true,
+            isSlTpEnabled = true,
         ),
     )
 }

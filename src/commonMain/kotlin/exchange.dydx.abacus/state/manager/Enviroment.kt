@@ -105,6 +105,7 @@ data class EnvironmentFeatureFlags(
     val usePessimisticCollateralCheck: Boolean,
     val useOptimisticCollateralCheck: Boolean,
     val withdrawalSafetyEnabled: Boolean,
+    val isSlTpEnabled: Boolean,
 ) {
     companion object {
         fun parse(
@@ -115,12 +116,14 @@ data class EnvironmentFeatureFlags(
             val usePessimisticCollateralCheck = parser.asBool(data?.get("usePessimisticCollateralCheck")) ?: false
             val useOptimisticCollateralCheck = parser.asBool(data?.get("useOptimisticCollateralCheck")) ?: false
             val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
+            val isSlTpEnabled = parser.asBool(data?.get("isSlTpEnabled")) ?: false
 
             return EnvironmentFeatureFlags(
                 reduceOnlySupported,
                 usePessimisticCollateralCheck,
                 useOptimisticCollateralCheck,
                 withdrawalSafetyEnabled,
+                isSlTpEnabled,
             )
         }
     }
