@@ -108,6 +108,7 @@ class AbacusMockData {
             useOptimisticCollateralCheck = true,
             withdrawalSafetyEnabled = true,
             isSlTpEnabled = true,
+            isSlTpLimitOrdersEnabled = true,
         ),
     )
 }
