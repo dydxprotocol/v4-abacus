@@ -338,6 +338,7 @@ enum class ToastType(val rawValue: String) {
 @JsExport
 @Serializable
 data class Toast(
+    val id: String? = null,
     val type: ToastType,
     val title: String,
     val text: String? = null,

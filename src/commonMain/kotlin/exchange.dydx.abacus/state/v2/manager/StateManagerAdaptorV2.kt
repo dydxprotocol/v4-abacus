@@ -14,8 +14,8 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
-import exchange.dydx.abacus.state.TriggerOrderToastGenerator
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.app.helper.TriggerOrderToastGenerator
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.ApiData
@@ -159,6 +159,7 @@ internal class StateManagerAdaptorV2(
         parser,
         uiImplementations.formatter,
         uiImplementations.localizer,
+        ioImplementations.threading,
     )
 
     internal open var restriction: UsageRestriction = UsageRestriction.noRestriction

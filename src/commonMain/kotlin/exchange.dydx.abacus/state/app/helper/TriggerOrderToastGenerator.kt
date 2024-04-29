@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.state
+package exchange.dydx.abacus.state.app.helper
 
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.PositionSide
@@ -10,6 +10,8 @@ import exchange.dydx.abacus.protocols.FormatterProtocol
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.PresentationProtocol
+import exchange.dydx.abacus.protocols.ThreadingProtocol
+import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.Toast
 import exchange.dydx.abacus.protocols.ToastType
 import exchange.dydx.abacus.responses.ParsingError
@@ -29,6 +31,7 @@ class TriggerOrderToastGenerator(
     private val parser: ParserProtocol,
     private val formatter: FormatterProtocol?,
     private val localizer: LocalizerProtocol?,
+    private val threading: ThreadingProtocol?,
 ) : TriggerOrderToastGeneratorProtocol {
     private enum class TriggerOrderStatus {
         Submitting,
@@ -38,7 +41,6 @@ class TriggerOrderToastGenerator(
 
     private var orderPayloadStatus: MutableMap<String, TriggerOrderStatus> = mutableMapOf()
 
-    private var payload: HumanReadableTriggerOrdersPayload? = null
     private var state: PerpetualState? = null
 
     override fun onTriggerOrderSubmitted(
@@ -50,7 +52,6 @@ class TriggerOrderToastGenerator(
             return
         }
 
-        this.payload = payload
         this.state = state
 
         payload.cancelOrderPayloads.forEach { cancelOrderPayload ->
@@ -62,9 +63,7 @@ class TriggerOrderToastGenerator(
         }
 
         val toasts = generateTriggerOrderToast(subaccountNumber, payload)
-        for (toast in toasts) {
-            presentation.showToast(toast)
-        }
+        showToasts(toasts)
     }
 
     override fun onTriggerOrderResponse(
@@ -84,9 +83,7 @@ class TriggerOrderToastGenerator(
             updateOrderStatus(responsePayload, TriggerOrderStatus.Failed)
         }
         val toasts = generateTriggerOrderToast(subaccountNumber, responsePayload)
-        for (toast in toasts) {
-            presentation.showToast(toast)
-        }
+        showToasts(toasts)
     }
 
     private fun updateOrderStatus(payload: HumanReadableTriggerOrdersPayload, status: TriggerOrderStatus) {
@@ -102,7 +99,7 @@ class TriggerOrderToastGenerator(
         subaccountNumber: Int,
         responsePayload: HumanReadableTriggerOrdersPayload?
     ): List<Toast> {
-        if (payload == null || state == null) {
+        if (responsePayload == null || state == null) {
             return emptyList()
         }
         val marketId = state?.input?.triggerOrders?.marketId ?: return emptyList()
@@ -135,7 +132,7 @@ class TriggerOrderToastGenerator(
         val tickSize = parser.asString(market.configs?.tickSize)
 
         val toasts = mutableListOf<Toast>()
-        responsePayload?.cancelOrderPayloads?.forEach { cancelOrderPayload ->
+        responsePayload.cancelOrderPayloads?.forEach { cancelOrderPayload ->
             val toast = generateForCancelOrder(
                 cancelOrderPayload,
                 takeProfitOrders,
@@ -230,6 +227,7 @@ class TriggerOrderToastGenerator(
         }
         return if (orderType != null && detail != null) {
             Toast(
+                id = cancelOrderPayload.orderId,
                 type = ToastType.Info,
                 title = orderType,
                 text = detail,
@@ -258,12 +256,12 @@ class TriggerOrderToastGenerator(
         when (placeOrderPayload.type) {
             "TAKE_PROFIT_MARKET", "TAKE_PROFIT" -> {
                 detailStringPath = when (status) {
-                    TriggerOrderStatus.Submitting -> null
+                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING.BODY"
                     TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.BODY"
                     TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING_ERROR.BODY"
                 }
                 orderTypePath = when (status) {
-                    TriggerOrderStatus.Submitting -> null
+                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING.TITLE"
                     TriggerOrderStatus.Success -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.TITLE"
                     TriggerOrderStatus.Failed -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATING_ERROR.TITLE"
                 }
@@ -271,12 +269,12 @@ class TriggerOrderToastGenerator(
 
             "STOP_LIMIT", "STOP_MARKET" -> {
                 detailStringPath = when (status) {
-                    TriggerOrderStatus.Submitting -> null
+                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING.BODY"
                     TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATED.BODY"
                     TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING_ERROR.BODY"
                 }
                 orderTypePath = when (status) {
-                    TriggerOrderStatus.Submitting -> null
+                    TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING.TITLE"
                     TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATED.TITLE"
                     TriggerOrderStatus.Failed -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_CREATING_ERROR.TITLE"
                 }
@@ -298,12 +296,25 @@ class TriggerOrderToastGenerator(
 
         return if (orderType != null && detail != null) {
             Toast(
+                id = placeOrderPayload.clientId.toString(),
                 type = ToastType.Info,
                 title = orderType,
                 text = detail,
             )
         } else {
             null
+        }
+    }
+
+    private fun showToasts(toasts: List<Toast>) {
+        if (threading == null) {
+            Logger.e { "Threading is null" }
+            return
+        }
+        threading?.async(ThreadingType.main) {
+            for (toast in toasts) {
+                presentation?.showToast(toast)
+            }
         }
     }
 }
