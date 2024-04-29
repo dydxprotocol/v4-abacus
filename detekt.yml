@@ -1,0 +1,6 @@
+naming:
+  InvalidPackageDeclaration:
+    # some of our package folders are structured /exchange.dydx.abacus instead of:
+    # /exchange -> /dydx -> /abacus
+    # didn't seem worth the potential thrash in PRs to fix (feel free to fix if you feel differently)
+    active: false
