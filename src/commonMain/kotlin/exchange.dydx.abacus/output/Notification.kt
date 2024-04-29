@@ -34,10 +34,10 @@ data class Notification(
     val id: String,
     val type: NotificationType,
     val priority: NotificationPriority,
-    val image: String?,
+    val image: String? = null,
     val title: String,
-    val text: String?,
-    val link: String?,
-    val data: String?, // JSON String
+    val text: String? = null,
+    val link: String? = null,
+    val data: String? = null, // JSON String
     val updateTimeInMilliseconds: Double,
 )

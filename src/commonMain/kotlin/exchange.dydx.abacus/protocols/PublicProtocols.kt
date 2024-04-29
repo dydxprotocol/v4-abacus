@@ -326,3 +326,23 @@ fun FileSystemProtocol.readCachedTextFile(
 }
 
 typealias TransactionCallback = (successful: Boolean, error: ParsingError?, data: Any?) -> Unit
+
+@JsExport
+@Serializable
+enum class ToastType(val rawValue: String) {
+    Info("Info"),
+    Warning("Warning"),
+    Error("Error");
+}
+
+@JsExport
+@Serializable
+data class Toast(
+    val type: ToastType,
+    val title: String,
+    val text: String? = null,
+)
+
+interface PresentationProtocol {
+    fun showToast(toast: Toast)
+}
