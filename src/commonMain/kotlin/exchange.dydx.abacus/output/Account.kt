@@ -404,7 +404,7 @@ data class SubaccountPosition(
                         existing.buyingPower !== buyingPower ||
                         existing.liquidationPrice !== liquidationPrice ||
                         existing.resources !== resources ||
-                        existing.childSubaccountNumber !== childSubaccountNumber ||
+                        existing.childSubaccountNumber != childSubaccountNumber ||
                         existing.freeCollateral !== freeCollateral ||
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
