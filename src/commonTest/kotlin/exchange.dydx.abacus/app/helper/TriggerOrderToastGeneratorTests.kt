@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.app.helper
 
 import exchange.dydx.abacus.output.PerpetualState
+import exchange.dydx.abacus.protocols.ToastType
 import exchange.dydx.abacus.state.app.helper.TriggerOrderToastGenerator
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -190,6 +191,7 @@ class TriggerOrderToastGeneratorTests {
         assertTrue { cancel.title.contains("NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVED.TITLE") }
         assertTrue { cancel.text!!.contains("NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVED.BODY") }
         assertTrue { cancel.text!!.contains("2000") }
+        assertEquals(cancel.type, ToastType.Info)
 
         toastGenerator.onTriggerOrderResponse(
             subaccountNumber = 0,
@@ -225,6 +227,7 @@ class TriggerOrderToastGeneratorTests {
         assertTrue { placeOrder.title.contains("NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.TITLE") }
         assertTrue { placeOrder.text!!.contains("NOTIFICATIONS.TAKE_PROFIT_TRIGGER_CREATED.BODY") }
         assertTrue { placeOrder.text!!.contains("3000") }
+        assertEquals(placeOrder.type, ToastType.Info)
     }
 
     @Test
@@ -265,6 +268,7 @@ class TriggerOrderToastGeneratorTests {
         assertTrue { cancelFailed.title.contains("NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING_ERROR.TITLE") }
         assertTrue { cancelFailed.text!!.contains("NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING_ERROR.BODY") }
         assertTrue { cancelFailed.text!!.contains("2000") }
+        assertEquals(cancelFailed.type, ToastType.Warning)
     }
 
     private fun createToastGenerator() =

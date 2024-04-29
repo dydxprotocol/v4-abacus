@@ -169,12 +169,41 @@ class TriggerOrderToastGenerator(
 
         val status = orderPayloadStatus[cancelOrderPayload.orderId] ?: TriggerOrderStatus.Submitting
 
-        val orderType: String?
-        val detail: String?
-
         val takeProfitOrder = takeProfitOrders?.firstOrNull { it.id == cancelOrderPayload.orderId }
         val stopLossOrder = stopLossOrders?.firstOrNull { it.id == cancelOrderPayload.orderId }
 
+        if (takeProfitOrder != null) {
+            return generateForCancelOrderForTP(
+                cancelOrderPayload.orderId,
+                status,
+                takeProfitOrder,
+                tickSize,
+            )
+        } else if (stopLossOrder != null) {
+            return generateForCancelOrderForSL(
+                cancelOrderPayload.orderId,
+                status,
+                stopLossOrder,
+                tickSize,
+            )
+        } else {
+            return null
+        }
+    }
+
+    private fun generateForCancelOrderForTP(
+        id: String,
+        status: TriggerOrderStatus,
+        takeProfitOrder: SubaccountOrder?,
+        tickSize: String?,
+    ): Toast? {
+        if (formatter == null || localizer == null) {
+            Logger.e { "Formatter or Localizer is null" }
+            return null
+        }
+
+        val orderType: String?
+        val detail: String?
         if (takeProfitOrder != null) {
             val detailStringPath = when (status) {
                 TriggerOrderStatus.Submitting -> "NOTIFICATIONS.TAKE_PROFIT_TRIGGER_REMOVING.BODY"
@@ -198,7 +227,37 @@ class TriggerOrderToastGenerator(
                         ),
                 ),
             )
-        } else if (stopLossOrder != null) {
+        } else {
+            orderType = null
+            detail = null
+        }
+
+        return if (orderType != null && detail != null) {
+            Toast(
+                id = id,
+                type = if (status == TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
+                title = orderType,
+                text = detail,
+            )
+        } else {
+            null
+        }
+    }
+
+    private fun generateForCancelOrderForSL(
+        id: String,
+        status: TriggerOrderStatus,
+        stopLossOrder: SubaccountOrder?,
+        tickSize: String?,
+    ): Toast? {
+        if (formatter == null || localizer == null) {
+            Logger.e { "Formatter or Localizer is null" }
+            return null
+        }
+
+        val orderType: String?
+        val detail: String?
+        if (stopLossOrder != null) {
             val detailStringPath = when (status) {
                 TriggerOrderStatus.Submitting -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVING.BODY"
                 TriggerOrderStatus.Success -> "NOTIFICATIONS.STOP_LOSS_TRIGGER_REMOVED.BODY"
@@ -225,10 +284,11 @@ class TriggerOrderToastGenerator(
             orderType = null
             detail = null
         }
+
         return if (orderType != null && detail != null) {
             Toast(
-                id = cancelOrderPayload.orderId,
-                type = ToastType.Info,
+                id = id,
+                type = if (status == TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
                 title = orderType,
                 text = detail,
             )
@@ -297,7 +357,7 @@ class TriggerOrderToastGenerator(
         return if (orderType != null && detail != null) {
             Toast(
                 id = placeOrderPayload.clientId.toString(),
-                type = ToastType.Info,
+                type = if (status == TriggerOrderStatus.Failed) ToastType.Warning else ToastType.Info,
                 title = orderType,
                 text = detail,
             )
