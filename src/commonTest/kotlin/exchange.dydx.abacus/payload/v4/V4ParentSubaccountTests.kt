@@ -223,6 +223,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "freeCollateral": {
                                                 "current": 796.244
+                                            },
+                                            "marginUsage": {
+                                                "current": 0.0397
                                             }
                                         }
                                     },
