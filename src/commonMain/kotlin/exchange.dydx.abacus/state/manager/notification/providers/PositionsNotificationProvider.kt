@@ -43,7 +43,7 @@ class PositionsNotificationProvider(
                 val positionStatus = parser.asString(position["status"])
                 if (positionStatus == "CLOSED") {
                     val closedAt = parser.asDatetime(position["closedAt"]) ?: continue
-                    val asset = asset(stateMachine, marketId) ?: continue
+                    val asset = stateMachine.state?.assetOfMarket(marketId) ?: continue
                     val assetText = asset.name
                     val marketImageUrl = asset.resources?.imageUrl
                     val params = (

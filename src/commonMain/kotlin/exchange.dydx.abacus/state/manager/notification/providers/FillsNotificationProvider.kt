@@ -14,6 +14,7 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.ParsingHelper.Companion.asset
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
@@ -101,7 +102,7 @@ class FillsNotificationProvider(
         val marketId = fill.marketId
         val market = market(stateMachine, marketId) ?: return null
         val tickSize = market.configs?.tickSize ?: return null
-        val asset = asset(stateMachine, marketId)
+        val asset = stateMachine.state?.assetOfMarket(marketId)
         val assetText = asset?.name ?: marketId
         val marketImageUrl = asset?.resources?.imageUrl
         val side = fill.side.rawValue
@@ -151,7 +152,7 @@ class FillsNotificationProvider(
     ): Notification? {
         val fillId = fill.id
         val marketId = fill.marketId
-        val asset = asset(stateMachine, marketId) ?: return null
+        val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
         val assetText = asset.name
         val marketImageUrl = asset.resources?.imageUrl
         val side = fill.side.rawValue

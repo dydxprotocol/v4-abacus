@@ -41,6 +41,11 @@ data class PerpetualState(
         return assets?.get(assetId)
     }
 
+    fun assetOfMarket(marketId: String): Asset? {
+        val assetId = market(marketId)?.assetId ?: return null
+        return assets?.get(assetId)
+    }
+
     fun marketIds(): IList<String>? {
         return marketsSummary?.marketIds()
     }

@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.state.manager.notification
 
-import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
@@ -17,12 +16,6 @@ interface NotificationsProviderProtocol {
     fun buildNotifications(
         subaccountNumber: Int
     ): IMap<String, Notification>
-
-    fun asset(stateMachine: TradingStateMachine, marketId: String): Asset? {
-        val market = stateMachine.state?.market(marketId) ?: return null
-        val assetId = market.assetId
-        return stateMachine.state?.asset(assetId)
-    }
 }
 
 class NotificationsProvider(

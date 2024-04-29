@@ -96,7 +96,7 @@ class OrderStatusChangesNotificationProvider(
         }
         return if (statusNotificationStringKey != null && timestamp != null) {
             val marketId = order.marketId
-            val asset = asset(stateMachine, marketId) ?: return null
+            val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
             val marketImageUrl = asset.resources?.imageUrl
             val side = order.side.rawValue
             val sideText = uiImplementations.localizer?.localize("APP.GENERAL.$side")
