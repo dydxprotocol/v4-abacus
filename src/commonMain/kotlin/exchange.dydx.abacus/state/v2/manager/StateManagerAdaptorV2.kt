@@ -475,10 +475,17 @@ internal class StateManagerAdaptorV2(
 
     internal fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         val payload = accounts.commitTriggerOrders(currentHeight) { successful, error, data ->
-            triggerOrderToastGenerator.onTriggerOrderResponse(subaccountNumber, successful, error, data)
+            if (appConfigs.triggerOrderToast) {
+                triggerOrderToastGenerator.onTriggerOrderResponse(
+                    subaccountNumber,
+                    successful,
+                    error,
+                    data
+                )
+            }
             callback(successful, error, data)
         }
-        if (payload != null) {
+        if (payload != null && appConfigs.triggerOrderToast) {
             triggerOrderToastGenerator.onTriggerOrderSubmitted(subaccountNumber, payload, stateMachine.state)
         }
         return payload
