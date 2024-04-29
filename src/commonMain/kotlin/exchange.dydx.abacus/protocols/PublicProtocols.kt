@@ -212,12 +212,19 @@ enum class AnalyticsEvent(val rawValue: String) {
     // Trade Events
     TradePlaceOrderClick("TradePlaceOrderClick"),
     TradeCancelOrderClick("TradeCancelOrderClick"),
-    TradePlaceOrder("TradePlaceOrder"),
-    TradeCancelOrder("TradeCancelOrder"),
+    TradeTriggerOrderClick("TradeTriggerOrderClick"),
+    TradePlaceOrder("TradePlaceOrder"), // analytics here
+    TradeCancelOrder("TradeCancelOrder"), // analytics here
+    TradeTriggerPlaceOrder("TradeTriggerPlaceOrder"),
+    TradeTriggerCancelOrder("TradeTriggerCancelOrder"),
     TradePlaceOrderSubmissionConfirmed("TradePlaceOrderSubmissionConfirmed"),
     TradeCancelOrderSubmissionConfirmed("TradeCancelOrderSubmissionConfirmed"),
+    TradeTriggerPlaceOrderSubmissionConfirmed("TradeTriggerPlaceOrderSubmissionConfirmed"),
+    TradeTriggerCancelOrderSubmissionConfirmed("TradeTriggerCancelOrderSubmissionConfirmed"),
     TradePlaceOrderSubmissionFailed("TradePlaceOrderSubmissionFailed"),
     TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
+    TradeTriggerPlaceOrderSubmissionFailed("TradeTriggerPlaceOrderSubmissionFailed"),
+    TradeTriggerCancelOrderSubmissionFailed("TradeTriggerCancelOrderSubmissionFailed"),
     TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
     TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
 

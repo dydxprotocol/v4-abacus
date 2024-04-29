@@ -554,7 +554,7 @@ internal class SubaccountSupervisor(
         val useTransactionQueue = !isShortTermOrder
 
         val onSubmitOrderTransaction = {
-            val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload)
+            val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, isTriggerOrder)
             helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                 this.placeOrderRecords.add(
                     PlaceOrderRecord(
@@ -646,13 +646,18 @@ internal class SubaccountSupervisor(
     private fun trackOrderSubmit(
         uiClickTimeMs: Double,
         analyticsPayload: IMap<String, Any>?,
+        isTriggerOrder: Boolean,
         isCancel: Boolean = false
     ): Double {
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
 
         tracking(
-            if (isCancel) AnalyticsEvent.TradeCancelOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue,
+            if (isCancel) {
+                if (isTriggerOrder) AnalyticsEvent.TradeTriggerCancelOrder.rawValue else AnalyticsEvent.TradeCancelOrder.rawValue
+            } else {
+                if (isTriggerOrder) AnalyticsEvent.TradeTriggerPlaceOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue
+            },
             ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
                 ?.toIMap(),
         )
@@ -699,7 +704,7 @@ internal class SubaccountSupervisor(
             TransactionType.CancelOrder,
             string,
             onSubmitTransaction = {
-                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, true)
+                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, isTriggerOrder, true)
                 helper.ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.cancelOrderRecords.add(
                         CancelOrderRecord(
@@ -1011,7 +1016,7 @@ internal class SubaccountSupervisor(
             updateTriggerOrder(triggerOrders.takeProfitOrder)
         }
 
-        return HumanReadableTriggerOrdersPayload(placeOrderPayloads, cancelOrderPayloads)
+        return HumanReadableTriggerOrdersPayload(marketId, placeOrderPayloads, cancelOrderPayloads)
     }
 
     @Throws(Exception::class)
@@ -1069,6 +1074,7 @@ internal class SubaccountSupervisor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
+        val type = order.type.rawValue
         val clientId = order.clientId ?: error("clientId is null")
         val orderFlags = order.orderFlags ?: error("orderFlags is null")
         val clobPairId = order.clobPairId ?: error("clobPairId is null")
@@ -1079,6 +1085,7 @@ internal class SubaccountSupervisor(
         return HumanReadableCancelOrderPayload(
             orderSubaccountNumber,
             orderId,
+            type,
             clientId,
             orderFlags,
             clobPairId,

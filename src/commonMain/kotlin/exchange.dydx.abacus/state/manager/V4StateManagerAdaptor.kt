@@ -1000,11 +1000,11 @@ class V4StateManagerAdaptor(
         callback: TransactionCallback,
         payload: HumanReadablePlaceOrderPayload,
         analyticsPayload: IMap<String, Any>?,
+        uiClickTimeMs: Double,
         isTriggerOrder: Boolean = false,
     ): HumanReadablePlaceOrderPayload {
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
-        val uiClickTimeMs = trackOrderClick(analyticsPayload)
 
         stopWatchingLastOrder()
 
@@ -1025,7 +1025,7 @@ class V4StateManagerAdaptor(
             },
             transactionCallback = { response: String? ->
                 val error = parseTransactionResponse(response)
-                trackOrderSubmitted(error, analyticsPayload)
+                trackOrderSubmitted(error, analyticsPayload, isTriggerOrder)
                 if (error == null) {
                     lastOrderClientId = clientId
                 } else {
@@ -1059,12 +1059,12 @@ class V4StateManagerAdaptor(
         callback: TransactionCallback,
         payload: HumanReadableCancelOrderPayload,
         analyticsPayload: IMap<String, Any>?,
+        uiClickTimeMs: Double,
         isTriggerOrder: Boolean = false,
     ) {
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
-        val uiClickTimeMs = trackOrderClick(analyticsPayload, isCancel = true)
         val isShortTermOrder = payload.orderFlags == 0
 
         stopWatchingLastOrder()
@@ -1086,7 +1086,7 @@ class V4StateManagerAdaptor(
             },
             transactionCallback = { response: String? ->
                 val error = parseTransactionResponse(response)
-                trackOrderSubmitted(error, analyticsPayload, true)
+                trackOrderSubmitted(error, analyticsPayload, isTriggerOrder, true)
                 if (error == null) {
                     this.orderCanceled(orderId)
                 } else {
@@ -1115,11 +1115,11 @@ class V4StateManagerAdaptor(
 
     private fun trackOrderClick(
         analyticsPayload: IMap<String, Any>?,
-        isCancel: Boolean = false
+        analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         tracking(
-            if (isCancel) AnalyticsEvent.TradeCancelOrderClick.rawValue else AnalyticsEvent.TradePlaceOrderClick.rawValue,
+            analyticsEvent.rawValue,
             analyticsPayload,
         )
         return uiClickTimeMs
@@ -1145,16 +1145,25 @@ class V4StateManagerAdaptor(
     private fun trackOrderSubmitted(
         error: ParsingError?,
         analyticsPayload: IMap<String, Any>?,
+        isTriggerOrder: Boolean,
         isCancel: Boolean = false,
     ) {
         if (error != null) {
             tracking(
-                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue,
+                if (isCancel) {
+                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
+                } else {
+                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerPlaceOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
+                },
                 ParsingHelper.merge(errorTrackingParams(error), analyticsPayload)?.toIMap(),
             )
         } else {
             tracking(
-                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue,
+                if (isCancel) {
+                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
+                } else {
+                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerPlaceOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
+                },
                 analyticsPayload,
             )
         }
@@ -1164,14 +1173,18 @@ class V4StateManagerAdaptor(
         val payload = placeOrderPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
         val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice)
-        return submitPlaceOrder(callback, payload, analyticsPayload)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
+
+        return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
         val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, true)
-        return submitPlaceOrder(callback, payload, analyticsPayload)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
+
+        return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
@@ -1182,40 +1195,42 @@ class V4StateManagerAdaptor(
             payload,
             existingOrder,
         )
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
-        submitCancelOrder(orderId, callback, payload, analyticsPayload)
+        submitCancelOrder(orderId, callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload {
-        val payloads = triggerOrdersPayload()
+        val payload = triggerOrdersPayload()
 
-        payloads.cancelOrderPayloads.forEach { payload ->
+        // this is a diff payload that summarizes the actions to be taken
+        val analyticsPayload = analyticsUtils.triggerOrdersAnalyticsPayload(payload)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeTriggerOrderClick)
+
+        payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            val existingOrder = subaccount?.orders?.firstOrNull { it.id == payload.orderId }
-            val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
-                payload,
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+            val cancelOrderAnalyticsPayload = analyticsUtils.cancelTriggerOrderAnalyticsPayload(
+                cancelPayload,
                 existingOrder,
-                true,
             )
-            submitCancelOrder(payload.orderId, callback, payload, analyticsPayload, true)
+            submitCancelOrder(cancelPayload.orderId, callback, cancelPayload, cancelOrderAnalyticsPayload, uiClickTimeMs, true)
         }
 
-        payloads.placeOrderPayloads.forEach { payload ->
-            val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-            val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
-                payload,
+        payload.placeOrderPayloads.forEach { placePayload ->
+            val midMarketPrice = stateMachine.state?.marketOrderbook(placePayload.marketId)?.midPrice
+            val placeOrderAnalyticsPayload = analyticsUtils.placeTriggerOrderAnalyticsPayload(
+                placePayload,
                 midMarketPrice,
-                isClosePosition = false,
-                fromSlTpDialog = true,
             )
-            submitPlaceOrder(callback, payload, analyticsPayload, true)
+            submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)
         }
 
-        if (payloads.cancelOrderPayloads.isEmpty() && payloads.placeOrderPayloads.isEmpty()) {
-            send(null, callback, payloads)
+        if (payload.cancelOrderPayloads.isEmpty() && payload.placeOrderPayloads.isEmpty()) {
+            send(null, callback, payload)
         }
 
-        return payloads
+        return payload
     }
 
     override fun commitTransfer(callback: TransactionCallback) {

@@ -1,11 +1,87 @@
 package exchange.dydx.abacus.utils
 
 import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import kollections.toIMap
 
+enum class OrderAction(val rawValue: String) {
+    replace("REPLACE"),
+    cancel("CANCEL"),
+    create("CREATE"),
+}
+
 class AnalyticsUtils {
+    /**
+     * Format Trigger Orders Payload and add additional details for `TriggerOrders` Analytic Events
+     * @param payload HumanReadableTriggerOrdersPayload
+     */
+
+    /**
+     * Format Place Order Payload for `TriggerOrders` Analytic Event
+     * @param payload HumanReadableTriggerOrdersPayload
+     */
+    fun triggerOrdersAnalyticsPayload(
+        payload: HumanReadableTriggerOrdersPayload,
+    ): IMap<String, Any>? {
+        val placeOrderPayloads = payload.placeOrderPayloads
+        val cancelOrderPayloads = payload.cancelOrderPayloads
+
+        val stopLossOrderTypes = listOf(OrderType.stopMarket, OrderType.stopLimit)
+        val takeProfitOrderTypes = listOf(OrderType.takeProfitMarket, OrderType.takeProfitLimit)
+
+        var stopLossOrderAction: OrderAction? = null
+        var takeProfitOrderAction: OrderAction? = null
+
+        placeOrderPayloads.forEach { placePayload ->
+            val orderType = OrderType.invoke(placePayload.type)
+            if (stopLossOrderTypes.contains(orderType)) {
+                stopLossOrderAction = OrderAction.create
+            } else if (takeProfitOrderTypes.contains(orderType)) {
+                takeProfitOrderAction = OrderAction.create
+            }
+        }
+
+        cancelOrderPayloads.forEach { cancelPayload ->
+            val orderType = OrderType.invoke(cancelPayload.type)
+            if (stopLossOrderTypes.contains(orderType)) {
+                stopLossOrderAction = if (stopLossOrderAction == null) OrderAction.cancel else OrderAction.replace
+            } else if (takeProfitOrderTypes.contains(orderType)) {
+                takeProfitOrderAction = if (takeProfitOrderAction == null) OrderAction.cancel else OrderAction.replace
+            }
+        }
+
+        return iMapOf(
+            "marketId" to payload.marketId,
+            "stopLossOrderAction" to stopLossOrderAction,
+            "takeProfitOrderAction" to takeProfitOrderAction,
+        ) as IMap<String, Any>?
+    }
+
+    /**
+     * xcxc
+     * @param payload HumanReadableTriggerOrdersPayload
+     */
+    fun cancelTriggerOrderAnalyticsPayload(
+        payload: HumanReadableCancelOrderPayload,
+        existingOrder: SubaccountOrder?,
+    ): IMap<String, Any>? {
+        return cancelOrderAnalyticsPayload(payload, existingOrder, true)
+    }
+
+    /**
+     * xcxc
+     * @param payload HumanReadableTriggerOrdersPayload
+     */
+    fun placeTriggerOrderAnalyticsPayload(
+        payload: HumanReadablePlaceOrderPayload,
+        midMarketPrice: Double?,
+    ): IMap<String, Any>? {
+        return placeOrderAnalyticsPayload(payload, midMarketPrice, false, true)
+    }
+
     /**
      * Format Place Order Payload and add additional details for `TradePlaceOrder` Analytic Events
      * @param payload HumanReadablePlaceOrderPayload
@@ -17,7 +93,7 @@ class AnalyticsUtils {
         payload: HumanReadablePlaceOrderPayload,
         midMarketPrice: Double?,
         isClosePosition: Boolean? = false,
-        fromSlTpDialog: Boolean? = false,
+        fromSlTpDialog: Boolean? = false, // xcxc remove
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
             formatPlaceOrderPayload(payload, isClosePosition, fromSlTpDialog),
@@ -109,7 +185,7 @@ class AnalyticsUtils {
         fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
-            "fromSlTpDialog" to fromSlTpDialog,
+            "fromSlTpDialog" to fromSlTpDialog, // xcxc remove
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,
