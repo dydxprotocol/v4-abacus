@@ -480,7 +480,7 @@ internal class StateManagerAdaptorV2(
                     subaccountNumber,
                     successful,
                     error,
-                    data
+                    data,
                 )
             }
             callback(successful, error, data)
