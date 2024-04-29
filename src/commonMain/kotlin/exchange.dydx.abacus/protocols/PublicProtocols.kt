@@ -329,10 +329,10 @@ typealias TransactionCallback = (successful: Boolean, error: ParsingError?, data
 
 @JsExport
 @Serializable
-enum class ToastType(val rawValue: String) {
-    Info("Info"),
-    Warning("Warning"),
-    Error("Error");
+enum class ToastType {
+    Info,
+    Warning,
+    Error
 }
 
 @JsExport
