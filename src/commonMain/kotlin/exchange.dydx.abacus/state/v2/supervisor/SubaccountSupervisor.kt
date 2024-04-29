@@ -530,6 +530,7 @@ internal class SubaccountSupervisor(
         callback: TransactionCallback,
         payload: HumanReadablePlaceOrderPayload,
         analyticsPayload: IMap<String, Any>?,
+        uiClickTimeMs: Double,
         isTriggerOrder: Boolean = false,
         transferPayload: HumanReadableSubaccountTransferPayload? = null,
     ): HumanReadablePlaceOrderPayload {
@@ -537,7 +538,6 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
         val transferPayloadString =
             if (transferPayload != null) Json.encodeToString(transferPayload) else null
-        val uiClickTimeMs = trackOrderClick(analyticsPayload)
 
         val isShortTermOrder = when (payload.type) {
             "MARKET" -> true
@@ -633,11 +633,11 @@ internal class SubaccountSupervisor(
 
     private fun trackOrderClick(
         analyticsPayload: IMap<String, Any>?,
-        isCancel: Boolean = false
+        analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         tracking(
-            if (isCancel) AnalyticsEvent.TradeCancelOrderClick.rawValue else AnalyticsEvent.TradePlaceOrderClick.rawValue,
+            analyticsEvent.rawValue,
             analyticsPayload,
         )
         return uiClickTimeMs
@@ -756,8 +756,9 @@ internal class SubaccountSupervisor(
             helper.parser.asInt(orderPayload.subaccountNumber) != subaccountNumber
         val transferPayload =
             if (isIsolatedMarginOrder) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
-        return submitPlaceOrder(callback, orderPayload, analyticsPayload, false, transferPayload)
+        return submitPlaceOrder(callback, orderPayload, analyticsPayload, uiClickTimeMs, false, transferPayload)
     }
 
     internal fun commitClosePosition(
@@ -767,8 +768,9 @@ internal class SubaccountSupervisor(
         val payload = closePositionPayload(currentHeight)
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
         val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, true)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
-        return submitPlaceOrder(callback, payload, analyticsPayload)
+        return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     internal fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
@@ -784,31 +786,36 @@ internal class SubaccountSupervisor(
         currentHeight: Int?,
         callback: TransactionCallback
     ): HumanReadableTriggerOrdersPayload {
-        val payloads = triggerOrdersPayload(currentHeight)
+        val payload = triggerOrdersPayload(currentHeight)
 
-        payloads.cancelOrderPayloads.forEach { payload ->
+        // this is a diff payload that summarizes the actions to be taken
+        val analyticsPayload = analyticsUtils.triggerOrdersAnalyticsPayload(payload)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeTriggerOrderClick)
+
+        payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            val existingOrder = subaccount?.orders?.firstOrNull { it.id == payload.orderId }
-            val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, true)
-            submitCancelOrder(payload.orderId, callback, payload, analyticsPayload, true)
-        }
-
-        payloads.placeOrderPayloads.forEach { payload ->
-            val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-            val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
-                payload,
-                midMarketPrice,
-                isClosePosition = false,
-                fromSlTpDialog = true,
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+            val cancelOrderAnalyticsPayload = analyticsUtils.cancelTriggerOrderAnalyticsPayload(
+                cancelPayload,
+                existingOrder,
             )
-            submitPlaceOrder(callback, payload, analyticsPayload, true)
+            submitCancelOrder(cancelPayload.orderId, callback, cancelPayload, cancelOrderAnalyticsPayload, true)
         }
 
-        if (payloads.cancelOrderPayloads.isEmpty() && payloads.placeOrderPayloads.isEmpty()) {
-            helper.send(null, callback, payloads)
+        payload.placeOrderPayloads.forEach { placePayload ->
+            val midMarketPrice = stateMachine.state?.marketOrderbook(placePayload.marketId)?.midPrice
+            val placeOrderAnalyticsPayload = analyticsUtils.placeTriggerOrderAnalyticsPayload(
+                placePayload,
+                midMarketPrice,
+            )
+            submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)
         }
 
-        return payloads
+        if (payload.cancelOrderPayloads.isEmpty() && payload.placeOrderPayloads.isEmpty()) {
+            helper.send(null, callback, payload)
+        }
+
+        return payload
     }
 
     internal fun stopWatchingLastOrder() {
