@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
+import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -14,6 +15,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.app.helper.TriggerOrderToastGenerator
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.ApiData
@@ -94,6 +96,7 @@ internal class StateManagerAdaptorV2(
     val appConfigs: AppConfigsV2,
     var stateNotification: StateNotificationProtocol?,
     var dataNotification: DataNotificationProtocol?,
+    private val presentationProtocol: PresentationProtocol?,
 ) : ConnectionDelegate {
     var stateMachine: TradingStateMachine = PerpTradingStateMachine(
         environment,
@@ -153,6 +156,14 @@ internal class StateManagerAdaptorV2(
         networkHelper,
         analyticsUtils,
         appConfigs.marketConfigs,
+    )
+
+    private val triggerOrderToastGenerator = TriggerOrderToastGenerator(
+        presentationProtocol,
+        parser,
+        uiImplementations.formatter,
+        uiImplementations.localizer,
+        ioImplementations.threading,
     )
 
     internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
@@ -471,7 +482,21 @@ internal class StateManagerAdaptorV2(
     }
 
     internal fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
-        return accounts.commitTriggerOrders(currentHeight, callback)
+        val payload = accounts.commitTriggerOrders(currentHeight) { successful, error, data ->
+            if (appConfigs.triggerOrderToast) {
+                triggerOrderToastGenerator.onTriggerOrderResponse(
+                    subaccountNumber,
+                    successful,
+                    error,
+                    data,
+                )
+            }
+            callback(successful, error, data)
+        }
+        if (payload != null && appConfigs.triggerOrderToast) {
+            triggerOrderToastGenerator.onTriggerOrderSubmitted(subaccountNumber, payload, stateMachine.state)
+        }
+        return payload
     }
 
     internal fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {

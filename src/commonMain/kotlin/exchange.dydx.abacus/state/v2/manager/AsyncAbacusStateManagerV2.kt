@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileLocation
+import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -55,7 +56,8 @@ class AsyncAbacusStateManagerV2(
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
-    val dataNotification: DataNotificationProtocol? = null
+    val dataNotification: DataNotificationProtocol? = null,
+    private val presentationProtocol: PresentationProtocol? = null,
 ) : SingletonAsyncAbacusStateManagerProtocol {
     init {
         if (appConfigs.enableLogger) {
@@ -398,6 +400,7 @@ class AsyncAbacusStateManagerV2(
                 appConfigs,
                 stateNotification,
                 dataNotification,
+                presentationProtocol,
             )
         }
     }

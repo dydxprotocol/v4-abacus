@@ -2,12 +2,16 @@ package exchange.dydx.abacus.protocols
 
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kollections.JsExport
 
 @JsExport
 interface LocalizerProtocol {
     fun localize(path: String, paramsAsJson: String? = null): String
 }
+
+fun LocalizerProtocol.localizeWithParams(path: String, params: Map<String, String>): String? =
+    localize(path = path, paramsAsJson = params.toJsonPrettyPrint())
 
 interface AbacusLocalizerProtocol : LocalizerProtocol {
     val languages: List<SelectionOption>
