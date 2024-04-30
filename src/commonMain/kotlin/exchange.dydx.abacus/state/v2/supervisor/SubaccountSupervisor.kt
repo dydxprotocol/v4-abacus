@@ -306,7 +306,11 @@ internal class SubaccountSupervisor(
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
                     tracking(
-                        if (placeOrderRecord.isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                        if (placeOrderRecord.isTriggerOrder) {
+                            AnalyticsEvent.TriggerPlaceOrderConfirmed.rawValue
+                        } else {
+                            AnalyticsEvent.TradePlaceOrderConfirmed.rawValue
+                        },
                         ParsingHelper.merge(
                             trackingParams(interval),
                             orderAnalyticsPayload,
@@ -322,7 +326,11 @@ internal class SubaccountSupervisor(
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
                     tracking(
-                        if (cancelOrderRecord.isTriggerOrder) AnalyticsEvent.TriggerCancelOrderConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
+                        if (cancelOrderRecord.isTriggerOrder) {
+                            AnalyticsEvent.TriggerCancelOrderConfirmed.rawValue
+                        } else {
+                            AnalyticsEvent.TradeCancelOrderConfirmed.rawValue
+                        },
                         ParsingHelper.merge(
                             trackingParams(interval),
                             orderAnalyticsPayload,
@@ -539,7 +547,11 @@ internal class SubaccountSupervisor(
 
         val marketId = payload.marketId
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
-        val positionSize = position?.size?.current
+            ?: throw ParsingException(
+                ParsingErrorType.MissingRequiredData,
+                "no open position for $marketId",
+            )
+        val positionSize = position.size?.current
 
         val isShortTermOrder = when (payload.type) {
             "MARKET" -> true
@@ -659,9 +671,17 @@ internal class SubaccountSupervisor(
 
         tracking(
             if (isCancel) {
-                if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrder.rawValue else AnalyticsEvent.TradeCancelOrder.rawValue
+                if (isTriggerOrder) {
+                    AnalyticsEvent.TriggerCancelOrder.rawValue
+                } else {
+                    AnalyticsEvent.TradeCancelOrder.rawValue
+                }
             } else {
-                if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue
+                if (isTriggerOrder) {
+                    AnalyticsEvent.TriggerPlaceOrder.rawValue
+                } else {
+                    AnalyticsEvent.TradePlaceOrder.rawValue
+                }
             },
             ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
                 ?.toIMap(),
@@ -679,18 +699,34 @@ internal class SubaccountSupervisor(
         if (error != null) {
             tracking(
                 if (isCancel) {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerCancelOrderSubmissionFailed.rawValue
+                    } else {
+                        AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
+                    }
                 } else {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerPlaceOrderSubmissionFailed.rawValue
+                    } else {
+                        AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
+                    }
                 },
                 ParsingHelper.merge(errorTrackingParams(error), analyticsPayload)?.toIMap(),
             )
         } else {
             tracking(
                 if (isCancel) {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerCancelOrderSubmissionConfirmed.rawValue
+                    } else {
+                        AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
+                    }
                 } else {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerPlaceOrderSubmissionConfirmed.rawValue
+                    } else {
+                        AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
+                    }
                 },
                 analyticsPayload,
             )
@@ -699,7 +735,7 @@ internal class SubaccountSupervisor(
 
     private fun submitCancelOrder(
         orderId: String,
-        marketId: String?,
+        marketId: String,
         callback: TransactionCallback,
         payload: HumanReadableCancelOrderPayload,
         analyticsPayload: IMap<String, Any>?,
@@ -710,7 +746,11 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
 
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
-        val positionSize = position?.size?.current
+            ?: throw ParsingException(
+                ParsingErrorType.MissingRequiredData,
+                "no open position for $marketId",
+            )
+        val positionSize = position.size?.current
 
         stopWatchingLastOrder()
 
@@ -795,8 +835,11 @@ internal class SubaccountSupervisor(
     internal fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
-        val marketId = existingOrder?.marketId
+        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
+            ParsingErrorType.MissingRequiredData,
+            "no existing order to be cancelled for $orderId",
+        )
+        val marketId = existingOrder.marketId
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
@@ -816,12 +859,24 @@ internal class SubaccountSupervisor(
         payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
-            val marketId = existingOrder?.marketId
+                ?: throw ParsingException(
+                    ParsingErrorType.MissingRequiredData,
+                    "no existing order to be cancelled for $cancelPayload.orderId",
+                )
+            val marketId = existingOrder.marketId
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
             )
-            submitCancelOrder(cancelPayload.orderId, marketId, callback, cancelPayload, cancelOrderAnalyticsPayload, uiClickTimeMs, true)
+            submitCancelOrder(
+                cancelPayload.orderId,
+                marketId,
+                callback,
+                cancelPayload,
+                cancelOrderAnalyticsPayload,
+                uiClickTimeMs,
+                true,
+            )
         }
 
         payload.placeOrderPayloads.forEach { placePayload ->
@@ -1006,9 +1061,13 @@ internal class SubaccountSupervisor(
 
         val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
 
-        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
-        val position = helper.parser.asNativeMap(helper.parser.value(subaccount, "openPositions.$marketId"))
-        val positionSize = helper.parser.asDouble(helper.parser.value(position, "size.current"))
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+        val position = subaccount?.openPositions?.find { it.id == marketId }
+            ?: throw ParsingException(
+                ParsingErrorType.MissingRequiredData,
+                "no open position for $marketId",
+            )
+        val positionSize = position.size?.current
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -1019,7 +1078,7 @@ internal class SubaccountSupervisor(
             // 5. No existing order -> nothing should be done
 
             if (triggerOrder.orderId != null) {
-                val existingOrder = subaccount.orders?.firstOrNull { it.id == triggerOrder.orderId }
+                val existingOrder = subaccount?.orders?.firstOrNull { it.id == triggerOrder.orderId }
                     ?: throw Exception("order is null")
                 if (triggerOrder.price?.triggerPrice != null) {
                     if (!isTriggerOrderEqualToExistingOrder(triggerOrder, existingOrder)) {
@@ -1115,8 +1174,8 @@ internal class SubaccountSupervisor(
 
         return HumanReadableCancelOrderPayload(
             orderSubaccountNumber,
-            orderId,
             type,
+            orderId,
             clientId,
             orderFlags,
             clobPairId,

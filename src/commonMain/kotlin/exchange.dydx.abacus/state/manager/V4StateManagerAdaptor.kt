@@ -12,6 +12,8 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.protocols.run
 import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingErrorType
+import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -1007,7 +1009,11 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
         val marketId = payload.marketId
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
-        val positionSize = position?.size?.current
+            ?: throw ParsingException(
+                ParsingErrorType.MissingRequiredData,
+                "no open position for $marketId",
+            )
+        val positionSize = position.size?.current
 
         stopWatchingLastOrder()
 
@@ -1062,7 +1068,7 @@ class V4StateManagerAdaptor(
 
     private fun submitCancelOrder(
         orderId: String,
-        marketId: String?,
+        marketId: String,
         callback: TransactionCallback,
         payload: HumanReadableCancelOrderPayload,
         analyticsPayload: IMap<String, Any>?,
@@ -1073,7 +1079,11 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
 
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
-        val positionSize = position?.size?.current
+            ?: throw ParsingException(
+                ParsingErrorType.MissingRequiredData,
+                "no open position for $marketId",
+            )
+        val positionSize = position.size?.current
 
         val isShortTermOrder = payload.orderFlags == 0
 
@@ -1149,9 +1159,17 @@ class V4StateManagerAdaptor(
 
         tracking(
             if (isCancel) {
-                if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrder.rawValue else AnalyticsEvent.TradeCancelOrder.rawValue
+                if (isTriggerOrder) {
+                    AnalyticsEvent.TriggerCancelOrder.rawValue
+                } else {
+                    AnalyticsEvent.TradeCancelOrder.rawValue
+                }
             } else {
-                if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue
+                if (isTriggerOrder) {
+                    AnalyticsEvent.TriggerPlaceOrder.rawValue
+                } else {
+                    AnalyticsEvent.TradePlaceOrder.rawValue
+                }
             },
             ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
                 ?.toIMap(),
@@ -1169,18 +1187,34 @@ class V4StateManagerAdaptor(
         if (error != null) {
             tracking(
                 if (isCancel) {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerCancelOrderSubmissionFailed.rawValue
+                    } else {
+                        AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
+                    }
                 } else {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerPlaceOrderSubmissionFailed.rawValue
+                    } else {
+                        AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
+                    }
                 },
                 ParsingHelper.merge(errorTrackingParams(error), analyticsPayload)?.toIMap(),
             )
         } else {
             tracking(
                 if (isCancel) {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerCancelOrderSubmissionConfirmed.rawValue
+                    } else {
+                        AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
+                    }
                 } else {
-                    if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
+                    if (isTriggerOrder) {
+                        AnalyticsEvent.TriggerPlaceOrderSubmissionConfirmed.rawValue
+                    } else {
+                        AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
+                    }
                 },
                 analyticsPayload,
             )
@@ -1208,8 +1242,11 @@ class V4StateManagerAdaptor(
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
-        val marketId = existingOrder?.marketId
+        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
+            ParsingErrorType.MissingRequiredData,
+            "no existing order to be cancelled for $orderId",
+        )
+        val marketId = existingOrder.marketId
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
             existingOrder,
@@ -1229,12 +1266,24 @@ class V4StateManagerAdaptor(
         payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
-            val marketId = existingOrder?.marketId
+                ?: throw ParsingException(
+                    ParsingErrorType.MissingRequiredData,
+                    "no existing order to be cancelled for $cancelPayload.orderId",
+                )
+            val marketId = existingOrder.marketId
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
             )
-            submitCancelOrder(cancelPayload.orderId, marketId, callback, cancelPayload, cancelOrderAnalyticsPayload, uiClickTimeMs, true)
+            submitCancelOrder(
+                cancelPayload.orderId,
+                marketId,
+                callback,
+                cancelPayload,
+                cancelOrderAnalyticsPayload,
+                uiClickTimeMs,
+                true,
+            )
         }
 
         payload.placeOrderPayloads.forEach { placePayload ->

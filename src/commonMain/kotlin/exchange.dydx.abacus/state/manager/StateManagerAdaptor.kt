@@ -76,7 +76,6 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -1883,8 +1882,11 @@ open class StateManagerAdaptor(
 
         val subaccountNumber = connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
-        val position = subaccount.openPositions?.find { it.id == marketId }
-        val positionSize = position?.size?.current
+        val position = subaccount.openPositions?.find { it.id == marketId } ?: throw ParsingException(
+            ParsingErrorType.MissingRequiredData,
+            "no open position for $marketId",
+        )
+        val positionSize = position.size?.current
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -2164,8 +2166,8 @@ open class StateManagerAdaptor(
 
         return HumanReadableCancelOrderPayload(
             subaccountNumber,
-            orderId,
             type,
+            orderId,
             clientId,
             orderFlags,
             clobPairId,
@@ -2307,7 +2309,6 @@ open class StateManagerAdaptor(
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.tracking?.log(eventName, paramsAsString)
         }
-        Logger.e { "xcxc $eventName $paramsAsString" }
     }
 
     private fun didSetPlaceOrderRecords() {
@@ -2333,7 +2334,11 @@ open class StateManagerAdaptor(
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
                     tracking(
-                        if (placeOrderRecord.isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                        if (placeOrderRecord.isTriggerOrder) {
+                            AnalyticsEvent.TriggerPlaceOrderConfirmed.rawValue
+                        } else {
+                            AnalyticsEvent.TradePlaceOrderConfirmed.rawValue
+                        },
                         ParsingHelper.merge(
                             trackingParams(interval),
                             orderAnalyticsPayload,
@@ -2349,7 +2354,11 @@ open class StateManagerAdaptor(
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
                     tracking(
-                        if (cancelOrderRecord.isTriggerOrder) AnalyticsEvent.TriggerCancelOrderConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
+                        if (cancelOrderRecord.isTriggerOrder) {
+                            AnalyticsEvent.TriggerCancelOrderConfirmed.rawValue
+                        } else {
+                            AnalyticsEvent.TradeCancelOrderConfirmed.rawValue
+                        },
                         ParsingHelper.merge(
                             trackingParams(interval),
                             orderAnalyticsPayload,

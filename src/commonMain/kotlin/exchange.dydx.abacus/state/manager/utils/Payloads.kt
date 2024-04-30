@@ -63,8 +63,8 @@ data class HumanReadablePlaceOrderPayload(
 @Serializable
 data class HumanReadableCancelOrderPayload(
     val subaccountNumber: Int,
-    val orderId: String,
     val type: String,
+    val orderId: String,
     val clientId: Int,
     val orderFlags: Int,
     val clobPairId: Int,
@@ -75,7 +75,7 @@ data class HumanReadableCancelOrderPayload(
 @JsExport
 @Serializable
 data class HumanReadableTriggerOrdersPayload(
-    val marketId: String?,
+    val marketId: String,
     val positionSize: Double?,
     val placeOrderPayloads: List<HumanReadablePlaceOrderPayload>,
     val cancelOrderPayloads: List<HumanReadableCancelOrderPayload>,

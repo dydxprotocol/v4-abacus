@@ -5,12 +5,22 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
+import kollections.JsExport
 import kollections.toIMap
+import kotlinx.serialization.Serializable
 
-enum class OrderAction(val rawValue: String) {
-    replace("REPLACE"),
-    cancel("CANCEL"),
-    create("CREATE"),
+@JsExport
+@Serializable
+enum class TriggerOrderAction(val rawValue: String) {
+    REPLACE("REPLACE"),
+    CANCEL("CANCEL"),
+    CREATE("CREATE"),
+    ;
+
+    companion object {
+        operator fun invoke(rawValue: String?) =
+            TriggerOrderAction.values().firstOrNull { it.rawValue == rawValue }
+    }
 }
 
 class AnalyticsUtils {
@@ -32,24 +42,32 @@ class AnalyticsUtils {
         val stopLossOrderTypes = listOf(OrderType.stopMarket, OrderType.stopLimit)
         val takeProfitOrderTypes = listOf(OrderType.takeProfitMarket, OrderType.takeProfitLimit)
 
-        var stopLossOrderAction: OrderAction? = null
-        var takeProfitOrderAction: OrderAction? = null
+        var stopLossOrderAction: TriggerOrderAction? = null
+        var takeProfitOrderAction: TriggerOrderAction? = null
 
         placeOrderPayloads.forEach { placePayload ->
             val orderType = OrderType.invoke(placePayload.type)
             if (stopLossOrderTypes.contains(orderType)) {
-                stopLossOrderAction = OrderAction.create
+                stopLossOrderAction = TriggerOrderAction.CREATE
             } else if (takeProfitOrderTypes.contains(orderType)) {
-                takeProfitOrderAction = OrderAction.create
+                takeProfitOrderAction = TriggerOrderAction.CREATE
             }
         }
 
         cancelOrderPayloads.forEach { cancelPayload ->
             val orderType = OrderType.invoke(cancelPayload.type)
             if (stopLossOrderTypes.contains(orderType)) {
-                stopLossOrderAction = if (stopLossOrderAction == null) OrderAction.cancel else OrderAction.replace
+                stopLossOrderAction = if (stopLossOrderAction == null) {
+                    TriggerOrderAction.CANCEL
+                } else {
+                    TriggerOrderAction.REPLACE
+                }
             } else if (takeProfitOrderTypes.contains(orderType)) {
-                takeProfitOrderAction = if (takeProfitOrderAction == null) OrderAction.cancel else OrderAction.replace
+                takeProfitOrderAction = if (takeProfitOrderAction == null) {
+                    TriggerOrderAction.CANCEL
+                } else {
+                    TriggerOrderAction.REPLACE
+                }
             }
         }
 
