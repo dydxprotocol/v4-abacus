@@ -834,12 +834,12 @@ internal class SubaccountSupervisor(
             transferPayloadString,
             null,
             transactionCallback = { response: String? ->
-              val error = parseTransactionResponse(response)
-              helper.send(
-                  error,
-                  callback,
-                  payload
-              )
+                val error = parseTransactionResponse(response)
+                helper.send(
+                    error,
+                    callback,
+                    payload,
+                )
             },
             false,
         )

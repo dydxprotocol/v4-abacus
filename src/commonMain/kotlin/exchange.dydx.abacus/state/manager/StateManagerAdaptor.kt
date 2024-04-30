@@ -29,10 +29,10 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
-import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.manager.utils.Address
 import exchange.dydx.abacus.state.manager.utils.DydxAddress
 import exchange.dydx.abacus.state.manager.utils.EvmAddress
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -2225,7 +2225,7 @@ open class StateManagerAdaptor(
             parentSubaccountNumber,
             amount,
             walletAddress,
-            childSubaccountNumber
+            childSubaccountNumber,
         )
     }
 

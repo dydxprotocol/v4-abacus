@@ -47,7 +47,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
             val walletPostParentSubaccountTransfer =
                 subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
                     wallet,
-                    subaccountNumber=parentSubaccountNumber,
+                    subaccountNumber = parentSubaccountNumber,
                     parentTransferDelta,
                     parser,
                     "postOrder",
@@ -55,8 +55,8 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
 
             val walletPostChildSubaccountTransfer =
                 subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
-                    wallet=walletPostParentSubaccountTransfer,
-                    subaccountNumber=childSubaccountNumber,
+                    wallet = walletPostParentSubaccountTransfer,
+                    subaccountNumber = childSubaccountNumber,
                     childTransferDelta,
                     parser,
                     "postOrder",
@@ -77,7 +77,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
     private fun getModifiedTransferDelta(
         isolatedMarginAdjustment: Map<String, Any>,
         isParentSubaccount: Boolean,
-        ): Map<String, Double>? {
+    ): Map<String, Double>? {
         val type = parser.asString(isolatedMarginAdjustment["type"])
         val amount = parser.asDouble(isolatedMarginAdjustment["amount"])
         if (type != null) {

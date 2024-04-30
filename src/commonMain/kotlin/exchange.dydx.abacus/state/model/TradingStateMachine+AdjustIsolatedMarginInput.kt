@@ -47,7 +47,6 @@ fun TradingStateMachine.adjustIsolatedMargin(
                 params.safeSet("account", account)
                 params.safeSet("wallet", wallet)
 
-
                 val modified = calculator.calculate(
                     state = params,
                     parentSubaccountNumber = parentSubaccountNumber,
@@ -56,9 +55,11 @@ fun TradingStateMachine.adjustIsolatedMargin(
                 parser.asMap(modified["adjustIsolatedMargin"])?.mutable() ?: adjustIsolatedMargin
             }
     val childSubaccountNumber = parser.asInt(adjustIsolatedMargin["childSubaccountNumber"])
-    val subaccountNumbers = if (childSubaccountNumber != null)
+    val subaccountNumbers = if (childSubaccountNumber != null) {
         iListOf(parentSubaccountNumber, childSubaccountNumber)
-        else iListOf(parentSubaccountNumber)
+    } else {
+        iListOf(parentSubaccountNumber)
+    }
 
     if (typeText != null) {
         if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, typeText)) {
@@ -86,9 +87,11 @@ fun TradingStateMachine.adjustIsolatedMargin(
                 AdjustIsolatedMarginInputField.childSubaccountNumber.rawValue -> {
                     val childSubaccountNumber = parser.asInt(data)
                     adjustIsolatedMargin.safeSet(typeText, childSubaccountNumber)
-                    val subaccountNumbers = if (childSubaccountNumber != null)
+                    val subaccountNumbers = if (childSubaccountNumber != null) {
                         iListOf(parentSubaccountNumber, childSubaccountNumber)
-                        else iListOf(parentSubaccountNumber)
+                    } else {
+                        iListOf(parentSubaccountNumber)
+                    }
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,

@@ -2,7 +2,6 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.responses.StateResponse
-import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import kotlin.test.Test

@@ -105,7 +105,7 @@ data class AdjustIsolatedMarginInput(
     val errors: String?,
     val errorMessage: String?,
     val fee: Double?,
-    ) {
+) {
     companion object {
         internal fun create(
             existing: AdjustIsolatedMarginInput?,

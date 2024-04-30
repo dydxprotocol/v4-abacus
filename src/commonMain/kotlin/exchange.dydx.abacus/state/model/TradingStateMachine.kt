@@ -974,7 +974,7 @@ open class TradingStateMachine(
                 val adjustIsolatedMargin = parser.asNativeMap(input["adjustIsolatedMargin"]) ?: return null
                 val type = parser.asString(adjustIsolatedMargin["type"]) ?: return null
 
-                when(type) {
+                when (type) {
                     "ADD" -> {
                         listOf(
                             ReceiptLine.crossFreeCollateral.rawValue,
