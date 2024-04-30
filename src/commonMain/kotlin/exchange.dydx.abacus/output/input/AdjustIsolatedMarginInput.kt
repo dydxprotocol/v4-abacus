@@ -85,8 +85,8 @@ data class AdjustIsolatedMarginInputSummary(
 @JsExport
 @Serializable
 enum class IsolatedMarginAdjustmentType(val rawValue: String) {
-    add("ADD"),
-    remove("REMOVE");
+    Add("ADD"),
+    Remove("REMOVE");
 
     companion object {
         operator fun invoke(rawValue: String) =

@@ -728,25 +728,25 @@ enum class OrderTimeInForce(val rawValue: String) {
 @JsExport
 @Serializable
 enum class ReceiptLine(val rawValue: String) {
-    equity("EQUITY"),
-    buyingPower("BUYING_POWER"),
-    marginUsage("MARGIN_USAGE"),
-    expectedPrice("EXPECTED_PRICE"),
-    fee("FEE"),
-    total("TOTAL"),
-    walletBalance("WALLET_BALANCE"),
-    bridgeFee("BRIDGE_FEE"),
-    exchangeRate("EXCHANGE_RATE"),
-    exchangeReceived("EXCHANGE_RECEIVED"),
-    slippage("SLIPPAGE"),
-    gasFee("GAS_FEES"),
-    reward("REWARD"),
-    transferRouteEstimatedDuration("TRANSFER_ROUTE_ESTIMATE_DURATION"),
-    crossFreeCollateral("CROSS_FREE_COLLATERAL"),
-    crossMarginUsage("CROSS_MARGIN_USAGE"),
-    positionMargin("POSITION_MARGIN"),
-    positionLeverage("POSITION_LEVERAGE"),
-    liquidationPrice("LIQUIDATION_PRICE");
+    Equity("EQUITY"),
+    BuyingPower("BUYING_POWER"),
+    MarginUsage("MARGIN_USAGE"),
+    ExpectedPrice("EXPECTED_PRICE"),
+    Fee("FEE"),
+    Total("TOTAL"),
+    WalletBalance("WALLET_BALANCE"),
+    BridgeFee("BRIDGE_FEE"),
+    ExchangeRate("EXCHANGE_RATE"),
+    ExchangeReceived("EXCHANGE_RECEIVED"),
+    Slippage("SLIPPAGE"),
+    GasFee("GAS_FEES"),
+    Reward("REWARD"),
+    TransferRouteEstimatedDuration("TRANSFER_ROUTE_ESTIMATE_DURATION"),
+    CrossFreeCollateral("CROSS_FREE_COLLATERAL"),
+    CrossMarginUsage("CROSS_MARGIN_USAGE"),
+    PositionMargin("POSITION_MARGIN"),
+    PositionLeverage("POSITION_LEVERAGE"),
+    LiquidationPrice("LIQUIDATION_PRICE");
 
     companion object {
         operator fun invoke(rawValue: String) =

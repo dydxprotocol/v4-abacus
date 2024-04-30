@@ -50,7 +50,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     private fun testChildSubaccountNumberInput() {
         test(
             {
-                perp.adjustIsolatedMargin("128", AdjustIsolatedMarginInputField.childSubaccountNumber, 0)
+                perp.adjustIsolatedMargin("128", AdjustIsolatedMarginInputField.ChildSubaccountNumber, 0)
             },
             """
             {
@@ -68,7 +68,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     private fun testZeroAmount() {
         test(
             {
-                perp.adjustIsolatedMargin("0", AdjustIsolatedMarginInputField.amount, 0)
+                perp.adjustIsolatedMargin("0", AdjustIsolatedMarginInputField.Amount, 0)
             },
             """
             {
@@ -102,7 +102,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     private fun testMarginAddition() {
         test(
             {
-                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.add.rawValue, AdjustIsolatedMarginInputField.type, 0)
+                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.rawValue, AdjustIsolatedMarginInputField.Type, 0)
             },
             """
         {
@@ -118,7 +118,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
 
         test(
             {
-                perp.adjustIsolatedMargin("92.49", AdjustIsolatedMarginInputField.amount, 0)
+                perp.adjustIsolatedMargin("92.49", AdjustIsolatedMarginInputField.Amount, 0)
             },
             """
             {
@@ -136,7 +136,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     private fun testMarginRemoval() {
         test(
             {
-                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.remove.rawValue, AdjustIsolatedMarginInputField.type, 0)
+                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Remove.rawValue, AdjustIsolatedMarginInputField.Type, 0)
             },
             """
             {
@@ -169,7 +169,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
 
         test(
             {
-                perp.adjustIsolatedMargin("20", AdjustIsolatedMarginInputField.amount, 0)
+                perp.adjustIsolatedMargin("20", AdjustIsolatedMarginInputField.Amount, 0)
             },
             """
             {

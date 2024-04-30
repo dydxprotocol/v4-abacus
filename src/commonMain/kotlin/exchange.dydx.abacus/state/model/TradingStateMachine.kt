@@ -910,20 +910,20 @@ open class TradingStateMachine(
                 return when (type) {
                     "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET", "TRAILING_STOP" -> {
                         listOf(
-                            ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.expectedPrice.rawValue,
-                            ReceiptLine.fee.rawValue,
-                            ReceiptLine.reward.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.MarginUsage.rawValue,
+                            ReceiptLine.ExpectedPrice.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.Reward.rawValue,
                         )
                     }
 
                     else -> {
                         listOf(
-                            ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue,
-                            ReceiptLine.reward.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.MarginUsage.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.Reward.rawValue,
                         )
                     }
                 }
@@ -931,11 +931,11 @@ open class TradingStateMachine(
 
             "closePosition" -> {
                 listOf(
-                    ReceiptLine.buyingPower.rawValue,
-                    ReceiptLine.marginUsage.rawValue,
-                    ReceiptLine.expectedPrice.rawValue,
-                    ReceiptLine.fee.rawValue,
-                    ReceiptLine.reward.rawValue,
+                    ReceiptLine.BuyingPower.rawValue,
+                    ReceiptLine.MarginUsage.rawValue,
+                    ReceiptLine.ExpectedPrice.rawValue,
+                    ReceiptLine.Fee.rawValue,
+                    ReceiptLine.Reward.rawValue,
                 )
             }
 
@@ -945,22 +945,22 @@ open class TradingStateMachine(
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
                         listOf(
-                            ReceiptLine.equity.rawValue,
-                            ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.exchangeRate.rawValue,
-                            ReceiptLine.exchangeReceived.rawValue,
-                            ReceiptLine.bridgeFee.rawValue,
-                            ReceiptLine.fee.rawValue,
-                            ReceiptLine.slippage.rawValue,
-                            ReceiptLine.transferRouteEstimatedDuration.rawValue,
+                            ReceiptLine.Equity.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.ExchangeRate.rawValue,
+                            ReceiptLine.ExchangeReceived.rawValue,
+                            ReceiptLine.BridgeFee.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.Slippage.rawValue,
+                            ReceiptLine.TransferRouteEstimatedDuration.rawValue,
                         )
                     }
 
                     "TRANSFER_OUT" -> {
                         listOf(
-                            ReceiptLine.equity.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue,
+                            ReceiptLine.Equity.rawValue,
+                            ReceiptLine.MarginUsage.rawValue,
+                            ReceiptLine.Fee.rawValue,
                         )
                     }
 
@@ -977,21 +977,21 @@ open class TradingStateMachine(
                 when (type) {
                     "ADD" -> {
                         listOf(
-                            ReceiptLine.crossFreeCollateral.rawValue,
-                            ReceiptLine.crossMarginUsage.rawValue,
-                            ReceiptLine.positionLeverage.rawValue,
-                            ReceiptLine.positionMargin.rawValue,
-                            ReceiptLine.liquidationPrice.rawValue,
+                            ReceiptLine.CrossFreeCollateral.rawValue,
+                            ReceiptLine.CrossMarginUsage.rawValue,
+                            ReceiptLine.PositionLeverage.rawValue,
+                            ReceiptLine.PositionMargin.rawValue,
+                            ReceiptLine.LiquidationPrice.rawValue,
                         )
                     }
 
                     "REMOVE" -> {
                         listOf(
-                            ReceiptLine.crossFreeCollateral.rawValue,
-                            ReceiptLine.crossMarginUsage.rawValue,
-                            ReceiptLine.positionLeverage.rawValue,
-                            ReceiptLine.positionMargin.rawValue,
-                            ReceiptLine.liquidationPrice.rawValue,
+                            ReceiptLine.CrossFreeCollateral.rawValue,
+                            ReceiptLine.CrossMarginUsage.rawValue,
+                            ReceiptLine.PositionLeverage.rawValue,
+                            ReceiptLine.PositionMargin.rawValue,
+                            ReceiptLine.LiquidationPrice.rawValue,
                         )
                     }
 
