@@ -1130,7 +1130,7 @@ class V4StateManagerAdaptor(
     }
 
     private fun trackOrderClick(
-        analyticsPayload: IMap<String, Any>?,
+        analyticsPayload: IMap<String, Any?>?,
         analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()

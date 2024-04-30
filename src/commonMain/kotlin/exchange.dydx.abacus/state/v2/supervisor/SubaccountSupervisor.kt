@@ -651,7 +651,7 @@ internal class SubaccountSupervisor(
     }
 
     private fun trackOrderClick(
-        analyticsPayload: IMap<String, Any>?,
+        analyticsPayload: IMap<String, Any?>?,
         analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
@@ -1019,10 +1019,9 @@ internal class SubaccountSupervisor(
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload {
         val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
         val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
-        val triggerOrders = stateMachine.state?.input?.triggerOrders
+        val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
-        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
-
+        val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marketId was null" }
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
         val position = subaccount?.openPositions?.find { it.id == marketId }
         val positionSize = position?.size?.current

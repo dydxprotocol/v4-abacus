@@ -1876,10 +1876,9 @@ open class StateManagerAdaptor(
     fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload {
         val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
         val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
-        val triggerOrders = stateMachine.state?.input?.triggerOrders
+        val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
-        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
-
+        val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marektId was null" }
         val subaccountNumber = connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
         val position = subaccount.openPositions?.find { it.id == marketId }
@@ -2307,7 +2306,7 @@ open class StateManagerAdaptor(
         )
     }
 
-    internal fun tracking(eventName: String, params: IMap<String, Any>?) {
+    internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
         val paramsAsString = jsonEncoder.encode(params)
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.tracking?.log(eventName, paramsAsString)

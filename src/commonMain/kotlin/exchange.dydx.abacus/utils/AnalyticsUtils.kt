@@ -16,11 +16,6 @@ enum class TriggerOrderAction(val rawValue: String) {
     CANCEL("CANCEL"),
     CREATE("CREATE"),
     ;
-
-    companion object {
-        operator fun invoke(rawValue: String?) =
-            TriggerOrderAction.values().firstOrNull { it.rawValue == rawValue }
-    }
 }
 
 class AnalyticsUtils {
@@ -35,7 +30,7 @@ class AnalyticsUtils {
      */
     fun triggerOrdersAnalyticsPayload(
         payload: HumanReadableTriggerOrdersPayload,
-    ): IMap<String, Any>? {
+    ): IMap<String, Any?>? {
         val placeOrderPayloads = payload.placeOrderPayloads
         val cancelOrderPayloads = payload.cancelOrderPayloads
 
@@ -51,7 +46,7 @@ class AnalyticsUtils {
         var takeProfitOrderAction: TriggerOrderAction? = null
 
         placeOrderPayloads.forEach { placePayload ->
-            val orderType = OrderType.invoke(placePayload.type)
+            val orderType = OrderType(placePayload.type)
             if (stopLossOrderTypes.contains(orderType)) {
                 stopLossOrderPlaceClientId = placePayload.clientId
                 stopLossOrderAction = TriggerOrderAction.CREATE
@@ -62,7 +57,7 @@ class AnalyticsUtils {
         }
 
         cancelOrderPayloads.forEach { cancelPayload ->
-            val orderType = OrderType.invoke(cancelPayload.type)
+            val orderType = OrderType(cancelPayload.type)
             if (stopLossOrderTypes.contains(orderType)) {
                 stopLossOrderCancelClientId = cancelPayload.clientId
                 stopLossOrderAction = if (stopLossOrderAction == null) {
@@ -89,7 +84,7 @@ class AnalyticsUtils {
             "takeProfitOrderAction" to takeProfitOrderAction?.rawValue,
             "takeProfitOrderCancelClientId" to takeProfitOrderCancelClientId,
             "takeProfitOrderPlaceClientId" to takeProfitOrderPlaceClientId,
-        ) as IMap<String, Any>?
+        )
     }
 
     /**
