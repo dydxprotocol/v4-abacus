@@ -91,6 +91,7 @@ class AnalyticsUtils {
      * Format Place Order Payload and add additional details for `TradePlaceOrder` Analytic Events
      * @param payload HumanReadablePlaceOrderPayload
      * @param midMarketPrice Double?
+     * @param fromSlTpDialog Boolean?
      * @param isClosePosition Boolean?
      */
     fun placeOrderAnalyticsPayload(
@@ -111,7 +112,8 @@ class AnalyticsUtils {
     /**
      * Format Place Order Payload for `TradePlaceOrder` Analytic Event
      * @param payload HumanReadablePlaceOrderPayload
-     * @param isClosePosition Boolean
+     * @param fromSlTpDialog Boolean?
+     * @param isClosePosition Boolean?
      */
     private fun formatPlaceOrderPayload(
         payload: HumanReadablePlaceOrderPayload,
@@ -171,6 +173,7 @@ class AnalyticsUtils {
      * Format Cancel Order Payload and add order details for `TradeCancelOrder` Analytic Events
      * @param payload HumanReadableCancelOrderPayload
      * @param existingOrder SubaccountOrder?
+     * @param fromSlTpDialog Boolean?
      */
     fun cancelOrderAnalyticsPayload(
         payload: HumanReadableCancelOrderPayload,
@@ -183,11 +186,17 @@ class AnalyticsUtils {
         )?.toIMap()
     }
 
+    /**
+     * Format Cancel Order Payload for `TradeCancelOrder` Analytic Event
+     * @param payload HumanReadableCancelOrderPayload
+     * @param fromSlTpDialog Boolean?
+     */
     private fun formatCancelOrderPayload(
         payload: HumanReadableCancelOrderPayload,
         fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
+            "fromSlTpDialog" to fromSlTpDialog,
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,
@@ -195,7 +204,6 @@ class AnalyticsUtils {
             "clobPairId" to payload.clobPairId,
             "goodTilBlock" to payload.goodTilBlock,
             "goodTilBlockTime" to payload.goodTilBlockTime,
-            "fromSlTpDialog" to fromSlTpDialog,
         ) as IMap<String, Any>?
     }
 
