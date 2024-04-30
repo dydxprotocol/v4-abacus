@@ -14,6 +14,7 @@ import exchange.dydx.abacus.protocols.ThreadingProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.Toast
 import exchange.dydx.abacus.protocols.ToastType
+import exchange.dydx.abacus.protocols.localizeWithParams
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
