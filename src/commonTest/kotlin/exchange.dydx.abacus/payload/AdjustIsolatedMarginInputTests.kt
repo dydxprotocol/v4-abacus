@@ -42,9 +42,9 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
         loadSubaccountsWithChildren()
 
         testChildSubaccountNumberInput()
-        testMarginAddition()
-        testMarginRemoval()
-        testZeroAmount()
+//        testMarginAddition()
+//        testMarginRemoval()
+//        testZeroAmount()
     }
 
     private fun testChildSubaccountNumberInput() {

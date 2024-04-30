@@ -1,10 +1,12 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
@@ -62,7 +64,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
     }
 
     if (typeText != null) {
-        if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, typeText)) {
+        if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, parentSubaccountNumber, typeText)) {
             when (typeText) {
                 AdjustIsolatedMarginInputField.Type.rawValue -> {
                     if (adjustIsolatedMargin["type"] != parser.asString(data)) {
@@ -119,25 +121,26 @@ fun TradingStateMachine.adjustIsolatedMargin(
 
 fun TradingStateMachine.validAdjustIsolatedMarginInput(
     adjustIsolatedMargin: Map<String, Any>,
-    typeText: String?
+    parentSubaccountNumber: Int?,
+    typeText: String?,
 ): Boolean {
     if (typeText == null) return false
 
     when (typeText) {
         AdjustIsolatedMarginInputField.Type.rawValue -> {
             val type = parser.asString(adjustIsolatedMargin["type"])
-            return type != null
+            return type == null || type == IsolatedMarginAdjustmentType.Add.rawValue || type == IsolatedMarginAdjustmentType.Remove.rawValue
         }
         AdjustIsolatedMarginInputField.Amount.rawValue -> {
-            val amount = parser.asString(adjustIsolatedMargin["amount"])
-            return amount != null
+            val amount = parser.asDouble(adjustIsolatedMargin["amount"])
+            return amount == null || amount > 0
         }
         AdjustIsolatedMarginInputField.ChildSubaccountNumber.rawValue -> {
             val childSubaccountNumber = parser.asInt(adjustIsolatedMargin["childSubaccountNumber"])
-            return childSubaccountNumber != null
+            return childSubaccountNumber == null || childSubaccountNumber % NUM_PARENT_SUBACCOUNTS == parentSubaccountNumber
         }
-        else -> {}
+        else -> {
+            return false
+        }
     }
-
-    return true
 }
