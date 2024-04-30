@@ -1206,7 +1206,7 @@ open class TradingStateMachine(
                 val subaccountHistoricalPnlData =
                     (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
                         ?: mutableListOf()
-                val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
+
                 if (subaccountHistoricalPnl?.size == 1) {
                     // Check if the PNL was generated from equity
                     val first = subaccountHistoricalPnl.firstOrNull()

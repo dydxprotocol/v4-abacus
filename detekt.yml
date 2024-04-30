@@ -4,6 +4,9 @@ naming:
     # /exchange -> /dydx -> /abacus
     # didn't seem worth the potential thrash in PRs to fix (feel free to fix if you feel differently)
     active: false
+  MatchingDeclarationName:
+    # Affects a lot of the TradingStateMachine+_.kt files
+    active: false
 
 complexity:
   CognitiveComplexMethod:
