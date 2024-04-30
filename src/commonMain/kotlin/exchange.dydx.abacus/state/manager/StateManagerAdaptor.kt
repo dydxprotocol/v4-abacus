@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Compliance
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
@@ -75,6 +76,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -120,9 +122,6 @@ open class StateManagerAdaptor(
     var stateNotification: StateNotificationProtocol?,
     var dataNotification: DataNotificationProtocol?,
 ) {
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
-
     var stateMachine: TradingStateMachine = PerpTradingStateMachine(
         environment,
         uiImplementations.localizer,
@@ -1880,10 +1879,12 @@ open class StateManagerAdaptor(
         val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
         val triggerOrders = stateMachine.state?.input?.triggerOrders
 
+        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
+
         val subaccountNumber = connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
-
-        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
+        val position = subaccount.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -1924,6 +1925,7 @@ open class StateManagerAdaptor(
 
         return HumanReadableTriggerOrdersPayload(
             marketId,
+            positionSize,
             placeOrderPayloads,
             cancelOrderPayloads,
         )
@@ -2305,6 +2307,7 @@ open class StateManagerAdaptor(
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.tracking?.log(eventName, paramsAsString)
         }
+        Logger.e { "xcxc $eventName $paramsAsString" }
     }
 
     private fun didSetPlaceOrderRecords() {
@@ -2330,7 +2333,7 @@ open class StateManagerAdaptor(
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
                     tracking(
-                        AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                        if (placeOrderRecord.isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
                         ParsingHelper.merge(
                             trackingParams(interval),
                             orderAnalyticsPayload,
@@ -2346,7 +2349,7 @@ open class StateManagerAdaptor(
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
                     tracking(
-                        AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
+                        if (cancelOrderRecord.isTriggerOrder) AnalyticsEvent.TriggerCancelOrderConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
                         ParsingHelper.merge(
                             trackingParams(interval),
                             orderAnalyticsPayload,

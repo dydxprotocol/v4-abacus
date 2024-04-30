@@ -18,12 +18,14 @@ data class PlaceOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
+    val isTriggerOrder: Boolean,
 )
 
 data class CancelOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
+    val isTriggerOrder: Boolean,
 )
 
 @JsExport
@@ -73,7 +75,8 @@ data class HumanReadableCancelOrderPayload(
 @JsExport
 @Serializable
 data class HumanReadableTriggerOrdersPayload(
-    val marketId: String,
+    val marketId: String?,
+    val positionSize: Double?,
     val placeOrderPayloads: List<HumanReadablePlaceOrderPayload>,
     val cancelOrderPayloads: List<HumanReadableCancelOrderPayload>,
 )

@@ -55,31 +55,10 @@ class AnalyticsUtils {
 
         return iMapOf(
             "marketId" to payload.marketId,
-            "stopLossOrderAction" to stopLossOrderAction,
-            "takeProfitOrderAction" to takeProfitOrderAction,
+            "positionSize" to payload.positionSize,
+            "stopLossOrderAction" to stopLossOrderAction?.rawValue,
+            "takeProfitOrderAction" to takeProfitOrderAction?.rawValue,
         ) as IMap<String, Any>?
-    }
-
-    /**
-     * xcxc
-     * @param payload HumanReadableTriggerOrdersPayload
-     */
-    fun cancelTriggerOrderAnalyticsPayload(
-        payload: HumanReadableCancelOrderPayload,
-        existingOrder: SubaccountOrder?,
-    ): IMap<String, Any>? {
-        return cancelOrderAnalyticsPayload(payload, existingOrder, true)
-    }
-
-    /**
-     * xcxc
-     * @param payload HumanReadableTriggerOrdersPayload
-     */
-    fun placeTriggerOrderAnalyticsPayload(
-        payload: HumanReadablePlaceOrderPayload,
-        midMarketPrice: Double?,
-    ): IMap<String, Any>? {
-        return placeOrderAnalyticsPayload(payload, midMarketPrice, false, true)
     }
 
     /**
@@ -87,16 +66,14 @@ class AnalyticsUtils {
      * @param payload HumanReadablePlaceOrderPayload
      * @param midMarketPrice Double?
      * @param isClosePosition Boolean?
-     * @param fromSlTpDialog Boolean?
      */
     fun placeOrderAnalyticsPayload(
         payload: HumanReadablePlaceOrderPayload,
         midMarketPrice: Double?,
         isClosePosition: Boolean? = false,
-        fromSlTpDialog: Boolean? = false, // xcxc remove
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatPlaceOrderPayload(payload, isClosePosition, fromSlTpDialog),
+            formatPlaceOrderPayload(payload, isClosePosition),
             iMapOf(
                 "inferredTimeInForce" to calculateOrderTimeInForce(payload),
                 "midMarketPrice" to midMarketPrice,
@@ -112,7 +89,6 @@ class AnalyticsUtils {
     private fun formatPlaceOrderPayload(
         payload: HumanReadablePlaceOrderPayload,
         isClosePosition: Boolean? = false,
-        fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "clientId" to payload.clientId,
@@ -121,7 +97,6 @@ class AnalyticsUtils {
             "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
             "goodTilBlock" to payload.goodTilBlock,
             "isClosePosition" to isClosePosition,
-            "fromSlTpDialog" to fromSlTpDialog,
             "marketId" to payload.marketId,
             "postOnly" to payload.postOnly,
             "price" to payload.price,
@@ -167,25 +142,21 @@ class AnalyticsUtils {
      * Format Cancel Order Payload and add order details for `TradeCancelOrder` Analytic Events
      * @param payload HumanReadableCancelOrderPayload
      * @param existingOrder SubaccountOrder?
-     * @param fromSlTpDialog Boolean
      */
     fun cancelOrderAnalyticsPayload(
         payload: HumanReadableCancelOrderPayload,
         existingOrder: SubaccountOrder?,
-        fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatCancelOrderPayload(payload, fromSlTpDialog),
+            formatCancelOrderPayload(payload),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
     }
 
     private fun formatCancelOrderPayload(
         payload: HumanReadableCancelOrderPayload,
-        fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
-            "fromSlTpDialog" to fromSlTpDialog, // xcxc remove
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,

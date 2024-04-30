@@ -209,24 +209,28 @@ enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
 
-    // Trade Events
+    // Trade
     TradePlaceOrderClick("TradePlaceOrderClick"),
     TradeCancelOrderClick("TradeCancelOrderClick"),
-    TradeTriggerOrderClick("TradeTriggerOrderClick"),
-    TradePlaceOrder("TradePlaceOrder"), // analytics here
-    TradeCancelOrder("TradeCancelOrder"), // analytics here
-    TradeTriggerPlaceOrder("TradeTriggerPlaceOrder"),
-    TradeTriggerCancelOrder("TradeTriggerCancelOrder"),
+    TradePlaceOrder("TradePlaceOrder"),
+    TradeCancelOrder("TradeCancelOrder"),
     TradePlaceOrderSubmissionConfirmed("TradePlaceOrderSubmissionConfirmed"),
     TradeCancelOrderSubmissionConfirmed("TradeCancelOrderSubmissionConfirmed"),
-    TradeTriggerPlaceOrderSubmissionConfirmed("TradeTriggerPlaceOrderSubmissionConfirmed"),
-    TradeTriggerCancelOrderSubmissionConfirmed("TradeTriggerCancelOrderSubmissionConfirmed"),
     TradePlaceOrderSubmissionFailed("TradePlaceOrderSubmissionFailed"),
     TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
-    TradeTriggerPlaceOrderSubmissionFailed("TradeTriggerPlaceOrderSubmissionFailed"),
-    TradeTriggerCancelOrderSubmissionFailed("TradeTriggerCancelOrderSubmissionFailed"),
     TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
     TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
+
+    // Trigger Order
+    TriggerOrderClick("TriggerOrderClick"),
+    TriggerPlaceOrder("TriggerPlaceOrder"),
+    TriggerCancelOrder("TriggerCancelOrder"),
+    TriggerPlaceOrderSubmissionConfirmed("TriggerPlaceOrderSubmissionConfirmed"),
+    TriggerCancelOrderSubmissionConfirmed("TriggerCancelOrderSubmissionConfirmed"),
+    TriggerPlaceOrderSubmissionFailed("TriggerPlaceOrderSubmissionFailed"),
+    TriggerCancelOrderSubmissionFailed("TriggerCancelOrderSubmissionFailed"),
+    TriggerCancelOrderConfirmed("TriggerCancelOrderConfirmed"),
+    TriggerPlaceOrderConfirmed("TriggerPlaceOrderConfirmed"),
 
     // Transfers
     TransferFaucetConfirmed("TransferFaucetConfirmed");

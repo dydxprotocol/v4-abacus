@@ -1005,6 +1005,9 @@ class V4StateManagerAdaptor(
     ): HumanReadablePlaceOrderPayload {
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
+        val marketId = payload.marketId
+        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         stopWatchingLastOrder()
 
@@ -1012,13 +1015,14 @@ class V4StateManagerAdaptor(
             TransactionType.PlaceOrder,
             string,
             onSubmitTransaction = {
-                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload)
+                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, isTriggerOrder)
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
+                            isTriggerOrder,
                         ),
                     )
                 }
@@ -1040,6 +1044,8 @@ class V4StateManagerAdaptor(
                     callback,
                     if (isTriggerOrder) {
                         HumanReadableTriggerOrdersPayload(
+                            marketId,
+                            positionSize,
                             listOf(payload),
                             emptyList(),
                         )
@@ -1056,6 +1062,7 @@ class V4StateManagerAdaptor(
 
     private fun submitCancelOrder(
         orderId: String,
+        marketId: String?,
         callback: TransactionCallback,
         payload: HumanReadableCancelOrderPayload,
         analyticsPayload: IMap<String, Any>?,
@@ -1065,6 +1072,9 @@ class V4StateManagerAdaptor(
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
+        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
+
         val isShortTermOrder = payload.orderFlags == 0
 
         stopWatchingLastOrder()
@@ -1073,13 +1083,14 @@ class V4StateManagerAdaptor(
             TransactionType.CancelOrder,
             string,
             onSubmitTransaction = {
-                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, true)
+                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, isTriggerOrder, true)
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.cancelOrderRecords.add(
                         CancelOrderRecord(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
+                            isTriggerOrder,
                         ),
                     )
                 }
@@ -1101,6 +1112,8 @@ class V4StateManagerAdaptor(
                     callback,
                     if (isTriggerOrder) {
                         HumanReadableTriggerOrdersPayload(
+                            marketId,
+                            positionSize,
                             emptyList(),
                             listOf(payload),
                         )
@@ -1128,13 +1141,18 @@ class V4StateManagerAdaptor(
     private fun trackOrderSubmit(
         uiClickTimeMs: Double,
         analyticsPayload: IMap<String, Any>?,
+        isTriggerOrder: Boolean,
         isCancel: Boolean = false
     ): Double {
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
 
         tracking(
-            if (isCancel) AnalyticsEvent.TradeCancelOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue,
+            if (isCancel) {
+                if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrder.rawValue else AnalyticsEvent.TradeCancelOrder.rawValue
+            } else {
+                if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue
+            },
             ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
                 ?.toIMap(),
         )
@@ -1151,18 +1169,18 @@ class V4StateManagerAdaptor(
         if (error != null) {
             tracking(
                 if (isCancel) {
-                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
+                    if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
                 } else {
-                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerPlaceOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
+                    if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
                 },
                 ParsingHelper.merge(errorTrackingParams(error), analyticsPayload)?.toIMap(),
             )
         } else {
             tracking(
                 if (isCancel) {
-                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
+                    if (isTriggerOrder) AnalyticsEvent.TriggerCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
                 } else {
-                    if (isTriggerOrder) AnalyticsEvent.TradeTriggerPlaceOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
+                    if (isTriggerOrder) AnalyticsEvent.TriggerPlaceOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
                 },
                 analyticsPayload,
             )
@@ -1191,13 +1209,14 @@ class V4StateManagerAdaptor(
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
         val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
+        val marketId = existingOrder?.marketId
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
             existingOrder,
         )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
-        submitCancelOrder(orderId, callback, payload, analyticsPayload, uiClickTimeMs)
+        submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload {
@@ -1205,21 +1224,22 @@ class V4StateManagerAdaptor(
 
         // this is a diff payload that summarizes the actions to be taken
         val analyticsPayload = analyticsUtils.triggerOrdersAnalyticsPayload(payload)
-        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeTriggerOrderClick)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TriggerOrderClick)
 
         payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
             val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
-            val cancelOrderAnalyticsPayload = analyticsUtils.cancelTriggerOrderAnalyticsPayload(
+            val marketId = existingOrder?.marketId
+            val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
             )
-            submitCancelOrder(cancelPayload.orderId, callback, cancelPayload, cancelOrderAnalyticsPayload, uiClickTimeMs, true)
+            submitCancelOrder(cancelPayload.orderId, marketId, callback, cancelPayload, cancelOrderAnalyticsPayload, uiClickTimeMs, true)
         }
 
         payload.placeOrderPayloads.forEach { placePayload ->
             val midMarketPrice = stateMachine.state?.marketOrderbook(placePayload.marketId)?.midPrice
-            val placeOrderAnalyticsPayload = analyticsUtils.placeTriggerOrderAnalyticsPayload(
+            val placeOrderAnalyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
                 placePayload,
                 midMarketPrice,
             )
