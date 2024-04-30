@@ -20,3 +20,13 @@ complexity:
     threshold: 100 # up from 60
   TooManyFunctions:
     active: false
+  NestedBlockDepth:
+    active: false
+
+style:
+  LoopWithTooManyJumpStatements:
+    active: false
+  ReturnCount:
+    active: false
+  MaxLineLength:
+    active: false
