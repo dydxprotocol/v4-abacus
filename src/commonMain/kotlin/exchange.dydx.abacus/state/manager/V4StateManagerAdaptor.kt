@@ -1008,12 +1008,9 @@ class V4StateManagerAdaptor(
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
         val marketId = payload.marketId
+
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
-            ?: throw ParsingException(
-                ParsingErrorType.MissingRequiredData,
-                "no open position for $marketId",
-            )
-        val positionSize = position.size?.current
+        val positionSize = position?.size?.current
 
         stopWatchingLastOrder()
 
@@ -1021,21 +1018,21 @@ class V4StateManagerAdaptor(
             TransactionType.PlaceOrder,
             string,
             onSubmitTransaction = {
-                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, isTriggerOrder)
+                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload)
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.placeOrderRecords.add(
                         PlaceOrderRecord(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
-                            isTriggerOrder,
+                            fromSlTp = isTriggerOrder,
                         ),
                     )
                 }
             },
             transactionCallback = { response: String? ->
                 val error = parseTransactionResponse(response)
-                trackOrderSubmitted(error, analyticsPayload, isTriggerOrder)
+                trackOrderSubmitted(error, analyticsPayload)
                 if (error == null) {
                     lastOrderClientId = clientId
                 } else {
@@ -1079,11 +1076,7 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
 
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
-            ?: throw ParsingException(
-                ParsingErrorType.MissingRequiredData,
-                "no open position for $marketId",
-            )
-        val positionSize = position.size?.current
+        val positionSize = position?.size?.current
 
         val isShortTermOrder = payload.orderFlags == 0
 
@@ -1093,21 +1086,21 @@ class V4StateManagerAdaptor(
             TransactionType.CancelOrder,
             string,
             onSubmitTransaction = {
-                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, isTriggerOrder, true)
+                val submitTimeMs = trackOrderSubmit(uiClickTimeMs, analyticsPayload, true)
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     this.cancelOrderRecords.add(
                         CancelOrderRecord(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
-                            isTriggerOrder,
+                            fromSlTp = isTriggerOrder,
                         ),
                     )
                 }
             },
             transactionCallback = { response: String? ->
                 val error = parseTransactionResponse(response)
-                trackOrderSubmitted(error, analyticsPayload, isTriggerOrder, true)
+                trackOrderSubmitted(error, analyticsPayload, true)
                 if (error == null) {
                     this.orderCanceled(orderId)
                 } else {
@@ -1151,28 +1144,14 @@ class V4StateManagerAdaptor(
     private fun trackOrderSubmit(
         uiClickTimeMs: Double,
         analyticsPayload: IMap<String, Any>?,
-        isTriggerOrder: Boolean,
         isCancel: Boolean = false
     ): Double {
         val submitTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
 
         tracking(
-            if (isCancel) {
-                if (isTriggerOrder) {
-                    AnalyticsEvent.TriggerCancelOrder.rawValue
-                } else {
-                    AnalyticsEvent.TradeCancelOrder.rawValue
-                }
-            } else {
-                if (isTriggerOrder) {
-                    AnalyticsEvent.TriggerPlaceOrder.rawValue
-                } else {
-                    AnalyticsEvent.TradePlaceOrder.rawValue
-                }
-            },
-            ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
-                ?.toIMap(),
+            if (isCancel) AnalyticsEvent.TradeCancelOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue,
+            ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)?.toIMap(),
         )
 
         return submitTimeMs
@@ -1181,41 +1160,16 @@ class V4StateManagerAdaptor(
     private fun trackOrderSubmitted(
         error: ParsingError?,
         analyticsPayload: IMap<String, Any>?,
-        isTriggerOrder: Boolean,
         isCancel: Boolean = false,
     ) {
         if (error != null) {
             tracking(
-                if (isCancel) {
-                    if (isTriggerOrder) {
-                        AnalyticsEvent.TriggerCancelOrderSubmissionFailed.rawValue
-                    } else {
-                        AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue
-                    }
-                } else {
-                    if (isTriggerOrder) {
-                        AnalyticsEvent.TriggerPlaceOrderSubmissionFailed.rawValue
-                    } else {
-                        AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue
-                    }
-                },
+                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue,
                 ParsingHelper.merge(errorTrackingParams(error), analyticsPayload)?.toIMap(),
             )
         } else {
             tracking(
-                if (isCancel) {
-                    if (isTriggerOrder) {
-                        AnalyticsEvent.TriggerCancelOrderSubmissionConfirmed.rawValue
-                    } else {
-                        AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue
-                    }
-                } else {
-                    if (isTriggerOrder) {
-                        AnalyticsEvent.TriggerPlaceOrderSubmissionConfirmed.rawValue
-                    } else {
-                        AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue
-                    }
-                },
+                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue,
                 analyticsPayload,
             )
         }
@@ -1224,7 +1178,7 @@ class V4StateManagerAdaptor(
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = placeOrderPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTp = false, isClosePosition = false)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1233,7 +1187,7 @@ class V4StateManagerAdaptor(
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, true)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTp = false, isClosePosition = true)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1250,6 +1204,7 @@ class V4StateManagerAdaptor(
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
             existingOrder,
+            fromSlTp = false,
         )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
@@ -1274,6 +1229,7 @@ class V4StateManagerAdaptor(
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
+                fromSlTp = true,
             )
             submitCancelOrder(
                 cancelPayload.orderId,
@@ -1291,6 +1247,8 @@ class V4StateManagerAdaptor(
             val placeOrderAnalyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
                 placePayload,
                 midMarketPrice,
+                fromSlTp = true,
+                isClosePosition = false,
             )
             submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)
         }

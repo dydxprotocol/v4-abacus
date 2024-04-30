@@ -42,14 +42,21 @@ class AnalyticsUtils {
         val stopLossOrderTypes = listOf(OrderType.stopMarket, OrderType.stopLimit)
         val takeProfitOrderTypes = listOf(OrderType.takeProfitMarket, OrderType.takeProfitLimit)
 
+        var stopLossOrderCancelClientId: Int? = null
+        var stopLossOrderPlaceClientId: Int? = null
+        var takeProfitOrderCancelClientId: Int? = null
+        var takeProfitOrderPlaceClientId: Int? = null
+
         var stopLossOrderAction: TriggerOrderAction? = null
         var takeProfitOrderAction: TriggerOrderAction? = null
 
         placeOrderPayloads.forEach { placePayload ->
             val orderType = OrderType.invoke(placePayload.type)
             if (stopLossOrderTypes.contains(orderType)) {
+                stopLossOrderPlaceClientId = placePayload.clientId
                 stopLossOrderAction = TriggerOrderAction.CREATE
             } else if (takeProfitOrderTypes.contains(orderType)) {
+                takeProfitOrderPlaceClientId = placePayload.clientId
                 takeProfitOrderAction = TriggerOrderAction.CREATE
             }
         }
@@ -57,12 +64,14 @@ class AnalyticsUtils {
         cancelOrderPayloads.forEach { cancelPayload ->
             val orderType = OrderType.invoke(cancelPayload.type)
             if (stopLossOrderTypes.contains(orderType)) {
+                stopLossOrderCancelClientId = cancelPayload.clientId
                 stopLossOrderAction = if (stopLossOrderAction == null) {
                     TriggerOrderAction.CANCEL
                 } else {
                     TriggerOrderAction.REPLACE
                 }
             } else if (takeProfitOrderTypes.contains(orderType)) {
+                takeProfitOrderCancelClientId = cancelPayload.clientId
                 takeProfitOrderAction = if (takeProfitOrderAction == null) {
                     TriggerOrderAction.CANCEL
                 } else {
@@ -75,7 +84,11 @@ class AnalyticsUtils {
             "marketId" to payload.marketId,
             "positionSize" to payload.positionSize,
             "stopLossOrderAction" to stopLossOrderAction?.rawValue,
+            "stopLossOrderCancelClientId" to stopLossOrderCancelClientId,
+            "stopLossOrderPlaceClientId" to stopLossOrderPlaceClientId,
             "takeProfitOrderAction" to takeProfitOrderAction?.rawValue,
+            "takeProfitOrderCancelClientId" to takeProfitOrderCancelClientId,
+            "takeProfitOrderPlaceClientId" to takeProfitOrderPlaceClientId,
         ) as IMap<String, Any>?
     }
 
@@ -88,10 +101,11 @@ class AnalyticsUtils {
     fun placeOrderAnalyticsPayload(
         payload: HumanReadablePlaceOrderPayload,
         midMarketPrice: Double?,
+        fromSlTp: Boolean? = false,
         isClosePosition: Boolean? = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatPlaceOrderPayload(payload, isClosePosition),
+            formatPlaceOrderPayload(payload, fromSlTp, isClosePosition),
             iMapOf(
                 "inferredTimeInForce" to calculateOrderTimeInForce(payload),
                 "midMarketPrice" to midMarketPrice,
@@ -106,6 +120,7 @@ class AnalyticsUtils {
      */
     private fun formatPlaceOrderPayload(
         payload: HumanReadablePlaceOrderPayload,
+        fromSlTp: Boolean? = false,
         isClosePosition: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
@@ -114,6 +129,7 @@ class AnalyticsUtils {
             "execution" to payload.execution,
             "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
             "goodTilBlock" to payload.goodTilBlock,
+            "fromSlTp" to fromSlTp,
             "isClosePosition" to isClosePosition,
             "marketId" to payload.marketId,
             "postOnly" to payload.postOnly,
@@ -164,15 +180,17 @@ class AnalyticsUtils {
     fun cancelOrderAnalyticsPayload(
         payload: HumanReadableCancelOrderPayload,
         existingOrder: SubaccountOrder?,
+        fromSlTp: Boolean? = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatCancelOrderPayload(payload),
+            formatCancelOrderPayload(payload, fromSlTp),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
     }
 
     private fun formatCancelOrderPayload(
         payload: HumanReadableCancelOrderPayload,
+        fromSlTp: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "subaccountNumber" to payload.subaccountNumber,
@@ -182,6 +200,7 @@ class AnalyticsUtils {
             "clobPairId" to payload.clobPairId,
             "goodTilBlock" to payload.goodTilBlock,
             "goodTilBlockTime" to payload.goodTilBlockTime,
+            "fromSlTp" to fromSlTp,
         ) as IMap<String, Any>?
     }
 

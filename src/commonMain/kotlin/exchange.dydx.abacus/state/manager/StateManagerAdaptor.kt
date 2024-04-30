@@ -1882,11 +1882,8 @@ open class StateManagerAdaptor(
 
         val subaccountNumber = connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
-        val position = subaccount.openPositions?.find { it.id == marketId } ?: throw ParsingException(
-            ParsingErrorType.MissingRequiredData,
-            "no open position for $marketId",
-        )
-        val positionSize = position.size?.current
+        val position = subaccount.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -2298,6 +2295,12 @@ open class StateManagerAdaptor(
         }
     }
 
+    internal open fun fromSlTpParams(fromSlTp: Boolean): IMap<String, Any> {
+        return iMapOf(
+            "fromSlTp" to fromSlTp,
+        )
+    }
+
     internal open fun trackingParams(interval: Double): IMap<String, Any> {
         return iMapOf(
             "roundtripMs" to interval,
@@ -2333,14 +2336,14 @@ open class StateManagerAdaptor(
                 if (placeOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
+                    val extraParams = ParsingHelper.merge(
+                        trackingParams(interval),
+                        fromSlTpParams(placeOrderRecord.fromSlTp),
+                    )
                     tracking(
-                        if (placeOrderRecord.isTriggerOrder) {
-                            AnalyticsEvent.TriggerPlaceOrderConfirmed.rawValue
-                        } else {
-                            AnalyticsEvent.TradePlaceOrderConfirmed.rawValue
-                        },
+                        AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval),
+                            extraParams,
                             orderAnalyticsPayload,
                         )?.toIMap(),
                     )
@@ -2353,14 +2356,14 @@ open class StateManagerAdaptor(
                 if (cancelOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
+                    val extraParams = ParsingHelper.merge(
+                        trackingParams(interval),
+                        fromSlTpParams(cancelOrderRecord.fromSlTp),
+                    )
                     tracking(
-                        if (cancelOrderRecord.isTriggerOrder) {
-                            AnalyticsEvent.TriggerCancelOrderConfirmed.rawValue
-                        } else {
-                            AnalyticsEvent.TradeCancelOrderConfirmed.rawValue
-                        },
+                        AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval),
+                            extraParams,
                             orderAnalyticsPayload,
                         )?.toIMap(),
                     )

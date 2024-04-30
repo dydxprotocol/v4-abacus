@@ -223,14 +223,6 @@ enum class AnalyticsEvent(val rawValue: String) {
 
     // Trigger Order
     TriggerOrderClick("TriggerOrderClick"),
-    TriggerPlaceOrder("TriggerPlaceOrder"),
-    TriggerCancelOrder("TriggerCancelOrder"),
-    TriggerPlaceOrderSubmissionConfirmed("TriggerPlaceOrderSubmissionConfirmed"),
-    TriggerCancelOrderSubmissionConfirmed("TriggerCancelOrderSubmissionConfirmed"),
-    TriggerPlaceOrderSubmissionFailed("TriggerPlaceOrderSubmissionFailed"),
-    TriggerCancelOrderSubmissionFailed("TriggerCancelOrderSubmissionFailed"),
-    TriggerCancelOrderConfirmed("TriggerCancelOrderConfirmed"),
-    TriggerPlaceOrderConfirmed("TriggerPlaceOrderConfirmed"),
 
     // Transfers
     TransferFaucetConfirmed("TransferFaucetConfirmed");
