@@ -307,7 +307,7 @@ internal class SubaccountSupervisor(
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
                     val extraParams = ParsingHelper.merge(
                         trackingParams(interval),
-                        fromSlTpParams(placeOrderRecord.fromSlTp),
+                        fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
                     )
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
@@ -327,7 +327,7 @@ internal class SubaccountSupervisor(
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
                     val extraParams = ParsingHelper.merge(
                         trackingParams(interval),
-                        fromSlTpParams(cancelOrderRecord.fromSlTp),
+                        fromSlTpDialogParams(cancelOrderRecord.fromSlTpDialog),
                     )
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
@@ -343,9 +343,9 @@ internal class SubaccountSupervisor(
         }
     }
 
-    private fun fromSlTpParams(fromSlTp: Boolean): IMap<String, Any> {
+    private fun fromSlTpDialogParams(fromSlTpDialog: Boolean): IMap<String, Any> {
         return iMapOf(
-            "fromSlTp" to fromSlTp,
+            "fromSlTpDialog" to fromSlTpDialog,
         )
     }
 
@@ -577,7 +577,7 @@ internal class SubaccountSupervisor(
                         subaccountNumber,
                         clientId,
                         submitTimeMs,
-                        fromSlTp = isTriggerOrder,
+                        fromSlTpDialog = isTriggerOrder,
                     ),
                 )
             }
@@ -726,7 +726,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
-                            fromSlTp = isTriggerOrder,
+                            fromSlTpDialog = isTriggerOrder,
                         ),
                     )
                 }
@@ -769,7 +769,7 @@ internal class SubaccountSupervisor(
     ): HumanReadablePlaceOrderPayload {
         val orderPayload = placeOrderPayload(currentHeight)
         val midMarketPrice = stateMachine.state?.marketOrderbook(orderPayload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(orderPayload, midMarketPrice, fromSlTp = false, isClosePosition = false)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(orderPayload, midMarketPrice, fromSlTpDialog = false, isClosePosition = false)
         val isIsolatedMarginOrder =
             helper.parser.asInt(orderPayload.subaccountNumber) != subaccountNumber
         val transferPayload =
@@ -785,7 +785,7 @@ internal class SubaccountSupervisor(
     ): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload(currentHeight)
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTp = false, isClosePosition = true)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTpDialog = false, isClosePosition = true)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -799,7 +799,7 @@ internal class SubaccountSupervisor(
             "no existing order to be cancelled for $orderId",
         )
         val marketId = existingOrder.marketId
-        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTp = false)
+        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTpDialog = false)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
@@ -826,7 +826,7 @@ internal class SubaccountSupervisor(
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
-                fromSlTp = true,
+                fromSlTpDialog = true,
             )
             submitCancelOrder(
                 cancelPayload.orderId,
@@ -844,7 +844,7 @@ internal class SubaccountSupervisor(
             val placeOrderAnalyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
                 placePayload,
                 midMarketPrice,
-                fromSlTp = true,
+                fromSlTpDialog = true,
                 isClosePosition = false,
             )
             submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)

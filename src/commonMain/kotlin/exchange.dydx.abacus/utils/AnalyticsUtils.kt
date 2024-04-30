@@ -96,11 +96,11 @@ class AnalyticsUtils {
     fun placeOrderAnalyticsPayload(
         payload: HumanReadablePlaceOrderPayload,
         midMarketPrice: Double?,
-        fromSlTp: Boolean? = false,
+        fromSlTpDialog: Boolean? = false,
         isClosePosition: Boolean? = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatPlaceOrderPayload(payload, fromSlTp, isClosePosition),
+            formatPlaceOrderPayload(payload, fromSlTpDialog, isClosePosition),
             iMapOf(
                 "inferredTimeInForce" to calculateOrderTimeInForce(payload),
                 "midMarketPrice" to midMarketPrice,
@@ -115,7 +115,7 @@ class AnalyticsUtils {
      */
     private fun formatPlaceOrderPayload(
         payload: HumanReadablePlaceOrderPayload,
-        fromSlTp: Boolean? = false,
+        fromSlTpDialog: Boolean? = false,
         isClosePosition: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
@@ -124,7 +124,7 @@ class AnalyticsUtils {
             "execution" to payload.execution,
             "goodTilTimeInSeconds" to payload.goodTilTimeInSeconds,
             "goodTilBlock" to payload.goodTilBlock,
-            "fromSlTp" to fromSlTp,
+            "fromSlTpDialog" to fromSlTpDialog,
             "isClosePosition" to isClosePosition,
             "marketId" to payload.marketId,
             "postOnly" to payload.postOnly,
@@ -175,17 +175,17 @@ class AnalyticsUtils {
     fun cancelOrderAnalyticsPayload(
         payload: HumanReadableCancelOrderPayload,
         existingOrder: SubaccountOrder?,
-        fromSlTp: Boolean? = false,
+        fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatCancelOrderPayload(payload, fromSlTp),
+            formatCancelOrderPayload(payload, fromSlTpDialog),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
     }
 
     private fun formatCancelOrderPayload(
         payload: HumanReadableCancelOrderPayload,
-        fromSlTp: Boolean? = false,
+        fromSlTpDialog: Boolean? = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "subaccountNumber" to payload.subaccountNumber,
@@ -195,7 +195,7 @@ class AnalyticsUtils {
             "clobPairId" to payload.clobPairId,
             "goodTilBlock" to payload.goodTilBlock,
             "goodTilBlockTime" to payload.goodTilBlockTime,
-            "fromSlTp" to fromSlTp,
+            "fromSlTpDialog" to fromSlTpDialog,
         ) as IMap<String, Any>?
     }
 

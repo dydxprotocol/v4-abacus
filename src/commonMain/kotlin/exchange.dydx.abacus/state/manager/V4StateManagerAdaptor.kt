@@ -1025,7 +1025,7 @@ class V4StateManagerAdaptor(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
-                            fromSlTp = isTriggerOrder,
+                            fromSlTpDialog = isTriggerOrder,
                         ),
                     )
                 }
@@ -1093,7 +1093,7 @@ class V4StateManagerAdaptor(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
-                            fromSlTp = isTriggerOrder,
+                            fromSlTpDialog = isTriggerOrder,
                         ),
                     )
                 }
@@ -1178,7 +1178,7 @@ class V4StateManagerAdaptor(
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = placeOrderPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTp = false, isClosePosition = false)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTpDialog = false, isClosePosition = false)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1187,7 +1187,7 @@ class V4StateManagerAdaptor(
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTp = false, isClosePosition = true)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTpDialog = false, isClosePosition = true)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1204,7 +1204,7 @@ class V4StateManagerAdaptor(
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
             existingOrder,
-            fromSlTp = false,
+            fromSlTpDialog = false,
         )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
@@ -1229,7 +1229,7 @@ class V4StateManagerAdaptor(
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
-                fromSlTp = true,
+                fromSlTpDialog = true,
             )
             submitCancelOrder(
                 cancelPayload.orderId,
@@ -1247,7 +1247,7 @@ class V4StateManagerAdaptor(
             val placeOrderAnalyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
                 placePayload,
                 midMarketPrice,
-                fromSlTp = true,
+                fromSlTpDialog = true,
                 isClosePosition = false,
             )
             submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)

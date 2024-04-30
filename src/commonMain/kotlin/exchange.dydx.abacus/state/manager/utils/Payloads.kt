@@ -18,14 +18,14 @@ data class PlaceOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
-    val fromSlTp: Boolean,
+    val fromSlTpDialog: Boolean,
 )
 
 data class CancelOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
-    val fromSlTp: Boolean,
+    val fromSlTpDialog: Boolean,
 )
 
 @JsExport

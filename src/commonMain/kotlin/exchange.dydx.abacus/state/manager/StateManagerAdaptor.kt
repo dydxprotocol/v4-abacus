@@ -2294,9 +2294,9 @@ open class StateManagerAdaptor(
         }
     }
 
-    internal open fun fromSlTpParams(fromSlTp: Boolean): IMap<String, Any> {
+    internal open fun fromSlTpDialogParams(fromSlTpDialog: Boolean): IMap<String, Any> {
         return iMapOf(
-            "fromSlTp" to fromSlTp,
+            "fromSlTpDialog" to fromSlTpDialog,
         )
     }
 
@@ -2337,7 +2337,7 @@ open class StateManagerAdaptor(
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
                     val extraParams = ParsingHelper.merge(
                         trackingParams(interval),
-                        fromSlTpParams(placeOrderRecord.fromSlTp),
+                        fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
                     )
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
@@ -2357,7 +2357,7 @@ open class StateManagerAdaptor(
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
                     val extraParams = ParsingHelper.merge(
                         trackingParams(interval),
-                        fromSlTpParams(cancelOrderRecord.fromSlTp),
+                        fromSlTpDialogParams(cancelOrderRecord.fromSlTpDialog),
                     )
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
