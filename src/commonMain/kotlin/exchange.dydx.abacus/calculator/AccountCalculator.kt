@@ -129,6 +129,10 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                 "freeCollateral",
                 childSubaccount["freeCollateral"],
             )
+            modifiedChildOpenPosition?.safeSet(
+                "marginUsage",
+                childSubaccount["marginUsage"],
+            )
             modifiedChildOpenPosition?.safeSet("equity", childSubaccount["equity"])
             modifiedOpenPositions.safeSet(market, modifiedChildOpenPosition)
         }
