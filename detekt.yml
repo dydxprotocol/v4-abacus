@@ -1,0 +1,22 @@
+naming:
+  InvalidPackageDeclaration:
+    # some of our package folders are structured /exchange.dydx.abacus instead of:
+    # /exchange -> /dydx -> /abacus
+    # didn't seem worth the potential thrash in PRs to fix (feel free to fix if you feel differently)
+    active: false
+
+complexity:
+  CognitiveComplexMethod:
+    active: false
+  ComplexCondition:
+    active: false
+  CyclomaticComplexMethod:
+    active: false
+  LongParameterList:
+    active: false
+  LargeClass:
+    threshold: 1000 # up from 600
+  LongMethod:
+    threshold: 100 # up from 60
+  TooManyFunctions:
+    active: false
