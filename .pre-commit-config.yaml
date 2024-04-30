@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: spotless-apply
+        name: spotless-apply
+        entry: ./gradlew spotlessApply 
+        language: script
+        stages: [pre-commit]
