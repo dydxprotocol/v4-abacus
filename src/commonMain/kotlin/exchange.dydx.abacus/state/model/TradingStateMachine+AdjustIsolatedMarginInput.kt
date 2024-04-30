@@ -55,6 +55,10 @@ fun TradingStateMachine.adjustIsolatedMargin(
 
                 parser.asMap(modified["adjustIsolatedMargin"])?.mutable() ?: adjustIsolatedMargin
             }
+    val childSubaccountNumber = parser.asInt(adjustIsolatedMargin["childSubaccountNumber"])
+    val subaccountNumbers = if (childSubaccountNumber != null)
+        iListOf(parentSubaccountNumber, childSubaccountNumber)
+        else iListOf(parentSubaccountNumber)
 
     if (typeText != null) {
         if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, typeText)) {
@@ -67,7 +71,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(parentSubaccountNumber),
+                        subaccountNumbers,
                     )
                 }
                 AdjustIsolatedMarginInputField.amount.rawValue -> {
@@ -76,7 +80,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
-                        iListOf(parentSubaccountNumber),
+                        subaccountNumbers,
                     )
                 }
                 AdjustIsolatedMarginInputField.childSubaccountNumber.rawValue -> {
@@ -100,7 +104,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
         changes = StateChanges(
             iListOf(Changes.wallet, Changes.subaccount, Changes.input),
             null,
-            iListOf(parentSubaccountNumber)
+            subaccountNumbers,
         )
     }
 

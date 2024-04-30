@@ -44,7 +44,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
             val parentTransferDelta = getModifiedTransferDelta(isolatedMarginAdjustment, true)
             val childTransferDelta = getModifiedTransferDelta(isolatedMarginAdjustment, false)
 
-            val postParentSubaccountTransferWallet =
+            val walletPostParentSubaccountTransfer =
                 subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
                     wallet,
                     subaccountNumber=parentSubaccountNumber,
@@ -53,22 +53,21 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
                     "postOrder",
                 )
 
-            val postChildSubaccountTransferWallet =
+            val walletPostChildSubaccountTransfer =
                 subaccountTransformer.applyIsolatedMarginAdjustmentToWallet(
-                    wallet=postParentSubaccountTransferWallet,
+                    wallet=walletPostParentSubaccountTransfer,
                     subaccountNumber=childSubaccountNumber,
                     childTransferDelta,
                     parser,
                     "postOrder",
                 )
 
-            modified["summary"] = summaryForType(
-                parentSubaccount,
-                childSubaccount,
-                isolatedMarginAdjustment,
-                type,
-            )
-            modified["wallet"] = postChildSubaccountTransferWallet
+            val modifiedParentSubaccount = parser.asNativeMap(parser.value(walletPostChildSubaccountTransfer, "accounts.subaccounts.$parentSubaccountNumber"))
+            val modifiedChildSubaccount = parser.asNativeMap(parser.value(walletPostChildSubaccountTransfer, "accounts.subaccounts.$childSubaccountNumber"))
+            val modifiedIsolatedMarginAdjustment = finalize(isolatedMarginAdjustment, modifiedParentSubaccount, modifiedChildSubaccount, type)
+
+            modified["adjustIsolatedMargin"] = modifiedIsolatedMarginAdjustment
+            modified["wallet"] = walletPostChildSubaccountTransfer
             modified
         } else {
             state
@@ -115,36 +114,48 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
     private fun summaryForType(
         parentSubaccount: Map<String, Any>?,
         childSubaccount: Map<String, Any>?,
-        isolatedMarginAdjustment: Map<String, Any>,
         type: String,
     ): Map<String, Any> {
         val summary = mutableMapOf<String, Any>()
-        val amount = parser.asDouble(isolatedMarginAdjustment["amount"])
         val crossCollateral = parser.asDouble(parser.value(parentSubaccount, "freeCollateral.postOrder"))
-        val crossLeverage = parser.asDouble(parser.value(parentSubaccount, "leverage.postOrder"))
-        val positionMargin = parser.asDouble(parser.value(childSubaccount, "margin.postOrder"))
-        val positionLeverage = parser.asDouble(parser.value(childSubaccount, "leverage.postOrder"))
+        val crossMarginUsage = parser.asDouble(parser.value(parentSubaccount, "marginUsage.postOrder"))
+        val openPositions = parser.asNativeMap(childSubaccount?.get("openPositions"))
+        val marketId = openPositions?.keys?.firstOrNull()
+        val positionMargin = parser.asDouble(parser.value(childSubaccount, "freeCollateral.postOrder"))
+        val positionLeverage = parser.asDouble(parser.value(childSubaccount, "openPositions.$marketId.leverage.postOrder"))
+        val liquidationPrice = parser.asDouble(parser.value(childSubaccount, "openPositions.$marketId.liquidationPrice.postOrder"))
 
         when (type) {
             "ADD" -> {
-                summary.safeSet("crossCollateral", crossCollateral)
-                summary.safeSet("crossLeverage", crossLeverage)
+                summary.safeSet("crossFreeCollateral", crossCollateral)
+                summary.safeSet("crossMarginUsage", crossMarginUsage)
                 summary.safeSet("positionMargin", positionMargin)
                 summary.safeSet("positionLeverage", positionLeverage)
-                summary.safeSet("liquidationPrice", amount)
+                summary.safeSet("liquidationPrice", liquidationPrice)
             }
 
             "REMOVE" -> {
-                summary.safeSet("crossCollateral", crossCollateral)
-                summary.safeSet("crossLeverage", crossLeverage)
+                summary.safeSet("crossFreeCollateral", crossCollateral)
+                summary.safeSet("crossMarginUsage", crossMarginUsage)
                 summary.safeSet("positionMargin", positionMargin)
                 summary.safeSet("positionLeverage", positionLeverage)
-                summary.safeSet("liquidationPrice", amount)
+                summary.safeSet("liquidationPrice", liquidationPrice)
             }
 
             else -> {}
         }
 
         return summary
+    }
+
+    private fun finalize(
+        isolatedMarginAdjustment: Map<String, Any>,
+        parentSubaccount: Map<String, Any>?,
+        childSubaccount: Map<String, Any>?,
+        type: String,
+    ): Map<String, Any> {
+        val modified = isolatedMarginAdjustment.mutable()
+        modified.safeSet("summary", summaryForType(parentSubaccount, childSubaccount, type))
+        return modified
     }
 }

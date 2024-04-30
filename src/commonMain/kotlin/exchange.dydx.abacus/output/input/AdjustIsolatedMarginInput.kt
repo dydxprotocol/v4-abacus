@@ -37,8 +37,8 @@ data class AdjustIsolatedMarginInputOptions(
 @JsExport
 @Serializable
 data class AdjustIsolatedMarginInputSummary(
-    val crossCollateral: Double?,
-    val crossLeverage: Double?,
+    val crossFreeCollateral: Double?,
+    val crossMarginUsage: Double?,
     val positionMargin: Double?,
     val positionLeverage: Double?,
     val liquidationPrice: Double?,
@@ -52,22 +52,22 @@ data class AdjustIsolatedMarginInputSummary(
             Logger.d { "creating Adjust Isolated Margin Input Summary\n" }
 
             data?.let {
-                val crossCollateral = parser.asDouble(data["crossCollateral"])
-                val crossLeverage = parser.asDouble(data["crossLeverage"])
+                val crossFreeCollateral = parser.asDouble(data["crossFreeCollateral"])
+                val crossMarginUsage = parser.asDouble(data["crossMarginUsage"])
                 val positionMargin = parser.asDouble(data["positionMargin"])
                 val positionLeverage = parser.asDouble(data["positionLeverage"])
                 val liquidationPrice = parser.asDouble(data["liquidationPrice"])
 
                 return if (
-                    existing?.crossCollateral != crossCollateral ||
-                    existing?.crossLeverage != crossLeverage ||
+                    existing?.crossFreeCollateral != crossFreeCollateral ||
+                    existing?.crossMarginUsage != crossMarginUsage ||
                     existing?.positionMargin != positionMargin ||
                     existing?.positionLeverage != positionLeverage ||
                     existing?.liquidationPrice != liquidationPrice
                 ) {
                     AdjustIsolatedMarginInputSummary(
-                        crossCollateral,
-                        crossLeverage,
+                        crossFreeCollateral,
+                        crossMarginUsage,
                         positionMargin,
                         positionLeverage,
                         liquidationPrice,

@@ -970,6 +970,37 @@ open class TradingStateMachine(
                 }
             }
 
+            "adjustIsolatedMargin" -> {
+                val adjustIsolatedMargin = parser.asNativeMap(input["adjustIsolatedMargin"]) ?: return null
+                val type = parser.asString(adjustIsolatedMargin["type"]) ?: return null
+
+                when(type) {
+                    "ADD" -> {
+                        listOf(
+                            ReceiptLine.crossFreeCollateral.rawValue,
+                            ReceiptLine.crossMarginUsage.rawValue,
+                            ReceiptLine.positionLeverage.rawValue,
+                            ReceiptLine.positionMargin.rawValue,
+                            ReceiptLine.liquidationPrice.rawValue,
+                        )
+                    }
+
+                    "REMOVE" -> {
+                        listOf(
+                            ReceiptLine.crossFreeCollateral.rawValue,
+                            ReceiptLine.crossMarginUsage.rawValue,
+                            ReceiptLine.positionLeverage.rawValue,
+                            ReceiptLine.positionMargin.rawValue,
+                            ReceiptLine.liquidationPrice.rawValue,
+                        )
+                    }
+
+                    else -> {
+                        listOf()
+                    }
+                }
+            }
+
             else -> null
         }
     }
