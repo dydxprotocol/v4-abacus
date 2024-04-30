@@ -84,7 +84,6 @@
     <ID>ComplexCondition:TriggerOrdersInput.kt$TriggerOrdersInput.Companion$existing?.marketId != marketId || existing?.size != size || existing?.stopLossOrder != stopLossOrder || existing?.takeProfitOrder != takeProfitOrder</ID>
     <ID>ComplexCondition:TriggerOrdersInput.kt$TriggerPrice.Companion$existing?.limitPrice != limitPrice || existing?.triggerPrice != triggerPrice || existing?.percentDiff != percentDiff || existing?.usdcDiff != usdcDiff || existing?.input != input</ID>
     <ID>ComplexCondition:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$size == null || size == Numeric.double.ZERO || notionalTotal == Numeric.double.ZERO || leverage == Numeric.double.ZERO</ID>
-    <ID>ComplexCondition:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$!isShortTermAndRequiresImmediateExecution &amp;&amp; (status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED" || status == "PARTIALLY_FILLED")</ID>
     <ID>ComplexCondition:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$triggerPrice != null &amp;&amp; triggerPrice &lt;= 0 || (limitPrice != null &amp;&amp; limitPrice &lt;= 0)</ID>
     <ID>ComplexCondition:V4StateManagerAdaptor+Transfer.kt$fromChain != null &amp;&amp; fromToken != null &amp;&amp; fromAmount != null &amp;&amp; fromAmount &gt; 0 &amp;&amp; fromAmountString != null &amp;&amp; accountAddress != null &amp;&amp; chainId != null &amp;&amp; dydxTokenDemon != null &amp;&amp; url != null &amp;&amp; sourceAddress != null &amp;&amp; squidIntegratorId != null</ID>
     <ID>ComplexCondition:V4StateManagerAdaptor+Transfer.kt$fromChain != null &amp;&amp; fromToken != null &amp;&amp; fromAmount != null &amp;&amp; fromAmount &gt; 0 &amp;&amp; fromAmountString != null &amp;&amp; nobleAddress != null &amp;&amp; chainId != null &amp;&amp; dydxTokenDemon != null &amp;&amp; url != null &amp;&amp; sourceAddress != null &amp;&amp; squidIntegratorId != null &amp;&amp; toChain != null &amp;&amp; toToken != null</ID>
@@ -353,206 +352,6 @@
     <ID>FunctionOnlyReturningConstant:V4StateManagerConfigs.kt$V4StateManagerConfigs$fun nobleDenom(): String?</ID>
     <ID>FunctionParameterNaming:AsyncAbacusStateManager.kt$AsyncAbacusStateManager.Companion$_nativeImplementations: ProtocolNativeImpFactory</ID>
     <ID>FunctionParameterNaming:AsyncAbacusStateManagerV2.kt$AsyncAbacusStateManagerV2.Companion$_nativeImplementations: ProtocolNativeImpFactory</ID>
-    <ID>InvalidPackageDeclaration:AbacusHelper.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:Account.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:AccountCalculator.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:AccountInputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:AccountProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:AccountSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:AccountTransformer.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:AccountsSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:AddressFormatException.kt$package exchange.dydx.abacus.utils.beth32</ID>
-    <ID>InvalidPackageDeclaration:AnalyticsUtils.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:ApiUtils.kt$package exchange.dydx.abacus.state.app.adaptors</ID>
-    <ID>InvalidPackageDeclaration:Asset.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:AssetPositionProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:AssetPositionsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:AssetProcessor.kt$package exchange.dydx.abacus.processor.assets</ID>
-    <ID>InvalidPackageDeclaration:AssetsProcessor.kt$package exchange.dydx.abacus.processor.assets</ID>
-    <ID>InvalidPackageDeclaration:AsyncAbacusStateManager.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:AsyncAbacusStateManagerProtocol.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:AsyncAbacusStateManagerV2.kt$package exchange.dydx.abacus.state.v2.manager</ID>
-    <ID>InvalidPackageDeclaration:BaseInputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:BaseProcessor.kt$package exchange.dydx.abacus.processor.base</ID>
-    <ID>InvalidPackageDeclaration:Bech32.kt$package exchange.dydx.abacus.utils.beth32</ID>
-    <ID>InvalidPackageDeclaration:Bech32Data.kt$package exchange.dydx.abacus.utils.beth32</ID>
-    <ID>InvalidPackageDeclaration:CandleProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:CandlesProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:CctpChainTokenInfo.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:ClosePositionInput.kt$package exchange.dydx.abacus.output.input</ID>
-    <ID>InvalidPackageDeclaration:Compliance.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:Configs.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:Configs.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:ConfigsProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:ConnectionStats.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:ConnectionsSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:Constants.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:DepositValidator.kt$package exchange.dydx.abacus.validator.transfer</ID>
-    <ID>InvalidPackageDeclaration:Documentation.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:DynamicLocalizer.kt$package exchange.dydx.abacus.state.app.helper</ID>
-    <ID>InvalidPackageDeclaration:Enviroment.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:EquityTierProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:EquityTiersProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:ExchangeInfo.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:FeeDiscountProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:FeeDiscountsProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:FeeTierProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:FeeTiersProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:FieldsInputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:FillProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:FillsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:Formatter.kt$package exchange.dydx.abacus.state.app.helper</ID>
-    <ID>InvalidPackageDeclaration:FundingPaymentProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:FundingPaymentsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:GoodTil.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:HistoricalFundingProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:HistoricalFundingsProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:HistoricalPNLProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:HistoricalPNLsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:HistoricalTradingRewardProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:HistoricalTradingRewardsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:Input.kt$package exchange.dydx.abacus.output.input</ID>
-    <ID>InvalidPackageDeclaration:InputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:JsonEncoder.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:JsonUtils.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:LaunchIncentive.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:LaunchIncentivePointProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:LaunchIncentivePointsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:LaunchIncentiveProcessor.kt$package exchange.dydx.abacus.processor.launchIncentive</ID>
-    <ID>InvalidPackageDeclaration:LaunchIncentiveSeasonProcessor.kt$package exchange.dydx.abacus.processor.launchIncentive</ID>
-    <ID>InvalidPackageDeclaration:LaunchIncentiveSeasonsProcessor.kt$package exchange.dydx.abacus.processor.launchIncentive</ID>
-    <ID>InvalidPackageDeclaration:LimiterCapacitiesProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:LimiterCapacityProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:List+Utils.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:LocalizerProtocol.kt$package exchange.dydx.abacus.protocols</ID>
-    <ID>InvalidPackageDeclaration:Logger.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:LoggerProtocol.kt$package exchange.dydx.abacus.protocols</ID>
-    <ID>InvalidPackageDeclaration:Map+Utils.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:Market.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:MarketCalculator.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:MarketId.kt$package exchange.dydx.abacus.processor.utils</ID>
-    <ID>InvalidPackageDeclaration:MarketProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:MarketSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:MarketsProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:MarketsSummaryProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:MarketsSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:Address.kt$package exchange.dydx.abacus.state.manager.utils</ID>
-    <ID>InvalidPackageDeclaration:Network.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:NetworkConfigsProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:NetworkHelper.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:NetworkSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:Notification.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:NotificationsProvider.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:Numeric.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:OnboardingSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:OrderProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:OrderTypeProcessor.kt$package exchange.dydx.abacus.processor.utils</ID>
-    <ID>InvalidPackageDeclaration:OrderbookEntryProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:OrderbookProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:OrdersProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:Parser.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:ParserProtocol.kt$package exchange.dydx.abacus.protocols</ID>
-    <ID>InvalidPackageDeclaration:ParsingError.kt$package exchange.dydx.abacus.responses</ID>
-    <ID>InvalidPackageDeclaration:ParsingHelper.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:Payloads.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:PerpTradingStateMachine.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:PerpetualPositionProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:PerpetualPositionsProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:PerpetualState.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:ProtocolNativeImpFactory.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:PublicProtocols.kt$package exchange.dydx.abacus.protocols</ID>
-    <ID>InvalidPackageDeclaration:RegulatoryRestriction.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:RewardsProcessor.kt$package exchange.dydx.abacus.processor</ID>
-    <ID>InvalidPackageDeclaration:Rounder.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:SerializableCollections.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:ServerTime.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:Set+Utils.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:Settings.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:SquidChainProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidChainResourceProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidRoutePayloadProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidRouteProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidRouteV2PayloadProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidRouteV2Processor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidStatusProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidTokenProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:SquidTokenResourceProcessor.kt$package exchange.dydx.abacus.processor.squid</ID>
-    <ID>InvalidPackageDeclaration:StateChanges.kt$package exchange.dydx.abacus.state.changes</ID>
-    <ID>InvalidPackageDeclaration:StateManagerAdaptor.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:StateManagerAdaptorV2.kt$package exchange.dydx.abacus.state.v2.manager</ID>
-    <ID>InvalidPackageDeclaration:StateManagerConfigs.kt$package exchange.dydx.abacus.state.manager.configs</ID>
-    <ID>InvalidPackageDeclaration:StateResponse.kt$package exchange.dydx.abacus.responses</ID>
-    <ID>InvalidPackageDeclaration:String+Utils.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:StringHelper.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:SubaccountCalculator.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:SubaccountSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:SubaccountTransformer.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:SystemSupervisor.kt$package exchange.dydx.abacus.state.v2.supervisor</ID>
-    <ID>InvalidPackageDeclaration:SystemUtils.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:Threading.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:Timer.kt$package exchange.dydx.abacus.utils</ID>
-    <ID>InvalidPackageDeclaration:TradeAccountStateValidator.kt$package exchange.dydx.abacus.validator.trade</ID>
-    <ID>InvalidPackageDeclaration:TradeBracketOrdersValidator.kt$package exchange.dydx.abacus.validator.trade</ID>
-    <ID>InvalidPackageDeclaration:TradeInput.kt$package exchange.dydx.abacus.output.input</ID>
-    <ID>InvalidPackageDeclaration:TradeInputCalculator.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:TradeInputDataValidator.kt$package exchange.dydx.abacus.validator.trade</ID>
-    <ID>InvalidPackageDeclaration:TradeInputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:TradeMarketOrderInputValidator.kt$package exchange.dydx.abacus.validator.trade</ID>
-    <ID>InvalidPackageDeclaration:TradePositionStateValidator.kt$package exchange.dydx.abacus.validator.trade</ID>
-    <ID>InvalidPackageDeclaration:TradeProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:TradeTriggerPriceValidator.kt$package exchange.dydx.abacus.validator.trade</ID>
-    <ID>InvalidPackageDeclaration:TradesProcessor.kt$package exchange.dydx.abacus.processor.markets</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Account.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Candles.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+ClosePositionInput.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+EquityTiers.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Errors.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+FeeDiscounts.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+FeeTiers.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+HistoricalFunding.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+HistoricalPnl.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+HistoricalTradingRewards.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+LaunchIncentive.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Markets.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Orderbook.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+ParentSubaccount.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Rewards.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Squid.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+TradeInput.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Trades.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+TransferInput.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+TriggerOrdersInput.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+Wallet.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine+WithdrawalGating.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStateMachine.kt$package exchange.dydx.abacus.state.model</ID>
-    <ID>InvalidPackageDeclaration:TradingStates.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:TransactionQueue.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:TransferInput.kt$package exchange.dydx.abacus.output.input</ID>
-    <ID>InvalidPackageDeclaration:TransferInputCalculator.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:TransferInputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:TransferOutValidator.kt$package exchange.dydx.abacus.validator.transfer</ID>
-    <ID>InvalidPackageDeclaration:TransferProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:TransferStatus.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:TransfersProcessor.kt$package exchange.dydx.abacus.processor.wallet.account</ID>
-    <ID>InvalidPackageDeclaration:TriggerOrdersInput.kt$package exchange.dydx.abacus.output.input</ID>
-    <ID>InvalidPackageDeclaration:TriggerOrdersInputCalculator.kt$package exchange.dydx.abacus.calculator</ID>
-    <ID>InvalidPackageDeclaration:TriggerOrdersInputValidator.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:UserProcessor.kt$package exchange.dydx.abacus.processor.wallet.user</ID>
-    <ID>InvalidPackageDeclaration:V3AccountProcessor.kt$package exchange.dydx.abacus.processor.wallet.account.deprecated</ID>
-    <ID>InvalidPackageDeclaration:V3ApiKey.kt$package exchange.dydx.abacus.state.app.signer</ID>
-    <ID>InvalidPackageDeclaration:V4StateManagerAdaptor+Transfer.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:V4StateManagerAdaptor.kt$package exchange.dydx.abacus.state.manager</ID>
-    <ID>InvalidPackageDeclaration:V4StateManagerConfigs.kt$package exchange.dydx.abacus.state.manager.configs</ID>
-    <ID>InvalidPackageDeclaration:V4TransactionErrors.kt$package exchange.dydx.abacus.state.app.adaptors</ID>
-    <ID>InvalidPackageDeclaration:ValidationError.kt$package exchange.dydx.abacus.output.input</ID>
-    <ID>InvalidPackageDeclaration:ValidatorProtocols.kt$package exchange.dydx.abacus.validator</ID>
-    <ID>InvalidPackageDeclaration:Wallet.kt$package exchange.dydx.abacus.output</ID>
-    <ID>InvalidPackageDeclaration:WalletProcessor.kt$package exchange.dydx.abacus.processor.wallet</ID>
-    <ID>InvalidPackageDeclaration:WithdrawalCapacityProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:WithdrawalCapacityValidator.kt$package exchange.dydx.abacus.validator.transfer</ID>
-    <ID>InvalidPackageDeclaration:WithdrawalGatingProcessor.kt$package exchange.dydx.abacus.processor.configs</ID>
-    <ID>InvalidPackageDeclaration:WithdrawalGatingValidator.kt$package exchange.dydx.abacus.validator.transfer</ID>
     <ID>LargeClass:AccountSupervisor.kt$AccountSupervisor : DynamicNetworkSupervisor</ID>
     <ID>LargeClass:OnboardingSupervisor.kt$OnboardingSupervisor : NetworkSupervisor</ID>
     <ID>LargeClass:StateManagerAdaptor.kt$StateManagerAdaptor</ID>
@@ -815,22 +614,13 @@
     <ID>MagicNumber:SubaccountSupervisor.kt$SubaccountSupervisor$28.0</ID>
     <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$0.00001</ID>
     <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$0.001</ID>
-    <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$0.01</ID>
-    <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$0.05</ID>
-    <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$0.1</ID>
-    <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$0.2</ID>
     <ID>MagicNumber:TradeInputCalculator.kt$TradeInputCalculator$28</ID>
-    <ID>MagicNumber:TradeInputDataValidator.kt$TradeInputDataValidator$20</ID>
     <ID>MagicNumber:TradeMarketOrderInputValidator.kt$TradeMarketOrderInputValidator$0.05</ID>
     <ID>MagicNumber:TradeMarketOrderInputValidator.kt$TradeMarketOrderInputValidator$0.1</ID>
     <ID>MagicNumber:TradesProcessor.kt$TradesProcessor$500</ID>
     <ID>MagicNumber:TransferInputCalculator.kt$TransferInputCalculator$100.0</ID>
-    <ID>MagicNumber:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$0.05</ID>
-    <ID>MagicNumber:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$0.1</ID>
-    <ID>MagicNumber:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$0.2</ID>
     <ID>MagicNumber:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$100</ID>
     <ID>MagicNumber:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$100.0</ID>
-    <ID>MagicNumber:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$20</ID>
     <ID>MagicNumber:V4StateManagerAdaptor.kt$V4StateManagerAdaptor$1.5</ID>
     <ID>MagicNumber:V4StateManagerAdaptor.kt$V4StateManagerAdaptor$10.0</ID>
     <ID>MagicNumber:V4StateManagerAdaptor.kt$V4StateManagerAdaptor$18</ID>
@@ -906,16 +696,7 @@
     <ID>MaxLineLength:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$if</ID>
     <ID>MaxLineLength:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$private</ID>
     <ID>MaxLineLength:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$val triggerPrices = parser.asNativeMap(triggerOrder["price"])?.let { calculateTriggerPrices(it, position, absSize) }</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$(status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED" || status == "PARTIALLY_FILLED")</ID>
     <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT" || type == "STOP_MARKET") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_ABOVE_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_ABOVE_TRIGGER_PRICE"</ID>
-    <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$if (type == "STOP_LIMIT") "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_LIMIT_MUST_BELOW_TRIGGER_PRICE" else "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_LIMIT_MUST_BELOW_TRIGGER_PRICE"</ID>
     <ID>MaxLineLength:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$}</ID>
     <ID>MaxLineLength:V4StateManagerAdaptor.kt$V4StateManagerAdaptor$"{\"operationName\":\"TradingSeasons\",\"variables\":{},\"query\":\"query TradingSeasons {tradingSeasons {startTimestamp label __typename }}\"}"</ID>
     <ID>MaxLineLength:V4StateManagerAdaptor.kt$V4StateManagerAdaptor$if (isCancel) AnalyticsEvent.TradeCancelOrderClick.rawValue else AnalyticsEvent.TradePlaceOrderClick.rawValue</ID>
@@ -1320,7 +1101,6 @@
     <ID>UnusedParameter:TradeInputValidator.kt$TradeInputValidator$trade: Map&lt;String, Any&gt;</ID>
     <ID>UnusedParameter:TradeMarketOrderInputValidator.kt$TradeMarketOrderInputValidator$markets: Map&lt;String, Any&gt;?</ID>
     <ID>UnusedParameter:TradePositionStateValidator.kt$TradePositionStateValidator$restricted: Boolean</ID>
-    <ID>UnusedParameter:TradeTriggerPriceValidator.kt$TradeTriggerPriceValidator$parser: ParserProtocol</ID>
     <ID>UnusedParameter:TradingStateMachine+Orderbook.kt$payload: Map&lt;String, Any&gt;</ID>
     <ID>UnusedParameter:TradingStateMachine+TriggerOrdersInput.kt$triggerOrders: Map&lt;String, Any&gt;</ID>
     <ID>UnusedParameter:TradingStateMachine+TriggerOrdersInput.kt$typeText: String?</ID>
@@ -1372,7 +1152,6 @@
     <ID>UnusedPrivateProperty:StringHelper.kt$StringHelper.Companion$i</ID>
     <ID>UnusedPrivateProperty:SubaccountSupervisor.kt$SubaccountSupervisor$val transferType = transfer.type</ID>
     <ID>UnusedPrivateProperty:TradeInput.kt$TradeInputOptions.Companion$private val typeOptionsArray = iListOf( SelectionOption( OrderType.limit.rawValue, null, "APP.TRADE.LIMIT_ORDER_SHORT", null, ), SelectionOption( OrderType.market.rawValue, null, "APP.TRADE.MARKET_ORDER_SHORT", null, ), SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null), SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null), SelectionOption( OrderType.trailingStop.rawValue, null, "APP.TRADE.TRAILING_STOP", null, ), SelectionOption( OrderType.takeProfitLimit.rawValue, null, "APP.TRADE.TAKE_PROFIT", null, ), SelectionOption( OrderType.takeProfitMarket.rawValue, null, "APP.TRADE.TAKE_PROFIT_MARKET", null, ), )</ID>
-    <ID>UnusedPrivateProperty:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01</ID>
     <ID>UnusedPrivateProperty:TradePositionStateValidator.kt$TradePositionStateValidator$val closeOnlyError = validateCloseOnly( market, change, )</ID>
     <ID>UnusedPrivateProperty:TradingStateMachine.kt$TradingStateMachine$val startTime = now - days.days</ID>
     <ID>UtilityClassWithPublicConstructor:AbacusHelper.kt$AbacusHelper</ID>
@@ -1398,12 +1177,6 @@
     <ID>VariableNaming:Numeric.kt$Doubles$@Suppress("PropertyName") val ZERO = 0.0</ID>
     <ID>VariableNaming:StateManagerAdaptor.kt$StateManagerAdaptor$@Suppress("LocalVariableName", "PropertyName") private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0</ID>
     <ID>VariableNaming:SubaccountSupervisor.kt$SubaccountSupervisor$@Suppress("LocalVariableName", "PropertyName") private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0</ID>
-    <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val MARKET_ORDER_MAX_SLIPPAGE = 0.05</ID>
-    <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val MARKET_ORDER_SLIPPAGE_WARNING_THRESHOLD = 0.01</ID>
-    <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1</ID>
-    <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05</ID>
-    <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2</ID>
-    <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1</ID>
     <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") val FR = parser.asDouble(feeRate)!!</ID>
     <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") val LV = parser.asDouble(leverage)!!</ID>
     <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") val MP = entryPrice</ID>
@@ -1412,14 +1185,8 @@
     <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") val X = ((LV * AE) - (SZ * OR)) / (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))</ID>
     <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") var AE = parser.asDouble(equity)!!</ID>
     <ID>VariableNaming:TradeInputCalculator.kt$TradeInputCalculator$@Suppress("LocalVariableName", "PropertyName") var SZ = parser.asDouble(positionSize) ?: Numeric.double.ZERO</ID>
-    <ID>VariableNaming:TradeInputDataValidator.kt$TradeInputDataValidator$@Suppress("PropertyName") private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS: Int = 20</ID>
     <ID>VariableNaming:TradeMarketOrderInputValidator.kt$TradeMarketOrderInputValidator$@Suppress("LocalVariableName", "PropertyName") private val MARKET_ORDER_ERROR_SLIPPAGE = 0.1</ID>
     <ID>VariableNaming:TradeMarketOrderInputValidator.kt$TradeMarketOrderInputValidator$@Suppress("LocalVariableName", "PropertyName") private val MARKET_ORDER_WARNING_SLIPPAGE = 0.05</ID>
     <ID>VariableNaming:TradesProcessor.kt$TradesProcessor$@Suppress("PropertyName") private val LIMIT = 500</ID>
-    <ID>VariableNaming:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1</ID>
-    <ID>VariableNaming:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05</ID>
-    <ID>VariableNaming:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2</ID>
-    <ID>VariableNaming:TriggerOrdersInputCalculator.kt$TriggerOrdersInputCalculator$@Suppress("LocalVariableName", "PropertyName") private val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1</ID>
-    <ID>VariableNaming:TriggerOrdersInputValidator.kt$TriggerOrdersInputValidator$@Suppress("PropertyName") private val MAX_NUM_OPEN_UNTRIGGERED_ORDERS: Int = 20</ID>
   </CurrentIssues>
 </SmellBaseline>
