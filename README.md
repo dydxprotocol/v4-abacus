@@ -88,7 +88,7 @@ Integration tests can be written to call Abacus from non-Kotlin code (i.e., Swif
 > ./bump_version.sh
 
 # Auto-lint
-
+ 
 Enable pre-commit to auto-lint/auto-format your changes before git commit:
 
 > brew install pre-commit
