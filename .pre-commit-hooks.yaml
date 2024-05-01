@@ -1,3 +1,4 @@
+hooks:
 -   id: spotless-apply
     name: spotless-apply
     entry: ./gradlew spotlessApply
