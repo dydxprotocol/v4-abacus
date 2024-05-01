@@ -1,5 +1,5 @@
 -   id: spotless-apply
     name: spotless-apply
-    entry: ./run_spotless_apply.sh
+    entry: ./gradlew spotlessApply
     language: script
     stages: [pre-commit]
