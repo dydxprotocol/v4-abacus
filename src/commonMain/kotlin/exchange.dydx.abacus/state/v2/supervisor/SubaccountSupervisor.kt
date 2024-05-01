@@ -54,6 +54,7 @@ import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -1293,6 +1294,57 @@ internal class SubaccountSupervisor(
         }
         if (changes.changes.contains(Changes.subaccount)) {
             parseOrdersToMatchPlaceOrdersAndCancelOrders()
+        }
+    }
+
+    /**
+     * @description Loop through all subaccounts to find childSubaccounts that have funds but no open positions or orders. Initiate a transfer to parentSubaccount.
+     */
+    private fun reclaimUnutilizedFundsFromChildSubaccounts() {
+        val subaccounts = stateMachine.state?.account?.subaccounts ?: return
+
+        val subaccountQuoteBalanceMap = subaccounts.mapValues { subaccount ->
+            // If the subaccount is the parentSubaccount, skip
+            if (subaccount.value.subaccountNumber == subaccountNumber) {
+                return@mapValues 0.0
+            }
+
+            val openPositions = subaccount.value.openPositions
+            val openOrders = subaccount.value.orders?.filter { order ->
+                val status = helper.parser.asString(order.status)
+                status == "OPEN"
+            }
+            val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
+
+            // Only return a quoteBalance if the subaccount has no open positions or orders
+            if (openPositions.isNullOrEmpty() && openOrders.isNullOrEmpty() && quoteBalance > 0.0) {
+                quoteBalance
+            } else {
+                0.0
+            }
+        }.filter {
+            it.value > 0.0
+        }
+
+        subaccountQuoteBalanceMap.forEach {
+            val childSubaccountNumber = it.key.toInt()
+            val amountToTransfer = it.value.toString()
+
+            val transferPayload = HumanReadableSubaccountTransferPayload(
+                childSubaccountNumber,
+                amountToTransfer,
+                accountAddress,
+                subaccountNumber,
+            )
+
+            val transferPayloadString = Json.encodeToString(transferPayload)
+
+            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
+                val error = parseTransactionResponse(response)
+                if (error != null) {
+                    Logger.e { "Unutilized funds from $childSubaccountNumber transfer error: $error" }
+                }
+            }
         }
     }
 
