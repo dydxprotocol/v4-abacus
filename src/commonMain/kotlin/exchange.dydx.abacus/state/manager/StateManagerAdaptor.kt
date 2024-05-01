@@ -1802,6 +1802,16 @@ open class StateManagerAdaptor(
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
+    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+        accountAddress?.let {
+            if (compliance.status != ComplianceStatus.UNKNOWN) {
+                updateCompliance(DydxAddress(it), compliance.status, action)
+                callback(true, null, null)
+            }
+        }
+        callback(false, V4TransactionErrors.error(null, "No account address"), null)
+    }
+
     internal open fun parseTransactionResponse(response: String?): ParsingError? {
         return null
     }
@@ -2454,13 +2464,14 @@ open class StateManagerAdaptor(
         return compliance.status
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction? = null) {
         val message = "Compliance verification message"
-        val action = if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
-            ComplianceAction.CONNECT
-        } else {
-            ComplianceAction.ONBOARD
-        }
+        val action = complianceAction
+            ?: if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
+                ComplianceAction.CONNECT
+            } else {
+                ComplianceAction.ONBOARD
+            }
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,
