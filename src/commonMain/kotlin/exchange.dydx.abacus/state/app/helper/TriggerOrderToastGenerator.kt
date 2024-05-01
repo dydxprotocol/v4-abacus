@@ -347,7 +347,7 @@ class TriggerOrderToastGenerator(
             }
         }
         
-             val orderType = orderTypePath?.let { localizer.localize(it) }
+               val orderType = orderTypePath?.let { localizer.localize(it) }
         val detail = detailStringPath?.let {
             localizer.localizeWithParams(
                 path = it,
