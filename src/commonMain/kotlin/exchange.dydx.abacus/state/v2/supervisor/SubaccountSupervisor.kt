@@ -8,6 +8,7 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -40,6 +41,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
+import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
 import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
@@ -59,6 +61,7 @@ import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
+import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
@@ -281,6 +284,8 @@ internal class SubaccountSupervisor(
             channel,
             subaccountChannelParams(accountAddress, subaccountNumber),
         )
+
+        pollReclaimUnutilizedFunds()
     }
 
     private fun subaccountChannelParams(
@@ -1339,11 +1344,33 @@ internal class SubaccountSupervisor(
 
             val transferPayloadString = Json.encodeToString(transferPayload)
 
-            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
+            helper.transaction(TransactionType.ReclaimChildSubaccountFunds, transferPayloadString) { response ->
                 val error = parseTransactionResponse(response)
                 if (error != null) {
                     Logger.e { "Unutilized funds from $childSubaccountNumber transfer error: $error" }
                 }
+            }
+        }
+    }
+
+    private var reclaimUnutilizedFundsTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private fun pollReclaimUnutilizedFunds() {
+        reclaimUnutilizedFundsTimer = null
+        helper.ioImplementations.threading?.async(ThreadingType.main) {
+            this.reclaimUnutilizedFundsTimer = helper.ioImplementations.timer?.schedule(
+                (10.seconds).inWholeSeconds.toDouble(),
+                null,
+            ) {
+                reclaimUnutilizedFundsFromChildSubaccounts()
+                pollReclaimUnutilizedFunds()
+                false
             }
         }
     }

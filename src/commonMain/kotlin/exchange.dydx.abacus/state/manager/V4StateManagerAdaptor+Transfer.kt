@@ -214,7 +214,7 @@ internal fun V4StateManagerAdaptor.simulateWithdrawal(
     val payload = withdrawPayloadJson()
 
     transaction(
-        TransactionType.simulateWithdraw,
+        TransactionType.SimulateWithdraw,
         payload,
     ) { response ->
         val error = parseTransactionResponse(response)
@@ -243,7 +243,7 @@ internal fun V4StateManagerAdaptor.simulateTransferNativeToken(
     val payload = transferNativeTokenPayloadJson()
 
     transaction(
-        TransactionType.simulateTransferNativeToken,
+        TransactionType.SimulateTransferNativeToken,
         payload,
     ) { response ->
         val error = parseTransactionResponse(response)
