@@ -14,7 +14,7 @@ import exchange.dydx.abacus.utils.safeSet
 import kotlin.math.abs
 
 internal object TriggerOrdersConstants {
-    const val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
+    const val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 90.0
 }
 
 @Suppress("UNCHECKED_CAST")
