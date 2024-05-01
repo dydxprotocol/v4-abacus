@@ -1,0 +1,5 @@
+-   id: spotless-apply
+    name: spotless-apply
+    entry: ./run_spotless_apply.sh
+    language: script
+    stages: [pre-commit]
