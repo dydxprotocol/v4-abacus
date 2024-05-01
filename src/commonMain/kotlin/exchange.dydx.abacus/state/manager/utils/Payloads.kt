@@ -18,12 +18,14 @@ data class PlaceOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
+    val fromSlTpDialog: Boolean,
 )
 
 data class CancelOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
+    val fromSlTpDialog: Boolean,
 )
 
 @JsExport
@@ -61,6 +63,7 @@ data class HumanReadablePlaceOrderPayload(
 @Serializable
 data class HumanReadableCancelOrderPayload(
     val subaccountNumber: Int,
+    val type: String,
     val orderId: String,
     val clientId: Int,
     val orderFlags: Int,
@@ -72,6 +75,8 @@ data class HumanReadableCancelOrderPayload(
 @JsExport
 @Serializable
 data class HumanReadableTriggerOrdersPayload(
+    val marketId: String,
+    val positionSize: Double?,
     val placeOrderPayloads: List<HumanReadablePlaceOrderPayload>,
     val cancelOrderPayloads: List<HumanReadableCancelOrderPayload>,
 )

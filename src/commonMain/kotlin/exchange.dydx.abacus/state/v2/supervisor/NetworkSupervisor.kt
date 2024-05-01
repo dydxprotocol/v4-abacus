@@ -81,7 +81,7 @@ internal open class NetworkSupervisor(
         }
     }
 
-    internal fun tracking(eventName: String, params: IMap<String, Any>?) {
+    internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
         val paramsAsString = helper.jsonEncoder.encode(params)
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.ioImplementations.tracking?.log(eventName, paramsAsString)

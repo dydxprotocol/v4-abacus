@@ -13,6 +13,10 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kotlin.math.abs
 
+internal object TriggerOrdersConstants {
+    const val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 90.0
+}
+
 @Suppress("UNCHECKED_CAST")
 internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
     internal fun calculate(

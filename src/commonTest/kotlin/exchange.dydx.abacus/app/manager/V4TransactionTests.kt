@@ -221,7 +221,7 @@ class V4TransactionTests : NetworkTests() {
         fun validateLimitOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
             assertEquals(payload.execution, "DEFAULT")
             assertEquals(payload.timeInForce, null)
-            assertEquals(payload.goodTilTimeInSeconds, 2419200)
+            assertEquals(payload.goodTilTimeInSeconds, 7776000)
             assertEquals(payload.reduceOnly, true)
             assertEquals(payload.postOnly, false)
         }

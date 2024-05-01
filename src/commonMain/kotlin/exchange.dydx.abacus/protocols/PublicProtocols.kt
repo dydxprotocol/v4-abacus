@@ -209,7 +209,7 @@ enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
 
-    // Trade Events
+    // Trade
     TradePlaceOrderClick("TradePlaceOrderClick"),
     TradeCancelOrderClick("TradeCancelOrderClick"),
     TradePlaceOrder("TradePlaceOrder"),
@@ -220,6 +220,9 @@ enum class AnalyticsEvent(val rawValue: String) {
     TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
     TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
     TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
+
+    // Trigger Order
+    TriggerOrderClick("TriggerOrderClick"),
 
     // Transfers
     TransferFaucetConfirmed("TransferFaucetConfirmed");
