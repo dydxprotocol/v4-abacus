@@ -146,11 +146,13 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)
         output["perpetual"] = perpetual(parser.asNativeMap(existing?.get("perpetual")), payload, oraclePrice)
         output.safeSet("line", line(output))
-        output.safeSet("configs.effectiveInitialMarginFraction", calculateEffectiveIMF(output, oraclePrice))
+        // This should go last as it needs to use most up-to-date perpetual and config properties
+        // to calculate the effectiveInitialMarginFraction
+        output.safeSet("configs.effectiveInitialMarginFraction", effectiveInitialMarginFraction(output, oraclePrice))
         return calculate(output)
     }
 
-    internal fun calculateEffectiveIMF(output: Map<String, Any>, oraclePrice: Double?): Double {
+    internal fun effectiveInitialMarginFraction(output: Map<String, Any>, oraclePrice: Double?): Double {
         val baseIMF = parser.asDouble(parser.value(output, "configs.initialMarginFraction"))
         val openInterestUSDC = parser.asDouble(parser.value(output, "perpetual.openInterestUSDC"))
         val openInterestLowerCap = parser.asDouble(parser.value(output, "perpetual.openInterestLowerCap"))
