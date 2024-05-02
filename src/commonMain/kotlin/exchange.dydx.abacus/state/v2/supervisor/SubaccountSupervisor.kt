@@ -41,7 +41,6 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
-import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
 import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
@@ -56,12 +55,10 @@ import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
-import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
@@ -1331,6 +1328,8 @@ internal class SubaccountSupervisor(
             it.value > 0.0
         }
 
+        val transferPayloadStrings = iMutableListOf<String>()
+
         subaccountQuoteBalanceMap.forEach {
             val childSubaccountNumber = it.key.toInt()
             val amountToTransfer = it.value.toString()
@@ -1343,11 +1342,21 @@ internal class SubaccountSupervisor(
             )
 
             val transferPayloadString = Json.encodeToString(transferPayload)
+            transferPayloadStrings.add(transferPayloadString)
+        }
 
+        recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+    }
+
+    private fun recursivelyReclaimChildSubaccountFunds(transferPayloadStrings: MutableList<String>) {
+        if (transferPayloadStrings.isNotEmpty()) {
+            val transferPayloadString = transferPayloadStrings.removeAt(0)
             helper.transaction(TransactionType.ReclaimChildSubaccountFunds, transferPayloadString) { response ->
                 val error = parseTransactionResponse(response)
                 if (error != null) {
-                    Logger.e { "Unutilized funds from $childSubaccountNumber transfer error: $error" }
+                    emitError(error)
+                } else {
+                    recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
                 }
             }
         }
