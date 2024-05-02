@@ -289,6 +289,8 @@ data class MarketPerpetual(
     val nextFundingAtMilliseconds: Double? = null,
     val openInterest: Double,
     val openInterestUSDC: Double,
+    val openInterestLowerCap: Double? = null,
+    val openInterestUpperCap: Double? = null,
     val line: IList<Double>?,
 ) {
     companion object {
@@ -303,6 +305,8 @@ data class MarketPerpetual(
                 val nextFundingRate = parser.asDouble(data["nextFundingRate"])
                 val nextFundingAtMilliseconds =
                     parser.asDatetime(data["nextFundingAt"])?.toEpochMilliseconds()?.toDouble()
+                val openInterestLowerCap = parser.asDouble(data["openInterestLowerCap"])
+                val openInterestUpperCap = parser.asDouble(data["openInterestUpperCap"])
                 val openInterest = parser.asDouble(data["openInterest"])
                 val openInterestUSDC = parser.asDouble(data["openInterestUSDC"])
 
@@ -317,14 +321,16 @@ data class MarketPerpetual(
                         existing.line != line
                     ) {
                         MarketPerpetual(
-                            volume24H,
-                            trades24H,
-                            null,
-                            nextFundingRate,
-                            nextFundingAtMilliseconds,
-                            openInterest,
-                            openInterestUSDC ?: 0.0,
-                            line,
+                            volume24H = volume24H,
+                            trades24H = trades24H,
+                            volume24HUSDC = null,
+                            nextFundingRate = nextFundingRate,
+                            nextFundingAtMilliseconds = nextFundingAtMilliseconds,
+                            openInterest = openInterest,
+                            openInterestUSDC = openInterestUSDC ?: 0.0,
+                            openInterestLowerCap = openInterestLowerCap,
+                            openInterestUpperCap = openInterestUpperCap,
+                            line = line,
                         )
                     } else {
                         existing

@@ -111,6 +111,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         "double" to mapOf(
             "volume24H" to "volume24H",
             "openInterest" to "openInterest",
+            "openInterestLowerCap" to "openInterestLowerCap",
+            "openInterestUpperCap" to "openInterestUpperCap",
             "nextFundingRate" to "nextFundingRate",
         ),
         "datetime" to mapOf(
