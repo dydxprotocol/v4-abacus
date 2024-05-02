@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.Logger
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("UNCHECKED_CAST")
