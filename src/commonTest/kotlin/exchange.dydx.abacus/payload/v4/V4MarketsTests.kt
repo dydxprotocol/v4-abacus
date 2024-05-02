@@ -100,7 +100,8 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
                            "clobPairId":0,
-                           "baselinePositionSize":0.0
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 0.05
                         },
                         "perpetual":{
                            "volume24H":4.936082546194518E8,
@@ -112,7 +113,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -123,7 +124,8 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
                            "clobPairId":1,
-                           "baselinePositionSize":0.0
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 1.0
                         },
                         "perpetual":{
                            "volume24H":4.931478367879293E8,
@@ -267,7 +269,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -333,7 +335,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -398,7 +400,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true

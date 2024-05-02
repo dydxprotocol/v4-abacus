@@ -130,6 +130,7 @@ data class MarketConfigs(
     val displayTickSize: Double? = null,
     val displayStepSizeDecimals: Int? = null,
     val displayTickSizeDecimals: Int? = null,
+    var effectiveInitialMarginFraction: Double? = null,
     val minOrderSize: Double? = null,
     val initialMarginFraction: Double? = null,
     val maintenanceMarginFraction: Double? = null,
@@ -173,6 +174,7 @@ data class MarketConfigs(
             val perpetualMarketType = PerpetualMarketType.invoke(
                 parser.asString(data["perpetualMarketType"]),
             )
+            var effectiveInitialMarginFraction = parser.asDouble(data["effectiveInitialMarginFraction"])
             val v4 = MarketConfigsV4.create(
                 existing?.v4,
                 parser,
@@ -195,30 +197,32 @@ data class MarketConfigs(
                 existing.basePositionNotional != basePositionNotional ||
                 existing.candleOptions != candleOptions ||
                 existing.perpetualMarketType != perpetualMarketType ||
-                existing.v4 != v4
+                existing.v4 != v4 ||
+                existing.effectiveInitialMarginFraction != effectiveInitialMarginFraction
             ) {
                 MarketConfigs(
-                    clobPairId,
-                    largeSize,
-                    stepSize,
-                    tickSize,
-                    stepSize.numberOfDecimals(),
-                    tickSize.numberOfDecimals(),
-                    displayStepSize,
-                    displayTickSize,
-                    displayStepSize.numberOfDecimals(),
-                    displayTickSize.numberOfDecimals(),
-                    minOrderSize,
-                    initialMarginFraction,
-                    maintenanceMarginFraction,
-                    incrementalInitialMarginFraction,
-                    incrementalPositionSize,
-                    maxPositionSize,
-                    basePositionNotional,
-                    baselinePositionSize,
-                    candleOptions,
-                    perpetualMarketType,
-                    v4,
+                    clobPairId = clobPairId,
+                    largeSize = largeSize,
+                    stepSize = stepSize,
+                    tickSize = tickSize,
+                    stepSizeDecimals = stepSize.numberOfDecimals(),
+                    tickSizeDecimals = tickSize.numberOfDecimals(),
+                    displayStepSize = displayStepSize,
+                    displayTickSize = displayTickSize,
+                    displayStepSizeDecimals = displayStepSize.numberOfDecimals(),
+                    displayTickSizeDecimals = displayTickSize.numberOfDecimals(),
+                    effectiveInitialMarginFraction = effectiveInitialMarginFraction,
+                    minOrderSize = minOrderSize,
+                    initialMarginFraction = initialMarginFraction,
+                    maintenanceMarginFraction = maintenanceMarginFraction,
+                    incrementalInitialMarginFraction = incrementalInitialMarginFraction,
+                    incrementalPositionSize = incrementalPositionSize,
+                    maxPositionSize = maxPositionSize,
+                    basePositionNotional = basePositionNotional,
+                    baselinePositionSize = baselinePositionSize,
+                    candleOptions = candleOptions,
+                    perpetualMarketType = perpetualMarketType,
+                    v4 = v4,
                 )
             } else {
                 existing

@@ -267,7 +267,6 @@ open class TradingStateMachine(
         val id = parser.asString(payload["id"])
         val childSubaccountNumber = parser.asInt(payload["subaccountNumber"])
         val info = SocketInfo(type, channel, id, childSubaccountNumber)
-
         try {
             when (type) {
                 "subscribed" -> {
