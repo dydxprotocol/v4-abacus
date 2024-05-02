@@ -149,7 +149,7 @@ class AnalyticsUtils {
         payload: HumanReadablePlaceOrderPayload
     ): String? {
         return when (payload.type) {
-            "MARKET" -> payload.timeInForce ?: "FOK"
+            "MARKET" -> payload.timeInForce ?: "IOC"
             "LIMIT" -> {
                 when (payload.timeInForce) {
                     "GTT" -> if (payload.postOnly == true) "POST_ONLY" else "GTT"
