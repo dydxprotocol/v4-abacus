@@ -321,16 +321,16 @@ data class MarketPerpetual(
                         existing.line != line
                     ) {
                         MarketPerpetual(
-                            volume24H=volume24H,
-                            trades24H=trades24H,
-                            volume24HUSDC=null,
-                            nextFundingRate=nextFundingRate,
-                            nextFundingAtMilliseconds=nextFundingAtMilliseconds,
-                            openInterest=openInterest,
-                            openInterestUSDC=openInterestUSDC ?: 0.0,
-                            openInterestLowerCap=openInterestLowerCap,
-                            openInterestUpperCap=openInterestUpperCap,
-                            line=line,
+                            volume24H = volume24H,
+                            trades24H = trades24H,
+                            volume24HUSDC = null,
+                            nextFundingRate = nextFundingRate,
+                            nextFundingAtMilliseconds = nextFundingAtMilliseconds,
+                            openInterest = openInterest,
+                            openInterestUSDC = openInterestUSDC ?: 0.0,
+                            openInterestLowerCap = openInterestLowerCap,
+                            openInterestUpperCap = openInterestUpperCap,
+                            line = line,
                         )
                     } else {
                         existing
