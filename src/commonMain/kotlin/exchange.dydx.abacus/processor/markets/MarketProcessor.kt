@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.Logger
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("UNCHECKED_CAST")
@@ -111,6 +112,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         "double" to mapOf(
             "volume24H" to "volume24H",
             "openInterest" to "openInterest",
+            "openInterestLowerCap" to "openInterestLowerCap",
+            "openInterestUpperCap" to "openInterestUpperCap",
             "nextFundingRate" to "nextFundingRate",
         ),
         "datetime" to mapOf(

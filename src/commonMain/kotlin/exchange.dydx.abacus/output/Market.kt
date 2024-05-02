@@ -289,6 +289,8 @@ data class MarketPerpetual(
     val nextFundingAtMilliseconds: Double? = null,
     val openInterest: Double,
     val openInterestUSDC: Double,
+    val openInterestLowerCap: Double? = null,
+    val openInterestUpperCap: Double? = null,
     val line: IList<Double>?,
 ) {
     companion object {
@@ -303,6 +305,8 @@ data class MarketPerpetual(
                 val nextFundingRate = parser.asDouble(data["nextFundingRate"])
                 val nextFundingAtMilliseconds =
                     parser.asDatetime(data["nextFundingAt"])?.toEpochMilliseconds()?.toDouble()
+                val openInterestLowerCap = parser.asDouble(data["openInterestLowerCap"])
+                val openInterestUpperCap = parser.asDouble(data["openInterestUpperCap"])
                 val openInterest = parser.asDouble(data["openInterest"])
                 val openInterestUSDC = parser.asDouble(data["openInterestUSDC"])
 
@@ -324,6 +328,8 @@ data class MarketPerpetual(
                             nextFundingAtMilliseconds,
                             openInterest,
                             openInterestUSDC ?: 0.0,
+                            openInterestLowerCap,
+                            openInterestUpperCap,
                             line,
                         )
                     } else {
