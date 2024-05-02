@@ -1351,7 +1351,7 @@ internal class SubaccountSupervisor(
     private fun recursivelyReclaimChildSubaccountFunds(transferPayloadStrings: MutableList<String>) {
         if (transferPayloadStrings.isNotEmpty()) {
             val transferPayloadString = transferPayloadStrings.removeAt(0)
-            helper.transaction(TransactionType.ReclaimChildSubaccountFunds, transferPayloadString) { response ->
+            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
                 val error = parseTransactionResponse(response)
                 if (error != null) {
                     emitError(error)

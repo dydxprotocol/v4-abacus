@@ -162,7 +162,6 @@ enum class TransactionType(val rawValue: String) {
     Deposit("deposit"),
     Withdraw("withdraw"),
     SubaccountTransfer("subaccountTransfer"),
-    ReclaimChildSubaccountFunds("reclaimChildSubaccountFunds"),
     Faucet("faucet"),
     SimulateWithdraw("simulateWithdraw"),
     SimulateTransferNativeToken("simulateTransferNativeToken"),
