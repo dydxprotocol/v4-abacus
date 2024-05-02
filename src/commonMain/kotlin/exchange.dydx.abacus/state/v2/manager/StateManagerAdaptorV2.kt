@@ -446,25 +446,27 @@ internal class StateManagerAdaptorV2(
     }
 
     private fun fetchGeo() {
-        val url = "https://api.dydx.exchange/v4/geo"
-        networkHelper.get(
-            url,
-            null,
-            null,
-            callback = { _, response, httpCode, _ ->
-                geo = if (networkHelper.success(httpCode) && response != null) {
-                    val payload = networkHelper.parser.decodeJsonObject(response)?.toIMap()
-                    if (payload != null) {
-                        val country = networkHelper.parser.asString(networkHelper.parser.value(payload, "geo.country"))
-                        country
+        val url = environment.endpoints.geo
+        if (url != null) {
+            networkHelper.get(
+                url,
+                null,
+                null,
+                callback = { _, response, httpCode, _ ->
+                    geo = if (networkHelper.success(httpCode) && response != null) {
+                        val payload = networkHelper.parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val country = networkHelper.parser.asString(networkHelper.parser.value(payload, "geo.country"))
+                            country
+                        } else {
+                            null
+                        }
                     } else {
                         null
                     }
-                } else {
-                    null
-                }
-            },
-        )
+                },
+            )
+        }
     }
 
     internal fun trade(data: String?, type: TradeInputField?) {
