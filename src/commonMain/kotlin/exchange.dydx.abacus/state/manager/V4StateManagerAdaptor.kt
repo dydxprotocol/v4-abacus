@@ -244,8 +244,8 @@ class V4StateManagerAdaptor(
         return configs.publicApiUrl("screen")
     }
 
-    override fun geoUrl(): String {
-        return "https://api.dydx.exchange/v4/geo"
+    override fun geoUrl(): String? {
+        return environment.endpoints.geo
     }
 
     override fun complianceScreenUrl(address: String): String? {

@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
@@ -80,6 +81,9 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Screen for restrictions
     fun screen(address: String, callback: (restriction: Restriction) -> Unit)
+
+    // Trigger update for compliance
+    fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback)
 }
 
 @JsExport

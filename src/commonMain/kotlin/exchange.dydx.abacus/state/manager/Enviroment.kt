@@ -32,6 +32,7 @@ data class EnvironmentEndpoints(
     val faucet: String?,
     val squid: String?,
     val nobleValidator: String?,
+    val geo: String?,
 ) {
     companion object {
         fun parse(
@@ -47,7 +48,8 @@ data class EnvironmentEndpoints(
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
             val nobleValidator = parser.asString(data["nobleValidator"])
-            return EnvironmentEndpoints(indexers, validators, faucet, squid, nobleValidator)
+            val geo = parser.asString(data["geo"])
+            return EnvironmentEndpoints(indexers, validators, faucet, squid, nobleValidator, geo)
         }
     }
 }
