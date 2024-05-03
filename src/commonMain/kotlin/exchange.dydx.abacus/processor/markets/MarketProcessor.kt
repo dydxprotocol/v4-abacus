@@ -151,7 +151,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return calculate(output)
     }
 
-    internal fun effectiveInitialMarginFraction(output: Map<String, Any>, oraclePrice: Double?): Double {
+    internal fun effectiveInitialMarginFraction(output: Map<String, Any>, oraclePrice: Double?): Double? {
         val baseIMF = parser.asDouble(parser.value(output, "configs.initialMarginFraction"))
         val openInterest = parser.asDouble(parser.value(output, "perpetual.openInterest"))
         val openInterestLowerCap = parser.asDouble(parser.value(output, "perpetual.openInterestLowerCap"))
@@ -159,7 +159,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
 
         // need nully checks because all properties are optional in the websocket message
         // clean up after https://linear.app/dydx/issue/OTE-301/audit-websocket-message-types-in-indexer is done
-        if (baseIMF === null) return 1.0
+        if (baseIMF === null) return null
         if (oraclePrice == null || openInterest == null || openInterestLowerCap == null || openInterestUpperCap == null) return baseIMF
         // if these are equal we can throw an error from dividing by zero
         if (openInterestUpperCap == openInterestLowerCap) return baseIMF
