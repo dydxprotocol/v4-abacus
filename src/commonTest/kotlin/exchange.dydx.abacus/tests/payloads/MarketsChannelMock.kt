@@ -1230,8 +1230,8 @@ internal class MarketsChannelMock {
         - First pair (BTC-USD) is missing upper and lower cap. effectiveIMF should default to regular IMF
         - Second pair (ETH-USD) lowerCap < openInterest x oraclePrice < upperCap. effectiveIMF should
           be a number between baseIMF and 1.0
-        - Third pair (MATIC-USD) openInterest x oracePrice > upperCap. effective IMF should be 1
-        - Fourth pair (ENJ-USD) openInterest < lowerCap. effective IMF should equal regular IMF
+        - Third pair (MATIC-USD) openInterest x oraclePrice > upperCap. effective IMF should be 1
+        - Fourth pair (ENJ-USD) openInterest x oraclePrice < lowerCap. effective IMF should equal regular IMF
        */
     internal val v4_subscribed_for_effective_imf_calculation = """
     {
