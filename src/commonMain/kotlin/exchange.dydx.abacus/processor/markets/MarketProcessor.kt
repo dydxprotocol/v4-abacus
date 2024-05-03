@@ -161,6 +161,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         // clean up after https://linear.app/dydx/issue/OTE-301/audit-websocket-message-types-in-indexer is done
         if (baseIMF === null) return 1.0
         if (oraclePrice == null || openInterest == null || openInterestLowerCap == null || openInterestUpperCap == null) return baseIMF
+        // if these are equal we can throw an error from dividing by zero
+        if (openInterestUpperCap == openInterestLowerCap) return baseIMF
         val openNotional = openInterest * oraclePrice
         val scalingFactor = (openNotional - openInterestLowerCap) / (openInterestUpperCap - openInterestLowerCap)
         val imfIncrease = scalingFactor * (1 - baseIMF)
