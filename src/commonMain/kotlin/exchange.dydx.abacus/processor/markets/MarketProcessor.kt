@@ -7,6 +7,8 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("UNCHECKED_CAST")
@@ -143,7 +145,30 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)
         output["perpetual"] = perpetual(parser.asNativeMap(existing?.get("perpetual")), payload, oraclePrice)
         output.safeSet("line", line(output))
+        // This should go last as it needs to use most up-to-date perpetual and config properties
+        // to calculate the effectiveInitialMarginFraction
+        output.safeSet("configs.effectiveInitialMarginFraction", effectiveInitialMarginFraction(output, oraclePrice))
         return calculate(output)
+    }
+
+    internal fun effectiveInitialMarginFraction(output: Map<String, Any>, oraclePrice: Double?): Double? {
+        val baseIMF = parser.asDouble(parser.value(output, "configs.initialMarginFraction"))
+        val openInterest = parser.asDouble(parser.value(output, "perpetual.openInterest"))
+        val openInterestLowerCap = parser.asDouble(parser.value(output, "perpetual.openInterestLowerCap"))
+        val openInterestUpperCap = parser.asDouble(parser.value(output, "perpetual.openInterestUpperCap"))
+
+        // need nully checks because all properties are optional in the websocket message
+        // clean up after https://linear.app/dydx/issue/OTE-301/audit-websocket-message-types-in-indexer is done
+        if (baseIMF === null) return null
+        if (oraclePrice == null || openInterest == null || openInterestLowerCap == null || openInterestUpperCap == null) return baseIMF
+        // if these are equal we can throw an error from dividing by zero
+        if (openInterestUpperCap == openInterestLowerCap) return baseIMF
+        val openNotional = openInterest * oraclePrice
+        val scalingFactor = (openNotional - openInterestLowerCap) / (openInterestUpperCap - openInterestLowerCap)
+        val imfIncrease = scalingFactor * (1 - baseIMF)
+
+        val effectiveIMF = min(baseIMF + max(imfIncrease, 0.0), 1.0)
+        return effectiveIMF
     }
 
     internal fun receivedDelta(
@@ -211,7 +236,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
 
     private fun configs(
         existing: Map<String, Any>?,
-        payload: Map<String, Any>
+        payload: Map<String, Any>,
     ): Map<String, Any> {
         val configs = transform(existing, payload, configsKeyMap)
         val configsV4 = transform(null, payload, configsV4KeyMap)

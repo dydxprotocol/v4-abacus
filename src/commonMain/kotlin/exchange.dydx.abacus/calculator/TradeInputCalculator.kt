@@ -1217,7 +1217,7 @@ internal class TradeInputCalculator(
             return parser.asDouble(parser.value(position, "maxLeverage.current"))
         } else {
             val initialMarginFraction =
-                parser.asDouble(parser.value(market, "configs.initialMarginFraction"))
+                parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
                     ?: return null
             return 1.0 / initialMarginFraction
         }
