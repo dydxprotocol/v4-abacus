@@ -1,0 +1,14 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_install_hook_types:
+   [pre-push]
+
+repos:
+-   repo: local
+    hooks:
+    -   id: spotless-apply
+        name: spotless-apply
+        entry: ./run_spotless_apply.sh
+        language: script
+        stages: [pre-push]
