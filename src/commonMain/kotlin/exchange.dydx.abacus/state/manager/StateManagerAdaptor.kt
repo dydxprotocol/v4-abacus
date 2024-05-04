@@ -1973,8 +1973,8 @@ open class StateManagerAdaptor(
 
         val timeInForce = if (trade.options?.timeInForceOptions != null) {
             when (trade.type) {
-                OrderType.market -> "FOK"
-                else -> trade.timeInForce ?: "FOK"
+                OrderType.market -> "IOC"
+                else -> trade.timeInForce ?: "IOC"
             }
         } else {
             null
