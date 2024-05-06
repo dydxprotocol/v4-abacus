@@ -117,7 +117,7 @@ data class AdjustIsolatedMarginInput(
             data?.let {
                 val type = parser.asString(data["type"])?.let {
                     IsolatedMarginAdjustmentType.invoke(it)
-                }?: IsolatedMarginAdjustmentType.Add
+                } ?: IsolatedMarginAdjustmentType.Add
 
                 val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
                 val amount = parser.asString(data["amount"])

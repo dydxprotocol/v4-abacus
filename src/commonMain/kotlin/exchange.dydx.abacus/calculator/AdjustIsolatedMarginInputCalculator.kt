@@ -19,7 +19,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         val childSubaccountNumber = parser.asInt(isolatedMarginAdjustment?.get("childSubaccountNumber"))
         val type = parser.asString(isolatedMarginAdjustment?.get("type"))?.let {
             IsolatedMarginAdjustmentType.invoke(it)
-        }?: IsolatedMarginAdjustmentType.Add
+        } ?: IsolatedMarginAdjustmentType.Add
 
         return if (wallet != null && isolatedMarginAdjustment != null && type != null) {
             val modified = state.mutable()
