@@ -605,8 +605,8 @@ internal class SubaccountSupervisor(
                     HumanReadableTriggerOrdersPayload(
                         marketId,
                         positionSize,
-                        listOf(payload),
-                        emptyList(),
+                        iListOf(payload),
+                        iListOf(),
                     )
                 } else {
                     payload
@@ -753,8 +753,8 @@ internal class SubaccountSupervisor(
                         HumanReadableTriggerOrdersPayload(
                             marketId,
                             positionSize,
-                            emptyList(),
-                            listOf(payload),
+                            iListOf(),
+                            iListOf(payload),
                         )
                     } else {
                         payload
@@ -1021,8 +1021,8 @@ internal class SubaccountSupervisor(
 
     @Throws(Exception::class)
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload {
-        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
-        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
+        val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
         val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
         val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marketId was null" }

@@ -133,7 +133,7 @@ class TriggerOrderToastGenerator(
         val tickSize = parser.asString(market.configs?.tickSize)
 
         val toasts = mutableListOf<Toast>()
-        responsePayload.cancelOrderPayloads?.forEach { cancelOrderPayload ->
+        responsePayload.cancelOrderPayloads.forEach { cancelOrderPayload ->
             val toast = generateForCancelOrder(
                 cancelOrderPayload,
                 takeProfitOrders,
@@ -144,7 +144,7 @@ class TriggerOrderToastGenerator(
                 toasts.add(toast)
             }
         }
-        responsePayload?.placeOrderPayloads?.forEach { placeOrderPayload ->
+        responsePayload.placeOrderPayloads.forEach { placeOrderPayload ->
             val toast = generateForPlaceOrder(
                 placeOrderPayload,
                 tickSize,

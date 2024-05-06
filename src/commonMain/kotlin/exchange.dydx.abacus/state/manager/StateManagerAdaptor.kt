@@ -1885,8 +1885,8 @@ open class StateManagerAdaptor(
 
     @Throws(Exception::class)
     fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload {
-        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
-        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
+        val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
         val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
         val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marektId was null" }
