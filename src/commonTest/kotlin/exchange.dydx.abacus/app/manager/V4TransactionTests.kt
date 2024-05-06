@@ -201,14 +201,18 @@ class V4TransactionTests : NetworkTests() {
         val ethStopLimitTriggerPrice = "3300"
         val ethStopLimitLimitPrice = "2100"
 
-        fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice): HumanReadableTriggerOrdersPayload? {
+        fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice): HumanReadableTriggerOrdersPayload {
             triggerOrdersInput("BTC-USD", slTriggerPrice, tpTriggerPrice, slLimitPrice, tpLimitPrice)
-            return v4Adapter?.commitTriggerOrders(transactionCallback)
+            val payload = v4Adapter?.commitTriggerOrders(transactionCallback)
+            requireNotNull(payload)
+            return payload
         }
 
-        fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize): HumanReadableTriggerOrdersPayload? {
+        fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize): HumanReadableTriggerOrdersPayload {
             triggerOrdersInput(marketId = "ETH-USD", stopLossTriggerPrice = triggerPrice, stopLossLimitPrice = limitPrice, stopLossOrderId = ethStopLimitOrderId, size = size)
-            return v4Adapter?.commitTriggerOrders(transactionCallback)
+            val payload = v4Adapter?.commitTriggerOrders(transactionCallback)
+            requireNotNull(payload)
+            return payload
         }
 
         fun validateMarketOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
@@ -242,16 +246,16 @@ class V4TransactionTests : NetworkTests() {
 
         // Creating New Orders
         val marketOrders = simulateNewBtcOrder(slLimitPrice = null, tpLimitPrice = null) // 2 new market orders created
-        assertEquals(2, marketOrders?.placeOrderPayloads?.size)
-        marketOrders?.placeOrderPayloads?.forEach { it -> validateMarketOrderDefaults(it) }
+        assertEquals(2, marketOrders.placeOrderPayloads.size)
+        marketOrders.placeOrderPayloads.forEach { it -> validateMarketOrderDefaults(it) }
 
         assertEquals(2, transactionQueue?.size)
         assertEquals(1, transactionCalledCount)
         clearTransactions(2)
 
         val limitOrders = simulateNewBtcOrder() // 2 new limit orders created
-        assertEquals(2, limitOrders?.placeOrderPayloads?.size)
-        limitOrders?.placeOrderPayloads?.forEach { it -> validateLimitOrderDefaults(it) }
+        assertEquals(2, limitOrders.placeOrderPayloads.size)
+        limitOrders.placeOrderPayloads.forEach { it -> validateLimitOrderDefaults(it) }
 
         assertEquals(2, transactionQueue?.size)
         assertEquals(3, transactionCalledCount)
@@ -264,8 +268,9 @@ class V4TransactionTests : NetworkTests() {
         assertEquals(0, transactionQueue?.size)
 
         val replacedOrders = simulateStopLimitOrderReplacement(limitPrice = null) // Replaces order due to removing limit price (limit -> market)
-        assertEquals(1, replacedOrders?.placeOrderPayloads?.size)
-        assertEquals(1, replacedOrders?.cancelOrderPayloads?.size)
+        requireNotNull(replacedOrders)
+        assertEquals(1, replacedOrders.placeOrderPayloads.size)
+        assertEquals(1, replacedOrders.cancelOrderPayloads.size)
 
         assertEquals(2, transactionQueue?.size)
         clearTransactions(2)
@@ -284,7 +289,7 @@ class V4TransactionTests : NetworkTests() {
 
         // Canceling Existing Orders
         val cancelledOrders = simulateStopLimitOrderReplacement(triggerPrice = null, limitPrice = null) // Cancels existing order due to null price inputs
-        assertEquals(1, cancelledOrders?.cancelOrderPayloads?.size)
+        assertEquals(1, cancelledOrders.cancelOrderPayloads.size)
         assertEquals(1, transactionQueue?.size)
     }
 
