@@ -43,6 +43,7 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
+import kollections.iListOf
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -1049,8 +1050,8 @@ class V4StateManagerAdaptor(
                         HumanReadableTriggerOrdersPayload(
                             marketId,
                             positionSize,
-                            listOf(payload),
-                            emptyList(),
+                            iListOf(payload),
+                            iListOf(),
                         )
                     } else {
                         payload
@@ -1117,8 +1118,8 @@ class V4StateManagerAdaptor(
                         HumanReadableTriggerOrdersPayload(
                             marketId,
                             positionSize,
-                            emptyList(),
-                            listOf(payload),
+                            iListOf(),
+                            iListOf(payload),
                         )
                     } else {
                         payload
