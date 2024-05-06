@@ -227,15 +227,13 @@ class V4TransactionTests : NetworkTests() {
         fun simulateNewBtcOrder(slTriggerPrice: String? = btcStopLossTriggerPrice, tpTriggerPrice: String? = btcTakeProfitTriggerPrice, slLimitPrice: String? = btcStopLossLimitPrice, tpLimitPrice: String? = btcTakeProfitLimitPrice): HumanReadableTriggerOrdersPayload {
             triggerOrdersInput("BTC-USD", slTriggerPrice, tpTriggerPrice, slLimitPrice, tpLimitPrice)
             val payload = subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
-            requireNotNull(payload)
-            return payload
+            return requireNotNull(payload)
         }
 
         fun simulateStopLimitOrderReplacement(triggerPrice: String? = ethStopLimitTriggerPrice, limitPrice: String? = ethStopLimitLimitPrice, size: String? = ethStopLimitOrderSize): HumanReadableTriggerOrdersPayload {
             triggerOrdersInput(marketId = "ETH-USD", stopLossTriggerPrice = triggerPrice, stopLossLimitPrice = limitPrice, stopLossOrderId = ethStopLimitOrderId, size = size)
             val payload = subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
-            requireNotNull(payload)
-            return payload
+            return requireNotNull(payload)
         }
 
         fun validateMarketOrderDefaults(payload: HumanReadablePlaceOrderPayload) {
