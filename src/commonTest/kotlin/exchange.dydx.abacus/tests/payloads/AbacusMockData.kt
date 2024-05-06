@@ -19,6 +19,7 @@ class AbacusMockData {
     internal val socketUrl = AbUrl("api.dydx.exchange", path = "/v3/ws", scheme = "wss")
     internal val environments = EnvironmentsMock()
     internal val accountsChannel = AccountsChannelMock()
+    internal val batchedSubaccountsChannel = BatchedSubaccountsChannelMock()
     internal val parentSubaccountsChannel = ParentSubaccountsChannelMock()
     internal val historicalTradingRewards = HistoricalTradingRewardsMock()
     internal val fillsChannel = FillsMock()

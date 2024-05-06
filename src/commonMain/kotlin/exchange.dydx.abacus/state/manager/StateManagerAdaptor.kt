@@ -682,13 +682,14 @@ open class StateManagerAdaptor(
         socket(
             socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber),
+            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
     }
 
     open fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean
     ): IMap<String, Any> {
         TODO("Not yet implemented")
     }
