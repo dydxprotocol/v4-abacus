@@ -11,6 +11,7 @@ import exchange.dydx.abacus.tests.mock.PresentationProtocolMock
 import exchange.dydx.abacus.tests.mock.ThreadingProtocolMock
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.Parser
+import kollections.iListOf
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -69,6 +70,9 @@ class TriggerOrderToastGeneratorTests {
                         "side": {
                             "current": "SHORT"
                         },
+                        "size": {
+                            "current": 94.57
+                        },
                         "resources": {
                             "sideString": {},
                             "sideStringKey": {},
@@ -95,8 +99,10 @@ class TriggerOrderToastGeneratorTests {
         toastGenerator.onTriggerOrderSubmitted(
             subaccountNumber = 0,
             payload = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = emptyList(),
-                placeOrderPayloads = emptyList(),
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(),
+                placeOrderPayloads = iListOf(),
             ),
             state = state,
         )
@@ -105,10 +111,13 @@ class TriggerOrderToastGeneratorTests {
         toastGenerator.onTriggerOrderSubmitted(
             subaccountNumber = 0,
             payload = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = listOf(
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
                         clientId = 0,
+                        type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
                         orderFlags = 0,
                         clobPairId = 0,
@@ -116,7 +125,7 @@ class TriggerOrderToastGeneratorTests {
                         goodTilBlockTime = null,
                     ),
                 ),
-                placeOrderPayloads = listOf(
+                placeOrderPayloads = iListOf(
                     HumanReadablePlaceOrderPayload(
                         subaccountNumber = 0,
                         marketId = "ETH-USD",
@@ -160,8 +169,10 @@ class TriggerOrderToastGeneratorTests {
         toastGenerator.onTriggerOrderSubmitted(
             subaccountNumber = 0,
             payload = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = emptyList(),
-                placeOrderPayloads = emptyList(),
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(),
+                placeOrderPayloads = iListOf(),
             ),
             state = state,
         )
@@ -171,10 +182,13 @@ class TriggerOrderToastGeneratorTests {
             successful = true,
             error = null,
             data = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = listOf(
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
                         clientId = 0,
+                        type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
                         orderFlags = 0,
                         clobPairId = 0,
@@ -182,7 +196,7 @@ class TriggerOrderToastGeneratorTests {
                         goodTilBlockTime = null,
                     ),
                 ),
-                placeOrderPayloads = emptyList(),
+                placeOrderPayloads = iListOf(),
             ),
         )
         assertEquals(presentation.showToastCallCount, 1)
@@ -198,8 +212,10 @@ class TriggerOrderToastGeneratorTests {
             successful = true,
             error = null,
             data = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = emptyList(),
-                placeOrderPayloads = listOf(
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(),
+                placeOrderPayloads = iListOf(
                     HumanReadablePlaceOrderPayload(
                         subaccountNumber = 0,
                         marketId = "ETH-USD",
@@ -237,8 +253,10 @@ class TriggerOrderToastGeneratorTests {
         toastGenerator.onTriggerOrderSubmitted(
             subaccountNumber = 0,
             payload = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = emptyList(),
-                placeOrderPayloads = emptyList(),
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(),
+                placeOrderPayloads = iListOf(),
             ),
             state = state,
         )
@@ -248,9 +266,12 @@ class TriggerOrderToastGeneratorTests {
             successful = false,
             error = null,
             data = HumanReadableTriggerOrdersPayload(
-                cancelOrderPayloads = listOf(
+                marketId = "ETH-USD",
+                positionSize = 94.57,
+                cancelOrderPayloads = iListOf(
                     HumanReadableCancelOrderPayload(
                         subaccountNumber = 0,
+                        type = "TAKE_PROFIT",
                         clientId = 0,
                         orderId = "existingOrderId",
                         orderFlags = 0,
@@ -259,7 +280,7 @@ class TriggerOrderToastGeneratorTests {
                         goodTilBlockTime = null,
                     ),
                 ),
-                placeOrderPayloads = emptyList(),
+                placeOrderPayloads = iListOf(),
             ),
         )
         assertEquals(presentation.showToastCallCount, 1)

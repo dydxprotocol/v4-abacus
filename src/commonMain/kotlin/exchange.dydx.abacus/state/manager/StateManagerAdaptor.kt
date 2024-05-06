@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Compliance
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
@@ -122,9 +123,6 @@ open class StateManagerAdaptor(
     var stateNotification: StateNotificationProtocol?,
     var dataNotification: DataNotificationProtocol?,
 ) {
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
-
     var stateMachine: TradingStateMachine = PerpTradingStateMachine(
         environment,
         uiImplementations.localizer,
@@ -1826,6 +1824,16 @@ open class StateManagerAdaptor(
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
     }
 
+    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+        accountAddress?.let {
+            if (compliance.status != ComplianceStatus.UNKNOWN) {
+                updateCompliance(DydxAddress(it), compliance.status, action)
+                callback(true, null, null)
+            }
+        }
+        callback(false, V4TransactionErrors.error(null, "No account address"), null)
+    }
+
     internal open fun parseTransactionResponse(response: String?): ParsingError? {
         return null
     }
@@ -1898,14 +1906,15 @@ open class StateManagerAdaptor(
 
     @Throws(Exception::class)
     fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload {
-        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
-        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
-        val triggerOrders = stateMachine.state?.input?.triggerOrders
+        val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
+        val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
+        val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marektId was null" }
         val subaccountNumber = connectedSubaccountNumber ?: throw Exception("subaccountNumber is null")
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
-
-        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
+        val position = subaccount.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -1945,6 +1954,8 @@ open class StateManagerAdaptor(
         }
 
         return HumanReadableTriggerOrdersPayload(
+            marketId,
+            positionSize,
             placeOrderPayloads,
             cancelOrderPayloads,
         )
@@ -1984,8 +1995,8 @@ open class StateManagerAdaptor(
 
         val timeInForce = if (trade.options?.timeInForceOptions != null) {
             when (trade.type) {
-                OrderType.market -> "FOK"
-                else -> trade.timeInForce ?: "FOK"
+                OrderType.market -> "IOC"
+                else -> trade.timeInForce ?: "IOC"
             }
         } else {
             null
@@ -2174,6 +2185,7 @@ open class StateManagerAdaptor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
+        val type = order.type.rawValue
         val clientId = order.clientId ?: throw Exception("clientId is null")
         val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
         val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
@@ -2182,6 +2194,7 @@ open class StateManagerAdaptor(
 
         return HumanReadableCancelOrderPayload(
             subaccountNumber,
+            type,
             orderId,
             clientId,
             orderFlags,
@@ -2334,13 +2347,19 @@ open class StateManagerAdaptor(
         }
     }
 
+    internal open fun fromSlTpDialogParams(fromSlTpDialog: Boolean): IMap<String, Any> {
+        return iMapOf(
+            "fromSlTpDialog" to fromSlTpDialog,
+        )
+    }
+
     internal open fun trackingParams(interval: Double): IMap<String, Any> {
         return iMapOf(
             "roundtripMs" to interval,
         )
     }
 
-    internal fun tracking(eventName: String, params: IMap<String, Any>?) {
+    internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
         val paramsAsString = jsonEncoder.encode(params)
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.tracking?.log(eventName, paramsAsString)
@@ -2369,10 +2388,14 @@ open class StateManagerAdaptor(
                 if (placeOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
+                    val extraParams = ParsingHelper.merge(
+                        trackingParams(interval),
+                        fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
+                    )
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval),
+                            extraParams,
                             orderAnalyticsPayload,
                         )?.toIMap(),
                     )
@@ -2385,10 +2408,14 @@ open class StateManagerAdaptor(
                 if (cancelOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
+                    val extraParams = ParsingHelper.merge(
+                        trackingParams(interval),
+                        fromSlTpDialogParams(cancelOrderRecord.fromSlTpDialog),
+                    )
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval),
+                            extraParams,
                             orderAnalyticsPayload,
                         )?.toIMap(),
                     )
@@ -2480,13 +2507,14 @@ open class StateManagerAdaptor(
         return compliance.status
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction? = null) {
         val message = "Compliance verification message"
-        val action = if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
-            ComplianceAction.CONNECT
-        } else {
-            ComplianceAction.ONBOARD
-        }
+        val action = complianceAction
+            ?: if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
+                ComplianceAction.CONNECT
+            } else {
+                ComplianceAction.ONBOARD
+            }
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,

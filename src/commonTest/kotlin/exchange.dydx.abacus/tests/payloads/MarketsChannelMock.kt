@@ -1171,7 +1171,7 @@ internal class MarketsChannelMock {
                     "ticker":"ETH-USD",
                     "status":"ACTIVE",
                     "lastPrice":"0",
-                    "oraclePrice":"0",
+                    "oraclePrice":"1000",
                     "priceChange24H":"0",
                     "volume24H":"493147836.787929310",
                     "trades24H":939311,
@@ -1186,6 +1186,8 @@ internal class MarketsChannelMock {
                     "stepBaseQuantums":1000000,
                     "subticksPerTick":10000,
                     "openInterest":"46115.049878",
+                    "openInterestLowerCap": "10000",
+                    "openInterestUpperCap": "50000",
                     "atomicResolution":-9,
                     "quantumConversionExponent":-9,
                     "tickSize":"0.001",
@@ -1221,6 +1223,139 @@ internal class MarketsChannelMock {
               }
            }
         }
+    """.trimIndent()
+
+      /*
+        Cases this mock tests:
+        - First pair (BTC-USD) is missing upper and lower cap. effectiveIMF should default to regular IMF
+        - Second pair (ETH-USD) lowerCap < openInterest x oraclePrice < upperCap. effectiveIMF should
+          be a number between baseIMF and 1.0
+        - Third pair (MATIC-USD) openInterest x oraclePrice > upperCap. effective IMF should be 1
+        - Fourth pair (ENJ-USD) openInterest x oraclePrice < lowerCap. effective IMF should equal regular IMF
+       */
+    internal val v4_subscribed_for_effective_imf_calculation = """
+    {
+       "type":"subscribed",
+       "connection_id":"d8caff8c-0ee8-4eb0-b124-20c2d3d956ba",
+       "message_id":1,
+       "channel":"v4_markets",
+       "contents":{
+          "markets":{
+             "BTC-USD":{
+                "clobPairId":"0",
+                "ticker":"BTC-USD",
+                "status":"ACTIVE",
+                "lastPrice":"0",
+                "oraclePrice":"0",
+                "priceChange24H":"0",
+                "volume24H":"493608254.61945181460",
+                "trades24H":922707,
+                "nextFundingRate":"0",
+                "nextFundingUpdate":0,
+                "initialMarginFraction":"0.0523",
+                "incrementalInitialMarginFraction":"0",
+                "maintenanceMarginFraction":"0.030000",
+                "basePositionSize":"0",
+                "incrementalPositionSize":"0",
+                "maxPositionSize":"0",
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":10000,
+                "openInterest":"3530.502834378",
+                "atomicResolution":-10,
+                "quantumConversionExponent":-8,
+                "tickSize":"0.01",
+                "stepSize":"0.000000001",
+                "stepBaseQuantums":10
+             },
+             "ETH-USD":{
+                "clobPairId":"1",
+                "ticker":"ETH-USD",
+                "status":"ACTIVE",
+                "lastPrice":"0",
+                "oraclePrice":"1000",
+                "priceChange24H":"0",
+                "volume24H":"493147836.787929310",
+                "trades24H":939311,
+                "nextFundingRate":"0",
+                "nextFundingUpdate":0,
+                "initialMarginFraction":"0.01",
+                "incrementalInitialMarginFraction":"0",
+                "maintenanceMarginFraction":"0.030000",
+                "basePositionSize":"0",
+                "incrementalPositionSize":"0",
+                "maxPositionSize":"0",
+                "stepBaseQuantums":1000000,
+                "subticksPerTick":10000,
+                "openInterest":"1000",
+                "openInterestLowerCap": "100000",
+                "openInterestUpperCap": "1500000",
+                "atomicResolution":-9,
+                "quantumConversionExponent":-9,
+                "tickSize":"0.001",
+                "stepSize":"0.001",
+                "stepBaseQuantums":1000
+             },
+             "MATIC-USD":{
+               "clobPairId":"33",
+               "ticker":"MATIC-USD",
+               "status":"ACTIVE",
+               "lastPrice":"0",
+               "oraclePrice":"57.80445",
+               "priceChange24H":"0.1",
+               "volume24H":"0",
+               "trades24H":0,
+               "nextFundingRate":"0",
+               "initialMarginFraction":"0.02",
+               "maintenanceMarginFraction":"0.03",
+               "basePositionSize":"0",
+               "openInterest":"5231.255",
+               "openInterestLowerCap": "83",
+               "openInterestUpperCap": "5500",
+               "incrementalPositionSize":"0",
+               "atomicResolution":-10,
+               "quantumConversionExponent":-8,
+               "tickSize":"100000",
+               "stepSize":"0.0001",
+               "stepBaseQuantums":1000000,
+               "subticksPerTick":1000000000,
+               "atomicResolution":-9,
+               "quantumConversionExponent":-9,
+               "tickSize":"0.001",
+               "stepSize":"0.001",
+               "stepBaseQuantums":1000
+            },
+             "ENJ-USD": {
+               "clobPairId":"59",
+               "ticker":"ENJ-USD",
+               "status":"ACTIVE",
+               "lastPrice":"0",
+               "oraclePrice":".4472",
+               "priceChange24H":"0",
+               "volume24H":"0",
+               "trades24H":0,
+               "nextFundingRate":"0",
+               "initialMarginFraction":"0.05",
+               "maintenanceMarginFraction":"0.03",
+               "basePositionSize":"0",
+               "openInterest":"1200.24",
+               "openInterestLowerCap": "1000",
+               "openInterestUpperCap": "15000",
+               "incrementalPositionSize":"0",
+               "atomicResolution":-10,
+               "quantumConversionExponent":-8,
+               "tickSize":"100000",
+               "stepSize":"0.0001",
+               "stepBaseQuantums":1000000,
+               "subticksPerTick":1000000000,
+               "atomicResolution":-9,
+               "quantumConversionExponent":-9,
+               "tickSize":"0.001",
+               "stepSize":"0.001",
+               "stepBaseQuantums":1000
+             }
+          }
+       }
+    }
     """.trimIndent()
 
     internal val v4_channel_data = """

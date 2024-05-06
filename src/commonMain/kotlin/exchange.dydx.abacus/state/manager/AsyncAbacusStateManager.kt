@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
@@ -531,6 +532,15 @@ class AsyncAbacusStateManager(
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         try {
             adaptor?.cancelOrder(orderId, callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
+    override fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+        try {
+            adaptor?.triggerCompliance(action, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)

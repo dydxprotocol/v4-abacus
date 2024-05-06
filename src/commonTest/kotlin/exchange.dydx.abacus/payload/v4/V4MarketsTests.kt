@@ -73,6 +73,9 @@ class V4MarketsTests : V4BaseTests() {
 
         testTradesBatchChanged()
         time = perp.log("Trades Batch Changed", time)
+
+        testEffectiveIMF()
+        time = perp.log("Calculate Effective IMF", time)
     }
 
     private fun testMarketsSubscribed() {
@@ -100,7 +103,8 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
                            "clobPairId":0,
-                           "baselinePositionSize":0.0
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 0.05
                         },
                         "perpetual":{
                            "volume24H":4.936082546194518E8,
@@ -112,7 +116,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -123,7 +127,8 @@ class V4MarketsTests : V4BaseTests() {
                            "incrementalPositionSize":0.0,
                            "initialMarginFraction":0.05,
                            "clobPairId":1,
-                           "baselinePositionSize":0.0
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 1.0
                         },
                         "perpetual":{
                            "volume24H":4.931478367879293E8,
@@ -267,7 +272,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -333,7 +338,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -398,7 +403,7 @@ class V4MarketsTests : V4BaseTests() {
                      "ETH-USD":{
                         "priceChange24H":0.0,
                         "market":"ETH-USD",
-                        "oraclePrice":0.0,
+                        "oraclePrice":1000.0,
                         "status":{
                            "canTrade":true,
                            "canReduce":true
@@ -633,6 +638,121 @@ class V4MarketsTests : V4BaseTests() {
                 val market = perp.state?.market(first)
                 assertNotNull(first)
             },
+        )
+    }
+
+    fun testEffectiveIMF() {
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.marketsChannel.v4_subscribed_for_effective_imf_calculation,
+                    0,
+                    null,
+                )
+            },
+            """
+            {
+               "markets":{
+                  "markets":{
+                     "BTC-USD":{
+                        "priceChange24H":0.0,
+                        "market":"BTC-USD",
+                        "oraclePrice":0,
+                        "status":{
+                           "canTrade":true,
+                           "canReduce":true
+                        },
+                        "configs":{
+                           "maintenanceMarginFraction":0.03,
+                           "incrementalInitialMarginFraction":0.0,
+                           "incrementalPositionSize":0.0,
+                           "initialMarginFraction":0.05,
+                           "clobPairId":0,
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 0.05
+                        },
+                        "perpetual":{
+                           "volume24H":4.936082546194518E8,
+                           "openInterest":3530.502834378,
+                           "nextFundingRate":0.0,
+                           "trades24H":922707
+                        }
+                     },
+                     "ETH-USD":{
+                        "priceChange24H":0.0,
+                        "market":"ETH-USD",
+                        "oraclePrice":1000.0,
+                        "status":{
+                           "canTrade":true,
+                           "canReduce":true
+                        },
+                        "configs":{
+                           "maintenanceMarginFraction":0.03,
+                           "incrementalInitialMarginFraction":0.0,
+                           "incrementalPositionSize":0.0,
+                           "initialMarginFraction":0.01,
+                           "clobPairId":1,
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 0.6
+                        },
+                        "perpetual":{
+                           "volume24H":4.931478367879293E8,
+                           "openInterest":1000,
+                           "nextFundingRate":0.0,
+                           "trades24H":939311
+                        }
+                     },
+                     "MATIC-USD":{
+                        "priceChange24H":0.1,
+                        "market":"MATIC-USD",
+                        "oraclePrice":57.80445,
+                        "status":{
+                           "canTrade":true,
+                           "canReduce":true
+                        },
+                        "configs":{
+                           "maintenanceMarginFraction":0.03,
+                           "incrementalPositionSize":0.0,
+                           "initialMarginFraction":0.02,
+                           "clobPairId":33,
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": 1.0
+                        },
+                        "perpetual":{
+                           "volume24H":0,
+                           "openInterest":5231.255,
+                           "nextFundingRate":0.0,
+                           "trades24H":0
+                        }
+                     },
+                     "ENJ-USD":{
+                        "priceChange24H":0.0,
+                        "market":"ENJ-USD",
+                        "oraclePrice":0.4472,
+                        "status":{
+                           "canTrade":true,
+                           "canReduce":true
+                        },
+                        "configs":{
+                           "maintenanceMarginFraction":0.03,
+                           "incrementalPositionSize":0.0,
+                           "initialMarginFraction":0.05,
+                           "clobPairId":59,
+                           "baselinePositionSize":0.0,
+                           "effectiveInitialMarginFraction": .05
+                        },
+                        "perpetual":{
+                           "volume24H":0,
+                           "openInterest":1200.24,
+                           "nextFundingRate":0.0,
+                           "trades24H":0
+                        }
+                     }
+                  }
+               }
+            }
+            """.trimIndent(),
         )
     }
 }

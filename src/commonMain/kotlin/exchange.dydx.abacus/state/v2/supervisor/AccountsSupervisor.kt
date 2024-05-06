@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
@@ -341,4 +342,11 @@ internal fun AccountsSupervisor.screen(
     callback: (restriction: Restriction) -> Unit
 ) {
     account?.screen(address, callback)
+}
+
+internal fun AccountsSupervisor.triggerCompliance(
+    action: ComplianceAction,
+    callback: TransactionCallback
+) {
+    account?.triggerCompliance(action, callback)
 }
