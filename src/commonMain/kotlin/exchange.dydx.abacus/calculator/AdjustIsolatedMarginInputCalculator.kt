@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator
 
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
@@ -16,7 +17,9 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         val wallet = parser.asNativeMap(state["wallet"])
         val isolatedMarginAdjustment = parser.asNativeMap(state["adjustIsolatedMargin"])
         val childSubaccountNumber = parser.asInt(isolatedMarginAdjustment?.get("childSubaccountNumber"))
-        val type = parser.asString(isolatedMarginAdjustment?.get("type"))
+        val type = parser.asString(isolatedMarginAdjustment?.get("type"))?.let {
+            IsolatedMarginAdjustmentType.invoke(it)
+        }?: IsolatedMarginAdjustmentType.Add
 
         return if (wallet != null && isolatedMarginAdjustment != null && type != null) {
             val modified = state.mutable()
@@ -93,7 +96,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
     private fun summaryForType(
         parentSubaccount: Map<String, Any>?,
         childSubaccount: Map<String, Any>?,
-        type: String,
+        type: IsolatedMarginAdjustmentType,
     ): Map<String, Any> {
         val summary = mutableMapOf<String, Any>()
         val crossCollateral = parser.asDouble(parser.value(parentSubaccount, "freeCollateral.postOrder"))
@@ -105,7 +108,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         val liquidationPrice = parser.asDouble(parser.value(childSubaccount, "openPositions.$marketId.liquidationPrice.postOrder"))
 
         when (type) {
-            "ADD" -> {
+            IsolatedMarginAdjustmentType.Add -> {
                 summary.safeSet("crossFreeCollateral", crossCollateral)
                 summary.safeSet("crossMarginUsage", crossMarginUsage)
                 summary.safeSet("positionMargin", positionMargin)
@@ -113,15 +116,13 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
                 summary.safeSet("liquidationPrice", liquidationPrice)
             }
 
-            "REMOVE" -> {
+            IsolatedMarginAdjustmentType.Remove -> {
                 summary.safeSet("crossFreeCollateral", crossCollateral)
                 summary.safeSet("crossMarginUsage", crossMarginUsage)
                 summary.safeSet("positionMargin", positionMargin)
                 summary.safeSet("positionLeverage", positionLeverage)
                 summary.safeSet("liquidationPrice", liquidationPrice)
             }
-
-            else -> {}
         }
 
         return summary
@@ -131,7 +132,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         isolatedMarginAdjustment: Map<String, Any>,
         parentSubaccount: Map<String, Any>?,
         childSubaccount: Map<String, Any>?,
-        type: String,
+        type: IsolatedMarginAdjustmentType,
     ): Map<String, Any> {
         val modified = isolatedMarginAdjustment.mutable()
         modified.safeSet("summary", summaryForType(parentSubaccount, childSubaccount, type))

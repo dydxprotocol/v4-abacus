@@ -778,7 +778,7 @@ data class TradeInput(
     val reduceOnly: Boolean,
     val postOnly: Boolean,
     val fee: Double?,
-    val marginMode: MarginMode?,
+    val marginMode: MarginMode,
     val targetLeverage: Double?,
     val bracket: TradeInputBracket?,
     val marketOrder: TradeInputMarketOrder?,
@@ -816,7 +816,7 @@ data class TradeInput(
 
                 val marginMode = parser.asString(data["marginMode"])?.let {
                     MarginMode.invoke(it)
-                }
+                } ?: MarginMode.cross
 
                 val targetLeverage = parser.asDouble(data["targetLeverage"])
 
@@ -858,7 +858,7 @@ data class TradeInput(
                     existing?.reduceOnly != reduceOnly ||
                     existing.postOnly != postOnly ||
                     existing.fee != fee ||
-                    existing?.marginMode != marginMode ||
+                    existing.marginMode != marginMode ||
                     existing?.targetLeverage != targetLeverage ||
                     existing.bracket != bracket ||
                     existing.marketOrder != marketOrder ||

@@ -97,7 +97,7 @@ enum class IsolatedMarginAdjustmentType(val rawValue: String) {
 @JsExport
 @Serializable
 data class AdjustIsolatedMarginInput(
-    val type: IsolatedMarginAdjustmentType?,
+    val type: IsolatedMarginAdjustmentType,
     val amount: String?,
     val childSubaccountNumber: Int?,
     val adjustIsolatedMarginInputOptions: AdjustIsolatedMarginInputOptions?,
@@ -117,7 +117,8 @@ data class AdjustIsolatedMarginInput(
             data?.let {
                 val type = parser.asString(data["type"])?.let {
                     IsolatedMarginAdjustmentType.invoke(it)
-                }
+                }?: IsolatedMarginAdjustmentType.Add
+
                 val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
                 val amount = parser.asString(data["amount"])
                 val fee = parser.asDouble(data["fee"])
@@ -145,13 +146,13 @@ data class AdjustIsolatedMarginInput(
 
                 return if (
                     existing?.type != type ||
-                    existing?.amount != amount ||
-                    existing?.childSubaccountNumber != childSubaccountNumber ||
-                    existing?.adjustIsolatedMarginInputOptions != adjustIsolatedMarginInputOptions ||
-                    existing?.summary !== summary ||
-                    existing?.errors !== errors ||
-                    existing?.errorMessage != errorMessage ||
-                    existing?.fee != fee
+                    existing.amount != amount ||
+                    existing.childSubaccountNumber != childSubaccountNumber ||
+                    existing.adjustIsolatedMarginInputOptions != adjustIsolatedMarginInputOptions ||
+                    existing.summary !== summary ||
+                    existing.errors !== errors ||
+                    existing.errorMessage != errorMessage ||
+                    existing.fee != fee
                 ) {
                     AdjustIsolatedMarginInput(
                         type,
