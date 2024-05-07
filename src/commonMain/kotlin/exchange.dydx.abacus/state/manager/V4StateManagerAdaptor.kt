@@ -1190,7 +1190,7 @@ class V4StateManagerAdaptor(
             payload,
             midMarketPrice,
             fromSlTpDialog = false,
-            isClosePosition = false
+            isClosePosition = false,
         )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
@@ -1204,7 +1204,7 @@ class V4StateManagerAdaptor(
             payload,
             midMarketPrice,
             fromSlTpDialog = false,
-            isClosePosition = true
+            isClosePosition = true,
         )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
@@ -1275,7 +1275,7 @@ class V4StateManagerAdaptor(
                 placePayload,
                 placeOrderAnalyticsPayload,
                 uiClickTimeMs,
-                true
+                true,
             )
         }
 
@@ -1576,9 +1576,9 @@ class V4StateManagerAdaptor(
             val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
             val interval = if (indexerTime != null) {
                 (
-                        Clock.System.now().toEpochMilliseconds()
-                            .toDouble() - indexerTime
-                        )
+                    Clock.System.now().toEpochMilliseconds()
+                        .toDouble() - indexerTime
+                    )
             } else {
                 null
             }

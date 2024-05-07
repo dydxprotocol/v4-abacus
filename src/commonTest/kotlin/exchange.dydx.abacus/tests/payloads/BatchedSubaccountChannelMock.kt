@@ -4998,4 +4998,5621 @@ internal class BatchedSubaccountsChannelMock {
           ]
         }
     """.trimIndent()
+    internal val channel_batch_data_order_filled_1 = """
+        {
+          "type": "channel_batch_data",
+          "connection_id": "a636f0fd-d238-46cd-a541-78cd747d0e09",
+          "message_id": 36,
+          "id": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3/0",
+          "channel": "v4_subaccounts",
+          "version": "2.4.0",
+          "contents": [
+            {
+              "orders": [
+                {
+                  "id": "8fe0d00e-2070-5e57-9320-9fe61fea1261",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "15324164",
+                  "clobPairId": "8",
+                  "side": "SELL",
+                  "size": "326",
+                  "price": "6.147",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "FIL-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "cc9be1bb-921b-545f-b6e6-f36b723411aa",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854739",
+                  "clobPairId": "39",
+                  "side": "SELL",
+                  "size": "51.5",
+                  "totalOptimisticFilled": "0",
+                  "price": "38.78",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "ORDI-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "a7fdbc3a-c0d1-5294-84b2-ae7640e04bd0",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282925",
+                  "clobPairId": "1",
+                  "side": "SELL",
+                  "size": "2.477",
+                  "totalOptimisticFilled": "0",
+                  "price": "3080",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "ETH-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "createdAtHeight": "9654026",
+                  "updatedAt": "2024-02-28T20:31:10.520Z",
+                  "updatedAtHeight": "9654026",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "da141f7c-e86f-5f3b-9827-fe16c9dec364",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950079",
+                  "clobPairId": "37",
+                  "side": "SELL",
+                  "size": "3.39",
+                  "totalOptimisticFilled": "0",
+                  "price": "589.1",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "BNB-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "da7caa9c-44e0-5962-94ba-0d359af2fe64",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054754",
+                  "clobPairId": "23",
+                  "side": "SELL",
+                  "size": "84",
+                  "totalOptimisticFilled": "0",
+                  "price": "9.133",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "APT-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "8fe0d00e-2070-5e57-9320-9fe61fea1261",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "15324164",
+                  "clobPairId": "8",
+                  "side": "SELL",
+                  "size": "326",
+                  "totalOptimisticFilled": "0",
+                  "price": "6.147",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "FIL-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "c7564ae2-543c-5633-a504-a6f9f5b8926c",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282924",
+                  "clobPairId": "1",
+                  "side": "BUY",
+                  "size": "2.477",
+                  "totalOptimisticFilled": "0",
+                  "price": "3075.9",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "ETH-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "0b0a04ad-bb1a-55e3-8f86-160e8f29b242",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785506",
+                  "clobPairId": "7",
+                  "side": "BUY",
+                  "size": "26.7",
+                  "totalOptimisticFilled": "0",
+                  "price": "37.28",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "AVAX-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "90df67b8-ceb7-5e73-a8fe-8b9cc973d74d",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352315",
+                  "clobPairId": "15",
+                  "side": "SELL",
+                  "size": "16800",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.11905",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "TRX-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "0058b8f9-b6dc-50a3-af52-ec44448cfae0",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785500",
+                  "clobPairId": "24",
+                  "side": "SELL",
+                  "size": "1124",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.07",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "ARB-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "f64ed412-6dd7-5641-9b1b-db2cf7598e1a",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785505",
+                  "clobPairId": "12",
+                  "side": "BUY",
+                  "size": "83",
+                  "totalOptimisticFilled": "0",
+                  "price": "7.21",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "DOT-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "caecb4f6-3391-5270-a0ac-5fd3d2cf68c0",
+                  "market": "APT-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-2778",
+                  "maxSize": "-42",
+                  "netFunding": "4.708773",
+                  "entryPrice": "9.12987054981949730355",
+                  "exitPrice": "9.13249631359380487784",
+                  "sumOpen": "2921286",
+                  "sumClose": "2918425",
+                  "realizedPnl": "-7658.38587003358249729325",
+                  "unrealizedPnl": "-22.4499991354364907381"
+                }
+              ],
+              "assetPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "e326796e-660a-532b-958b-1b83e7e5f895",
+                  "assetId": "0",
+                  "symbol": "USDC",
+                  "side": "LONG",
+                  "size": "1599714.624632"
+                }
+              ]
+            },
+            {
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "caecb4f6-3391-5270-a0ac-5fd3d2cf68c0",
+                  "market": "APT-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-2776",
+                  "maxSize": "-42",
+                  "netFunding": "4.708773",
+                  "entryPrice": "9.12987054981949730355",
+                  "exitPrice": "9.13249618726287105037",
+                  "sumOpen": "2921286",
+                  "sumClose": "2918507",
+                  "realizedPnl": "-7658.23248494838371039774",
+                  "unrealizedPnl": "-22.4338364290754853452"
+                }
+              ],
+              "assetPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "e326796e-660a-532b-958b-1b83e7e5f895",
+                  "assetId": "0",
+                  "symbol": "USDC",
+                  "side": "LONG",
+                  "size": "1599696.370275"
+                }
+              ]
+            },
+            {
+              "fills": [
+                {
+                  "id": "a74830f8-d506-54b3-bf3b-1de791b8fe4e",
+                  "fee": "-0.067364",
+                  "side": "BUY",
+                  "size": "82",
+                  "type": "LIMIT",
+                  "price": "9.128",
+                  "eventId": "00e478220000000200000005",
+                  "orderId": "f7c9cd24-57cd-5240-a98d-3c9c3c11767d",
+                  "createdAt": "2024-05-06T18:41:20.606Z",
+                  "liquidity": "MAKER",
+                  "clobPairId": "23",
+                  "quoteAmount": "748.496",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972962",
+                  "transactionHash": "E06299AA699592C0F60ACBDA3C241AAED74A7D6986B07A1707F425072453DD4B",
+                  "ticker": "APT-USD"
+                },
+                {
+                  "id": "0d473eec-93b0-5c49-94ca-b8017454d769",
+                  "fee": "-0.001643",
+                  "side": "BUY",
+                  "size": "2",
+                  "type": "LIMIT",
+                  "price": "9.128",
+                  "eventId": "00e47822000000020000000b",
+                  "orderId": "f7c9cd24-57cd-5240-a98d-3c9c3c11767d",
+                  "createdAt": "2024-05-06T18:41:20.606Z",
+                  "liquidity": "MAKER",
+                  "clobPairId": "23",
+                  "quoteAmount": "18.256",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972962",
+                  "transactionHash": "E06299AA699592C0F60ACBDA3C241AAED74A7D6986B07A1707F425072453DD4B",
+                  "ticker": "APT-USD"
+                }
+              ],
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "caecb4f6-3391-5270-a0ac-5fd3d2cf68c0",
+                  "market": "APT-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-2776",
+                  "maxSize": "-42",
+                  "netFunding": "4.708773",
+                  "entryPrice": "9.12987054981949730355",
+                  "exitPrice": "9.13249618418171744566",
+                  "sumOpen": "2921286",
+                  "sumClose": "2918509"
+                }
+              ],
+              "orders": [
+                {
+                  "id": "f7c9cd24-57cd-5240-a98d-3c9c3c11767d",
+                  "side": "BUY",
+                  "size": "84",
+                  "type": "LIMIT",
+                  "price": "9.128",
+                  "status": "FILLED",
+                  "clientId": "64054753",
+                  "updatedAt": "2024-05-06T18:41:20.606Z",
+                  "clobPairId": "23",
+                  "orderFlags": "0",
+                  "reduceOnly": false,
+                  "timeInForce": "GTT",
+                  "totalFilled": "84",
+                  "goodTilBlock": "14972962",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "triggerPrice": null,
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972962",
+                  "updatedAtHeight": "14972962",
+                  "goodTilBlockTime": null,
+                  "postOnly": true,
+                  "ticker": "APT-USD"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "31cd45c6-ad44-5349-b4b9-90bf92ed5f11",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950089",
+                  "clobPairId": "43",
+                  "side": "BUY",
+                  "size": "1482",
+                  "price": "1.321",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "STRK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b2bf0614-efde-52c6-8431-50c685e92a15",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054762",
+                  "clobPairId": "25",
+                  "side": "SELL",
+                  "size": "4990",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.4008",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "BLUR-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "adf6a5dd-018b-5a18-8e8f-848eca239639",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054764",
+                  "clobPairId": "38",
+                  "side": "SELL",
+                  "size": "266",
+                  "totalOptimisticFilled": "0",
+                  "price": "3.585",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "JTO-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "46ff7334-54c1-5392-b294-c926d01c4e9c",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352324",
+                  "clobPairId": "46",
+                  "side": "SELL",
+                  "size": "3670",
+                  "price": "0.5447",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "PYTH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "42bc3384-9e10-53e3-b5c2-caecae66475a",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352323",
+                  "clobPairId": "46",
+                  "side": "BUY",
+                  "size": "3670",
+                  "price": "0.5444",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "PYTH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "c8d9dbe0-643b-5320-b406-0cb0a5b98226",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "26450119",
+                  "clobPairId": "39",
+                  "side": "SELL",
+                  "size": "25.8",
+                  "price": "38.77",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "ORDI-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "c8d9dbe0-643b-5320-b406-0cb0a5b98226",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "26450119",
+                  "clobPairId": "39",
+                  "side": "SELL",
+                  "size": "25.8",
+                  "totalOptimisticFilled": "0",
+                  "price": "38.77",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "ORDI-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "6db68c65-119e-55e7-ab3c-ae885629245f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352217",
+                  "clobPairId": "15",
+                  "side": "BUY",
+                  "size": "125500",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.11854",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "TRX-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "3b2839d5-ebd2-50cd-87ef-3bf8fb50dbe8",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "9468916",
+                  "clobPairId": "0",
+                  "side": "BUY",
+                  "size": "0.3158",
+                  "price": "63334",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "BTC-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "3b2839d5-ebd2-50cd-87ef-3bf8fb50dbe8",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "9468916",
+                  "clobPairId": "0",
+                  "side": "BUY",
+                  "size": "0.3158",
+                  "totalOptimisticFilled": "0",
+                  "price": "63334",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "BTC-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "a44e6e09-02e0-590a-90a5-5157f7b16158",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785512",
+                  "clobPairId": "2",
+                  "side": "BUY",
+                  "size": "68",
+                  "totalOptimisticFilled": "0",
+                  "price": "14.687",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "LINK-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "0af38935-c391-536d-9ea0-04d967d77ba4",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352310",
+                  "clobPairId": "30",
+                  "side": "BUY",
+                  "size": "82000000",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.000024172",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "SHIB-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "ce730a91-0a0b-54a5-8a34-48bae019b888",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950081",
+                  "clobPairId": "59",
+                  "side": "SELL",
+                  "size": "1459",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.369",
+                  "type": "LIMIT",
+                  "status": "CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972962",
+                  "ticker": "AEVO-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "305e4882-6cf7-59ad-9b2b-98eed89f1204",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950090",
+                  "clobPairId": "43",
+                  "side": "SELL",
+                  "size": "1482",
+                  "price": "1.323",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "STRK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "d19ccd28-24ae-5932-b491-2009b01c74fe",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "27352201",
+                  "clobPairId": "46",
+                  "side": "SELL",
+                  "size": "1650",
+                  "price": "0.5447",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "PYTH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "d19ccd28-24ae-5932-b491-2009b01c74fe",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "27352201",
+                  "clobPairId": "46",
+                  "side": "SELL",
+                  "size": "1650",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.5447",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "PYTH-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "733b0dda-8562-5f39-b95a-957f522fbeaa",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "21204931",
+                  "clobPairId": "26",
+                  "side": "SELL",
+                  "size": "510",
+                  "price": "1.962",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "LDO-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "733b0dda-8562-5f39-b95a-957f522fbeaa",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "21204931",
+                  "clobPairId": "26",
+                  "side": "SELL",
+                  "size": "510",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.962",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "LDO-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "8f90bf46-db89-52d6-8637-0191018a7ac4",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854750",
+                  "clobPairId": "52",
+                  "side": "SELL",
+                  "size": "510",
+                  "price": "2.208",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "IMX-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4259115a-a115-5553-9480-989cfbb490f6",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950091",
+                  "clobPairId": "21",
+                  "side": "BUY",
+                  "size": "99",
+                  "price": "6.157",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "WLD-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4c83f8ab-4ab0-5d5b-b395-593407201f73",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854749",
+                  "clobPairId": "52",
+                  "side": "BUY",
+                  "size": "510",
+                  "price": "2.205",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "IMX-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "7654b9fd-da00-5f5d-a4a7-cd9b13f2e8b4",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950092",
+                  "clobPairId": "35",
+                  "side": "BUY",
+                  "size": "1780",
+                  "price": "1.117",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "JUP-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4259115a-a115-5553-9480-989cfbb490f6",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950091",
+                  "clobPairId": "21",
+                  "side": "BUY",
+                  "size": "99",
+                  "totalOptimisticFilled": "0",
+                  "price": "6.157",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "WLD-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "22e411c4-3044-5d82-8152-abb2a8f832cb",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950093",
+                  "clobPairId": "35",
+                  "side": "SELL",
+                  "size": "1780",
+                  "price": "1.1176",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "JUP-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "1eae447f-5534-55f2-80f3-6a055496d9b8",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "11332160",
+                  "clobPairId": "12",
+                  "side": "SELL",
+                  "size": "277",
+                  "price": "7.23",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "DOT-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "1eae447f-5534-55f2-80f3-6a055496d9b8",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "11332160",
+                  "clobPairId": "12",
+                  "side": "SELL",
+                  "size": "277",
+                  "totalOptimisticFilled": "0",
+                  "price": "7.23",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "DOT-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "c1f1d894-542a-5280-b0bb-830a338ecded",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282928",
+                  "clobPairId": "1",
+                  "side": "BUY",
+                  "size": "1.886",
+                  "price": "3076.9",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972966",
+                  "ticker": "ETH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "daf960b0-cdbd-52da-93a6-9eaeeadf4d63",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854751",
+                  "clobPairId": "64",
+                  "side": "BUY",
+                  "size": "16220",
+                  "price": "0.1231",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "CHZ-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "20674a72-a7ac-5702-aac2-fcf1e5f3aca1",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282929",
+                  "clobPairId": "1",
+                  "side": "SELL",
+                  "size": "1.886",
+                  "price": "3079.1",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972966",
+                  "ticker": "ETH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "5d973cf8-6feb-5d6e-8447-8acbac1c65e5",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854752",
+                  "clobPairId": "64",
+                  "side": "SELL",
+                  "size": "16220",
+                  "price": "0.1233",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "CHZ-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "fccc826e-babe-5ab9-9639-b9ce34c5e4d0",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "35360321",
+                  "clobPairId": "13",
+                  "side": "SELL",
+                  "size": "132",
+                  "price": "7.557",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "UNI-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "3abe0a19-31a9-5845-b8fa-65705f362037",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785518",
+                  "clobPairId": "16",
+                  "side": "SELL",
+                  "size": "42",
+                  "price": "7.343",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "NEAR-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "fa664a22-4b59-588d-a547-a283a306d798",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785520",
+                  "clobPairId": "24",
+                  "side": "SELL",
+                  "size": "1124",
+                  "price": "1.07",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "ARB-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "fccc826e-babe-5ab9-9639-b9ce34c5e4d0",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "35360321",
+                  "clobPairId": "13",
+                  "side": "SELL",
+                  "size": "132",
+                  "totalOptimisticFilled": "0",
+                  "price": "7.557",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "UNI-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "9273d939-739d-5fa2-8456-61978eb92a8a",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785521",
+                  "clobPairId": "12",
+                  "side": "SELL",
+                  "size": "83",
+                  "price": "7.23",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "DOT-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "a1c486ef-f6bc-5fda-900d-5473d9ec482b",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785519",
+                  "clobPairId": "24",
+                  "side": "BUY",
+                  "size": "1124",
+                  "price": "1.068",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "ARB-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b9f3ff47-f659-5e9d-827e-856d09f456b5",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785522",
+                  "clobPairId": "4",
+                  "side": "BUY",
+                  "size": "80",
+                  "price": "0.4366",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "CRV-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "cd38954c-8739-5c0f-a0cb-cdcab2f32dfd",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054771",
+                  "clobPairId": "38",
+                  "side": "SELL",
+                  "size": "674",
+                  "price": "3.589",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972971",
+                  "ticker": "JTO-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "39ffd7ad-b677-51de-b2db-e55b8a8f17c4",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785523",
+                  "clobPairId": "4",
+                  "side": "SELL",
+                  "size": "80",
+                  "price": "0.4389",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "CRV-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b29a815d-c7f6-51ef-89db-a1e6c97e6c9e",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854753",
+                  "clobPairId": "51",
+                  "side": "SELL",
+                  "size": "63",
+                  "price": "25.3",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "INJ-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b57e6101-05f5-50e3-90c8-1995dfade54f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "8430577",
+                  "clobPairId": "47",
+                  "side": "BUY",
+                  "size": "79900000",
+                  "price": "0.00002501",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "BONK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b57e6101-05f5-50e3-90c8-1995dfade54f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "8430577",
+                  "clobPairId": "47",
+                  "side": "BUY",
+                  "size": "79900000",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.00002501",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972963",
+                  "ticker": "BONK-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            }
+          ]
+        }
+    """.trimIndent()
+    internal val channel_batch_data_order_filled_2 = """
+        {
+          "type": "channel_batch_data",
+          "connection_id": "a636f0fd-d238-46cd-a541-78cd747d0e09",
+          "message_id": 63,
+          "id": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3/0",
+          "channel": "v4_subaccounts",
+          "version": "2.4.0",
+          "contents": [
+            {
+              "orders": [
+                {
+                  "id": "31e2aaee-e2e9-5b59-85b3-48d6ae99dcd9",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "23163849",
+                  "clobPairId": "3",
+                  "side": "SELL",
+                  "size": "700",
+                  "price": "0.7195",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "MATIC-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "31e2aaee-e2e9-5b59-85b3-48d6ae99dcd9",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "23163849",
+                  "clobPairId": "3",
+                  "side": "SELL",
+                  "size": "700",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.7195",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "MATIC-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "9191ea2d-110b-5e1c-bfc3-cbfef23c0983",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "5309308",
+                  "clobPairId": "7",
+                  "side": "SELL",
+                  "size": "13.4",
+                  "price": "37.3",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "AVAX-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "9191ea2d-110b-5e1c-bfc3-cbfef23c0983",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "5309308",
+                  "clobPairId": "7",
+                  "side": "SELL",
+                  "size": "13.4",
+                  "totalOptimisticFilled": "0",
+                  "price": "37.3",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "AVAX-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "0c1136dc-97a0-55ef-af51-819c4d5e853f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950116",
+                  "clobPairId": "33",
+                  "side": "BUY",
+                  "size": "28",
+                  "price": "10.32",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "TIA-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b00eeb26-3f91-5e49-8761-eb0c17f7758b",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854775",
+                  "clobPairId": "51",
+                  "side": "BUY",
+                  "size": "66.4",
+                  "price": "25.26",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "INJ-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "acaa59e1-adb4-5b87-b579-7e4ca6ce908d",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "21204934",
+                  "clobPairId": "26",
+                  "side": "SELL",
+                  "size": "510",
+                  "price": "1.962",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "LDO-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "acaa59e1-adb4-5b87-b579-7e4ca6ce908d",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "21204934",
+                  "clobPairId": "26",
+                  "side": "SELL",
+                  "size": "510",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.962",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "LDO-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "48cd61a6-4f68-51ed-b49a-c8cd73848d1f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "31284947",
+                  "clobPairId": "43",
+                  "side": "SELL",
+                  "size": "1513",
+                  "price": "1.323",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "STRK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "026be2bc-5eb2-5870-bf70-d2499f356523",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282935",
+                  "clobPairId": "1",
+                  "side": "BUY",
+                  "size": "2.806",
+                  "price": "3075.6",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972966",
+                  "ticker": "ETH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "48cd61a6-4f68-51ed-b49a-c8cd73848d1f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "31284947",
+                  "clobPairId": "43",
+                  "side": "SELL",
+                  "size": "1513",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.323",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "STRK-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "3884e597-6376-5ee8-a115-8e2507bd875c",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282934",
+                  "clobPairId": "1",
+                  "side": "BUY",
+                  "size": "1.029",
+                  "price": "3076.9",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ETH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "e75c65cf-1ba3-5e87-a554-b1d4dd751058",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054794",
+                  "clobPairId": "23",
+                  "side": "SELL",
+                  "size": "200",
+                  "price": "9.144",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972973",
+                  "ticker": "APT-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "82c9154e-5773-5fde-a6ed-d6106d628f33",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "27352204",
+                  "clobPairId": "46",
+                  "side": "SELL",
+                  "size": "1650",
+                  "price": "0.5446",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "PYTH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "82c9154e-5773-5fde-a6ed-d6106d628f33",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "27352204",
+                  "clobPairId": "46",
+                  "side": "SELL",
+                  "size": "1650",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.5446",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "PYTH-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "026be2bc-5eb2-5870-bf70-d2499f356523",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282935",
+                  "clobPairId": "1",
+                  "side": "BUY",
+                  "size": "2.806",
+                  "totalOptimisticFilled": "0",
+                  "price": "3075.6",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972966",
+                  "ticker": "ETH-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "7be42526-696e-5e81-9f63-786b4eebb01c",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "32397787",
+                  "clobPairId": "31",
+                  "side": "SELL",
+                  "size": "910",
+                  "price": "1.094",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "SUI-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "7be42526-696e-5e81-9f63-786b4eebb01c",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "32397787",
+                  "clobPairId": "31",
+                  "side": "SELL",
+                  "size": "910",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.094",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "SUI-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "aeb246ea-172f-5af8-acb3-b0826d8cdf99",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "20430991",
+                  "clobPairId": "35",
+                  "side": "SELL",
+                  "size": "890",
+                  "price": "1.1171",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "JUP-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "aeb246ea-172f-5af8-acb3-b0826d8cdf99",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "20430991",
+                  "clobPairId": "35",
+                  "side": "SELL",
+                  "size": "890",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.1171",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "JUP-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "aa670abc-7e36-5dee-afe1-bdeb104b6af1",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785563",
+                  "clobPairId": "2",
+                  "side": "BUY",
+                  "size": "68",
+                  "price": "14.685",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "LINK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "1603a773-2395-54bd-9858-0e414cbc9989",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785562",
+                  "clobPairId": "5",
+                  "side": "SELL",
+                  "size": "9.6",
+                  "price": "152.85",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972971",
+                  "ticker": "SOL-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "a003e35c-2006-5e7d-bf19-f074514b7fb3",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "14454043",
+                  "clobPairId": "44",
+                  "side": "SELL",
+                  "size": "840",
+                  "price": "2.3766",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "FET-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "a003e35c-2006-5e7d-bf19-f074514b7fb3",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "14454043",
+                  "clobPairId": "44",
+                  "side": "SELL",
+                  "size": "840",
+                  "totalOptimisticFilled": "0",
+                  "price": "2.3766",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "FET-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "90bda234-3a22-5cc3-8c05-227f7da9160c",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785564",
+                  "clobPairId": "2",
+                  "side": "SELL",
+                  "size": "68",
+                  "price": "14.69",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "LINK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4ca89415-a434-5941-a68c-3a3c402062d5",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785565",
+                  "clobPairId": "8",
+                  "side": "BUY",
+                  "size": "469",
+                  "price": "6.14",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972966",
+                  "ticker": "FIL-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "5c22e605-a31d-5803-ba82-e2ab9c1e5805",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854776",
+                  "clobPairId": "65",
+                  "side": "BUY",
+                  "size": "109",
+                  "price": "3.374",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "WIF-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "072d5f15-e8c2-5b15-91ed-cbd363c11df1",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785566",
+                  "clobPairId": "16",
+                  "side": "BUY",
+                  "size": "44",
+                  "price": "7.325",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "NEAR-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "f90e114e-42c3-5c43-91fc-4bc71bd2a742",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "30906388",
+                  "clobPairId": "5",
+                  "side": "SELL",
+                  "size": "32.7",
+                  "price": "152.8",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "SOL-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "f90e114e-42c3-5c43-91fc-4bc71bd2a742",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "30906388",
+                  "clobPairId": "5",
+                  "side": "SELL",
+                  "size": "32.7",
+                  "totalOptimisticFilled": "0",
+                  "price": "152.8",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "SOL-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "2b95adfa-5510-5247-a2ae-ee43b3d6a91d",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "11398529",
+                  "clobPairId": "0",
+                  "side": "SELL",
+                  "size": "0.0364",
+                  "price": "63353",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "BTC-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4ccdd095-ead4-5b0c-869a-dbe4791f5215",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "11398528",
+                  "clobPairId": "0",
+                  "side": "BUY",
+                  "size": "0.0364",
+                  "price": "63326",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "BTC-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "bf87ee54-6658-5b30-a401-a95d24756e75",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24385164",
+                  "clobPairId": "16",
+                  "side": "SELL",
+                  "size": "136",
+                  "price": "7.334",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "NEAR-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "bf87ee54-6658-5b30-a401-a95d24756e75",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24385164",
+                  "clobPairId": "16",
+                  "side": "SELL",
+                  "size": "136",
+                  "totalOptimisticFilled": "0",
+                  "price": "7.334",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "NEAR-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "072d5f15-e8c2-5b15-91ed-cbd363c11df1",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785566",
+                  "clobPairId": "16",
+                  "side": "BUY",
+                  "size": "44",
+                  "totalOptimisticFilled": "0",
+                  "price": "7.325",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "NEAR-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "ffc5f43e-7c58-5d7d-8a29-046fae3e567e",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854777",
+                  "clobPairId": "47",
+                  "side": "BUY",
+                  "size": "68100000",
+                  "price": "0.000025",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "BONK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "87667ad6-d688-5b2b-85f5-691e18336659",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "10201624",
+                  "clobPairId": "4",
+                  "side": "BUY",
+                  "size": "4570",
+                  "price": "0.4376",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "CRV-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4ca89415-a434-5941-a68c-3a3c402062d5",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785565",
+                  "clobPairId": "8",
+                  "side": "BUY",
+                  "size": "469",
+                  "totalOptimisticFilled": "0",
+                  "price": "6.14",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972966",
+                  "ticker": "FIL-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "02aaa7a3-d2f7-5662-a3f9-f57170fc06c4",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785551",
+                  "clobPairId": "8",
+                  "side": "BUY",
+                  "size": "116",
+                  "totalOptimisticFilled": "0",
+                  "price": "6.142",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "FIL-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "7e7bb369-0dd8-5966-8c76-496fe73e3b2f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "24854778",
+                  "clobPairId": "47",
+                  "side": "SELL",
+                  "size": "68100000",
+                  "price": "0.00002503",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "BONK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "84a06dee-76c4-5016-a089-0cef146996cc",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352294",
+                  "clobPairId": "44",
+                  "side": "BUY",
+                  "size": "2100",
+                  "totalOptimisticFilled": "0",
+                  "price": "2.3727",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972969",
+                  "ticker": "FET-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b46f4d57-d976-599b-ab39-9ee85123eee0",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1282936",
+                  "clobPairId": "1",
+                  "side": "SELL",
+                  "size": "1.034",
+                  "price": "3078.4",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ETH-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "4ff1e0df-963a-5c99-b9b3-1ad5c41ba03f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "34352350",
+                  "clobPairId": "44",
+                  "side": "BUY",
+                  "size": "2100",
+                  "price": "2.3718",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972973",
+                  "ticker": "FET-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "822f2c81-9912-503c-b2f9-2cb964a88b32",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "10201623",
+                  "clobPairId": "4",
+                  "side": "BUY",
+                  "size": "4570",
+                  "totalOptimisticFilled": "4570",
+                  "price": "0.4376",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "CRV-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "1603a773-2395-54bd-9858-0e414cbc9989",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "47785562",
+                  "clobPairId": "5",
+                  "side": "SELL",
+                  "size": "9.6",
+                  "totalOptimisticFilled": "0",
+                  "price": "152.85",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972971",
+                  "ticker": "SOL-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "8ac1a6a2-db80-569f-89a5-38c1530fcb84",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "26450122",
+                  "clobPairId": "39",
+                  "side": "SELL",
+                  "size": "25.8",
+                  "price": "38.77",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ORDI-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "923caeed-cc94-5528-b29e-2eae12f3b324",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "28331617",
+                  "clobPairId": "29",
+                  "side": "SELL",
+                  "size": "2180",
+                  "price": "0.5482",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "SEI-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "923caeed-cc94-5528-b29e-2eae12f3b324",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "28331617",
+                  "clobPairId": "29",
+                  "side": "SELL",
+                  "size": "2180",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.5482",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "SEI-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "9e5abbbf-2c06-5c20-8295-5f1f96924c74",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "4289210",
+                  "clobPairId": "24",
+                  "side": "SELL",
+                  "size": "936",
+                  "price": "1.069",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ARB-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "9e5abbbf-2c06-5c20-8295-5f1f96924c74",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "4289210",
+                  "clobPairId": "24",
+                  "side": "SELL",
+                  "size": "936",
+                  "totalOptimisticFilled": "0",
+                  "price": "1.069",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ARB-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "e4dc295c-2204-5088-a826-b08b5c0c69e3",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "8430580",
+                  "clobPairId": "47",
+                  "side": "SELL",
+                  "size": "79900000",
+                  "price": "0.00002503",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "BONK-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "e4dc295c-2204-5088-a826-b08b5c0c69e3",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "8430580",
+                  "clobPairId": "47",
+                  "side": "SELL",
+                  "size": "79900000",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.00002503",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "BONK-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "50a1fecc-d2fc-5efe-bda9-164990325dac",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054796",
+                  "clobPairId": "62",
+                  "side": "SELL",
+                  "size": "762",
+                  "price": "2.625",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ARKM-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "7d09e37c-3e50-5276-9922-c50bf268048f",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "64054795",
+                  "clobPairId": "62",
+                  "side": "BUY",
+                  "size": "762",
+                  "price": "2.624",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ARKM-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "8ac1a6a2-db80-569f-89a5-38c1530fcb84",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "26450122",
+                  "clobPairId": "39",
+                  "side": "SELL",
+                  "size": "25.8",
+                  "totalOptimisticFilled": "0",
+                  "price": "38.77",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "ORDI-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "d7ffbefb-0d6d-5de2-838d-39404adab13d",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "63950117",
+                  "clobPairId": "21",
+                  "side": "SELL",
+                  "size": "257",
+                  "price": "6.18",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "GTT",
+                  "postOnly": true,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972973",
+                  "ticker": "WLD-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "tradingReward": {
+                "tradingReward": "0.120213656910332891",
+                "createdAtHeight": "14972965",
+                "createdAt": "2024-05-06T18:41:23.452Z"
+              }
+            },
+            {
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "b27fe5e5-9411-5a46-8ff4-82eff972a665",
+                  "market": "CRV-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-5180",
+                  "maxSize": "-480",
+                  "netFunding": "-0.004246",
+                  "entryPrice": "0.43801138333224734478",
+                  "exitPrice": "0.43662955658134004757",
+                  "sumOpen": "153470",
+                  "sumClose": "142980",
+                  "realizedPnl": "197.5693428447253550858",
+                  "unrealizedPnl": "1.1243429950412459604"
+                }
+              ],
+              "assetPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "e326796e-660a-532b-958b-1b83e7e5f895",
+                  "assetId": "0",
+                  "symbol": "USDC",
+                  "side": "LONG",
+                  "size": "1595143.629373"
+                }
+              ]
+            },
+            {
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "b27fe5e5-9411-5a46-8ff4-82eff972a665",
+                  "market": "CRV-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-1880",
+                  "maxSize": "-480",
+                  "netFunding": "-0.004246",
+                  "entryPrice": "0.43801138333224734478",
+                  "exitPrice": "0.43663633968804159446",
+                  "sumOpen": "153470",
+                  "sumClose": "144250",
+                  "realizedPnl": "198.34579967667948366",
+                  "unrealizedPnl": "0.4080627086250081864"
+                }
+              ],
+              "assetPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "e326796e-660a-532b-958b-1b83e7e5f895",
+                  "assetId": "0",
+                  "symbol": "USDC",
+                  "side": "LONG",
+                  "size": "1593699.848518"
+                }
+              ]
+            },
+            {
+              "fills": [
+                {
+                  "id": "d9a769be-0403-585a-a6b7-733aa5353811",
+                  "fee": "0.138875",
+                  "side": "BUY",
+                  "size": "1270",
+                  "type": "LIMIT",
+                  "price": "0.4374",
+                  "eventId": "00e47825000000020000000e",
+                  "orderId": "87667ad6-d688-5b2b-85f5-691e18336659",
+                  "createdAt": "2024-05-06T18:41:23.452Z",
+                  "liquidity": "TAKER",
+                  "clobPairId": "4",
+                  "quoteAmount": "555.498",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972965",
+                  "transactionHash": "1F41C92B9FC15B94F7DC55A0D55EDBB59122D5B7D96CEB9924B9CE2EE2FE3D0F",
+                  "ticker": "CRV-USD"
+                },
+                {
+                  "id": "a15ab1f0-1d06-5f47-bad7-a048f5696c5f",
+                  "fee": "0.360855",
+                  "side": "BUY",
+                  "size": "3300",
+                  "type": "LIMIT",
+                  "price": "0.4374",
+                  "eventId": "00e478250000000200000011",
+                  "orderId": "87667ad6-d688-5b2b-85f5-691e18336659",
+                  "createdAt": "2024-05-06T18:41:23.452Z",
+                  "liquidity": "TAKER",
+                  "clobPairId": "4",
+                  "quoteAmount": "1443.42",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972965",
+                  "transactionHash": "1F41C92B9FC15B94F7DC55A0D55EDBB59122D5B7D96CEB9924B9CE2EE2FE3D0F",
+                  "ticker": "CRV-USD"
+                }
+              ],
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "b27fe5e5-9411-5a46-8ff4-82eff972a665",
+                  "market": "CRV-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-1880",
+                  "maxSize": "-480",
+                  "netFunding": "-0.004246",
+                  "entryPrice": "0.43801138333224734478",
+                  "exitPrice": "0.43665341917993900373",
+                  "sumOpen": "153470",
+                  "sumClose": "147550"
+                }
+              ],
+              "orders": [
+                {
+                  "id": "87667ad6-d688-5b2b-85f5-691e18336659",
+                  "side": "BUY",
+                  "size": "4570",
+                  "type": "LIMIT",
+                  "price": "0.4376",
+                  "status": "FILLED",
+                  "clientId": "10201624",
+                  "updatedAt": "2024-05-06T18:41:23.452Z",
+                  "clobPairId": "4",
+                  "orderFlags": "0",
+                  "reduceOnly": false,
+                  "timeInForce": "IOC",
+                  "totalFilled": "4570",
+                  "goodTilBlock": "14972965",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "triggerPrice": null,
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972965",
+                  "updatedAtHeight": "14972965",
+                  "goodTilBlockTime": null,
+                  "postOnly": false,
+                  "ticker": "CRV-USD"
+                }
+              ]
+            },
+            {
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "3316ca2e-baa4-594c-a353-900b8a139df2",
+                  "market": "INJ-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-957.3",
+                  "maxSize": "-6.3",
+                  "netFunding": "0.571584",
+                  "entryPrice": "25.84818550028599549619",
+                  "exitPrice": "25.84011068408081729257",
+                  "sumOpen": "19405.9",
+                  "sumClose": "18421.8",
+                  "realizedPnl": "149.324233168551831446916",
+                  "unrealizedPnl": "468.334432236783488502687"
+                }
+              ],
+              "assetPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "e326796e-660a-532b-958b-1b83e7e5f895",
+                  "assetId": "0",
+                  "symbol": "USDC",
+                  "side": "LONG",
+                  "size": "1593826.216918"
+                }
+              ]
+            },
+            {
+              "fills": [
+                {
+                  "id": "a39be804-d529-5e35-a585-24a15fc5ef13",
+                  "fee": "0.0316",
+                  "side": "SELL",
+                  "size": "5",
+                  "type": "LIMIT",
+                  "price": "25.28",
+                  "eventId": "00e478250000000200000020",
+                  "orderId": "e068abcc-db2e-550f-a747-bbbd8465b813",
+                  "createdAt": "2024-05-06T18:41:23.452Z",
+                  "liquidity": "TAKER",
+                  "clobPairId": "51",
+                  "quoteAmount": "126.4",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972965",
+                  "transactionHash": "1F41C92B9FC15B94F7DC55A0D55EDBB59122D5B7D96CEB9924B9CE2EE2FE3D0F",
+                  "ticker": "INJ-USD"
+                }
+              ],
+              "perpetualPositions": [
+                {
+                  "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                  "subaccountNumber": 0,
+                  "positionId": "3316ca2e-baa4-594c-a353-900b8a139df2",
+                  "market": "INJ-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-957.3",
+                  "maxSize": "-6.3",
+                  "netFunding": "0.571584",
+                  "entryPrice": "25.84803914295576196877",
+                  "exitPrice": "25.84011068408081729257",
+                  "sumOpen": "19410.9",
+                  "sumClose": "18421.8"
+                }
+              ],
+              "orders": [
+                {
+                  "id": "e068abcc-db2e-550f-a747-bbbd8465b813",
+                  "side": "SELL",
+                  "size": "39.6",
+                  "type": "LIMIT",
+                  "price": "25.28",
+                  "status": "CANCELED",
+                  "clientId": "18334330",
+                  "updatedAt": "2024-05-06T18:41:23.452Z",
+                  "clobPairId": "51",
+                  "orderFlags": "0",
+                  "reduceOnly": false,
+                  "timeInForce": "IOC",
+                  "totalFilled": "5",
+                  "goodTilBlock": "14972965",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "triggerPrice": null,
+                  "clientMetadata": "0",
+                  "createdAtHeight": "14972965",
+                  "updatedAtHeight": "14972965",
+                  "goodTilBlockTime": null,
+                  "postOnly": false,
+                  "ticker": "INJ-USD"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b3791a71-9578-5b2b-b763-88d0de37b112",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "16211736",
+                  "clobPairId": "53",
+                  "side": "SELL",
+                  "size": "8750",
+                  "price": "0.1143",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "HBAR-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "b3791a71-9578-5b2b-b763-88d0de37b112",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "16211736",
+                  "clobPairId": "53",
+                  "side": "SELL",
+                  "size": "8750",
+                  "totalOptimisticFilled": "0",
+                  "price": "0.1143",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "HBAR-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "e068abcc-db2e-550f-a747-bbbd8465b813",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "18334330",
+                  "clobPairId": "51",
+                  "side": "SELL",
+                  "size": "39.6",
+                  "price": "25.28",
+                  "status": "BEST_EFFORT_OPENED",
+                  "type": "LIMIT",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "INJ-USD",
+                  "clientMetadata": "0"
+                }
+              ]
+            },
+            {
+              "orders": [
+                {
+                  "id": "e068abcc-db2e-550f-a747-bbbd8465b813",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "18334330",
+                  "clobPairId": "51",
+                  "side": "SELL",
+                  "size": "39.6",
+                  "totalOptimisticFilled": "0",
+                  "price": "25.28",
+                  "type": "LIMIT",
+                  "status": "BEST_EFFORT_CANCELED",
+                  "timeInForce": "IOC",
+                  "postOnly": false,
+                  "reduceOnly": false,
+                  "orderFlags": "0",
+                  "goodTilBlock": "14972965",
+                  "ticker": "INJ-USD",
+                  "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                  "createdAtHeight": "14972965",
+                  "updatedAt": "2024-05-06T18:41:23.452Z",
+                  "updatedAtHeight": "14972965",
+                  "clientMetadata": "0"
+                }
+              ]
+            }
+          ]
+        }
+    """.trimIndent()
+    internal val channel_batch_data_order_filled_3 = """
+        [
+          {
+            "orders": [
+              {
+                "id": "b6647251-0e89-587c-a621-a77381974cb7",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854872",
+                "clobPairId": "47",
+                "side": "SELL",
+                "size": "79900000",
+                "price": "0.00002503",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BONK-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "688da090-189a-5177-b83b-83dd312116f0",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785706",
+                "clobPairId": "8",
+                "side": "SELL",
+                "size": "229",
+                "totalOptimisticFilled": "0",
+                "price": "6.147",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972974",
+                "ticker": "FIL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "f12d6138-1e9d-5bca-ace6-eeece9d4408c",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785713",
+                "clobPairId": "8",
+                "side": "BUY",
+                "size": "230",
+                "totalOptimisticFilled": "0",
+                "price": "6.139",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972974",
+                "ticker": "FIL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6f83d10e-5b0a-5f85-96a3-a4d66b6feb17",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "17448033",
+                "clobPairId": "52",
+                "side": "SELL",
+                "size": "544",
+                "price": "2.207",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "IMX-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6f83d10e-5b0a-5f85-96a3-a4d66b6feb17",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "17448033",
+                "clobPairId": "52",
+                "side": "SELL",
+                "size": "544",
+                "totalOptimisticFilled": "0",
+                "price": "2.207",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "IMX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "af7294fe-e800-5429-b0d7-4a77d8701cb4",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352434",
+                "clobPairId": "30",
+                "side": "SELL",
+                "size": "82000000",
+                "price": "0.000024177",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "SHIB-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "bf718c87-182d-515a-899f-c309504b1c9e",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854873",
+                "clobPairId": "13",
+                "side": "BUY",
+                "size": "1986",
+                "price": "7.522",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972986",
+                "ticker": "UNI-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "7eb2dc15-4479-51cd-b4b6-b0f8a25bea61",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "8430588",
+                "clobPairId": "47",
+                "side": "BUY",
+                "size": "79900000",
+                "price": "0.000025",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BONK-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "7eb2dc15-4479-51cd-b4b6-b0f8a25bea61",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "8430588",
+                "clobPairId": "47",
+                "side": "BUY",
+                "size": "79900000",
+                "totalOptimisticFilled": "0",
+                "price": "0.000025",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BONK-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6377f1bd-694a-53ee-bac3-9dd1bb314420",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "15324171",
+                "clobPairId": "8",
+                "side": "BUY",
+                "size": "326",
+                "price": "6.142",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "FIL-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6377f1bd-694a-53ee-bac3-9dd1bb314420",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "15324171",
+                "clobPairId": "8",
+                "side": "BUY",
+                "size": "326",
+                "totalOptimisticFilled": "0",
+                "price": "6.142",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "FIL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "cda2d1c7-c6ee-5869-8976-340223112633",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785714",
+                "clobPairId": "4",
+                "side": "SELL",
+                "size": "100",
+                "price": "0.4383",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "CRV-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "afde3348-4f22-5ac3-a1d2-5216dde78d94",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352433",
+                "clobPairId": "61",
+                "side": "BUY",
+                "size": "1448",
+                "price": "2.808",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972981",
+                "ticker": "SNX-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "0944c9e5-2ee6-5c7c-af1f-b88cb138a8b9",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "23163854",
+                "clobPairId": "3",
+                "side": "SELL",
+                "size": "700",
+                "price": "0.7195",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "MATIC-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "0944c9e5-2ee6-5c7c-af1f-b88cb138a8b9",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "23163854",
+                "clobPairId": "3",
+                "side": "SELL",
+                "size": "700",
+                "totalOptimisticFilled": "0",
+                "price": "0.7195",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "MATIC-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "b6e3d5b2-b5b3-5656-9489-df2975f7bfcb",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950194",
+                "clobPairId": "35",
+                "side": "BUY",
+                "size": "1790",
+                "price": "1.1164",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "JUP-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "3309bc27-8eee-5ff8-8b1c-5ee2192e3922",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785717",
+                "clobPairId": "24",
+                "side": "SELL",
+                "size": "1124",
+                "price": "1.069",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "ARB-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "b6e3d5b2-b5b3-5656-9489-df2975f7bfcb",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950194",
+                "clobPairId": "35",
+                "side": "BUY",
+                "size": "1790",
+                "totalOptimisticFilled": "0",
+                "price": "1.1164",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "JUP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "afc75964-29c6-5975-9a10-5eebef4e958a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950181",
+                "clobPairId": "35",
+                "side": "SELL",
+                "size": "4470",
+                "totalOptimisticFilled": "0",
+                "price": "1.1184",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972975",
+                "ticker": "JUP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "03aa66bf-9156-588f-84d1-db9bfe4f1411",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950195",
+                "clobPairId": "35",
+                "side": "SELL",
+                "size": "1790",
+                "price": "1.117",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "JUP-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "f1cb848a-6769-5a76-ab88-3fef5f8d23e8",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785715",
+                "clobPairId": "53",
+                "side": "SELL",
+                "size": "1900",
+                "price": "0.1144",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "HBAR-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "4f353258-a1fa-5edc-b347-f18145775014",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785716",
+                "clobPairId": "24",
+                "side": "BUY",
+                "size": "1124",
+                "price": "1.068",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "ARB-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "d980e4ce-9d58-5cec-b1fb-1d292a50c866",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "20430997",
+                "clobPairId": "35",
+                "side": "SELL",
+                "size": "890",
+                "price": "1.1169",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "JUP-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "698797b9-2237-5b75-8f12-3e99c18e54b2",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785718",
+                "clobPairId": "12",
+                "side": "BUY",
+                "size": "83",
+                "price": "7.21",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "DOT-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "1e9e99d1-1f3c-5de9-adea-23183cc5dbd9",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950180",
+                "clobPairId": "35",
+                "side": "BUY",
+                "size": "4470",
+                "totalOptimisticFilled": "0",
+                "price": "1.1152",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972975",
+                "ticker": "JUP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "03aa66bf-9156-588f-84d1-db9bfe4f1411",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950195",
+                "clobPairId": "35",
+                "side": "SELL",
+                "size": "1790",
+                "totalOptimisticFilled": "0",
+                "price": "1.117",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "JUP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "d980e4ce-9d58-5cec-b1fb-1d292a50c866",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "20430997",
+                "clobPairId": "35",
+                "side": "SELL",
+                "size": "890",
+                "totalOptimisticFilled": "0",
+                "price": "1.1169",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "JUP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "40e55f38-9e5c-5635-83b8-b00698c73f9a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "11398549",
+                "clobPairId": "0",
+                "side": "SELL",
+                "size": "0.1031",
+                "totalOptimisticFilled": "0",
+                "price": "63375",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "BTC-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "1cc31c00-afeb-5eba-b43f-df476cd6f221",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785705",
+                "clobPairId": "22",
+                "side": "SELL",
+                "size": "943",
+                "totalOptimisticFilled": "0",
+                "price": "1.274",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "APE-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "5f7db51e-88ec-5559-872c-0c24c82c8444",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854860",
+                "clobPairId": "47",
+                "side": "BUY",
+                "size": "78400000",
+                "totalOptimisticFilled": "0",
+                "price": "0.000025",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "BONK-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "a066a133-a779-51ec-8465-a2b39df72512",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785694",
+                "clobPairId": "27",
+                "side": "SELL",
+                "size": "214",
+                "totalOptimisticFilled": "0",
+                "price": "2.81",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "OP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "389d3960-181c-5e79-9971-4dccfe5ea6e8",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352426",
+                "clobPairId": "15",
+                "side": "BUY",
+                "size": "16800",
+                "totalOptimisticFilled": "0",
+                "price": "0.119",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TRX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "00774af6-2c75-56a1-933a-c87b4fa91b45",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950186",
+                "clobPairId": "21",
+                "side": "SELL",
+                "size": "118",
+                "totalOptimisticFilled": "0",
+                "price": "6.172",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "WLD-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "cf69b472-cdac-53ad-8bc8-98a41ab5ce20",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950103",
+                "clobPairId": "33",
+                "side": "SELL",
+                "size": "207",
+                "totalOptimisticFilled": "0",
+                "price": "10.38",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TIA-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "8735b996-0f90-5ec6-9961-cb585f49cf91",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950191",
+                "clobPairId": "43",
+                "side": "SELL",
+                "size": "1514",
+                "totalOptimisticFilled": "0",
+                "price": "1.322",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "STRK-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "46de9008-4015-54d9-9635-ad3b2b985731",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950185",
+                "clobPairId": "21",
+                "side": "BUY",
+                "size": "118",
+                "totalOptimisticFilled": "0",
+                "price": "6.156",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "WLD-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "0aab35dd-ba6d-5137-bb95-79fa05121301",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950159",
+                "clobPairId": "33",
+                "side": "BUY",
+                "size": "77",
+                "totalOptimisticFilled": "0",
+                "price": "10.3",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TIA-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "f56aaaec-1f20-52ef-8959-10ca700ef6a3",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054862",
+                "clobPairId": "31",
+                "side": "SELL",
+                "size": "1820",
+                "totalOptimisticFilled": "0",
+                "price": "1.0941",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SUI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "38a20fdf-fb9a-582b-af9b-fa8e53c5e720",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785698",
+                "clobPairId": "8",
+                "side": "SELL",
+                "size": "57",
+                "totalOptimisticFilled": "0",
+                "price": "6.146",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "FIL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "7960f213-2571-54a9-8af6-69dbd9f71211",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054864",
+                "clobPairId": "29",
+                "side": "SELL",
+                "size": "2690",
+                "totalOptimisticFilled": "0",
+                "price": "0.5478",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SEI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "fc93c0a0-07b0-559b-8313-183eca8cd08d",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054861",
+                "clobPairId": "31",
+                "side": "BUY",
+                "size": "1820",
+                "totalOptimisticFilled": "0",
+                "price": "1.0938",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SUI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "5308c450-a6b5-58d9-aa4e-75ce09ec743a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352424",
+                "clobPairId": "61",
+                "side": "BUY",
+                "size": "568",
+                "totalOptimisticFilled": "0",
+                "price": "2.811",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SNX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "999a4a4b-40b5-5cad-80cb-8c71ba9adccf",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352335",
+                "clobPairId": "15",
+                "side": "BUY",
+                "size": "126000",
+                "totalOptimisticFilled": "0",
+                "price": "0.11853",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TRX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "e148d9df-c458-579e-99e4-dea13441bdcc",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785719",
+                "clobPairId": "12",
+                "side": "SELL",
+                "size": "83",
+                "price": "7.23",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "DOT-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "020b69b8-7d6c-5327-978d-5e0bb43849ae",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785693",
+                "clobPairId": "27",
+                "side": "BUY",
+                "size": "214",
+                "totalOptimisticFilled": "0",
+                "price": "2.805",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "OP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "0f79f409-0be1-5802-9a49-9153ad3e2055",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950190",
+                "clobPairId": "43",
+                "side": "BUY",
+                "size": "1514",
+                "totalOptimisticFilled": "0",
+                "price": "1.321",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "STRK-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "91b22b65-0bf3-54ed-9da9-f4670acb1a02",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854865",
+                "clobPairId": "13",
+                "side": "BUY",
+                "size": "264",
+                "totalOptimisticFilled": "0",
+                "price": "7.551",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "UNI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "353671c7-457c-55b0-badc-74fb67311afe",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785696",
+                "clobPairId": "5",
+                "side": "SELL",
+                "size": "2.2",
+                "totalOptimisticFilled": "0",
+                "price": "152.78",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SOL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "4eb78ead-9238-558a-ba76-514574d8c7b7",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785695",
+                "clobPairId": "5",
+                "side": "BUY",
+                "size": "2.2",
+                "totalOptimisticFilled": "0",
+                "price": "152.55",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SOL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "9cf15f8f-75eb-547c-8977-3506cc86c4d5",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785703",
+                "clobPairId": "32",
+                "side": "SELL",
+                "size": "310",
+                "totalOptimisticFilled": "0",
+                "price": "0.5469",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "XRP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "98967f6f-31fa-5410-b42d-f8cf768f46fd",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785704",
+                "clobPairId": "3",
+                "side": "SELL",
+                "size": "690",
+                "totalOptimisticFilled": "0",
+                "price": "0.7195",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "MATIC-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "441af756-4863-5f19-9229-061da9c4ec82",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785697",
+                "clobPairId": "8",
+                "side": "BUY",
+                "size": "57",
+                "totalOptimisticFilled": "0",
+                "price": "6.14",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "FIL-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "a9204db3-9d3e-5e76-b7fa-838535630a03",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854866",
+                "clobPairId": "13",
+                "side": "SELL",
+                "size": "264",
+                "totalOptimisticFilled": "0",
+                "price": "7.555",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "UNI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "4fb9552d-6f57-5a15-861e-295e3b436cfb",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054868",
+                "clobPairId": "23",
+                "side": "SELL",
+                "size": "101",
+                "totalOptimisticFilled": "0",
+                "price": "9.125",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "APT-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "c9161c6e-5500-5613-bb64-ab63044faaaa",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352430",
+                "clobPairId": "30",
+                "side": "BUY",
+                "size": "82000000",
+                "totalOptimisticFilled": "0",
+                "price": "0.000024166",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SHIB-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "eba636b1-4a55-5ac7-b6db-df71b0779786",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854863",
+                "clobPairId": "39",
+                "side": "BUY",
+                "size": "51.5",
+                "totalOptimisticFilled": "0",
+                "price": "38.74",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "ORDI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "5169019f-02e4-5f27-9208-3b877c13780a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854694",
+                "clobPairId": "52",
+                "side": "SELL",
+                "size": "3525",
+                "totalOptimisticFilled": "0",
+                "price": "2.218",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "IMX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "2628a9cf-dbb1-5066-9903-2c0b9e81daee",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "11398548",
+                "clobPairId": "0",
+                "side": "BUY",
+                "size": "0.1031",
+                "totalOptimisticFilled": "0",
+                "price": "63292",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "BTC-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "createdAtHeight": "4366782",
+                "updatedAt": "2023-12-26T15:37:48.178Z",
+                "updatedAtHeight": "4366782",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "14c4e01e-2dec-59eb-9ecf-f35064fd8caa",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785699",
+                "clobPairId": "26",
+                "side": "SELL",
+                "size": "306",
+                "totalOptimisticFilled": "0",
+                "price": "1.962",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "LDO-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "e0a6c2e6-0db2-586e-82ff-13221abd639b",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352425",
+                "clobPairId": "61",
+                "side": "SELL",
+                "size": "568",
+                "totalOptimisticFilled": "0",
+                "price": "2.813",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SNX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "96f257c8-247c-544b-82b6-b7ac03ff4db7",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "25446576",
+                "clobPairId": "27",
+                "side": "BUY",
+                "size": "1425",
+                "price": "2.806",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "OP-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "96f257c8-247c-544b-82b6-b7ac03ff4db7",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "25446576",
+                "clobPairId": "27",
+                "side": "BUY",
+                "size": "1425",
+                "totalOptimisticFilled": "0",
+                "price": "2.806",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "OP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "tradingReward": {
+              "tradingReward": "0.009290434492556074",
+              "createdAtHeight": "14972972",
+              "createdAt": "2024-05-06T18:41:30.747Z"
+            }
+          },
+          {
+            "perpetualPositions": [
+              {
+                "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                "subaccountNumber": 0,
+                "positionId": "3316ca2e-baa4-594c-a353-900b8a139df2",
+                "market": "INJ-USD",
+                "side": "SHORT",
+                "status": "OPEN",
+                "size": "-950.8",
+                "maxSize": "-6.3",
+                "netFunding": "0.571584",
+                "entryPrice": "25.84803914295576196877",
+                "exitPrice": "25.84011068408081729257",
+                "sumOpen": "19410.9",
+                "sumClose": "18421.8",
+                "realizedPnl": "146.62806770245583602116",
+                "unrealizedPnl": "465.015317670338479906516"
+              }
+            ],
+            "assetPositions": [
+              {
+                "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                "subaccountNumber": 0,
+                "positionId": "e326796e-660a-532b-958b-1b83e7e5f895",
+                "assetId": "0",
+                "symbol": "USDC",
+                "side": "LONG",
+                "size": "1594658.823566"
+              }
+            ]
+          },
+          {
+            "fills": [
+              {
+                "id": "e112f5c2-b77d-5c63-845b-cbc65a2f7c37",
+                "fee": "0.041064",
+                "side": "BUY",
+                "size": "6.5",
+                "type": "LIMIT",
+                "price": "25.27",
+                "eventId": "00e4782c0000000200000005",
+                "orderId": "c58b5007-374f-544d-b99e-6a6b0f775cc7",
+                "createdAt": "2024-05-06T18:41:30.747Z",
+                "liquidity": "TAKER",
+                "clobPairId": "51",
+                "quoteAmount": "164.255",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientMetadata": "0",
+                "createdAtHeight": "14972972",
+                "transactionHash": "C4728A71264AEFA06E08AC3FA799ACB85B53916A97787F639BDB51C538D2FE27",
+                "ticker": "INJ-USD"
+              }
+            ],
+            "perpetualPositions": [
+              {
+                "address": "dydx18p7nz5rqezkyscdz9pv9rchnsesjyjjyfe92t3",
+                "subaccountNumber": 0,
+                "positionId": "3316ca2e-baa4-594c-a353-900b8a139df2",
+                "market": "INJ-USD",
+                "side": "SHORT",
+                "status": "OPEN",
+                "size": "-950.8",
+                "maxSize": "-6.3",
+                "netFunding": "0.571584",
+                "entryPrice": "25.84803914295576196877",
+                "exitPrice": "25.83990959556768665586",
+                "sumOpen": "19410.9",
+                "sumClose": "18428.3"
+              }
+            ],
+            "orders": [
+              {
+                "id": "c58b5007-374f-544d-b99e-6a6b0f775cc7",
+                "side": "BUY",
+                "size": "39.6",
+                "type": "LIMIT",
+                "price": "25.27",
+                "status": "CANCELED",
+                "clientId": "18334336",
+                "updatedAt": "2024-05-06T18:41:30.747Z",
+                "clobPairId": "51",
+                "orderFlags": "0",
+                "reduceOnly": false,
+                "timeInForce": "IOC",
+                "totalFilled": "6.5",
+                "goodTilBlock": "14972972",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "triggerPrice": null,
+                "clientMetadata": "0",
+                "createdAtHeight": "14972972",
+                "updatedAtHeight": "14972972",
+                "goodTilBlockTime": null,
+                "postOnly": false,
+                "ticker": "INJ-USD"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "defe1e7d-778c-5911-8138-93330fea79b2",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950188",
+                "clobPairId": "33",
+                "side": "SELL",
+                "size": "32",
+                "totalOptimisticFilled": "0",
+                "price": "10.34",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TIA-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "c5133b63-8c26-5140-96e3-ee5880af61c4",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785702",
+                "clobPairId": "32",
+                "side": "BUY",
+                "size": "310",
+                "totalOptimisticFilled": "0",
+                "price": "0.5462",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "XRP-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6334eebc-7c64-59f3-acfb-fe351bffc27e",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054870",
+                "clobPairId": "25",
+                "side": "BUY",
+                "size": "4990",
+                "price": "0.4002",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BLUR-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "3bf888e4-3328-5eb1-819a-7e3355a958de",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352435",
+                "clobPairId": "15",
+                "side": "SELL",
+                "size": "16800",
+                "price": "0.11905",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "TRX-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "61d6fb1f-e25a-54ca-8e58-60f08a86d6d0",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054860",
+                "clobPairId": "62",
+                "side": "SELL",
+                "size": "763",
+                "totalOptimisticFilled": "0",
+                "price": "2.624",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "ARKM-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "b2234066-d546-5814-8da8-7a2b6a328b14",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854874",
+                "clobPairId": "65",
+                "side": "BUY",
+                "size": "128",
+                "price": "3.372",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WIF-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "a1752004-a36a-599f-8b02-8cd958396bc6",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352336",
+                "clobPairId": "15",
+                "side": "SELL",
+                "size": "126000",
+                "totalOptimisticFilled": "0",
+                "price": "0.11953",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TRX-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "b3468577-6787-5c08-b1be-3b60e2da4762",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950189",
+                "clobPairId": "59",
+                "side": "SELL",
+                "size": "1459",
+                "totalOptimisticFilled": "0",
+                "price": "1.369",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "AEVO-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "05929b2c-ae2d-5f97-9ff3-0e5329e0217e",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054867",
+                "clobPairId": "23",
+                "side": "BUY",
+                "size": "101",
+                "totalOptimisticFilled": "0",
+                "price": "9.12",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "APT-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "46f47606-edab-5a43-b99e-5090a72b6dc7",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950187",
+                "clobPairId": "33",
+                "side": "BUY",
+                "size": "32",
+                "totalOptimisticFilled": "0",
+                "price": "10.32",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TIA-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "b791b9af-72e2-545e-a9da-26044d42931e",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854864",
+                "clobPairId": "39",
+                "side": "SELL",
+                "size": "51.5",
+                "totalOptimisticFilled": "0",
+                "price": "38.77",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "ORDI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "8b093d3b-12f5-5089-82ab-261329a6b907",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054866",
+                "clobPairId": "38",
+                "side": "SELL",
+                "size": "325",
+                "totalOptimisticFilled": "0",
+                "price": "3.584",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "JTO-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "65b1636c-0884-5f6c-897f-3365c116e05e",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054865",
+                "clobPairId": "38",
+                "side": "BUY",
+                "size": "325",
+                "totalOptimisticFilled": "0",
+                "price": "3.581",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "JTO-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "f371a841-06ce-5c3c-b40c-39d12a20e0e6",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950160",
+                "clobPairId": "33",
+                "side": "SELL",
+                "size": "77",
+                "totalOptimisticFilled": "0",
+                "price": "10.35",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "TIA-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6c300110-8218-51ab-a8e9-b1d7c00d9e28",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "28331625",
+                "clobPairId": "29",
+                "side": "SELL",
+                "size": "2190",
+                "price": "0.5476",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "SEI-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6c300110-8218-51ab-a8e9-b1d7c00d9e28",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "28331625",
+                "clobPairId": "29",
+                "side": "SELL",
+                "size": "2190",
+                "totalOptimisticFilled": "0",
+                "price": "0.5476",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "SEI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "732f5218-1caa-5128-8b6b-d03212a7b194",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785701",
+                "clobPairId": "10",
+                "side": "SELL",
+                "size": "6400",
+                "totalOptimisticFilled": "0",
+                "price": "0.15617",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "DOGE-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "1276c028-1ffb-58a6-834e-6733522f8c45",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854875",
+                "clobPairId": "47",
+                "side": "BUY",
+                "size": "79900000",
+                "price": "0.000025",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BONK-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "86c19d84-4a4c-584c-b3b3-c314daf8ed2c",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054859",
+                "clobPairId": "62",
+                "side": "BUY",
+                "size": "763",
+                "totalOptimisticFilled": "0",
+                "price": "2.622",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "ARKM-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "4239b51a-9302-5e93-a6a0-ea3f6bd9259f",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785700",
+                "clobPairId": "10",
+                "side": "BUY",
+                "size": "6400",
+                "totalOptimisticFilled": "0",
+                "price": "0.15611",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "DOGE-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "ac1a1e3b-09d8-5ea1-a317-3804f2291d06",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950196",
+                "clobPairId": "21",
+                "side": "BUY",
+                "size": "121",
+                "price": "6.156",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WLD-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "7c8463b1-012c-56fa-8068-18922ee8849e",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352437",
+                "clobPairId": "46",
+                "side": "SELL",
+                "size": "3670",
+                "price": "0.5445",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "PYTH-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "1a482dbb-d61a-5051-b65c-fe049d538d4a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950197",
+                "clobPairId": "21",
+                "side": "SELL",
+                "size": "121",
+                "price": "6.172",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WLD-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "db79eadf-b326-5837-aa6d-1dcdaffbb12a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "26450128",
+                "clobPairId": "39",
+                "side": "SELL",
+                "size": "25.8",
+                "price": "38.76",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "ORDI-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "db79eadf-b326-5837-aa6d-1dcdaffbb12a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "26450128",
+                "clobPairId": "39",
+                "side": "SELL",
+                "size": "25.8",
+                "totalOptimisticFilled": "0",
+                "price": "38.76",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "ORDI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "a3ada32e-7f25-5a5d-9fa5-788e3a57fbbb",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "36474019",
+                "clobPairId": "21",
+                "side": "BUY",
+                "size": "162",
+                "price": "6.16",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WLD-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "a3ada32e-7f25-5a5d-9fa5-788e3a57fbbb",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "36474019",
+                "clobPairId": "21",
+                "side": "BUY",
+                "size": "162",
+                "totalOptimisticFilled": "0",
+                "price": "6.16",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WLD-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "0e91f4b2-9385-57ef-a5c9-393ae1b9bb73",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "21204937",
+                "clobPairId": "26",
+                "side": "SELL",
+                "size": "511",
+                "price": "1.962",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "LDO-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "0e91f4b2-9385-57ef-a5c9-393ae1b9bb73",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "21204937",
+                "clobPairId": "26",
+                "side": "SELL",
+                "size": "511",
+                "totalOptimisticFilled": "0",
+                "price": "1.962",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "LDO-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "8dbab4e8-169a-5139-9f78-b4299171ebe7",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054863",
+                "clobPairId": "29",
+                "side": "BUY",
+                "size": "2690",
+                "totalOptimisticFilled": "0",
+                "price": "0.5469",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "SEI-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "e2ba057f-b9f1-538e-badc-757740f275b6",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054782",
+                "clobPairId": "25",
+                "side": "SELL",
+                "size": "12480",
+                "totalOptimisticFilled": "0",
+                "price": "0.4014",
+                "type": "LIMIT",
+                "status": "CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972972",
+                "ticker": "BLUR-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_EXPIRED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "e6461978-3982-523a-83ef-24753bdd7ced",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352438",
+                "clobPairId": "42",
+                "side": "BUY",
+                "size": "614",
+                "price": "3.256",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "DYM-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "9b08334f-eee8-5828-98f0-6d309cbf6372",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "3344908",
+                "clobPairId": "23",
+                "side": "SELL",
+                "size": "219",
+                "price": "9.125",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "APT-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "3be51e79-6230-56b2-8231-5ed58709c296",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854871",
+                "clobPairId": "51",
+                "side": "SELL",
+                "size": "23.5",
+                "totalOptimisticFilled": "0",
+                "price": "25.3",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "INJ-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "bc33fcf2-05a2-50bf-bef6-c2fcc8865b82",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "34352436",
+                "clobPairId": "46",
+                "side": "BUY",
+                "size": "3670",
+                "price": "0.5442",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "PYTH-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "fe444731-cfc3-5186-ae0e-fba2e4174d89",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "7248890",
+                "clobPairId": "37",
+                "side": "SELL",
+                "size": "5.09",
+                "price": "589.1",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BNB-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "fe444731-cfc3-5186-ae0e-fba2e4174d89",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "7248890",
+                "clobPairId": "37",
+                "side": "SELL",
+                "size": "5.09",
+                "totalOptimisticFilled": "0",
+                "price": "589.1",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BNB-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "6b64ef8e-a07b-5a0d-b5a0-cb9a01ae9103",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "64054871",
+                "clobPairId": "25",
+                "side": "SELL",
+                "size": "4990",
+                "price": "0.4007",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "BLUR-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "ee422fd6-6f81-5917-be34-cd03ae5933e4",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950200",
+                "clobPairId": "33",
+                "side": "SELL",
+                "size": "33",
+                "price": "10.34",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "TIA-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "97f0f697-b459-5f9c-9463-f10701c6f5dc",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785722",
+                "clobPairId": "5",
+                "side": "BUY",
+                "size": "2.2",
+                "price": "152.54",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "SOL-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "44e7c2bc-c2f0-55b7-90cf-2fdab8ef2723",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "47785720",
+                "clobPairId": "27",
+                "side": "BUY",
+                "size": "214",
+                "price": "2.805",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "OP-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "9b08334f-eee8-5828-98f0-6d309cbf6372",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "3344908",
+                "clobPairId": "23",
+                "side": "SELL",
+                "size": "219",
+                "totalOptimisticFilled": "0",
+                "price": "9.125",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "IOC",
+                "postOnly": false,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "APT-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_IMMEDIATE_OR_CANCEL_WOULD_REST_ON_BOOK",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "ac1a1e3b-09d8-5ea1-a317-3804f2291d06",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950196",
+                "clobPairId": "21",
+                "side": "BUY",
+                "size": "121",
+                "totalOptimisticFilled": "0",
+                "price": "6.156",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WLD-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "1a482dbb-d61a-5051-b65c-fe049d538d4a",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "63950197",
+                "clobPairId": "21",
+                "side": "SELL",
+                "size": "121",
+                "totalOptimisticFilled": "0",
+                "price": "6.172",
+                "type": "LIMIT",
+                "status": "BEST_EFFORT_CANCELED",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972973",
+                "ticker": "WLD-USD",
+                "removalReason": "ORDER_REMOVAL_REASON_USER_CANCELED",
+                "clientMetadata": "0"
+              }
+            ]
+          },
+          {
+            "orders": [
+              {
+                "id": "2691b03c-b75a-5508-954e-43b9974eaeaa",
+                "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                "clientId": "24854877",
+                "clobPairId": "51",
+                "side": "SELL",
+                "size": "59.4",
+                "price": "25.33",
+                "status": "BEST_EFFORT_OPENED",
+                "type": "LIMIT",
+                "timeInForce": "GTT",
+                "postOnly": true,
+                "reduceOnly": false,
+                "orderFlags": "0",
+                "goodTilBlock": "14972981",
+                "ticker": "INJ-USD",
+                "clientMetadata": "0"
+              }
+            ]
+          }
+        ]
+    """.trimIndent()
 }

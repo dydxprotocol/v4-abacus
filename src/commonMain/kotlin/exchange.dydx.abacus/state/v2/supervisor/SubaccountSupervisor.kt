@@ -287,10 +287,11 @@ internal class SubaccountSupervisor(
         subaccountNumber: Int,
         subscribe: Boolean,
     ): IMap<String, Any> {
-        return if (subscribe)
+        return if (subscribe) {
             iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
-        else
+        } else {
             iMapOf("id" to "$accountAddress/$subaccountNumber")
+        }
     }
 
     private fun didSetPlaceOrderRecords() {
