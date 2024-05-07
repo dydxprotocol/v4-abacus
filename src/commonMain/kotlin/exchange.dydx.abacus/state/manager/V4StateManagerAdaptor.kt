@@ -1510,39 +1510,50 @@ class V4StateManagerAdaptor(
         fetchTransferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
-    private fun uiTrackingParams(interval: Double): IMap<String, Any> {
-        return iMapOf(
-            "clickToSubmitOrderDelayMs" to interval,
-        )
-    }
-
-    private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
-        return if (error.stringKey != null) {
-            iMapOf(
-                "errorType" to error.type.rawValue,
-                "errorMessage" to error.message,
-                "errorStringKey" to error.stringKey,
-            )
-        } else {
-            iMapOf(
-                "errorType" to error.type.rawValue,
-                "errorMessage" to error.message,
-            )
-        }
-    }
-
-    override fun trackingParams(interval: Double): IMap<String, Any> {
+    private fun validatorTrackingParams(): IMap<String, Any> {
         val validatorUrl = this.validatorUrl
         return if (validatorUrl != null) {
             iMapOf(
-                "roundtripMs" to interval,
                 "validatorUrl" to validatorUrl,
             )
         } else {
+            iMapOf<String, Any>()
+        }
+    }
+    private fun uiTrackingParams(interval: Double): IMap<String, Any> {
+        return ParsingHelper.merge(
+            validatorTrackingParams(),
+            iMapOf(
+                "clickToSubmitOrderDelayMs" to interval,
+            ),
+        ) as IMap<String, Any>
+    }
+
+    private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
+        return ParsingHelper.merge(
+            validatorTrackingParams(),
+            if (error.stringKey != null) {
+                iMapOf(
+                    "errorType" to error.type.rawValue,
+                    "errorMessage" to error.message,
+                    "errorStringKey" to error.stringKey,
+                )
+            } else {
+                iMapOf(
+                    "errorType" to error.type.rawValue,
+                    "errorMessage" to error.message,
+                )
+            },
+        ) as IMap<String, Any>
+    }
+
+    override fun trackingParams(interval: Double): IMap<String, Any> {
+        return ParsingHelper.merge(
+            validatorTrackingParams(),
             iMapOf(
                 "roundtripMs" to interval,
-            )
-        }
+            ),
+        ) as IMap<String, Any>
     }
 
     private fun didSetApiState(apiState: ApiState?, oldValue: ApiState?) {
