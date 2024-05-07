@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Suppress("PropertyName")
 @JsExport
 @Serializable
-internal class BatchedSubaccountsChannelMock {
+internal class SubaccountsChannelMock {
     internal val rest_response = """
         {
             "subaccounts": [

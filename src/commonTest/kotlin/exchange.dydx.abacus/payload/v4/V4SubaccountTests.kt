@@ -5,7 +5,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V4BatchedSubaccountTests : V4BaseTests() {
+class V4SubaccountTests : V4BaseTests() {
     @Test
     fun testDataFeed() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
