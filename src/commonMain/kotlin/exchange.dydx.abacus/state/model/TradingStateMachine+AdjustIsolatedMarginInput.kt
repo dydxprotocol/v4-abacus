@@ -129,7 +129,7 @@ fun TradingStateMachine.validAdjustIsolatedMarginInput(
     when (typeText) {
         AdjustIsolatedMarginInputField.Type.rawValue -> {
             val type = parser.asString(adjustIsolatedMargin["type"])
-            return type == null || type == IsolatedMarginAdjustmentType.Add.rawValue || type == IsolatedMarginAdjustmentType.Remove.rawValue
+            return type == null || type == IsolatedMarginAdjustmentType.Add. || type == IsolatedMarginAdjustmentType.Remove.rawValue
         }
         AdjustIsolatedMarginInputField.Amount.rawValue -> {
             val amount = parser.asDouble(adjustIsolatedMargin["amount"])

@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @JsExport
 @Serializable
 data class AdjustIsolatedMarginInputOptions(
-    val needsSize: Boolean?,
+    val needsSize: Boolean,
 ) {
     companion object {
         internal fun create(
@@ -19,7 +19,7 @@ data class AdjustIsolatedMarginInputOptions(
             Logger.d { "creating Adjust Isolated Margin Input Options\n" }
 
             data?.let {
-                val needsSize = parser.asBool(data["needsSize"])
+                val needsSize = parser.asBool(data["needsSize"]) ?: false
 
                 return if (existing?.needsSize != needsSize
                 ) {
@@ -84,14 +84,9 @@ data class AdjustIsolatedMarginInputSummary(
 
 @JsExport
 @Serializable
-enum class IsolatedMarginAdjustmentType(val rawValue: String) {
-    Add("ADD"),
-    Remove("REMOVE");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            IsolatedMarginAdjustmentType.values().firstOrNull { it.rawValue == rawValue }
-    }
+enum class IsolatedMarginAdjustmentType {
+    Add,
+    Remove
 }
 
 @JsExport
@@ -116,7 +111,7 @@ data class AdjustIsolatedMarginInput(
 
             data?.let {
                 val type = parser.asString(data["type"])?.let {
-                    IsolatedMarginAdjustmentType.invoke(it)
+                    IsolatedMarginAdjustmentType.valueOf(it)
                 } ?: IsolatedMarginAdjustmentType.Add
 
                 val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
