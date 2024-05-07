@@ -59,38 +59,33 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
     private fun getModifiedTransferDelta(
         isolatedMarginAdjustment: Map<String, Any>,
         isParentSubaccount: Boolean,
-    ): Map<String, Double>? {
-        val type = parser.asString(isolatedMarginAdjustment["type"])
+    ): Map<String, Double> {
+        val type = parser.asString(isolatedMarginAdjustment["type"])?.let {
+            IsolatedMarginAdjustmentType.invoke(it)
+        } ?: IsolatedMarginAdjustmentType.Add
         val amount = parser.asDouble(isolatedMarginAdjustment["amount"])
-        if (type != null) {
-            when (type) {
-                "ADD" -> {
-                    val multiplier =
-                        if (isParentSubaccount) Numeric.double.NEGATIVE else Numeric.double.POSITIVE
-                    val usdcSize = (amount ?: Numeric.double.ZERO) * multiplier
 
-                    return mapOf(
-                        "usdcSize" to usdcSize,
-                    )
-                }
+        when (type) {
+            IsolatedMarginAdjustmentType.Add -> {
+                val multiplier =
+                    if (isParentSubaccount) Numeric.double.NEGATIVE else Numeric.double.POSITIVE
+                val usdcSize = (amount ?: Numeric.double.ZERO) * multiplier
 
-                "REMOVE" -> {
-                    val multiplier =
-                        if (isParentSubaccount) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
-                    val usdcSize = (amount ?: Numeric.double.ZERO) * multiplier
+                return mapOf(
+                    "usdcSize" to usdcSize,
+                )
+            }
 
-                    return mapOf(
-                        "usdcSize" to usdcSize,
-                    )
-                }
+            IsolatedMarginAdjustmentType.Remove -> {
+                val multiplier =
+                    if (isParentSubaccount) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+                val usdcSize = (amount ?: Numeric.double.ZERO) * multiplier
 
-                else -> {
-                    return null
-                }
+                return mapOf(
+                    "usdcSize" to usdcSize,
+                )
             }
         }
-
-        return null
     }
 
     private fun summaryForType(
