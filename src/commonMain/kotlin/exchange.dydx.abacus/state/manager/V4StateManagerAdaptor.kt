@@ -202,8 +202,13 @@ class V4StateManagerAdaptor(
     override fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber")
+        return if (subscribe) {
+            iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
+        } else {
+            iMapOf("id" to "$accountAddress/$subaccountNumber")
+        }
     }
 
     override fun faucetBody(amount: Double): String? {
@@ -1010,7 +1015,8 @@ class V4StateManagerAdaptor(
         val string = Json.encodeToString(payload)
         val marketId = payload.marketId
 
-        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
+        val position =
+            stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
         val positionSize = position?.size?.current
 
         stopWatchingLastOrder()
@@ -1076,7 +1082,8 @@ class V4StateManagerAdaptor(
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
-        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
+        val position =
+            stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
         val positionSize = position?.size?.current
 
         val isShortTermOrder = payload.orderFlags == 0
@@ -1179,7 +1186,12 @@ class V4StateManagerAdaptor(
     override fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = placeOrderPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTpDialog = false, isClosePosition = false)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
+            payload,
+            midMarketPrice,
+            fromSlTpDialog = false,
+            isClosePosition = false,
+        )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1188,7 +1200,12 @@ class V4StateManagerAdaptor(
     override fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload()
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTpDialog = false, isClosePosition = true)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
+            payload,
+            midMarketPrice,
+            fromSlTpDialog = false,
+            isClosePosition = true,
+        )
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1197,10 +1214,11 @@ class V4StateManagerAdaptor(
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
-            ParsingErrorType.MissingRequiredData,
-            "no existing order to be cancelled for $orderId",
-        )
+        val existingOrder =
+            subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
+                ParsingErrorType.MissingRequiredData,
+                "no existing order to be cancelled for $orderId",
+            )
         val marketId = existingOrder.marketId
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
@@ -1244,14 +1262,21 @@ class V4StateManagerAdaptor(
         }
 
         payload.placeOrderPayloads.forEach { placePayload ->
-            val midMarketPrice = stateMachine.state?.marketOrderbook(placePayload.marketId)?.midPrice
+            val midMarketPrice =
+                stateMachine.state?.marketOrderbook(placePayload.marketId)?.midPrice
             val placeOrderAnalyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
                 placePayload,
                 midMarketPrice,
                 fromSlTpDialog = true,
                 isClosePosition = false,
             )
-            submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)
+            submitPlaceOrder(
+                callback,
+                placePayload,
+                placeOrderAnalyticsPayload,
+                uiClickTimeMs,
+                true,
+            )
         }
 
         if (payload.cancelOrderPayloads.isEmpty() && payload.placeOrderPayloads.isEmpty()) {

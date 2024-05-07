@@ -278,15 +278,20 @@ internal class SubaccountSupervisor(
         helper.socket(
             helper.socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber),
+            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
     }
 
     private fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber")
+        return if (subscribe) {
+            iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
+        } else {
+            iMapOf("id" to "$accountAddress/$subaccountNumber")
+        }
     }
 
     private fun didSetPlaceOrderRecords() {
