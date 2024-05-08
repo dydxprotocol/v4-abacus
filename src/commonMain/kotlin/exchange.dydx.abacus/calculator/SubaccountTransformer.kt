@@ -199,6 +199,26 @@ internal class SubaccountTransformer {
         }
     }
 
+    internal fun applyIsolatedMarginAdjustmentToWallet(
+        wallet: Map<String, Any>,
+        subaccountNumber: Int?,
+        delta: Map<String, Double>,
+        parser: ParserProtocol,
+        period: String
+    ): Map<String, Any> {
+        val key = "account.subaccounts.$subaccountNumber"
+        val subaccount = parser.asNativeMap(parser.value(wallet, key))
+
+        if (subaccount != null) {
+            val modifiedSubaccount = applyDeltaToSubaccount(subaccount, delta, parser, period)
+            val modifiedWallet = wallet.mutable()
+            modifiedWallet.safeSet(key, modifiedSubaccount)
+            return modifiedWallet
+        }
+
+        return wallet
+    }
+
     internal fun applyTradeToSubaccount(
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,

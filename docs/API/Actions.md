@@ -241,3 +241,29 @@ Take profit order trigger price's percentage difference from the position's aver
 ### takeProfitUsdcDiff
 
 Take profit order trigger price's usdc difference from the position's average entry price
+
+# AdjustIsolatedMargin
+
+    fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?): AppStateResponse
+
+The input state is in `response.state.input.adjustIsolatedMargin` as a [AdjustIsolatedMarginInput](../Input/AdjustIsolatedMarginInput.md).
+
+### data
+
+Data input in string format
+
+## AdjustIsolatedMarginInputField
+
+### Type
+
+IsolatedMarginAdjustmentType
+Add - Add margin to the child's isolated margin account from the parent's cross margin account
+Remove - Remove margin from the child's isolated margin account to the parent's cross margin account
+
+### Amount
+
+Amount of USDC to remove or add
+
+### ChildSubaccountNumber
+
+Subaccount number for the child whose margin is to be adjusted

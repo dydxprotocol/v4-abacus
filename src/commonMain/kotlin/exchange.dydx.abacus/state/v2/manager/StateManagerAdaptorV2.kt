@@ -35,6 +35,7 @@ import exchange.dydx.abacus.state.manager.NetworkState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -52,10 +53,13 @@ import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
 import exchange.dydx.abacus.state.v2.supervisor.addressRestriction
+import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
+import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMarginPayload
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
+import exchange.dydx.abacus.state.v2.supervisor.commitAdjustIsolatedMargin
 import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
@@ -481,6 +485,10 @@ internal class StateManagerAdaptorV2(
         accounts.triggerOrders(data, type)
     }
 
+    internal fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?) {
+        accounts.adjustIsolatedMargin(data, type)
+    }
+
     internal fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
         return accounts.placeOrderPayload(currentHeight)
     }
@@ -533,6 +541,14 @@ internal class StateManagerAdaptorV2(
 
     internal fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return accounts.commitClosePosition(currentHeight, callback)
+    }
+
+    internal fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload? {
+        return accounts.commitAdjustIsolatedMargin(callback)
+    }
+
+    internal fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
+        return accounts.adjustIsolatedMarginPayload()
     }
 
     internal fun stopWatchingLastOrder() {

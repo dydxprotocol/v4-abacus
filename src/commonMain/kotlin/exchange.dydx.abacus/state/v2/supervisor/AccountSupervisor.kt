@@ -31,6 +31,7 @@ import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.manager.utils.Address
 import exchange.dydx.abacus.state.manager.utils.DydxAddress
 import exchange.dydx.abacus.state.manager.utils.EvmAddress
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -959,6 +960,13 @@ internal fun AccountSupervisor.triggerOrders(data: String?, type: TriggerOrdersI
     subaccount?.triggerOrders(data, type)
 }
 
+internal fun AccountSupervisor.adjustIsolatedMargin(
+    data: String?,
+    type: AdjustIsolatedMarginInputField?,
+) {
+    subaccount?.adjustIsolatedMargin(data, type)
+}
+
 internal fun AccountSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
     return subaccount?.placeOrderPayload(currentHeight)
 }
@@ -969,6 +977,10 @@ internal fun AccountSupervisor.closePositionPayload(currentHeight: Int?): HumanR
 
 internal fun AccountSupervisor.triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload? {
     return subaccount?.triggerOrdersPayload(currentHeight)
+}
+
+internal fun AccountSupervisor.adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
+    return subaccount?.adjustIsolatedMarginPayload()
 }
 
 internal fun AccountSupervisor.cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
@@ -999,6 +1011,12 @@ internal fun AccountSupervisor.commitTriggerOrders(
     callback: TransactionCallback
 ): HumanReadableTriggerOrdersPayload? {
     return subaccount?.commitTriggerOrders(currentHeight, callback)
+}
+
+internal fun AccountSupervisor.commitAdjustIsolatedMargin(
+    callback: TransactionCallback
+): HumanReadableSubaccountTransferPayload? {
+    return subaccount?.commitAdjustIsolatedMargin(callback)
 }
 
 internal fun AccountSupervisor.commitClosePosition(

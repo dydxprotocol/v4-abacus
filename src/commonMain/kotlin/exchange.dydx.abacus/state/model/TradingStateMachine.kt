@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.AccountCalculator
+import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarketCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
@@ -599,6 +600,10 @@ open class TradingStateMachine(
                     calculateTriggerOrders(subaccountNumber)
                 }
 
+                "adjustIsolatedMargin" -> {
+                    calculateAdjustIsolatedMargin(subaccountNumber)
+                }
+
                 else -> {}
             }
         }
@@ -710,6 +715,25 @@ open class TradingStateMachine(
 
         val modified = calculator.calculate(params, subaccountNumber)
         input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
+
+        this.input = input
+    }
+
+    private fun calculateAdjustIsolatedMargin(subaccountNumber: Int?) {
+        val input = this.input?.mutable()
+        val adjustIsolatedMargin = parser.asNativeMap(input?.get("adjustIsolatedMargin"))
+        val calculator = AdjustIsolatedMarginInputCalculator(parser)
+        val params = mutableMapOf<String, Any>()
+        params.safeSet("wallet", wallet)
+        params.safeSet("account", account)
+        params.safeSet("user", user)
+        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+        params.safeSet("adjustIsolatedMargin", adjustIsolatedMargin)
+
+        val modified = calculator.calculate(params, subaccountNumber)
+        this.setMarkets(parser.asNativeMap(modified["markets"]))
+        this.wallet = parser.asNativeMap(modified["wallet"])
+        input?.safeSet("adjustIsolatedMargin", parser.asNativeMap(modified["adjustIsolatedMargin"]))
 
         this.input = input
     }
@@ -885,20 +909,20 @@ open class TradingStateMachine(
                 return when (type) {
                     "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET", "TRAILING_STOP" -> {
                         listOf(
-                            ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.expectedPrice.rawValue,
-                            ReceiptLine.fee.rawValue,
-                            ReceiptLine.reward.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.MarginUsage.rawValue,
+                            ReceiptLine.ExpectedPrice.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.Reward.rawValue,
                         )
                     }
 
                     else -> {
                         listOf(
-                            ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue,
-                            ReceiptLine.reward.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.MarginUsage.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.Reward.rawValue,
                         )
                     }
                 }
@@ -906,11 +930,11 @@ open class TradingStateMachine(
 
             "closePosition" -> {
                 listOf(
-                    ReceiptLine.buyingPower.rawValue,
-                    ReceiptLine.marginUsage.rawValue,
-                    ReceiptLine.expectedPrice.rawValue,
-                    ReceiptLine.fee.rawValue,
-                    ReceiptLine.reward.rawValue,
+                    ReceiptLine.BuyingPower.rawValue,
+                    ReceiptLine.MarginUsage.rawValue,
+                    ReceiptLine.ExpectedPrice.rawValue,
+                    ReceiptLine.Fee.rawValue,
+                    ReceiptLine.Reward.rawValue,
                 )
             }
 
@@ -920,22 +944,53 @@ open class TradingStateMachine(
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
                         listOf(
-                            ReceiptLine.equity.rawValue,
-                            ReceiptLine.buyingPower.rawValue,
-                            ReceiptLine.exchangeRate.rawValue,
-                            ReceiptLine.exchangeReceived.rawValue,
-                            ReceiptLine.bridgeFee.rawValue,
-                            ReceiptLine.fee.rawValue,
-                            ReceiptLine.slippage.rawValue,
-                            ReceiptLine.transferRouteEstimatedDuration.rawValue,
+                            ReceiptLine.Equity.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.ExchangeRate.rawValue,
+                            ReceiptLine.ExchangeReceived.rawValue,
+                            ReceiptLine.BridgeFee.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.Slippage.rawValue,
+                            ReceiptLine.TransferRouteEstimatedDuration.rawValue,
                         )
                     }
 
                     "TRANSFER_OUT" -> {
                         listOf(
-                            ReceiptLine.equity.rawValue,
-                            ReceiptLine.marginUsage.rawValue,
-                            ReceiptLine.fee.rawValue,
+                            ReceiptLine.Equity.rawValue,
+                            ReceiptLine.MarginUsage.rawValue,
+                            ReceiptLine.Fee.rawValue,
+                        )
+                    }
+
+                    else -> {
+                        listOf()
+                    }
+                }
+            }
+
+            "adjustIsolatedMargin" -> {
+                val adjustIsolatedMargin = parser.asNativeMap(input["adjustIsolatedMargin"]) ?: return null
+                val type = parser.asString(adjustIsolatedMargin["Type"]) ?: return null
+
+                when (type) {
+                    "ADD" -> {
+                        listOf(
+                            ReceiptLine.CrossFreeCollateral.rawValue,
+                            ReceiptLine.CrossMarginUsage.rawValue,
+                            ReceiptLine.PositionLeverage.rawValue,
+                            ReceiptLine.PositionMargin.rawValue,
+                            ReceiptLine.LiquidationPrice.rawValue,
+                        )
+                    }
+
+                    "REMOVE" -> {
+                        listOf(
+                            ReceiptLine.CrossFreeCollateral.rawValue,
+                            ReceiptLine.CrossMarginUsage.rawValue,
+                            ReceiptLine.PositionLeverage.rawValue,
+                            ReceiptLine.PositionMargin.rawValue,
+                            ReceiptLine.LiquidationPrice.rawValue,
                         )
                     }
 
@@ -1150,7 +1205,7 @@ open class TradingStateMachine(
                 val subaccountHistoricalPnlData =
                     (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
                         ?: mutableListOf()
-                val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
+
                 if (subaccountHistoricalPnl?.size == 1) {
                     // Check if the PNL was generated from equity
                     val first = subaccountHistoricalPnl.firstOrNull()
