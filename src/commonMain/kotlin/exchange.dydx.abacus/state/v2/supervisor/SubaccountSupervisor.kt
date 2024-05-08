@@ -35,10 +35,12 @@ import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
@@ -279,7 +281,7 @@ internal class SubaccountSupervisor(
         helper.socket(
             helper.socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber),
+            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
 
         pollReclaimUnutilizedFunds()
@@ -288,8 +290,13 @@ internal class SubaccountSupervisor(
     private fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber")
+        return if (subscribe) {
+            iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
+        } else {
+            iMapOf("id" to "$accountAddress/$subaccountNumber")
+        }
     }
 
     private fun didSetPlaceOrderRecords() {
@@ -436,6 +443,21 @@ internal class SubaccountSupervisor(
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
             val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
+    fun adjustIsolatedMargin(
+        data: String?,
+        type: AdjustIsolatedMarginInputField?,
+    ) {
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.adjustIsolatedMargin(data, type, subaccountNumber)
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(
                     stateResponse.state,
@@ -604,8 +626,8 @@ internal class SubaccountSupervisor(
                     HumanReadableTriggerOrdersPayload(
                         marketId,
                         positionSize,
-                        listOf(payload),
-                        emptyList(),
+                        iListOf(payload),
+                        iListOf(),
                     )
                 } else {
                     payload
@@ -752,8 +774,8 @@ internal class SubaccountSupervisor(
                         HumanReadableTriggerOrdersPayload(
                             marketId,
                             positionSize,
-                            emptyList(),
-                            listOf(payload),
+                            iListOf(),
+                            iListOf(payload),
                         )
                     } else {
                         payload
@@ -860,6 +882,30 @@ internal class SubaccountSupervisor(
         return payload
     }
 
+    internal fun commitAdjustIsolatedMargin(
+        callback: TransactionCallback
+    ): HumanReadableSubaccountTransferPayload {
+        val payload = adjustIsolatedMarginPayload()
+        val transferPayloadString = Json.encodeToString(payload)
+
+        submitTransaction(
+            TransactionType.SubaccountTransfer,
+            transferPayloadString,
+            null,
+            transactionCallback = { response: String? ->
+                val error = parseTransactionResponse(response)
+                helper.send(
+                    error,
+                    callback,
+                    payload,
+                )
+            },
+            false,
+        )
+
+        return payload
+    }
+
     internal fun stopWatchingLastOrder() {
         lastOrderClientId = null
     }
@@ -896,8 +942,8 @@ internal class SubaccountSupervisor(
 
         val timeInForce = if (trade.options?.timeInForceOptions != null) {
             when (trade.type) {
-                OrderType.market -> "FOK"
-                else -> trade.timeInForce ?: "FOK"
+                OrderType.market -> "IOC"
+                else -> trade.timeInForce ?: "IOC"
             }
         } else {
             null
@@ -1020,8 +1066,8 @@ internal class SubaccountSupervisor(
 
     @Throws(Exception::class)
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload {
-        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
-        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
+        val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
         val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
         val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marketId was null" }
@@ -1189,6 +1235,20 @@ internal class SubaccountSupervisor(
             size,
             destinationAddress,
             0,
+        )
+    }
+
+    @Throws(Exception::class)
+    fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload {
+        val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin ?: error("AdjustIsolatedMarginInput is null")
+        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber ?: error("childSubaccountNumber is null")
+
+        return HumanReadableSubaccountTransferPayload(
+            subaccountNumber,
+            amount,
+            accountAddress,
+            childSubaccountNumber,
         )
     }
 

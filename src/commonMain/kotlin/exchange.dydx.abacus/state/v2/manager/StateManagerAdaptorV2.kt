@@ -1,5 +1,8 @@
 package exchange.dydx.abacus.state.v2.manager
 
+import exchange.dydx.abacus.output.Compliance
+import exchange.dydx.abacus.output.ComplianceAction
+import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
@@ -32,6 +35,7 @@ import exchange.dydx.abacus.state.manager.NetworkState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -49,10 +53,13 @@ import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
 import exchange.dydx.abacus.state.v2.supervisor.addressRestriction
+import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
+import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMarginPayload
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
+import exchange.dydx.abacus.state.v2.supervisor.commitAdjustIsolatedMargin
 import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
@@ -70,6 +77,7 @@ import exchange.dydx.abacus.state.v2.supervisor.stopWatchingLastOrder
 import exchange.dydx.abacus.state.v2.supervisor.subaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.subaccountTransferPayload
 import exchange.dydx.abacus.state.v2.supervisor.trade
+import exchange.dydx.abacus.state.v2.supervisor.triggerCompliance
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
@@ -81,6 +89,7 @@ import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
+import kollections.toIMap
 
 @JsExport
 internal class StateManagerAdaptorV2(
@@ -167,6 +176,14 @@ internal class StateManagerAdaptorV2(
             if (field != value) {
                 field = value
                 didSetRestriction(value)
+            }
+        }
+
+    internal open var geo: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                didSetGeo(value)
             }
         }
 
@@ -298,6 +315,9 @@ internal class StateManagerAdaptorV2(
         onboarding.readyToConnect = readyToConnect
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
+        if (readyToConnect) {
+            fetchGeo()
+        }
     }
 
     private fun didSetIndexerConnected(indexerConnected: Boolean) {
@@ -429,6 +449,30 @@ internal class StateManagerAdaptorV2(
         return null
     }
 
+    private fun fetchGeo() {
+        val url = environment.endpoints.geo
+        if (url != null) {
+            networkHelper.get(
+                url,
+                null,
+                null,
+                callback = { _, response, httpCode, _ ->
+                    geo = if (networkHelper.success(httpCode) && response != null) {
+                        val payload = networkHelper.parser.decodeJsonObject(response)?.toIMap()
+                        if (payload != null) {
+                            val country = networkHelper.parser.asString(networkHelper.parser.value(payload, "geo.country"))
+                            country
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                },
+            )
+        }
+    }
+
     internal fun trade(data: String?, type: TradeInputField?) {
         accounts.trade(data, type)
     }
@@ -439,6 +483,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
         accounts.triggerOrders(data, type)
+    }
+
+    internal fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?) {
+        accounts.adjustIsolatedMargin(data, type)
     }
 
     internal fun placeOrderPayload(): HumanReadablePlaceOrderPayload? {
@@ -493,6 +541,14 @@ internal class StateManagerAdaptorV2(
 
     internal fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         return accounts.commitClosePosition(currentHeight, callback)
+    }
+
+    internal fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload? {
+        return accounts.commitAdjustIsolatedMargin(callback)
+    }
+
+    internal fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
+        return accounts.adjustIsolatedMarginPayload()
     }
 
     internal fun stopWatchingLastOrder() {
@@ -553,6 +609,10 @@ internal class StateManagerAdaptorV2(
         accounts.screen(address, callback)
     }
 
+    internal fun triggerCompliance(address: ComplianceAction, callback: TransactionCallback) {
+        accounts.triggerCompliance(address, callback)
+    }
+
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {
         restriction = indexerRestriction ?: accounts.addressRestriction ?: UsageRestriction.noRestriction
     }
@@ -579,6 +639,39 @@ internal class StateManagerAdaptorV2(
             restriction,
             state?.launchIncentive,
             state?.compliance,
+        )
+        ioImplementations.threading?.async(ThreadingType.main) {
+            stateNotification?.stateChanged(
+                stateMachine.state,
+                StateChanges(
+                    iListOf(Changes.restriction),
+                ),
+            )
+        }
+    }
+
+    private fun didSetGeo(geo: String?) {
+        val state = stateMachine.state
+        stateMachine.state = PerpetualState(
+            state?.assets,
+            state?.marketsSummary,
+            state?.orderbooks,
+            state?.candles,
+            state?.trades,
+            state?.historicalFundings,
+            state?.wallet,
+            state?.account,
+            state?.historicalPnl,
+            state?.fills,
+            state?.transfers,
+            state?.fundingPayments,
+            state?.configs,
+            state?.input,
+            state?.availableSubaccountNumbers ?: iListOf(),
+            state?.transferStatuses,
+            state?.restriction,
+            state?.launchIncentive,
+            Compliance(geo, state?.compliance?.status ?: ComplianceStatus.COMPLIANT),
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(

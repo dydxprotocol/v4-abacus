@@ -33,6 +33,7 @@ import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
 import exchange.dydx.abacus.state.manager.utils.Address
 import exchange.dydx.abacus.state.manager.utils.DydxAddress
 import exchange.dydx.abacus.state.manager.utils.EvmAddress
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -40,6 +41,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
+import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.state.model.candles
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
@@ -47,6 +49,7 @@ import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
 import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
+import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
 import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
 import exchange.dydx.abacus.state.model.receivedBatchedTradesChanges
@@ -682,13 +685,14 @@ open class StateManagerAdaptor(
         socket(
             socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber),
+            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
     }
 
     open fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean
     ): IMap<String, Any> {
         TODO("Not yet implemented")
     }
@@ -748,7 +752,7 @@ open class StateManagerAdaptor(
                             ParsingErrorType.MissingContent,
                             payload.toString(),
                         )
-                    changes = socketChannelBatchData(channel, id, subaccountNumber, content)
+                    changes = socketChannelBatchData(channel, id, subaccountNumber, info, content)
                 }
 
                 "connected" -> {
@@ -1049,6 +1053,7 @@ open class StateManagerAdaptor(
         channel: String,
         id: String?,
         subaccountNumber: Int?,
+        info: SocketInfo,
         content: IList<IMap<String, Any>>,
     ): StateChanges? {
         return when (channel) {
@@ -1074,6 +1079,10 @@ open class StateManagerAdaptor(
             configs.marketCandlesChannel() -> {
                 val (market, resolution) = splitCandlesChannel(id)
                 stateMachine.receivedBatchedCandlesChanges(market, resolution, content)
+            }
+
+            configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
+                stateMachine.receivedBatchSubaccountsChanges(content, info, height())
             }
 
             else -> {
@@ -1767,12 +1776,32 @@ open class StateManagerAdaptor(
         }
     }
 
+    fun adjustIsolatedMargin(
+        data: String?,
+        type: AdjustIsolatedMarginInputField?,
+    ) {
+        ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.adjustIsolatedMargin(data, type, subaccountNumber)
+            ioImplementations.threading?.async(ThreadingType.main) {
+                stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
     internal open fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload? {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
         return null
     }
 
     internal open fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
+        callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+        return null
+    }
+
+    internal open fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload? {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
         return null
     }
@@ -1800,6 +1829,16 @@ open class StateManagerAdaptor(
 
     internal open fun cancelOrder(orderId: String, callback: TransactionCallback) {
         callback(false, V4TransactionErrors.error(null, "Not implemented"), null)
+    }
+
+    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+        accountAddress?.let {
+            if (compliance.status != ComplianceStatus.UNKNOWN) {
+                updateCompliance(DydxAddress(it), compliance.status, action)
+                callback(true, null, null)
+            }
+        }
+        callback(false, V4TransactionErrors.error(null, "No account address"), null)
     }
 
     internal open fun parseTransactionResponse(response: String?): ParsingError? {
@@ -1874,8 +1913,8 @@ open class StateManagerAdaptor(
 
     @Throws(Exception::class)
     fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload {
-        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
-        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
+        val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
         val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
         val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marektId was null" }
@@ -1963,8 +2002,8 @@ open class StateManagerAdaptor(
 
         val timeInForce = if (trade.options?.timeInForceOptions != null) {
             when (trade.type) {
-                OrderType.market -> "FOK"
-                else -> trade.timeInForce ?: "FOK"
+                OrderType.market -> "IOC"
+                else -> trade.timeInForce ?: "IOC"
             }
         } else {
             null
@@ -2187,6 +2226,27 @@ open class StateManagerAdaptor(
                 }
             }
         }
+    }
+
+    @Throws(Exception::class)
+    fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload {
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+            ?: error("subaccount is null")
+        val parentSubaccountNumber = subaccount.subaccountNumber
+        val wallet = stateMachine.state?.wallet ?: error("wallet is null")
+        val walletAddress = wallet.walletAddress ?: error("walletAddress is null")
+        val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin
+            ?: error("isolatedMarginAdjustment is null")
+        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber
+            ?: error("childSubaccountNumber is null")
+
+        return HumanReadableSubaccountTransferPayload(
+            parentSubaccountNumber,
+            amount,
+            walletAddress,
+            childSubaccountNumber,
+        )
     }
 
     private fun updateTracking(changes: StateChanges) {
@@ -2454,13 +2514,14 @@ open class StateManagerAdaptor(
         return compliance.status
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction? = null) {
         val message = "Compliance verification message"
-        val action = if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
-            ComplianceAction.CONNECT
-        } else {
-            ComplianceAction.ONBOARD
-        }
+        val action = complianceAction
+            ?: if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
+                ComplianceAction.CONNECT
+            } else {
+                ComplianceAction.ONBOARD
+            }
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,

@@ -1,9 +1,11 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -37,6 +39,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun closePosition(data: String?, type: ClosePositionInputField)
     fun transfer(data: String?, type: TransferInputField?)
     fun triggerOrders(data: String?, type: TriggerOrdersInputField?)
+    fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?)
 
     // helper functions
     fun isMarketValid(marketId: String?): Boolean
@@ -60,11 +63,13 @@ interface AsyncAbacusStateManagerProtocol {
     fun depositPayload(): HumanReadableDepositPayload?
     fun withdrawPayload(): HumanReadableWithdrawPayload?
     fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload?
+    fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload?
 
     // Commit changes with input objects
     fun commitPlaceOrder(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
     fun commitClosePosition(callback: TransactionCallback): HumanReadablePlaceOrderPayload?
     fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload?
+    fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload?
     fun stopWatchingLastOrder()
     fun commitTransfer(callback: TransactionCallback)
     fun commitCCTPWithdraw(callback: TransactionCallback)
@@ -80,6 +85,9 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Screen for restrictions
     fun screen(address: String, callback: (restriction: Restriction) -> Unit)
+
+    // Trigger update for compliance
+    fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback)
 }
 
 @JsExport

@@ -119,7 +119,8 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                    "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-                   "https://api.examples.com/configs/exchanges.json"
+                   "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo"
                 ]
             """.trimIndent(),
             testRest?.requests,
@@ -217,6 +218,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
@@ -286,6 +288,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
@@ -340,6 +343,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
@@ -419,7 +423,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=0xsecondaryFakeAddress",
+                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/0xsecondaryFakeAddress",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY"
@@ -489,7 +495,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -505,7 +513,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
+                    {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
                 ]
             """.trimIndent(),
             testWebSocket?.messages,
@@ -558,7 +566,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_parent_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
+                    {"type":"subscribe","channel":"v4_parent_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
                 ]
             """.trimIndent(),
             testWebSocket?.messages,
@@ -616,7 +624,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -679,7 +689,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -687,6 +699,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
+                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?period=WEEKLY"
@@ -699,7 +712,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0"},
+                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"},
                     {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
                 ]
             """.trimIndent(),
@@ -776,7 +789,9 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
                     "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
                     "https://api.examples.com/configs/exchanges.json",
+                    "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
@@ -792,7 +807,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0"},
+                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"},
                     {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
                 ]
             """.trimIndent(),

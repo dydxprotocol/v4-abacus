@@ -19,8 +19,8 @@ internal class WithdrawalCapacityProcessor(parser: ParserProtocol) : BaseProcess
             if (limiterCapacityList.size != 2) {
                 return existing
             }
-            var dailyLimit = parser.asDecimal(parser.asMap(limiterCapacityList[0])?.get("capacity"))
-            var weeklyLimit = parser.asDecimal(parser.asMap(limiterCapacityList[1])?.get("capacity"))
+            val dailyLimit = parser.asDecimal(parser.asMap(limiterCapacityList[0])?.get("capacity"))
+            val weeklyLimit = parser.asDecimal(parser.asMap(limiterCapacityList[1])?.get("capacity"))
             if (dailyLimit != null && weeklyLimit != null) {
                 var maxWithdrawalCapacity: BigDecimal?
                 if (dailyLimit < weeklyLimit) {

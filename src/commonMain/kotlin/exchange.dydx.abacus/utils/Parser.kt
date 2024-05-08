@@ -138,7 +138,13 @@ class Parser : ParserProtocol {
         val jsonLiteral = data as? JsonPrimitive
         if (jsonLiteral != null) {
             return if (jsonLiteral.isString) {
-                jsonLiteral.content.toBigDecimal(null, null)
+                try {
+                    jsonLiteral.content.toBigDecimal(null, null)
+                } catch (e: Exception) {
+                    Logger.e { "Failed to parse jsonLiteral: $jsonLiteral.content" }
+                    Logger.e { "Exception: $e" }
+                    null
+                }
             } else {
                 jsonLiteral.doubleOrNull?.toBigDecimal(null, null)
             }
