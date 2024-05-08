@@ -102,7 +102,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     private fun testMarginAddition() {
         test(
             {
-                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.rawValue, AdjustIsolatedMarginInputField.Type, 0)
+                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.name, AdjustIsolatedMarginInputField.Type, 0)
             },
             """
         {
@@ -136,7 +136,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     private fun testMarginRemoval() {
         test(
             {
-                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Remove.rawValue, AdjustIsolatedMarginInputField.Type, 0)
+                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Remove.name, AdjustIsolatedMarginInputField.Type, 0)
             },
             """
             {
