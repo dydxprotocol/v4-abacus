@@ -1374,7 +1374,7 @@ internal class SubaccountSupervisor(
             val openPositions = subaccount.value.openPositions
             val openOrders = subaccount.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                status == "OPEN"
+                iListOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(status)
             }
             val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
 
