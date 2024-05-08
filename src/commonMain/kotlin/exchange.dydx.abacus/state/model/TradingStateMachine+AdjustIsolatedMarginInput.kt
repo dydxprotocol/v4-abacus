@@ -16,15 +16,10 @@ import kotlinx.serialization.Serializable
 
 @JsExport
 @Serializable
-enum class AdjustIsolatedMarginInputField(val rawValue: String) {
-    Type("type"),
-    Amount("amount"),
-    ChildSubaccountNumber("childSubaccountNumber");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            AdjustIsolatedMarginInputField.entries.firstOrNull { it.rawValue == rawValue }
-    }
+enum class AdjustIsolatedMarginInputField {
+    Type,
+    Amount,
+    ChildSubaccountNumber,
 }
 
 fun TradingStateMachine.adjustIsolatedMargin(
@@ -34,7 +29,6 @@ fun TradingStateMachine.adjustIsolatedMargin(
 ): StateResponse {
     var changes: StateChanges? = null
     var error: ParsingError? = null
-    val typeText = type?.rawValue
 
     val input = this.input?.mutable() ?: mutableMapOf()
     input["current"] = "adjustIsolatedMargin"
@@ -63,12 +57,12 @@ fun TradingStateMachine.adjustIsolatedMargin(
         iListOf(parentSubaccountNumber)
     }
 
-    if (typeText != null) {
-        if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, parentSubaccountNumber, typeText)) {
-            when (typeText) {
-                AdjustIsolatedMarginInputField.Type.rawValue -> {
+    if (type != null) {
+        if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, parentSubaccountNumber, type.name)) {
+            when (type) {
+                AdjustIsolatedMarginInputField.Type -> {
                     if (adjustIsolatedMargin["type"] != parser.asString(data)) {
-                        adjustIsolatedMargin.safeSet(typeText, parser.asString(data))
+                        adjustIsolatedMargin.safeSet(type.name, parser.asString(data))
                         adjustIsolatedMargin.safeSet("amount", null)
                     }
                     changes = StateChanges(
@@ -77,18 +71,18 @@ fun TradingStateMachine.adjustIsolatedMargin(
                         subaccountNumbers,
                     )
                 }
-                AdjustIsolatedMarginInputField.Amount.rawValue -> {
+                AdjustIsolatedMarginInputField.Amount -> {
                     val amount = parser.asString(data)
-                    adjustIsolatedMargin.safeSet(typeText, amount)
+                    adjustIsolatedMargin.safeSet(type.name, amount)
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                         null,
                         subaccountNumbers,
                     )
                 }
-                AdjustIsolatedMarginInputField.ChildSubaccountNumber.rawValue -> {
+                AdjustIsolatedMarginInputField.ChildSubaccountNumber -> {
                     val childSubaccountNumber = parser.asInt(data)
-                    adjustIsolatedMargin.safeSet(typeText, childSubaccountNumber)
+                    adjustIsolatedMargin.safeSet(type.name, childSubaccountNumber)
                     val subaccountNumbers = if (childSubaccountNumber != null) {
                         iListOf(parentSubaccountNumber, childSubaccountNumber)
                     } else {
@@ -103,7 +97,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                 else -> {}
             }
         } else {
-            error = cannotModify(typeText)
+            error = cannotModify(type.name)
         }
     } else {
         changes = StateChanges(
@@ -127,15 +121,16 @@ fun TradingStateMachine.validAdjustIsolatedMarginInput(
     if (typeText == null) return false
 
     when (typeText) {
-        AdjustIsolatedMarginInputField.Type.rawValue -> {
-            val type = parser.asString(adjustIsolatedMargin["type"])
-            return type == null || type == IsolatedMarginAdjustmentType.Add. || type == IsolatedMarginAdjustmentType.Remove.rawValue
+        AdjustIsolatedMarginInputField.Type.name -> {
+            val typeString = parser.asString(adjustIsolatedMargin["type"]) ?: return true
+            val type = IsolatedMarginAdjustmentType.valueOf(typeString)
+            return type == IsolatedMarginAdjustmentType.Add || type == IsolatedMarginAdjustmentType.Remove
         }
-        AdjustIsolatedMarginInputField.Amount.rawValue -> {
+        AdjustIsolatedMarginInputField.Amount.name -> {
             val amount = parser.asDouble(adjustIsolatedMargin["amount"])
             return amount == null || amount > 0
         }
-        AdjustIsolatedMarginInputField.ChildSubaccountNumber.rawValue -> {
+        AdjustIsolatedMarginInputField.ChildSubaccountNumber.name -> {
             val childSubaccountNumber = parser.asInt(adjustIsolatedMargin["childSubaccountNumber"])
             return childSubaccountNumber == null || childSubaccountNumber % NUM_PARENT_SUBACCOUNTS == parentSubaccountNumber
         }
