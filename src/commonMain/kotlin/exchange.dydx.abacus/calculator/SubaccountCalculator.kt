@@ -169,7 +169,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             val notional = valueTotal.abs()
                             set(notional, modified, "notionalTotal", period)
                             val adjustedImf = calculatedAdjustedImf(
-                                parser.asNativeMap(market?.get("configs"))
+                                parser.asNativeMap(market?.get("configs")),
                             )
                             val adjustedMmf = calculatedAdjustedMmf(
                                 parser.asNativeMap(market?.get("configs")),
