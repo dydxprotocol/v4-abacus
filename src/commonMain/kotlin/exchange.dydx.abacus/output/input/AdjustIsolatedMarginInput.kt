@@ -110,12 +110,12 @@ data class AdjustIsolatedMarginInput(
             Logger.d { "creating Adjust Isolated Margin Input\n" }
 
             data?.let {
-                val type = parser.asString(data["type"])?.let {
+                val type = parser.asString(data["Type"])?.let {
                     IsolatedMarginAdjustmentType.valueOf(it)
                 } ?: IsolatedMarginAdjustmentType.Add
 
-                val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
-                val amount = parser.asString(data["amount"])
+                val childSubaccountNumber = parser.asInt(data["ChildSubaccountNumber"])
+                val amount = parser.asString(data["Amount"])
                 val fee = parser.asDouble(data["fee"])
                 val adjustIsolatedMarginInputOptions = AdjustIsolatedMarginInputOptions.create(
                     existing?.adjustIsolatedMarginInputOptions,

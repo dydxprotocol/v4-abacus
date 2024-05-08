@@ -971,7 +971,7 @@ open class TradingStateMachine(
 
             "adjustIsolatedMargin" -> {
                 val adjustIsolatedMargin = parser.asNativeMap(input["adjustIsolatedMargin"]) ?: return null
-                val type = parser.asString(adjustIsolatedMargin["type"]) ?: return null
+                val type = parser.asString(adjustIsolatedMargin["Type"]) ?: return null
 
                 when (type) {
                     "ADD" -> {

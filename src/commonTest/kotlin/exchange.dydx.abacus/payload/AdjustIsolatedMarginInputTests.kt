@@ -42,9 +42,9 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
         loadSubaccountsWithChildren()
 
         testChildSubaccountNumberInput()
-//        testMarginAddition()
-//        testMarginRemoval()
-//        testZeroAmount()
+        testMarginAddition()
+        testMarginRemoval()
+        testZeroAmount()
     }
 
     private fun testChildSubaccountNumberInput() {
@@ -57,7 +57,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "childSubaccountNumber": "128"
+                        "ChildSubaccountNumber": "128"
                     }
                 }
             }
@@ -75,7 +75,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "amount": "0"
+                        "Amount": "0"
                     }
                 },
                 "wallet": {
@@ -83,12 +83,14 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": "100000"
+                                    "current": "100000",
+                                    "postOrder": null
                                 }
                             },
                             "128": {
                                 "quoteBalance": {
-                                    "current": "500.000000"
+                                    "current": "500.000000",
+                                    "postOrder": null
                                 }
                             }
                         }
@@ -109,7 +111,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
             "input": {
                 "current": "adjustIsolatedMargin",
                 "adjustIsolatedMargin": {
-                    "type": "ADD"
+                    "Type": "Add"
                 }
             }
         }
@@ -125,7 +127,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "amount": "92.49"
+                        "Amount": "92.49"
                     }
                 }
             }
@@ -143,8 +145,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "type": "REMOVE",
-                        "amount": null
+                        "Type": "Remove"
                     }
                 },
                 "wallet": {
@@ -176,8 +177,8 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "type": "REMOVE",
-                        "amount": "20"
+                        "Type": "Remove",
+                        "Amount": "20"
                     }
                 },
                 "wallet": {

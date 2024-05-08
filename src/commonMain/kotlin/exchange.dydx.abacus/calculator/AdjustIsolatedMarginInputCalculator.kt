@@ -16,8 +16,8 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
     ): Map<String, Any> {
         val wallet = parser.asNativeMap(state["wallet"])
         val isolatedMarginAdjustment = parser.asNativeMap(state["adjustIsolatedMargin"])
-        val childSubaccountNumber = parser.asInt(isolatedMarginAdjustment?.get("childSubaccountNumber"))
-        val type = parser.asString(isolatedMarginAdjustment?.get("type"))?.let {
+        val childSubaccountNumber = parser.asInt(isolatedMarginAdjustment?.get("ChildSubaccountNumber"))
+        val type = parser.asString(isolatedMarginAdjustment?.get("Type"))?.let {
             IsolatedMarginAdjustmentType.valueOf(it)
         } ?: IsolatedMarginAdjustmentType.Add
 
@@ -60,10 +60,10 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         isolatedMarginAdjustment: Map<String, Any>,
         isParentSubaccount: Boolean,
     ): Map<String, Double> {
-        val type = parser.asString(isolatedMarginAdjustment["type"])?.let {
+        val type = parser.asString(isolatedMarginAdjustment["Type"])?.let {
             IsolatedMarginAdjustmentType.valueOf(it)
         } ?: IsolatedMarginAdjustmentType.Add
-        val amount = parser.asDouble(isolatedMarginAdjustment["amount"])
+        val amount = parser.asDouble(isolatedMarginAdjustment["Amount"])
 
         when (type) {
             IsolatedMarginAdjustmentType.Add -> {
