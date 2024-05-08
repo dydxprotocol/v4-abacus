@@ -122,7 +122,10 @@ internal class TradePositionStateValidator(
                 position,
             )
         ) {
-            if (parser.asString(trade["type"]) != "MARKET") {
+            if (parser.asString(trade["type"]) == "MARKET") {
+                // no op. we removed this validation codepath in favor of relying on BE validation
+                null
+            } else {
                 if (change == PositionChange.NEW) {
                     error(
                         "ERROR",
