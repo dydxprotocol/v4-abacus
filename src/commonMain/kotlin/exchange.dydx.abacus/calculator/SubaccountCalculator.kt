@@ -169,10 +169,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             val notional = valueTotal.abs()
                             set(notional, modified, "notionalTotal", period)
                             val adjustedImf = calculatedAdjustedImf(
-                                parser.asNativeMap(market?.get("configs")),
-                                subaccount,
-                                size,
-                                notional,
+                                parser.asNativeMap(market?.get("configs"))
                             )
                             val adjustedMmf = calculatedAdjustedMmf(
                                 parser.asNativeMap(market?.get("configs")),
@@ -216,14 +213,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
     private fun calculatedAdjustedImf(
         configs: Map<String, Any>?,
-        subaccount: Map<String, Any>,
-        size: Double?,
-        notional: Double?,
     ): Double {
-        val initialMarginFraction =
-            parser.asDouble(configs?.get("initialMarginFraction")) ?: Numeric.double.ZERO
-        val notionalValue: Double = parser.asDouble(notional) ?: Numeric.double.ZERO
-        return calculateV4MarginFraction(configs, initialMarginFraction, notionalValue)
+        return parser.asDouble(configs?.get("effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
     }
 
     private fun calculatedAdjustedMmf(
