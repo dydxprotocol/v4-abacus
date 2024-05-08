@@ -51,6 +51,7 @@ class NetworkHelper(
     internal var lastValidatorCallTime: Instant? = null
     internal var lastIndexerCallTime: Instant? = null
     internal val jsonEncoder = JsonEncoder()
+    internal var validatorUrl: String? = null
 
     private var indexerRestriction: UsageRestriction? = null
         set(value) {

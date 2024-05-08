@@ -1510,23 +1510,15 @@ class V4StateManagerAdaptor(
         fetchTransferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
-    private fun validatorTrackingParams(): IMap<String, Any> {
-        val validatorUrl = this.validatorUrl
-        return if (validatorUrl != null) {
-            iMapOf(
-                "validatorUrl" to validatorUrl,
-            )
-        } else {
-            iMapOf<String, Any>()
-        }
-    }
+    private fun validatorTrackingParams() = validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
+
     private fun uiTrackingParams(interval: Double): IMap<String, Any> {
         return ParsingHelper.merge(
             validatorTrackingParams(),
             iMapOf(
                 "clickToSubmitOrderDelayMs" to interval,
             ),
-        ) as IMap<String, Any>
+        )?.toIMap() ?: iMapOf()
     }
 
     private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
@@ -1544,7 +1536,7 @@ class V4StateManagerAdaptor(
                     "errorMessage" to error.message,
                 )
             },
-        ) as IMap<String, Any>
+        )?.toIMap() ?: iMapOf()
     }
 
     override fun trackingParams(interval: Double): IMap<String, Any> {
@@ -1553,7 +1545,7 @@ class V4StateManagerAdaptor(
             iMapOf(
                 "roundtripMs" to interval,
             ),
-        ) as IMap<String, Any>
+        )?.toIMap() ?: iMapOf()
     }
 
     private fun didSetApiState(apiState: ApiState?, oldValue: ApiState?) {

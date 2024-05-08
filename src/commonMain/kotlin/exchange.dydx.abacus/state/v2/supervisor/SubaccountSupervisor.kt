@@ -81,7 +81,7 @@ internal class SubaccountSupervisor(
     analyticsUtils: AnalyticsUtils,
     private val configs: SubaccountConfigs,
     private val accountAddress: String,
-    internal val subaccountNumber: Int
+    internal val subaccountNumber: Int,
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
     /*
     Because faucet is done at subaccount level, we need SubaccountSupervisor even
@@ -356,12 +356,6 @@ internal class SubaccountSupervisor(
         )
     }
 
-    private fun trackingParams(interval: Double): IMap<String, Any> {
-        return iMapOf(
-            "roundtripMs" to interval,
-        )
-    }
-
     private fun didSetCancelOrderRecords() {
         parseOrdersToMatchPlaceOrdersAndCancelOrders()
     }
@@ -383,25 +377,42 @@ internal class SubaccountSupervisor(
 
     val transactionQueue = TransactionQueue(helper::transaction)
 
+    private fun validatorTrackingParams() = helper.validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
+
     private fun uiTrackingParams(interval: Double): IMap<String, Any> {
-        return iMapOf(
-            "clickToSubmitOrderDelayMs" to interval,
-        )
+        return ParsingHelper.merge(
+            validatorTrackingParams(),
+            iMapOf(
+                "clickToSubmitOrderDelayMs" to interval,
+            ),
+        )?.toIMap() ?: iMapOf()
     }
 
     private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
-        return if (error.stringKey != null) {
+        return ParsingHelper.merge(
+            validatorTrackingParams(),
+            if (error.stringKey != null) {
+                iMapOf(
+                    "errorType" to error.type.rawValue,
+                    "errorMessage" to error.message,
+                    "errorStringKey" to error.stringKey,
+                )
+            } else {
+                iMapOf(
+                    "errorType" to error.type.rawValue,
+                    "errorMessage" to error.message,
+                )
+            },
+        )?.toIMap() ?: iMapOf()
+    }
+
+    private fun trackingParams(interval: Double): IMap<String, Any> {
+        return ParsingHelper.merge(
+            validatorTrackingParams(),
             iMapOf(
-                "errorType" to error.type.rawValue,
-                "errorMessage" to error.message,
-                "errorStringKey" to error.stringKey,
-            )
-        } else {
-            iMapOf(
-                "errorType" to error.type.rawValue,
-                "errorMessage" to error.message,
-            )
-        }
+                "roundtripMs" to interval,
+            ),
+        )?.toIMap() ?: iMapOf()
     }
 
     fun closePosition(
