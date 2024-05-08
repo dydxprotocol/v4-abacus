@@ -113,7 +113,6 @@ internal class TradePositionStateValidator(
     ): Map<String, Any>? {
         /*
         MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE
-        MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE
 
         INVALID_NEW_POSITION_LEVERAGE
         INVALID_LARGE_POSITION_LEVERAGE
