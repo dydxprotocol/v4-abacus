@@ -513,7 +513,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
+                    {"type":"subscribe","channel":"v4_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
                 ]
             """.trimIndent(),
             testWebSocket?.messages,
@@ -566,7 +566,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_parent_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0"}
+                    {"type":"subscribe","channel":"v4_parent_subaccounts","id":"cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0","batched":"true"}
                 ]
             """.trimIndent(),
             testWebSocket?.messages,
@@ -712,7 +712,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0"},
+                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"},
                     {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
                 ]
             """.trimIndent(),
@@ -807,7 +807,7 @@ class V4ForegroundCycleTests : NetworkTests() {
             """
                 [
                     {"type":"subscribe","channel":"v4_markets","batched":"true"},
-                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0"},
+                    {"type":"subscribe","channel":"v4_subaccounts","id":"$testAddress/0","batched":"true"},
                     {"type":"unsubscribe","channel":"v4_subaccounts","id":"$testAddress/0"}
                 ]
             """.trimIndent(),

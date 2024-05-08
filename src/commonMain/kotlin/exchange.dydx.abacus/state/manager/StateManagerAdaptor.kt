@@ -49,6 +49,7 @@ import exchange.dydx.abacus.state.model.historicalFundings
 import exchange.dydx.abacus.state.model.historicalPnl
 import exchange.dydx.abacus.state.model.orderCanceled
 import exchange.dydx.abacus.state.model.receivedBatchOrderbookChanges
+import exchange.dydx.abacus.state.model.receivedBatchSubaccountsChanges
 import exchange.dydx.abacus.state.model.receivedBatchedCandlesChanges
 import exchange.dydx.abacus.state.model.receivedBatchedMarketsChanges
 import exchange.dydx.abacus.state.model.receivedBatchedTradesChanges
@@ -684,13 +685,14 @@ open class StateManagerAdaptor(
         socket(
             socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber),
+            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
     }
 
     open fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean
     ): IMap<String, Any> {
         TODO("Not yet implemented")
     }
@@ -750,7 +752,7 @@ open class StateManagerAdaptor(
                             ParsingErrorType.MissingContent,
                             payload.toString(),
                         )
-                    changes = socketChannelBatchData(channel, id, subaccountNumber, content)
+                    changes = socketChannelBatchData(channel, id, subaccountNumber, info, content)
                 }
 
                 "connected" -> {
@@ -1051,6 +1053,7 @@ open class StateManagerAdaptor(
         channel: String,
         id: String?,
         subaccountNumber: Int?,
+        info: SocketInfo,
         content: IList<IMap<String, Any>>,
     ): StateChanges? {
         return when (channel) {
@@ -1076,6 +1079,10 @@ open class StateManagerAdaptor(
             configs.marketCandlesChannel() -> {
                 val (market, resolution) = splitCandlesChannel(id)
                 stateMachine.receivedBatchedCandlesChanges(market, resolution, content)
+            }
+
+            configs.subaccountChannel(false), configs.subaccountChannel(true) -> {
+                stateMachine.receivedBatchSubaccountsChanges(content, info, height())
             }
 
             else -> {
