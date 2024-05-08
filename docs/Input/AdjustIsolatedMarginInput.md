@@ -1,6 +1,6 @@
 # AdjustIsolatedMarginInput
 
-data class TriggerOrdersInput(  
+data class AdjustIsolatedMarginInput(  
 &emsp;val type: String?, // "ADD" or "REMOVE"
 &emsp;val amount: Double?,
 &emsp;val childSubaccountNumber: Int?,

@@ -254,15 +254,16 @@ Data input in string format
 
 ## AdjustIsolatedMarginInputField
 
-### type
+### Type
 
-ADD - Add margin to the child's isolated margin account from the parent's cross margin account
-REMOVE - Remove margin from the child's isolated margin account to the parent's cross margin account
+IsolatedMarginAdjustmentType
+Add - Add margin to the child's isolated margin account from the parent's cross margin account
+Remove - Remove margin from the child's isolated margin account to the parent's cross margin account
 
-### amount
+### Amount
 
 Amount of USDC to remove or add
 
-### childSubaccountNumber
+### ChildSubaccountNumber
 
 Subaccount number for the child whose margin is to be adjusted
