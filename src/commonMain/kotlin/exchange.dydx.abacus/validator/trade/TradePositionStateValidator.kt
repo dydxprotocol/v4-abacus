@@ -122,21 +122,7 @@ internal class TradePositionStateValidator(
                 position,
             )
         ) {
-            if (parser.asString(trade["type"]) == "MARKET") {
-                val increasingPosition = when (change) {
-                    PositionChange.NEW, PositionChange.CROSSING, PositionChange.INCREASING -> true
-                    else -> false
-                }
-
-                error(
-                    if (increasingPosition) "ERROR" else "WARNING",
-                    "MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                    if (increasingPosition) listOf("size.size") else null,
-                    if (increasingPosition) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
-                    "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                    "ERRORS.TRADE_BOX.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                )
-            } else {
+            if (parser.asString(trade["type"]) != "MARKET") {
                 if (change == PositionChange.NEW) {
                     error(
                         "ERROR",
