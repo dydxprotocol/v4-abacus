@@ -82,6 +82,7 @@ data class DepositInputOptions(
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
                     existing?.needsFastSpeed != needsFastSpeed ||
+                    existing?.exchanges != exchanges ||
                     existing?.chains != chains ||
                     existing?.assets != assets
                 ) {
@@ -168,6 +169,7 @@ data class WithdrawalInputOptions(
                 return if (existing?.needsSize != needsSize ||
                     existing?.needsAddress != needsAddress ||
                     existing?.needsFastSpeed != needsFastSpeed ||
+                    existing?.exchanges != exchanges ||
                     existing?.chains != chains ||
                     existing?.assets != assets
                 ) {
