@@ -1510,42 +1510,31 @@ class V4StateManagerAdaptor(
         fetchTransferStatus(hash, fromChainId, toChainId, isCctp, requestId)
     }
 
-    private fun validatorTrackingParams() = validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
-
     private fun uiTrackingParams(interval: Double): IMap<String, Any> {
-        return ParsingHelper.merge(
-            validatorTrackingParams(),
-            iMapOf(
-                "clickToSubmitOrderDelayMs" to interval,
-            ),
-        )?.toIMap() ?: iMapOf()
+        return iMapOf(
+            "clickToSubmitOrderDelayMs" to interval,
+        )
     }
 
     private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
-        return ParsingHelper.merge(
-            validatorTrackingParams(),
-            if (error.stringKey != null) {
-                iMapOf(
-                    "errorType" to error.type.rawValue,
-                    "errorMessage" to error.message,
-                    "errorStringKey" to error.stringKey,
-                )
-            } else {
-                iMapOf(
-                    "errorType" to error.type.rawValue,
-                    "errorMessage" to error.message,
-                )
-            },
-        )?.toIMap() ?: iMapOf()
+        return if (error.stringKey != null) {
+            iMapOf(
+                "errorType" to error.type.rawValue,
+                "errorMessage" to error.message,
+                "errorStringKey" to error.stringKey,
+            )
+        } else {
+            iMapOf(
+                "errorType" to error.type.rawValue,
+                "errorMessage" to error.message,
+            )
+        }
     }
 
     override fun trackingParams(interval: Double): IMap<String, Any> {
-        return ParsingHelper.merge(
-            validatorTrackingParams(),
-            iMapOf(
-                "roundtripMs" to interval,
-            ),
-        )?.toIMap() ?: iMapOf()
+        return iMapOf(
+            "roundtripMs" to interval,
+        )
     }
 
     private fun didSetApiState(apiState: ApiState?, oldValue: ApiState?) {
@@ -1573,27 +1562,38 @@ class V4StateManagerAdaptor(
         trackApiStateIfNeeded(apiState, null)
     }
 
+    private fun apiStateParams(): IMap<String, Any>? {
+        val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
+        val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
+        val interval = if (indexerTime != null) {
+            (
+                Clock.System.now().toEpochMilliseconds()
+                    .toDouble() - indexerTime
+                )
+        } else {
+            null
+        }
+        return iMapOf(
+            "lastSuccessfulIndexerRPC" to indexerTime,
+            "lastSuccessfulFullNodeRPC" to validatorTime,
+            "elapsedTime" to interval,
+            "blockHeight" to indexerState.blockAndTime?.block,
+            "nodeHeight" to validatorState.blockAndTime?.block,
+            "validatorUrl" to this.validatorUrl,
+        ) as IMap<String, Any>?
+    }
+
     private fun trackApiStateIfNeeded(apiState: ApiState?, oldValue: ApiState?) {
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
-            val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
-            val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-            val interval = if (indexerTime != null) {
-                (
-                    Clock.System.now().toEpochMilliseconds()
-                        .toDouble() - indexerTime
-                    )
-            } else {
-                null
-            }
-            val params = mapOf(
-                "lastSuccessfulIndexerRPC" to indexerTime,
-                "lastSuccessfulFullNodeRPC" to validatorTime,
-                "elapsedTime" to interval,
-                "blockHeight" to indexerState.blockAndTime?.block,
-                "nodeHeight" to validatorState.blockAndTime?.block,
-            ).filterValues { it != null } as Map<String, Any>
+            tracking(AnalyticsEvent.NetworkStatus.rawValue, null)
+        }
+    }
 
-            tracking(AnalyticsEvent.NetworkStatus.rawValue, params.toIMap())
+    override fun tracking(eventName: String, params: IMap<String, Any?>?) {
+        val additionalParams = apiStateParams()
+        val paramsAsString = this.jsonEncoder.encode(params?.let { ParsingHelper.merge(it as IMap<String, Any>, additionalParams) } ?: additionalParams)
+        this.ioImplementations.threading?.async(ThreadingType.main) {
+            this.ioImplementations.tracking?.log(eventName, paramsAsString)
         }
     }
 

@@ -377,42 +377,29 @@ internal class SubaccountSupervisor(
 
     val transactionQueue = TransactionQueue(helper::transaction)
 
-    private fun validatorTrackingParams() = helper.validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
-
     private fun uiTrackingParams(interval: Double): IMap<String, Any> {
-        return ParsingHelper.merge(
-            validatorTrackingParams(),
-            iMapOf(
-                "clickToSubmitOrderDelayMs" to interval,
-            ),
-        )?.toIMap() ?: iMapOf()
+        return iMapOf(
+            "clickToSubmitOrderDelayMs" to interval,
+        )
     }
 
     private fun errorTrackingParams(error: ParsingError): IMap<String, Any> {
-        return ParsingHelper.merge(
-            validatorTrackingParams(),
-            if (error.stringKey != null) {
-                iMapOf(
-                    "errorType" to error.type.rawValue,
-                    "errorMessage" to error.message,
-                    "errorStringKey" to error.stringKey,
-                )
-            } else {
-                iMapOf(
-                    "errorType" to error.type.rawValue,
-                    "errorMessage" to error.message,
-                )
-            },
-        )?.toIMap() ?: iMapOf()
+        return if (error.stringKey != null) {
+            iMapOf(
+                "errorType" to error.type.rawValue,
+                "errorMessage" to error.message,
+                "errorStringKey" to error.stringKey,
+            )
+        } else {
+            iMapOf(
+                "errorType" to error.type.rawValue,
+                "errorMessage" to error.message,
+            )
+        }
     }
 
-    private fun trackingParams(interval: Double): IMap<String, Any> {
-        return ParsingHelper.merge(
-            validatorTrackingParams(),
-            iMapOf(
-                "roundtripMs" to interval,
-            ),
-        )?.toIMap() ?: iMapOf()
+    private fun trackingParams(interval: Double? = null): IMap<String, Any> {
+        return interval?.let { iMapOf("roundtripMs" to it) } ?: iMapOf()
     }
 
     fun closePosition(
@@ -684,7 +671,7 @@ internal class SubaccountSupervisor(
     }
 
     private fun trackOrderClick(
-        analyticsPayload: IMap<String, Any?>?,
+        analyticsPayload: IMap<String, Any>?,
         analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()

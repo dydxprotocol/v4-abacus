@@ -531,11 +531,4 @@ class NetworkHelper(
             }
         }
     }
-
-    private fun tracking(eventName: String, params: IMap<String, Any>?) {
-        val paramsAsString = jsonEncoder.encode(params)
-        ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.tracking?.log(eventName, paramsAsString)
-        }
-    }
 }

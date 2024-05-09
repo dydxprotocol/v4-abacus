@@ -7,6 +7,8 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 
 internal open class NetworkSupervisor(
@@ -81,8 +83,9 @@ internal open class NetworkSupervisor(
         }
     }
 
-    internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
-        val paramsAsString = helper.jsonEncoder.encode(params)
+    internal fun tracking(eventName: String, params: IMap<String, Any>?) {
+        val requiredParams = helper.validatorUrl?.let { iMapOf("validatorUrl" to it) } ?: iMapOf()
+        val paramsAsString = helper.jsonEncoder.encode(params?.let { ParsingHelper.merge(it, requiredParams) } ?: requiredParams)
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.ioImplementations.tracking?.log(eventName, paramsAsString)
         }
