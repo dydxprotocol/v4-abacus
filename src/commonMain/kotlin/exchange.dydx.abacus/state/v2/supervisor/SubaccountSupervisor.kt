@@ -1432,7 +1432,7 @@ internal class SubaccountSupervisor(
 
     private fun pollReclaimUnutilizedFunds() {
         reclaimUnutilizedFundsTimer = null
-        helper.ioImplementations.threading?.async(ThreadingType.main) {
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
             this.reclaimUnutilizedFundsTimer = helper.ioImplementations.timer?.schedule(
                 (10.seconds).inWholeSeconds.toDouble(),
                 null,
