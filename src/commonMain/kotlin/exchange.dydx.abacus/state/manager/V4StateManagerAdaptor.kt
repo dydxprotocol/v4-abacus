@@ -39,6 +39,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.UIImplementations
+import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -1532,17 +1533,9 @@ class V4StateManagerAdaptor(
     }
 
     override fun trackingParams(interval: Double): IMap<String, Any> {
-        val validatorUrl = this.validatorUrl
-        return if (validatorUrl != null) {
-            iMapOf(
-                "roundtripMs" to interval,
-                "validatorUrl" to validatorUrl,
-            )
-        } else {
-            iMapOf(
-                "roundtripMs" to interval,
-            )
-        }
+        return iMapOf(
+            "roundtripMs" to interval,
+        )
     }
 
     private fun didSetApiState(apiState: ApiState?, oldValue: ApiState?) {
@@ -1570,27 +1563,32 @@ class V4StateManagerAdaptor(
         trackApiStateIfNeeded(apiState, null)
     }
 
+    private fun apiStateParams(): IMap<String, Any>? {
+        val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()
+        val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()
+        val interval = indexerTime?.let { Clock.System.now().toEpochMilliseconds() - it }
+        return iMapOf(
+            "lastSuccessfulIndexerRPC" to indexerTime?.toDouble(),
+            "lastSuccessfulFullNodeRPC" to validatorTime?.toDouble(),
+            "elapsedTime" to interval?.toDouble(),
+            "blockHeight" to indexerState.blockAndTime?.block,
+            "nodeHeight" to validatorState.blockAndTime?.block,
+            "validatorUrl" to this.validatorUrl,
+        ) as IMap<String, Any>?
+    }
+
     private fun trackApiStateIfNeeded(apiState: ApiState?, oldValue: ApiState?) {
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
-            val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
-            val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-            val interval = if (indexerTime != null) {
-                (
-                    Clock.System.now().toEpochMilliseconds()
-                        .toDouble() - indexerTime
-                    )
-            } else {
-                null
-            }
-            val params = mapOf(
-                "lastSuccessfulIndexerRPC" to indexerTime,
-                "lastSuccessfulFullNodeRPC" to validatorTime,
-                "elapsedTime" to interval,
-                "blockHeight" to indexerState.blockAndTime?.block,
-                "nodeHeight" to validatorState.blockAndTime?.block,
-            ).filterValues { it != null } as Map<String, Any>
+            tracking(AnalyticsEvent.NetworkStatus.rawValue)
+        }
+    }
 
-            tracking(AnalyticsEvent.NetworkStatus.rawValue, params.toIMap())
+    override fun tracking(eventName: String, params: IMap<String, Any?>?) {
+        val requiredParams = apiStateParams()
+        val mergedParams = params?.let { ParsingHelper.merge(params.filterNotNull(), requiredParams) } ?: requiredParams
+        val paramsAsString = this.jsonEncoder.encode(mergedParams)
+        this.ioImplementations.threading?.async(ThreadingType.main) {
+            this.ioImplementations.tracking?.log(eventName, paramsAsString)
         }
     }
 

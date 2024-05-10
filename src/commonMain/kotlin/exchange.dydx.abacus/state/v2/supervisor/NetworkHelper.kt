@@ -51,6 +51,7 @@ class NetworkHelper(
     internal var lastValidatorCallTime: Instant? = null
     internal var lastIndexerCallTime: Instant? = null
     internal val jsonEncoder = JsonEncoder()
+    internal var validatorUrl: String? = null
 
     private var indexerRestriction: UsageRestriction? = null
         set(value) {
@@ -528,13 +529,6 @@ class NetworkHelper(
             } else {
                 callback(true, null, data)
             }
-        }
-    }
-
-    private fun tracking(eventName: String, params: IMap<String, Any>?) {
-        val paramsAsString = jsonEncoder.encode(params)
-        ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.tracking?.log(eventName, paramsAsString)
         }
     }
 }
