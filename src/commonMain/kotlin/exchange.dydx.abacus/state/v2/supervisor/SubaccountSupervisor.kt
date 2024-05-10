@@ -81,7 +81,7 @@ internal class SubaccountSupervisor(
     analyticsUtils: AnalyticsUtils,
     private val configs: SubaccountConfigs,
     private val accountAddress: String,
-    internal val subaccountNumber: Int
+    internal val subaccountNumber: Int,
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
     /*
     Because faucet is done at subaccount level, we need SubaccountSupervisor even

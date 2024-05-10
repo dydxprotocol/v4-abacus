@@ -2366,7 +2366,7 @@ open class StateManagerAdaptor(
         )
     }
 
-    internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
+    internal open fun tracking(eventName: String, params: IMap<String, Any?>? = null) {
         val paramsAsString = jsonEncoder.encode(params)
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.tracking?.log(eventName, paramsAsString)
