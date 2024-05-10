@@ -1564,20 +1564,13 @@ class V4StateManagerAdaptor(
     }
 
     private fun apiStateParams(): IMap<String, Any>? {
-        val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
-        val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-        val interval = if (indexerTime != null) {
-            (
-                Clock.System.now().toEpochMilliseconds()
-                    .toDouble() - indexerTime
-                )
-        } else {
-            null
-        }
+        val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()
+        val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()
+        val interval = indexerTime?.let { Clock.System.now().toEpochMilliseconds() - it }
         return iMapOf(
-            "lastSuccessfulIndexerRPC" to indexerTime,
-            "lastSuccessfulFullNodeRPC" to validatorTime,
-            "elapsedTime" to interval,
+            "lastSuccessfulIndexerRPC" to indexerTime?.toDouble(),
+            "lastSuccessfulFullNodeRPC" to validatorTime?.toDouble(),
+            "elapsedTime" to interval?.toDouble(),
             "blockHeight" to indexerState.blockAndTime?.block,
             "nodeHeight" to validatorState.blockAndTime?.block,
             "validatorUrl" to this.validatorUrl,
