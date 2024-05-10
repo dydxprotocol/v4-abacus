@@ -30,7 +30,7 @@ class AnalyticsUtils {
      */
     fun triggerOrdersAnalyticsPayload(
         payload: HumanReadableTriggerOrdersPayload,
-    ): IMap<String, Any>? {
+    ): IMap<String, Any?>? {
         val placeOrderPayloads = payload.placeOrderPayloads
         val cancelOrderPayloads = payload.cancelOrderPayloads
 
@@ -84,7 +84,7 @@ class AnalyticsUtils {
             "takeProfitOrderAction" to takeProfitOrderAction?.rawValue,
             "takeProfitOrderCancelClientId" to takeProfitOrderCancelClientId,
             "takeProfitOrderPlaceClientId" to takeProfitOrderPlaceClientId,
-        ) as IMap<String, Any>?
+        )
     }
 
     /**

@@ -356,6 +356,12 @@ internal class SubaccountSupervisor(
         )
     }
 
+    private fun trackingParams(interval: Double): IMap<String, Any> {
+        return iMapOf(
+            "roundtripMs" to interval,
+        )
+    }
+
     private fun didSetCancelOrderRecords() {
         parseOrdersToMatchPlaceOrdersAndCancelOrders()
     }
@@ -396,10 +402,6 @@ internal class SubaccountSupervisor(
                 "errorMessage" to error.message,
             )
         }
-    }
-
-    private fun trackingParams(interval: Double? = null): IMap<String, Any> {
-        return interval?.let { iMapOf("roundtripMs" to it) } ?: iMapOf()
     }
 
     fun closePosition(
@@ -671,7 +673,7 @@ internal class SubaccountSupervisor(
     }
 
     private fun trackOrderClick(
-        analyticsPayload: IMap<String, Any>?,
+        analyticsPayload: IMap<String, Any?>?,
         analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()

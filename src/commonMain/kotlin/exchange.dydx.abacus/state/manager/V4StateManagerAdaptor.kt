@@ -39,6 +39,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.UIImplementations
+import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -1585,13 +1586,14 @@ class V4StateManagerAdaptor(
 
     private fun trackApiStateIfNeeded(apiState: ApiState?, oldValue: ApiState?) {
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
-            tracking(AnalyticsEvent.NetworkStatus.rawValue, null)
+            tracking(AnalyticsEvent.NetworkStatus.rawValue)
         }
     }
 
     override fun tracking(eventName: String, params: IMap<String, Any?>?) {
-        val additionalParams = apiStateParams()
-        val paramsAsString = this.jsonEncoder.encode(params?.let { ParsingHelper.merge(it as IMap<String, Any>, additionalParams) } ?: additionalParams)
+        val requiredParams = apiStateParams()
+        val mergedParams = params?.let { ParsingHelper.merge(params.filterNotNull(), requiredParams) } ?: requiredParams
+        val paramsAsString = this.jsonEncoder.encode(mergedParams)
         this.ioImplementations.threading?.async(ThreadingType.main) {
             this.ioImplementations.tracking?.log(eventName, paramsAsString)
         }
