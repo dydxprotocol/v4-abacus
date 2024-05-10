@@ -33,6 +33,7 @@ import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
