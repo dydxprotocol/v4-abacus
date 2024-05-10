@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
@@ -2400,16 +2401,41 @@ open class StateManagerAdaptor(
                         trackingParams(interval),
                         fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
                     )
-                    tracking(
-                        AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
-                        ParsingHelper.merge(
-                            extraParams,
-                            orderAnalyticsPayload,
-                        )?.toIMap(),
-                    )
-                    placeOrderRecords.remove(placeOrderRecord)
+                    val analyticsPayload = ParsingHelper.merge(extraParams, orderAnalyticsPayload)?.toIMap()
+
+                    if (placeOrderRecord.lastOrderStatus != order.status) {
+                        // when order is first indexed
+                        if (placeOrderRecord.lastOrderStatus == null) {
+                            tracking(
+                                AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                                analyticsPayload,
+                            )
+                        }
+
+                        val orderStatusChangeEvent = when (order.status) {
+                            OrderStatus.cancelled -> AnalyticsEvent.TradePlaceOrderStatusCanceled
+                            OrderStatus.canceling -> AnalyticsEvent.TradePlaceOrderStatusCanceling
+                            OrderStatus.filled -> AnalyticsEvent.TradePlaceOrderStatusFilled
+                            OrderStatus.open -> AnalyticsEvent.TradePlaceOrderStatusOpen
+                            OrderStatus.pending -> AnalyticsEvent.TradePlaceOrderStatusPending
+                            OrderStatus.untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
+                            OrderStatus.partiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
+                        }
+
+                        tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
+
+                        when (order.status) {
+                            // order reaches final state, can remove / skip further tracking
+                            OrderStatus.cancelled, OrderStatus.filled -> {
+                                placeOrderRecords.remove(placeOrderRecord)
+                            }
+                            else -> {}
+                        }
+                        placeOrderRecord.lastOrderStatus = order.status
+                    }
                     break
                 }
+
                 val cancelOrderRecord = cancelOrderRecords.firstOrNull {
                     it.clientId == order.clientId
                 }
