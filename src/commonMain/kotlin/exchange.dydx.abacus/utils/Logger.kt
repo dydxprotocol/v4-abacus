@@ -3,7 +3,7 @@ package exchange.dydx.abacus.utils
 import exchange.dydx.abacus.protocols.LoggingProtocol
 
 object Logger {
-    private val TAG = "Abacus"
+    private const val TAG = "Abacus"
 
     var clientLogger: LoggingProtocol? = null
 
