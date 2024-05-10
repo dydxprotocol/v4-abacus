@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
@@ -32,11 +33,12 @@ import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.manager.TransactionQueue
-import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.findOrder
 import exchange.dydx.abacus.state.model.historicalPnl
@@ -78,11 +80,8 @@ internal class SubaccountSupervisor(
     analyticsUtils: AnalyticsUtils,
     private val configs: SubaccountConfigs,
     private val accountAddress: String,
-    internal val subaccountNumber: Int
+    internal val subaccountNumber: Int,
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
-    @Suppress("LocalVariableName", "PropertyName")
-    private val TRIGGER_ORDER_DEFAULT_DURATION_DAYS = 28.0
-
     /*
     Because faucet is done at subaccount level, we need SubaccountSupervisor even
     before the subaccount is realized on protocol/indexer.
@@ -281,15 +280,20 @@ internal class SubaccountSupervisor(
         helper.socket(
             helper.socketAction(subscribe),
             channel,
-            subaccountChannelParams(accountAddress, subaccountNumber),
+            subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
     }
 
     private fun subaccountChannelParams(
         accountAddress: String,
         subaccountNumber: Int,
+        subscribe: Boolean,
     ): IMap<String, Any> {
-        return iMapOf("id" to "$accountAddress/$subaccountNumber")
+        return if (subscribe) {
+            iMapOf("id" to "$accountAddress/$subaccountNumber", "batched" to "true")
+        } else {
+            iMapOf("id" to "$accountAddress/$subaccountNumber")
+        }
     }
 
     private fun didSetPlaceOrderRecords() {
@@ -308,10 +312,14 @@ internal class SubaccountSupervisor(
                 if (placeOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - placeOrderRecord.timestampInMilliseconds
+                    val extraParams = ParsingHelper.merge(
+                        trackingParams(interval),
+                        fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
+                    )
                     tracking(
                         AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval),
+                            extraParams,
                             orderAnalyticsPayload,
                         )?.toIMap(),
                     )
@@ -324,10 +332,14 @@ internal class SubaccountSupervisor(
                 if (cancelOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
                         .toDouble() - cancelOrderRecord.timestampInMilliseconds
+                    val extraParams = ParsingHelper.merge(
+                        trackingParams(interval),
+                        fromSlTpDialogParams(cancelOrderRecord.fromSlTpDialog),
+                    )
                     tracking(
                         AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
                         ParsingHelper.merge(
-                            trackingParams(interval),
+                            extraParams,
                             orderAnalyticsPayload,
                         )?.toIMap(),
                     )
@@ -336,6 +348,12 @@ internal class SubaccountSupervisor(
                 }
             }
         }
+    }
+
+    private fun fromSlTpDialogParams(fromSlTpDialog: Boolean): IMap<String, Any> {
+        return iMapOf(
+            "fromSlTpDialog" to fromSlTpDialog,
+        )
     }
 
     private fun trackingParams(interval: Double): IMap<String, Any> {
@@ -422,6 +440,21 @@ internal class SubaccountSupervisor(
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
             val stateResponse = stateMachine.triggerOrders(data, type, subaccountNumber)
+            helper.ioImplementations.threading?.async(ThreadingType.main) {
+                helper.stateNotification?.stateChanged(
+                    stateResponse.state,
+                    stateResponse.changes,
+                )
+            }
+        }
+    }
+
+    fun adjustIsolatedMargin(
+        data: String?,
+        type: AdjustIsolatedMarginInputField?,
+    ) {
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            val stateResponse = stateMachine.adjustIsolatedMargin(data, type, subaccountNumber)
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(
                     stateResponse.state,
@@ -531,6 +564,7 @@ internal class SubaccountSupervisor(
         callback: TransactionCallback,
         payload: HumanReadablePlaceOrderPayload,
         analyticsPayload: IMap<String, Any>?,
+        uiClickTimeMs: Double,
         isTriggerOrder: Boolean = false,
         transferPayload: HumanReadableSubaccountTransferPayload? = null,
     ): HumanReadablePlaceOrderPayload {
@@ -538,7 +572,10 @@ internal class SubaccountSupervisor(
         val string = Json.encodeToString(payload)
         val transferPayloadString =
             if (transferPayload != null) Json.encodeToString(transferPayload) else null
-        val uiClickTimeMs = trackOrderClick(analyticsPayload)
+
+        val marketId = payload.marketId
+        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         val isShortTermOrder = when (payload.type) {
             "MARKET" -> true
@@ -562,6 +599,7 @@ internal class SubaccountSupervisor(
                         subaccountNumber,
                         clientId,
                         submitTimeMs,
+                        fromSlTpDialog = isTriggerOrder,
                     ),
                 )
             }
@@ -583,8 +621,10 @@ internal class SubaccountSupervisor(
                 callback,
                 if (isTriggerOrder) {
                     HumanReadableTriggerOrdersPayload(
-                        listOf(payload),
-                        emptyList(),
+                        marketId,
+                        positionSize,
+                        iListOf(payload),
+                        iListOf(),
                     )
                 } else {
                     payload
@@ -633,12 +673,12 @@ internal class SubaccountSupervisor(
     }
 
     private fun trackOrderClick(
-        analyticsPayload: IMap<String, Any>?,
-        isCancel: Boolean = false
+        analyticsPayload: IMap<String, Any?>?,
+        analyticsEvent: AnalyticsEvent,
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         tracking(
-            if (isCancel) AnalyticsEvent.TradeCancelOrderClick.rawValue else AnalyticsEvent.TradePlaceOrderClick.rawValue,
+            analyticsEvent.rawValue,
             analyticsPayload,
         )
         return uiClickTimeMs
@@ -654,8 +694,7 @@ internal class SubaccountSupervisor(
 
         tracking(
             if (isCancel) AnalyticsEvent.TradeCancelOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue,
-            ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)
-                ?.toIMap(),
+            ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)?.toIMap(),
         )
 
         return submitTimeMs
@@ -681,16 +720,18 @@ internal class SubaccountSupervisor(
 
     private fun submitCancelOrder(
         orderId: String,
+        marketId: String,
         callback: TransactionCallback,
         payload: HumanReadableCancelOrderPayload,
         analyticsPayload: IMap<String, Any>?,
+        uiClickTimeMs: Double,
         isTriggerOrder: Boolean = false,
     ): HumanReadableCancelOrderPayload {
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
 
-        val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
-        tracking(AnalyticsEvent.TradeCancelOrderClick.rawValue, analyticsPayload)
+        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         stopWatchingLastOrder()
 
@@ -707,6 +748,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
+                            fromSlTpDialog = isTriggerOrder,
                         ),
                     )
                 }
@@ -727,8 +769,10 @@ internal class SubaccountSupervisor(
                     callback,
                     if (isTriggerOrder) {
                         HumanReadableTriggerOrdersPayload(
-                            emptyList(),
-                            listOf(payload),
+                            marketId,
+                            positionSize,
+                            iListOf(),
+                            iListOf(payload),
                         )
                     } else {
                         payload
@@ -747,13 +791,14 @@ internal class SubaccountSupervisor(
     ): HumanReadablePlaceOrderPayload {
         val orderPayload = placeOrderPayload(currentHeight)
         val midMarketPrice = stateMachine.state?.marketOrderbook(orderPayload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(orderPayload, midMarketPrice, false)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(orderPayload, midMarketPrice, fromSlTpDialog = false, isClosePosition = false)
         val isIsolatedMarginOrder =
             helper.parser.asInt(orderPayload.subaccountNumber) != subaccountNumber
         val transferPayload =
             if (isIsolatedMarginOrder) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
-        return submitPlaceOrder(callback, orderPayload, analyticsPayload, false, transferPayload)
+        return submitPlaceOrder(callback, orderPayload, analyticsPayload, uiClickTimeMs, false, transferPayload)
     }
 
     internal fun commitClosePosition(
@@ -762,49 +807,100 @@ internal class SubaccountSupervisor(
     ): HumanReadablePlaceOrderPayload {
         val payload = closePositionPayload(currentHeight)
         val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, true)
+        val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(payload, midMarketPrice, fromSlTpDialog = false, isClosePosition = true)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
-        return submitPlaceOrder(callback, payload, analyticsPayload)
+        return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     internal fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId }
-        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder)
+        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
+            ParsingErrorType.MissingRequiredData,
+            "no existing order to be cancelled for $orderId",
+        )
+        val marketId = existingOrder.marketId
+        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTpDialog = false)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
-        return submitCancelOrder(orderId, callback, payload, analyticsPayload)
+        return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     internal fun commitTriggerOrders(
         currentHeight: Int?,
         callback: TransactionCallback
     ): HumanReadableTriggerOrdersPayload {
-        val payloads = triggerOrdersPayload(currentHeight)
+        val payload = triggerOrdersPayload(currentHeight)
 
-        payloads.cancelOrderPayloads.forEach { payload ->
+        // this is a diff payload that summarizes the actions to be taken
+        val analyticsPayload = analyticsUtils.triggerOrdersAnalyticsPayload(payload)
+        val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TriggerOrderClick)
+
+        payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            val existingOrder = subaccount?.orders?.firstOrNull { it.id == payload.orderId }
-            val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, true)
-            submitCancelOrder(payload.orderId, callback, payload, analyticsPayload, true)
-        }
-
-        payloads.placeOrderPayloads.forEach { payload ->
-            val midMarketPrice = stateMachine.state?.marketOrderbook(payload.marketId)?.midPrice
-            val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
-                payload,
-                midMarketPrice,
-                isClosePosition = false,
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+                ?: throw ParsingException(
+                    ParsingErrorType.MissingRequiredData,
+                    "no existing order to be cancelled for $cancelPayload.orderId",
+                )
+            val marketId = existingOrder.marketId
+            val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
+                cancelPayload,
+                existingOrder,
                 fromSlTpDialog = true,
             )
-            submitPlaceOrder(callback, payload, analyticsPayload, true)
+            submitCancelOrder(
+                cancelPayload.orderId,
+                marketId,
+                callback,
+                cancelPayload,
+                cancelOrderAnalyticsPayload,
+                uiClickTimeMs,
+                true,
+            )
         }
 
-        if (payloads.cancelOrderPayloads.isEmpty() && payloads.placeOrderPayloads.isEmpty()) {
-            helper.send(null, callback, payloads)
+        payload.placeOrderPayloads.forEach { placePayload ->
+            val midMarketPrice = stateMachine.state?.marketOrderbook(placePayload.marketId)?.midPrice
+            val placeOrderAnalyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(
+                placePayload,
+                midMarketPrice,
+                fromSlTpDialog = true,
+                isClosePosition = false,
+            )
+            submitPlaceOrder(callback, placePayload, placeOrderAnalyticsPayload, uiClickTimeMs, true)
         }
 
-        return payloads
+        if (payload.cancelOrderPayloads.isEmpty() && payload.placeOrderPayloads.isEmpty()) {
+            helper.send(null, callback, payload)
+        }
+
+        return payload
+    }
+
+    internal fun commitAdjustIsolatedMargin(
+        callback: TransactionCallback
+    ): HumanReadableSubaccountTransferPayload {
+        val payload = adjustIsolatedMarginPayload()
+        val transferPayloadString = Json.encodeToString(payload)
+
+        submitTransaction(
+            TransactionType.SubaccountTransfer,
+            transferPayloadString,
+            null,
+            transactionCallback = { response: String? ->
+                val error = parseTransactionResponse(response)
+                helper.send(
+                    error,
+                    callback,
+                    payload,
+                )
+            },
+            false,
+        )
+
+        return payload
     }
 
     internal fun stopWatchingLastOrder() {
@@ -843,8 +939,8 @@ internal class SubaccountSupervisor(
 
         val timeInForce = if (trade.options?.timeInForceOptions != null) {
             when (trade.type) {
-                OrderType.market -> "FOK"
-                else -> trade.timeInForce ?: "FOK"
+                OrderType.market -> "IOC"
+                else -> trade.timeInForce ?: "IOC"
             }
         } else {
             null
@@ -967,13 +1063,14 @@ internal class SubaccountSupervisor(
 
     @Throws(Exception::class)
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload {
-        val placeOrderPayloads = mutableListOf<HumanReadablePlaceOrderPayload>()
-        val cancelOrderPayloads = mutableListOf<HumanReadableCancelOrderPayload>()
-        val triggerOrders = stateMachine.state?.input?.triggerOrders
+        val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
+        val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
+        val triggerOrders = requireNotNull(stateMachine.state?.input?.triggerOrders) { "triggerOrders input was null" }
 
-        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
-
-        val marketId = triggerOrders?.marketId ?: throw Exception("marketId is null")
+        val marketId = requireNotNull(triggerOrders.marketId) { "triggerOrders.marketId was null" }
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+        val position = subaccount?.openPositions?.find { it.id == marketId }
+        val positionSize = position?.size?.current
 
         fun updateTriggerOrder(triggerOrder: TriggerOrder) {
             // Cases
@@ -984,7 +1081,7 @@ internal class SubaccountSupervisor(
             // 5. No existing order -> nothing should be done
 
             if (triggerOrder.orderId != null) {
-                val existingOrder = subaccount.orders?.firstOrNull { it.id == triggerOrder.orderId }
+                val existingOrder = subaccount?.orders?.firstOrNull { it.id == triggerOrder.orderId }
                     ?: throw Exception("order is null")
                 if (triggerOrder.price?.triggerPrice != null) {
                     if (!isTriggerOrderEqualToExistingOrder(triggerOrder, existingOrder)) {
@@ -1012,7 +1109,7 @@ internal class SubaccountSupervisor(
             updateTriggerOrder(triggerOrders.takeProfitOrder)
         }
 
-        return HumanReadableTriggerOrdersPayload(placeOrderPayloads, cancelOrderPayloads)
+        return HumanReadableTriggerOrdersPayload(marketId, positionSize, placeOrderPayloads, cancelOrderPayloads)
     }
 
     @Throws(Exception::class)
@@ -1070,6 +1167,7 @@ internal class SubaccountSupervisor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
+        val type = order.type.rawValue
         val clientId = order.clientId ?: error("clientId is null")
         val orderFlags = order.orderFlags ?: error("orderFlags is null")
         val clobPairId = order.clobPairId ?: error("clobPairId is null")
@@ -1079,6 +1177,7 @@ internal class SubaccountSupervisor(
 
         return HumanReadableCancelOrderPayload(
             orderSubaccountNumber,
+            type,
             orderId,
             clientId,
             orderFlags,
@@ -1133,6 +1232,20 @@ internal class SubaccountSupervisor(
             size,
             destinationAddress,
             0,
+        )
+    }
+
+    @Throws(Exception::class)
+    fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload {
+        val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin ?: error("AdjustIsolatedMarginInput is null")
+        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber ?: error("childSubaccountNumber is null")
+
+        return HumanReadableSubaccountTransferPayload(
+            subaccountNumber,
+            amount,
+            accountAddress,
+            childSubaccountNumber,
         )
     }
 

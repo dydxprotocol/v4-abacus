@@ -1,10 +1,12 @@
 package exchange.dydx.abacus.state.v2.manager
 
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileLocation
+import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -26,6 +28,7 @@ import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.manager.SingletonAsyncAbacusStateManagerProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -54,7 +57,8 @@ class AsyncAbacusStateManagerV2(
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
     val stateNotification: StateNotificationProtocol? = null,
-    val dataNotification: DataNotificationProtocol? = null
+    val dataNotification: DataNotificationProtocol? = null,
+    private val presentationProtocol: PresentationProtocol? = null,
 ) : SingletonAsyncAbacusStateManagerProtocol {
     init {
         if (appConfigs.enableLogger) {
@@ -397,6 +401,7 @@ class AsyncAbacusStateManagerV2(
                 appConfigs,
                 stateNotification,
                 dataNotification,
+                presentationProtocol,
             )
         }
     }
@@ -415,6 +420,10 @@ class AsyncAbacusStateManagerV2(
 
     override fun triggerOrders(data: String?, type: TriggerOrdersInputField?) {
         adaptor?.triggerOrders(data, type)
+    }
+
+    override fun adjustIsolatedMargin(data: String?, type: AdjustIsolatedMarginInputField?) {
+        adaptor?.adjustIsolatedMargin(data, type)
     }
 
     override fun isMarketValid(marketId: String?): Boolean {
@@ -456,6 +465,10 @@ class AsyncAbacusStateManagerV2(
         return adaptor?.triggerOrdersPayload()
     }
 
+    override fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
+        return adaptor?.adjustIsolatedMarginPayload()
+    }
+
     override fun depositPayload(): HumanReadableDepositPayload? {
         return adaptor?.depositPayload()
     }
@@ -481,6 +494,16 @@ class AsyncAbacusStateManagerV2(
     override fun commitTriggerOrders(callback: TransactionCallback): HumanReadableTriggerOrdersPayload? {
         return try {
             adaptor?.commitTriggerOrders(callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+            null
+        }
+    }
+
+    override fun commitAdjustIsolatedMargin(callback: TransactionCallback): HumanReadableSubaccountTransferPayload? {
+        return try {
+            adaptor?.commitAdjustIsolatedMargin(callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
@@ -532,6 +555,15 @@ class AsyncAbacusStateManagerV2(
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         try {
             adaptor?.cancelOrder(orderId, callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
+    override fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+        try {
+            adaptor?.triggerCompliance(action, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)

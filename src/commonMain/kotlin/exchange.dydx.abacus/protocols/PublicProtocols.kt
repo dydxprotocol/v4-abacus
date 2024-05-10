@@ -209,7 +209,7 @@ enum class AnalyticsEvent(val rawValue: String) {
     // App
     NetworkStatus("NetworkStatus"),
 
-    // Trade Events
+    // Trade
     TradePlaceOrderClick("TradePlaceOrderClick"),
     TradeCancelOrderClick("TradeCancelOrderClick"),
     TradePlaceOrder("TradePlaceOrder"),
@@ -220,6 +220,9 @@ enum class AnalyticsEvent(val rawValue: String) {
     TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
     TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
     TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
+
+    // Trigger Order
+    TriggerOrderClick("TriggerOrderClick"),
 
     // Transfers
     TransferFaucetConfirmed("TransferFaucetConfirmed");
@@ -326,3 +329,24 @@ fun FileSystemProtocol.readCachedTextFile(
 }
 
 typealias TransactionCallback = (successful: Boolean, error: ParsingError?, data: Any?) -> Unit
+
+@JsExport
+@Serializable
+enum class ToastType {
+    Info,
+    Warning,
+    Error
+}
+
+@JsExport
+@Serializable
+data class Toast(
+    val id: String? = null,
+    val type: ToastType,
+    val title: String,
+    val text: String? = null,
+)
+
+interface PresentationProtocol {
+    fun showToast(toast: Toast)
+}

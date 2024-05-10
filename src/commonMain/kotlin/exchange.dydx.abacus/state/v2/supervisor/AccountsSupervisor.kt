@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
@@ -20,6 +21,7 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -291,6 +293,23 @@ internal fun AccountsSupervisor.commitTriggerOrders(
     return account?.commitTriggerOrders(currentHeight, callback)
 }
 
+internal fun AccountsSupervisor.adjustIsolatedMargin(
+    data: String?,
+    type: AdjustIsolatedMarginInputField?
+) {
+    account?.adjustIsolatedMargin(data, type)
+}
+
+internal fun AccountsSupervisor.commitAdjustIsolatedMargin(
+    callback: TransactionCallback
+): HumanReadableSubaccountTransferPayload? {
+    return account?.commitAdjustIsolatedMargin(callback)
+}
+
+internal fun AccountsSupervisor.adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload? {
+    return account?.adjustIsolatedMarginPayload()
+}
+
 internal fun AccountsSupervisor.commitClosePosition(
     currentHeight: Int?,
     callback: TransactionCallback
@@ -323,4 +342,11 @@ internal fun AccountsSupervisor.screen(
     callback: (restriction: Restriction) -> Unit
 ) {
     account?.screen(address, callback)
+}
+
+internal fun AccountsSupervisor.triggerCompliance(
+    action: ComplianceAction,
+    callback: TransactionCallback
+) {
+    account?.triggerCompliance(action, callback)
 }

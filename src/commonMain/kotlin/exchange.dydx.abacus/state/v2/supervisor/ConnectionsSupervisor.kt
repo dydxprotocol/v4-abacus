@@ -28,9 +28,11 @@ internal class ConnectionsSupervisor(
     private val delegate: ConnectionDelegate,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils), ConnectionStatsDelegate {
     private val connectionStats = ConnectionStats(stateMachine, helper, this)
-    override var validatorUrl: String? = null
+
+    override var validatorUrl: String?
+        get() = helper.validatorUrl
         set(value) {
-            field = value
+            helper.validatorUrl = value
             didSetValidatorUrl(value)
         }
 

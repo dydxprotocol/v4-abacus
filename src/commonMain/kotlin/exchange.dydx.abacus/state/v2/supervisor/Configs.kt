@@ -190,6 +190,7 @@ class AppConfigsV2(
     var onboardingConfigs: OnboardingConfigs,
     var loadRemote: Boolean = true,
     var enableLogger: Boolean = false,
+    var triggerOrderToast: Boolean = false,
 ) {
     companion object {
         val forApp = AppConfigsV2(
@@ -198,6 +199,7 @@ class AppConfigsV2(
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
+            triggerOrderToast = true,
         )
         val forAppWithIsolatedMargins = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
@@ -205,6 +207,7 @@ class AppConfigsV2(
             accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
+            triggerOrderToast = true,
         )
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
@@ -213,6 +216,7 @@ class AppConfigsV2(
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = false,
             enableLogger = true,
+            triggerOrderToast = true,
         )
         val forWeb = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
@@ -220,6 +224,7 @@ class AppConfigsV2(
             accountConfigs = AccountConfigs.forApp,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
+            triggerOrderToast = false,
         )
         val forWebAppWithIsolatedMargins = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
@@ -227,6 +232,7 @@ class AppConfigsV2(
             accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = true,
+            triggerOrderToast = false,
         )
         val forProgrammaticTraders = AppConfigsV2(
             systemConfigs = SystemConfigs.forProgrammaticTraders,
@@ -234,6 +240,7 @@ class AppConfigsV2(
             accountConfigs = AccountConfigs.forProgrammaticTraders,
             onboardingConfigs = OnboardingConfigs.forProgrammaticTraders,
             loadRemote = true,
+            triggerOrderToast = false,
         )
     }
 }
