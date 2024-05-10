@@ -4,7 +4,7 @@ import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.BlockAndTime
-import exchange.dydx.abacus.state.manager.NotificationsProvider
+import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.historicalTradingRewards
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
@@ -850,12 +850,13 @@ class V4AccountTests : V4BaseTests() {
                 val uiImplementations = BaseTests.testUIImplementations(localizer)
                 val notificationsProvider =
                     NotificationsProvider(
+                        perp,
                         uiImplementations,
                         environment = mock.v4Environment,
                         Parser(),
                         JsonEncoder(),
                     )
-                val notifications = notificationsProvider.buildNotifications(perp, 0)
+                val notifications = notificationsProvider.buildNotifications(0)
                 assertEquals(
                     6,
                     notifications.size,

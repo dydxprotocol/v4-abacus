@@ -30,6 +30,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.manager.utils.Address
 import exchange.dydx.abacus.state.manager.utils.DydxAddress
 import exchange.dydx.abacus.state.manager.utils.EvmAddress
@@ -152,7 +153,7 @@ open class StateManagerAdaptor(
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
     private val notificationsProvider =
-        NotificationsProvider(uiImplementations, environment, parser, jsonEncoder)
+        NotificationsProvider(stateMachine, uiImplementations, environment, parser, jsonEncoder)
 
     private var subaccountsTimer: LocalTimerProtocol? = null
         set(value) {
@@ -2259,7 +2260,7 @@ open class StateManagerAdaptor(
     }
 
     private fun updateNotifications() {
-        val notifications = notificationsProvider.buildNotifications(stateMachine, subaccountNumber)
+        val notifications = notificationsProvider.buildNotifications(subaccountNumber)
         consolidateNotifications(notifications)
     }
 
