@@ -96,15 +96,16 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
                 threading = TestThreading(),
                 timer = TestTimer(),
                 fileSystem = TestFileSystem(),
+                logging = null,
             )
         }
 
         fun testLocalizer(ioImplementations: IOImplementations): LocalizerProtocol {
             return DynamicLocalizer(
-                ioImplementations,
-                "en",
-                "/config",
-                "https://dydx-v4-shared-resources.vercel.app/config",
+                ioImplementations = ioImplementations,
+                systemLanguage = "en",
+                path = "/config",
+                endpoint = "https://dydx-v4-shared-resources.vercel.app/config",
             )
         }
 
@@ -116,11 +117,11 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
     internal open fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
-            mock.v4Environment,
-            testLocalizer(ioImplementations),
-            null,
-            maxSubaccountNumber,
-            useParentSubaccount,
+            environment = mock.v4Environment,
+            localizer = testLocalizer(ioImplementations),
+            formatter = null,
+            maxSubaccountNumber = maxSubaccountNumber,
+            useParentSubaccount = useParentSubaccount,
         )
     }
 

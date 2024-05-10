@@ -350,3 +350,10 @@ data class Toast(
 interface PresentationProtocol {
     fun showToast(toast: Toast)
 }
+
+@JsExport
+interface LoggingProtocol {
+    fun d(tag: String, message: String)
+
+    fun e(tag: String, message: String)
+}
