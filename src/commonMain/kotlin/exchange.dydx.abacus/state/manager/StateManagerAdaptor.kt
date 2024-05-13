@@ -262,7 +262,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT)
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null)
         set(value) {
             if (field != value) {
                 field = value
@@ -1367,18 +1367,26 @@ open class StateManagerAdaptor(
         val url = accountUrl()
         if (url != null) {
             get(url, null, null, callback = { _, response, httpCode, _ ->
-                if (success(httpCode) && response != null) {
-                    update(stateMachine.account(response), oldState)
+                val isValidResponse = success(httpCode) && response != null
+                if (isValidResponse) {
+                    response?.let { update(stateMachine.account(response), oldState) }
                     updateConnectedSubaccountNumber()
+                    accountAddress?.let {
+                        complianceScreen(DydxAddress(it), ComplianceAction.CONNECT)
+                    }
                 } else {
+                    accountAddress?.let {
+                        if (compliance.updatedAt == null) {
+                            complianceScreen(DydxAddress(it), ComplianceAction.ONBOARD)
+                        }
+                    }
+                }
+                if (!isValidResponse && httpCode != 403) {
                     subaccountsTimer =
                         ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
                             retrieveAccount()
                             false
                         }
-                }
-                accountAddress?.let {
-                    complianceScreen(DydxAddress(it))
                 }
             })
         }
@@ -2505,12 +2513,12 @@ open class StateManagerAdaptor(
                         val payload = parser.decodeJsonObject(response)?.toIMap()
                         if (payload != null) {
                             val country = parser.asString(parser.value(payload, "geo.country"))
-                            Compliance(country, compliance.status)
+                            Compliance(country, compliance.status, compliance.updatedAt)
                         } else {
-                            Compliance(null, compliance.status)
+                            Compliance(null, compliance.status, compliance.updatedAt)
                         }
                     } else {
-                        Compliance(null, compliance.status)
+                        Compliance(null, compliance.status, compliance.updatedAt)
                     }
                 },
             )
@@ -2522,34 +2530,29 @@ open class StateManagerAdaptor(
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
                 val status = parser.asString(res["status"])
+                val updatedAt = parser.asString(res["updatedAt"])
                 val complianceStatus =
                     if (status != null) {
                         ComplianceStatus.valueOf(status)
                     } else {
                         ComplianceStatus.UNKNOWN
                     }
-                Compliance(compliance?.geo, complianceStatus)
+                Compliance(compliance.geo, complianceStatus, updatedAt ?: compliance.updatedAt)
             } else {
-                Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
             }
         } else {
-            Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+            Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
         }
         return compliance.status
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction? = null) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
         val message = "Compliance verification message"
-        val action = complianceAction
-            ?: if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
-                ComplianceAction.CONNECT
-            } else {
-                ComplianceAction.ONBOARD
-            }
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,
-                "action" to action.toString(),
+                "action" to complianceAction.toString(),
                 "status" to status.toString(),
             ),
         )
@@ -2568,14 +2571,13 @@ open class StateManagerAdaptor(
 
                 val isUrlAndKeysPresent =
                     url != null && signedMessage != null && publicKey != null && timestamp != null
-                val isStatusValid = status != ComplianceStatus.UNKNOWN
 
-                if (isUrlAndKeysPresent && isStatusValid) {
+                if (isUrlAndKeysPresent) {
                     val body: IMap<String, String> = iMapOf(
                         "address" to address.rawAddress,
                         "message" to message,
                         "currentStatus" to status.toString(),
-                        "action" to action.toString(),
+                        "action" to complianceAction.toString(),
                         "signedMessage" to signedMessage!!,
                         "pubkey" to publicKey!!,
                         "timestamp" to timestamp!!,
@@ -2592,15 +2594,15 @@ open class StateManagerAdaptor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
                 }
             } else {
-                compliance = Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
             }
         }
     }
 
-    private fun complianceScreen(address: Address) {
+    private fun complianceScreen(address: Address, complianceAction: ComplianceAction? = null) {
         val url = complianceScreenUrl(address.rawAddress)
         if (url != null) {
             get(
@@ -2609,8 +2611,8 @@ open class StateManagerAdaptor(
                 null,
                 callback = { _, response, httpCode, _ ->
                     val complianceStatus = handleComplianceResponse(response, httpCode)
-                    if (address is DydxAddress) {
-                        updateCompliance(address, complianceStatus)
+                    if (address is DydxAddress && complianceAction != null) {
+                        updateCompliance(address, complianceStatus, complianceAction)
                     }
                 },
             )
