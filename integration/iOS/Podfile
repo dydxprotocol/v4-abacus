@@ -4,7 +4,7 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
 def abacus_pods
-  pod 'abacus', :path => '../../v4-abacus'
+  pod 'abacus', :path => '../..'
   #pod 'abacus', :git => 'https://github.com/dydxprotocol/v4-abacus.git'
 end
 

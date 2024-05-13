@@ -202,6 +202,7 @@ class AsyncAbacusStateManager(
                 threading = _nativeImplementations.threading ?: Threading(),
                 timer = _nativeImplementations.timer ?: CoroutineTimer(),
                 fileSystem = _nativeImplementations.fileSystem,
+                logging = _nativeImplementations.logging,
             )
         }
 

@@ -1,17 +1,26 @@
 package exchange.dydx.abacus.utils
 
+import exchange.dydx.abacus.protocols.LoggingProtocol
+
 object Logger {
+    private const val TAG = "Abacus"
+
+    var clientLogger: LoggingProtocol? = null
 
     var isDebugEnabled: Boolean = false
 
     fun d(message: () -> String) {
         if (isDebugEnabled) {
-            platformDebugLog(message())
+            clientLogger?.let {
+                it.d(TAG, message())
+            } ?: platformDebugLog(message())
         }
     }
 
     fun e(message: () -> String) {
-        platformErrorLog(message())
+        clientLogger?.let {
+            it.e(TAG, message())
+        } ?: platformErrorLog(message())
     }
 }
 
