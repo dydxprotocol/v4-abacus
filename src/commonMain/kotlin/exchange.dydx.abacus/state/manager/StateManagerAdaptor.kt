@@ -1369,7 +1369,7 @@ open class StateManagerAdaptor(
             get(url, null, null, callback = { _, response, httpCode, _ ->
                 val isValidResponse = success(httpCode) && response != null
                 if (isValidResponse) {
-                    response?.let { update(stateMachine.account(response), oldState) }
+                    response?.let { update(stateMachine.account(it), oldState) }
                     updateConnectedSubaccountNumber()
                     accountAddress?.let {
                         complianceScreen(DydxAddress(it), ComplianceAction.CONNECT)

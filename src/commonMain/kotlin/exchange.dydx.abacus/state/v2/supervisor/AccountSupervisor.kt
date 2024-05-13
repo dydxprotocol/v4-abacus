@@ -305,7 +305,7 @@ internal open class AccountSupervisor(
             helper.get(url, null, null, callback = { _, response, httpCode, _ ->
                 val isValidResponse = helper.success(httpCode) && response != null
                 if (isValidResponse) {
-                    response?.let { retrievedSubaccounts(response) }
+                    response?.let { retrievedSubaccounts(it) }
                     complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
                 } else {
                     complianceScreen(DydxAddress(accountAddress), ComplianceAction.ONBOARD)
