@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.manager
 
+import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.utils.IList
 import kollections.JsExport
 import kotlinx.serialization.Serializable
@@ -20,6 +21,7 @@ data class PlaceOrderRecord(
     val clientId: Int,
     val timestampInMilliseconds: Double,
     val fromSlTpDialog: Boolean,
+    var lastOrderStatus: OrderStatus?,
 )
 
 data class CancelOrderRecord(

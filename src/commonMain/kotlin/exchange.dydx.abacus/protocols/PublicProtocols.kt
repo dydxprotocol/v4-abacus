@@ -221,6 +221,15 @@ enum class AnalyticsEvent(val rawValue: String) {
     TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
     TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
 
+    // Order status change
+    TradePlaceOrderStatusCanceled("TradePlaceOrderStatusCanceled"),
+    TradePlaceOrderStatusCanceling("TradePlaceOrderStatusCanceling"),
+    TradePlaceOrderStatusFilled("TradePlaceOrderStatusFilled"),
+    TradePlaceOrderStatusOpen("TradePlaceOrderStatusOpen"),
+    TradePlaceOrderStatusPending("TradePlaceOrderStatusPending"),
+    TradePlaceOrderStatusUntriggered("TradePlaceOrderStatusUntriggered"),
+    TradePlaceOrderStatusPartiallyFilled("TradePlaceOrderStatusPartiallyFilled"),
+
     // Trigger Order
     TriggerOrderClick("TriggerOrderClick"),
 

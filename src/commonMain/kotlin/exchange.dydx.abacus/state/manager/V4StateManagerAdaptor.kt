@@ -1034,6 +1034,7 @@ class V4StateManagerAdaptor(
                             clientId,
                             submitTimeMs,
                             fromSlTpDialog = isTriggerOrder,
+                            lastOrderStatus = null,
                         ),
                     )
                 }
