@@ -457,9 +457,6 @@ open class StateManagerAdaptor(
             }
             if (accountAddress != null) {
                 screenAccountAddress()
-                accountAddress?.let {
-                    complianceScreen(DydxAddress(it))
-                }
                 retrieveAccount()
                 retrieveAccountHistoricalTradingRewards()
             }
@@ -505,9 +502,6 @@ open class StateManagerAdaptor(
 
         subaccountsTimer = null
         screenAccountAddress()
-        accountAddress?.let {
-            complianceScreen(DydxAddress(it))
-        }
         retrieveAccountHistoricalTradingRewards()
     }
 
@@ -1382,6 +1376,9 @@ open class StateManagerAdaptor(
                             retrieveAccount()
                             false
                         }
+                }
+                accountAddress?.let {
+                    complianceScreen(DydxAddress(it))
                 }
             })
         }
