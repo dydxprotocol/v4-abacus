@@ -1483,9 +1483,9 @@ open class StateManagerAdaptor(
             historicalPnl,
             "createdAt",
             1.days,
-            180.days,
+            90.days,
             "createdBeforeOrAt",
-            "createdAtOrAfter",
+            "createdOnOrAfter",
             params,
             previousUrl,
         ) { url, response, httpCode, _ ->
