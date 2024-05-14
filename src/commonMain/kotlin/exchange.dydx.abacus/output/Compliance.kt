@@ -29,4 +29,5 @@ data class Compliance(
     val geo: String?,
     val status: ComplianceStatus,
     val updatedAt: String?,
+    val expiresAt: String?,
 )

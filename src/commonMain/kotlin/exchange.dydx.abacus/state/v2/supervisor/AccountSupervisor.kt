@@ -54,6 +54,7 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import kollections.iListOf
 import kollections.iSetOf
 import kollections.toIMap
+import kotlinx.datetime.Instant
 import kotlin.collections.mutableMapOf
 import kotlin.time.Duration.Companion.days
 
@@ -135,7 +136,7 @@ internal open class AccountSupervisor(
             }
         }
 
-    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null)
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null, null)
         set(value) {
             if (field != value) {
                 field = value
@@ -593,25 +594,24 @@ internal open class AccountSupervisor(
     }
 
     private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
-        compliance = if (helper.success(httpCode) && response != null) {
+        var complianceStatus = ComplianceStatus.UNKNOWN
+        var updatedAt: String? = null
+        var expiresAt: String? = null
+        if (helper.success(httpCode) && response != null) {
             val res = helper.parser.decodeJsonObject(response)?.toIMap()
-            if (res != null) {
-                val status = helper.parser.asString(res["status"])
-                val updatedAt = helper.parser.asString(res["updatedAt"])
-                val complianceStatus =
-                    if (status != null) {
-                        ComplianceStatus.valueOf(status)
-                    } else {
-                        ComplianceStatus.UNKNOWN
-                    }
-                Compliance(compliance.geo, complianceStatus, updatedAt ?: compliance.updatedAt)
-            } else {
-                Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+            complianceStatus = helper.parser.asString(res?.get("status"))?.let { ComplianceStatus.valueOf(it) } ?: ComplianceStatus.UNKNOWN
+            updatedAt = helper.parser.asString(res?.get("updatedAt"))
+            if (updatedAt != null) {
+                expiresAt = try {
+                    Instant.parse(updatedAt).plus(7.days).toString()
+                } catch (e: Exception) {
+                    Logger.e { "Error parsing compliance updatedAt: $updatedAt" }
+                    null
+                }
             }
-        } else {
-            Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
         }
-        return compliance.status
+        compliance = Compliance(compliance.geo, complianceStatus, updatedAt, expiresAt)
+        return complianceStatus
     }
 
     private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
@@ -662,10 +662,10 @@ internal open class AccountSupervisor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt, compliance.expiresAt)
                 }
             } else {
-                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt, compliance.expiresAt)
             }
         }
     }
@@ -912,7 +912,7 @@ internal open class AccountSupervisor(
             state?.transferStatuses,
             state?.restriction,
             state?.launchIncentive,
-            Compliance(state?.compliance?.geo, compliance.status, compliance.updatedAt),
+            Compliance(state?.compliance?.geo, compliance.status, compliance.updatedAt, compliance.expiresAt),
         )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
