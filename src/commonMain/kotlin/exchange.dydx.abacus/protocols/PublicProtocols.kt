@@ -119,20 +119,6 @@ interface WebSocketProtocol {
 }
 
 @JsExport
-@Serializable
-enum class HistoricalPnlPeriod(val rawValue: String) {
-    Period1d("1d"),
-    Period7d("7d"),
-    Period30d("30d"),
-    Period90d("90d");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            HistoricalPnlPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
 enum class QueryType(val rawValue: String) {
     Height("getHeight"),
     EquityTiers("getEquityTiers"),
