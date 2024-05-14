@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'v4_abacus'
-    spec.version                  = '1.7.11'
+    spec.version                  = '1.7.12'
     spec.homepage                 = 'https://github.com/dydxprotocol/v4-abacus'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
@@ -10,6 +10,17 @@ Pod::Spec.new do |spec|
     spec.libraries                = 'c++'
                 
                 
+                
+    if !Dir.exist?('build/cocoapods/framework/Abacus.framework') || Dir.empty?('build/cocoapods/framework/Abacus.framework')
+        raise "
+
+        Kotlin framework 'Abacus' doesn't exist yet, so a proper Xcode project can't be generated.
+        'pod install' should be executed after running ':generateDummyFramework' Gradle task:
+
+            ./gradlew :generateDummyFramework
+
+        Alternatively, proper pod installation is performed during Gradle sync in the IDE (if Podfile location is set)"
+    end
                 
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => '',

@@ -6,14 +6,14 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
     }
 }
 
 plugins {
-    kotlin("multiplatform") version "1.9.10"
-    kotlin("native.cocoapods") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
+    kotlin("multiplatform") version "1.9.24"
+    kotlin("native.cocoapods") version "1.9.24"
+    kotlin("plugin.serialization") version "1.9.24"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.4.2"
     id("com.diffplug.spotless") version "6.25.0"
@@ -49,7 +49,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.7.11"
+version = "1.7.12"
 
 repositories {
     google()
