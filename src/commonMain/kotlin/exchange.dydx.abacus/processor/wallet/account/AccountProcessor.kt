@@ -1089,7 +1089,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         info: SocketInfo,
         height: BlockAndTime?,
     ): Map<String, Any>? {
-        val subaccountNumber = parser.asInt(parser.value(content, "subaccounts.subaccountNumber"))
+        val subaccountNumber = info.childSubaccountNumber ?: parser.asInt(parser.value(content, "subaccounts.subaccountNumber"))
             ?: subaccountNumberFromInfo(info)
 
         return if (subaccountNumber != null) {
