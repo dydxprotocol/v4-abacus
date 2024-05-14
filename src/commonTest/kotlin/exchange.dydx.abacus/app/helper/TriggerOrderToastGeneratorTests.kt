@@ -12,6 +12,7 @@ import exchange.dydx.abacus.tests.mock.ThreadingProtocolMock
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.Parser
 import kollections.iListOf
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -24,6 +25,7 @@ class TriggerOrderToastGeneratorTests {
     private val threading = ThreadingProtocolMock()
     private val formatter = DummyFormatter()
 
+    @OptIn(ExperimentalSerializationApi::class)
     private val state: PerpetualState = run {
         val stateString =
             """
@@ -77,7 +79,25 @@ class TriggerOrderToastGeneratorTests {
                             "sideString": {},
                             "sideStringKey": {},
                             "indicator": {}
-                        }
+                        },
+                        "entryPrice": {},
+                        "realizedPnl": {},
+                        "realizedPnlPercent": {},
+                        "unrealizedPnl": {},
+                        "unrealizedPnlPercent": {},
+                        "notionalTotal": {},
+                        "valueTotal": {},
+                        "initialRiskTotal": {},
+                        "adjustedImf": {},
+                        "adjustedMmf": {},
+                        "leverage": {},
+                        "maxLeverage": {},
+                        "buyingPower": {},
+                        "liquidationPrice": {},
+                        "freeCollateral": {},
+                        "marginUsage": {},
+                        "quoteBalance": {},
+                        "equity": {}
                     }
                 ]
             }
