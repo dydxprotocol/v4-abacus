@@ -1,8 +1,12 @@
 package exchange.dydx.abacus.di
 
+import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
+import exchange.dydx.abacus.state.manager.DocumentationLoader
+import exchange.dydx.abacus.state.manager.EnvironmentLoader
+import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.utils.IOImplementations
@@ -18,6 +22,8 @@ import kotlin.js.JsExport
 // kotlin-inject handles qualifiers via typealiases (though Dagger-style @Qualifier annotations are coming soon)
 typealias DeploymentUri = String
 typealias Deployment = String // MAINNET, TESTNET, DEV
+typealias EnvironmentId = String // final computed env id
+typealias EnvironmentIdParameter = String // env id passed in by clients
 
 @Scope
 @Target(CLASS, FUNCTION, PROPERTY_GETTER)
@@ -34,6 +40,7 @@ object AbacusFactory {
         stateNotification: StateNotificationProtocol? = null,
         dataNotification: DataNotificationProtocol? = null,
         presentationProtocol: PresentationProtocol? = null,
+        environmentIdParameter: EnvironmentIdParameter? = null,
     ): AbacusComponent = AbacusComponent::class.create(
         deploymentUri,
         deployment,
@@ -43,6 +50,7 @@ object AbacusFactory {
         stateNotification,
         dataNotification,
         presentationProtocol,
+        environmentIdParameter,
     )
 }
 
@@ -58,6 +66,14 @@ abstract class AbacusComponent(
     @get:Provides protected val stateNotification: StateNotificationProtocol?,
     @get:Provides protected val dataNotification: DataNotificationProtocol?,
     @get:Provides protected val presentationProtocol: PresentationProtocol?,
+    @get:Provides protected val environmentIdParameter: EnvironmentIdParameter?,
 ) {
     abstract val stateManager: AsyncAbacusStateManagerV2
+    abstract val documentation: Documentation?
+
+    @Provides protected fun provideV4Environment(environmentLoader: EnvironmentLoader): V4Environment =
+        environmentLoader.envAndAppSettings.run { environments.first { it.id == environmentId } }
+
+    @Provides protected fun provideDocumentation(documentationLoader: DocumentationLoader): Documentation? =
+        documentationLoader.documentation
 }
