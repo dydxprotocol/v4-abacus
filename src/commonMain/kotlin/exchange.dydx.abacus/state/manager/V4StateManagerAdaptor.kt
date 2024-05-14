@@ -1602,6 +1602,7 @@ class V4StateManagerAdaptor(
             when (httpCode) {
                 403 -> {
                     indexerRestriction = restrictionReason(response)
+                    callback(url, response, httpCode, headersAsJsonString)
                 }
 
                 429 -> {

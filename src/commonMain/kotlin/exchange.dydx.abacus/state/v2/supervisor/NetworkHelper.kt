@@ -196,9 +196,11 @@ class NetworkHelper(
                         this.lastIndexerCallTime = time
                     }
                     try {
+                        val parsedHeaders = parser.decodeJsonObject(headersAsJsonString)
                         when (httpCode) {
                             403 -> {
                                 indexerRestriction = restrictionReason(response)
+                                callback(fullUrl, response, httpCode, parsedHeaders)
                             }
 
                             429 -> {
@@ -214,8 +216,7 @@ class NetworkHelper(
                             }
 
                             else -> {
-                                val headers = parser.decodeJsonObject(headersAsJsonString)
-                                callback(fullUrl, response, httpCode, headers)
+                                callback(fullUrl, response, httpCode, parsedHeaders)
                             }
                         }
                     } catch (e: Exception) {

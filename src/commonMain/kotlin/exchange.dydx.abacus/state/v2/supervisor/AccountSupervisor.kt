@@ -135,7 +135,7 @@ internal open class AccountSupervisor(
             }
         }
 
-    private var complianceStatus: ComplianceStatus = ComplianceStatus.COMPLIANT
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null)
         set(value) {
             if (field != value) {
                 field = value
@@ -200,7 +200,6 @@ internal open class AccountSupervisor(
 
     init {
         screenAccountAddress()
-        complianceScreen(DydxAddress(accountAddress))
     }
 
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
@@ -304,9 +303,14 @@ internal open class AccountSupervisor(
         val url = accountUrl()
         if (url != null) {
             helper.get(url, null, null, callback = { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    retrievedSubaccounts(response)
+                val isValidResponse = helper.success(httpCode) && response != null
+                if (isValidResponse) {
+                    response?.let { retrievedSubaccounts(it) }
+                    complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
                 } else {
+                    complianceScreen(DydxAddress(accountAddress), ComplianceAction.ONBOARD)
+                }
+                if (!isValidResponse && httpCode != 403) {
                     subaccountNumber = 0
                     subaccountsTimer =
                         helper.ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
@@ -589,38 +593,33 @@ internal open class AccountSupervisor(
     }
 
     private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
-        complianceStatus = if (helper.success(httpCode) && response != null) {
+        compliance = if (helper.success(httpCode) && response != null) {
             val res = helper.parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
                 val status = helper.parser.asString(res["status"])
+                val updatedAt = helper.parser.asString(res["updatedAt"])
                 val complianceStatus =
                     if (status != null) {
                         ComplianceStatus.valueOf(status)
                     } else {
                         ComplianceStatus.UNKNOWN
                     }
-                complianceStatus
+                Compliance(compliance.geo, complianceStatus, updatedAt ?: compliance.updatedAt)
             } else {
-                ComplianceStatus.UNKNOWN
+                Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
             }
         } else {
-            ComplianceStatus.UNKNOWN
+            Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
         }
-        return complianceStatus
+        return compliance.status
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction? = null) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
         val message = "Compliance verification message"
-        val action = complianceAction
-            ?: if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
-                ComplianceAction.CONNECT
-            } else {
-                ComplianceAction.ONBOARD
-            }
         val payload = helper.jsonEncoder.encode(
             mapOf(
                 "message" to message,
-                "action" to action.toString(),
+                "action" to complianceAction.toString(),
                 "status" to status.toString(),
             ),
         )
@@ -646,7 +645,7 @@ internal open class AccountSupervisor(
                         "address" to address.rawAddress,
                         "message" to message,
                         "currentStatus" to status.toString(),
-                        "action" to action.toString(),
+                        "action" to complianceAction.toString(),
                         "signedMessage" to signedMessage!!,
                         "pubkey" to publicKey!!,
                         "timestamp" to timestamp!!,
@@ -663,15 +662,15 @@ internal open class AccountSupervisor(
                         },
                     )
                 } else {
-                    complianceStatus = ComplianceStatus.UNKNOWN
+                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
                 }
             } else {
-                complianceStatus = ComplianceStatus.UNKNOWN
+                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
             }
         }
     }
 
-    private fun complianceScreen(address: Address) {
+    private fun complianceScreen(address: Address, action: ComplianceAction? = null) {
         val url = complianceScreenUrl(address.rawAddress)
         if (url != null) {
             helper.get(
@@ -680,8 +679,8 @@ internal open class AccountSupervisor(
                 null,
                 callback = { _, response, httpCode, _ ->
                     val complianceStatus = handleComplianceResponse(response, httpCode)
-                    if (address is DydxAddress) {
-                        updateCompliance(address, complianceStatus)
+                    if (address is DydxAddress && action != null) {
+                        updateCompliance(address, complianceStatus, action)
                     }
                 },
             )
@@ -689,8 +688,8 @@ internal open class AccountSupervisor(
     }
 
     internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
-        if (complianceStatus != ComplianceStatus.UNKNOWN) {
-            updateCompliance(DydxAddress(accountAddress), complianceStatus, action)
+        if (compliance.status != ComplianceStatus.UNKNOWN) {
+            updateCompliance(DydxAddress(accountAddress), compliance.status, action)
             callback(true, null, null)
         }
         callback(false, V4TransactionErrors.error(null, "No account address"), null)
@@ -892,7 +891,7 @@ internal open class AccountSupervisor(
         }
     }
 
-    private fun didSetComplianceStatus(complianceStatus: ComplianceStatus) {
+    private fun didSetComplianceStatus(compliance: Compliance) {
         val state = stateMachine.state
         stateMachine.state = PerpetualState(
             state?.assets,
@@ -913,7 +912,7 @@ internal open class AccountSupervisor(
             state?.transferStatuses,
             state?.restriction,
             state?.launchIncentive,
-            Compliance(state?.compliance?.geo, complianceStatus),
+            Compliance(state?.compliance?.geo, compliance.status, compliance.updatedAt),
         )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(

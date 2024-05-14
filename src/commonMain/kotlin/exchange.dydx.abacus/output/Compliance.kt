@@ -28,4 +28,5 @@ enum class ComplianceAction {
 data class Compliance(
     val geo: String?,
     val status: ComplianceStatus,
+    val updatedAt: String?,
 )
