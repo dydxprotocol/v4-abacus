@@ -1,5 +1,8 @@
 package exchange.dydx.abacus.state.v2.manager
 
+import exchange.dydx.abacus.di.AbacusScope
+import exchange.dydx.abacus.di.Deployment
+import exchange.dydx.abacus.di.DeploymentUri
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
 import exchange.dydx.abacus.output.Restriction
@@ -48,11 +51,14 @@ import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
 import kotlinx.serialization.json.Json
+import me.tatarka.inject.annotations.Inject
 
 @JsExport
+@AbacusScope
+@Inject
 class AsyncAbacusStateManagerV2(
-    val deploymentUri: String,
-    val deployment: String, // MAINNET, TESTNET, DEV
+    val deploymentUri: DeploymentUri,
+    val deployment: Deployment, // MAINNET, TESTNET, DEV
     val appConfigs: AppConfigsV2,
     val ioImplementations: IOImplementations,
     val uiImplementations: UIImplementations,
