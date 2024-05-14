@@ -610,7 +610,7 @@ class V4ForegroundCycleTests : NetworkTests() {
 //                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
 //                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
 //                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdOnOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
 //                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
 //                ]
 //            """.trimIndent(),
@@ -631,7 +631,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-                    "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdAtOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
+                    "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdOnOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
                 ]
