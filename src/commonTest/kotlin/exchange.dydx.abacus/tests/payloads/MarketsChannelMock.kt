@@ -10,6 +10,25 @@ internal class MarketsChannelMock {
           "channel": "v3_markets",
           "contents": {
             "markets": {
+                "LDO-USD":{
+                    "clobPairId":"26",
+                    "ticker":"LDO-USD",
+                    "status":"ACTIVE",
+                    "oraclePrice":"1.619032989",
+                    "priceChange24H":"-0.049527727",
+                    "volume24H":"1181661.046",
+                    "trades24H":2992,
+                    "nextFundingRate":"0",
+                    "initialMarginFraction":"0.2",
+                    "maintenanceMarginFraction":"0.1",
+                    "openInterest":"83181",
+                    "atomicResolution":-6,
+                    "quantumConversionExponent":-9,
+                    "tickSize":"0.001",
+                    "stepSize":"1",
+                    "stepBaseQuantums":1000000,
+                    "subticksPerTick":1000000
+                 },
               "BTC-USD": {
                 "clobPairId":"0",
                 "ticker":"BTC-USD",

@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
@@ -339,6 +340,205 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun testWithRealData() {
+        loadMarketsConfigurations()
+        loadMarkets()
+        perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+        loadSubaccountsWithRealData()
+
+        testParentSubaccountSubscribedWithPendingPositions()
+        testParentSubaccountSubscribed()
+        testParentSubaccountChannelData()
+    }
+
+    internal fun loadSubaccountsWithRealData(): StateResponse {
+        return test({
+            perp.rest(
+                AbUrl.fromString("$testRestUrl/v4/addresses/dydxaddress"),
+                mock.parentSubaccountsChannel.rest_response,
+                0,
+                null,
+            )
+        }, null)
+    }
+
+    private fun testParentSubaccountSubscribedWithPendingPositions() {
+        test(
+            {
+                perp.socket(testWsUrl, mock.parentSubaccountsChannel.read_subscribed_with_pending, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "equity": {
+                                        "current": 1979.85
+                                    },
+                                    "freeCollateral": {
+                                        "current": 1711.96
+                                    },
+                                    "quoteBalance": {
+                                        "current": 1711.96
+                                    },
+                                    "openPositions": {
+                                    },
+                                    "pendingPositions": [
+                                        {
+                                            "assetId": "LDO",
+                                            "firstOrderId": "d1deed71-d743-5528-aff2-cf3daf8b6413",
+                                            "quoteBalance": {
+                                                "current": 267.89
+                                            },
+                                            "freeCollateral": {
+                                                "current": 267.89
+                                            },
+                                            "equity": {
+                                                "current": 267.89
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testParentSubaccountSubscribed() {
+        test(
+            {
+                perp.socket(testWsUrl, mock.parentSubaccountsChannel.real_subscribed, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "equity": {
+                                        "current": 1997.66
+                                    },
+                                    "freeCollateral": {
+                                        "current": 1711.96
+                                    },
+                                    "quoteBalance": {
+                                        "current": 1711.96
+                                    },
+                                    "openPositions": {
+                                        "LDO-USD": {
+                                            "id": "LDO-USD",
+                                            "status": "OPEN",
+                                            "size": {
+                                                "current": 11.0
+                                            },
+                                            "assetId": "LDO",
+                                            "valueTotal": {
+                                                "current": 17.81
+                                            },
+                                            "notionalTotal": {
+                                                "current": 17.81
+                                            },
+                                            "leverage": {
+                                                "current": 0.06
+                                            },
+                                            "buyingPower": {
+                                                "current": 1410.69
+                                            },
+                                            "childSubaccountNumber": 128,
+                                            "quoteBalance": {
+                                                "current": 267.89
+                                            },
+                                            "freeCollateral": {
+                                                "current": 282.14
+                                            },
+                                            "marginUsage": {
+                                                "current": 0.012
+                                            },
+                                            "equity": {
+                                                "current": 285.70
+                                            }
+                                        }
+                                    },
+                                    "pendingPositions": null
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testParentSubaccountChannelData() {
+        test(
+            {
+                perp.socket(testWsUrl, mock.parentSubaccountsChannel.real_channel_batch_data, 0, null)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "equity": {
+                                        "current": 2107.37
+                                    },
+                                    "freeCollateral": {
+                                        "current": 1711.96
+                                    },
+                                    "quoteBalance": {
+                                        "current": 1711.96
+                                    },
+                                    "openPositions": {
+                                        "LDO-USD": {
+                                            "id": "LDO-USD",
+                                            "status": "OPEN",
+                                            "size": {
+                                                "current": 17.0
+                                            },
+                                            "assetId": "LDO",
+                                            "valueTotal": {
+                                                "current": 27.52
+                                            },
+                                            "notionalTotal": {
+                                                "current": 27.52
+                                            },
+                                            "leverage": {
+                                                "current": 0.07
+                                            },
+                                            "buyingPower": {
+                                                "current": 1949.55
+                                            },
+                                            "childSubaccountNumber": 128,
+                                            "quoteBalance": {
+                                                "current": 367.89
+                                            },
+                                            "freeCollateral": {
+                                                "current": 389.91
+                                            },
+                                            "marginUsage": {
+                                                "current": 0.014
+                                            },
+                                            "equity": {
+                                                "current": 395.41
+                                            }
+                                        }
+                                    },
+                                    "pendingPositions": null
                                 }
                             }
                         }
