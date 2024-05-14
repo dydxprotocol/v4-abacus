@@ -51,6 +51,7 @@ class NetworkHelper(
     internal var lastValidatorCallTime: Instant? = null
     internal var lastIndexerCallTime: Instant? = null
     internal val jsonEncoder = JsonEncoder()
+    internal var validatorUrl: String? = null
 
     private var indexerRestriction: UsageRestriction? = null
         set(value) {
@@ -195,9 +196,11 @@ class NetworkHelper(
                         this.lastIndexerCallTime = time
                     }
                     try {
+                        val parsedHeaders = parser.decodeJsonObject(headersAsJsonString)
                         when (httpCode) {
                             403 -> {
                                 indexerRestriction = restrictionReason(response)
+                                callback(fullUrl, response, httpCode, parsedHeaders)
                             }
 
                             429 -> {
@@ -213,8 +216,7 @@ class NetworkHelper(
                             }
 
                             else -> {
-                                val headers = parser.decodeJsonObject(headersAsJsonString)
-                                callback(fullUrl, response, httpCode, headers)
+                                callback(fullUrl, response, httpCode, parsedHeaders)
                             }
                         }
                     } catch (e: Exception) {
@@ -528,13 +530,6 @@ class NetworkHelper(
             } else {
                 callback(true, null, data)
             }
-        }
-    }
-
-    private fun tracking(eventName: String, params: IMap<String, Any>?) {
-        val paramsAsString = jsonEncoder.encode(params)
-        ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.tracking?.log(eventName, paramsAsString)
         }
     }
 }

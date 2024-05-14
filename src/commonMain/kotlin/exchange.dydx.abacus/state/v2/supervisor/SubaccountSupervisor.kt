@@ -4,6 +4,7 @@ import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFA
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
@@ -30,11 +31,11 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
-import exchange.dydx.abacus.state.manager.NotificationsProvider
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.manager.TransactionQueue
+import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -82,7 +83,7 @@ internal class SubaccountSupervisor(
     analyticsUtils: AnalyticsUtils,
     private val configs: SubaccountConfigs,
     private val accountAddress: String,
-    internal val subaccountNumber: Int
+    internal val subaccountNumber: Int,
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
     /*
     Because faucet is done at subaccount level, we need SubaccountSupervisor even
@@ -147,6 +148,7 @@ internal class SubaccountSupervisor(
         }
 
     private val notificationsProvider = NotificationsProvider(
+        stateMachine,
         helper.uiImplementations,
         helper.environment,
         helper.parser,
@@ -251,9 +253,9 @@ internal class SubaccountSupervisor(
             historicalPnl,
             "createdAt",
             1.days,
-            180.days,
+            90.days,
             "createdBeforeOrAt",
-            "createdAtOrAfter",
+            "createdOnOrAfter",
             params,
             previousUrl,
         ) { url, response, httpCode, _ ->
@@ -319,16 +321,41 @@ internal class SubaccountSupervisor(
                         trackingParams(interval),
                         fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
                     )
-                    tracking(
-                        AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
-                        ParsingHelper.merge(
-                            extraParams,
-                            orderAnalyticsPayload,
-                        )?.toIMap(),
-                    )
-                    placeOrderRecords.remove(placeOrderRecord)
+                    val analyticsPayload = ParsingHelper.merge(extraParams, orderAnalyticsPayload)?.toIMap()
+
+                    if (placeOrderRecord.lastOrderStatus != order.status) {
+                        // when order is first indexed
+                        if (placeOrderRecord.lastOrderStatus == null) {
+                            tracking(
+                                AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                                analyticsPayload,
+                            )
+                        }
+
+                        val orderStatusChangeEvent = when (order.status) {
+                            OrderStatus.cancelled -> AnalyticsEvent.TradePlaceOrderStatusCanceled
+                            OrderStatus.canceling -> AnalyticsEvent.TradePlaceOrderStatusCanceling
+                            OrderStatus.filled -> AnalyticsEvent.TradePlaceOrderStatusFilled
+                            OrderStatus.open -> AnalyticsEvent.TradePlaceOrderStatusOpen
+                            OrderStatus.pending -> AnalyticsEvent.TradePlaceOrderStatusPending
+                            OrderStatus.untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
+                            OrderStatus.partiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
+                        }
+
+                        tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
+
+                        when (order.status) {
+                            // order reaches final state, can remove / skip further tracking
+                            OrderStatus.cancelled, OrderStatus.filled -> {
+                                placeOrderRecords.remove(placeOrderRecord)
+                            }
+                            else -> {}
+                        }
+                        placeOrderRecord.lastOrderStatus = order.status
+                    }
                     break
                 }
+
                 val cancelOrderRecord = cancelOrderRecords.firstOrNull {
                     it.clientId == order.clientId
                 }
@@ -603,6 +630,7 @@ internal class SubaccountSupervisor(
                         clientId,
                         submitTimeMs,
                         fromSlTpDialog = isTriggerOrder,
+                        lastOrderStatus = null,
                     ),
                 )
             }
@@ -1445,7 +1473,7 @@ internal class SubaccountSupervisor(
     }
 
     override fun updateNotifications() {
-        val notifications = notificationsProvider.buildNotifications(stateMachine, subaccountNumber)
+        val notifications = notificationsProvider.buildNotifications(subaccountNumber)
         consolidateNotifications(notifications)
     }
 

@@ -3,7 +3,7 @@ PODS:
   - CryptoSwift (1.6.0)
 
 DEPENDENCIES:
-  - abacus (from `~/v4-abacus`)
+  - abacus (from `../..`)
   - CryptoSwift
 
 SPEC REPOS:
@@ -12,12 +12,12 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   abacus:
-    :path: "~/v4-abacus"
+    :path: "../.."
 
 SPEC CHECKSUMS:
   abacus: a57d55b0ca0d3514389573a87c47507f88eb6b0a
   CryptoSwift: 562f8eceb40e80796fffc668b0cad9313284cfa6
 
-PODFILE CHECKSUM: 37d72c15b180e62a4c42b8fb41b4836c89aa63c9
+PODFILE CHECKSUM: b52035db7d56f0cfe37ecfb54b51338a99aca685
 
 COCOAPODS: 1.12.1

@@ -45,6 +45,7 @@ class AsyncAbacusStateManager(
     val dataNotification: DataNotificationProtocol? = null
 ) : SingletonAsyncAbacusStateManagerProtocol {
     init {
+        Logger.clientLogger = ioImplementations.logging
         if (appConfigs.enableLogger) {
             Logger.isDebugEnabled = true
         }
@@ -202,6 +203,7 @@ class AsyncAbacusStateManager(
                 threading = _nativeImplementations.threading ?: Threading(),
                 timer = _nativeImplementations.timer ?: CoroutineTimer(),
                 fileSystem = _nativeImplementations.fileSystem,
+                logging = _nativeImplementations.logging,
             )
         }
 

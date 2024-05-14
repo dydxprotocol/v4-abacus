@@ -25,6 +25,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             modified = it.mutable()
         }
         val chainOptions = chainOptions()
+
         modified.safeSet("transfer.depositOptions.chains", chainOptions)
         modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
         val selectedChainId = defaultChainId()
@@ -65,7 +66,6 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         if (this.chains != null && this.tokens != null) {
             return existing
         }
-
         this.chains = parser.asNativeList(payload["chains"])
         this.tokens = parser.asNativeList(payload["tokens"])
 
@@ -74,6 +74,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             modified = it.mutable()
         }
         val chainOptions = chainOptions()
+
         modified.safeSet("transfer.depositOptions.chains", chainOptions)
         modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
         val selectedChainId = defaultChainId()
@@ -162,8 +163,9 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     }
 
     private fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
-        modified.safeSet("transfer.depositOptions.assets", tokenOptions(selectedChainId))
-        modified.safeSet("transfer.withdrawalOptions.assets", tokenOptions(selectedChainId))
+        val tokenOptions = tokenOptions(selectedChainId)
+        modified.safeSet("transfer.depositOptions.assets", tokenOptions)
+        modified.safeSet("transfer.withdrawalOptions.assets", tokenOptions)
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
         modified.safeSet("transfer.resources.tokenResources", tokenResources(selectedChainId))
     }
@@ -266,6 +268,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             }
         }
 
+        options.sortBy { parser.asString(parser.asNativeMap(it)?.get("stringKey")) }
         return options
     }
 
@@ -287,6 +290,7 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             }
         }
 
+        options.sortBy { parser.asString(parser.asNativeMap(it)?.get("stringKey")) }
         return options
     }
 }

@@ -120,7 +120,7 @@ class V4RestrictionsTests {
         )
         assertEquals(
             "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-            testRest?.requests?.get(12),
+            testRest?.requests?.get(11),
         )
 
         testRest?.setResponse(

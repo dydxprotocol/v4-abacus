@@ -12,7 +12,8 @@ import exchange.dydx.abacus.state.manager.NetworkStatus
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.IMap
-import kollections.toIMap
+import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.iMapOf
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.math.max
@@ -245,32 +246,29 @@ internal class ConnectionStats(
         updateApiState()
     }
 
+    private fun apiStateParams(): IMap<String, Any>? {
+        val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()
+        val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()
+        val interval = indexerTime?.let { Clock.System.now().toEpochMilliseconds() - it }
+        return iMapOf(
+            "lastSuccessfulIndexerRPC" to indexerTime?.toDouble(),
+            "lastSuccessfulFullNodeRPC" to validatorTime?.toDouble(),
+            "elapsedTime" to interval?.toDouble(),
+            "blockHeight" to indexerState.blockAndTime?.block,
+            "nodeHeight" to validatorState.blockAndTime?.block,
+            "validatorUrl" to helper.validatorUrl,
+        ) as IMap<String, Any>?
+    }
+
     private fun trackApiStateIfNeeded(apiState: ApiState?, oldValue: ApiState?) {
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
-            val indexerTime = lastIndexerCallTime?.toEpochMilliseconds()?.toDouble()
-            val validatorTime = lastValidatorCallTime?.toEpochMilliseconds()?.toDouble()
-            val interval = if (indexerTime != null) {
-                (
-                    Clock.System.now().toEpochMilliseconds()
-                        .toDouble() - indexerTime
-                    )
-            } else {
-                null
-            }
-            val params = mapOf(
-                "lastSuccessfulIndexerRPC" to indexerTime,
-                "lastSuccessfulFullNodeRPC" to validatorTime,
-                "elapsedTime" to interval,
-                "blockHeight" to indexerState.blockAndTime?.block,
-                "nodeHeight" to validatorState.blockAndTime?.block,
-            ).filterValues { it != null } as Map<String, Any>
-
-            tracking(AnalyticsEvent.NetworkStatus.rawValue, params.toIMap())
+            tracking(AnalyticsEvent.NetworkStatus.rawValue)
         }
     }
 
-    private fun tracking(eventName: String, params: IMap<String, Any>?) {
-        val paramsAsString = helper.jsonEncoder.encode(params)
+    private fun tracking(eventName: String, params: IMap<String, Any>? = null) {
+        val additionalParams = apiStateParams()
+        val paramsAsString = helper.jsonEncoder.encode(params?.let { ParsingHelper.merge(it, additionalParams) } ?: additionalParams)
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.ioImplementations.tracking?.log(eventName, paramsAsString)
         }

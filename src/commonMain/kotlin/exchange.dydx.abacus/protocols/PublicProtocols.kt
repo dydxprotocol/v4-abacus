@@ -119,20 +119,6 @@ interface WebSocketProtocol {
 }
 
 @JsExport
-@Serializable
-enum class HistoricalPnlPeriod(val rawValue: String) {
-    Period1d("1d"),
-    Period7d("7d"),
-    Period30d("30d"),
-    Period90d("90d");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            HistoricalPnlPeriod.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
 enum class QueryType(val rawValue: String) {
     Height("getHeight"),
     EquityTiers("getEquityTiers"),
@@ -220,6 +206,15 @@ enum class AnalyticsEvent(val rawValue: String) {
     TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
     TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
     TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
+
+    // Order status change
+    TradePlaceOrderStatusCanceled("TradePlaceOrderStatusCanceled"),
+    TradePlaceOrderStatusCanceling("TradePlaceOrderStatusCanceling"),
+    TradePlaceOrderStatusFilled("TradePlaceOrderStatusFilled"),
+    TradePlaceOrderStatusOpen("TradePlaceOrderStatusOpen"),
+    TradePlaceOrderStatusPending("TradePlaceOrderStatusPending"),
+    TradePlaceOrderStatusUntriggered("TradePlaceOrderStatusUntriggered"),
+    TradePlaceOrderStatusPartiallyFilled("TradePlaceOrderStatusPartiallyFilled"),
 
     // Trigger Order
     TriggerOrderClick("TriggerOrderClick"),
@@ -349,4 +344,11 @@ data class Toast(
 
 interface PresentationProtocol {
     fun showToast(toast: Toast)
+}
+
+@JsExport
+interface LoggingProtocol {
+    fun d(tag: String, message: String)
+
+    fun e(tag: String, message: String)
 }

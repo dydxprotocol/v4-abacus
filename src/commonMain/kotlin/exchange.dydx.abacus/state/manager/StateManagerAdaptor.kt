@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
@@ -30,6 +31,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.Changes.candles
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.configs.StateManagerConfigs
+import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.manager.utils.Address
 import exchange.dydx.abacus.state.manager.utils.DydxAddress
 import exchange.dydx.abacus.state.manager.utils.EvmAddress
@@ -152,7 +154,7 @@ open class StateManagerAdaptor(
     internal val jsonEncoder = JsonEncoder()
     internal val parser = Parser()
     private val notificationsProvider =
-        NotificationsProvider(uiImplementations, environment, parser, jsonEncoder)
+        NotificationsProvider(stateMachine, uiImplementations, environment, parser, jsonEncoder)
 
     private var subaccountsTimer: LocalTimerProtocol? = null
         set(value) {
@@ -260,7 +262,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT)
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null)
         set(value) {
             if (field != value) {
                 field = value
@@ -455,9 +457,6 @@ open class StateManagerAdaptor(
             }
             if (accountAddress != null) {
                 screenAccountAddress()
-                accountAddress?.let {
-                    complianceScreen(DydxAddress(it))
-                }
                 retrieveAccount()
                 retrieveAccountHistoricalTradingRewards()
             }
@@ -503,9 +502,6 @@ open class StateManagerAdaptor(
 
         subaccountsTimer = null
         screenAccountAddress()
-        accountAddress?.let {
-            complianceScreen(DydxAddress(it))
-        }
         retrieveAccountHistoricalTradingRewards()
     }
 
@@ -1371,10 +1367,21 @@ open class StateManagerAdaptor(
         val url = accountUrl()
         if (url != null) {
             get(url, null, null, callback = { _, response, httpCode, _ ->
-                if (success(httpCode) && response != null) {
-                    update(stateMachine.account(response), oldState)
+                val isValidResponse = success(httpCode) && response != null
+                if (isValidResponse) {
+                    response?.let { update(stateMachine.account(it), oldState) }
                     updateConnectedSubaccountNumber()
+                    accountAddress?.let {
+                        complianceScreen(DydxAddress(it), ComplianceAction.CONNECT)
+                    }
                 } else {
+                    accountAddress?.let {
+                        if (compliance.updatedAt == null) {
+                            complianceScreen(DydxAddress(it), ComplianceAction.ONBOARD)
+                        }
+                    }
+                }
+                if (!isValidResponse && httpCode != 403) {
                     subaccountsTimer =
                         ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
                             retrieveAccount()
@@ -1476,9 +1483,9 @@ open class StateManagerAdaptor(
             historicalPnl,
             "createdAt",
             1.days,
-            180.days,
+            90.days,
             "createdBeforeOrAt",
-            "createdAtOrAfter",
+            "createdOnOrAfter",
             params,
             previousUrl,
         ) { url, response, httpCode, _ ->
@@ -2259,7 +2266,7 @@ open class StateManagerAdaptor(
     }
 
     private fun updateNotifications() {
-        val notifications = notificationsProvider.buildNotifications(stateMachine, subaccountNumber)
+        val notifications = notificationsProvider.buildNotifications(subaccountNumber)
         consolidateNotifications(notifications)
     }
 
@@ -2366,7 +2373,7 @@ open class StateManagerAdaptor(
         )
     }
 
-    internal fun tracking(eventName: String, params: IMap<String, Any?>?) {
+    internal open fun tracking(eventName: String, params: IMap<String, Any?>? = null) {
         val paramsAsString = jsonEncoder.encode(params)
         ioImplementations.threading?.async(ThreadingType.main) {
             ioImplementations.tracking?.log(eventName, paramsAsString)
@@ -2399,16 +2406,41 @@ open class StateManagerAdaptor(
                         trackingParams(interval),
                         fromSlTpDialogParams(placeOrderRecord.fromSlTpDialog),
                     )
-                    tracking(
-                        AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
-                        ParsingHelper.merge(
-                            extraParams,
-                            orderAnalyticsPayload,
-                        )?.toIMap(),
-                    )
-                    placeOrderRecords.remove(placeOrderRecord)
+                    val analyticsPayload = ParsingHelper.merge(extraParams, orderAnalyticsPayload)?.toIMap()
+
+                    if (placeOrderRecord.lastOrderStatus != order.status) {
+                        // when order is first indexed
+                        if (placeOrderRecord.lastOrderStatus == null) {
+                            tracking(
+                                AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                                analyticsPayload,
+                            )
+                        }
+
+                        val orderStatusChangeEvent = when (order.status) {
+                            OrderStatus.cancelled -> AnalyticsEvent.TradePlaceOrderStatusCanceled
+                            OrderStatus.canceling -> AnalyticsEvent.TradePlaceOrderStatusCanceling
+                            OrderStatus.filled -> AnalyticsEvent.TradePlaceOrderStatusFilled
+                            OrderStatus.open -> AnalyticsEvent.TradePlaceOrderStatusOpen
+                            OrderStatus.pending -> AnalyticsEvent.TradePlaceOrderStatusPending
+                            OrderStatus.untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
+                            OrderStatus.partiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
+                        }
+
+                        tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
+
+                        when (order.status) {
+                            // order reaches final state, can remove / skip further tracking
+                            OrderStatus.cancelled, OrderStatus.filled -> {
+                                placeOrderRecords.remove(placeOrderRecord)
+                            }
+                            else -> {}
+                        }
+                        placeOrderRecord.lastOrderStatus = order.status
+                    }
                     break
                 }
+
                 val cancelOrderRecord = cancelOrderRecords.firstOrNull {
                     it.clientId == order.clientId
                 }
@@ -2481,12 +2513,12 @@ open class StateManagerAdaptor(
                         val payload = parser.decodeJsonObject(response)?.toIMap()
                         if (payload != null) {
                             val country = parser.asString(parser.value(payload, "geo.country"))
-                            Compliance(country, compliance.status)
+                            Compliance(country, compliance.status, compliance.updatedAt)
                         } else {
-                            Compliance(null, compliance.status)
+                            Compliance(null, compliance.status, compliance.updatedAt)
                         }
                     } else {
-                        Compliance(null, compliance.status)
+                        Compliance(null, compliance.status, compliance.updatedAt)
                     }
                 },
             )
@@ -2498,34 +2530,29 @@ open class StateManagerAdaptor(
             val res = parser.decodeJsonObject(response)?.toIMap()
             if (res != null) {
                 val status = parser.asString(res["status"])
+                val updatedAt = parser.asString(res["updatedAt"])
                 val complianceStatus =
                     if (status != null) {
                         ComplianceStatus.valueOf(status)
                     } else {
                         ComplianceStatus.UNKNOWN
                     }
-                Compliance(compliance?.geo, complianceStatus)
+                Compliance(compliance.geo, complianceStatus, updatedAt ?: compliance.updatedAt)
             } else {
-                Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
             }
         } else {
-            Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+            Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
         }
         return compliance.status
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction? = null) {
+    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
         val message = "Compliance verification message"
-        val action = complianceAction
-            ?: if ((stateMachine.state?.account?.subaccounts?.size ?: 0) > 0) {
-                ComplianceAction.CONNECT
-            } else {
-                ComplianceAction.ONBOARD
-            }
         val payload = jsonEncoder.encode(
             mapOf(
                 "message" to message,
-                "action" to action.toString(),
+                "action" to complianceAction.toString(),
                 "status" to status.toString(),
             ),
         )
@@ -2544,14 +2571,13 @@ open class StateManagerAdaptor(
 
                 val isUrlAndKeysPresent =
                     url != null && signedMessage != null && publicKey != null && timestamp != null
-                val isStatusValid = status != ComplianceStatus.UNKNOWN
 
-                if (isUrlAndKeysPresent && isStatusValid) {
+                if (isUrlAndKeysPresent) {
                     val body: IMap<String, String> = iMapOf(
                         "address" to address.rawAddress,
                         "message" to message,
                         "currentStatus" to status.toString(),
-                        "action" to action.toString(),
+                        "action" to complianceAction.toString(),
                         "signedMessage" to signedMessage!!,
                         "pubkey" to publicKey!!,
                         "timestamp" to timestamp!!,
@@ -2568,15 +2594,15 @@ open class StateManagerAdaptor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
                 }
             } else {
-                compliance = Compliance(compliance?.geo, ComplianceStatus.UNKNOWN)
+                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
             }
         }
     }
 
-    private fun complianceScreen(address: Address) {
+    private fun complianceScreen(address: Address, complianceAction: ComplianceAction? = null) {
         val url = complianceScreenUrl(address.rawAddress)
         if (url != null) {
             get(
@@ -2585,8 +2611,8 @@ open class StateManagerAdaptor(
                 null,
                 callback = { _, response, httpCode, _ ->
                     val complianceStatus = handleComplianceResponse(response, httpCode)
-                    if (address is DydxAddress) {
-                        updateCompliance(address, complianceStatus)
+                    if (address is DydxAddress && complianceAction != null) {
+                        updateCompliance(address, complianceStatus, complianceAction)
                     }
                 },
             )

@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.FormatterProtocol
 import exchange.dydx.abacus.protocols.LocalizerProtocol
+import exchange.dydx.abacus.protocols.LoggingProtocol
 import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.RestProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
@@ -32,6 +33,7 @@ open class ProtocolNativeImpFactory(
     var v3Signer: V3PrivateSignerProtocol? = null,
     var apiKey: V3ApiKey? = null,
     var presentation: PresentationProtocol? = null,
+    var logging: LoggingProtocol? = null,
 )
 
 @JsExport
@@ -43,6 +45,7 @@ class IOImplementations(
     var threading: ThreadingProtocol?,
     var timer: TimerProtocol?,
     var fileSystem: FileSystemProtocol?,
+    var logging: LoggingProtocol?,
 )
 
 @JsExport
