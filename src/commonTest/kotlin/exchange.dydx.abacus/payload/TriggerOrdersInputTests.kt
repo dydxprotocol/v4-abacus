@@ -35,7 +35,7 @@ class TriggerOrderInputTests : V4BaseTests() {
     }
 
     @Test
-    fun testLessThanZeroLeverageInputs() {
+    fun testLessThanOneLeverageInputs() {
         setup()
 
         // Tests on ETH-USD market with
