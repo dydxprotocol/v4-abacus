@@ -79,10 +79,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                         childSubaccountNumber
                     }
                     val subaccount = parser.asNativeMap(
-                        parser.value(
-                            this.account,
-                            "subaccounts.$subaccountNumber",
-                        ),
+                        parser.value(this.account, "subaccounts.$subaccountNumber"),
                     )
 
                     val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current"))
@@ -114,14 +111,13 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     changes = getStateChanges(subaccountNumbers)
                 }
                 AdjustIsolatedMarginInputField.ChildSubaccountNumber -> {
-                    val childSubaccountNumber = parser.asInt(data)
-                    adjustIsolatedMargin.safeSet(type.name, childSubaccountNumber)
-                    val subaccountNumbers = if (childSubaccountNumber != null) {
-                        iListOf(parentSubaccountNumber, childSubaccountNumber)
-                    } else {
-                        iListOf(parentSubaccountNumber)
+                    var updatedSubaccountNumbers = iListOf(parentSubaccountNumber)
+                    val updatedChildSubaccountNumber = parser.asInt(data)
+                    adjustIsolatedMargin.safeSet(type.name, updatedChildSubaccountNumber)
+                    if (updatedChildSubaccountNumber != null) {
+                        updatedSubaccountNumbers = iListOf(parentSubaccountNumber, updatedChildSubaccountNumber)
                     }
-                    changes = getStateChanges(subaccountNumbers)
+                    changes = getStateChanges(updatedSubaccountNumbers)
                 }
             }
         } else {
