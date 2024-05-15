@@ -4,6 +4,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.triggerOrders
+import exchange.dydx.abacus.utils.Rounder
 import kotlin.test.Test
 
 class TriggerOrderInputTests : V4BaseTests() {
@@ -20,6 +21,53 @@ class TriggerOrderInputTests : V4BaseTests() {
     fun testInputs() {
         setup()
 
+        // Tests on ETH-USD market with
+        // - notional total: 1753.2932
+        // - size: 0.5
+        // - leverage: 2.054737105604498
+
+        val leverage = 2.054737105604498;
+
+        testDefaults()
+        testSetPositionSize()
+        testStopLossInput(leverage)
+        testTakeProfitInput(leverage)
+    }
+
+    @Test
+    fun testLessThanZeroLeverageInputs() {
+        setup()
+
+        // Tests on ETH-USD market with
+        // - notional total: 1753.2932
+        // - size: 0.5
+        // - leverage < 1 (defaults to 1 in calculations)
+
+        test(
+            {
+                perp.rest(
+                    AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                    mock.accountsChannel.v4_accounts_received_for_calculation_2,
+                    0,
+                    null,
+                )
+            },
+            null,
+        )
+
+        val leverage = 1.0;
+
+        testDefaults()
+        testSetPositionSize()
+        testStopLossInput(leverage)
+        testTakeProfitInput(leverage)
+    }
+
+    private fun roundValue(value: Double): Double {
+        return Rounder.round(value, 0.000001)
+    }
+
+    private fun testDefaults() {
         test(
             {
                 perp.triggerOrders("ETH-USD", TriggerOrdersInputField.marketId, 0)
@@ -36,13 +84,6 @@ class TriggerOrderInputTests : V4BaseTests() {
             """.trimIndent(),
         )
 
-        testDefaults()
-        testSetPositionSize()
-        testStopLossInput()
-        testTakeProfitInput()
-    }
-
-    private fun testDefaults() {
         test(
             {
                 perp.triggerOrders("STOP_MARKET", TriggerOrdersInputField.stopLossOrderType, 0)
@@ -137,7 +178,7 @@ class TriggerOrderInputTests : V4BaseTests() {
         )
     }
 
-    private fun testStopLossInput() {
+    private fun testStopLossInput(leverageMultiplier: Double) {
         test({
             perp.triggerOrders("STOP_MARKET", TriggerOrdersInputField.stopLossOrderType, 0)
         }, null)
@@ -195,7 +236,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "400.0",
                                 "usdcDiff": "300",
-                                "percentDiff": "70.31580704",
+                                "percentDiff": "${roundValue(34.221316 * leverageMultiplier)}",
                                 "input": "stopLossOrder.price.triggerPrice"
                             },
                             "summary": {
@@ -225,7 +266,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "300.0",
                                 "triggerPrice": "200.0",
                                 "usdcDiff": "400",
-                                "percentDiff": "93.75440939",
+                                "percentDiff": "${roundValue(45.62842084826428 * leverageMultiplier)}",
                                 "input": "stopLossOrder.price.usdcDiff"
                             },
                             "summary": {
@@ -253,8 +294,8 @@ class TriggerOrderInputTests : V4BaseTests() {
                             "side": "SELL",
                             "price": {
                                 "limitPrice": "300.0",
-                                "triggerPrice": "786.6767",
-                                "usdcDiff": "106.6617",
+                                "triggerPrice": "${roundValue(1000.0 - 438.3233 / leverageMultiplier)}",
+                                "usdcDiff": "${roundValue(219.16165 / leverageMultiplier)}",
                                 "percentDiff": "25.0",
                                 "input": "stopLossOrder.price.percentDiff"
                             },
@@ -269,7 +310,7 @@ class TriggerOrderInputTests : V4BaseTests() {
         )
     }
 
-    private fun testTakeProfitInput() {
+    private fun testTakeProfitInput(leverageMultiplier: Double) {
         test({
             perp.triggerOrders("TAKE_PROFIT_MARKET", TriggerOrdersInputField.takeProfitOrderType, 0)
         }, null)
@@ -331,7 +372,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1800.0",
                                 "usdcDiff": "400",
-                                "percentDiff": "93.75440939",
+                                "percentDiff": "${roundValue(45.62842084826428 * leverageMultiplier)}",
                                 "input": "takeProfitOrder.price.triggerPrice"
                             },
                             "summary": {
@@ -361,7 +402,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "limitPrice": "1600.0",
                                 "triggerPrice": "1600.0",
                                 "usdcDiff": "300.0",
-                                "percentDiff": "70.31580704",
+                                "percentDiff": "${34.22131563619821 * leverageMultiplier}",
                                 "input": "takeProfitOrder.price.usdcDiff"
                             },
                             "summary": {
@@ -389,8 +430,8 @@ class TriggerOrderInputTests : V4BaseTests() {
                             "side": "SELL",
                             "price": {
                                 "limitPrice": "1600.0",
-                                "triggerPrice": "1213.3233",
-                                "usdcDiff": "106.6617",
+                                "triggerPrice": "${roundValue(1000.0 + 438.3233 / leverageMultiplier)}",
+                                "usdcDiff": "${roundValue(219.16165 / leverageMultiplier)}",
                                 "percentDiff": "25.0",
                                 "input": "takeProfitOrder.price.percentDiff"
                             },

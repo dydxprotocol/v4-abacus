@@ -2362,6 +2362,65 @@ internal class AccountsChannelMock {
         }
     """.trimIndent()
 
+    internal val v4_accounts_received_for_calculation_2 = """
+    {
+        "totalTradingRewards": "2800.8",
+        "subaccounts": [{
+             "address":"cosmos1jtpspgllck9z4ghkqhupum35q55xt99sg3guxn",
+             "subaccountNumber":0,
+             "openPerpetualPositions":{
+                "ETH-USD":{
+                   "market":"ETH-USD",
+                   "status":"OPEN",
+                   "side":"LONG",
+                   "size":"1.0",
+                   "maxSize":"1.0",
+                   "entryPrice":"1000.0",
+                   "createdAt":"2022-12-11T17:29:39.792Z",
+                   "createdAtHeight":"45",
+                   "closedAt":null,
+                   "sumOpen":"1000.0",
+                   "netFunding":"0"
+                },
+                "BTC-USD":{
+                    "market":"BTC-USD",
+                    "status":"OPEN",
+                    "side":"LONG",
+                    "size":"1.0",
+                    "maxSize":"1.0",
+                    "entryPrice":"34996.0",
+                    "createdAt":"2022-12-12T17:29:39.792Z",
+                    "createdAtHeight":"85",
+                    "closedAt":null,
+                    "sumOpen":"1000.0",
+                    "netFunding":"0"
+                 }
+             },
+            "assetPositions":{
+                "USDC":{
+                   "symbol":"USDC",
+                   "side":"SHORT",
+                   "size":"900",
+                   "assetId":"0"
+                }
+            },
+            "marginEnabled": true,
+            "tradingRewards": [
+                {
+                    "tradingReward": "0.02",
+                    "createdAtHeight": "2422",
+                    "createdAt": "2023-08-09T20:00:00.000Z"
+                },
+                {
+                    "tradingReward": "0.01",
+                    "createdAtHeight": "2500",
+                    "createdAt": "2023-08-09T20:10:00.000Z"
+                }
+            ]
+        }]
+    }
+    """.trimIndent()
+
     internal val v4_subscribed_for_calculation = """
         {
            "type":"subscribed",
