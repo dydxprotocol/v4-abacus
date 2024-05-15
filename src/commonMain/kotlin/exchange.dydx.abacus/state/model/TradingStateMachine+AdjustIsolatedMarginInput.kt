@@ -72,7 +72,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                 }
                 AdjustIsolatedMarginInputField.AmountPercent,
                 AdjustIsolatedMarginInputField.Amount -> {
-                    val isolatedMarginAdjustmentType = adjustIsolatedMargin["Type"]?: IsolatedMarginAdjustmentType.Add.name
+                    val isolatedMarginAdjustmentType = adjustIsolatedMargin["Type"] ?: IsolatedMarginAdjustmentType.Add.name
                     val subaccountNumber = if (isolatedMarginAdjustmentType == IsolatedMarginAdjustmentType.Add.name) {
                         parentSubaccountNumber
                     } else {
