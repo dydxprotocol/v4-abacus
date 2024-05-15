@@ -332,4 +332,359 @@ internal class ParentSubaccountsChannelMock {
            }
         }
     """.trimIndent()
+
+    internal val rest_response = """
+        {
+           "subaccounts":[
+              {
+                 "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                 "subaccountNumber":0,
+                 "equity":"1711.959192",
+                 "freeCollateral":"1711.959192",
+                 "openPerpetualPositions":{
+                    
+                 },
+                 "assetPositions":{
+                    "USDC":{
+                       "size":"1711.959192",
+                       "symbol":"USDC",
+                       "side":"LONG",
+                       "assetId":"0",
+                       "subaccountNumber":0
+                    }
+                 },
+                 "marginEnabled":true
+              },
+              {
+                 "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                 "subaccountNumber":128,
+                 "equity":"285.689378002",
+                 "freeCollateral":"282.1297138016",
+                 "openPerpetualPositions":{
+                    "LDO-USD":{
+                       "market":"LDO-USD",
+                       "status":"OPEN",
+                       "side":"LONG",
+                       "size":"11",
+                       "maxSize":"11",
+                       "entryPrice":"1.7",
+                       "exitPrice":null,
+                       "realizedPnl":"0",
+                       "unrealizedPnl":"-0.901678998",
+                       "createdAt":"2024-05-14T18:03:47.615Z",
+                       "createdAtHeight":"304483",
+                       "closedAt":null,
+                       "sumOpen":"11",
+                       "sumClose":"0",
+                       "netFunding":"0",
+                       "subaccountNumber":128
+                    }
+                 },
+                 "assetPositions":{
+                    "USDC":{
+                       "size":"267.891057",
+                       "symbol":"USDC",
+                       "side":"LONG",
+                       "assetId":"0",
+                       "subaccountNumber":128
+                    }
+                 },
+                 "marginEnabled":true
+              }
+           ]
+        }
+    """.trimIndent()
+
+    internal val read_subscribed_with_pending = """
+        {
+           "type":"subscribed",
+           "connection_id":"51b652ba-3264-4c46-a410-3439c8ea4020",
+           "message_id":2,
+           "channel":"v4_parent_subaccounts",
+           "id":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+           "contents":{
+              "subaccount":{
+                 "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                 "parentSubaccountNumber":0,
+                 "equity":"1997.648570002",
+                 "freeCollateral":"1994.0889058016",
+                 "childSubaccounts":[
+                    {
+                       "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                       "subaccountNumber":0,
+                       "equity":"1711.959192",
+                       "freeCollateral":"1711.959192",
+                       "openPerpetualPositions":{
+                       },
+                       "assetPositions":{
+                          "USDC":{
+                             "size":"1711.959192",
+                             "symbol":"USDC",
+                             "side":"LONG",
+                             "assetId":"0",
+                             "subaccountNumber":0
+                          }
+                       },
+                       "marginEnabled":true
+                    },
+                    {
+                       "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                       "subaccountNumber":128,
+                       "equity":"285.689378002",
+                       "freeCollateral":"282.1297138016",
+                       "openPerpetualPositions":{
+                       },
+                       "assetPositions":{
+                          "USDC":{
+                             "size":"267.891057",
+                             "symbol":"USDC",
+                             "side":"LONG",
+                             "assetId":"0",
+                             "subaccountNumber":128
+                          }
+                       },
+                       "marginEnabled":true
+                    }
+                 ]
+              },
+              "orders":[
+                 {
+                    "id":"d1deed71-d743-5528-aff2-cf3daf8b6413",
+                    "subaccountId":"b456e984-b4bc-5ad2-8662-6b8378c7e0ad",
+                    "clientId":"1840243499",
+                    "clobPairId":"26",
+                    "side":"BUY",
+                    "size":"6",
+                    "totalFilled":"0",
+                    "price":"1.5",
+                    "type":"LIMIT",
+                    "status":"OPEN",
+                    "timeInForce":"GTT",
+                    "reduceOnly":false,
+                    "orderFlags":"64",
+                    "goodTilBlockTime":"2024-06-11T18:11:11.000Z",
+                    "createdAtHeight":"304912",
+                    "clientMetadata":"0",
+                    "updatedAt":"2024-05-14T18:11:10.494Z",
+                    "updatedAtHeight":"304912",
+                    "postOnly":false,
+                    "ticker":"LDO-USD",
+                    "subaccountNumber":128
+                 }
+              ]
+           }
+        }
+    """.trimIndent()
+
+    internal val real_subscribed = """
+        {
+           "type":"subscribed",
+           "connection_id":"51b652ba-3264-4c46-a410-3439c8ea4020",
+           "message_id":2,
+           "channel":"v4_parent_subaccounts",
+           "id":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+           "contents":{
+              "subaccount":{
+                 "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                 "parentSubaccountNumber":0,
+                 "equity":"1997.648570002",
+                 "freeCollateral":"1994.0889058016",
+                 "childSubaccounts":[
+                    {
+                       "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                       "subaccountNumber":0,
+                       "equity":"1711.959192",
+                       "freeCollateral":"1711.959192",
+                       "openPerpetualPositions":{
+                          
+                       },
+                       "assetPositions":{
+                          "USDC":{
+                             "size":"1711.959192",
+                             "symbol":"USDC",
+                             "side":"LONG",
+                             "assetId":"0",
+                             "subaccountNumber":0
+                          }
+                       },
+                       "marginEnabled":true
+                    },
+                    {
+                       "address":"dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                       "subaccountNumber":128,
+                       "equity":"285.689378002",
+                       "freeCollateral":"282.1297138016",
+                       "openPerpetualPositions":{
+                          "LDO-USD":{
+                             "market":"LDO-USD",
+                             "status":"OPEN",
+                             "side":"LONG",
+                             "size":"11",
+                             "maxSize":"11",
+                             "entryPrice":"1.7",
+                             "exitPrice":null,
+                             "realizedPnl":"0",
+                             "unrealizedPnl":"-0.901678998",
+                             "createdAt":"2024-05-14T18:03:47.615Z",
+                             "createdAtHeight":"304483",
+                             "closedAt":null,
+                             "sumOpen":"11",
+                             "sumClose":"0",
+                             "netFunding":"0",
+                             "subaccountNumber":128
+                          }
+                       },
+                       "assetPositions":{
+                          "USDC":{
+                             "size":"267.891057",
+                             "symbol":"USDC",
+                             "side":"LONG",
+                             "assetId":"0",
+                             "subaccountNumber":128
+                          }
+                       },
+                       "marginEnabled":true
+                    }
+                 ]
+              },
+              "orders":[
+                 {
+                    "id":"d1deed71-d743-5528-aff2-cf3daf8b6413",
+                    "subaccountId":"b456e984-b4bc-5ad2-8662-6b8378c7e0ad",
+                    "clientId":"1840243499",
+                    "clobPairId":"26",
+                    "side":"BUY",
+                    "size":"6",
+                    "totalFilled":"0",
+                    "price":"1.5",
+                    "type":"LIMIT",
+                    "status":"OPEN",
+                    "timeInForce":"GTT",
+                    "reduceOnly":false,
+                    "orderFlags":"64",
+                    "goodTilBlockTime":"2024-06-11T18:11:11.000Z",
+                    "createdAtHeight":"304912",
+                    "clientMetadata":"0",
+                    "updatedAt":"2024-05-14T18:11:10.494Z",
+                    "updatedAtHeight":"304912",
+                    "postOnly":false,
+                    "ticker":"LDO-USD",
+                    "subaccountNumber":128
+                 }
+              ]
+           }
+        }
+    """.trimIndent()
+
+    internal val real_channel_batch_data = """
+        {
+            "type": "channel_batch_data",
+            "connection_id": "9ef7b25a-1c25-48f6-93e9-b4664232aa21",
+            "message_id": 14,
+            "id": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+            "channel": "v4_parent_subaccounts",
+            "version": "2.4.0",
+            "contents": [
+                {
+                    "perpetualPositions": [
+                        {
+                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                            "subaccountNumber": 128,
+                            "positionId": "0bd60156-d281-501b-9c2c-8ea3b27c260a",
+                            "market": "LDO-USD",
+                            "side": "LONG",
+                            "status": "OPEN",
+                            "size": "17",
+                            "maxSize": "17",
+                            "netFunding": "0",
+                            "entryPrice": "0",
+                            "exitPrice": null,
+                            "sumOpen": "0",
+                            "sumClose": "0",
+                            "realizedPnl": "0",
+                            "unrealizedPnl": "17.798321002"
+                        }
+                    ],
+                    "assetPositions": [
+                        {
+                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                            "subaccountNumber": 128,
+                            "positionId": "443f239c-51c8-5cbb-b3b8-5d86718b88c2",
+                            "assetId": "0",
+                            "symbol": "USDC",
+                            "side": "LONG",
+                            "size": "367.891057"
+                        }
+                    ]
+                },
+                {
+                    "fills": [
+                        {
+                            "id": "9051d9e5-b9b9-5431-9f8c-dd96e86760cf",
+                            "fee": "-0.002057",
+                            "side": "BUY",
+                            "size": "11",
+                            "type": "LIMIT",
+                            "price": "1.7",
+                            "eventId": "0004a5630000000200000002",
+                            "orderId": "3a098370-6fa9-5791-b921-fdf4174978c9",
+                            "createdAt": "2024-05-14T18:03:47.615Z",
+                            "liquidity": "MAKER",
+                            "clobPairId": "26",
+                            "quoteAmount": "18.7",
+                            "subaccountId": "b456e984-b4bc-5ad2-8662-6b8378c7e0ad",
+                            "clientMetadata": "0",
+                            "createdAtHeight": "304483",
+                            "transactionHash": "33F24BCE8CFDAF1CD8DAC0ED2C2A749929DC03B2B10590595A652DDC60F906DD",
+                            "ticker": "LDO-USD"
+                        }
+                    ],
+                    "perpetualPositions": [
+                        {
+                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                            "subaccountNumber": 128,
+                            "positionId": "0bd60156-d281-501b-9c2c-8ea3b27c260a",
+                            "market": "LDO-USD",
+                            "side": "LONG",
+                            "status": "OPEN",
+                            "size": "17",
+                            "maxSize": "17",
+                            "netFunding": "0",
+                            "entryPrice": "1.7",
+                            "exitPrice": null,
+                            "sumOpen": "11",
+                            "sumClose": "0"
+                        }
+                    ],
+                    "orders": [
+                        {
+                            "id": "3a098370-6fa9-5791-b921-fdf4174978c9",
+                            "side": "BUY",
+                            "size": "11",
+                            "type": "LIMIT",
+                            "price": "1.7",
+                            "status": "FILLED",
+                            "clientId": "326692184",
+                            "updatedAt": "2024-05-14T18:03:47.615Z",
+                            "clobPairId": "26",
+                            "orderFlags": "64",
+                            "reduceOnly": false,
+                            "timeInForce": "GTT",
+                            "totalFilled": "11",
+                            "goodTilBlock": null,
+                            "subaccountId": "b456e984-b4bc-5ad2-8662-6b8378c7e0ad",
+                            "triggerPrice": null,
+                            "clientMetadata": "0",
+                            "createdAtHeight": "303758",
+                            "updatedAtHeight": "304483",
+                            "goodTilBlockTime": "2024-06-11T17:51:31.000Z",
+                            "postOnly": false,
+                            "ticker": "LDO-USD"
+                        }
+                    ]
+                }
+            ],
+            "subaccountNumber": 128
+        }
+    """.trimIndent()
 }

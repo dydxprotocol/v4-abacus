@@ -72,7 +72,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
                     val childOpenPositions =
                         parser.asNativeMap(parser.value(subaccount, "openPositions"))
-                    parentSubaccount = if (childOpenPositions != null) {
+                    parentSubaccount = if (!childOpenPositions.isNullOrEmpty()) {
                         mergeChildOpenPositions(
                             parentSubaccount,
                             subaccountNumber,
