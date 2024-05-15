@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output.input
 
+import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
@@ -38,10 +39,15 @@ data class AdjustIsolatedMarginInputOptions(
 @Serializable
 data class AdjustIsolatedMarginInputSummary(
     val crossFreeCollateral: Double?,
+    val crossFreeCollateralUpdated: Double?,
     val crossMarginUsage: Double?,
+    val crossMarginUsageUpdated: Double?,
     val positionMargin: Double?,
+    val positionMarginUpdated: Double?,
     val positionLeverage: Double?,
+    val positionLeverageUpdated: Double?,
     val liquidationPrice: Double?,
+    val liquidationPriceUpdated: Double?,
 ) {
     companion object {
         internal fun create(
@@ -52,25 +58,40 @@ data class AdjustIsolatedMarginInputSummary(
             Logger.d { "creating Adjust Isolated Margin Input Summary\n" }
 
             data?.let {
-                val crossFreeCollateral = parser.asDouble(data["crossFreeCollateral"])
-                val crossMarginUsage = parser.asDouble(data["crossMarginUsage"])
-                val positionMargin = parser.asDouble(data["positionMargin"])
-                val positionLeverage = parser.asDouble(data["positionLeverage"])
-                val liquidationPrice = parser.asDouble(data["liquidationPrice"])
+                val crossFreeCollateral = parser.asDouble(parser.value(data, "crossFreeCollateral.current"))
+                val crossFreeCollateralUpdated = parser.asDouble(parser.value(data, "crossFreeCollateral.postOrder"))
+                val crossMarginUsage = parser.asDouble(parser.value(data, "crossMarginUsage.current"))
+                val crossMarginUsageUpdated = parser.asDouble(parser.value(data, "crossMarginUsage.postOrder"))
+                val positionMargin = parser.asDouble(parser.value(data, "positionMargin.current"))
+                val positionMarginUpdated = parser.asDouble(parser.value(data, "positionMargin.postOrder"))
+                val positionLeverage = parser.asDouble(parser.value(data, "positionLeverage.current"))
+                val positionLeverageUpdated = parser.asDouble(parser.value(data, "positionLeverage.postOrder"))
+                val liquidationPrice = parser.asDouble(parser.value(data, "liquidationPrice.current"))
+                val liquidationPriceUpdated = parser.asDouble(parser.value(data, "liquidationPrice.postOrder"))
 
                 return if (
                     existing?.crossFreeCollateral != crossFreeCollateral ||
+                    existing?.crossFreeCollateralUpdated != crossFreeCollateralUpdated ||
                     existing?.crossMarginUsage != crossMarginUsage ||
+                    existing?.crossMarginUsageUpdated != crossMarginUsageUpdated ||
                     existing?.positionMargin != positionMargin ||
+                    existing?.positionMarginUpdated != positionMarginUpdated ||
                     existing?.positionLeverage != positionLeverage ||
-                    existing?.liquidationPrice != liquidationPrice
+                    existing?.positionLeverageUpdated != positionLeverageUpdated ||
+                    existing?.liquidationPrice != liquidationPrice ||
+                    existing?.liquidationPriceUpdated != liquidationPriceUpdated
                 ) {
                     AdjustIsolatedMarginInputSummary(
                         crossFreeCollateral,
+                        crossFreeCollateralUpdated,
                         crossMarginUsage,
+                        crossMarginUsageUpdated,
                         positionMargin,
+                        positionMarginUpdated,
                         positionLeverage,
+                        positionLeverageUpdated,
                         liquidationPrice,
+                        liquidationPriceUpdated,
                     )
                 } else {
                     existing
@@ -94,12 +115,10 @@ enum class IsolatedMarginAdjustmentType {
 data class AdjustIsolatedMarginInput(
     val type: IsolatedMarginAdjustmentType,
     val amount: String?,
+    val amountPercent: String?,
     val childSubaccountNumber: Int?,
     val adjustIsolatedMarginInputOptions: AdjustIsolatedMarginInputOptions?,
-    val summary: AdjustIsolatedMarginInputSummary?,
-    val errors: String?,
-    val errorMessage: String?,
-    val fee: Double?,
+    val summary: AdjustIsolatedMarginInputSummary?
 ) {
     companion object {
         internal fun create(
@@ -116,11 +135,12 @@ data class AdjustIsolatedMarginInput(
 
                 val childSubaccountNumber = parser.asInt(data["ChildSubaccountNumber"])
                 val amount = parser.asString(data["Amount"])
-                val fee = parser.asDouble(data["fee"])
+                val amountPercent = parser.asString(data["AmountPercent"])
+
                 val adjustIsolatedMarginInputOptions = AdjustIsolatedMarginInputOptions.create(
                     existing?.adjustIsolatedMarginInputOptions,
                     parser,
-                    parser.asMap(data["adjustIsolatedMarginInputOptions"]),
+                    parser.asMap(data["options"]),
                 )
                 val summary = AdjustIsolatedMarginInputSummary.create(
                     existing?.summary,
@@ -128,36 +148,21 @@ data class AdjustIsolatedMarginInput(
                     parser.asMap(data["summary"]),
                 )
 
-                val errors = parser.asString(data["errors"])
-
-                val errorMessage: String? =
-                    if (errors != null) {
-                        val errorArray = parser.decodeJsonArray(errors)
-                        val firstError = parser.asMap(errorArray?.first())
-                        parser.asString(firstError?.get("message"))
-                    } else {
-                        null
-                    }
-
                 return if (
                     existing?.type != type ||
                     existing.amount != amount ||
+                    existing.amountPercent != amountPercent ||
                     existing.childSubaccountNumber != childSubaccountNumber ||
                     existing.adjustIsolatedMarginInputOptions != adjustIsolatedMarginInputOptions ||
-                    existing.summary !== summary ||
-                    existing.errors !== errors ||
-                    existing.errorMessage != errorMessage ||
-                    existing.fee != fee
+                    existing.summary !== summary
                 ) {
                     AdjustIsolatedMarginInput(
                         type,
                         amount,
+                        amountPercent,
                         childSubaccountNumber,
                         adjustIsolatedMarginInputOptions,
-                        summary,
-                        errors,
-                        errorMessage,
-                        fee,
+                        summary
                     )
                 } else {
                     existing
