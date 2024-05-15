@@ -6,6 +6,7 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -67,11 +68,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                         adjustIsolatedMargin.safeSet("Amount", null)
                         adjustIsolatedMargin.safeSet("AmountPercent", null)
                     }
-                    changes = StateChanges(
-                        iListOf(Changes.wallet, Changes.subaccount, Changes.input),
-                        null,
-                        subaccountNumbers,
-                    )
+                    changes = getStateChanges(subaccountNumbers)
                 }
                 AdjustIsolatedMarginInputField.AmountPercent,
                 AdjustIsolatedMarginInputField.Amount -> {
@@ -89,34 +86,29 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     )
 
                     val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current"))
+                    val amountValue = parser.asDouble(data)
 
-                    if (type == AdjustIsolatedMarginInputField.Amount) {
-                        val amount = parser.asDouble(data)
-                        if (amount != null && freeCollateral != null) {
-                            val amountPercent = amount / freeCollateral
+                    if (amountValue == null) {
+                        adjustIsolatedMargin.safeSet("Amount", null)
+                        adjustIsolatedMargin.safeSet("AmountPercent", null)
+                    } else if (type == AdjustIsolatedMarginInputField.Amount) {
+                        adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
+
+                        if (freeCollateral != null) {
+                            val amountPercent = amountValue / freeCollateral
                             adjustIsolatedMargin.safeSet("AmountPercent", amountPercent.toString())
-                            adjustIsolatedMargin.safeSet(type.name, amount.toString())
-                        } else {
-                            adjustIsolatedMargin.safeSet(type.name, data)
-                            adjustIsolatedMargin.safeSet("AmountPercent", null)
-                        }
+                        } else adjustIsolatedMargin.safeSet("AmountPercent", null)
                     } else if (type == AdjustIsolatedMarginInputField.AmountPercent) {
-                        val amountPercent = parser.asDouble(data)
-                        if (amountPercent != null && freeCollateral != null) {
-                            val amount = amountPercent * freeCollateral
+                        adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
+
+                        if (freeCollateral != null) {
+                            val amount = amountValue * freeCollateral
                             adjustIsolatedMargin.safeSet("Amount", amount.toString())
-                            adjustIsolatedMargin.safeSet(type.name, amountPercent.toString())
-                        } else {
-                            adjustIsolatedMargin.safeSet(type.name, data)
-                            adjustIsolatedMargin.safeSet("Amount", null)
-                        }
+                        } else adjustIsolatedMargin.safeSet("Amount", null)
+
                     }
 
-                    changes = StateChanges(
-                        iListOf(Changes.wallet, Changes.subaccount, Changes.input),
-                        null,
-                        subaccountNumbers,
-                    )
+                    changes = getStateChanges(subaccountNumbers)
                 }
                 AdjustIsolatedMarginInputField.ChildSubaccountNumber -> {
                     val childSubaccountNumber = parser.asInt(data)
@@ -126,13 +118,8 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     } else {
                         iListOf(parentSubaccountNumber)
                     }
-                    changes = StateChanges(
-                        iListOf(Changes.wallet, Changes.subaccount, Changes.input),
-                        null,
-                        subaccountNumbers,
-                    )
+                    changes = getStateChanges(subaccountNumbers)
                 }
-                else -> {}
             }
         } else {
             error = cannotModify(type.name)
@@ -149,6 +136,16 @@ fun TradingStateMachine.adjustIsolatedMargin(
     this.input = input
     changes?.let { update(it) }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
+}
+
+fun getStateChanges(
+    subaccountNumbers: IList<Int>,
+): StateChanges {
+    return StateChanges(
+        iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+        null,
+        subaccountNumbers,
+    )
 }
 
 fun TradingStateMachine.validAdjustIsolatedMarginInput(
