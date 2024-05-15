@@ -66,9 +66,6 @@ fun TradingStateMachine.adjustIsolatedMargin(
                         adjustIsolatedMargin.safeSet(type.name, parser.asString(data))
                         adjustIsolatedMargin.safeSet("Amount", null)
                         adjustIsolatedMargin.safeSet("AmountPercent", null)
-                        if (parser.asString(parser.value(adjustIsolatedMargin, "amount.input")) == "amount.percent") {
-                            adjustIsolatedMargin.safeSet("amount.input", "amount.size")
-                        }
                     }
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
