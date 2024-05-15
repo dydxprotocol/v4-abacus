@@ -97,15 +97,18 @@ fun TradingStateMachine.adjustIsolatedMargin(
                         if (freeCollateral != null) {
                             val amountPercent = amountValue / freeCollateral
                             adjustIsolatedMargin.safeSet("AmountPercent", amountPercent.toString())
-                        } else adjustIsolatedMargin.safeSet("AmountPercent", null)
+                        } else {
+                            adjustIsolatedMargin.safeSet("AmountPercent", null)
+                        }
                     } else if (type == AdjustIsolatedMarginInputField.AmountPercent) {
                         adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
 
                         if (freeCollateral != null) {
                             val amount = amountValue * freeCollateral
                             adjustIsolatedMargin.safeSet("Amount", amount.toString())
-                        } else adjustIsolatedMargin.safeSet("Amount", null)
-
+                        } else {
+                            adjustIsolatedMargin.safeSet("Amount", null)
+                        }
                     }
 
                     changes = getStateChanges(subaccountNumbers)
