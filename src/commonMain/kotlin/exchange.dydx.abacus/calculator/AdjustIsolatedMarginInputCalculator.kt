@@ -149,7 +149,6 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
                             options["needsSize"] = true
                         }
                     }
-
                 }
             }
 

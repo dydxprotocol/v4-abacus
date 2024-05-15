@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.output.input
 
-import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
@@ -162,7 +161,7 @@ data class AdjustIsolatedMarginInput(
                         amountPercent,
                         childSubaccountNumber,
                         adjustIsolatedMarginInputOptions,
-                        summary
+                        summary,
                     )
                 } else {
                     existing

@@ -206,9 +206,10 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
     }
 
     private fun testMarginAmountPercent() {
-        test({
-            perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.name, AdjustIsolatedMarginInputField.Type, 0)
-        },
+        test(
+            {
+                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.name, AdjustIsolatedMarginInputField.Type, 0)
+            },
             """
             {
                 "input": {
@@ -241,13 +242,14 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
             """.trimIndent(),
         )
 
-        test({
-            perp.adjustIsolatedMargin(
-                IsolatedMarginAdjustmentType.Remove.name,
-                AdjustIsolatedMarginInputField.Type,
-                0
-            )
-        },
+        test(
+            {
+                perp.adjustIsolatedMargin(
+                    IsolatedMarginAdjustmentType.Remove.name,
+                    AdjustIsolatedMarginInputField.Type,
+                    0,
+                )
+            },
             """
             {
                 "input": {
@@ -262,9 +264,10 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
             """.trimIndent(),
         )
 
-        test({
-            perp.adjustIsolatedMargin("0.1", AdjustIsolatedMarginInputField.AmountPercent, 0)
-        },
+        test(
+            {
+                perp.adjustIsolatedMargin("0.1", AdjustIsolatedMarginInputField.AmountPercent, 0)
+            },
             """
             {
                 "input": {
