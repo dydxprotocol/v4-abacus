@@ -45,6 +45,8 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalMarketsSummary
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.TokenInfo
@@ -80,6 +82,7 @@ open class TradingStateMachine(
     private val formatter: Formatter?,
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
+    private val internalState: InternalState = InternalState(),
 ) {
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
@@ -98,7 +101,11 @@ open class TradingStateMachine(
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
     internal val inputValidator = InputValidator(localizer, formatter, parser)
 
-    internal var data: Map<String, Any>? = null
+    internal var data: Map<String, Any>?
+        get() = internalState.data
+        set(value) {
+            internalState.data = value
+        }
 
     private var dummySubaccountPNLs = mutableMapOf<String, SubaccountHistoricalPNL>();
 
@@ -121,9 +128,13 @@ open class TradingStateMachine(
             return parser.asNativeMap(data?.get("markets"))
         }
         set(value) {
-            val modified = data?.mutable() ?: mutableMapOf()
-            modified.safeSet("markets", value)
-            this.data = if (modified.size != 0) modified else null
+            val oldValue = parser.asNativeMap(data?.get("markets"))
+            if (oldValue != value) {
+                val modified = data?.mutable() ?: mutableMapOf()
+                modified.safeSet("markets", value)
+                this.data = if (modified.size != 0) modified else null
+                internalState.marketsSummary = InternalMarketsSummary.fromMap(value)
+            }
         }
 
     internal var historicalPnlDays: Int = 1

@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.squid
 
+import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
@@ -241,13 +242,13 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return chainResources
     }
 
-    internal fun tokenResources(chainId: String?): Map<String, Any>? {
-        val tokenResources = mutableMapOf<String, Any>()
+    internal fun tokenResources(chainId: String?): Map<String, TransferInputTokenResource>? {
+        val tokenResources = mutableMapOf<String, TransferInputTokenResource>()
         filteredTokens(chainId)?.forEach {
             parser.asString(parser.asNativeMap(it)?.get("address"))?.let { key ->
                 val processor = SquidTokenResourceProcessor(parser)
                 parser.asNativeMap(it)?.let { payload ->
-                    tokenResources[key] = processor.received(null, payload)
+                    tokenResources[key] = processor.received(payload)
                 }
             }
         }

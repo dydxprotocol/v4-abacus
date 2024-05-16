@@ -309,40 +309,40 @@ data class TransferInputTokenResource(
     var iconUrl: String?
 ) {
     companion object {
-        internal fun create(
-            existing: TransferInputTokenResource?,
-            parser: ParserProtocol,
-            data: Map<*, *>?
-        ): TransferInputTokenResource? {
-            Logger.d { "creating Transfer Input Token Resource\n" }
-
-            data?.let {
-                val name = parser.asString(data["name"])
-                val address = parser.asString(data["address"])
-                val symbol = parser.asString(data["symbol"])
-                val decimals = parser.asInt(data["decimals"])
-                val iconUrl = parser.asString(data["iconUrl"])
-
-                return if (existing?.name != name ||
-                    existing?.address != address ||
-                    existing?.symbol != symbol ||
-                    existing?.decimals != decimals ||
-                    existing?.iconUrl != iconUrl
-                ) {
-                    TransferInputTokenResource(
-                        name,
-                        address,
-                        symbol,
-                        decimals,
-                        iconUrl,
-                    )
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Transfer Input Token Resource not valid" }
-            return null
-        }
+//        internal fun create(
+//            existing: TransferInputTokenResource?,
+//            parser: ParserProtocol,
+//            data: Map<*, *>?
+//        ): TransferInputTokenResource? {
+//            Logger.d { "creating Transfer Input Token Resource\n" }
+//
+//            data?.let {
+//                val name = parser.asString(data["name"])
+//                val address = parser.asString(data["address"])
+//                val symbol = parser.asString(data["symbol"])
+//                val decimals = parser.asInt(data["decimals"])
+//                val iconUrl = parser.asString(data["iconUrl"])
+//
+//                return if (existing?.name != name ||
+//                    existing?.address != address ||
+//                    existing?.symbol != symbol ||
+//                    existing?.decimals != decimals ||
+//                    existing?.iconUrl != iconUrl
+//                ) {
+//                    TransferInputTokenResource(
+//                        name,
+//                        address,
+//                        symbol,
+//                        decimals,
+//                        iconUrl,
+//                    )
+//                } else {
+//                    existing
+//                }
+//            }
+//            Logger.d { "Transfer Input Token Resource not valid" }
+//            return null
+//        }
     }
 }
 
@@ -371,16 +371,8 @@ data class TransferInputResources(
                         ) ?: TransferInputChainResource(null, null, null, null, null)
                     }?.toIMap() ?: iMapOf()
 
-                val tokenResourcesMap = parser.asMap(data["tokenResources"])
-                val tokenResources: IMap<String, TransferInputTokenResource> =
-                    tokenResourcesMap?.mapValues {
-                        TransferInputTokenResource.create(
-                            null,
-                            parser,
-                            parser.asMap(it.value),
-                        ) ?: TransferInputTokenResource(null, null, null, null, null)
-                    }?.toIMap() ?: iMapOf()
-
+                val tokenResourcesMap = parser.asMap(data["tokenResources"]) as? Map<String, TransferInputTokenResource>?
+                val tokenResources: IMap<String, TransferInputTokenResource> = tokenResourcesMap?.toIMap() ?: iMapOf()
                 return if (
                     existing?.chainResources != chainResources ||
                     existing.tokenResources != tokenResources

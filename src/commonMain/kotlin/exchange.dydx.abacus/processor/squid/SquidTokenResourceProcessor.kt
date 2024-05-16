@@ -1,23 +1,20 @@
 package exchange.dydx.abacus.processor.squid
 
+import exchange.dydx.abacus.output.input.TransferInputChainResource
+import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SquidTokenResourceProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val keyMap = mapOf(
-        "string" to mapOf(
-            "name" to "name",
-            "address" to "address",
-            "symbol" to "symbol",
-            "decimals" to "decimals",
-            "logoURI" to "iconUrl",
-        ),
-    )
-
-    override fun received(
-        existing: Map<String, Any>?,
+internal class SquidTokenResourceProcessor(private val parser: ParserProtocol) {
+    fun received(
         payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, keyMap)
+    ): TransferInputTokenResource {
+        return TransferInputTokenResource(
+            name = parser.asString(payload["name"]),
+            address = parser.asString(payload["address"]),
+            symbol = parser.asString(payload["symbol"]),
+            decimals = parser.asInt(payload["decimals"]),
+            iconUrl = parser.asString(payload["logoURI"]),
+        )
     }
 }
