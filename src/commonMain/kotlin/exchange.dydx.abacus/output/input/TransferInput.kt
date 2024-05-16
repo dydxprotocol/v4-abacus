@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.state.manager.ExchangeConfig.exchangeList
 import exchange.dydx.abacus.state.manager.V4Environment
@@ -30,7 +31,8 @@ data class DepositInputOptions(
         internal fun create(
             existing: DepositInputOptions?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            internalState: InternalTransferInputState?
         ): DepositInputOptions? {
             Logger.d { "creating Deposit Input Options\n" }
 
@@ -39,35 +41,9 @@ data class DepositInputOptions(
                 val needsAddress = parser.asBool(data["needsAddress"])
                 val needsFastSpeed = parser.asBool(data["needsFastSpeed"])
 
-                var chains: IMutableList<SelectionOption>? = null
-                parser.asList(data["chains"])?.let { data ->
-                    chains = iMutableListOf()
-                    for (i in data.indices) {
-                        val item = data[i]
-                        SelectionOption.create(
-                            existing?.chains?.getOrNull(i),
-                            parser,
-                            parser.asMap(item),
-                        )?.let {
-                            chains?.add(it)
-                        }
-                    }
-                }
+                val chains: IList<SelectionOption>? = internalState?.chains?.toIList() ?: iListOf()
 
-                var assets: IMutableList<SelectionOption>? = null
-                parser.asList(data["assets"])?.let { data ->
-                    assets = iMutableListOf()
-                    for (i in data.indices) {
-                        val item = data[i]
-                        SelectionOption.create(
-                            existing?.assets?.getOrNull(i),
-                            parser,
-                            parser.asMap(item),
-                        )?.let {
-                            assets?.add(it)
-                        }
-                    }
-                }
+                val assets: IList<SelectionOption>? = internalState?.tokens?.toIList() ?: iListOf()
 
                 var exchanges: IMutableList<SelectionOption>? = null
                 exchangeList?.let { data ->
@@ -118,7 +94,8 @@ data class WithdrawalInputOptions(
         internal fun create(
             existing: WithdrawalInputOptions?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
+            internalState: InternalTransferInputState?,
         ): WithdrawalInputOptions? {
             Logger.d { "creating Withdrawal Input Options\n" }
 
@@ -127,34 +104,9 @@ data class WithdrawalInputOptions(
                 val needsAddress = parser.asBool(data["needsAddress"])
                 val needsFastSpeed = parser.asBool(data["needsFastSpeed"])
 
-                var chains: IMutableList<SelectionOption>? = null
-                parser.asList(data["chains"])?.let { data ->
-                    chains = iMutableListOf()
-                    for (i in data.indices) {
-                        val item = data[i]
-                        SelectionOption.create(
-                            existing?.chains?.getOrNull(i),
-                            parser,
-                            parser.asMap(item),
-                        )?.let {
-                            chains?.add(it)
-                        }
-                    }
-                }
-                var assets: IMutableList<SelectionOption>? = null
-                parser.asList(data["assets"])?.let { data ->
-                    assets = iMutableListOf()
-                    for (i in data.indices) {
-                        val item = data[i]
-                        SelectionOption.create(
-                            existing?.assets?.getOrNull(i),
-                            parser,
-                            parser.asMap(item),
-                        )?.let {
-                            assets?.add(it)
-                        }
-                    }
-                }
+                val chains: IList<SelectionOption>? = internalState?.chains?.toIList() ?: iListOf()
+
+                val assets: IList<SelectionOption>? = internalState?.tokens?.toIList() ?: iListOf()
 
                 var exchanges: IMutableList<SelectionOption>? = null
                 exchangeList?.let { data ->
@@ -307,44 +259,7 @@ data class TransferInputTokenResource(
     var symbol: String?,
     var decimals: Int?,
     var iconUrl: String?
-) {
-    companion object {
-//        internal fun create(
-//            existing: TransferInputTokenResource?,
-//            parser: ParserProtocol,
-//            data: Map<*, *>?
-//        ): TransferInputTokenResource? {
-//            Logger.d { "creating Transfer Input Token Resource\n" }
-//
-//            data?.let {
-//                val name = parser.asString(data["name"])
-//                val address = parser.asString(data["address"])
-//                val symbol = parser.asString(data["symbol"])
-//                val decimals = parser.asInt(data["decimals"])
-//                val iconUrl = parser.asString(data["iconUrl"])
-//
-//                return if (existing?.name != name ||
-//                    existing?.address != address ||
-//                    existing?.symbol != symbol ||
-//                    existing?.decimals != decimals ||
-//                    existing?.iconUrl != iconUrl
-//                ) {
-//                    TransferInputTokenResource(
-//                        name,
-//                        address,
-//                        symbol,
-//                        decimals,
-//                        iconUrl,
-//                    )
-//                } else {
-//                    existing
-//                }
-//            }
-//            Logger.d { "Transfer Input Token Resource not valid" }
-//            return null
-//        }
-    }
-}
+)
 
 @JsExport
 @Serializable
@@ -356,23 +271,13 @@ data class TransferInputResources(
         internal fun create(
             existing: TransferInputResources?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            internalState: InternalTransferInputState?,
         ): TransferInputResources? {
             Logger.d { "creating Transfer Input Resources\n" }
 
-            data?.let {
-                val chainResourcesMap = parser.asMap(data["chainResources"])
-                val chainResources: IMap<String, TransferInputChainResource> =
-                    chainResourcesMap?.mapValues { entry ->
-                        TransferInputChainResource.create(
-                            null,
-                            parser,
-                            parser.asMap(entry.value),
-                        ) ?: TransferInputChainResource(null, null, null, null, null)
-                    }?.toIMap() ?: iMapOf()
-
-                val tokenResourcesMap = parser.asMap(data["tokenResources"]) as? Map<String, TransferInputTokenResource>?
-                val tokenResources: IMap<String, TransferInputTokenResource> = tokenResourcesMap?.toIMap() ?: iMapOf()
+            internalState?.let {
+                val chainResources: IMap<String, TransferInputChainResource> = internalState.chainResources?.toIMap() ?: iMapOf()
+                val tokenResources: IMap<String, TransferInputTokenResource> = internalState.tokenResources?.toIMap() ?: iMapOf()
                 return if (
                     existing?.chainResources != chainResources ||
                     existing.tokenResources != tokenResources
@@ -624,7 +529,8 @@ data class TransferInput(
             existing: TransferInput?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            environment: V4Environment?
+            environment: V4Environment?,
+            internalState: InternalTransferInputState?
         ): TransferInput? {
             Logger.d { "creating Transfer Input\n" }
 
@@ -648,6 +554,7 @@ data class TransferInput(
                         existing?.depositOptions,
                         parser,
                         parser.asMap(data["depositOptions"]),
+                        internalState,
                     )
                 }
 
@@ -657,6 +564,7 @@ data class TransferInput(
                         existing?.withdrawalOptions,
                         parser,
                         parser.asMap(data["withdrawalOptions"]),
+                        internalState,
                     )
                 }
 
@@ -679,7 +587,7 @@ data class TransferInput(
                 val resources = TransferInputResources.create(
                     existing?.resources,
                     parser,
-                    parser.asMap(data["resources"]),
+                    internalState,
                 )
 
                 val route = parser.asMap(data["route"])

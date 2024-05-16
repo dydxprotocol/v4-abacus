@@ -1,11 +1,11 @@
 package exchange.dydx.abacus.processor.squid
 
-import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
-import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SquidTokenResourceProcessor(private val parser: ParserProtocol) {
+internal class SquidTokenResourceProcessor(
+    private val parser: ParserProtocol
+) {
     fun received(
         payload: Map<String, Any>
     ): TransferInputTokenResource {

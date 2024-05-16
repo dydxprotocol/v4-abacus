@@ -45,7 +45,6 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.internalstate.InternalMarketsSummary
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
@@ -82,8 +81,9 @@ open class TradingStateMachine(
     private val formatter: Formatter?,
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
-    private val internalState: InternalState = InternalState(),
 ) {
+    private val internalState: InternalState = InternalState()
+
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
     internal val assetsProcessor = run {
@@ -93,7 +93,7 @@ open class TradingStateMachine(
     }
     internal val walletProcessor = WalletProcessor(parser)
     internal val configsProcessor = ConfigsProcessor(parser)
-    internal val squidProcessor = SquidProcessor(parser)
+    internal val squidProcessor = SquidProcessor(parser, internalState.transfer)
     internal val rewardsProcessor = RewardsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
@@ -101,11 +101,7 @@ open class TradingStateMachine(
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
     internal val inputValidator = InputValidator(localizer, formatter, parser)
 
-    internal var data: Map<String, Any>?
-        get() = internalState.data
-        set(value) {
-            internalState.data = value
-        }
+    internal var data: Map<String, Any>? = null
 
     private var dummySubaccountPNLs = mutableMapOf<String, SubaccountHistoricalPNL>();
 
@@ -133,7 +129,6 @@ open class TradingStateMachine(
                 val modified = data?.mutable() ?: mutableMapOf()
                 modified.safeSet("markets", value)
                 this.data = if (modified.size != 0) modified else null
-                internalState.marketsSummary = InternalMarketsSummary.fromMap(value)
             }
         }
 
@@ -1280,7 +1275,7 @@ open class TradingStateMachine(
                     this.environment,
                 )
                 this.input?.let {
-                    input = Input.create(input, parser, it, environment)
+                    input = Input.create(input, parser, it, environment, internalState)
                 }
             }
         }

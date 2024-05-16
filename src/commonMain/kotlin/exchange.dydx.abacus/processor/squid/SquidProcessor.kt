@@ -1,13 +1,19 @@
 package exchange.dydx.abacus.processor.squid
 
+import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class SquidProcessor(
+    parser: ParserProtocol,
+    private val internalState: InternalTransferInputState,
+) : BaseProcessor(parser) {
     private var chains: List<Any>? = null
     private var tokens: List<Any>? = null
     var exchangeDestinationChainId: String? = null
@@ -27,12 +33,12 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
         val chainOptions = chainOptions()
 
-        modified.safeSet("transfer.depositOptions.chains", chainOptions)
-        modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
+        internalState.chains = chainOptions
+
         val selectedChainId = defaultChainId()
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
-            modified.safeSet("transfer.resources.chainResources", chainResources(selectedChainId))
+            internalState.chainResources = chainResources(selectedChainId)
         }
 
         updateTokensDefaults(modified, selectedChainId)
@@ -76,12 +82,12 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
         val chainOptions = chainOptions()
 
-        modified.safeSet("transfer.depositOptions.chains", chainOptions)
-        modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
+        internalState.chains = chainOptions
+
         val selectedChainId = defaultChainId()
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
-            modified.safeSet("transfer.resources.chainResources", chainResources(selectedChainId))
+            internalState.chainResources = chainResources(selectedChainId)
         }
 
         updateTokensDefaults(modified, selectedChainId)
@@ -165,10 +171,10 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     private fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
-        modified.safeSet("transfer.depositOptions.assets", tokenOptions)
-        modified.safeSet("transfer.withdrawalOptions.assets", tokenOptions)
+        internalState.tokens = tokenOptions
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
         modified.safeSet("transfer.resources.tokenResources", tokenResources(selectedChainId))
+        internalState.tokenResources = tokenResources(selectedChainId)
     }
 
     internal fun defaultChainId(): String? {
@@ -227,15 +233,15 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
-    internal fun chainResources(chainId: String?): Map<String, Any>? {
-        val chainResources = mutableMapOf<String, Any>()
+    internal fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
+        val chainResources = mutableMapOf<String, TransferInputChainResource>()
         chainId?.let {
             this.chains?.find {
                 parser.asString(parser.asNativeMap(it)?.get("chainId")) == chainId
             }?.let {
                 val processor = SquidChainResourceProcessor(parser)
                 parser.asNativeMap(it)?.let { payload ->
-                    chainResources[chainId] = processor.received(null, payload)
+                    chainResources[chainId] = processor.received(payload)
                 }
             }
         }
@@ -255,15 +261,15 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return tokenResources
     }
 
-    private fun chainOptions(): List<Any> {
+    private fun chainOptions(): List<SelectionOption> {
         val chainProcessor = SquidChainProcessor(parser)
-        val options = mutableListOf<Any>()
+        val options = mutableListOf<SelectionOption>()
 
         this.chains?.let { it ->
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
-                    if (parser.asString(chain.get("chainType")) != "cosmos") {
-                        options.add(chainProcessor.received(null, chain))
+                    if (parser.asString(chain["chainType"]) != "cosmos") {
+                        options.add(chainProcessor.received(chain))
                     }
                 }
             }
@@ -273,9 +279,9 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return options
     }
 
-    internal fun tokenOptions(chainId: String?): List<Any> {
+    internal fun tokenOptions(chainId: String?): List<SelectionOption> {
         val processor = SquidTokenProcessor(parser)
-        val options = mutableListOf<Any>()
+        val options = mutableListOf<SelectionOption>()
 
         val selectedChainId = chainId ?: defaultChainId()
         selectedChainId?.let {
@@ -283,15 +289,15 @@ internal class SquidProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             this.tokens?.let {
                 for (token in it) {
                     parser.asNativeMap(token)?.let { token ->
-                        if (parser.asString(token.get("chainId")) == selectedChainId) {
-                            options.add(processor.received(null, token))
+                        if (parser.asString(token["chainId"]) == selectedChainId) {
+                            options.add(processor.received(token))
                         }
                     }
                 }
             }
         }
 
-        options.sortBy { parser.asString(parser.asNativeMap(it)?.get("stringKey")) }
+        options.sortBy { it.stringKey }
         return options
     }
 }
