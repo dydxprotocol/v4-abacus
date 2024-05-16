@@ -477,6 +477,7 @@ data class SubaccountPosition(
 @Serializable
 data class SubaccountPendingPosition(
     val assetId: String,
+    val marketId: String,
     val firstOrderId: String,
     val orderCount: Int,
     val freeCollateral: TradeStatesWithDoubleValues?,
@@ -492,6 +493,7 @@ data class SubaccountPendingPosition(
             Logger.d { "creating Account Pending Position\n" }
             data?.let {
                 val assetId = parser.asString(data["assetId"]) ?: return null
+                val marketId = parser.asString(data["marketId"]) ?: return null
                 val firstOrderId = parser.asString(data["firstOrderId"]) ?: return null
                 val orderCount = parser.asInt(data["orderCount"]) ?: return null
                 val freeCollateral = TradeStatesWithDoubleValues.create(
@@ -511,6 +513,7 @@ data class SubaccountPendingPosition(
                 )
 
                 return if (existing?.assetId != assetId ||
+                    existing.marketId != marketId ||
                     existing.firstOrderId != firstOrderId ||
                     existing.orderCount != orderCount ||
                     existing.freeCollateral !== freeCollateral ||
@@ -519,6 +522,7 @@ data class SubaccountPendingPosition(
                 ) {
                     SubaccountPendingPosition(
                         assetId,
+                        marketId,
                         firstOrderId,
                         orderCount,
                         freeCollateral,
