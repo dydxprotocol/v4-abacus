@@ -124,12 +124,9 @@ open class TradingStateMachine(
             return parser.asNativeMap(data?.get("markets"))
         }
         set(value) {
-            val oldValue = parser.asNativeMap(data?.get("markets"))
-            if (oldValue != value) {
-                val modified = data?.mutable() ?: mutableMapOf()
-                modified.safeSet("markets", value)
-                this.data = if (modified.size != 0) modified else null
-            }
+            val modified = data?.mutable() ?: mutableMapOf()
+            modified.safeSet("markets", value)
+            this.data = if (modified.size != 0) modified else null
         }
 
     internal var historicalPnlDays: Int = 1

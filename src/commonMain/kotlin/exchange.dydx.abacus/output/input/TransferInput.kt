@@ -212,44 +212,7 @@ data class TransferInputChainResource(
     val networkName: String?,
     val chainId: Int?,
     val iconUrl: String?
-) {
-    companion object {
-        internal fun create(
-            existing: TransferInputChainResource?,
-            parser: ParserProtocol,
-            data: Map<*, *>?
-        ): TransferInputChainResource? {
-            Logger.d { "creating Transfer Input Chain Resource\n" }
-
-            data?.let {
-                val chainName = parser.asString(data["chainName"])
-                val rpc = parser.asString(data["rpc"])
-                val networkName = parser.asString(data["networkName"])
-                val chainId = parser.asInt(data["chainId"])
-                val iconUrl = parser.asString(data["iconUrl"])
-
-                return if (existing?.chainName != chainName ||
-                    existing?.rpc != rpc ||
-                    existing?.networkName != networkName ||
-                    existing?.chainId != chainId ||
-                    existing?.iconUrl != iconUrl
-                ) {
-                    TransferInputChainResource(
-                        chainName,
-                        rpc,
-                        networkName,
-                        chainId,
-                        iconUrl,
-                    )
-                } else {
-                    existing
-                }
-            }
-            Logger.d { "Transfer Input Chain Resource not valid" }
-            return null
-        }
-    }
-}
+)
 
 @JsExport
 @Serializable
@@ -270,7 +233,6 @@ data class TransferInputResources(
     companion object {
         internal fun create(
             existing: TransferInputResources?,
-            parser: ParserProtocol,
             internalState: InternalTransferInputState?,
         ): TransferInputResources? {
             Logger.d { "creating Transfer Input Resources\n" }
@@ -586,7 +548,6 @@ data class TransferInput(
 
                 val resources = TransferInputResources.create(
                     existing?.resources,
-                    parser,
                     internalState,
                 )
 
