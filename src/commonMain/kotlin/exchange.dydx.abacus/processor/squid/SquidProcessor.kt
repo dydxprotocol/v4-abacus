@@ -173,7 +173,6 @@ internal class SquidProcessor(
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
-        modified.safeSet("transfer.resources.tokenResources", tokenResources(selectedChainId))
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
