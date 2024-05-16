@@ -180,6 +180,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
             val modifiedPendingPosition = mutableMapOf<String, Any>()
             modifiedPendingPosition.safeSet("assetId", assetId)
+            modifiedPendingPosition.safeSet("marketId", marketId)
             modifiedPendingPosition.safeSet(
                 "firstOrderId",
                 parser.value(pending, "firstOrderId"),
