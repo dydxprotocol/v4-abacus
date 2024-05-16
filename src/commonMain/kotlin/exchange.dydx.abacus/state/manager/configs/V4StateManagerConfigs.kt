@@ -36,8 +36,8 @@ class V4StateManagerConfigs(
                          "historical-pnl":"/v4/historical-pnl",
                          "transfers":"/v4/transfers",
                          "historicalTradingRewardAggregations":"/v4/historicalTradingRewardAggregations",
-                         "parent-fills":"/v4/fills/parentSubaccount",
-                         "parent-transfers": "/v4/transfers/parentSubaccount"
+                         "parent-fills":"/v4/fills/parentSubaccountNumber",
+                         "parent-transfers": "/v4/transfers/parentSubaccountNumber"
                       },
                       "faucet":{
                          "faucet":"/faucet/tokens"

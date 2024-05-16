@@ -192,7 +192,7 @@ internal class SubaccountSupervisor(
         val oldState = stateMachine.state
         val url =
             helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-fills" else "fills")
-        val params = subaccountParams()
+        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
@@ -203,6 +203,15 @@ internal class SubaccountSupervisor(
                 }
             })
         }
+    }
+
+    private fun parentSubaccountParams(): IMap<String, String> {
+        val accountAddress = accountAddress
+        val subaccountNumber = subaccountNumber
+        return iMapOf(
+            "address" to accountAddress,
+            "parentSubaccountNumber" to "$subaccountNumber",
+        )
     }
 
     private fun subaccountParams(): IMap<String, String> {
@@ -217,7 +226,7 @@ internal class SubaccountSupervisor(
     private fun retrieveTransfers() {
         val oldState = stateMachine.state
         val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-transfers" else "transfers")
-        val params = subaccountParams()
+        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
