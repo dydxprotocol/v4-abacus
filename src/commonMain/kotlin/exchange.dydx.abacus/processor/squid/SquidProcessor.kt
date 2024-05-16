@@ -264,7 +264,7 @@ internal class SquidProcessor(
         val chainProcessor = SquidChainProcessor(parser)
         val options = mutableListOf<SelectionOption>()
 
-        this.chains?.let { it ->
+        this.chains?.let {
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
                     if (parser.asString(chain["chainType"]) != "cosmos") {
