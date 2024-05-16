@@ -183,7 +183,7 @@ data class OnboardingConfigs(
 }
 
 @JsExport
-class AppConfigsV2(
+data class AppConfigsV2(
     val systemConfigs: SystemConfigs,
     val marketConfigs: MarketsConfigs,
     val accountConfigs: AccountConfigs,
