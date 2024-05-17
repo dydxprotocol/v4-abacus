@@ -45,6 +45,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
         testMarginAddition()
         testMarginRemoval()
         testZeroAmount()
+        testMarginAmountPercent()
     }
 
     private fun testChildSubaccountNumberInput() {
@@ -197,6 +198,84 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
                                 }
                             }
                         }
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testMarginAmountPercent() {
+        test(
+            {
+                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.name, AdjustIsolatedMarginInputField.Type, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Type": "Add",
+                        "Amount": null,
+                        "AmountPercent": null
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.adjustIsolatedMargin("0.1", AdjustIsolatedMarginInputField.AmountPercent, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Type": "Add",
+                        "AmountPercent": "0.1",
+                        "Amount": "8882.656169898173"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.adjustIsolatedMargin(
+                    IsolatedMarginAdjustmentType.Remove.name,
+                    AdjustIsolatedMarginInputField.Type,
+                    0,
+                )
+            },
+            """
+            {
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Type": "Remove",
+                        "Amount": null,
+                        "AmountPercent": null
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.adjustIsolatedMargin("0.1", AdjustIsolatedMarginInputField.AmountPercent, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Type": "Remove",
+                        "AmountPercent": "0.1",
+                        "Amount": "79.62439999999999"
                     }
                 }
             }

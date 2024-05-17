@@ -4,6 +4,7 @@ import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFA
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
@@ -1277,12 +1278,25 @@ internal class SubaccountSupervisor(
         val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin ?: error("AdjustIsolatedMarginInput is null")
         val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
         val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber ?: error("childSubaccountNumber is null")
+        val type = isolatedMarginAdjustment.type
+
+        val recipientSubaccountNumber = if (type == IsolatedMarginAdjustmentType.Add) {
+            childSubaccountNumber
+        } else {
+            subaccountNumber
+        }
+
+        val sourceSubaccountNumber = if (type == IsolatedMarginAdjustmentType.Add) {
+            subaccountNumber
+        } else {
+            childSubaccountNumber
+        }
 
         return HumanReadableSubaccountTransferPayload(
-            subaccountNumber,
+            sourceSubaccountNumber,
             amount,
             accountAddress,
-            childSubaccountNumber,
+            recipientSubaccountNumber,
         )
     }
 
