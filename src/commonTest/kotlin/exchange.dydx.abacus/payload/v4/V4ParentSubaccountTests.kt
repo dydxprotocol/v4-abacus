@@ -2,6 +2,7 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
@@ -27,6 +28,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
     private fun testAccountsOnce() {
         var time = ServerTime.now()
         testSubaccountSubscribed()
+        testTradeInput()
         testSubaccountChannelData()
         time = perp.log("Accounts Subscribed", time)
     }
@@ -254,6 +256,42 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
         )
     }
 
+    private fun testTradeInput() {
+        test(
+            {
+                perp.tradeInMarket("RUNE-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "ISOLATED",
+                            "targetLeverage": 1.0
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("BTC-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "CROSS"
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+    }
+
     private fun testSubaccountChannelData() {
         test(
             {
@@ -375,7 +413,12 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
     private fun testParentSubaccountSubscribedWithPendingPositions() {
         test(
             {
-                perp.socket(testWsUrl, mock.parentSubaccountsChannel.read_subscribed_with_pending, 0, null)
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.read_subscribed_with_pending,
+                    0,
+                    null
+                )
             },
             """
                 {
@@ -486,7 +529,12 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
     private fun testParentSubaccountChannelData() {
         test(
             {
-                perp.socket(testWsUrl, mock.parentSubaccountsChannel.real_channel_batch_data, 0, null)
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.real_channel_batch_data,
+                    0,
+                    null
+                )
             },
             """
                 {
