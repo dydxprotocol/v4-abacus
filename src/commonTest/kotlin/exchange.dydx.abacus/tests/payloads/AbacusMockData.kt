@@ -48,6 +48,7 @@ class AbacusMockData {
     internal val localizationMock = LocalizationMock()
     internal val launchIncentiveMock = LaunchIncentiveMock()
     internal val v4OnChainMock = V4OnChainMock()
+    internal val v4ParentSubaccountsMock = V4ParentSubaccountsMock()
     internal val v4WithdrawalSafetyChecksMock = V4WithdrawalSafetyChecksMock()
     internal val v4Environment = V4Environment(
         "test",

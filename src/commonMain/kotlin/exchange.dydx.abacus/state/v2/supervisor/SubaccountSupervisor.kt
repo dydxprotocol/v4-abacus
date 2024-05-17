@@ -512,7 +512,7 @@ internal class SubaccountSupervisor(
             val openPositions = it.value.openPositions
             val openOrders = it.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                status == "OPEN"
+                status == "open" || status == "pending" || status == "untriggered" || status == "partiallyFilled"
             }
 
             val postionMarketIds = openPositions?.map { position ->
@@ -542,7 +542,7 @@ internal class SubaccountSupervisor(
         }
 
         // Find new childSubaccount number available for Isolated Margin Trade
-        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber)
+        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber.toString())
         for (offset in NUM_PARENT_SUBACCOUNTS..MAX_SUBACCOUNT_NUMBER step NUM_PARENT_SUBACCOUNTS) {
             val tentativeSubaccountNumber = offset + subaccountNumber
             if (!existingSubaccountNumbers.contains(tentativeSubaccountNumber.toString())) {
