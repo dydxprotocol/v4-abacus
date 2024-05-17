@@ -350,9 +350,9 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
 
-        stateManager.setAddresses(null, "dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4")
-        testWebSocket?.simulateReceived(mock.parentSubaccountsChannel.subscribed)
-        testWebSocket?.simulateReceived(mock.parentSubaccountsChannel.channel_data)
+        stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
+        testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)
+        testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.channel_batch_data)
 
         stateManager.market = "ETH-USD"
     }
@@ -391,7 +391,7 @@ class V4TransactionTests : NetworkTests() {
         setStateMachineForIsolatedMarginTests(stateManager)
         val transactionCallback: TransactionCallback = { _, _, _ -> }
 
-        val cancelPayload = subaccountSupervisor?.cancelOrder("b812bea8-29d3-5841-9549-caa072f6f8a9", transactionCallback)
+        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
     }
