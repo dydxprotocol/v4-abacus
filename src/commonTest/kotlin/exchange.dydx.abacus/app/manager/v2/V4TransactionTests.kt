@@ -391,7 +391,7 @@ class V4TransactionTests : NetworkTests() {
         setStateMachineForIsolatedMarginTests(stateManager)
         val transactionCallback: TransactionCallback = { _, _, _ -> }
 
-        val cancelPayload = subaccountSupervisor?.cancelOrder("b812bea8-29d3-5841-9549-caa072f6f8a9", transactionCallback)
+        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
     }
