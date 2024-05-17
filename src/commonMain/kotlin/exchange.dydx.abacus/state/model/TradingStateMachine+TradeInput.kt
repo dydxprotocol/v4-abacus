@@ -139,7 +139,7 @@ private fun TradingStateMachine.findExistingMarginMode(
     subaccountNumber: Int,
 ): String? {
     val position = parser.asMap(
-        parser.value(account, "groupedSubaccounts.$subaccountNumber.openPositions.$marketId")
+        parser.value(account, "groupedSubaccounts.$subaccountNumber.openPositions.$marketId"),
     )
     if (position != null) {
         return if (position["equity"] == null) "CROSS" else "ISOLATED"

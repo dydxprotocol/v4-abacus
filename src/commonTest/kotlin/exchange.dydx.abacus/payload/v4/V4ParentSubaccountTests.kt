@@ -289,7 +289,6 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 }
             """.trimIndent(),
         )
-
     }
 
     private fun testSubaccountChannelData() {
@@ -417,7 +416,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     testWsUrl,
                     mock.parentSubaccountsChannel.read_subscribed_with_pending,
                     0,
-                    null
+                    null,
                 )
             },
             """
@@ -533,7 +532,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     testWsUrl,
                     mock.parentSubaccountsChannel.real_channel_batch_data,
                     0,
-                    null
+                    null,
                 )
             },
             """
