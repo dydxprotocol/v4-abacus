@@ -138,11 +138,33 @@ private fun TradingStateMachine.findExistingMarginMode(
     marketId: String,
     subaccountNumber: Int,
 ): String? {
-    val position = parser.asMap(
+    val position = parser.asNativeMap(
         parser.value(account, "groupedSubaccounts.$subaccountNumber.openPositions.$marketId"),
     )
     if (position != null) {
-        return if (position["equity"] == null) "CROSS" else "ISOLATED"
+        return if (position["equity"] == null) {
+            "CROSS"
+        } else {
+            "ISOLATED"
+        }
+    }
+    val order = parser.asNativeMap(
+        parser.value(account, "groupedSubaccounts.$subaccountNumber.orders"),
+    )?.values?.firstOrNull {
+        parser.asString(parser.value(it, "marketId")) == marketId
+    }
+    if (order != null) {
+        return if (parser.asInt(
+                parser.value(
+                    order,
+                    "subaccountNumber",
+                ),
+            ) ?: subaccountNumber != subaccountNumber
+        ) {
+            "ISOLATED"
+        } else {
+            "CROSS"
+        }
     }
     return null
 }

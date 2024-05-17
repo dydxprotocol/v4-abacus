@@ -289,6 +289,38 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 }
             """.trimIndent(),
         )
+
+        test(
+            {
+                perp.tradeInMarket("APE-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "ISOLATED"
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("ETH-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "CROSS"
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
     }
 
     private fun testSubaccountChannelData() {
