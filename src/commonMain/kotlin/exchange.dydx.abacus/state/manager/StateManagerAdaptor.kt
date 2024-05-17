@@ -2244,7 +2244,7 @@ open class StateManagerAdaptor(
         val walletAddress = wallet.walletAddress ?: error("walletAddress is null")
         val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin
             ?: error("isolatedMarginAdjustment is null")
-        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val amount = parser.asString(isolatedMarginAdjustment.amount) ?: error("amount is null")
         val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber
             ?: error("childSubaccountNumber is null")
 

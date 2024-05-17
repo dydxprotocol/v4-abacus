@@ -4,6 +4,7 @@ import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFA
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
@@ -193,7 +194,7 @@ internal class SubaccountSupervisor(
         val oldState = stateMachine.state
         val url =
             helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-fills" else "fills")
-        val params = subaccountParams()
+        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
@@ -204,6 +205,15 @@ internal class SubaccountSupervisor(
                 }
             })
         }
+    }
+
+    private fun parentSubaccountParams(): IMap<String, String> {
+        val accountAddress = accountAddress
+        val subaccountNumber = subaccountNumber
+        return iMapOf(
+            "address" to accountAddress,
+            "parentSubaccountNumber" to "$subaccountNumber",
+        )
     }
 
     private fun subaccountParams(): IMap<String, String> {
@@ -218,7 +228,7 @@ internal class SubaccountSupervisor(
     private fun retrieveTransfers() {
         val oldState = stateMachine.state
         val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-transfers" else "transfers")
-        val params = subaccountParams()
+        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
         if (url != null) {
             helper.get(url, params, null, callback = { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
@@ -505,7 +515,7 @@ internal class SubaccountSupervisor(
             val openPositions = it.value.openPositions
             val openOrders = it.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                status == "OPEN"
+                status == "open" || status == "pending" || status == "untriggered" || status == "partiallyFilled"
             }
 
             val postionMarketIds = openPositions?.map { position ->
@@ -535,7 +545,7 @@ internal class SubaccountSupervisor(
         }
 
         // Find new childSubaccount number available for Isolated Margin Trade
-        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber)
+        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber.toString())
         for (offset in NUM_PARENT_SUBACCOUNTS..MAX_SUBACCOUNT_NUMBER step NUM_PARENT_SUBACCOUNTS) {
             val tentativeSubaccountNumber = offset + subaccountNumber
             if (!existingSubaccountNumbers.contains(tentativeSubaccountNumber.toString())) {
@@ -1271,12 +1281,25 @@ internal class SubaccountSupervisor(
         val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin ?: error("AdjustIsolatedMarginInput is null")
         val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
         val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber ?: error("childSubaccountNumber is null")
+        val type = isolatedMarginAdjustment.type
+
+        val recipientSubaccountNumber = if (type == IsolatedMarginAdjustmentType.Add) {
+            childSubaccountNumber
+        } else {
+            subaccountNumber
+        }
+
+        val sourceSubaccountNumber = if (type == IsolatedMarginAdjustmentType.Add) {
+            subaccountNumber
+        } else {
+            childSubaccountNumber
+        }
 
         return HumanReadableSubaccountTransferPayload(
-            subaccountNumber,
+            sourceSubaccountNumber,
             amount,
             accountAddress,
-            childSubaccountNumber,
+            recipientSubaccountNumber,
         )
     }
 
