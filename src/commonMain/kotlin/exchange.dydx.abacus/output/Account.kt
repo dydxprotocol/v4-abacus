@@ -16,6 +16,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
+import exchange.dydx.abacus.utils.modify
 import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
 import kollections.iMapOf
@@ -2043,6 +2044,7 @@ data class Account(
             if (subaccountsData != null) {
                 for ((key, value) in subaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
+                    subaccountData.modify("subaccountNumber", key.toInt())
                     Subaccount.create(
                         existing?.subaccounts?.get(key),
                         parser,

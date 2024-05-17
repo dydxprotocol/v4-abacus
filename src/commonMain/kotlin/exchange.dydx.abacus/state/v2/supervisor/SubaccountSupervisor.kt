@@ -296,7 +296,9 @@ internal class SubaccountSupervisor(
             subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
 
-        pollReclaimUnutilizedFunds()
+        if (parent) {
+            pollReclaimUnutilizedFunds()
+        }
     }
 
     private fun subaccountChannelParams(
@@ -1425,7 +1427,7 @@ internal class SubaccountSupervisor(
             val openPositions = subaccount.value.openPositions
             val openOrders = subaccount.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                iListOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(status)
+                iListOf("open", "pending", "untriggered", "partiallyFilled").contains(status)
             }
             val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
 
