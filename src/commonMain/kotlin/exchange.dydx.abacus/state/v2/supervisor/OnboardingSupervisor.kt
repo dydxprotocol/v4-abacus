@@ -464,7 +464,7 @@ internal class OnboardingSupervisor(
         val payload = withdrawPayloadJson(subaccountNumber)
 
         helper.transaction(
-            TransactionType.SimulateWithdraw,
+            TransactionType.simulateWithdraw,
             payload,
         ) { response ->
             val error = helper.parseTransactionResponse(response)
@@ -495,7 +495,7 @@ internal class OnboardingSupervisor(
         val payload = transferNativeTokenPayloadJson(subaccountNumber)
 
         helper.transaction(
-            TransactionType.SimulateTransferNativeToken,
+            TransactionType.simulateTransferNativeToken,
             payload,
         ) { response ->
             val error = helper.parseTransactionResponse(response)
