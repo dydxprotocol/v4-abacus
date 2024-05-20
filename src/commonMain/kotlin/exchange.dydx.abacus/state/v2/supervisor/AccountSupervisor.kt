@@ -604,7 +604,7 @@ internal open class AccountSupervisor(
             if (updatedAt != null) {
                 expiresAt = try {
                     Instant.parse(updatedAt).plus(7.days).toString()
-                } catch (e: Exception) {
+                } catch (e: IllegalArgumentException) {
                     Logger.e { "Error parsing compliance updatedAt: $updatedAt" }
                     null
                 }
