@@ -4,7 +4,7 @@ import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 
-internal class InternalTransferInputState(
+internal data class InternalTransferInputState(
     var chains: List<SelectionOption>? = null,
     var tokens: List<SelectionOption>? = null,
     var chainResources: Map<String, TransferInputChainResource>? = null,
