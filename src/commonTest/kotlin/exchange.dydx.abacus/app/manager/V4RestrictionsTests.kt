@@ -1,7 +1,10 @@
 package exchange.dydx.abacus.app.manager
 
+import exchange.dydx.abacus.output.ComplianceAction
+import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
+import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
@@ -139,5 +142,58 @@ class V4RestrictionsTests {
                 "Expected user restriction",
             )
         }
+    }
+
+    @Test
+    fun testGeoEndpointHandling() {
+        reset()
+
+        val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
+
+
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/screen",
+            """
+                {
+                    "restricted": false
+                }
+            """.trimIndent(),
+        )
+
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/geoblock",
+            """
+                {
+                    "status": "CLOSE_ONLY",
+                    "reason": null,
+                    "updatedAt": "2024-05-14T20:40:00.415Z"
+                }
+            """.trimIndent(),
+        )
+
+        setStateMachineConnected(stateManager)
+        stateManager.setAddresses(null, testAddress)
+
+        stateManager.triggerCompliance(ComplianceAction.CONNECT) { successful, error, data ->
+            print("")
+        }
+
+        assertEquals(
+            ComplianceStatus.CLOSE_ONLY,
+            stateManager.adaptor?.stateMachine?.state?.compliance?.status,
+            "Expected CLOSE_ONLY restriction",
+        )
+
+        assertEquals(
+            "2024-05-14T20:40:00.415Z",
+            stateManager.adaptor?.stateMachine?.state?.compliance?.updatedAt,
+            "Expected different updatedAt",
+        )
+
+        assertEquals(
+            "2024-05-27T20:40:00.415Z",
+            stateManager.adaptor?.stateMachine?.state?.compliance?.expiresAt,
+            "Expected different updatedAt",
+        )
     }
 }

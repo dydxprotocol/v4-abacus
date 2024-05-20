@@ -441,6 +441,9 @@ open class TradingStateMachine(
         return Pair(market, resolution)
     }
 
+    /**
+     * function specifically for testing spoofed rest response processing
+     */
     fun rest(
         url: AbUrl,
         payload: String,
@@ -492,6 +495,11 @@ open class TradingStateMachine(
                 if (deploymentUri != null) {
                     changes = configurations(payload, subaccountNumber, deploymentUri)
                 }
+            }
+
+            "/v4/compliance/geoblock" -> {
+                print("compliance")
+//                this.state.compliance = compliance(payload)
             }
 
             else -> {
