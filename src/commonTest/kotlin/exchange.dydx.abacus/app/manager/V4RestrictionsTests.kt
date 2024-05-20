@@ -148,14 +148,36 @@ class V4RestrictionsTests {
     fun testGeoEndpointHandling() {
         reset()
 
-        val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
-
+        testChain!!.signCompliancePayload = """
+        {
+            "signedMessage": "1",
+            "publicKey": "1",
+            "timestamp": "2024-05-14T20:40:00.415Z"
+        }
+        """.trimIndent()
 
         testRest?.setResponse(
-            "https://indexer.v4staging.dydx.exchange/v4/compliance/screen",
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/geoblock",
             """
                 {
-                    "restricted": false
+                    "status": "CLOSE_ONLY",
+                    "reason": null,
+                    "updatedAt": "2024-05-14T20:40:00.415Z"
+                }
+            """.trimIndent(),
+        )
+
+        setStateMachineConnected(stateManager)
+        val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
+        stateManager.setAddresses(null, testAddress)
+
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/$testAddress",
+            """
+                {
+                    "status": "CLOSE_ONLY",
+                    "reason": null,
+                    "updatedAt": "2024-05-14T20:40:00.415Z"
                 }
             """.trimIndent(),
         )
@@ -170,9 +192,6 @@ class V4RestrictionsTests {
                 }
             """.trimIndent(),
         )
-
-        setStateMachineConnected(stateManager)
-        stateManager.setAddresses(null, testAddress)
 
         stateManager.triggerCompliance(ComplianceAction.CONNECT) { successful, error, data ->
             print("")
@@ -190,10 +209,11 @@ class V4RestrictionsTests {
             "Expected different updatedAt",
         )
 
+        // expires at is 7 days in advance
         assertEquals(
-            "2024-05-27T20:40:00.415Z",
+            "2024-05-21T20:40:00.415Z",
             stateManager.adaptor?.stateMachine?.state?.compliance?.expiresAt,
-            "Expected different updatedAt",
+            "Expected different expires at",
         )
     }
 }
