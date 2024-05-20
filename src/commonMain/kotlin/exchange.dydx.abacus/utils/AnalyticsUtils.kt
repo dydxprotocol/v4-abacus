@@ -215,8 +215,8 @@ class AnalyticsUtils {
         return iMapOf(
             "orderId" to order.id,
             "clientId" to order.clientId,
-            "type" to order.type.rawValue,
-            "side" to order.side.rawValue,
+            "type" to order.type?.rawValue,
+            "side" to order.side?.rawValue,
             "status" to order.status.rawValue,
             "timeInForce" to order.timeInForce?.rawValue,
             "marketId" to order.marketId,

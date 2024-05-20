@@ -863,7 +863,7 @@ internal class SubaccountSupervisor(
             ParsingErrorType.MissingRequiredData,
             "no existing order to be cancelled for $orderId",
         )
-        val marketId = existingOrder.marketId
+        val marketId = existingOrder.marketId!!
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTpDialog = false)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
@@ -887,7 +887,7 @@ internal class SubaccountSupervisor(
                     ParsingErrorType.MissingRequiredData,
                     "no existing order to be cancelled for $cancelPayload.orderId",
                 )
-            val marketId = existingOrder.marketId
+            val marketId = existingOrder.marketId!!
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
@@ -1210,7 +1210,7 @@ internal class SubaccountSupervisor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
-        val type = order.type.rawValue
+        val type = order.type!!.rawValue
         val clientId = order.clientId ?: error("clientId is null")
         val orderFlags = order.orderFlags ?: error("orderFlags is null")
         val clobPairId = order.clobPairId ?: error("clobPairId is null")

@@ -3417,6 +3417,15 @@ internal class SubaccountsChannelMock {
                   "goodTilBlock": "14968030",
                   "ticker": "DOT-USD",
                   "clientMetadata": "0"
+                },
+                {
+                  "id": "7d6abe82-76b1-5df0-a3ed-b2dd41994361",
+                  "subaccountId": "174aff47-4e1d-5979-b5ba-f36d393519bc",
+                  "clientId": "1",
+                  "clobPairId": "1",
+                  "status":"CANCELED",
+                  "orderFlags":"0",
+                  "removalReason":"ORDER_REMOVAL_REASON_EXPIRED"
                 }
               ]
             },

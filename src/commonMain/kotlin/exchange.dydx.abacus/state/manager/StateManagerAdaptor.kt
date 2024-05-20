@@ -2199,7 +2199,7 @@ open class StateManagerAdaptor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
-        val type = order.type.rawValue
+        val type = order.type?.rawValue ?: throw Exception("order type is null")
         val clientId = order.clientId ?: throw Exception("clientId is null")
         val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
         val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")

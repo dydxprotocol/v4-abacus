@@ -111,7 +111,7 @@ class FillsNotificationProvider(
         val filledAmountText = parser.asString(order.totalFilled)
         val priceText = priceText(fill.price, tickSize)
         val averagePriceText = parser.asString(averagePrice(fillsForOrder))
-        val orderType = order.type.rawValue
+        val orderType = order.type!!.rawValue
         val orderTypeText = text(orderType)
         val params = (
             iMapOf(

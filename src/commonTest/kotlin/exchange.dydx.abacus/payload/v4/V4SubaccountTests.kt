@@ -156,6 +156,14 @@ class V4SubaccountTests : V4BaseTests() {
                                      "orderFlags":"0",
                                      "clientMetadata":"0"
                                   },
+                                  "7d6abe82-76b1-5df0-a3ed-b2dd41994361":{
+                                     "id": "7d6abe82-76b1-5df0-a3ed-b2dd41994361",
+                                     "clientId": "1",
+                                     "clobPairId": "1",
+                                     "status":"CANCELED",
+                                     "orderFlags":"0",
+                                     "cancelReason":"ORDER_REMOVAL_REASON_EXPIRED"
+                                  },
                                   "e9301261-eb3c-5758-bab5-e5b0be498a2d":{
                                      "id":"e9301261-eb3c-5758-bab5-e5b0be498a2d",
                                      "clientId":"34294435",

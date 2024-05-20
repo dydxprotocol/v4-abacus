@@ -94,7 +94,7 @@ class OrderStatusChangesNotificationProvider(
 
             else -> null
         }
-        return if (statusNotificationStringKey != null && timestamp != null) {
+        return if (statusNotificationStringKey != null && timestamp != null && order.marketId != null && order.type != null && order.side != null) {
             val marketId = order.marketId
             val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
             val marketImageUrl = asset.resources?.imageUrl

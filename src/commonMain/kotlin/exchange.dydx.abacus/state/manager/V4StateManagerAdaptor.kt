@@ -1221,7 +1221,7 @@ class V4StateManagerAdaptor(
                 ParsingErrorType.MissingRequiredData,
                 "no existing order to be cancelled for $orderId",
             )
-        val marketId = existingOrder.marketId
+        val marketId = existingOrder.marketId!!
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
             payload,
             existingOrder,
@@ -1246,7 +1246,7 @@ class V4StateManagerAdaptor(
                     ParsingErrorType.MissingRequiredData,
                     "no existing order to be cancelled for $cancelPayload.orderId",
                 )
-            val marketId = existingOrder.marketId
+            val marketId = existingOrder.marketId!!
             val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
