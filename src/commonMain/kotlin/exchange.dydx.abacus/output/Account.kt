@@ -1354,11 +1354,12 @@ data class Subaccount(
                  */
                 val marginEnabled = parser.asBool(data["marginEnabled"]) ?: true
 
-                return if (existing?.positionId != positionId ||
-                    existing?.pnlTotal != pnlTotal ||
-                    existing?.pnl24h != pnl24h ||
-                    existing?.pnl24hPercent != pnl24hPercent ||
-                    existing?.quoteBalance !== quoteBalance ||
+                return if (existing?.subaccountNumber != subaccountNumber ||
+                    existing.positionId != positionId ||
+                    existing.pnlTotal != pnlTotal ||
+                    existing.pnl24h != pnl24h ||
+                    existing.pnl24hPercent != pnl24hPercent ||
+                    existing.quoteBalance !== quoteBalance ||
                     existing.notionalTotal !== notionalTotal ||
                     existing.valueTotal !== valueTotal ||
                     existing.initialRiskTotal !== initialRiskTotal ||
@@ -2043,6 +2044,7 @@ data class Account(
             if (subaccountsData != null) {
                 for ((key, value) in subaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
+
                     Subaccount.create(
                         existing?.subaccounts?.get(key),
                         parser,
@@ -2062,6 +2064,7 @@ data class Account(
             if (groupedSubaccountsData != null) {
                 for ((key, value) in groupedSubaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
+
                     Subaccount.create(
                         existing?.subaccounts?.get(key),
                         parser,
