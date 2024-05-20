@@ -16,7 +16,6 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
-import exchange.dydx.abacus.utils.modify
 import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
 import kollections.iMapOf
