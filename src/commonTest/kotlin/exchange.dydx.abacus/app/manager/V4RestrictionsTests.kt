@@ -4,7 +4,6 @@ import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
-import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.state.manager.AppConfigs
 import exchange.dydx.abacus.state.manager.AsyncAbacusStateManager
 import exchange.dydx.abacus.state.manager.V4StateManagerAdaptor
