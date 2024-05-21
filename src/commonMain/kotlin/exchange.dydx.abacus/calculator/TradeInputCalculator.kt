@@ -6,6 +6,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPP
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.Numeric
@@ -98,18 +99,9 @@ internal class TradeInputCalculator(
                         )
                     }
                 }
-                finalize(
-                    modifiedTrade,
-                    account,
-                    subaccount,
-                    user,
-                    market,
-                    rewardsParams,
-                    feeTiers,
-                    type,
-                )
+                finalize(modifiedTrade, subaccount, user, market, rewardsParams, feeTiers, type)
             } else {
-                finalize(trade, account, subaccount, user, market, rewardsParams, feeTiers, type)
+                finalize(trade, subaccount, user, market, rewardsParams, feeTiers, type)
             }
             modified["trade"] = trade
             modified.safeSet(
@@ -360,12 +352,9 @@ internal class TradeInputCalculator(
             when (marginMode) {
                 "ISOLATED" -> {
                     // TODO: When the collateral of child subaccounts is implemented, return from here. The below code is the CROSS implementation.
-                    val currentNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.current"))
-                    val postOrderNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
-                    val mmf =
-                        parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
+                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
+                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
+                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
                     if (currentNotionalTotal != null && mmf != null) {
                         if (postOrderNotionalTotal != null) {
                             return postOrderNotionalTotal.times(mmf)
@@ -375,12 +364,9 @@ internal class TradeInputCalculator(
                 }
 
                 "CROSS" -> {
-                    val currentNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.current"))
-                    val postOrderNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
-                    val mmf =
-                        parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
+                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
+                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
+                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
                     if (currentNotionalTotal != null && mmf != null) {
                         if (postOrderNotionalTotal != null) {
                             return postOrderNotionalTotal.times(mmf)
@@ -399,10 +385,7 @@ internal class TradeInputCalculator(
      * Return Subaccount leverage to display as Position leverage in the TradeInput Summary.
      * Use Subaccount leverage since a subaccount can only have 1 isolated position
      */
-    private fun getPositionLeverage(
-        subaccount: Map<String, Any>?,
-        market: Map<String, Any>?
-    ): Double? {
+    private fun getPositionLeverage(subaccount: Map<String, Any>?, market: Map<String, Any>?): Double? {
         if (subaccount == null || market == null) return null
         // TODO: When Child Subaccounts are added to Subaccount data class, return the child subaccount's leverage
         val marketId = parser.asString(market["id"])
@@ -831,7 +814,6 @@ internal class TradeInputCalculator(
 
     private fun finalize(
         trade: Map<String, Any>,
-        account: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         user: Map<String, Any>?,
         market: Map<String, Any>?,
@@ -851,10 +833,10 @@ internal class TradeInputCalculator(
             null
         }
         var modified = trade.mutable()
-        val fields = requiredFields(account, subaccount, trade, market)
+        val fields = requiredFields(trade, market)
         modified.safeSet("fields", fields)
         modified.safeSet("options", calculatedOptionsFromFields(fields, trade, position, market))
-        modified = defaultOptions(account, subaccount, modified, position, market)
+        modified = defaultOptions(modified, position, market)
         modified.safeSet(
             "summary",
             summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type),
@@ -863,22 +845,32 @@ internal class TradeInputCalculator(
         return modified
     }
 
-    private fun requiredFields(
-        account: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        trade: Map<String, Any>,
-        market: Map<String, Any>?,
-    ): List<Any>? {
+    private fun requiredFields(trade: Map<String, Any>, market: Map<String, Any>?): List<Any>? {
         val type = parser.asString(trade["type"])
         return when (type) {
-            "MARKET" ->
-                listOf(
-                    sizeField(),
-                    leverageField(),
-                    bracketsField(),
-                    marginModeField(market, account, subaccount),
-                    reduceOnlyField(),
-                ).filterNotNull()
+            "MARKET" -> {
+                val marginMode = parser.asString(trade["marginMode"])
+                when (MarginMode.invoke(marginMode)) {
+                    MarginMode.isolated -> fieldList(
+                        listOf(
+                            sizeField(),
+                            bracketsField(),
+                            marginModeField(market),
+                        ),
+                        reduceOnlyField(),
+                    )
+
+                    else -> fieldList(
+                        listOf(
+                            sizeField(),
+                            leverageField(),
+                            bracketsField(),
+                            marginModeField(market),
+                        ),
+                        reduceOnlyField(),
+                    )
+                }
+            }
 
             "LIMIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
@@ -890,45 +882,49 @@ internal class TradeInputCalculator(
                             timeInForceField(),
                             goodTilField(),
                             postOnlyField(),
-                            marginModeField(market, account, subaccount),
-                        ).filterNotNull()
+                            marginModeField(market),
+                        )
 
-                    else ->
+                    else -> fieldList(
                         listOf(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
-                            marginModeField(market, account, subaccount),
-                            reduceOnlyField(),
-                        ).filterNotNull()
+                            marginModeField(market),
+                        ),
+                        reduceOnlyField(),
+                    )
                 }
             }
 
             "STOP_LIMIT", "TAKE_PROFIT" -> {
                 val execution = parser.asString(trade["execution"])
-                listOf(
-                    sizeField(),
-                    limitPriceField(),
-                    triggerPriceField(),
-                    goodTilField(),
-                    executionField(true),
-                    marginModeField(market, account, subaccount),
+                fieldList(
+                    listOf(
+                        sizeField(),
+                        limitPriceField(),
+                        triggerPriceField(),
+                        goodTilField(),
+                        executionField(true),
+                        marginModeField(market),
+                    ),
                     when (execution) {
                         "FOK", "IOC" -> reduceOnlyField()
                         else -> null
                     },
-                ).filterNotNull()
+                )
             }
 
-            "STOP_MARKET", "TAKE_PROFIT_MARKET" ->
+            "STOP_MARKET", "TAKE_PROFIT_MARKET" -> fieldList(
                 listOf(
                     sizeField(),
                     triggerPriceField(),
                     goodTilField(),
                     executionField(false),
-                    marginModeField(market, account, subaccount),
-                    reduceOnlyField(),
-                ).filterNotNull()
+                    marginModeField(market),
+                ),
+                reduceOnlyField(),
+            )
 
             "TRAILING_STOP" ->
                 listOf(
@@ -936,10 +932,23 @@ internal class TradeInputCalculator(
                     trailingPercentField(),
                     goodTilField(),
                     executionField(false),
-                    marginModeField(market, account, subaccount),
-                ).filterNotNull()
+                    marginModeField(market),
+                )
 
             else -> null
+        }
+    }
+
+    private fun fieldList(
+        list: List<Map<String, Any>>,
+        reduceOnly: Map<String, Any>?,
+    ): List<Map<String, Any>> {
+        return if (reduceOnly != null) {
+            val modified = list.toMutableList()
+            modified.add(reduceOnly)
+            modified
+        } else {
+            list
         }
     }
 
@@ -1013,22 +1022,24 @@ internal class TradeInputCalculator(
     private fun stopLossField(): Map<String, Any> {
         return mapOf(
             "field" to "stopLoss",
-            "type" to
+            "type" to fieldList(
                 listOf(
                     priceField(),
-                    reduceOnlyField(),
-                ).filterNotNull(),
+                ),
+                reduceOnlyField(),
+            ),
         )
     }
 
     private fun takeProfitField(): Map<String, Any> {
         return mapOf(
             "field" to "takeProfit",
-            "type" to
+            "type" to fieldList(
                 listOf(
                     priceField(),
-                    reduceOnlyField(),
-                ).filterNotNull(),
+                ),
+                reduceOnlyField(),
+            ),
         )
     }
 
@@ -1102,29 +1113,21 @@ internal class TradeInputCalculator(
         )
     }
 
-    private fun marginModeField(
-        market: Map<String, Any>?,
-        account: Map<String, Any>?,
-        subaccount: Map<String, Any>?
-    ): Map<String, Any>? {
-        val selectableMarginMode = MarginModeCalculator.selectableMarginModes(
-            parser,
-            account,
-            market,
-            parser.asInt(subaccount?.get("subaccountNumber")) ?: 0,
+    private fun marginModeField(market: Map<String, Any>?): Map<String, Any> {
+        return mapOf(
+            "field" to "marginMode",
+            "type" to "string",
+            "options" to
+                when (parser.asString(parser.value(market, "configs.perpetualMarketType"))) {
+                    "ISOLATED" -> listOf(
+                        marginModeIsolated,
+                    )
+                    else -> listOf(
+                        marginModeCross,
+                        marginModeIsolated,
+                    )
+                },
         )
-        return if (selectableMarginMode) {
-            mapOf(
-                "field" to "marginMode",
-                "type" to "string",
-                "options" to listOf(
-                    marginModeCross,
-                    marginModeIsolated,
-                ),
-            )
-        } else {
-            null
-        }
     }
 
     private fun calculatedOptionsFromFields(
@@ -1147,7 +1150,6 @@ internal class TradeInputCalculator(
                 "needsTimeInForce" to false,
                 "needsGoodUntil" to false,
                 "needsExecution" to false,
-                "needsMarginMode" to false,
             )
             for (item in fields) {
                 parser.asNativeMap(item)?.let { field ->
@@ -1186,7 +1188,6 @@ internal class TradeInputCalculator(
                                 "marginModeOptions",
                                 parser.asNativeList(field["options"]),
                             )
-                            options["needsMarginMode"] = true
                         }
 
                         "reduceOnly" -> {
@@ -1264,76 +1265,40 @@ internal class TradeInputCalculator(
     }
 
     private fun calculatedOptions(
-        account: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
         position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): Map<String, Any>? {
-        val fields = requiredFields(account, subaccount, trade, market)
+        val fields = requiredFields(trade, market)
         return calculatedOptionsFromFields(fields, trade, position, market)
     }
 
     private fun defaultOptions(
-        account: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
         position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): MutableMap<String, Any> {
         val modified = trade.toMutableMap()
-        parser.asNativeList(
-            calculatedOptions(
-                account,
-                subaccount,
-                trade,
-                position,
-                market,
-            )?.get("timeInForceOptions"),
-        )
+        parser.asNativeList(calculatedOptions(trade, position, market)?.get("timeInForceOptions"))
             ?.let { items ->
                 if (!found(parser.asString(trade["timeInForce"]), items)) {
                     modified.safeSet("timeInForce", first(items))
                 }
             }
-        parser.asNativeList(
-            calculatedOptions(
-                account,
-                subaccount,
-                trade,
-                position,
-                market,
-            )?.get("goodTilUnitOptions"),
-        )
+        parser.asNativeList(calculatedOptions(trade, position, market)?.get("goodTilUnitOptions"))
             ?.let { items ->
                 val key = "goodTil.unit"
                 if (!found(parser.asString(parser.value(trade, key)), items)) {
                     modified.safeSet("goodTil.unit", "D")
                 }
             }
-        parser.asNativeList(
-            calculatedOptions(
-                account,
-                subaccount,
-                trade,
-                position,
-                market,
-            )?.get("executionOptions"),
-        )
+        parser.asNativeList(calculatedOptions(trade, position, market)?.get("executionOptions"))
             ?.let { items ->
                 if (!found(parser.asString(trade["execution"]), items)) {
                     modified.safeSet("execution", first(items))
                 }
             }
-        parser.asNativeList(
-            calculatedOptions(
-                account,
-                subaccount,
-                trade,
-                position,
-                market,
-            )?.get("marginModeOptions"),
-        )
+        parser.asNativeList(calculatedOptions(trade, position, market)?.get("marginModeOptions"))
             ?.let { items ->
                 if (!found(parser.asString(trade["marginMode"]), items)) {
                     modified.safeSet("marginMode", first(items))
@@ -1341,8 +1306,6 @@ internal class TradeInputCalculator(
             }
         if (parser.asBool(
                 calculatedOptions(
-                    account,
-                    subaccount,
                     trade,
                     position,
                     market,
@@ -1528,10 +1491,7 @@ internal class TradeInputCalculator(
                     summary.safeSet("indexSlippage", indexSlippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
-                    summary.safeSet(
-                        "positionMargin",
-                        calculatePositionMargin(trade, subaccount, market),
-                    )
+                    summary.safeSet("positionMargin", calculatePositionMargin(trade, subaccount, market))
                     summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
                 }
             }
@@ -1643,10 +1603,7 @@ internal class TradeInputCalculator(
                     summary.safeSet("slippage", slippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
-                    summary.safeSet(
-                        "positionMargin",
-                        calculatePositionMargin(trade, subaccount, market),
-                    )
+                    summary.safeSet("positionMargin", calculatePositionMargin(trade, subaccount, market))
                     summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
                 }
             }
@@ -1704,10 +1661,7 @@ internal class TradeInputCalculator(
                 )
                 summary.safeSet("filled", true)
                 summary.safeSet("reward", reward)
-                summary.safeSet(
-                    "positionMargin",
-                    calculatePositionMargin(trade, subaccount, market),
-                )
+                summary.safeSet("positionMargin", calculatePositionMargin(trade, subaccount, market))
                 summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
             }
 

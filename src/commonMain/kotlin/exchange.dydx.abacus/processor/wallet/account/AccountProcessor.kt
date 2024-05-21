@@ -371,12 +371,14 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: List<Any>?,
         height: BlockAndTime?,
     ): Map<String, Any> {
+        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"]) ?: 0
         return if (payload != null) {
             val modified = subaccount.mutable()
             val transformed = ordersProcessor.received(
                 parser.asNativeMap(subaccount["orders"]),
                 payload,
                 height,
+                subaccountNumber
             )
             modified.safeSet("orders", transformed)
             modified
