@@ -499,7 +499,6 @@ open class TradingStateMachine(
 
             "/v4/compliance/geoblock" -> {
                 print("compliance")
-//                this.state.compliance = compliance(payload)
             }
 
             else -> {
