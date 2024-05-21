@@ -378,7 +378,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
                 parser.asNativeMap(subaccount["orders"]),
                 payload,
                 height,
-                subaccountNumber
+                subaccountNumber,
             )
             modified.safeSet("orders", transformed)
             modified
