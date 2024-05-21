@@ -397,22 +397,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, testAddress)
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=0xsecondaryFakeAddress",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
-//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -428,7 +412,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/0xsecondaryFakeAddress?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/0xsecondaryFakeAddress",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/0xsecondaryFakeAddress",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=WEEKLY"
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/0xsecondaryFakeAddress?period=DAILY"
                 ]
             """.trimIndent(),
             testRest?.requests,
@@ -466,25 +450,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, testAddress)
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -503,7 +468,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=DAILY"
                 ]
             """.trimIndent(),
             testRest?.requests,
@@ -594,26 +559,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, testAddress)
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdOnOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -633,7 +578,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?createdOnOrAfter=2022-08-08T21:07:24.581Z&address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=DAILY"
                 ]
             """.trimIndent(),
             testRest?.requests,
@@ -662,23 +607,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, secondAddress)
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2",
-//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?period=WEEKLY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
-//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?n=2"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -697,12 +625,12 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=DAILY",
                     "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
                     "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?n=2",
                     "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?period=WEEKLY"
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1d67qczf2dz0n30qau2wg893fhpdeekmfu44p4f?period=DAILY"
                 ]
             """.trimIndent(),
             testRest?.requests,
@@ -760,25 +688,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         stateManager.setAddresses(null, null)
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/chains",
-//                   "https://squid-api-git-main-cosmos-testnet-0xsquid.vercel.app/v1/tokens",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-//                   "https://indexer.v4staging.dydx.exchange/v4/screen?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/addresses/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-//                   "https://indexer.v4staging.dydx.exchange/v4/fills?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
-//                   "https://dydx.exchange/v4-launch-incentive/query/api/dydx/points/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?n=2"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -797,7 +706,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/transfers?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/historical-pnl?address=cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm&subaccountNumber=0",
                     "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
-                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=WEEKLY"
+                    "https://indexer.v4staging.dydx.exchange/v4/historicalTradingRewardAggregations/cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm?period=DAILY"
                 ]
             """.trimIndent(),
             testRest?.requests,

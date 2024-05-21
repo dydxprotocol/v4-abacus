@@ -207,7 +207,7 @@ class AsyncAbacusStateManagerV2(
         }
 
     override var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
-        HistoricalTradingRewardsPeriod.WEEKLY
+        HistoricalTradingRewardsPeriod.DAILY
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {

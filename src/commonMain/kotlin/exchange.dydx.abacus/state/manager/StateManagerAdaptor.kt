@@ -321,7 +321,7 @@ open class StateManagerAdaptor(
         }
 
     var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
-        HistoricalTradingRewardsPeriod.WEEKLY
+        HistoricalTradingRewardsPeriod.DAILY
         internal set(value) {
             if (field != value) {
                 field = value
@@ -1393,7 +1393,7 @@ open class StateManagerAdaptor(
     }
 
     open fun retrieveAccountHistoricalTradingRewards(
-        period: String = "WEEKLY",
+        period: String = "DAILY",
         previousUrl: String? = null
     ) {
         val oldState = stateMachine.state
