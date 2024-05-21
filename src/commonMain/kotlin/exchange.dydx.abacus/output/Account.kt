@@ -1792,7 +1792,7 @@ data class TradingRewards(
                 var objIndex = 0
                 var dataIndex = 0
                 var lastStart: Double? = null
-                var cumulativeTotal: Double = total
+                var cumulativeAmount: Double = total
 
                 while (objIndex < (objs?.size ?: 0) && dataIndex < data.size) {
                     val obj = objs!![objIndex]
@@ -1806,14 +1806,14 @@ data class TradingRewards(
                             (comparison == ComparisonOrder.ascending) -> {
                                 // item is newer than obj
                                 val modified = item.mutable()
-                                modified.safeSet("cumulativeAmount", cumulativeTotal)
+                                modified.safeSet("cumulativeAmount", cumulativeAmount)
                                 val synced =
                                     HistoricalTradingReward.create(null, parser, modified, period)
                                 addHistoricalTradingRewards(result, synced!!, period, lastStart)
                                 result.add(synced)
                                 dataIndex++
                                 lastStart = synced.startedAtInMilliseconds
-                                cumulativeTotal = cumulativeTotal - parser.asDouble(item["amount"])!!
+                                cumulativeAmount = cumulativeAmount - parser.asDouble(item["amount"])!!
                             }
 
                             (comparison == ComparisonOrder.descending) -> {
@@ -1822,7 +1822,7 @@ data class TradingRewards(
                                 result.add(obj)
                                 objIndex++
                                 lastStart = obj.startedAtInMilliseconds
-                                cumulativeTotal = obj.cumulativeAmount - obj.amount
+                                cumulativeAmount = obj.cumulativeAmount - obj.amount
                             }
 
                             else -> {
@@ -1831,7 +1831,7 @@ data class TradingRewards(
                                 objIndex++
                                 dataIndex++
                                 lastStart = obj.startedAtInMilliseconds
-                                cumulativeTotal = obj.cumulativeAmount - obj.amount
+                                cumulativeAmount = obj.cumulativeAmount - obj.amount
                             }
                         }
                     } else {
@@ -1845,7 +1845,7 @@ data class TradingRewards(
                         result.add(obj)
                         objIndex++
                         lastStart = obj.startedAtInMilliseconds
-                        cumulativeTotal = obj.cumulativeAmount - obj.amount
+                        cumulativeAmount = obj.cumulativeAmount - obj.amount
                     }
                 }
                 while (dataIndex < data.size) {
@@ -1855,14 +1855,14 @@ data class TradingRewards(
 
                     if (item != null && itemStart != null) {
                         val modified = item.mutable()
-                        modified.safeSet("cumulativeAmount", cumulativeTotal)
+                        modified.safeSet("cumulativeAmount", cumulativeAmount)
 
                         val synced = HistoricalTradingReward.create(null, parser, modified, period)
                         addHistoricalTradingRewards(result, synced!!, period, lastStart)
                         result.add(synced)
                         dataIndex++
                         lastStart = synced.startedAtInMilliseconds
-                        cumulativeTotal = cumulativeTotal - synced.amount
+                        cumulativeAmount = cumulativeAmount - synced.amount
                     }
                 }
             } else {
