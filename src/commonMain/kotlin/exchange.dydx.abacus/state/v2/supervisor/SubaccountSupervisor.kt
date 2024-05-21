@@ -859,7 +859,8 @@ internal class SubaccountSupervisor(
     internal fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
+        // orders should have marketId unless it has already been canceled
+        val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId && it.marketId != null } ?: throw ParsingException(
             ParsingErrorType.MissingRequiredData,
             "no existing order to be cancelled for $orderId",
         )
@@ -882,7 +883,8 @@ internal class SubaccountSupervisor(
 
         payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+            // orders should have marketId unless it has already been canceled
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId && it.marketId != null }
                 ?: throw ParsingException(
                     ParsingErrorType.MissingRequiredData,
                     "no existing order to be cancelled for $cancelPayload.orderId",
@@ -1210,7 +1212,7 @@ internal class SubaccountSupervisor(
             ?: throw Exception("subaccount is null")
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
-        val type = order.type!!.rawValue
+        val type = order.type?.rawValue ?: error("order type is null")
         val clientId = order.clientId ?: error("clientId is null")
         val orderFlags = order.orderFlags ?: error("orderFlags is null")
         val clobPairId = order.clobPairId ?: error("clobPairId is null")

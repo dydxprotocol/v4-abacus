@@ -1216,8 +1216,9 @@ class V4StateManagerAdaptor(
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+        // orders should have marketId unless it has already been canceled
         val existingOrder =
-            subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
+            subaccount?.orders?.firstOrNull { it.id == orderId && it.marketId != null } ?: throw ParsingException(
                 ParsingErrorType.MissingRequiredData,
                 "no existing order to be cancelled for $orderId",
             )
@@ -1241,7 +1242,8 @@ class V4StateManagerAdaptor(
 
         payload.cancelOrderPayloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+            // orders should have marketId unless it has already been canceled
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId && it.marketId != null }
                 ?: throw ParsingException(
                     ParsingErrorType.MissingRequiredData,
                     "no existing order to be cancelled for $cancelPayload.orderId",

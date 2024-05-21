@@ -119,14 +119,14 @@ class TriggerOrderToastGenerator(
         }
         val takeProfitOrders = triggerOrders?.filter { order ->
             selectedSubaccountPosition?.side?.current?.let { currentSide ->
-                (order.type == OrderType.takeProfitMarket || order.type == OrderType.takeProfitLimit) &&
-                    order.side!!.isOppositeOf(currentSide)
+                (order.type == OrderType.takeProfitMarket || order.type == OrderType.takeProfitLimit) && order.side != null &&
+                    order.side.isOppositeOf(currentSide)
             } ?: false
         }
         val stopLossOrders = triggerOrders?.filter { order ->
             selectedSubaccountPosition?.side?.current?.let { currentSide ->
-                (order.type == OrderType.stopMarket || order.type == OrderType.stopLimit) &&
-                    order.side!!.isOppositeOf(currentSide)
+                (order.type == OrderType.stopMarket || order.type == OrderType.stopLimit) && order.side != null &&
+                    order.side.isOppositeOf(currentSide)
             } ?: false
         }
 

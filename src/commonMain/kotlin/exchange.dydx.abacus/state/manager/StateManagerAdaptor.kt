@@ -2195,14 +2195,12 @@ open class StateManagerAdaptor(
 
     @Throws(Exception::class)
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload {
-        val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            ?: throw Exception("subaccount is null")
-        val order = subaccount.orders?.firstOrNull { it.id == orderId }
-            ?: throw Exception("order is null")
-        val type = order.type?.rawValue ?: throw Exception("order type is null")
-        val clientId = order.clientId ?: throw Exception("clientId is null")
-        val orderFlags = order.orderFlags ?: throw Exception("orderFlags is null")
-        val clobPairId = order.clobPairId ?: throw Exception("clobPairId is null")
+        val subaccount = requireNotNull(stateMachine.state?.subaccount(subaccountNumber)) {"subaccount is null"}
+        val order = requireNotNull(subaccount.orders?.firstOrNull { it.id == orderId }) {"order is null"}
+        val type = requireNotNull(order.type?.rawValue) {"order type is null"}
+        val clientId = requireNotNull(order.clientId) {"clientId is null"}
+        val orderFlags = requireNotNull(order.orderFlags) {"orderFlags is null"}
+        val clobPairId = requireNotNull(order.clobPairId) {"clobPairId is null"}
         val goodTilBlock = order.goodTilBlock
         val goodTilBlockTime = order.goodTilBlockTime
 
