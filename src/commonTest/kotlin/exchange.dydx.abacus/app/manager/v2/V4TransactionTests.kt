@@ -364,7 +364,7 @@ class V4TransactionTests : NetworkTests() {
         stateManager.trade("2", TradeInputField.targetLeverage)
 
         if (isShortTerm) {
-            stateManager.trade("MARKET", TradeInputField.timeInForceType)
+            stateManager.trade("MARKET", TradeInputField.type)
         } else {
             stateManager.trade("LIMIT", TradeInputField.type)
             stateManager.trade("GTT", TradeInputField.timeInForceType)
@@ -375,6 +375,21 @@ class V4TransactionTests : NetworkTests() {
     fun testIsolatedMarginPlaceOrderTransactions() {
         setStateMachineForIsolatedMarginTests(stateManager)
         prepareIsolatedMarginTrade(false)
+
+        val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
+        assertNotNull(orderPayload, "Order payload should not be null")
+        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+
+        val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
+        assertNotNull(transferPayload, "Transfer payload should not be null")
+        assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
+        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+    }
+
+    @Test
+    fun testIsolatedMarginPlaceShortTermOrderTransactions() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(true)
 
         val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
         assertNotNull(orderPayload, "Order payload should not be null")
