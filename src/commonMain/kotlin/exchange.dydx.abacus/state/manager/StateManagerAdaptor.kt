@@ -2524,7 +2524,7 @@ open class StateManagerAdaptor(
                         val payload = parser.decodeJsonObject(response)?.toIMap()
                         geo = parser.asString(payload?.get("geo"))
                     }
-                    compliance = Compliance(geo, compliance.status, compliance.updatedAt, compliance.expiresAt)
+                    compliance = compliance.copy(geo = geo)
                 },
             )
         }
@@ -2547,7 +2547,7 @@ open class StateManagerAdaptor(
                 }
             }
         }
-        compliance = Compliance(compliance.geo, complianceStatus, updatedAt, expiresAt)
+        compliance = compliance.copy(status = complianceStatus, updatedAt = updatedAt, expiresAt = expiresAt)
         return complianceStatus
     }
 
@@ -2598,10 +2598,10 @@ open class StateManagerAdaptor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt, compliance.expiresAt)
+                    compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
                 }
             } else {
-                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt, compliance.expiresAt)
+                compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
             }
         }
     }

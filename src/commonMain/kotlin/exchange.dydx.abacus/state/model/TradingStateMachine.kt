@@ -497,10 +497,6 @@ open class TradingStateMachine(
                 }
             }
 
-            "/v4/compliance/geoblock" -> {
-                print("compliance")
-            }
-
             else -> {
                 if (url.path.contains("/v3/historical-funding/") || url.path.contains("/v4/historicalFunding/")) {
                     changes = historicalFundings(payload)

@@ -610,7 +610,7 @@ internal open class AccountSupervisor(
                 }
             }
         }
-        compliance = Compliance(compliance.geo, complianceStatus, updatedAt, expiresAt)
+        compliance = compliance.copy(status = complianceStatus, updatedAt = updatedAt, expiresAt = expiresAt)
         return complianceStatus
     }
 
@@ -662,10 +662,10 @@ internal open class AccountSupervisor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt, compliance.expiresAt)
+                    compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
                 }
             } else {
-                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt, compliance.expiresAt)
+                compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
             }
         }
     }
@@ -912,7 +912,7 @@ internal open class AccountSupervisor(
             state?.transferStatuses,
             state?.restriction,
             state?.launchIncentive,
-            Compliance(state?.compliance?.geo, compliance.status, compliance.updatedAt, compliance.expiresAt),
+            compliance,
         )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
