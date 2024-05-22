@@ -123,22 +123,19 @@ internal fun TradingStateMachine.updateTradeInputFromMarket(
     val account = this.account
     val marketId = parser.asString(trade["marketId"])
     val existingMarginMode =
-        MarginModeCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
-    if (existingMarginMode != null) {
-        // If there is an existing position or order, we have to use the same margin mode
-        modified["marginMode"] = existingMarginMode
-        if (existingMarginMode == "ISOLATED" && parser.asDouble(trade["targetLeverage"]) == null) {
-            modified["targetLeverage"] = 1.0
-        }
-    } else if (marketId != null) {
-        val marketMarginMode = MarginModeCalculator.findMarketMarginMode(
+        MarginModeCalculator.findExistingMarginMode(
+            parser,
+            account,
+            marketId,
+            subaccountNumber,
+        ) ?: MarginModeCalculator.findMarketMarginMode(
             parser,
             parser.asMap(parser.value(marketsSummary, "markets.$marketId")),
         )
-        modified["marginMode"] = marketMarginMode
-        if (parser.asDouble(trade["targetLeverage"]) == null) {
-            modified["targetLeverage"] = 1.0
-        }
+    // If there is an existing position or order, we have to use the same margin mode
+    modified["marginMode"] = existingMarginMode
+    if (existingMarginMode == "ISOLATED" && parser.asDouble(trade["targetLeverage"]) == null) {
+        modified["targetLeverage"] = 1.0
     }
     return modified
 }
