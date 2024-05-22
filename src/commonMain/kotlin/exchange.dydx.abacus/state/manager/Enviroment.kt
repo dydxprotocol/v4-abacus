@@ -59,6 +59,7 @@ data class EnvironmentLinks(
     val tos: String?,
     val privacy: String?,
     val mintscan: String?,
+    val mintscanBase: String?,
     val documentation: String?,
     val community: String?,
     val feedback: String?,
@@ -76,6 +77,7 @@ data class EnvironmentLinks(
             val tos = parser.asString(data["tos"])
             val privacy = parser.asString(data["privacy"])
             val mintscan = parser.asString(data["mintscan"])
+            val mintscanBase = parser.asString(data["mintscanBase"])
             val documentation = parser.asString(data["documentation"])
             val community = parser.asString(data["community"])
             val feedback = parser.asString(data["feedback"])
@@ -88,6 +90,7 @@ data class EnvironmentLinks(
                 tos,
                 privacy,
                 mintscan,
+                mintscanBase,
                 documentation,
                 community,
                 feedback,
