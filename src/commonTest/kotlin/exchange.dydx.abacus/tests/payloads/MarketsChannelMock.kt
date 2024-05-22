@@ -77,7 +77,8 @@ internal class MarketsChannelMock {
                 "atomicResolution":-10,
                 "quantumConversionExponent":-9,
                 "stepBaseQuantums":1000000,
-                "subticksPerTick":100000
+                "subticksPerTick":100000,
+                "marketType":"ISOLATED"
               },
               "SUSHI-USD": {
                 "market": "SUSHI-USD",
