@@ -1410,9 +1410,9 @@ open class StateManagerAdaptor(
             url,
             historicalTradingRewardsInPeriod,
             "startedAt",
-            0.days,
-            180.days,
-            "endedAt",
+            1.days,
+            180.days, // TODO: update this to read in the trading rewards start date from env.json
+            "startingBeforeOrAt",
             null,
             params,
             previousUrl,
@@ -1561,16 +1561,25 @@ open class StateManagerAdaptor(
                     parser.asMap(items.firstOrNull())?.get(timeField),
                 )
             val now = ServerTime.now()
-            if (lastItemTime != null && (now.minus(lastItemTime)) > sampleDuration * 2.0) {
+
+            var latestItemTime: Instant? = null
+            var earliestItemTime: Instant? = null
+
+            if (lastItemTime != null && firstItemTime != null) {
+                latestItemTime = if (lastItemTime.compareTo(firstItemTime) > 0) lastItemTime else firstItemTime
+                earliestItemTime = if (lastItemTime.compareTo(firstItemTime) < 0) lastItemTime else firstItemTime
+            }
+
+            if (latestItemTime != null && (now.minus(latestItemTime)) > sampleDuration * 2.0) {
                 /*
                 Get latest
                  */
-                val forwardTime = lastItemTime + 99 * sampleDuration
+                val forwardTime = latestItemTime + 99 * sampleDuration
                 val beforeOrAt = if (forwardTime > now) forwardTime else null
                 val params = timedParams(
                     beforeOrAt,
                     beforeParam,
-                    lastItemTime + 1.seconds,
+                    latestItemTime + 1.seconds,
                     afterParam,
                     additionalParams,
                 )
@@ -1578,12 +1587,12 @@ open class StateManagerAdaptor(
                 if (fullUrl != previousUrl) {
                     getWithFullUrl(fullUrl, null, callback)
                 }
-            } else if (firstItemTime != null) {
+            } else if (earliestItemTime != null) {
                 /*
                 Get previous
                  */
-                if (now - firstItemTime <= maxDuration) {
-                    val beforeOrAt = firstItemTime - 1.seconds
+                if (now - earliestItemTime <= maxDuration) {
+                    val beforeOrAt = earliestItemTime - 1.seconds
                     val after = beforeOrAt - 99 * sampleDuration
                     val params =
                         timedParams(beforeOrAt, beforeParam, after, afterParam, additionalParams)
