@@ -162,6 +162,44 @@ internal class ParentSubaccountsChannelMock {
                     "postOnly":false,
                     "reduceOnly":false,
                     "goodTilBlock":"5837"
+                 },
+                 {
+                    "id":"b812bea8-29d3-5841-0549-caa072f6f8b9",
+                    "market":"APE-USD",
+                    "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
+                    "subaccountNumber":256,
+                    "clientId":"194126270",
+                    "clobPairId":"134",
+                    "orderFlags": "0",
+                    "side":"BUY",
+                    "size":"0.01",
+                    "totalFilled":"0.682633",
+                    "price":"1255.927",
+                    "type":"LIMIT",
+                    "status":"BEST_EFFORT_CANCELED",
+                    "timeInForce":"GTT",
+                    "postOnly":false,
+                    "reduceOnly":false,
+                    "goodTilBlock":"5837"
+                 },
+                 {
+                    "id":"b812bea8-29d3-5841-1549-caa072f6f8b9",
+                    "market":"ETH-USD",
+                    "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
+                    "subaccountNumber":0,
+                    "clientId":"194126270",
+                    "clobPairId":"134",
+                    "orderFlags": "0",
+                    "side":"SELL",
+                    "size":"1.653451",
+                    "totalFilled":"0.682633",
+                    "price":"6255.927",
+                    "type":"LIMIT",
+                    "status":"BEST_EFFORT_CANCELED",
+                    "timeInForce":"GTT",
+                    "postOnly":false,
+                    "reduceOnly":false,
+                    "goodTilBlock":"5837"
                  }
               ]
            }

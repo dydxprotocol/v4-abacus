@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -294,6 +295,10 @@ internal class SubaccountSupervisor(
             channel,
             subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
+
+        if (parent) {
+            pollReclaimUnutilizedFunds()
+        }
     }
 
     private fun subaccountChannelParams(
@@ -1404,6 +1409,91 @@ internal class SubaccountSupervisor(
         }
         if (changes.changes.contains(Changes.subaccount)) {
             parseOrdersToMatchPlaceOrdersAndCancelOrders()
+        }
+    }
+
+    /**
+     * @description Loop through all subaccounts to find childSubaccounts that have funds but no open positions or orders. Initiate a transfer to parentSubaccount.
+     */
+    private fun reclaimUnutilizedFundsFromChildSubaccounts() {
+        val subaccounts = stateMachine.state?.account?.subaccounts ?: return
+
+        val subaccountQuoteBalanceMap = subaccounts.mapValues { subaccount ->
+            // If the subaccount is the parentSubaccount, skip
+            if (subaccount.value.subaccountNumber == subaccountNumber) {
+                return@mapValues 0.0
+            }
+
+            val openPositions = subaccount.value.openPositions
+            val openOrders = subaccount.value.orders?.filter { order ->
+                val status = helper.parser.asString(order.status)
+                iListOf("open", "pending", "untriggered", "partiallyFilled").contains(status)
+            }
+            val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
+
+            // Only return a quoteBalance if the subaccount has no open positions or orders
+            if (openPositions.isNullOrEmpty() && openOrders.isNullOrEmpty() && quoteBalance > 0.0) {
+                quoteBalance
+            } else {
+                0.0
+            }
+        }.filter {
+            it.value > 0.0
+        }
+
+        val transferPayloadStrings = iMutableListOf<String>()
+
+        subaccountQuoteBalanceMap.forEach {
+            val childSubaccountNumber = it.key.toInt()
+            val amountToTransfer = it.value.toString()
+
+            val transferPayload = HumanReadableSubaccountTransferPayload(
+                childSubaccountNumber,
+                amountToTransfer,
+                accountAddress,
+                subaccountNumber,
+            )
+
+            val transferPayloadString = Json.encodeToString(transferPayload)
+            transferPayloadStrings.add(transferPayloadString)
+        }
+
+        recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+    }
+
+    private fun recursivelyReclaimChildSubaccountFunds(transferPayloadStrings: MutableList<String>) {
+        if (transferPayloadStrings.isNotEmpty()) {
+            val transferPayloadString = transferPayloadStrings.removeAt(0)
+            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
+                val error = parseTransactionResponse(response)
+                if (error != null) {
+                    emitError(error)
+                } else {
+                    recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+                }
+            }
+        }
+    }
+
+    private var reclaimUnutilizedFundsTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private fun pollReclaimUnutilizedFunds() {
+        reclaimUnutilizedFundsTimer = null
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            this.reclaimUnutilizedFundsTimer = helper.ioImplementations.timer?.schedule(
+                (10.seconds).inWholeSeconds.toDouble(),
+                null,
+            ) {
+                reclaimUnutilizedFundsFromChildSubaccounts()
+                pollReclaimUnutilizedFunds()
+                false
+            }
         }
     }
 
