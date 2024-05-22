@@ -1,9 +1,11 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -201,6 +203,11 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             }
             if (modified["id"] == null) {
                 modified.safeSet("id", payload["clientId"])
+            }
+            parser.asInt(modified["subaccountNumber"])?.run {
+                modified.safeSet("subaccountNumber", this)
+                // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
+                modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.ISOLATED else MarginMode.CROSS)
             }
             val size = parser.asDouble(payload["size"])
             if (size != null) {

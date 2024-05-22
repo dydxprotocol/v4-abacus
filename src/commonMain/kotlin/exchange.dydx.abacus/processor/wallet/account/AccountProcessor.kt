@@ -299,13 +299,14 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         modified = transform(modified, payload, "current", currentAccountKeyMap)
 
         if (firstTime) {
+            val subaccountNumber = parser.asInt(modified["subaccountNumber"])
             val openPerpetualPositionsData =
                 (
                     parser.asNativeMap(payload["openPositions"])
                         ?: parser.asNativeMap(payload["openPerpetualPositions"])
                     )
 
-            val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
+            val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData, subaccountNumber)
             modified.safeSet(
                 "positions",
                 positions,
@@ -371,7 +372,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: List<Any>?,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"]) ?: 0
+        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"])
         return if (payload != null) {
             val modified = subaccount.mutable()
             val transformed = ordersProcessor.received(

@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.modify
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 
 internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
@@ -14,17 +15,17 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         existing: Map<String, Any>?,
         payload: List<Any>?,
         height: BlockAndTime?,
-        subaccountNumber: Int,
+        subaccountNumber: Int?,
     ): Map<String, Any>? {
         return if (payload != null) {
             val orders = existing?.mutable() ?: mutableMapOf<String, Any>()
             for (data in payload) {
                 parser.asNativeMap(data)?.let { data ->
                     val orderId = parser.asString(data["id"] ?: data["clientId"])
-                    val orderSubaccountNumber = parser.asInt(data["subaccountNumber"])
+                    val modified = data.toMutableMap()
 
-                    if (orderSubaccountNumber == null) {
-                        data.modify("subaccountNumber", subaccountNumber)
+                    subaccountNumber?.run {
+                        modified.safeSet("subaccountNumber", this)
                     }
 
                     if (orderId != null) {
