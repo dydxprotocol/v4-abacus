@@ -5,7 +5,7 @@ import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.output.MarginType
+import exchange.dydx.abacus.output.MarginMode
 
 class AccountCalculator(val parser: ParserProtocol, private val useParentSubaccount: Boolean) {
     private val subaccountCalculator = SubaccountCalculator(parser)
@@ -56,8 +56,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
         if (subaccountNumbers != null) {
             val groupedSubaccounts = mutableMapOf<String, Any>()
             for (subaccountNumber in subaccountNumbers) {
-                // 128 is the number of parent subaccounts, anything above that is reserved for isolated margin subaccounts
-                val marginType = if(subaccountNumber >= 128) MarginType.ISOLATED else MarginType.CROSS
+                val marginMode = if(subaccountNumber >= NUM_PARENT_SUBACCOUNTS) MarginMode.ISOLATED else MarginMode.CROSS
                 val subaccount =
                     parser.asNativeMap(parser.value(subaccounts, "$subaccountNumber")) ?: break
                 if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
@@ -79,7 +78,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                         mergeChildOpenPositions(
                             parentSubaccount,
                             subaccountNumber,
-                            marginType,
+                            marginMode,
                             subaccount,
                             childOpenPositions,
                         )
@@ -89,7 +88,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                             mergeChildPendingPositions(
                                 parentSubaccount,
                                 subaccountNumber,
-                                marginType,
+                                marginMode,
                                 subaccount,
                                 orders,
                                 markets,
@@ -98,7 +97,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                             parentSubaccount
                         }
                     }
-                    parentSubaccount = mergeOrders(parentSubaccount, subaccount)
+                    parentSubaccount = mergeOrders(parentSubaccount, subaccount, marginMode)
                     parentSubaccount = sumEquity(parentSubaccount, subaccount)
                     groupedSubaccounts["$parentSubaccountNumber"] = parentSubaccount
                 }
@@ -113,7 +112,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
     private fun mergeChildOpenPositions(
         parentSubaccount: Map<String, Any>,
         childSubaccountNumber: Int,
-        marginType: MarginType,
+        marginMode: MarginMode,
         childSubaccount: Map<String, Any>,
         childOpenPositions: Map<String, Any>,
     ): Map<String, Any> {
@@ -128,8 +127,8 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                 childSubaccountNumber,
             )
             modifiedChildOpenPosition?.safeSet(
-                "marginType",
-                marginType,
+                "marginMode",
+                marginMode,
             )
             modifiedChildOpenPosition?.safeSet(
                 "quoteBalance",
@@ -155,7 +154,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
     private fun mergeChildPendingPositions(
         parentSubaccount: Map<String, Any>,
         childSubaccountNumber: Int,
-        marginType: MarginType,
+        marginMode: MarginMode,
         childSubaccount: Map<String, Any>,
         childOrders: Map<String, Any>,
         markets: Map<String, Any>?,
@@ -205,8 +204,8 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                 childSubaccountNumber,
             )
             modifiedPendingPosition?.safeSet(
-                "marginType",
-                marginType,
+                "marginMode",
+                marginMode,
             )
             modifiedPendingPosition.safeSet(
                 "quoteBalance",
@@ -238,12 +237,13 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
     private fun mergeOrders(
         parentSubaccount: Map<String, Any>,
         childSubaccount: Map<String, Any>,
+        marginMode: MarginMode,
     ): Map<String, Any> {
         // Each empty subaccount should have order for one market only
         // Just in case it has more than one market, we will create
         // two separate pending positions.
 
-        val mergedOrders = ParsingHelper.merge(
+        var mergedOrders = ParsingHelper.merge(
             parser.asNativeMap(
                 parser.value(parentSubaccount, "orders"),
             ),
@@ -251,6 +251,15 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                 parser.value(childSubaccount, "orders"),
             ),
         )
+
+        mergedOrders = mergedOrders?.mapValues { (_, value) ->
+            var modifiedOrder = parser.asMap(value)?.toMutableMap() ?: mutableMapOf()
+            modifiedOrder?.safeSet(
+                "marginMode",
+                marginMode,
+            )
+            modifiedOrder
+        }
 
         val modifiedParentSubaccount = parentSubaccount.toMutableMap()
         modifiedParentSubaccount.safeSet(

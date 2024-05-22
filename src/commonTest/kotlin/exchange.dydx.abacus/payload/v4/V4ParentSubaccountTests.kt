@@ -218,7 +218,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 7962.44
                                             },
                                             "childSubaccountNumber": 128,
-                                            "marginType": "ISOLATED",
+                                            "marginMode": "ISOLATED",
                                             "equity": {
                                                 "current": 829.16
                                             },
@@ -534,7 +534,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 1410.69
                                             },
                                             "childSubaccountNumber": 128,
-                                            "marginType": "ISOLATED",
+                                            "marginMode": "ISOLATED",
                                             "quoteBalance": {
                                                 "current": 267.89
                                             },
@@ -605,7 +605,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 1949.55
                                             },
                                             "childSubaccountNumber": 128,
-                                            "marginType": "ISOLATED",
+                                            "marginMode": "ISOLATED",
                                             "quoteBalance": {
                                                 "current": 367.89
                                             },

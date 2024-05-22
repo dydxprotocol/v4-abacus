@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import exchange.dydx.abacus.output.MarginType
+import exchange.dydx.abacus.output.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
@@ -355,9 +355,9 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     internal fun calculateMarginType(
         subaccount: Map<String, Any>,
         payload: Map<String, Any>,
-    ): MarginType {
+    ): MarginMode {
         print("reached")
-        return MarginType.CROSS
+        return MarginMode.CROSS
     }
 
     private fun deriveQuoteBalance(assetPositions: Map<String, Any>?): Double? {
