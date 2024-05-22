@@ -353,7 +353,6 @@ class V4TransactionTests : NetworkTests() {
 
         stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
         testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)
-//        testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.channel_batch_data)
 
         stateManager.market = "BTC-USD"
     }
