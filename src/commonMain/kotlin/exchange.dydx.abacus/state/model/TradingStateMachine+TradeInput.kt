@@ -123,6 +123,7 @@ internal fun TradingStateMachine.updateTradeInputFromMarket(
     val marketId = parser.asString(trade["marketId"])
     if (marketId != null && account != null) {
         val existingMarginMode = findExistingMarginMode(account, marketId, subaccountNumber)
+            ?: findMarketMarginMode(this.marketsSummary, marketId)
         if (existingMarginMode != null) {
             modified["marginMode"] = existingMarginMode
             if (existingMarginMode == "ISOLATED" && parser.asDouble(trade["targetLeverage"]) == null) {
@@ -154,12 +155,14 @@ private fun TradingStateMachine.findExistingMarginMode(
         parser.asString(parser.value(it, "marketId")) == marketId
     }
     if (order != null) {
-        return if (parser.asInt(
-                parser.value(
-                    order,
-                    "subaccountNumber",
-                ),
-            ) ?: subaccountNumber != subaccountNumber
+        return if ((
+                parser.asInt(
+                    parser.value(
+                        order,
+                        "subaccountNumber",
+                    ),
+                ) ?: subaccountNumber
+                ) != subaccountNumber
         ) {
             "ISOLATED"
         } else {
@@ -167,6 +170,14 @@ private fun TradingStateMachine.findExistingMarginMode(
         }
     }
     return null
+}
+
+private fun TradingStateMachine.findMarketMarginMode(
+    marketsSummary: Map<String, Any>?,
+    marketId: String
+): String? {
+    val marginMode = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
+    return marginMode ?: "CROSS"
 }
 
 internal fun TradingStateMachine.initiateTrade(
