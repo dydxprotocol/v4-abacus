@@ -1411,7 +1411,7 @@ open class StateManagerAdaptor(
             historicalTradingRewardsInPeriod,
             "startedAt",
             1.days,
-            180.days, // TODO: update this to read in the trading rewards start date from env.json
+            180.days, // OTE-337: update this to read in the trading rewards start date from env.json
             "startingBeforeOrAt",
             null,
             params,
