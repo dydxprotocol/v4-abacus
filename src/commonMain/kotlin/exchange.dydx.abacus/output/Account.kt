@@ -179,6 +179,18 @@ enum class PositionSide(val rawValue: String) {
 
 @JsExport
 @Serializable
+enum class MarginType(val rawValue: String) {
+    ISOLATED("ISOLATED"),
+    CROSS("CROSS");
+
+    companion object {
+        operator fun invoke(rawValue: String) =
+            MarginType.values().firstOrNull { it.rawValue == rawValue }
+    }
+}
+
+@JsExport
+@Serializable
 data class TradeStatesWithPositionSides(
     val current: PositionSide?,
     val postOrder: PositionSide?,
@@ -249,10 +261,14 @@ data class SubaccountPosition(
     val liquidationPrice: TradeStatesWithDoubleValues,
     val resources: SubaccountPositionResources,
     val childSubaccountNumber: Int?,
+    val marginType: MarginType?,
     val freeCollateral: TradeStatesWithDoubleValues,
     val marginUsage: TradeStatesWithDoubleValues,
-    val quoteBalance: TradeStatesWithDoubleValues, // available for isolated market position
-    val equity: TradeStatesWithDoubleValues, // available for isolated market position
+    /** available for isolated market position */
+    val quoteBalance: TradeStatesWithDoubleValues,
+    /** available for isolated market position */
+    val equity: TradeStatesWithDoubleValues,
+    /** Margin type of the position */
 ) {
     companion object {
         internal fun create(
@@ -361,6 +377,7 @@ data class SubaccountPosition(
                         parser.asMap(data["liquidationPrice"]),
                     )
                     val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
+                    val marginType = parser.asString("marginType")?.let{ MarginType.invoke(it) }
                     val freeCollateral = TradeStatesWithDoubleValues.create(
                         null,
                         parser,
@@ -408,7 +425,8 @@ data class SubaccountPosition(
                         existing.freeCollateral !== freeCollateral ||
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
-                        existing.equity !== equity
+                        existing.equity !== equity ||
+                        existing.marginType !== marginType
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
@@ -436,6 +454,7 @@ data class SubaccountPosition(
                             liquidationPrice,
                             resources,
                             childSubaccountNumber,
+                            marginType,
                             freeCollateral,
                             marginUsage,
                             quoteBalance,
