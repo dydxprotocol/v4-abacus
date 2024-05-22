@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.model
 
+import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
@@ -121,63 +122,33 @@ internal fun TradingStateMachine.updateTradeInputFromMarket(
     val modified = trade.mutable()
     val account = this.account
     val marketId = parser.asString(trade["marketId"])
-    if (marketId != null && account != null) {
-        val existingMarginMode = findExistingMarginMode(account, marketId, subaccountNumber)
-            ?: findMarketMarginMode(this.marketsSummary, marketId)
-        if (existingMarginMode != null) {
-            modified["marginMode"] = existingMarginMode
-            if (existingMarginMode == "ISOLATED" && parser.asDouble(trade["targetLeverage"]) == null) {
+    val existingMarginMode =
+        MarginModeCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
+    if (existingMarginMode != null) {
+        // If there is an existing position or order, we have to use the same margin mode
+        modified["marginMode"] = existingMarginMode
+        if (existingMarginMode == "ISOLATED" && parser.asDouble(trade["targetLeverage"]) == null) {
+            modified["targetLeverage"] = 1.0
+        }
+    } else if (marketId != null) {
+        val marketMarginMode = MarginModeCalculator.findMarketMarginMode(
+            parser,
+            parser.asMap(parser.value(marketsSummary, "markets.$marketId")),
+        )
+        if (marketMarginMode == "ISOLATED") {
+            // if market is "ISOLATED", we have to use "ISOLATED" margin mode
+            modified["marginMode"] = marketMarginMode
+            if (parser.asDouble(trade["targetLeverage"]) == null) {
                 modified["targetLeverage"] = 1.0
+            }
+        } else {
+            // if market is "CROSS", we default to "CROSS" if it is not already set
+            if (modified["marginMode"] == null) {
+                modified["marginMode"] = "CROSS"
             }
         }
     }
     return modified
-}
-
-private fun TradingStateMachine.findExistingMarginMode(
-    account: Map<String, Any>,
-    marketId: String,
-    subaccountNumber: Int,
-): String? {
-    val position = parser.asNativeMap(
-        parser.value(account, "groupedSubaccounts.$subaccountNumber.openPositions.$marketId"),
-    )
-    if (position != null) {
-        return if (position["equity"] == null) {
-            "CROSS"
-        } else {
-            "ISOLATED"
-        }
-    }
-    val order = parser.asNativeMap(
-        parser.value(account, "groupedSubaccounts.$subaccountNumber.orders"),
-    )?.values?.firstOrNull {
-        parser.asString(parser.value(it, "marketId")) == marketId
-    }
-    if (order != null) {
-        return if ((
-                parser.asInt(
-                    parser.value(
-                        order,
-                        "subaccountNumber",
-                    ),
-                ) ?: subaccountNumber
-                ) != subaccountNumber
-        ) {
-            "ISOLATED"
-        } else {
-            "CROSS"
-        }
-    }
-    return null
-}
-
-private fun TradingStateMachine.findMarketMarginMode(
-    marketsSummary: Map<String, Any>?,
-    marketId: String
-): String? {
-    val marginMode = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
-    return marginMode ?: "CROSS"
 }
 
 internal fun TradingStateMachine.initiateTrade(
