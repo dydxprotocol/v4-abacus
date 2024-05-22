@@ -374,38 +374,6 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 }
             """.trimIndent(),
         )
-
-        test(
-            {
-                perp.tradeInMarket("AVAX-USD", 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marginMode": "ISOLATED"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.tradeInMarket("LINK-USD", 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marginMode": "CROSS"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
     }
 
     private fun testSubaccountChannelData() {

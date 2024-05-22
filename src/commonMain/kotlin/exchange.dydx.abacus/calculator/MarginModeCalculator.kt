@@ -15,7 +15,11 @@ internal object MarginModeCalculator {
                 "groupedSubaccounts.$subaccountNumber.openPositions.$marketId",
             ),
         )
-        if (position != null) {
+        if (position != null && (
+                parser.asDouble(parser.value(position, "size.current"))
+                    ?: 0.0
+                ) != 0.0
+        ) {
             return if (position["equity"] == null) {
                 "CROSS"
             } else {

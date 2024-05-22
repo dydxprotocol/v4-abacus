@@ -1182,6 +1182,10 @@ internal class TradeInputCalculator(
                         }
 
                         "marginMode" -> {
+                            options.safeSet(
+                                "marginModeOptions",
+                                parser.asNativeList(field["options"]),
+                            )
                             options["needsMarginMode"] = true
                         }
 
