@@ -383,8 +383,8 @@ class V4TransactionTests : NetworkTests() {
         prepareIsolatedMarginClosePosition()
         val closePositionPayload = subaccountSupervisor?.closePositionPayload(0)
         assertNotNull(closePositionPayload, "Close position payload should not be null")
+        assertEquals(128, closePositionPayload.subaccountNumber)
     }
-
 
     @Test
     fun testIsolatedMarginPlaceOrderTransactions() {

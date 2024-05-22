@@ -113,152 +113,151 @@ internal class V4ParentSubaccountsMock {
 
     internal val subscribed_with_positions = """
         {
-            "type": "subscribed",
-            "connection_id": "6aa2642d-eda4-4483-9751-b70c5192b990",
-            "message_id": 2,
-            "channel": "v4_parent_subaccounts",
-            "id": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
-            "contents": {
-                "subaccount": {
-                    "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
-                    "parentSubaccountNumber": 0,
-                    "equity": "592.86113348",
-                    "freeCollateral": "590.874540184",
-                    "childSubaccounts": [
-                        {
-                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
-                            "subaccountNumber": 0,
-                            "equity": "535.435939",
-                            "freeCollateral": "535.435939",
-                            "openPerpetualPositions": {},
-                            "assetPositions": {
-                                "USDC": {
-                                    "size": "535.435939",
-                                    "symbol": "USDC",
-                                    "side": "LONG",
-                                    "assetId": "0",
-                                    "subaccountNumber": 0
-                                }
-                            },
-                            "marginEnabled": true,
-                            "updatedAtHeight": "90617"
-                        },
-                        {
-                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
-                            "subaccountNumber": 128,
-                            "equity": "25",
-                            "freeCollateral": "25",
-                            "openPerpetualPositions": {},
-                            "assetPositions": {
-                                "USDC": {
-                                    "size": "25",
-                                    "symbol": "USDC",
-                                    "side": "LONG",
-                                    "assetId": "0",
-                                    "subaccountNumber": 128
-                                }
-                            },
-                            "marginEnabled": true,
-                            "updatedAtHeight": "23992"
-                        },
-                        {
-                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
-                            "subaccountNumber": 256,
-                            "equity": "32.42519448",
-                            "freeCollateral": "30.438601184",
-                            "openPerpetualPositions": {
-                                "APE-USD": {
-                                    "market": "APE-USD",
-                                    "status": "OPEN",
-                                    "side": "LONG",
-                                    "size": "8",
-                                    "maxSize": "8",
-                                    "entryPrice": "1.243",
-                                    "exitPrice": null,
-                                    "realizedPnl": "0",
-                                    "unrealizedPnl": "-0.01103352",
-                                    "createdAt": "2024-05-21T17:53:31.604Z",
-                                    "createdAtHeight": "83211",
-                                    "closedAt": null,
-                                    "sumOpen": "8",
-                                    "sumClose": "0",
-                                    "netFunding": "0",
-                                    "subaccountNumber": 256
-                                }
-                            },
-                            "assetPositions": {
-                                "USDC": {
-                                    "size": "22.492228",
-                                    "symbol": "USDC",
-                                    "side": "LONG",
-                                    "assetId": "0",
-                                    "subaccountNumber": 256
-                                }
-                            },
-                            "marginEnabled": true,
-                            "updatedAtHeight": "83211"
-                        },
-                        {
-                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
-                            "subaccountNumber": 384,
-                            "equity": "0",
-                            "freeCollateral": "0",
-                            "openPerpetualPositions": {},
-                            "assetPositions": {},
-                            "marginEnabled": true,
-                            "updatedAtHeight": "45152"
-                        }
-                    ]
-                },
-                "orders": [
-                    {
-                        "id": "7b781887-8a9e-5191-acfa-be58263d7cbf",
-                        "subaccountId": "b342d48a-d9ce-5725-980f-eb5ef3d00951",
-                        "clientId": "1996993052",
-                        "clobPairId": "22",
-                        "side": "BUY",
-                        "size": "20",
-                        "totalFilled": "0",
-                        "price": "1.1",
-                        "type": "LIMIT",
-                        "status": "OPEN",
-                        "timeInForce": "GTT",
-                        "reduceOnly": false,
-                        "orderFlags": "64",
-                        "goodTilBlockTime": "2024-06-17T23:59:25.000Z",
-                        "createdAtHeight": "24229",
-                        "clientMetadata": "0",
-                        "updatedAt": "2024-05-20T23:59:24.975Z",
-                        "updatedAtHeight": "24229",
-                        "postOnly": false,
-                        "ticker": "APE-USD",
-                        "subaccountNumber": 256
-                    },
-                    {
-                        "id": "7338c86f-13c8-573e-91f5-a8d8e58f87a1",
-                        "subaccountId": "b456e984-b4bc-5ad2-8662-6b8378c7e0ad",
-                        "clientId": "1871509150",
-                        "clobPairId": "24",
-                        "side": "BUY",
-                        "size": "20",
-                        "totalFilled": "0",
-                        "price": "1",
-                        "type": "LIMIT",
-                        "status": "OPEN",
-                        "timeInForce": "GTT",
-                        "reduceOnly": false,
-                        "orderFlags": "64",
-                        "goodTilBlockTime": "2024-06-17T23:55:11.000Z",
-                        "createdAtHeight": "23994",
-                        "clientMetadata": "0",
-                        "updatedAt": "2024-05-20T23:55:11.560Z",
-                        "updatedAtHeight": "23994",
-                        "postOnly": false,
-                        "ticker": "ARB-USD",
-                        "subaccountNumber": 128
+          "type": "subscribed",
+          "connection_id": "3adc59d6-09cb-432e-b987-ced0da32bec9",
+          "message_id": 2,
+          "channel": "v4_parent_subaccounts",
+          "id": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+          "contents": {
+            "subaccount": {
+              "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+              "parentSubaccountNumber": 0,
+              "equity": "1004.026896843",
+              "freeCollateral": "963.0237707731",
+              "childSubaccounts": [
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 0,
+                  "equity": "862.675984",
+                  "freeCollateral": "862.675984",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "862.675984",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 0
                     }
-                ]
-            }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12906107"
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 128,
+                  "equity": "59.810279856",
+                  "freeCollateral": "57.7685502848",
+                  "openPerpetualPositions": {
+                    "APE-USD": {
+                      "market": "APE-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "8",
+                      "maxSize": "8",
+                      "entryPrice": "1.292",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "-0.127352144",
+                      "createdAt": "2024-05-22T20:18:18.080Z",
+                      "createdAtHeight": "12905490",
+                      "closedAt": null,
+                      "sumOpen": "8",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "49.601632",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12905505"
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 256,
+                  "equity": "41.902552695",
+                  "freeCollateral": "21.9040510255",
+                  "openPerpetualPositions": {
+                    "XLM-USD": {
+                      "market": "XLM-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "1810",
+                      "maxSize": "1810",
+                      "entryPrice": "0.11046795580110497238",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "0.0380166949999999922",
+                      "createdAt": "2024-05-22T20:30:13.972Z",
+                      "createdAtHeight": "12906057",
+                      "closedAt": null,
+                      "sumOpen": "1810",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 256
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "158.082464",
+                      "symbol": "USDC",
+                      "side": "SHORT",
+                      "assetId": "0",
+                      "subaccountNumber": 256
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12906057"
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 384,
+                  "equity": "39.638080292",
+                  "freeCollateral": "20.6751854628",
+                  "openPerpetualPositions": {
+                    "ARB-USD": {
+                      "market": "ARB-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "166",
+                      "maxSize": "166",
+                      "entryPrice": "1.14298795180722891566",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "-0.10705170799999999956",
+                      "createdAt": "2024-05-22T20:31:23.666Z",
+                      "createdAtHeight": "12906110",
+                      "closedAt": null,
+                      "sumOpen": "166",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 384
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "149.990868",
+                      "symbol": "USDC",
+                      "side": "SHORT",
+                      "assetId": "0",
+                      "subaccountNumber": 384
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12906110"
+                }
+              ]
+            },
+            "orders": []
+          }
         }
     """.trimIndent()
 
