@@ -354,7 +354,7 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)
         testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.channel_batch_data)
 
-        stateManager.market = "ETH-USD"
+        stateManager.market = "BTC-USD"
     }
 
     private fun prepareIsolatedMarginTrade(isShortTerm: Boolean) {

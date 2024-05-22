@@ -60,6 +60,7 @@ data class Tooltip(
 @JsExport
 @Serializable
 data class TradeInputOptions(
+    val needsMarginMode: Boolean,
     val needsSize: Boolean,
     val needsLeverage: Boolean,
     val maxLeverage: Double?,
@@ -168,6 +169,7 @@ data class TradeInputOptions(
             Logger.d { "creating Trade Input Options\n" }
 
             data?.let {
+                val needsMarginMode = parser.asBool(data["needsMarginMode"]) ?: true
                 val needsSize = parser.asBool(data["needsSize"]) ?: false
                 val needsLeverage = parser.asBool(data["needsLeverage"]) ?: false
                 val maxLeverage = parser.asDouble(data["maxLeverage"])
@@ -233,7 +235,9 @@ data class TradeInputOptions(
                 val executionOptionsArray =
                     executionOptions
 
-                return if (existing?.needsSize != needsSize ||
+                return if (
+                    existing?.needsMarginMode != needsMarginMode ||
+                    existing.needsSize != needsSize ||
                     existing.needsLeverage != needsLeverage ||
                     existing.maxLeverage != maxLeverage ||
                     existing.needsLimitPrice != needsLimitPrice ||
@@ -252,6 +256,7 @@ data class TradeInputOptions(
                     val typeOptions = typeOptionsV4Array
 
                     TradeInputOptions(
+                        needsMarginMode,
                         needsSize,
                         needsLeverage,
                         maxLeverage,
