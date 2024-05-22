@@ -155,12 +155,14 @@ private fun TradingStateMachine.findExistingMarginMode(
         parser.asString(parser.value(it, "marketId")) == marketId
     }
     if (order != null) {
-        return if ((parser.asInt(
-                parser.value(
-                    order,
-                    "subaccountNumber",
-                ),
-            ) ?: subaccountNumber) != subaccountNumber
+        return if ((
+                parser.asInt(
+                    parser.value(
+                        order,
+                        "subaccountNumber",
+                    ),
+                ) ?: subaccountNumber
+                ) != subaccountNumber
         ) {
             "ISOLATED"
         } else {
