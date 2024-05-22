@@ -1394,7 +1394,7 @@ open class StateManagerAdaptor(
 
     open fun retrieveAccountHistoricalTradingRewards(
         period: String = "DAILY",
-        previousUrl: String? = null
+        previousUrl: String? = null,
     ) {
         val oldState = stateMachine.state
         var url = historicalTradingRewardAggregationsUrl() ?: return
@@ -1406,12 +1406,15 @@ open class StateManagerAdaptor(
             ),
         )?.mutable()
 
+        val tradingRewardsStartDate = Instant.fromEpochMilliseconds(environment.rewardsHistoryStartDateMs.toLong())
+        val maxDuration = Clock.System.now() - tradingRewardsStartDate
+
         retrieveTimed(
             url,
             historicalTradingRewardsInPeriod,
             "startedAt",
             1.days,
-            180.days, // OTE-337: update this to read in the trading rewards start date from env.json
+            maxDuration,
             "startingBeforeOrAt",
             null,
             params,

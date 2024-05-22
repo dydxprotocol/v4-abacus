@@ -54,6 +54,8 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import kollections.iListOf
 import kollections.iSetOf
 import kollections.toIMap
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlin.collections.mutableMapOf
 import kotlin.time.Duration.Companion.days
 
@@ -481,12 +483,15 @@ internal open class AccountSupervisor(
             ),
         )?.mutable()
 
+        val tradingRewardsStartDate = Instant.fromEpochMilliseconds(helper.environment.rewardsHistoryStartDateMs.toLong())
+        val maxDuration = Clock.System.now() - tradingRewardsStartDate
+
         helper.retrieveTimed(
             url,
             historicalTradingRewardsInPeriod,
             "startedAt",
             1.days,
-            180.days, // OTE-337: update this to read in the trading rewards start date from env.json
+            maxDuration,
             "startingBeforeOrAt",
             null,
             params,
