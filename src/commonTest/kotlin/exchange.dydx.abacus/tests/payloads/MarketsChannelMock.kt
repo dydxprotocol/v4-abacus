@@ -10,6 +10,25 @@ internal class MarketsChannelMock {
           "channel": "v3_markets",
           "contents": {
             "markets": {
+                "APE-USD": {
+                    "clobPairId": "22",
+                    "ticker": "APE-USD",
+                    "status": "ACTIVE",
+                    "oraclePrice": "1.260519794",
+                    "priceChange24H": "-0.013680206",
+                    "volume24H": "519465.935",
+                    "trades24H": 1358,
+                    "nextFundingRate": "-0.00000426818181818182",
+                    "initialMarginFraction": "0.2",
+                    "maintenanceMarginFraction": "0.1",
+                    "openInterest": "142671",
+                    "atomicResolution": -6,
+                    "quantumConversionExponent": -9,
+                    "tickSize": "0.001",
+                    "stepSize": "1",
+                    "stepBaseQuantums": 1000000,
+                    "subticksPerTick": 1000000
+                },
                 "LDO-USD":{
                     "clobPairId":"26",
                     "ticker":"LDO-USD",
@@ -2720,6 +2739,25 @@ internal class MarketsChannelMock {
            "channel":"v4_markets",
            "contents":{
               "markets":{
+                  "APE-USD": {
+                    "clobPairId": "22",
+                    "ticker": "APE-USD",
+                    "status": "ACTIVE",
+                    "oraclePrice": "1.260519794",
+                    "priceChange24H": "-0.013680206",
+                    "volume24H": "519465.935",
+                    "trades24H": 1358,
+                    "nextFundingRate": "-0.00000426818181818182",
+                    "initialMarginFraction": "0.2",
+                    "maintenanceMarginFraction": "0.1",
+                    "openInterest": "142671",
+                    "atomicResolution": -6,
+                    "quantumConversionExponent": -9,
+                    "tickSize": "0.001",
+                    "stepSize": "1",
+                    "stepBaseQuantums": 1000000,
+                    "subticksPerTick": 1000000
+                  },
                  "BTC-USD":{
                     "clobPairId":"0",
                     "ticker":"BTC-USD",

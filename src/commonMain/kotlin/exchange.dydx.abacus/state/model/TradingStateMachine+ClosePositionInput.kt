@@ -4,6 +4,8 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -100,14 +102,20 @@ fun TradingStateMachine.closePosition(
 
 fun TradingStateMachine.getPosition(
     marketId: String,
-    subaccountNumber: Int = 0
 ): Map<String, Any>? {
-    val position = parser.asMap(
-        parser.value(
-            wallet,
-            "account.subaccounts.$subaccountNumber.openPositions.$marketId",
-        ),
-    )
+    val subaccounts = parser.asMap(parser.value(wallet, "account.subaccounts")) ?: mutableMapOf()
+
+    var position: Map<String, Any>? = null
+
+    for ((_, subaccount) in subaccounts) {
+        val subaccountPosition = parser.asMap(parser.value(subaccount, "openPositions.$marketId"))
+
+        if (subaccountPosition != null) {
+            position = subaccountPosition
+            break
+        }
+    }
+
     return if (position != null && (
             parser.asDouble(parser.value(position, "size.current"))
                 ?: Numeric.double.ZERO
