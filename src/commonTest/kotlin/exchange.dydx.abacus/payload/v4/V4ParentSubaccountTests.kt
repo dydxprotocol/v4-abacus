@@ -365,7 +365,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
-                            "marginMode": "ISOLATED",
+                            "marginMode": "CROSS",
                             "options": {
                                 "needsMarginMode": true
                             }

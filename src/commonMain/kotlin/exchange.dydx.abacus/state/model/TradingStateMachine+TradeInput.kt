@@ -135,17 +135,9 @@ internal fun TradingStateMachine.updateTradeInputFromMarket(
             parser,
             parser.asMap(parser.value(marketsSummary, "markets.$marketId")),
         )
-        if (marketMarginMode == "ISOLATED") {
-            // if market is "ISOLATED", we have to use "ISOLATED" margin mode
-            modified["marginMode"] = marketMarginMode
-            if (parser.asDouble(trade["targetLeverage"]) == null) {
-                modified["targetLeverage"] = 1.0
-            }
-        } else {
-            // if market is "CROSS", we default to "CROSS" if it is not already set
-            if (modified["marginMode"] == null) {
-                modified["marginMode"] = "CROSS"
-            }
+        modified["marginMode"] = marketMarginMode
+        if (parser.asDouble(trade["targetLeverage"]) == null) {
+            modified["targetLeverage"] = 1.0
         }
     }
     return modified
