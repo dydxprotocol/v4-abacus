@@ -94,7 +94,7 @@ internal open class AccountSupervisor(
         }
 
     var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
-        HistoricalTradingRewardsPeriod.WEEKLY
+        HistoricalTradingRewardsPeriod.DAILY
         internal set(value) {
             if (field != value) {
                 field = value
@@ -485,9 +485,9 @@ internal open class AccountSupervisor(
             url,
             historicalTradingRewardsInPeriod,
             "startedAt",
-            0.days,
-            180.days,
-            "endedAt",
+            1.days,
+            180.days, // OTE-337: update this to read in the trading rewards start date from env.json
+            "startingBeforeOrAt",
             null,
             params,
             previousUrl,

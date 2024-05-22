@@ -68,7 +68,7 @@ internal class AccountsSupervisor(
         }
 
     var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
-        HistoricalTradingRewardsPeriod.WEEKLY
+        HistoricalTradingRewardsPeriod.DAILY
         internal set(value) {
             if (field != value) {
                 field = value
