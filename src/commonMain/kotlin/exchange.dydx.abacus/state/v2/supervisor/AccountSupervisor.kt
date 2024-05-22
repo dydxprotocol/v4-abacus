@@ -912,7 +912,7 @@ internal open class AccountSupervisor(
             state?.transferStatuses,
             state?.restriction,
             state?.launchIncentive,
-            compliance,
+            Compliance(state?.compliance?.geo, compliance.status, compliance.updatedAt, compliance.expiresAt),
         )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
