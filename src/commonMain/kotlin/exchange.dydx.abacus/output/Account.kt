@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output
 
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
@@ -413,7 +414,7 @@ data class SubaccountPosition(
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
                         existing.equity !== equity ||
-                        existing.marginMode !== marginMode
+                        existing.marginMode != marginMode
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
