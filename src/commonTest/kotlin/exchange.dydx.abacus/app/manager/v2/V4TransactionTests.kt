@@ -345,15 +345,18 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueEmpty()
     }
 
-    private fun setStateMachineForIsolatedMarginTests(stateManager: AsyncAbacusStateManagerV2) {
+    private fun setStateMachineForIsolatedMarginTests(stateManager: AsyncAbacusStateManagerV2, withPositions: Boolean = false) {
         stateManager.readyToConnect = true
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
 
         stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
-        testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)
-
+        if (withPositions) {
+            testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)
+        } else {
+            testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)
+        }
         stateManager.market = "BTC-USD"
     }
 
@@ -378,7 +381,7 @@ class V4TransactionTests : NetworkTests() {
 
     @Test
     fun testIsolatedMarginClosePosition() {
-        setStateMachineForIsolatedMarginTests(stateManager)
+        setStateMachineForIsolatedMarginTests(stateManager, withPositions = true)
         prepareIsolatedMarginClosePosition()
         val closePositionPayload = subaccountSupervisor?.closePositionPayload(0)
         assertNotNull(closePositionPayload, "Close position payload should not be null")
