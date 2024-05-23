@@ -200,8 +200,8 @@ internal fun TradingStateMachine.orderCanceled(
 }
 
 internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateChanges {
-    val json = Json.parseToJsonElement(payload)
     return try {
+        val json = Json.parseToJsonElement(payload)
         val account = json.jsonArray.toList()
         this.wallet = walletProcessor.receivedAccountBalances(wallet, account)
         return StateChanges(iListOf(Changes.accountBalances), null)
