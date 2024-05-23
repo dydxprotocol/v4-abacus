@@ -81,6 +81,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -262,7 +263,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null)
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null, null)
         set(value) {
             if (field != value) {
                 field = value
@@ -2521,42 +2522,36 @@ open class StateManagerAdaptor(
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    compliance = if (success(httpCode) && response != null) {
+                    var geo: String? = null
+                    if (success(httpCode) && response != null) {
                         val payload = parser.decodeJsonObject(response)?.toIMap()
-                        if (payload != null) {
-                            val country = parser.asString(parser.value(payload, "geo.country"))
-                            Compliance(country, compliance.status, compliance.updatedAt)
-                        } else {
-                            Compliance(null, compliance.status, compliance.updatedAt)
-                        }
-                    } else {
-                        Compliance(null, compliance.status, compliance.updatedAt)
+                        geo = parser.asString(payload?.get("geo"))
                     }
+                    compliance = compliance.copy(geo = geo)
                 },
             )
         }
     }
 
     private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
-        compliance = if (success(httpCode) && response != null) {
+        var complianceStatus = ComplianceStatus.UNKNOWN
+        var updatedAt: String? = null
+        var expiresAt: String? = null
+        if (success(httpCode) && response != null) {
             val res = parser.decodeJsonObject(response)?.toIMap()
-            if (res != null) {
-                val status = parser.asString(res["status"])
-                val updatedAt = parser.asString(res["updatedAt"])
-                val complianceStatus =
-                    if (status != null) {
-                        ComplianceStatus.valueOf(status)
-                    } else {
-                        ComplianceStatus.UNKNOWN
-                    }
-                Compliance(compliance.geo, complianceStatus, updatedAt ?: compliance.updatedAt)
-            } else {
-                Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+            complianceStatus = parser.asString(res?.get("status"))?.let { ComplianceStatus.valueOf(it) } ?: ComplianceStatus.UNKNOWN
+            updatedAt = parser.asString(res?.get("updatedAt"))
+            if (updatedAt != null) {
+                expiresAt = try {
+                    Instant.parse(updatedAt).plus(7.days).toString()
+                } catch (e: Exception) {
+                    Logger.e { "Error parsing compliance updatedAt: $updatedAt" }
+                    null
+                }
             }
-        } else {
-            Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
         }
-        return compliance.status
+        compliance = compliance.copy(status = complianceStatus, updatedAt = updatedAt, expiresAt = expiresAt)
+        return complianceStatus
     }
 
     private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
@@ -2606,10 +2601,10 @@ open class StateManagerAdaptor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+                    compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
                 }
             } else {
-                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+                compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
             }
         }
     }

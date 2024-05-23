@@ -579,6 +579,11 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         if (data != null) {
             assertNotNull(obj)
             assertEquals(
+                parser.asBool(data["needsMarginMode"]) ?: false,
+                obj.needsMarginMode,
+                "$trace.needsMarginMode $doesntMatchText",
+            )
+            assertEquals(
                 parser.asBool(data["needsSize"]) ?: false,
                 obj.needsSize,
                 "$trace.needsSize $doesntMatchText",
