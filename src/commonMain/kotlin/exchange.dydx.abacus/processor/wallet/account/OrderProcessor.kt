@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
@@ -207,7 +208,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             parser.asInt(modified["subaccountNumber"])?.run {
                 modified.safeSet("subaccountNumber", this)
                 // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
-                modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated else MarginMode.cross)
+                modified.safeSet("marketType", if (this >= NUM_PARENT_SUBACCOUNTS) PerpetualMarketType.ISOLATED else PerpetualMarketType.CROSS)
             }
             val size = parser.asDouble(payload["size"])
             if (size != null) {

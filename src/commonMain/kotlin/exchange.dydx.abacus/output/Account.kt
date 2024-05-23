@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.output
 
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
@@ -256,7 +255,7 @@ data class SubaccountPosition(
     val marginUsage: TradeStatesWithDoubleValues,
     val quoteBalance: TradeStatesWithDoubleValues, // available for isolated market position
     val equity: TradeStatesWithDoubleValues, // available for isolated market position
-    val marginMode: MarginMode?
+    val marketType: PerpetualMarketType?
 ) {
     companion object {
         internal fun create(
@@ -385,7 +384,7 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["equity"]),
                     )
-                    val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
+                    val marketType = parser.asString(data["marketType"])?.let { PerpetualMarketType.invoke(it) }
 
                     return if (existing?.id != id ||
                         existing.assetId != assetId ||
@@ -414,7 +413,7 @@ data class SubaccountPosition(
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
                         existing.equity !== equity ||
-                        existing.marginMode != marginMode
+                        existing.marketType != marketType
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
@@ -446,7 +445,7 @@ data class SubaccountPosition(
                             marginUsage,
                             quoteBalance,
                             equity,
-                            marginMode,
+                            marketType,
                         )
                     } else {
                         existing
@@ -667,7 +666,7 @@ data class SubaccountOrder(
     val cancelReason: String?,
     val resources: SubaccountOrderResources,
     val subaccountNumber: Int?,
-    val marginMode: MarginMode?
+    val marketType: PerpetualMarketType?
 ) {
     companion object {
         internal fun create(
@@ -701,7 +700,7 @@ data class SubaccountOrder(
                 }
                 // TODO: Remove default to 0 for subaccountNumber once new indexer response is consumed. Prevents breaking change
                 val subaccountNumber = parser.asInt(data["subaccountNumber"]) ?: 0
-                val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
+                val marketType = parser.asString(data["marketType"])?.let { PerpetualMarketType.invoke(it) }
                 if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null &&
                     resources != null
                 ) {
@@ -752,7 +751,7 @@ data class SubaccountOrder(
                         existing.cancelReason != cancelReason ||
                         existing.resources !== resources ||
                         existing.subaccountNumber != subaccountNumber ||
-                        existing.marginMode != marginMode
+                        existing.marketType != marketType
                     ) {
                         SubaccountOrder(
                             id,
@@ -782,7 +781,7 @@ data class SubaccountOrder(
                             cancelReason,
                             resources,
                             subaccountNumber,
-                            marginMode,
+                            marketType,
                         )
                     } else {
                         existing

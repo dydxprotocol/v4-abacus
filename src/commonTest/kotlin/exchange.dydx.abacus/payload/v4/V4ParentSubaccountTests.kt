@@ -257,7 +257,6 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 500.0
-                                            },
                                             "subaccountNumber": 128,
                                             "marginMode": "ISOLATED"
                                         }
@@ -282,10 +281,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "current": "trade",
                         "trade": {
                             "marginMode": "ISOLATED",
-                            "targetLeverage": 1.0,
-                            "options": {
-                                "needsMarginMode": false
-                            }
+                            "targetLeverage": 1.0
                         }
                     }
                 }
@@ -301,10 +297,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
-                            "marginMode": "CROSS",
-                            "options": {
-                                "needsMarginMode": false
-                            }
+                            "marginMode": "CROSS"
                         }
                     }
                 }
@@ -320,10 +313,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
-                            "marginMode": "ISOLATED",
-                            "options": {
-                                "needsMarginMode": false
-                            }
+                            "marginMode": "ISOLATED"
                         }
                     }
                 }
@@ -339,10 +329,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
-                            "marginMode": "CROSS",
-                            "options": {
-                                "needsMarginMode": false
-                            }
+                            "marginMode": "CROSS"
                         }
                     }
                 }
@@ -358,10 +345,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
-                            "marginMode": "ISOLATED",
-                            "options": {
-                                "needsMarginMode": false
-                            }
+                            "marginMode": "ISOLATED"
                         }
                     }
                 }
@@ -377,10 +361,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
-                            "marginMode": "CROSS",
-                            "options": {
-                                "needsMarginMode": true
-                            }
+                            "marginMode": "CROSS"
                         }
                     }
                 }
