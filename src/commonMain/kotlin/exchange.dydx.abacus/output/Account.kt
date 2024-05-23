@@ -859,18 +859,6 @@ data class SubaccountFillResources(
 
 @JsExport
 @Serializable
-enum class MarginMode(val rawValue: String) {
-    ISOLATED("ISOLATED"),
-    CROSS("CROSS");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            MarginMode.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-@JsExport
-@Serializable
 enum class FillLiquidity(val rawValue: String) {
     maker("MAKER"),
     taker("TAKER");
