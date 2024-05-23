@@ -34,7 +34,7 @@ object AbacusFactory {
         stateNotification: StateNotificationProtocol? = null,
         dataNotification: DataNotificationProtocol? = null,
         presentationProtocol: PresentationProtocol? = null,
-    ): AbacusComponent = AbacusComponent::class.create(
+    ): AbacusComponent = createAbacusComponent(
         deploymentUri,
         deployment,
         appConfigs,
@@ -61,3 +61,14 @@ abstract class AbacusComponent(
 ) {
     abstract val stateManager: AsyncAbacusStateManagerV2
 }
+
+internal expect fun createAbacusComponent(
+    deploymentUri: DeploymentUri,
+    deployment: Deployment,
+    appConfigs: AppConfigsV2,
+    ioImplementations: IOImplementations,
+    uiImplementations: UIImplementations,
+    stateNotification: StateNotificationProtocol?,
+    dataNotification: DataNotificationProtocol?,
+    presentationProtocol: PresentationProtocol?,
+): AbacusComponent
