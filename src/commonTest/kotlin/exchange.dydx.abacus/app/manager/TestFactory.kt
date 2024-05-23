@@ -313,6 +313,7 @@ class TestChain : DYDXChainTransactionsProtocol {
     var cancelOrderResponse: String? = null
     var depositResponse: String? = null
     var withdrawResponse: String? = null
+    var signCompliancePayload: String? = null
 
     var transactionCallback: ((response: String?) -> Unit)? = null
 
@@ -377,7 +378,19 @@ class TestChain : DYDXChainTransactionsProtocol {
                 withdraw(paramsInJson!!, callback)
             }
 
+            TransactionType.SignCompliancePayload -> {
+                signCompliancePayload(paramsInJson!!, callback)
+            }
+
             else -> {}
+        }
+    }
+
+    fun signCompliancePayload(json: String, callback: (response: String?) -> Unit) {
+        if (signCompliancePayload != null) {
+            callback(signCompliancePayload)
+        } else {
+            callback(dummyError)
         }
     }
 

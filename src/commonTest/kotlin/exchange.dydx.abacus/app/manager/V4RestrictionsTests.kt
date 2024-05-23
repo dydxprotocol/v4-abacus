@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.app.manager
 
+import exchange.dydx.abacus.output.ComplianceAction
+import exchange.dydx.abacus.output.ComplianceStatus
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.state.manager.AppConfigs
@@ -139,5 +141,78 @@ class V4RestrictionsTests {
                 "Expected user restriction",
             )
         }
+    }
+
+    @Test
+    fun testGeoEndpointHandling() {
+        reset()
+
+        testChain!!.signCompliancePayload = """
+        {
+            "signedMessage": "1",
+            "publicKey": "1",
+            "timestamp": "2024-05-14T20:40:00.415Z"
+        }
+        """.trimIndent()
+
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/geoblock",
+            """
+                {
+                    "status": "CLOSE_ONLY",
+                    "reason": null,
+                    "updatedAt": "2024-05-14T20:40:00.415Z"
+                }
+            """.trimIndent(),
+        )
+
+        setStateMachineConnected(stateManager)
+        val testAddress = "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm"
+        stateManager.setAddresses(null, testAddress)
+
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/screen/$testAddress",
+            """
+                {
+                    "status": "CLOSE_ONLY",
+                    "reason": null,
+                    "updatedAt": "2024-05-14T20:40:00.415Z"
+                }
+            """.trimIndent(),
+        )
+
+        testRest?.setResponse(
+            "https://indexer.v4staging.dydx.exchange/v4/compliance/geoblock",
+            """
+                {
+                    "status": "CLOSE_ONLY",
+                    "reason": null,
+                    "updatedAt": "2024-05-14T20:40:00.415Z"
+                }
+            """.trimIndent(),
+        )
+
+        stateManager.triggerCompliance(ComplianceAction.CONNECT) { successful, error, data ->
+            print("")
+        }
+
+        assertEquals(
+            ComplianceStatus.CLOSE_ONLY,
+            stateManager.adaptor?.stateMachine?.state?.compliance?.status,
+            "Expected CLOSE_ONLY restriction",
+        )
+
+        assertEquals(
+            "2024-05-14T20:40:00.415Z",
+            stateManager.adaptor?.stateMachine?.state?.compliance?.updatedAt,
+            "Expected different updatedAt",
+        )
+
+        // expires at is 7 days in advance
+        assertEquals(
+            "2024-05-21T20:40:00.415Z",
+            stateManager.adaptor?.stateMachine?.state?.compliance?.expiresAt,
+            "Expected different expires at",
+        )
     }
 }
