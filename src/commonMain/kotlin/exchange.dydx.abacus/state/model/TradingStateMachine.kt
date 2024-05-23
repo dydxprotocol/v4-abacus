@@ -1198,7 +1198,7 @@ open class TradingStateMachine(
         for (subaccountNumber in subaccountNumbers) {
             val subaccountText = "$subaccountNumber"
             val subaccount =
-                parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber"))
+                parser.asNativeMap(parser.value(this.account, "groupedSubaccounts.$subaccountNumber")) ?: parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber"))
 
             if (changes.changes.contains(Changes.historicalPnl)) {
                 val now = ServerTime.now()
