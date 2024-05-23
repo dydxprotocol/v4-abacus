@@ -58,6 +58,7 @@ class AbacusMockData {
         "dYdX-api",
         "dYdX Chain",
         "dYdX-logo.png",
+        "1704844800000",
         false,
         EnvironmentEndpoints(
             null,

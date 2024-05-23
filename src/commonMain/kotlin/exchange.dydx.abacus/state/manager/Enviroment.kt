@@ -4,9 +4,11 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.ServerTime
 import kollections.JsExport
 import kollections.iMutableMapOf
 import kollections.toIList
+import kotlin.time.Duration.Companion.days
 
 @JsExport
 data class IndexerURIs(
@@ -400,6 +402,7 @@ open class Environment(
     val ethereumChainId: String,
     val dydxChainId: String?,
     val squidIntegratorId: String?,
+    val rewardsHistoryStartDateMs: String,
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
@@ -418,6 +421,7 @@ class V4Environment(
     squidIntegratorId: String?,
     val chainName: String?,
     val chainLogo: String?,
+    rewardsHistoryStartDateMs: String,
     isMainNet: Boolean,
     endpoints: EnvironmentEndpoints,
     links: EnvironmentLinks?,
@@ -432,6 +436,7 @@ class V4Environment(
     ethereumChainId,
     dydxChainId,
     squidIntegratorId,
+    rewardsHistoryStartDateMs,
     isMainNet,
     endpoints,
     links,
@@ -458,6 +463,7 @@ class V4Environment(
             val squidIntegratorId = parser.asString(data["squidIntegratorId"])
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
+            val rewardsHistoryStartDateMs = parser.asString(data["rewardsHistoryStartDateMs"]) ?: ServerTime.now().minus(180.days).toEpochMilliseconds().toString()
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
             val endpoints =
                 EnvironmentEndpoints.parse(parser.asNativeMap(data["endpoints"]) ?: return null, parser)
@@ -484,6 +490,7 @@ class V4Environment(
                 squidIntegratorId,
                 chainName,
                 "$deploymentUri$chainLogo",
+                rewardsHistoryStartDateMs,
                 isMainNet,
                 endpoints,
                 links,

@@ -73,6 +73,7 @@ class EnvironmentsMock {
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
                  "squidIntegratorId": "dYdX-api",
+                 "rewardsHistoryStartDateMs": "1704844800000",
                  "isMainNet":false,
                  "endpoints":{
                     "indexers":[
@@ -106,6 +107,7 @@ class EnvironmentsMock {
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
                  "squidIntegratorId": "dYdX-api",
+                 "rewardsHistoryStartDateMs": "1704844800000",
                  "isMainNet":false,
                  "endpoints":{
                     "indexers":[

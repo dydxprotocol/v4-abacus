@@ -1827,8 +1827,12 @@ data class TradingRewards(
                             }
 
                             else -> {
+                                val modified = item.mutable()
+                                modified.safeSet("cumulativeAmount", obj.cumulativeAmount)
+                                val synced =
+                                    HistoricalTradingReward.create(obj, parser, modified, period)
                                 addHistoricalTradingRewards(result, obj, period, lastStart)
-                                result.add(obj)
+                                result.add(synced!!)
                                 objIndex++
                                 dataIndex++
                                 lastStart = obj.startedAtInMilliseconds
@@ -1940,7 +1944,7 @@ data class TradingRewards(
                 Instant.fromEpochMilliseconds(lastStart.toLong())
             }
             while (obj.startedAtInMilliseconds < lastStartTime.toEpochMilliseconds().toDouble()) {
-                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount)
+                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount + obj.amount)
                 if (obj.startedAtInMilliseconds < previous.startedAtInMilliseconds) {
                     result.add(previous)
                     lastStartTime =
