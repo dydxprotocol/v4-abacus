@@ -484,7 +484,7 @@ internal open class AccountSupervisor(
         )?.mutable()
 
         val tradingRewardsStartDate = Instant.fromEpochMilliseconds(helper.environment.rewardsHistoryStartDateMs.toLong())
-        val maxDuration = Clock.System.now() - tradingRewardsStartDate
+        val maxDuration = Clock.System.now() - tradingRewardsStartDate + 2.days
 
         helper.retrieveTimed(
             url,

@@ -1407,7 +1407,7 @@ open class StateManagerAdaptor(
         )?.mutable()
 
         val tradingRewardsStartDate = Instant.fromEpochMilliseconds(environment.rewardsHistoryStartDateMs.toLong())
-        val maxDuration = Clock.System.now() - tradingRewardsStartDate
+        val maxDuration = Clock.System.now() - tradingRewardsStartDate + 2.days
 
         retrieveTimed(
             url,
