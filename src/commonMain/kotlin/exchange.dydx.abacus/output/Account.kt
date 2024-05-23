@@ -445,7 +445,7 @@ data class SubaccountPosition(
                             marginUsage,
                             quoteBalance,
                             equity,
-                            marginMode
+                            marginMode,
                         )
                     } else {
                         existing
@@ -667,7 +667,7 @@ data class SubaccountOrder(
     val resources: SubaccountOrderResources,
     val subaccountNumber: Int?,
     val marginMode: MarginMode?
-    ) {
+) {
     companion object {
         internal fun create(
             existing: SubaccountOrder?,
@@ -677,7 +677,6 @@ data class SubaccountOrder(
         ): SubaccountOrder? {
             Logger.d { "creating Account Order\n" }
             data?.let {
-
                 val id = parser.asString(data["id"])
                 val clientId = parser.asInt(data["clientId"])
                 val marketId = parser.asString(data["marketId"])
@@ -753,7 +752,7 @@ data class SubaccountOrder(
                         existing.resources !== resources ||
                         existing.subaccountNumber != subaccountNumber ||
                         existing.marginMode != marginMode
-                            ) {
+                    ) {
                         SubaccountOrder(
                             id,
                             clientId,
@@ -782,8 +781,8 @@ data class SubaccountOrder(
                             cancelReason,
                             resources,
                             subaccountNumber,
-                            marginMode
-                            )
+                            marginMode,
+                        )
                     } else {
                         existing
                     }

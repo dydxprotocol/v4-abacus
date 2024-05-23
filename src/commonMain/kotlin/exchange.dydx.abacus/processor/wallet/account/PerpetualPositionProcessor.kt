@@ -119,7 +119,7 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
 
         parser.asInt(payload["subaccountNumber"])?.run {
             modified.safeSet("subaccountNumber", this)
-            
+
             // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
             modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated else MarginMode.cross)
         }
