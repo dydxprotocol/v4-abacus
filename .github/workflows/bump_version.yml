@@ -19,9 +19,9 @@ jobs:
           # Fetch full depth, otherwise the last step overwrites the last commit's parent, essentially removing the graph.
           fetch-depth: 0
 
-      - name: Run bump_version.sh
+      - name: Run bump_version_gh_action.sh
         run: |
-          bash ./bump_version.sh
+          bash ./bump_version_gh_action.sh
       - name: Amend the last commit
         run: |
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
