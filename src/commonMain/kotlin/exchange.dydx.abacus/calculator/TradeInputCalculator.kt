@@ -1138,6 +1138,7 @@ internal class TradeInputCalculator(
     ): Map<String, Any>? {
         fields?.let { fields ->
             val options = mutableMapOf<String, Any>(
+                "needsMarginMode" to false,
                 "needsSize" to false,
                 "needsLeverage" to false,
                 "needsTargetLeverage" to false,
@@ -1187,6 +1188,10 @@ internal class TradeInputCalculator(
                             options.safeSet(
                                 "marginModeOptions",
                                 parser.asNativeList(field["options"]),
+                            )
+                            options.safeSet(
+                                "needsMarginMode",
+                                parser.asNativeList(field["options"])?.let { it.size > 1 },
                             )
                         }
 
