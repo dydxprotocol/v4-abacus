@@ -441,6 +441,9 @@ open class TradingStateMachine(
         return Pair(market, resolution)
     }
 
+    /**
+     * function specifically for testing spoofed rest response processing
+     */
     fun rest(
         url: AbUrl,
         payload: String,
