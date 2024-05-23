@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:property-naming")
+
 package exchange.dydx.abacus.calculator
 
 import abs
@@ -54,7 +56,6 @@ internal class TradeInputCalculator(
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
         val subaccount = if (subaccountNumber != null) {
-
             parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
                 ?: parser.asNativeMap(
                     parser.value(
