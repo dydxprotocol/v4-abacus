@@ -84,7 +84,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": -0.12
                                             },
                                             "subaccountNumber": 0,
-                                            "marginMode": "CROSS"
+                                            "marketType": "CROSS"
                                         }
                                     }
                                 },
@@ -132,7 +132,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 7962.44
                                             },
                                             "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            "marketType": "ISOLATED"
                                         }
                                     },
                                     "orders": {
@@ -150,7 +150,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "reduceOnly": false,
                                             "goodTilBlock": "5837",
                                             "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            "marketType": "ISOLATED"
                                         }
                                     }
                                 }
@@ -194,7 +194,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": -0.12
                                             },
                                             "subaccountNumber": 0,
-                                            "marginMode": "CROSS"
+                                            "marketType": "CROSS"
                                         },
                                         "RUNE-USD": {
                                             "id": "RUNE-USD",
@@ -239,7 +239,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 0.0397
                                             },
                                             "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            "marketType": "ISOLATED"
                                         }
                                     },
                                     "pendingPositions": [
@@ -257,8 +257,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 500.0
-                                            "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            }
                                         }
                                     ]
                                 }
