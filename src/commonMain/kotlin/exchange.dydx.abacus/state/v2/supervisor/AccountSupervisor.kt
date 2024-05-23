@@ -207,21 +207,23 @@ internal open class AccountSupervisor(
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
         val isSubaccountRealized = stateMachine.state?.subaccount(subaccountNumber) != null
         val subaccountSupervisor = subaccounts[subaccountNumber]
-        subaccountSupervisor?.retain() ?: run {
-            val newSubaccountSupervisor = SubaccountSupervisor(
-                stateMachine,
-                helper,
-                analyticsUtils,
-                configs.subaccountConfigs,
-                accountAddress,
-                subaccountNumber,
-            )
-            newSubaccountSupervisor.readyToConnect = readyToConnect
-            newSubaccountSupervisor.indexerConnected = indexerConnected
-            newSubaccountSupervisor.socketConnected = socketConnected
-            newSubaccountSupervisor.validatorConnected = validatorConnected
-            subaccounts[subaccountNumber] = newSubaccountSupervisor
-        }
+        subaccountSupervisor?.retain()
+            ?: run {
+                val newSubaccountSupervisor =
+                    SubaccountSupervisor(
+                        stateMachine,
+                        helper,
+                        analyticsUtils,
+                        configs.subaccountConfigs,
+                        accountAddress,
+                        subaccountNumber,
+                    )
+                newSubaccountSupervisor.readyToConnect = readyToConnect
+                newSubaccountSupervisor.indexerConnected = indexerConnected
+                newSubaccountSupervisor.socketConnected = socketConnected
+                newSubaccountSupervisor.validatorConnected = validatorConnected
+                subaccounts[subaccountNumber] = newSubaccountSupervisor
+            }
         subaccounts[subaccountNumber]?.realized = isSubaccountRealized
     }
 
@@ -304,23 +306,31 @@ internal open class AccountSupervisor(
     private fun retrieveSubaccounts() {
         val url = accountUrl()
         if (url != null) {
-            helper.get(url, null, null, callback = { _, response, httpCode, _ ->
-                val isValidResponse = helper.success(httpCode) && response != null
-                if (isValidResponse) {
-                    response?.let { retrievedSubaccounts(it) }
-                    complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
-                } else {
-                    complianceScreen(DydxAddress(accountAddress), ComplianceAction.ONBOARD)
-                }
-                if (!isValidResponse && httpCode != 403) {
-                    subaccountNumber = 0
-                    subaccountsTimer =
-                        helper.ioImplementations.timer?.schedule(subaccountsPollingDelay, null) {
-                            retrieveSubaccounts()
-                            false
-                        }
-                }
-            })
+            helper.get(
+                url,
+                null,
+                null,
+                callback = { _, response, httpCode, _ ->
+                    val isValidResponse = helper.success(httpCode) && response != null
+                    if (isValidResponse) {
+                        response?.let { retrievedSubaccounts(it) }
+                        complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
+                    } else {
+                        complianceScreen(DydxAddress(accountAddress), ComplianceAction.ONBOARD)
+                    }
+                    if (!isValidResponse && httpCode != 403) {
+                        subaccountNumber = 0
+                        subaccountsTimer =
+                            helper.ioImplementations.timer?.schedule(
+                                subaccountsPollingDelay,
+                                null,
+                            ) {
+                                retrieveSubaccounts()
+                                false
+                            }
+                    }
+                },
+            )
         }
     }
 
@@ -357,14 +367,15 @@ internal open class AccountSupervisor(
 
     private fun retrieveUserStats() {
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-        userStatsTimer = timer.schedule(0.0, userStatsPollingDuration) {
-            if (validatorConnected && subaccount != null) {
-                getUserStats()
-                true
-            } else {
-                false
+        userStatsTimer =
+            timer.schedule(0.0, userStatsPollingDuration) {
+                if (validatorConnected && subaccount != null) {
+                    getUserStats()
+                    true
+                } else {
+                    false
+                }
             }
-        }
     }
 
     private fun getUserStats() {
@@ -378,14 +389,15 @@ internal open class AccountSupervisor(
 
     private fun retrieveBalances() {
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-        accountBalancesTimer = timer.schedule(0.0, accountBalancePollingDuration) {
-            if (validatorConnected) {
-                getAccountBalances()
-                true
-            } else {
-                false
+        accountBalancesTimer =
+            timer.schedule(0.0, accountBalancePollingDuration) {
+                if (validatorConnected) {
+                    getAccountBalances()
+                    true
+                } else {
+                    false
+                }
             }
-        }
     }
 
     private fun getAccountBalances() {
@@ -404,14 +416,15 @@ internal open class AccountSupervisor(
 
     private fun retrieveNobleBalance() {
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-        nobleBalancesTimer = timer.schedule(0.0, nobleBalancePollingDuration) {
-            if (validatorConnected) {
-                getNobleBalance()
-                true
-            } else {
-                false
+        nobleBalancesTimer =
+            timer.schedule(0.0, nobleBalancePollingDuration) {
+                if (validatorConnected) {
+                    getNobleBalance()
+                    true
+                } else {
+                    false
+                }
             }
-        }
     }
 
     private fun getNobleBalance() {
@@ -440,9 +453,8 @@ internal open class AccountSupervisor(
                             pendingCctpWithdraw = null
                             processingCctpWithdraw = false
                         }
-                    } ?: run {
-                        transferNobleBalance(amount)
                     }
+                        ?: run { transferNobleBalance(amount) }
                 } else if (balance["error"] != null) {
                     Logger.e { "Error checking noble balance: $response" }
                 }
@@ -476,14 +488,18 @@ internal open class AccountSupervisor(
         val oldState = stateMachine.state
         val url = historicalTradingRewardAggregationsUrl() ?: return
         val params = historicalTradingRewardAggregationsParams(period.rawValue)
-        val historicalTradingRewardsInPeriod = helper.parser.asNativeList(
-            helper.parser.value(
-                stateMachine.data,
-                "wallet.account.tradingRewards.historical.$period",
-            ),
-        )?.mutable()
+        val historicalTradingRewardsInPeriod =
+            helper.parser
+                .asNativeList(
+                    helper.parser.value(
+                        stateMachine.data,
+                        "wallet.account.tradingRewards.historical.$period",
+                    ),
+                )
+                ?.mutable()
 
-        val tradingRewardsStartDate = Instant.fromEpochMilliseconds(helper.environment.rewardsHistoryStartDateMs.toLong())
+        val tradingRewardsStartDate =
+            Instant.fromEpochMilliseconds(helper.environment.rewardsHistoryStartDateMs.toLong())
         val maxDuration = Clock.System.now() - tradingRewardsStartDate + 2.days
 
         helper.retrieveTimed(
@@ -500,10 +516,11 @@ internal open class AccountSupervisor(
             if (helper.success(httpCode) && !response.isNullOrEmpty()) {
                 val historicalTradingRewards = helper.parser.decodeJsonObject(response)?.toIMap()
                 if (historicalTradingRewards != null) {
-                    val changes = stateMachine.receivedHistoricalTradingRewards(
-                        historicalTradingRewards,
-                        period.rawValue,
-                    )
+                    val changes =
+                        stateMachine.receivedHistoricalTradingRewards(
+                            historicalTradingRewards,
+                            period.rawValue,
+                        )
                     update(changes, oldState)
                     if (changes.changes.contains(Changes.tradingRewards)) {
                         retrieveHistoricalTradingRewards(period, url)
@@ -558,20 +575,22 @@ internal open class AccountSupervisor(
             dydxTokenDemon != null &&
             squidIntegratorId != null
         ) {
-            val params: Map<String, String> = mapOf(
-                "fromChain" to fromChain,
-                "fromToken" to fromToken,
-                "fromAddress" to nobleAddress,
-                "fromAmount" to amount.toPlainString(),
-                "toChain" to chainId,
-                "toToken" to dydxTokenDemon,
-                "toAddress" to accountAddress.toString(),
-                "slippage" to "1",
-                "enableForecall" to "false",
-            )
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
+            val params: Map<String, String> =
+                mapOf(
+                    "fromChain" to fromChain,
+                    "fromToken" to fromToken,
+                    "fromAddress" to nobleAddress,
+                    "fromAmount" to amount.toPlainString(),
+                    "toChain" to chainId,
+                    "toToken" to dydxTokenDemon,
+                    "toAddress" to accountAddress.toString(),
+                    "slippage" to "1",
+                    "enableForecall" to "false",
+                )
+            val header =
+                iMapOf(
+                    "x-integrator-id" to squidIntegratorId,
+                )
             helper.get(url, params, header) { _, response, code, _ ->
                 if (response != null) {
                     val json = helper.parser.decodeJsonObject(response)
@@ -603,30 +622,43 @@ internal open class AccountSupervisor(
         var expiresAt: String? = null
         if (helper.success(httpCode) && response != null) {
             val res = helper.parser.decodeJsonObject(response)?.toIMap()
-            complianceStatus = helper.parser.asString(res?.get("status"))?.let { ComplianceStatus.valueOf(it) } ?: ComplianceStatus.UNKNOWN
+            complianceStatus =
+                helper.parser.asString(res?.get("status"))?.let { ComplianceStatus.valueOf(it) }
+                    ?: ComplianceStatus.UNKNOWN
             updatedAt = helper.parser.asString(res?.get("updatedAt"))
             if (updatedAt != null) {
-                expiresAt = try {
-                    Instant.parse(updatedAt).plus(7.days).toString()
-                } catch (e: IllegalArgumentException) {
-                    Logger.e { "Error parsing compliance updatedAt: $updatedAt" }
-                    null
-                }
+                expiresAt =
+                    try {
+                        Instant.parse(updatedAt).plus(7.days).toString()
+                    } catch (e: IllegalArgumentException) {
+                        Logger.e { "Error parsing compliance updatedAt: $updatedAt" }
+                        null
+                    }
             }
         }
-        compliance = compliance.copy(status = complianceStatus, updatedAt = updatedAt, expiresAt = expiresAt)
+        compliance =
+            compliance.copy(
+                status = complianceStatus,
+                updatedAt = updatedAt,
+                expiresAt = expiresAt,
+            )
         return complianceStatus
     }
 
-    private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
+    private fun updateCompliance(
+        address: DydxAddress,
+        status: ComplianceStatus,
+        complianceAction: ComplianceAction
+    ) {
         val message = "Compliance verification message"
-        val payload = helper.jsonEncoder.encode(
-            mapOf(
-                "message" to message,
-                "action" to complianceAction.toString(),
-                "status" to status.toString(),
-            ),
-        )
+        val payload =
+            helper.jsonEncoder.encode(
+                mapOf(
+                    "message" to message,
+                    "action" to complianceAction.toString(),
+                    "status" to status.toString(),
+                ),
+            )
         helper.transaction(
             TransactionType.SignCompliancePayload,
             payload,
@@ -641,22 +673,27 @@ internal open class AccountSupervisor(
                 val timestamp = helper.parser.asString(result["timestamp"])
 
                 val isUrlAndKeysPresent =
-                    url != null && signedMessage != null && publicKey != null && timestamp != null
+                    url != null &&
+                        signedMessage != null &&
+                        publicKey != null &&
+                        timestamp != null
                 val isStatusValid = status != ComplianceStatus.UNKNOWN
 
                 if (isUrlAndKeysPresent && isStatusValid) {
-                    val body: IMap<String, String> = iMapOf(
-                        "address" to address.rawAddress,
-                        "message" to message,
-                        "currentStatus" to status.toString(),
-                        "action" to complianceAction.toString(),
-                        "signedMessage" to signedMessage!!,
-                        "pubkey" to publicKey!!,
-                        "timestamp" to timestamp!!,
-                    )
-                    val header = iMapOf(
-                        "Content-Type" to "application/json",
-                    )
+                    val body: IMap<String, String> =
+                        iMapOf(
+                            "address" to address.rawAddress,
+                            "message" to message,
+                            "currentStatus" to status.toString(),
+                            "action" to complianceAction.toString(),
+                            "signedMessage" to signedMessage!!,
+                            "pubkey" to publicKey!!,
+                            "timestamp" to timestamp!!,
+                        )
+                    val header =
+                        iMapOf(
+                            "Content-Type" to "application/json",
+                        )
                     helper.post(
                         url!!,
                         header,
@@ -718,17 +755,17 @@ internal open class AccountSupervisor(
                     Restriction.USER_RESTRICTION_UNKNOWN -> {
                         sourceAddressRestriction = restriction
                     }
-
                     else -> {
                         throw Exception("Unexpected restriction value")
                     }
                 }
                 rerunAddressScreeningDelay(sourceAddressRestriction)?.let {
                     val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-                    screenSourceAddressTimer = timer.schedule(it, it) {
-                        screenSourceAddress()
-                        true
-                    }
+                    screenSourceAddressTimer =
+                        timer.schedule(it, it) {
+                            screenSourceAddress()
+                            true
+                        }
                 }
             }
         } else {
@@ -749,17 +786,17 @@ internal open class AccountSupervisor(
                 Restriction.USER_RESTRICTION_UNKNOWN -> {
                     accountAddressRestriction = restriction
                 }
-
                 else -> {
                     throw Exception("Unexpected restriction value")
                 }
             }
             rerunAddressScreeningDelay(accountAddressRestriction)?.let {
                 val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
-                screenAccountAddressTimer = timer.schedule(it, it) {
-                    screenAccountAddress()
-                    true
-                }
+                screenAccountAddressTimer =
+                    timer.schedule(it, it) {
+                        screenAccountAddress()
+                        true
+                    }
             }
         }
     }
@@ -783,8 +820,15 @@ internal open class AccountSupervisor(
                     if (helper.success(httpCode) && response != null) {
                         val payload = helper.parser.decodeJsonObject(response)?.toIMap()
                         if (payload != null) {
-                            val restricted = helper.parser.asBool(payload["restricted"]) ?: false
-                            callback(if (restricted) Restriction.USER_RESTRICTED else Restriction.NO_RESTRICTION)
+                            val restricted =
+                                helper.parser.asBool(payload["restricted"]) ?: false
+                            callback(
+                                if (restricted) {
+                                    Restriction.USER_RESTRICTED
+                                } else {
+                                    Restriction.NO_RESTRICTION
+                                },
+                            )
                         } else {
                             callback(Restriction.USER_RESTRICTION_UNKNOWN)
                         }
@@ -810,10 +854,11 @@ internal open class AccountSupervisor(
         return if (response != null) {
             val json = helper.parser.decodeJsonObject(response)
             val errors = helper.parser.asList(helper.parser.value(json, "errors"))
-            val geoRestriciton = errors?.firstOrNull { error ->
-                val code = helper.parser.asString(helper.parser.value(error, "code"))
-                code?.contains("GEOBLOCKED") == true
-            }
+            val geoRestriciton =
+                errors?.firstOrNull { error ->
+                    val code = helper.parser.asString(helper.parser.value(error, "code"))
+                    code?.contains("GEOBLOCKED") == true
+                }
 
             if (geoRestriciton !== null) {
                 UsageRestriction.http403Restriction
@@ -841,17 +886,18 @@ internal open class AccountSupervisor(
     private fun updateAddressRestriction() {
         val restrictions: Set<Restriction?> =
             iSetOf(accountAddressRestriction, sourceAddressRestriction)
-        addressRestriction = if (restrictions.contains(Restriction.USER_RESTRICTED)) {
-            UsageRestriction.userRestriction
-        } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
-            UsageRestriction.userRestrictionUnknown
-        } else {
-            if (sourceAddressRestriction == null && accountAddressRestriction == null) {
-                null
+        addressRestriction =
+            if (restrictions.contains(Restriction.USER_RESTRICTED)) {
+                UsageRestriction.userRestriction
+            } else if (restrictions.contains(Restriction.USER_RESTRICTION_UNKNOWN)) {
+                UsageRestriction.userRestrictionUnknown
             } else {
-                UsageRestriction.noRestriction
+                if (sourceAddressRestriction == null && accountAddressRestriction == null) {
+                    null
+                } else {
+                    UsageRestriction.noRestriction
+                }
             }
-        }
     }
 
     private fun didSetAddressRestriction(addressRestriction: UsageRestriction?) {
@@ -864,27 +910,28 @@ internal open class AccountSupervisor(
 
     private fun didSetRestriction(restriction: UsageRestriction?) {
         val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            state?.assets,
-            state?.marketsSummary,
-            state?.orderbooks,
-            state?.candles,
-            state?.trades,
-            state?.historicalFundings,
-            state?.wallet,
-            state?.account,
-            state?.historicalPnl,
-            state?.fills,
-            state?.transfers,
-            state?.fundingPayments,
-            state?.configs,
-            state?.input,
-            state?.availableSubaccountNumbers ?: iListOf(),
-            state?.transferStatuses,
-            restriction,
-            state?.launchIncentive,
-            state?.compliance,
-        )
+        stateMachine.state =
+            PerpetualState(
+                state?.assets,
+                state?.marketsSummary,
+                state?.orderbooks,
+                state?.candles,
+                state?.trades,
+                state?.historicalFundings,
+                state?.wallet,
+                state?.account,
+                state?.historicalPnl,
+                state?.fills,
+                state?.transfers,
+                state?.fundingPayments,
+                state?.configs,
+                state?.input,
+                state?.availableSubaccountNumbers ?: iListOf(),
+                state?.transferStatuses,
+                restriction,
+                state?.launchIncentive,
+                state?.compliance,
+            )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
                 stateMachine.state,
@@ -897,27 +944,33 @@ internal open class AccountSupervisor(
 
     private fun didSetComplianceStatus(compliance: Compliance) {
         val state = stateMachine.state
-        stateMachine.state = PerpetualState(
-            state?.assets,
-            state?.marketsSummary,
-            state?.orderbooks,
-            state?.candles,
-            state?.trades,
-            state?.historicalFundings,
-            state?.wallet,
-            state?.account,
-            state?.historicalPnl,
-            state?.fills,
-            state?.transfers,
-            state?.fundingPayments,
-            state?.configs,
-            state?.input,
-            state?.availableSubaccountNumbers ?: iListOf(),
-            state?.transferStatuses,
-            state?.restriction,
-            state?.launchIncentive,
-            Compliance(state?.compliance?.geo, compliance.status, compliance.updatedAt, compliance.expiresAt),
-        )
+        stateMachine.state =
+            PerpetualState(
+                state?.assets,
+                state?.marketsSummary,
+                state?.orderbooks,
+                state?.candles,
+                state?.trades,
+                state?.historicalFundings,
+                state?.wallet,
+                state?.account,
+                state?.historicalPnl,
+                state?.fills,
+                state?.transfers,
+                state?.fundingPayments,
+                state?.configs,
+                state?.input,
+                state?.availableSubaccountNumbers ?: iListOf(),
+                state?.transferStatuses,
+                state?.restriction,
+                state?.launchIncentive,
+                Compliance(
+                    state?.compliance?.geo,
+                    compliance.status,
+                    compliance.updatedAt,
+                    compliance.expiresAt,
+                ),
+            )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
                 stateMachine.state,
@@ -970,15 +1023,21 @@ internal fun AccountSupervisor.adjustIsolatedMargin(
     subaccount?.adjustIsolatedMargin(data, type)
 }
 
-internal fun AccountSupervisor.placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
+internal fun AccountSupervisor.placeOrderPayload(
+    currentHeight: Int?
+): HumanReadablePlaceOrderPayload? {
     return subaccount?.placeOrderPayload(currentHeight)
 }
 
-internal fun AccountSupervisor.closePositionPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload? {
+internal fun AccountSupervisor.closePositionPayload(
+    currentHeight: Int?
+): HumanReadablePlaceOrderPayload? {
     return subaccount?.closePositionPayload(currentHeight)
 }
 
-internal fun AccountSupervisor.triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload? {
+internal fun AccountSupervisor.triggerOrdersPayload(
+    currentHeight: Int?
+): HumanReadableTriggerOrdersPayload? {
     return subaccount?.triggerOrdersPayload(currentHeight)
 }
 
@@ -986,7 +1045,9 @@ internal fun AccountSupervisor.adjustIsolatedMarginPayload(): HumanReadableSubac
     return subaccount?.adjustIsolatedMarginPayload()
 }
 
-internal fun AccountSupervisor.cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload? {
+internal fun AccountSupervisor.cancelOrderPayload(
+    orderId: String
+): HumanReadableCancelOrderPayload? {
     return subaccount?.cancelOrderPayload(orderId)
 }
 
@@ -1050,7 +1111,6 @@ internal fun AccountSupervisor.refresh(data: ApiData) {
         ApiData.HISTORICAL_TRADING_REWARDS -> {
             retrieveHistoricalTradingRewards(historicalTradingRewardPeriod)
         }
-
         ApiData.HISTORICAL_PNLS -> {
             subaccount?.refresh(data)
         }
