@@ -1171,8 +1171,10 @@ internal class SubaccountSupervisor(
         val goodTilTimeInSeconds = null
         val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
+        val subaccountNumberForPosition = helper.parser.asInt(helper.parser.value(stateMachine.data, "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber")) ?: subaccountNumber
+
         return HumanReadablePlaceOrderPayload(
-            subaccountNumber,
+            subaccountNumberForPosition,
             marketId,
             clientId,
             "MARKET",
