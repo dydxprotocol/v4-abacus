@@ -84,7 +84,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": -0.12
                                             },
                                             "subaccountNumber": 0,
-                                            "marginMode": "CROSS"
+                                            "marginMode": "cross"
                                         }
                                     }
                                 },
@@ -132,7 +132,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 7962.44
                                             },
                                             "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            "marginMode": "isolated"
                                         }
                                     },
                                     "orders": {
@@ -150,7 +150,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "reduceOnly": false,
                                             "goodTilBlock": "5837",
                                             "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            "marginMode": "isolated"
                                         }
                                     }
                                 }
@@ -194,7 +194,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": -0.12
                                             },
                                             "subaccountNumber": 0,
-                                            "marginMode": "CROSS"
+                                            "marginMode": "cross"
                                         },
                                         "RUNE-USD": {
                                             "id": "RUNE-USD",
@@ -239,7 +239,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                                 "current": 0.0397
                                             },
                                             "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            "marginMode": "isolated"
                                         }
                                     },
                                     "pendingPositions": [
@@ -257,8 +257,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 500.0
-                                            "subaccountNumber": 128,
-                                            "marginMode": "ISOLATED"
+                                            }
                                         }
                                     ]
                                 }
@@ -282,6 +281,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "trade": {
                             "marginMode": "ISOLATED",
                             "targetLeverage": 1.0
+                            "targetLeverage": 1.0,
+                            "options": {
+                                "needsMarginMode": true
+                            }
                         }
                     }
                 }
@@ -298,6 +301,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "current": "trade",
                         "trade": {
                             "marginMode": "CROSS"
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": true
+                            }
                         }
                     }
                 }
@@ -314,6 +321,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "current": "trade",
                         "trade": {
                             "marginMode": "ISOLATED"
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": true
+                            }
                         }
                     }
                 }
@@ -330,6 +341,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "current": "trade",
                         "trade": {
                             "marginMode": "CROSS"
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": true
+                            }
                         }
                     }
                 }
@@ -346,6 +361,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "current": "trade",
                         "trade": {
                             "marginMode": "ISOLATED"
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": true
+                            }
                         }
                     }
                 }
@@ -362,6 +381,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "current": "trade",
                         "trade": {
                             "marginMode": "CROSS"
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": true
+                            }
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import abs
-import exchange.dydx.abacus.output.PerpetualMarketType
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -121,7 +121,7 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
             modified.safeSet("subaccountNumber", this)
 
             // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
-            modified.safeSet("marketType", if (this >= NUM_PARENT_SUBACCOUNTS) PerpetualMarketType.ISOLATED else PerpetualMarketType.CROSS)
+            modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated else MarginMode.cross)
         }
 
         ParsingHelper.asset(parser.asString(modified["id"]))?.let {
