@@ -1940,7 +1940,7 @@ data class TradingRewards(
                 Instant.fromEpochMilliseconds(lastStart.toLong())
             }
             while (obj.startedAtInMilliseconds < lastStartTime.toEpochMilliseconds().toDouble()) {
-                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount)
+                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount + obj.amount)
                 if (obj.startedAtInMilliseconds < previous.startedAtInMilliseconds) {
                     result.add(previous)
                     lastStartTime =
