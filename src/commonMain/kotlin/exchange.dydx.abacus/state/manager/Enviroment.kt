@@ -476,7 +476,12 @@ class V4Environment(
                 parser,
                 deploymentUri,
             )
-            val apps = AppsRequirements.parse(data, parser, localizer)
+            val appsData = parser.asNativeMap(data["apps"])
+            val apps = if (appsData != null) {
+                AppsRequirements.parse(appsData, parser, localizer)
+            } else {
+                null
+            }
             val tokens = parseTokens(tokensData ?: parser.asNativeMap(data["tokens"]), parser, deploymentUri)
             val governance = EnvironmentGovernance.parse(governanceData ?: parser.asNativeMap(data["governance"]) ?: return null, parser)
 
