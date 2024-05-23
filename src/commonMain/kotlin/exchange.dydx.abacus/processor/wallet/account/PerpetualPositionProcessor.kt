@@ -2,7 +2,6 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import abs
 import exchange.dydx.abacus.output.PerpetualMarketType
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS

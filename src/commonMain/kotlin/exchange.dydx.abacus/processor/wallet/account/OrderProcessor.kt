@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.output.PerpetualMarketType
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
