@@ -111,6 +111,156 @@ internal class V4ParentSubaccountsMock {
         }
     """.trimIndent()
 
+    internal val subscribed_with_positions = """
+        {
+          "type": "subscribed",
+          "connection_id": "3adc59d6-09cb-432e-b987-ced0da32bec9",
+          "message_id": 2,
+          "channel": "v4_parent_subaccounts",
+          "id": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+          "contents": {
+            "subaccount": {
+              "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+              "parentSubaccountNumber": 0,
+              "equity": "1004.026896843",
+              "freeCollateral": "963.0237707731",
+              "childSubaccounts": [
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 0,
+                  "equity": "862.675984",
+                  "freeCollateral": "862.675984",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "862.675984",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 0
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12906107"
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 128,
+                  "equity": "59.810279856",
+                  "freeCollateral": "57.7685502848",
+                  "openPerpetualPositions": {
+                    "APE-USD": {
+                      "market": "APE-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "8",
+                      "maxSize": "8",
+                      "entryPrice": "1.292",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "-0.127352144",
+                      "createdAt": "2024-05-22T20:18:18.080Z",
+                      "createdAtHeight": "12905490",
+                      "closedAt": null,
+                      "sumOpen": "8",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "49.601632",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12905505"
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 256,
+                  "equity": "41.902552695",
+                  "freeCollateral": "21.9040510255",
+                  "openPerpetualPositions": {
+                    "XLM-USD": {
+                      "market": "XLM-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "1810",
+                      "maxSize": "1810",
+                      "entryPrice": "0.11046795580110497238",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "0.0380166949999999922",
+                      "createdAt": "2024-05-22T20:30:13.972Z",
+                      "createdAtHeight": "12906057",
+                      "closedAt": null,
+                      "sumOpen": "1810",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 256
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "158.082464",
+                      "symbol": "USDC",
+                      "side": "SHORT",
+                      "assetId": "0",
+                      "subaccountNumber": 256
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12906057"
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 384,
+                  "equity": "39.638080292",
+                  "freeCollateral": "20.6751854628",
+                  "openPerpetualPositions": {
+                    "ARB-USD": {
+                      "market": "ARB-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "166",
+                      "maxSize": "166",
+                      "entryPrice": "1.14298795180722891566",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "-0.10705170799999999956",
+                      "createdAt": "2024-05-22T20:31:23.666Z",
+                      "createdAtHeight": "12906110",
+                      "closedAt": null,
+                      "sumOpen": "166",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 384
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "149.990868",
+                      "symbol": "USDC",
+                      "side": "SHORT",
+                      "assetId": "0",
+                      "subaccountNumber": 384
+                    }
+                  },
+                  "marginEnabled": true,
+                  "updatedAtHeight": "12906110"
+                }
+              ]
+            },
+            "orders": []
+          }
+        }
+    """.trimIndent()
+
     internal val channel_batch_data = """
         {
           "type": "channel_batch_data",

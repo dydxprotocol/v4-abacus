@@ -564,10 +564,8 @@ internal class SubaccountSupervisor(
 
         // Derive transfer params from trade input
         val targetLeverage = trade?.targetLeverage ?: error("targetLeverage is null")
-        val size = orderPayload.size
-        val price = orderPayload.price
-        val notionalUsdc = price * size
-        val amountToTransfer = (notionalUsdc / targetLeverage).toString()
+        val usdcSize = trade.size?.usdcSize ?: error("usdcSize is null")
+        val amountToTransfer = (usdcSize / targetLeverage).toString()
         val childSubaccountNumber = orderPayload.subaccountNumber
 
         val transferPayload = HumanReadableSubaccountTransferPayload(
@@ -1171,8 +1169,10 @@ internal class SubaccountSupervisor(
         val goodTilTimeInSeconds = null
         val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
+        val subaccountNumberForPosition = helper.parser.asInt(helper.parser.value(stateMachine.data, "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber")) ?: subaccountNumber
+
         return HumanReadablePlaceOrderPayload(
-            subaccountNumber,
+            subaccountNumberForPosition,
             marketId,
             clientId,
             "MARKET",
