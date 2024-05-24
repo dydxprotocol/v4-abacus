@@ -350,14 +350,15 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
-
+        stateManager.market = "ETH-USD"
+        testWebSocket?.simulateReceived(mock.orderbookChannel.load_test_2_subscribed)
         stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
+
         if (withPositions) {
             testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)
         } else {
             testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)
         }
-        stateManager.market = "BTC-USD"
     }
 
     private fun prepareIsolatedMarginClosePosition() {
