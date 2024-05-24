@@ -87,9 +87,10 @@ class TradingRewardsTests {
 
     @Test
     fun testHistoricalDailyTradingRewardsWithExisting() {
+        val total = 200.0
         val tradingRewards = TradingRewards.create(
             TradingRewards(
-                200.0,
+                total,
                 iListOf(
                     BlockReward(1.0, yesterday.toEpochMilliseconds().toDouble(), 1),
                 ),
@@ -97,7 +98,7 @@ class TradingRewardsTests {
                     "DAILY" to iListOf(
                         HistoricalTradingReward(
                             2.0,
-                            197.0,
+                            total,
                             yesterday.toEpochMilliseconds().toDouble(),
                             today.toEpochMilliseconds().toDouble(),
                         ),
@@ -106,7 +107,7 @@ class TradingRewardsTests {
             ),
             parser,
             mapOf(
-                "total" to 200.0,
+                "total" to total,
                 "historical" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
@@ -127,7 +128,7 @@ class TradingRewardsTests {
             ).toIMap(),
         )
 
-        assertEquals(200.0, tradingRewards?.total)
+        assertEquals(total, tradingRewards?.total)
 
         // DAILY
         // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
@@ -137,7 +138,7 @@ class TradingRewardsTests {
             iListOf(
                 HistoricalTradingReward(
                     3.0,
-                    200.0,
+                    total,
                     today.toEpochMilliseconds().toDouble(),
                     tomorrow.toEpochMilliseconds().toDouble(),
                 ),
