@@ -640,6 +640,7 @@ data class SubaccountOrderResources(
 @JsExport
 @Serializable
 data class SubaccountOrder(
+    val subaccountNumber: Int?,
     val id: String,
     val clientId: Int?,
     val type: OrderType,
@@ -666,7 +667,6 @@ data class SubaccountOrder(
     val reduceOnly: Boolean,
     val cancelReason: String?,
     val resources: SubaccountOrderResources,
-    val subaccountNumber: Int?,
     val marginMode: MarginMode?
 ) {
     companion object {
@@ -678,6 +678,8 @@ data class SubaccountOrder(
         ): SubaccountOrder? {
             Logger.d { "creating Account Order\n" }
             data?.let {
+                // TODO: Remove default to 0 for subaccountNumber once new indexer response is consumed. Prevents breaking change
+                val subaccountNumber = parser.asInt(data["subaccountNumber"]) ?: 0
                 val id = parser.asString(data["id"])
                 val clientId = parser.asInt(data["clientId"])
                 val marketId = parser.asString(data["marketId"])
@@ -699,8 +701,6 @@ data class SubaccountOrder(
                 val resources = parser.asMap(data["resources"])?.let {
                     SubaccountOrderResources.create(existing?.resources, parser, it, localizer)
                 }
-                // TODO: Remove default to 0 for subaccountNumber once new indexer response is consumed. Prevents breaking change
-                val subaccountNumber = parser.asInt(data["subaccountNumber"]) ?: 0
                 val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
                 if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null &&
                     resources != null
@@ -726,7 +726,8 @@ data class SubaccountOrder(
                     val cancelReason = parser.asString(data["cancelReason"])
 
                     return if (
-                        existing?.id != id ||
+                        existing?.subaccountNumber != subaccountNumber ||
+                        existing.id != id ||
                         existing.clientId != clientId ||
                         existing.type !== type ||
                         existing.side !== side ||
@@ -755,6 +756,7 @@ data class SubaccountOrder(
                         existing.marginMode != marginMode
                     ) {
                         SubaccountOrder(
+                            subaccountNumber,
                             id,
                             clientId,
                             type,
@@ -781,7 +783,6 @@ data class SubaccountOrder(
                             reduceOnly,
                             cancelReason,
                             resources,
-                            subaccountNumber,
                             marginMode,
                         )
                     } else {
