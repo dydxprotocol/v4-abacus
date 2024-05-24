@@ -1841,8 +1841,8 @@ data class TradingRewards(
 
                                 val synced =
                                     HistoricalTradingReward.create(obj, parser, modified, period)
-                                addHistoricalTradingRewards(result, obj, period, lastStart)
-                                result.add(synced!!)
+                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                result.add(synced)
                                 objIndex++
                                 dataIndex++
                                 lastStart = synced.startedAtInMilliseconds
