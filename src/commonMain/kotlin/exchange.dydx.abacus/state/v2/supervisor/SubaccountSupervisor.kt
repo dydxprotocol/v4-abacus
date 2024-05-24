@@ -564,7 +564,7 @@ internal class SubaccountSupervisor(
 
         // Derive transfer params from trade input
         val targetLeverage = trade?.targetLeverage ?: error("targetLeverage is null")
-        val usdcSize = trade.size?.usdcSize  ?: error("usdcSize is null")
+        val usdcSize = trade.size?.usdcSize ?: error("usdcSize is null")
         val amountToTransfer = (usdcSize / targetLeverage).toString()
         val childSubaccountNumber = orderPayload.subaccountNumber
 
