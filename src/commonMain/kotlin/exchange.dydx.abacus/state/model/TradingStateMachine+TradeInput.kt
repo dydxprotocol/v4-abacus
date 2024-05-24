@@ -164,7 +164,7 @@ internal fun TradingStateMachine.initiateTrade(
     return parser.asMap(modified["trade"])?.mutable() ?: trade
 }
 
-internal fun TradingStateMachine.inititiateClosePosition(
+internal fun TradingStateMachine.initiateClosePosition(
     marketId: String?,
     subaccountNumber: Int,
 ): MutableMap<String, Any> {
