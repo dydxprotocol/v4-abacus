@@ -8,7 +8,6 @@ import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -263,11 +262,11 @@ data class EquityTiers(
         ): EquityTiers? {
             data?.let {
                 val shortTermOrderEquityTiers = parser.asNativeList(data["shortTermOrderEquityTiers"])?.let { tiers ->
-                    create(existing?.shortTermOrderEquityTiers?.toIList(), parser, tiers)
+                    create(existing?.shortTermOrderEquityTiers, parser, tiers)
                 } ?: iListOf()
 
                 val statefulOrderEquityTiers = parser.asNativeList(data["statefulOrderEquityTiers"])?.let { tiers ->
-                    create(existing?.statefulOrderEquityTiers?.toIList(), parser, tiers)
+                    create(existing?.statefulOrderEquityTiers, parser, tiers)
                 } ?: iListOf()
 
                 return EquityTiers(shortTermOrderEquityTiers, statefulOrderEquityTiers)
@@ -290,14 +289,14 @@ data class EquityTiers(
                     parser.asMap(item)?.let {
                         val tier = existing?.getOrNull(i)
                         val nextTierData = parser.asMap(nextItem)
-                        EquityTier.create(tier, parser, it, i + 1, nextTierData)?.let { equityTier ->
+                        EquityTier.create(tier, parser, it, nextTierData)?.let { equityTier ->
                             equityTiers.add(equityTier)
                         }
                     }
                 }
                 return equityTiers
             }
-            Logger.d { "Equity Tiers values not valid" }
+            Logger.d { "Equity Tiers not valid" }
             return null
         }
     }
@@ -306,7 +305,6 @@ data class EquityTiers(
 @JsExport
 @Serializable
 data class EquityTier(
-    val tierId: Int,
     val requiredTotalNetCollateralUSD: Double,
     val nextLevelRequiredTotalNetCollateralUSD: Double?,
     val maxOrders: Int,
@@ -316,7 +314,6 @@ data class EquityTier(
             existing: EquityTier?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            tierId: Int,
             nextTierData: Map<*, *>?
         ): EquityTier? {
             data?.let {
@@ -327,13 +324,12 @@ data class EquityTier(
                 val maxOrders = parser.asInt(data["maxOrders"])
 
                 if (requiredTotalNetCollateralUSD != null && maxOrders != null) {
-                    return if (existing?.tierId != tierId ||
+                    return if (
                         existing?.requiredTotalNetCollateralUSD != requiredTotalNetCollateralUSD ||
                         existing?.nextLevelRequiredTotalNetCollateralUSD != nextLevelRequiredTotalNetCollateralUSD ||
                         existing?.maxOrders != maxOrders
                     ) {
                         EquityTier(
-                            tierId,
                             requiredTotalNetCollateralUSD,
                             nextLevelRequiredTotalNetCollateralUSD,
                             maxOrders,
