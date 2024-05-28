@@ -51,8 +51,8 @@ vercomp $REPO_VERSION $VERSION
         2) SHOULD_BUMP=false ;;
     esac
 
-if [ $SHOULD_BUMP = false ]; then
-    echo "Repo version >= PR version... No need to bump."
+if [ $SHOULD_BUMP == false ]; then
+    echo "Repo version > PR version... No need to bump."
     exit -1
 fi
 
