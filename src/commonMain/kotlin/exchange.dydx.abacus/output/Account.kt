@@ -1818,6 +1818,7 @@ data class TradingRewards(
                                 // item is newer than obj
                                 val modified = item.mutable()
                                 modified.safeSet("cumulativeAmount", cumulativeAmount)
+
                                 val synced =
                                     HistoricalTradingReward.create(null, parser, modified, period)
                                 addHistoricalTradingRewards(result, synced!!, period, lastStart)
@@ -1829,24 +1830,33 @@ data class TradingRewards(
 
                             (comparison == ComparisonOrder.descending) -> {
                                 // item is older than obj
-                                addHistoricalTradingRewards(result, obj, period, lastStart)
-                                result.add(obj)
+                                val modified = mapOf(
+                                    "amount" to obj.amount,
+                                    "cumulativeAmount" to cumulativeAmount,
+                                    "startedAt" to obj.startedAt,
+                                    "endedAt" to obj.endedAt,
+                                )
+
+                                val synced = HistoricalTradingReward.create(obj, parser, modified, period)
+                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                result.add(synced)
                                 objIndex++
-                                lastStart = obj.startedAtInMilliseconds
-                                cumulativeAmount = obj.cumulativeAmount - obj.amount
+                                lastStart = synced.startedAtInMilliseconds
+                                cumulativeAmount = cumulativeAmount - obj.amount
                             }
 
                             else -> {
                                 val modified = item.mutable()
-                                modified.safeSet("cumulativeAmount", obj.cumulativeAmount)
+                                modified.safeSet("cumulativeAmount", cumulativeAmount)
+
                                 val synced =
                                     HistoricalTradingReward.create(obj, parser, modified, period)
-                                addHistoricalTradingRewards(result, obj, period, lastStart)
-                                result.add(synced!!)
+                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                result.add(synced)
                                 objIndex++
                                 dataIndex++
-                                lastStart = obj.startedAtInMilliseconds
-                                cumulativeAmount = obj.cumulativeAmount - obj.amount
+                                lastStart = synced.startedAtInMilliseconds
+                                cumulativeAmount = cumulativeAmount - obj.amount
                             }
                         }
                     } else {
@@ -1856,11 +1866,19 @@ data class TradingRewards(
                 if (objs != null) {
                     while (objIndex < objs.size) {
                         val obj = objs[objIndex]
-                        addHistoricalTradingRewards(result, obj, period, lastStart)
-                        result.add(obj)
+                        val modified = mapOf(
+                            "amount" to obj.amount,
+                            "cumulativeAmount" to cumulativeAmount,
+                            "startedAt" to obj.startedAt,
+                            "endedAt" to obj.endedAt,
+                        )
+
+                        val synced = HistoricalTradingReward.create(obj, parser, modified, period)
+                        addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                        result.add(synced)
                         objIndex++
                         lastStart = obj.startedAtInMilliseconds
-                        cumulativeAmount = obj.cumulativeAmount - obj.amount
+                        cumulativeAmount = cumulativeAmount - obj.amount
                     }
                 }
                 while (dataIndex < data.size) {
