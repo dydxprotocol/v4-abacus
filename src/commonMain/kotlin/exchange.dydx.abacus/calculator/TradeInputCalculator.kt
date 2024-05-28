@@ -69,7 +69,12 @@ internal class TradeInputCalculator(
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
-        val trade = parser.asNativeMap(state["trade"])
+        val trade = updateTradeInputFromMarket(
+            markets,
+            account,
+            parser.asNativeMap(state["trade"]),
+            subaccountNumber ?: 0,
+        )
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
         val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
@@ -132,6 +137,53 @@ internal class TradeInputCalculator(
         } else {
             state
         }
+    }
+
+    private fun updateTradeInputFromMarket(
+        markets: Map<String, Any>?,
+        account: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+        subaccountNumber: Int,
+    ): MutableMap<String, Any>? {
+        val modified = tradeInput?.mutable() ?: return null
+        val marketId = parser.asString(tradeInput["marketId"])
+        val existingMarginMode =
+            MarginModeCalculator.findExistingMarginMode(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+        // If there is an existing position or order, we have to use the same margin mode
+        if (existingMarginMode != null) {
+            modified["marginMode"] = existingMarginMode
+            if (
+                existingMarginMode == "ISOLATED" &&
+                parser.asDouble(tradeInput["targetLeverage"]) == null
+            ) {
+                modified["targetLeverage"] = 1.0
+            }
+        } else {
+            val marketMarginMode = MarginModeCalculator.findMarketMarginMode(
+                parser,
+                parser.asMap(markets?.get(marketId)),
+            )
+            when (marketMarginMode) {
+                "ISOLATED" -> {
+                    modified["marginMode"] = marketMarginMode
+                    if (parser.asDouble(tradeInput["targetLeverage"]) == null) {
+                        modified["targetLeverage"] = 1.0
+                    }
+                }
+
+                "CROSS" -> {
+                    if (modified["marginMode"] == null) {
+                        modified["marginMode"] = marketMarginMode
+                    }
+                }
+            }
+        }
+        return modified
     }
 
     private fun calculateNonMarketTrade(
