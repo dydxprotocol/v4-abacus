@@ -9,6 +9,7 @@ import exchange.dydx.abacus.utils.safeSet
 @Suppress("NotImplementedDeclaration")
 internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IRouterProcessor {
     override var chains: List<Any>? = null
+
 //    possibly want to use a different variable so we aren't stuck with this bad type
 //    actual type of the tokens payload is Map<str, Map<str, List<Map<str, Any>>>>
     override var tokens: List<Any>? = null
