@@ -824,7 +824,7 @@ internal class TradeInputCalculator(
 
                 @Suppress("LocalVariableName", "PropertyName")
                 val X = ((LV * AE) - (SZ * OR)) /
-                    (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
+                        (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
                     val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
@@ -1069,10 +1069,10 @@ internal class TradeInputCalculator(
         return mapOf(
             "field" to "stopLoss",
             "type" to
-                listOf(
-                    priceField(),
-                    reduceOnlyField(),
-                ).filterNotNull(),
+                    listOf(
+                        priceField(),
+                        reduceOnlyField(),
+                    ).filterNotNull(),
         )
     }
 
@@ -1080,10 +1080,10 @@ internal class TradeInputCalculator(
         return mapOf(
             "field" to "takeProfit",
             "type" to
-                listOf(
-                    priceField(),
-                    reduceOnlyField(),
-                ).filterNotNull(),
+                    listOf(
+                        priceField(),
+                        reduceOnlyField(),
+                    ).filterNotNull(),
         )
     }
 
@@ -1141,19 +1141,19 @@ internal class TradeInputCalculator(
             "field" to "execution",
             "type" to "string",
             "options" to
-                if (includesDefaultAndPostOnly) {
-                    listOf(
-                        executionDefault,
-                        executionIOC,
-                        executionFOK,
-                        executionPostOnly,
-                    )
-                } else {
-                    listOf(
-                        executionIOC,
-                        executionFOK,
-                    )
-                },
+                    if (includesDefaultAndPostOnly) {
+                        listOf(
+                            executionDefault,
+                            executionIOC,
+                            executionFOK,
+                            executionPostOnly,
+                        )
+                    } else {
+                        listOf(
+                            executionIOC,
+                            executionFOK,
+                        )
+                    },
         )
     }
 
@@ -1462,10 +1462,10 @@ internal class TradeInputCalculator(
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
             return feeMultiplier * (fee - maxMakerRebate * notional) / (
-                tokenPrice * 10.0.pow(
-                    tokenPriceExponent,
-                )
-                )
+                    tokenPrice * 10.0.pow(
+                        tokenPriceExponent,
+                    )
+                    )
         }
         return null
     }
@@ -1536,11 +1536,11 @@ internal class TradeInputCalculator(
                     val total =
                         if (usdcSize != null) {
                             (
-                                usdcSize * multiplier + (
-                                    fee
-                                        ?: Numeric.double.ZERO
-                                    ) * Numeric.double.NEGATIVE
-                                )
+                                    usdcSize * multiplier + (
+                                            fee
+                                                ?: Numeric.double.ZERO
+                                            ) * Numeric.double.NEGATIVE
+                                    )
                         } else {
                             null
                         }
@@ -1669,11 +1669,11 @@ internal class TradeInputCalculator(
                     val total =
                         if (usdcSize != null) {
                             (
-                                usdcSize * multiplier + (
-                                    fee
-                                        ?: Numeric.double.ZERO
-                                    ) * Numeric.double.NEGATIVE
-                                )
+                                    usdcSize * multiplier + (
+                                            fee
+                                                ?: Numeric.double.ZERO
+                                            ) * Numeric.double.NEGATIVE
+                                    )
                         } else {
                             null
                         }
@@ -1726,11 +1726,11 @@ internal class TradeInputCalculator(
                 val total =
                     if (usdcSize != null) {
                         (
-                            usdcSize * multiplier + (
-                                fee
-                                    ?: Numeric.double.ZERO
-                                ) * Numeric.double.NEGATIVE
-                            )
+                                usdcSize * multiplier + (
+                                        fee
+                                            ?: Numeric.double.ZERO
+                                        ) * Numeric.double.NEGATIVE
+                                )
                     } else {
                         null
                     }
