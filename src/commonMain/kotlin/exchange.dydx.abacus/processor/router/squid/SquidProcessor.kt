@@ -173,6 +173,8 @@ internal class SquidProcessor(
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
+        modified.safeSet("transfer.depositOptions.assets", tokenOptions)
+        modified.safeSet("transfer.withdrawalOptions.assets", tokenOptions)
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
         internalState.tokenResources = tokenResources(selectedChainId)
     }
