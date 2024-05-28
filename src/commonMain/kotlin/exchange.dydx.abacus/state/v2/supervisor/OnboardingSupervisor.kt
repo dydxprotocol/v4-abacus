@@ -69,6 +69,19 @@ internal class OnboardingSupervisor(
         retrieveCctpChainIds()
     }
 
+    private fun retrieveSkipTransferChains() {
+        val oldState = stateMachine.state
+        val chainsUrl = helper.configs.skipV1Chains()
+        if (chainsUrl != null) {
+            helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
+                if (helper.success(httpCode) && response != null) {
+//                  will be updated to use skipChains when testing cutover
+                    update(stateMachine.squidChains(response), oldState)
+                }
+            }
+        }
+    }
+
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
         val url = helper.configs.squidV2Assets()
