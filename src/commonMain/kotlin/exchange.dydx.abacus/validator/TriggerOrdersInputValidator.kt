@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.validator
 import abs
 import exchange.dydx.abacus.output.input.OrderSide
-import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
@@ -11,8 +10,6 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.utils.Rounder
-import exchange.dydx.abacus.validator.trade.EquityTier
-import exchange.dydx.abacus.validator.trade.SubaccountLimitConstants.MAX_NUM_OPEN_UNTRIGGERED_ORDERS
 
 enum class RelativeToPrice(val rawValue: String) {
     ABOVE("ABOVE"),
@@ -47,7 +44,8 @@ internal class TriggerOrdersInputValidator(
 
             val marketId = parser.asString(transaction["marketId"]) ?: return null
             val market = parser.asNativeMap(markets?.get(marketId))
-            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId")) ?: return null
+            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+                ?: return null
             val tickSize = parser.asString(parser.value(market, "configs.tickSize")) ?: "0.01"
             val oraclePrice = parser.asDouble(
                 parser.value(
@@ -56,7 +54,7 @@ internal class TriggerOrdersInputValidator(
                 ),
             ) ?: return null
 
-            validateTriggerOrders(transaction, market, subaccount, configs, environment)?.let {
+            validateTriggerOrders(transaction, market)?.let {
                 errors.addAll(it)
             }
 
@@ -103,17 +101,8 @@ internal class TriggerOrdersInputValidator(
     private fun validateTriggerOrders(
         triggerOrders: Map<String, Any>,
         market: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        environment: V4Environment?,
     ): MutableList<Any>? {
         val triggerErrors = mutableListOf<Any>()
-        validateOrderCount(triggerOrders, subaccount, configs, environment)?.let {
-            /*
-                USER_MAX_ORDERS
-             */
-            triggerErrors.addAll(it)
-        }
         validateSize(parser.asDouble(triggerOrders["size"]), market)?.let {
             /*
                 AMOUNT_INPUT_STEP_SIZE
@@ -206,6 +195,7 @@ internal class TriggerOrdersInputValidator(
                     null
                 }
             }
+
             RelativeToPrice.BELOW -> {
                 if (triggerPrice >= liquidationPrice) {
                     liquidationPriceError(
@@ -219,6 +209,7 @@ internal class TriggerOrdersInputValidator(
                     null
                 }
             }
+
             else -> null
         }
     }
@@ -249,137 +240,6 @@ internal class TriggerOrdersInputValidator(
         )
     }
 
-    private fun validateOrderCount(
-        triggerOrders: Map<String, Any>,
-        subaccount: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        environment: V4Environment?,
-    ): List<Any>? {
-        val equityTier = equityTier(subaccount, configs)
-
-        val fallbackMaxNumOrders = MAX_NUM_OPEN_UNTRIGGERED_ORDERS
-
-        val equityTierLimit = equityTier?.maxOrders ?: fallbackMaxNumOrders
-        val nextLevelRequiredTotalNetCollateralUSD =
-            equityTier?.nextLevelRequiredTotalNetCollateralUSD
-        val numOrders = orderCount(subaccount)
-        var numOrdersToCreate = 0
-        var numOrdersToCancel = 0
-
-        if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") != null && parser.value(triggerOrders, "stopLossOrder.orderId") == null) {
-            numOrdersToCreate += 1
-        } else if (parser.value(triggerOrders, "stopLossOrder.price.triggerPrice") == null && parser.value(triggerOrders, "stopLossOrder.orderId") != null) {
-            numOrdersToCancel += 1
-        }
-        if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") != null && parser.value(triggerOrders, "takeProfitOrder.orderId") == null) {
-            numOrdersToCreate += 1
-        } else if (parser.value(triggerOrders, "takeProfitOrder.price.triggerPrice") == null && parser.value(triggerOrders, "takeProfitOrder.orderId") != null) {
-            numOrdersToCancel += 1
-        }
-
-        val documentation = environment?.links?.documentation
-        val link = if (documentation != null) "$documentation/trading/other_limits" else null
-
-        return if ((numOrders + numOrdersToCreate - numOrdersToCancel) > equityTierLimit) {
-            listOf(
-                if (nextLevelRequiredTotalNetCollateralUSD != null) {
-                    error(
-                        "ERROR",
-                        "USER_MAX_ORDERS",
-                        null, // No input field since the error is not related to a specific field
-                        null,
-                        "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
-                        "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_CURRENT_EQUITY_TIER",
-                        mapOf(
-                            "EQUITY" to mapOf(
-                                "value" to nextLevelRequiredTotalNetCollateralUSD,
-                                "format" to "price",
-                            ),
-                            "LIMIT" to mapOf(
-                                "value" to equityTierLimit,
-                                "format" to "string",
-                            ),
-                        ),
-                        null,
-                        link,
-                    )
-                } else {
-                    error(
-                        "ERROR",
-                        "USER_MAX_ORDERS",
-                        null, // No input field since the error is not related to a specific field
-                        null,
-                        "ERRORS.TRADE_BOX_TITLE.USER_MAX_ORDERS",
-                        "ERRORS.TRADE_BOX.USER_MAX_ORDERS_FOR_TOP_EQUITY_TIER",
-                        mapOf(
-                            "LIMIT" to mapOf(
-                                "value" to equityTierLimit,
-                                "format" to "string",
-                            ),
-                        ),
-                        null,
-                        link,
-                    )
-                },
-            )
-        } else {
-            null
-        }
-    }
-
-    private fun equityTier(
-        subaccount: Map<String, Any>?,
-        configs: Map<String, Any>?
-    ): EquityTier? {
-        var equityTier: EquityTier? = null
-        val equity: Double = parser.asDouble(parser.value(subaccount, "equity.current")) ?: 0.0
-        parser.asNativeMap(parser.value(configs, "equityTiers"))?.let { equityTiers ->
-            parser.asNativeList(equityTiers["statefulOrderEquityTiers"])?.let { tiers ->
-                if (tiers.isEmpty()) return null
-                for (tier in tiers) {
-                    parser.asNativeMap(tier)?.let { item ->
-                        val requiredTotalNetCollateralUSD =
-                            parser.asDouble(item["requiredTotalNetCollateralUSD"]) ?: 0.0
-                        if (requiredTotalNetCollateralUSD <= equity) {
-                            val maxNumOrders = parser.asInt(item["maxOrders"]) ?: 0
-                            equityTier = EquityTier(
-                                requiredTotalNetCollateralUSD,
-                                maxNumOrders,
-                            )
-                        } else if (equityTier?.nextLevelRequiredTotalNetCollateralUSD == null) {
-                            equityTier?.nextLevelRequiredTotalNetCollateralUSD =
-                                requiredTotalNetCollateralUSD
-                        }
-                    }
-                }
-            }
-        } ?: run {
-            return null
-        }
-        return equityTier
-    }
-
-    private fun orderCount(
-        subaccount: Map<String, Any>?,
-    ): Int {
-        var count = 0
-        parser.asNativeMap(subaccount?.get("orders"))?.let { orders ->
-            for ((_, item) in orders) {
-                parser.asNativeMap(item)?.let { order ->
-                    val status = parser.asString(order["status"])?.let { OrderStatus.invoke(it) }
-                    val orderType = parser.asString(order["type"])?.let { OrderType.invoke(it) }
-                    val timeInForce = parser.asString(order["timeInForce"])?.let { OrderTimeInForce.invoke(it) }
-                    if (orderType != null && timeInForce != null && status != null) {
-                        if (isOrderIncludedInEquityTierLimit(orderType, timeInForce, status)) {
-                            count += 1
-                        }
-                    }
-                }
-            }
-        }
-        return count
-    }
-
     private fun validateRequiredInput(
         triggerOrder: Map<String, Any>,
     ): List<Any>? {
@@ -390,7 +250,11 @@ internal class TriggerOrdersInputValidator(
 
         if (triggerPrice == null && limitPrice != null) {
             errors.add(
-                required("REQUIRED_TRIGGER_PRICE", "price.triggerPrice", "APP.TRADE.ENTER_TRIGGER_PRICE"),
+                required(
+                    "REQUIRED_TRIGGER_PRICE",
+                    "price.triggerPrice",
+                    "APP.TRADE.ENTER_TRIGGER_PRICE"
+                ),
             )
         }
 
@@ -553,6 +417,7 @@ internal class TriggerOrdersInputValidator(
                             }
                     }
             }
+
             else -> null
         }
     }
@@ -585,8 +450,7 @@ internal class TriggerOrdersInputValidator(
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
                 val errors = mutableListOf<Map<String, Any>>()
 
-                parser.asDouble(configs["stepSize"])?.let {
-                        stepSize ->
+                parser.asDouble(configs["stepSize"])?.let { stepSize ->
                     if (Rounder.round(size, stepSize) != size) {
                         errors.add(
                             error(
@@ -646,11 +510,11 @@ internal class TriggerOrdersInputValidator(
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
         val params = mapOf(
             "INDEX_PRICE" to
-                mapOf(
-                    "value" to oraclePrice,
-                    "format" to "price",
-                    "tickSize" to tickSize,
-                ),
+                    mapOf(
+                        "value" to oraclePrice,
+                        "format" to "price",
+                        "tickSize" to tickSize,
+                    ),
         )
         val fields = listOfNotNull(inputField)
         val isStopLoss = type == OrderType.stopLimit || type == OrderType.stopMarket
@@ -692,26 +556,6 @@ internal class TriggerOrdersInputValidator(
                 params,
             )
         }
-    }
-}
-
-private fun isOrderIncludedInEquityTierLimit(
-    orderType: OrderType,
-    timeInForce: OrderTimeInForce,
-    status: OrderStatus
-): Boolean {
-    val isCurrentOrderStateful = isStatefulOrder(orderType, timeInForce)
-    // Short term with IOC or FOK should not be counted
-    val isShortTermAndRequiresImmediateExecution =
-        !isCurrentOrderStateful && (timeInForce == OrderTimeInForce.IOC || timeInForce == OrderTimeInForce.FOK)
-
-    return if (!isShortTermAndRequiresImmediateExecution) {
-        when (status) {
-            OrderStatus.open, OrderStatus.pending, OrderStatus.untriggered, OrderStatus.partiallyFilled -> true
-            else -> false
-        }
-    } else {
-        false
     }
 }
 
