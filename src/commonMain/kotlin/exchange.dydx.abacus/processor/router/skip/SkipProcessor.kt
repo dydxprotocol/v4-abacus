@@ -5,6 +5,7 @@ import exchange.dydx.abacus.processor.router.*
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.safeSet
 
+@Suppress("NotImplementedDeclaration")
 internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IRouterProcessor {
     override var chains: List<Any>? = null
 //    possibly want to use a different variable so we aren't stuck with this bad type
@@ -17,19 +18,19 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("receivedV2SdkInfo is not implemented in SkipProcessor!")
     }
     override fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("receivedChains is not implemented in SkipProcessor!")
     }
     override fun receivedTokens(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("receivedTokens is not implemented in SkipProcessor!")
     }
 
     override fun receivedRoute(
@@ -37,7 +38,7 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         payload: Map<String, Any>,
         requestId: String?,
     ): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("receivedRoute is not implemented in SkipProcessor!")
     }
 
     override fun receivedRouteV2(
@@ -45,11 +46,11 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         payload: Map<String, Any>,
         requestId: String?
     ): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("receivedRouteV2 is not implemented in SkipProcessor!")
     }
 
     override fun usdcAmount(data: Map<String, Any>): Double? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("usdcAmount is not implemented in SkipProcessor!")
     }
 
     override fun receivedStatus(
@@ -57,7 +58,7 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         payload: Map<String, Any>,
         transactionId: String?,
     ): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("receivedStatus is not implemented in SkipProcessor!")
     }
 
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
@@ -69,38 +70,38 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
     }
 
     override fun defaultChainId(): String? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("defaultChainId is not implemented in SkipProcessor!")
     }
 
     override fun selectedTokenSymbol(tokenAddress: String?): String? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("selectedTokenSymbol is not implemented in SkipProcessor!")
     }
 
     override fun selectedTokenDecimals(tokenAddress: String?): String? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("selectedTokenDecimals is not implemented in SkipProcessor!")
     }
 
     override fun filteredTokens(chainId: String?): List<Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("filteredTokens is not implemented in SkipProcessor!")
     }
 
     override fun defaultTokenAddress(chainId: String?): String? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("defaultTokenAddress is not implemented in SkipProcessor!")
     }
 
     override fun chainResources(chainId: String?): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("chainResources is not implemented in SkipProcessor!")
     }
 
     override fun tokenResources(chainId: String?): Map<String, Any>? {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("tokenResources is not implemented in SkipProcessor!")
     }
 
     override fun chainOptions(): List<Any> {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("chainOptions is not implemented in SkipProcessor!")
     }
 
     override fun tokenOptions(chainId: String?): List<Any> {
-        throw Error("Not Implemented!")
+        throw NotImplementedError("tokenOptions is not implemented in SkipProcessor!")
     }
 }
