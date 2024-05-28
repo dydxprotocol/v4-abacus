@@ -1,15 +1,15 @@
-package exchange.dydx.abacus.processor.router.Skip
+package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SkipTokenResourceProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class SkipChainResourceProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val keyMap = mapOf(
         "string" to mapOf(
-            "name" to "name",
-            "denom" to "address",
-            "symbol" to "symbol",
-            "decimals" to "decimals",
+            "chain_name" to "chainName",
+            "rpc" to "rpc",
+            "networkName" to "networkName",
+            "chain_id" to "chainId",
             "logo_uri" to "iconUrl",
         ),
     )

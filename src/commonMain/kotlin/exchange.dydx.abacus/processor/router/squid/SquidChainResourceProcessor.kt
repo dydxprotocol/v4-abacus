@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.processor.squid
+package exchange.dydx.abacus.processor.router.squid
 
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.protocols.ParserProtocol

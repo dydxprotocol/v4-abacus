@@ -2,14 +2,7 @@ package exchange.dydx.abacus.processor.router.Squid
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.*
-import exchange.dydx.abacus.processor.router.Skip.SkipChainProcessor
-import exchange.dydx.abacus.processor.router.Skip.SkipChainResourceProcessor
-import exchange.dydx.abacus.processor.router.Skip.SkipTokenProcessor
-import exchange.dydx.abacus.processor.router.Skip.SkipTokenResourceProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IRouterProcessor {
@@ -83,7 +76,7 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         throw Error("Not Implemented!")
     }
 
-    override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
+    override fun selectedTokenDecimals(tokenAddress: String?): String? {
         throw Error("Not Implemented!")
     }
 

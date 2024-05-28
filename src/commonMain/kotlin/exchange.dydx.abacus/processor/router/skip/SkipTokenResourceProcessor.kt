@@ -1,16 +1,16 @@
-package exchange.dydx.abacus.processor.router.Squid
+package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SquidTokenResourceProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class SkipTokenResourceProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val keyMap = mapOf(
         "string" to mapOf(
             "name" to "name",
-            "address" to "address",
+            "denom" to "address",
             "symbol" to "symbol",
             "decimals" to "decimals",
-            "logoURI" to "iconUrl",
+            "logo_uri" to "iconUrl",
         ),
     )
 
