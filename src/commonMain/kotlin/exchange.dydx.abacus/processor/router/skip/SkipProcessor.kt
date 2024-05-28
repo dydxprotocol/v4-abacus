@@ -136,7 +136,7 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         val chainProcessor = SkipChainProcessor(parser)
         val options = mutableListOf<Any>()
 
-        this.chains?.let { it ->
+        this.chains?.let {
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
                     if (parser.asString(chain.get("chainType")) != "cosmos") {

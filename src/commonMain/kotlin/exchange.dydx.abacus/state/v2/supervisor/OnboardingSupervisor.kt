@@ -69,6 +69,7 @@ internal class OnboardingSupervisor(
         retrieveCctpChainIds()
     }
 
+    @Suppress("UnusedPrivateMember")
     private fun retrieveSkipTransferChains() {
         val oldState = stateMachine.state
         val chainsUrl = helper.configs.skipV1Chains()
