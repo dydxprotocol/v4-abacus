@@ -252,8 +252,8 @@ data class FeeTier(
 @JsExport
 @Serializable
 data class EquityTiers(
-    val shortTermOrderEquityTiers: List<EquityTier>,
-    val statefulOrderEquityTiers: List<EquityTier>,
+    val shortTermOrderEquityTiers: IList<EquityTier>,
+    val statefulOrderEquityTiers: IList<EquityTier>,
 ) {
     companion object {
         internal fun create(
@@ -297,6 +297,7 @@ data class EquityTiers(
                 }
                 return equityTiers
             }
+            Logger.d { "Equity Tiers values not valid" }
             return null
         }
     }
