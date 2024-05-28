@@ -22,14 +22,15 @@ internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 parser.asNativeMap(data)?.let { data ->
                     val orderId = parser.asString(data["id"] ?: data["clientId"])
                     val modified = data.toMutableMap()
+                    val orderSubaccountNumber = parser.asInt(data["subaccountNumber"])
 
-                    subaccountNumber?.run {
-                        modified.safeSet("subaccountNumber", this)
+                    if (orderSubaccountNumber == null) {
+                        modified.safeSet("subaccountNumber", subaccountNumber)
                     }
 
                     if (orderId != null) {
                         val existing = parser.asNativeMap(orders[orderId])
-                        val order = itemProcessor.received(existing, data, height)
+                        val order = itemProcessor.received(existing, modified, height)
                         orders.typedSafeSet(orderId, order)
                     }
                 }
