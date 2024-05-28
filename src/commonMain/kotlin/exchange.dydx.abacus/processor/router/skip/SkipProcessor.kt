@@ -92,7 +92,7 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
     }
 
     override fun defaultChainId(): String? {
-        val selectedChain = parser.asNativeMap(this.chains?.find{ parser.asString(parser.asNativeMap(it)?.get("chain_id")) === "1" })
+        val selectedChain = parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) === "1" })
 
         return parser.asString(selectedChain?.get("chain_id"))
     }
