@@ -72,12 +72,9 @@ internal class OnboardingSupervisor(
     private fun retrieveSkipTransferChains() {
         val oldState = stateMachine.state
         val chainsUrl = helper.configs.skipV1Chains()
-        if (chainsUrl != null) {
-            helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-//                  will be updated to use skipChains when testing cutover
-                    update(stateMachine.squidChains(response), oldState)
-                }
+        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.routerChains(response), oldState)
             }
         }
     }

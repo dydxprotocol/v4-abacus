@@ -6,7 +6,7 @@ import kollections.iListOf
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
-internal fun TradingStateMachine.squidChains(payload: String): StateChanges? {
+internal fun TradingStateMachine.routerChains(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         input = squidProcessor.receivedChains(input, json)
