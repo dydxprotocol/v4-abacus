@@ -14,7 +14,7 @@ import exchange.dydx.abacus.utils.safeSet
 internal class SquidProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState,
-) : BaseProcessor(parser) {
+) : BaseProcessor(parser), IRouterProcessor {
     private var chains: List<Any>? = null
     private var tokens: List<Any>? = null
     var exchangeDestinationChainId: String? = null
