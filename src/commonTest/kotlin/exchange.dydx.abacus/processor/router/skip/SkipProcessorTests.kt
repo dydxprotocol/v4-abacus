@@ -12,7 +12,7 @@ internal fun templateToJson(template: String): Map<String, Any> {
 
 class SkipProcessorTests {
 
-    internal val skipProcessor = SkipProcessor(parser=Parser())
+    internal val skipProcessor = SkipProcessor(parser = Parser())
     internal val skipChainsMock = SkipChainsMock()
 
     @Test
