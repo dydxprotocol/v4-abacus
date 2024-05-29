@@ -1569,6 +1569,38 @@ data class AccountBalance(
 
 @JsExport
 @Serializable
+data class StakingDelegation(
+    var validator: String,
+    var amount: String,
+) {
+    companion object {
+        internal fun create(
+            existing: StakingDelegation?,
+            parser: ParserProtocol,
+            data: Map<String, Any>,
+            decimals: Int,
+        ): StakingDelegation? {
+            Logger.d { "creating Staking Delegation\n" }
+
+            val validator = parser.asString(data["validator"])
+            val amount = parser.asDecimal(data["amount"])
+            if (validator != null && amount != null) {
+                val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
+                val decimalAmountString = parser.asString(decimalAmount)!!
+                return if (existing?.validator != validator || existing.amount != decimalAmountString) {
+                    StakingDelegation(validator, decimalAmountString)
+                } else {
+                    existing
+                }
+            }
+            Logger.d { "Staking Delegation not valid" }
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class HistoricalTradingReward(
     val amount: Double,
     val cumulativeAmount: Double,
@@ -2020,6 +2052,7 @@ data class TradingRewards(
 data class Account(
     var balances: IMap<String, AccountBalance>?,
     var stakingBalances: IMap<String, AccountBalance>?,
+    var stakingDelegations: IList<StakingDelegation>?,
     var subaccounts: IMap<String, Subaccount>?,
     var groupedSubaccounts: IMap<String, Subaccount>?,
     var tradingRewards: TradingRewards?,
@@ -2078,6 +2111,24 @@ data class Account(
                 }
             }
 
+            val stakingDelegations: IMutableList<StakingDelegation> =
+                iMutableListOf()
+            val stakingDelegationsData = parser.asList(data["stakingDelegations"])
+            stakingDelegationsData?.forEachIndexed { index, value ->
+                val stakingDelegationData = parser.asMap(value) ?: iMapOf()
+                val tokenInfo = findTokenInfo(tokensInfo, stakingDelegationData["denom"] as String)
+                if (tokenInfo != null) {
+                    StakingDelegation.create(
+                        existing?.stakingDelegations?.getOrNull(index),
+                        parser,
+                        stakingDelegationData,
+                        tokenInfo.decimals,
+                    )?.let { stakingDelegation ->
+                        stakingDelegations.add(stakingDelegation)
+                    }
+                }
+            }
+
             val tradingRewardsData = parser.asMap(data["tradingRewards"])
             val tradingRewards = if (tradingRewardsData != null) {
                 TradingRewards.create(existing?.tradingRewards, parser, tradingRewardsData)
@@ -2132,6 +2183,7 @@ data class Account(
             return Account(
                 balances,
                 stakingBalances,
+                stakingDelegations,
                 subaccounts,
                 groupedSubaccounts,
                 tradingRewards,
