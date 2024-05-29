@@ -253,7 +253,7 @@ internal class TriggerOrdersInputValidator(
                 required(
                     "REQUIRED_TRIGGER_PRICE",
                     "price.triggerPrice",
-                    "APP.TRADE.ENTER_TRIGGER_PRICE"
+                    "APP.TRADE.ENTER_TRIGGER_PRICE",
                 ),
             )
         }
@@ -510,11 +510,11 @@ internal class TriggerOrdersInputValidator(
         val action = "APP.TRADE.MODIFY_TRIGGER_PRICE"
         val params = mapOf(
             "INDEX_PRICE" to
-                    mapOf(
-                        "value" to oraclePrice,
-                        "format" to "price",
-                        "tickSize" to tickSize,
-                    ),
+                mapOf(
+                    "value" to oraclePrice,
+                    "format" to "price",
+                    "tickSize" to tickSize,
+                ),
         )
         val fields = listOfNotNull(inputField)
         val isStopLoss = type == OrderType.stopLimit || type == OrderType.stopMarket
