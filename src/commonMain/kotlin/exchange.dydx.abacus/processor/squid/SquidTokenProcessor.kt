@@ -1,21 +1,19 @@
 package exchange.dydx.abacus.processor.squid
 
-import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SquidTokenProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val keyMap = mapOf(
-        "string" to mapOf(
-            "name" to "stringKey",
-            "address" to "type",
-            "logoURI" to "iconUrl",
-        ),
-    )
-
-    override fun received(
-        existing: Map<String, Any>?,
+internal class SquidTokenProcessor(
+    private val parser: ParserProtocol,
+) {
+    fun received(
         payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, keyMap)
+    ): SelectionOption {
+        return SelectionOption(
+            stringKey = parser.asString(payload["name"]),
+            string = parser.asString(payload["name"]),
+            type = parser.asString(payload["address"]) ?: "",
+            iconUrl = parser.asString(payload["logoURI"]),
+        )
     }
 }
