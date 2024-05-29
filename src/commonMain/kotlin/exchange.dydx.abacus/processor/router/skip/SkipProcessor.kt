@@ -1,14 +1,19 @@
 package exchange.dydx.abacus.processor.router.skip
 
+import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.SharedRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("NotImplementedDeclaration")
-internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IRouterProcessor {
+internal class SkipProcessor(
+    parser: ParserProtocol,
+    private val internalState: InternalTransferInputState
+) : BaseProcessor(parser), IRouterProcessor {
     override var chains: List<Any>? = null
 
 //    possibly want to use a different variable so we aren't stuck with this bad type
@@ -38,8 +43,7 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         }
         val chainOptions = chainOptions()
 
-        modified.safeSet("transfer.depositOptions.chains", chainOptions)
-        modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
+        internalState.chains = chainOptions
         val selectedChainId = defaultChainId()
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
@@ -132,9 +136,9 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         throw NotImplementedError("tokenResources is not implemented in SkipProcessor!")
     }
 
-    override fun chainOptions(): List<Any> {
+    override fun chainOptions(): List<SelectionOption> {
         val chainProcessor = SkipChainProcessor(parser)
-        val options = mutableListOf<Any>()
+        val options = mutableListOf<SelectionOption>()
 
         this.chains?.let {
             for (chain in it) {
