@@ -10,6 +10,7 @@ import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.setAddresses
+import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.v2.manager.AsyncAbacusStateManagerV2
@@ -344,17 +345,24 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueEmpty()
     }
 
-    private fun setStateMachineForIsolatedMarginTests(stateManager: AsyncAbacusStateManagerV2) {
+    private fun setStateMachineForIsolatedMarginTests(stateManager: AsyncAbacusStateManagerV2, withPositions: Boolean = false) {
         stateManager.readyToConnect = true
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
 
-        stateManager.setAddresses(null, "dydx199tqg4wdlnu4qjlxchpd7seg454937hjrknju4")
-        testWebSocket?.simulateReceived(mock.parentSubaccountsChannel.subscribed)
-        testWebSocket?.simulateReceived(mock.parentSubaccountsChannel.channel_data)
+        stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
+        if (withPositions) {
+            testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)
+        } else {
+            testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)
+        }
+        stateManager.market = "BTC-USD"
+    }
 
-        stateManager.market = "ETH-USD"
+    private fun prepareIsolatedMarginClosePosition() {
+        stateManager.closePosition("APE-USD", ClosePositionInputField.market)
+        stateManager.closePosition("1", ClosePositionInputField.percent)
     }
 
     private fun prepareIsolatedMarginTrade(isShortTerm: Boolean) {
@@ -369,6 +377,15 @@ class V4TransactionTests : NetworkTests() {
             stateManager.trade("LIMIT", TradeInputField.type)
             stateManager.trade("GTT", TradeInputField.timeInForceType)
         }
+    }
+
+    @Test
+    fun testIsolatedMarginClosePosition() {
+        setStateMachineForIsolatedMarginTests(stateManager, withPositions = true)
+        prepareIsolatedMarginClosePosition()
+        val closePositionPayload = subaccountSupervisor?.closePositionPayload(0)
+        assertNotNull(closePositionPayload, "Close position payload should not be null")
+        assertEquals(128, closePositionPayload.subaccountNumber)
     }
 
     @Test
@@ -391,7 +408,7 @@ class V4TransactionTests : NetworkTests() {
         setStateMachineForIsolatedMarginTests(stateManager)
         val transactionCallback: TransactionCallback = { _, _, _ -> }
 
-        val cancelPayload = subaccountSupervisor?.cancelOrder("b812bea8-29d3-5841-9549-caa072f6f8a9", transactionCallback)
+        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
     }

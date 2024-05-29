@@ -195,6 +195,9 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
             "starkKey" to "starkKey",
             "positionId" to "positionId",
         ),
+        "int" to mapOf(
+            "subaccountNumber" to "subaccountNumber",
+        ),
         "double" to mapOf(
             "pendingDeposits" to "pendingDeposits",
             "pendingWithdrawals" to "pendingWithdrawals",

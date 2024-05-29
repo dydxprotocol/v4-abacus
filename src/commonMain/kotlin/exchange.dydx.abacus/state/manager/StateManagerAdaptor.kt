@@ -81,6 +81,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -262,7 +263,7 @@ open class StateManagerAdaptor(
             }
         }
 
-    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null)
+    private var compliance: Compliance = Compliance(null, ComplianceStatus.COMPLIANT, null, null)
         set(value) {
             if (field != value) {
                 field = value
@@ -321,7 +322,7 @@ open class StateManagerAdaptor(
         }
 
     var historicalTradingRewardPeriod: HistoricalTradingRewardsPeriod =
-        HistoricalTradingRewardsPeriod.WEEKLY
+        HistoricalTradingRewardsPeriod.DAILY
         internal set(value) {
             if (field != value) {
                 field = value
@@ -1393,8 +1394,8 @@ open class StateManagerAdaptor(
     }
 
     open fun retrieveAccountHistoricalTradingRewards(
-        period: String = "WEEKLY",
-        previousUrl: String? = null
+        period: String = "DAILY",
+        previousUrl: String? = null,
     ) {
         val oldState = stateMachine.state
         var url = historicalTradingRewardAggregationsUrl() ?: return
@@ -1406,13 +1407,16 @@ open class StateManagerAdaptor(
             ),
         )?.mutable()
 
+        val tradingRewardsStartDate = Instant.fromEpochMilliseconds(environment.rewardsHistoryStartDateMs.toLong())
+        val maxDuration = Clock.System.now() - tradingRewardsStartDate + 2.days
+
         retrieveTimed(
             url,
             historicalTradingRewardsInPeriod,
             "startedAt",
-            0.days,
-            180.days,
-            "endedAt",
+            1.days,
+            maxDuration,
+            "startingBeforeOrAt",
             null,
             params,
             previousUrl,
@@ -1561,16 +1565,25 @@ open class StateManagerAdaptor(
                     parser.asMap(items.firstOrNull())?.get(timeField),
                 )
             val now = ServerTime.now()
-            if (lastItemTime != null && (now.minus(lastItemTime)) > sampleDuration * 2.0) {
+
+            var latestItemTime: Instant? = null
+            var earliestItemTime: Instant? = null
+
+            if (lastItemTime != null && firstItemTime != null) {
+                latestItemTime = if (lastItemTime.compareTo(firstItemTime) > 0) lastItemTime else firstItemTime
+                earliestItemTime = if (lastItemTime.compareTo(firstItemTime) < 0) lastItemTime else firstItemTime
+            }
+
+            if (latestItemTime != null && (now.minus(latestItemTime)) > sampleDuration * 2.0) {
                 /*
                 Get latest
                  */
-                val forwardTime = lastItemTime + 99 * sampleDuration
+                val forwardTime = latestItemTime + 99 * sampleDuration
                 val beforeOrAt = if (forwardTime > now) forwardTime else null
                 val params = timedParams(
                     beforeOrAt,
                     beforeParam,
-                    lastItemTime + 1.seconds,
+                    latestItemTime + 1.seconds,
                     afterParam,
                     additionalParams,
                 )
@@ -1578,12 +1591,12 @@ open class StateManagerAdaptor(
                 if (fullUrl != previousUrl) {
                     getWithFullUrl(fullUrl, null, callback)
                 }
-            } else if (firstItemTime != null) {
+            } else if (earliestItemTime != null) {
                 /*
                 Get previous
                  */
-                if (now - firstItemTime <= maxDuration) {
-                    val beforeOrAt = firstItemTime - 1.seconds
+                if (now - earliestItemTime <= maxDuration) {
+                    val beforeOrAt = earliestItemTime - 1.seconds
                     val after = beforeOrAt - 99 * sampleDuration
                     val params =
                         timedParams(beforeOrAt, beforeParam, after, afterParam, additionalParams)
@@ -2244,7 +2257,7 @@ open class StateManagerAdaptor(
         val walletAddress = wallet.walletAddress ?: error("walletAddress is null")
         val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin
             ?: error("isolatedMarginAdjustment is null")
-        val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
+        val amount = parser.asString(isolatedMarginAdjustment.amount) ?: error("amount is null")
         val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber
             ?: error("childSubaccountNumber is null")
 
@@ -2509,42 +2522,36 @@ open class StateManagerAdaptor(
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    compliance = if (success(httpCode) && response != null) {
+                    var geo: String? = null
+                    if (success(httpCode) && response != null) {
                         val payload = parser.decodeJsonObject(response)?.toIMap()
-                        if (payload != null) {
-                            val country = parser.asString(parser.value(payload, "geo.country"))
-                            Compliance(country, compliance.status, compliance.updatedAt)
-                        } else {
-                            Compliance(null, compliance.status, compliance.updatedAt)
-                        }
-                    } else {
-                        Compliance(null, compliance.status, compliance.updatedAt)
+                        geo = parser.asString(payload?.get("geo"))
                     }
+                    compliance = compliance.copy(geo = geo)
                 },
             )
         }
     }
 
     private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
-        compliance = if (success(httpCode) && response != null) {
+        var complianceStatus = ComplianceStatus.UNKNOWN
+        var updatedAt: String? = null
+        var expiresAt: String? = null
+        if (success(httpCode) && response != null) {
             val res = parser.decodeJsonObject(response)?.toIMap()
-            if (res != null) {
-                val status = parser.asString(res["status"])
-                val updatedAt = parser.asString(res["updatedAt"])
-                val complianceStatus =
-                    if (status != null) {
-                        ComplianceStatus.valueOf(status)
-                    } else {
-                        ComplianceStatus.UNKNOWN
-                    }
-                Compliance(compliance.geo, complianceStatus, updatedAt ?: compliance.updatedAt)
-            } else {
-                Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+            complianceStatus = parser.asString(res?.get("status"))?.let { ComplianceStatus.valueOf(it) } ?: ComplianceStatus.UNKNOWN
+            updatedAt = parser.asString(res?.get("updatedAt"))
+            if (updatedAt != null) {
+                expiresAt = try {
+                    Instant.parse(updatedAt).plus(7.days).toString()
+                } catch (e: Exception) {
+                    Logger.e { "Error parsing compliance updatedAt: $updatedAt" }
+                    null
+                }
             }
-        } else {
-            Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
         }
-        return compliance.status
+        compliance = compliance.copy(status = complianceStatus, updatedAt = updatedAt, expiresAt = expiresAt)
+        return complianceStatus
     }
 
     private fun updateCompliance(address: DydxAddress, status: ComplianceStatus, complianceAction: ComplianceAction) {
@@ -2594,10 +2601,10 @@ open class StateManagerAdaptor(
                         },
                     )
                 } else {
-                    compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+                    compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
                 }
             } else {
-                compliance = Compliance(compliance.geo, ComplianceStatus.UNKNOWN, compliance.updatedAt)
+                compliance = compliance.copy(status = ComplianceStatus.UNKNOWN)
             }
         }
     }

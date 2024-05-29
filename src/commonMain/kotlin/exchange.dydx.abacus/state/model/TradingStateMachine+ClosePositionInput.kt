@@ -37,7 +37,7 @@ fun TradingStateMachine.closePosition(
     val input = this.input?.mutable() ?: mutableMapOf()
     input["current"] = "closePosition"
     val trade =
-        parser.asMap(input["closePosition"])?.mutable() ?: inititiateClosePosition(
+        parser.asMap(input["closePosition"])?.mutable() ?: initiateClosePosition(
             null,
             subaccountNumber,
         )
@@ -45,7 +45,7 @@ fun TradingStateMachine.closePosition(
     var sizeChanged = false
     when (typeText) {
         ClosePositionInputField.market.rawValue -> {
-            val position = if (data != null) getPosition(data) else null
+            val position = if (data != null) getPosition(data, subaccountNumber) else null
             if (position != null) {
                 if (data != null) {
                     if (parser.asString(trade["marketId"]) != data) {
@@ -100,14 +100,21 @@ fun TradingStateMachine.closePosition(
 
 fun TradingStateMachine.getPosition(
     marketId: String,
-    subaccountNumber: Int = 0
+    subaccountNumber: Int,
 ): Map<String, Any>? {
+    val groupedSubaccounts = parser.asMap(parser.value(wallet, "account.groupedSubaccounts"))
+    val path = if (groupedSubaccounts != null) {
+        "account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId"
+    } else {
+        "account.subaccounts.$subaccountNumber.openPositions.$marketId"
+    }
     val position = parser.asMap(
         parser.value(
             wallet,
-            "account.subaccounts.$subaccountNumber.openPositions.$marketId",
+            path,
         ),
     )
+
     return if (position != null && (
             parser.asDouble(parser.value(position, "size.current"))
                 ?: Numeric.double.ZERO

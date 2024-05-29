@@ -70,7 +70,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
 
     private val configsKeyMap = mapOf(
         "string" to mapOf(
-            "perpetualMarketType" to "perpetualMarketType",
+            "marketType" to "perpetualMarketType",
         ),
         "double" to mapOf(
             "maintenanceMarginFraction" to "maintenanceMarginFraction",

@@ -4,9 +4,11 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.ServerTime
 import kollections.JsExport
 import kollections.iMutableMapOf
 import kollections.toIList
+import kotlin.time.Duration.Companion.days
 
 @JsExport
 data class IndexerURIs(
@@ -59,6 +61,7 @@ data class EnvironmentLinks(
     val tos: String?,
     val privacy: String?,
     val mintscan: String?,
+    val mintscanBase: String?,
     val documentation: String?,
     val community: String?,
     val feedback: String?,
@@ -67,6 +70,7 @@ data class EnvironmentLinks(
     val launchIncentive: String?,
     val statusPage: String?,
     val withdrawalGateLearnMore: String?,
+    val complianceSupportEmail: String?,
 ) {
     companion object {
         fun parse(
@@ -76,6 +80,7 @@ data class EnvironmentLinks(
             val tos = parser.asString(data["tos"])
             val privacy = parser.asString(data["privacy"])
             val mintscan = parser.asString(data["mintscan"])
+            val mintscanBase = parser.asString(data["mintscanBase"])
             val documentation = parser.asString(data["documentation"])
             val community = parser.asString(data["community"])
             val feedback = parser.asString(data["feedback"])
@@ -84,10 +89,12 @@ data class EnvironmentLinks(
             val launchIncentive = parser.asString(data["launchIncentive"])
             val statusPage = parser.asString(data["statusPage"])
             val withdrawalGateLearnMore = parser.asString(data["withdrawalGateLearnMore"])
+            val complianceSupportEmail = parser.asString(data["complianceSupportEmail"])
             return EnvironmentLinks(
                 tos,
                 privacy,
                 mintscan,
+                mintscanBase,
                 documentation,
                 community,
                 feedback,
@@ -96,6 +103,7 @@ data class EnvironmentLinks(
                 launchIncentive,
                 statusPage,
                 withdrawalGateLearnMore,
+                complianceSupportEmail,
             )
         }
     }
@@ -394,6 +402,7 @@ open class Environment(
     val ethereumChainId: String,
     val dydxChainId: String?,
     val squidIntegratorId: String?,
+    val rewardsHistoryStartDateMs: String,
     val isMainNet: Boolean,
     val endpoints: EnvironmentEndpoints,
     val links: EnvironmentLinks?,
@@ -412,6 +421,7 @@ class V4Environment(
     squidIntegratorId: String?,
     val chainName: String?,
     val chainLogo: String?,
+    rewardsHistoryStartDateMs: String,
     isMainNet: Boolean,
     endpoints: EnvironmentEndpoints,
     links: EnvironmentLinks?,
@@ -426,6 +436,7 @@ class V4Environment(
     ethereumChainId,
     dydxChainId,
     squidIntegratorId,
+    rewardsHistoryStartDateMs,
     isMainNet,
     endpoints,
     links,
@@ -452,6 +463,7 @@ class V4Environment(
             val squidIntegratorId = parser.asString(data["squidIntegratorId"])
             val chainName = parser.asString(data["chainName"])
             val chainLogo = parser.asString(data["chainLogo"])
+            val rewardsHistoryStartDateMs = parser.asString(data["rewardsHistoryStartDateMs"]) ?: ServerTime.now().minus(180.days).toEpochMilliseconds().toString()
             val isMainNet = parser.asBool(data["isMainNet"]) ?: return null
             val endpoints =
                 EnvironmentEndpoints.parse(parser.asNativeMap(data["endpoints"]) ?: return null, parser)
@@ -464,7 +476,12 @@ class V4Environment(
                 parser,
                 deploymentUri,
             )
-            val apps = AppsRequirements.parse(data, parser, localizer)
+            val appsData = parser.asNativeMap(data["apps"])
+            val apps = if (appsData != null) {
+                AppsRequirements.parse(appsData, parser, localizer)
+            } else {
+                null
+            }
             val tokens = parseTokens(tokensData ?: parser.asNativeMap(data["tokens"]), parser, deploymentUri)
             val governance = EnvironmentGovernance.parse(governanceData ?: parser.asNativeMap(data["governance"]) ?: return null, parser)
 
@@ -478,6 +495,7 @@ class V4Environment(
                 squidIntegratorId,
                 chainName,
                 "$deploymentUri$chainLogo",
+                rewardsHistoryStartDateMs,
                 isMainNet,
                 endpoints,
                 links,

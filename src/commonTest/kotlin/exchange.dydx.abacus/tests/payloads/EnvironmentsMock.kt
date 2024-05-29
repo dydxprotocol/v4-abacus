@@ -38,10 +38,12 @@ class EnvironmentsMock {
                     "tos":"https://dydx.exchange/v4-terms",
                     "privacy":"https://dydx.exchange/privacy",
                     "mintscan":"https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
+                    "mintscanBase":"https://testnet.mintscan.io/dydx-testnet",
                     "documentation":"https://v4-teacher.vercel.app/",
                     "community":"https://discord.com/invite/dydx",
                     "feedback":"https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform",
-                    "launchIncentive":"https://dydx.exchange/v4-launch-incentive"
+                    "launchIncentive":"https://dydx.exchange/v4-launch-incentive",
+                    "complianceSupportEmail":"someemail@gmail.com"
                }
            },
            "wallets": {
@@ -71,6 +73,7 @@ class EnvironmentsMock {
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
                  "squidIntegratorId": "dYdX-api",
+                 "rewardsHistoryStartDateMs": "1704844800000",
                  "isMainNet":false,
                  "endpoints":{
                     "indexers":[
@@ -104,6 +107,7 @@ class EnvironmentsMock {
                  "ethereumChainId":"5",
                  "dydxChainId":"dydxprotocol-testnet",
                  "squidIntegratorId": "dYdX-api",
+                 "rewardsHistoryStartDateMs": "1704844800000",
                  "isMainNet":false,
                  "endpoints":{
                     "indexers":[

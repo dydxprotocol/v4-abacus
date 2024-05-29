@@ -4,11 +4,13 @@ import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFA
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.protocols.AnalyticsEvent
+import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -293,6 +295,10 @@ internal class SubaccountSupervisor(
             channel,
             subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
+
+        if (parent) {
+            pollReclaimUnutilizedFunds()
+        }
     }
 
     private fun subaccountChannelParams(
@@ -511,7 +517,7 @@ internal class SubaccountSupervisor(
             val openPositions = it.value.openPositions
             val openOrders = it.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                status == "OPEN"
+                status == "open" || status == "pending" || status == "untriggered" || status == "partiallyFilled"
             }
 
             val postionMarketIds = openPositions?.map { position ->
@@ -541,7 +547,7 @@ internal class SubaccountSupervisor(
         }
 
         // Find new childSubaccount number available for Isolated Margin Trade
-        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber)
+        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap?.keys ?: iListOf(subaccountNumber.toString())
         for (offset in NUM_PARENT_SUBACCOUNTS..MAX_SUBACCOUNT_NUMBER step NUM_PARENT_SUBACCOUNTS) {
             val tentativeSubaccountNumber = offset + subaccountNumber
             if (!existingSubaccountNumbers.contains(tentativeSubaccountNumber.toString())) {
@@ -558,10 +564,8 @@ internal class SubaccountSupervisor(
 
         // Derive transfer params from trade input
         val targetLeverage = trade?.targetLeverage ?: error("targetLeverage is null")
-        val size = orderPayload.size
-        val price = orderPayload.price
-        val notionalUsdc = price * size
-        val amountToTransfer = (notionalUsdc / targetLeverage).toString()
+        val usdcSize = trade.size?.usdcSize ?: error("usdcSize is null")
+        val amountToTransfer = (usdcSize / targetLeverage).toString()
         val childSubaccountNumber = orderPayload.subaccountNumber
 
         val transferPayload = HumanReadableSubaccountTransferPayload(
@@ -1165,8 +1169,10 @@ internal class SubaccountSupervisor(
         val goodTilTimeInSeconds = null
         val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
+        val subaccountNumberForPosition = helper.parser.asInt(helper.parser.value(stateMachine.data, "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber")) ?: subaccountNumber
+
         return HumanReadablePlaceOrderPayload(
-            subaccountNumber,
+            subaccountNumberForPosition,
             marketId,
             clientId,
             "MARKET",
@@ -1277,12 +1283,25 @@ internal class SubaccountSupervisor(
         val isolatedMarginAdjustment = stateMachine.state?.input?.adjustIsolatedMargin ?: error("AdjustIsolatedMarginInput is null")
         val amount = isolatedMarginAdjustment.amount ?: error("amount is null")
         val childSubaccountNumber = isolatedMarginAdjustment.childSubaccountNumber ?: error("childSubaccountNumber is null")
+        val type = isolatedMarginAdjustment.type
+
+        val recipientSubaccountNumber = if (type == IsolatedMarginAdjustmentType.Add) {
+            childSubaccountNumber
+        } else {
+            subaccountNumber
+        }
+
+        val sourceSubaccountNumber = if (type == IsolatedMarginAdjustmentType.Add) {
+            subaccountNumber
+        } else {
+            childSubaccountNumber
+        }
 
         return HumanReadableSubaccountTransferPayload(
-            subaccountNumber,
+            sourceSubaccountNumber,
             amount,
             accountAddress,
-            childSubaccountNumber,
+            recipientSubaccountNumber,
         )
     }
 
@@ -1390,6 +1409,91 @@ internal class SubaccountSupervisor(
         }
         if (changes.changes.contains(Changes.subaccount)) {
             parseOrdersToMatchPlaceOrdersAndCancelOrders()
+        }
+    }
+
+    /**
+     * @description Loop through all subaccounts to find childSubaccounts that have funds but no open positions or orders. Initiate a transfer to parentSubaccount.
+     */
+    private fun reclaimUnutilizedFundsFromChildSubaccounts() {
+        val subaccounts = stateMachine.state?.account?.subaccounts ?: return
+
+        val subaccountQuoteBalanceMap = subaccounts.mapValues { subaccount ->
+            // If the subaccount is the parentSubaccount, skip
+            if (subaccount.value.subaccountNumber == subaccountNumber) {
+                return@mapValues 0.0
+            }
+
+            val openPositions = subaccount.value.openPositions
+            val openOrders = subaccount.value.orders?.filter { order ->
+                val status = helper.parser.asString(order.status)
+                iListOf("open", "pending", "untriggered", "partiallyFilled").contains(status)
+            }
+            val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
+
+            // Only return a quoteBalance if the subaccount has no open positions or orders
+            if (openPositions.isNullOrEmpty() && openOrders.isNullOrEmpty() && quoteBalance > 0.0) {
+                quoteBalance
+            } else {
+                0.0
+            }
+        }.filter {
+            it.value > 0.0
+        }
+
+        val transferPayloadStrings = iMutableListOf<String>()
+
+        subaccountQuoteBalanceMap.forEach {
+            val childSubaccountNumber = it.key.toInt()
+            val amountToTransfer = it.value.toString()
+
+            val transferPayload = HumanReadableSubaccountTransferPayload(
+                childSubaccountNumber,
+                amountToTransfer,
+                accountAddress,
+                subaccountNumber,
+            )
+
+            val transferPayloadString = Json.encodeToString(transferPayload)
+            transferPayloadStrings.add(transferPayloadString)
+        }
+
+        recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+    }
+
+    private fun recursivelyReclaimChildSubaccountFunds(transferPayloadStrings: MutableList<String>) {
+        if (transferPayloadStrings.isNotEmpty()) {
+            val transferPayloadString = transferPayloadStrings.removeAt(0)
+            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
+                val error = parseTransactionResponse(response)
+                if (error != null) {
+                    emitError(error)
+                } else {
+                    recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+                }
+            }
+        }
+    }
+
+    private var reclaimUnutilizedFundsTimer: LocalTimerProtocol? = null
+        set(value) {
+            if (field !== value) {
+                field?.cancel()
+                field = value
+            }
+        }
+
+    private fun pollReclaimUnutilizedFunds() {
+        reclaimUnutilizedFundsTimer = null
+        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+            this.reclaimUnutilizedFundsTimer = helper.ioImplementations.timer?.schedule(
+                (10.seconds).inWholeSeconds.toDouble(),
+                null,
+            ) {
+                reclaimUnutilizedFundsFromChildSubaccounts()
+                pollReclaimUnutilizedFunds()
+                false
+            }
         }
     }
 

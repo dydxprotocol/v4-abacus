@@ -2,6 +2,7 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
@@ -27,6 +28,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
     private fun testAccountsOnce() {
         var time = ServerTime.now()
         testSubaccountSubscribed()
+        testTradeInput()
         testSubaccountChannelData()
         time = perp.log("Accounts Subscribed", time)
     }
@@ -232,6 +234,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                     },
                                     "pendingPositions": [
                                         {
+                                            "assetId": "APE"
+                                        },
+                                        {
                                             "assetId": "RUNE",
                                             "orderCount": 1,
                                             "quoteBalance": {
@@ -246,6 +251,123 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                         }
                                     ]
                                 }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testTradeInput() {
+        test(
+            {
+                perp.tradeInMarket("RUNE-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "ISOLATED",
+                            "targetLeverage": 1.0,
+                            "options": {
+                                "needsMarginMode": false
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("BTC-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": false
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("APE-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": false
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("ETH-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": false
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("AVAX-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": false
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.tradeInMarket("LINK-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": true
                             }
                         }
                     }
@@ -375,7 +497,12 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
     private fun testParentSubaccountSubscribedWithPendingPositions() {
         test(
             {
-                perp.socket(testWsUrl, mock.parentSubaccountsChannel.read_subscribed_with_pending, 0, null)
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.read_subscribed_with_pending,
+                    0,
+                    null,
+                )
             },
             """
                 {
@@ -486,7 +613,12 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
     private fun testParentSubaccountChannelData() {
         test(
             {
-                perp.socket(testWsUrl, mock.parentSubaccountsChannel.real_channel_batch_data, 0, null)
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.real_channel_batch_data,
+                    0,
+                    null,
+                )
             },
             """
                 {
