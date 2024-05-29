@@ -20,7 +20,7 @@ complexity:
   LargeClass:
     threshold: 1000 # up from 600
   LongMethod:
-    threshold: 100 # up from 60
+    active: false
   TooManyFunctions:
     active: false
   NestedBlockDepth:

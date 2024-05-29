@@ -235,11 +235,10 @@ class V4SquidTests : V4BaseTests() {
         val stateChange = perp.squidChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        val result = parser.asMap(perp.squidProcessor.chainResources("1"))!!
-        val resource = parser.asMap(result["1"])!!
-        assertTrue(resource.keys.size == 5)
-        assertTrue(resource["chainId"] == "1") // Ethereum
-        assertTrue(resource["chainName"] == "Ethereum") // Ethereum
+        val result = perp.squidProcessor.chainResources("1")
+        val resource = result?.get("1")
+        assertTrue(resource?.chainId == 1) // Ethereum
+        assertTrue(resource?.chainName == "Ethereum") // Ethereum
     }
 
     @Test

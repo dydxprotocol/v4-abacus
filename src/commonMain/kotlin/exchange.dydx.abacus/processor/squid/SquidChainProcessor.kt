@@ -1,22 +1,19 @@
 package exchange.dydx.abacus.processor.squid
 
-import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SquidChainProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val keyMap = mapOf(
-        "string" to mapOf(
-            "chainName" to "stringKey",
-            "networkIdentifier" to "stringKey",
-            "chainId" to "type",
-            "chainIconURI" to "iconUrl",
-        ),
-    )
-
-    override fun received(
-        existing: Map<String, Any>?,
+internal class SquidChainProcessor(
+    private val parser: ParserProtocol
+) {
+    fun received(
         payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, keyMap)
+    ): SelectionOption {
+        return SelectionOption(
+            stringKey = parser.asString(payload["networkIdentifier"]) ?: parser.asString(payload["chainName"]),
+            string = parser.asString(payload["networkIdentifier"]) ?: parser.asString(payload["chainName"]),
+            type = parser.asString(payload["chainId"]) ?: "",
+            iconUrl = parser.asString(payload["chainIconURI"]),
+        )
     }
 }
