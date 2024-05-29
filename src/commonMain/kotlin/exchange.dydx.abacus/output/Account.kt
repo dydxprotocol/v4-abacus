@@ -2090,44 +2090,20 @@ data class Account(
             }
 
             val stakingBalances: IMutableMap<String, AccountBalance> =
-                iMutableMapOf()
-            val stakingBalancesData = parser.asMap(data["stakingBalances"])
-            if (stakingBalancesData != null) {
-                for ((key, value) in stakingBalancesData) {
-                    // key is the denom
-                    // It should be chain token denom here
-                    val tokenInfo = findTokenInfo(tokensInfo, key)
-                    if (tokenInfo != null) {
-                        val balanceData = parser.asMap(value) ?: iMapOf()
-                        AccountBalance.create(
-                            existing?.stakingBalances?.get(key),
-                            parser,
-                            balanceData,
-                            tokenInfo.decimals,
-                        )?.let { balance ->
-                            stakingBalances[key] = balance
-                        }
-                    }
-                }
-            }
+                processStakingBalance(
+                    existing,
+                    parser,
+                    data,
+                    tokensInfo,
+                )
 
             val stakingDelegations: IMutableList<StakingDelegation> =
-                iMutableListOf()
-            val stakingDelegationsData = parser.asList(data["stakingDelegations"])
-            stakingDelegationsData?.forEachIndexed { index, value ->
-                val stakingDelegationData = parser.asMap(value) ?: iMapOf()
-                val tokenInfo = findTokenInfo(tokensInfo, stakingDelegationData["denom"] as String)
-                if (tokenInfo != null) {
-                    StakingDelegation.create(
-                        existing?.stakingDelegations?.getOrNull(index),
-                        parser,
-                        stakingDelegationData,
-                        tokenInfo.decimals,
-                    )?.let { stakingDelegation ->
-                        stakingDelegations.add(stakingDelegation)
-                    }
-                }
-            }
+                processStakingDelegations(
+                    existing,
+                    parser,
+                    data,
+                    tokensInfo,
+                )
 
             val tradingRewardsData = parser.asMap(data["tradingRewards"])
             val tradingRewards = if (tradingRewardsData != null) {
@@ -2193,6 +2169,62 @@ data class Account(
 
         private fun findTokenInfo(tokensInfo: Map<String, TokenInfo>, denom: String): TokenInfo? {
             return tokensInfo.firstNotNullOfOrNull { if (it.value.denom == denom) it.value else null }
+        }
+
+        private fun processStakingDelegations(
+            existing: Account?,
+            parser: ParserProtocol,
+            data: Map<String, Any>,
+            tokensInfo: Map<String, TokenInfo>,
+        ): IMutableList<StakingDelegation> {
+            val stakingDelegations: IMutableList<StakingDelegation> =
+                iMutableListOf()
+            val stakingDelegationsData = parser.asList(data["stakingDelegations"])
+            stakingDelegationsData?.forEachIndexed { index, value ->
+                val stakingDelegationData = parser.asMap(value) ?: iMapOf()
+                val tokenInfo = findTokenInfo(tokensInfo, stakingDelegationData["denom"] as String)
+                if (tokenInfo != null) {
+                    StakingDelegation.create(
+                        existing?.stakingDelegations?.getOrNull(index),
+                        parser,
+                        stakingDelegationData,
+                        tokenInfo.decimals,
+                    )?.let { stakingDelegation ->
+                        stakingDelegations.add(stakingDelegation)
+                    }
+                }
+            }
+            return stakingDelegations
+        }
+
+        private fun processStakingBalance(
+            existing: Account?,
+            parser: ParserProtocol,
+            data: Map<String, Any>,
+            tokensInfo: Map<String, TokenInfo>,
+        ): IMutableMap<String, AccountBalance> {
+            val stakingBalances: IMutableMap<String, AccountBalance> =
+                iMutableMapOf()
+            val stakingBalancesData = parser.asMap(data["stakingBalances"])
+            if (stakingBalancesData != null) {
+                for ((key, value) in stakingBalancesData) {
+                    // key is the denom
+                    // It should be chain token denom here
+                    val tokenInfo = findTokenInfo(tokensInfo, key)
+                    if (tokenInfo != null) {
+                        val balanceData = parser.asMap(value) ?: iMapOf()
+                        AccountBalance.create(
+                            existing?.stakingBalances?.get(key),
+                            parser,
+                            balanceData,
+                            tokenInfo.decimals,
+                        )?.let { balance ->
+                            stakingBalances[key] = balance
+                        }
+                    }
+                }
+            }
+            return stakingBalances
         }
     }
 }
