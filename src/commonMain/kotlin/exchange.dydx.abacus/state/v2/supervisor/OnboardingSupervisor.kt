@@ -24,11 +24,9 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
-import exchange.dydx.abacus.state.model.squidChains
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
-import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -71,20 +69,6 @@ internal class OnboardingSupervisor(
         retrieveCctpChainIds()
     }
 
-    private fun retrieveTransferChains() {
-        val oldState = stateMachine.state
-        val url = helper.configs.squidChains()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidChains(response), oldState)
-                }
-            }
-        }
-    }
-
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
         val url = helper.configs.squidV2Assets()
@@ -94,20 +78,6 @@ internal class OnboardingSupervisor(
             helper.get(url, null, header) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
-                }
-            }
-        }
-    }
-
-    private fun retrieveTransferTokens() {
-        val oldState = stateMachine.state
-        val url = helper.configs.squidToken()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidTokens(response), oldState)
                 }
             }
         }
