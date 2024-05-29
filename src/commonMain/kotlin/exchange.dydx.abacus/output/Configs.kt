@@ -8,7 +8,6 @@ import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport

@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.validator
 import abs
 import exchange.dydx.abacus.output.input.OrderSide
-import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -556,19 +555,6 @@ internal class TriggerOrdersInputValidator(
                 params,
             )
         }
-    }
-}
-
-private fun isStatefulOrder(orderType: OrderType, timeInForce: OrderTimeInForce): Boolean {
-    return when (orderType) {
-        OrderType.market -> false
-        OrderType.limit -> {
-            when (timeInForce) {
-                OrderTimeInForce.GTT -> true
-                else -> false
-            }
-        }
-        else -> true
     }
 }
 
