@@ -519,7 +519,7 @@ internal class OnboardingSupervisor(
             CctpConfig.cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
         val isExchange = state?.input?.transfer?.exchange != null
         when (configs.squidVersion) {
-           OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+            OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
                 state,
                 decimals,
                 gas,
