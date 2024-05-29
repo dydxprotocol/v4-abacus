@@ -1,8 +1,10 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import abs
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.safeSet
@@ -106,7 +108,7 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
 
     override fun received(
         existing: Map<String, Any>?,
-        payload: Map<String, Any>
+        payload: Map<String, Any>,
     ): Map<String, Any> {
         var modified = transform(existing, payload, positionKeyMap)
         modified = transform(modified, payload, "current", currentPositionKeyMap)
@@ -114,6 +116,13 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
         val size = parser.asDouble(payload["size"])
         val sizeMap = size(parser.asNativeMap(payload["size"]), size, parser.asString(payload["side"]))
         modified.safeSet("size", sizeMap)
+
+        parser.asInt(payload["subaccountNumber"])?.run {
+            modified.safeSet("subaccountNumber", this)
+
+            // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
+            modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
+        }
 
         ParsingHelper.asset(parser.asString(modified["id"]))?.let {
             modified["assetId"] = it

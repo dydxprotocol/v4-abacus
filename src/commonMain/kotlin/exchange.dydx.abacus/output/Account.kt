@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output
 
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
@@ -255,6 +256,7 @@ data class SubaccountPosition(
     val marginUsage: TradeStatesWithDoubleValues,
     val quoteBalance: TradeStatesWithDoubleValues, // available for isolated market position
     val equity: TradeStatesWithDoubleValues, // available for isolated market position
+    val marginMode: MarginMode?
 ) {
     companion object {
         internal fun create(
@@ -383,6 +385,7 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["equity"]),
                     )
+                    val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
 
                     return if (existing?.id != id ||
                         existing.assetId != assetId ||
@@ -410,7 +413,8 @@ data class SubaccountPosition(
                         existing.freeCollateral !== freeCollateral ||
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
-                        existing.equity !== equity
+                        existing.equity !== equity ||
+                        existing.marginMode != marginMode
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
@@ -442,6 +446,7 @@ data class SubaccountPosition(
                             marginUsage,
                             quoteBalance,
                             equity,
+                            marginMode,
                         )
                     } else {
                         existing
@@ -662,6 +667,7 @@ data class SubaccountOrder(
     val reduceOnly: Boolean,
     val cancelReason: String?,
     val resources: SubaccountOrderResources,
+    val marginMode: MarginMode?
 ) {
     companion object {
         internal fun create(
@@ -695,6 +701,7 @@ data class SubaccountOrder(
                 val resources = parser.asMap(data["resources"])?.let {
                     SubaccountOrderResources.create(existing?.resources, parser, it, localizer)
                 }
+                val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
                 if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null &&
                     resources != null
                 ) {
@@ -744,7 +751,9 @@ data class SubaccountOrder(
                         existing.postOnly != postOnly ||
                         existing.reduceOnly != reduceOnly ||
                         existing.cancelReason != cancelReason ||
-                        existing.resources !== resources
+                        existing.resources !== resources ||
+                        existing.subaccountNumber != subaccountNumber ||
+                        existing.marginMode != marginMode
                     ) {
                         SubaccountOrder(
                             subaccountNumber,
@@ -774,6 +783,7 @@ data class SubaccountOrder(
                             reduceOnly,
                             cancelReason,
                             resources,
+                            marginMode,
                         )
                     } else {
                         existing

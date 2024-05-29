@@ -8,6 +8,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPP
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.Numeric
@@ -363,12 +364,9 @@ internal class TradeInputCalculator(
             when (marginMode) {
                 "ISOLATED" -> {
                     // TODO: When the collateral of child subaccounts is implemented, return from here. The below code is the CROSS implementation.
-                    val currentNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.current"))
-                    val postOrderNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
-                    val mmf =
-                        parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
+                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
+                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
+                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
                     if (currentNotionalTotal != null && mmf != null) {
                         if (postOrderNotionalTotal != null) {
                             return postOrderNotionalTotal.times(mmf)
@@ -874,14 +872,24 @@ internal class TradeInputCalculator(
     ): List<Any>? {
         val type = parser.asString(trade["type"])
         return when (type) {
-            "MARKET" ->
-                listOf(
-                    sizeField(),
-                    leverageField(),
-                    bracketsField(),
-                    marginModeField(market, account, subaccount),
-                    reduceOnlyField(),
-                ).filterNotNull()
+            "MARKET" -> {
+                val marginMode = parser.asString(trade["marginMode"])
+                return when (MarginMode.invoke(marginMode)) {
+                    MarginMode.isolated -> listOf(
+                        sizeField(),
+                        bracketsField(),
+                        marginModeField(market, account, subaccount),
+                        reduceOnlyField(),
+                    ).filterNotNull()
+                    else -> listOf(
+                        sizeField(),
+                        leverageField(),
+                        bracketsField(),
+                        marginModeField(market, account, subaccount),
+                        reduceOnlyField(),
+                    ).filterNotNull()
+                }
+            }
 
             "LIMIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
