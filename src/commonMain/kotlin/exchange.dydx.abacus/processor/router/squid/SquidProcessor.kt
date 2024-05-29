@@ -15,9 +15,9 @@ internal class SquidProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState,
 ) : BaseProcessor(parser), IRouterProcessor {
-    private var chains: List<Any>? = null
-    private var tokens: List<Any>? = null
-    var exchangeDestinationChainId: String? = null
+    override var chains: List<Any>? = null
+    override var tokens: List<Any>? = null
+    override var exchangeDestinationChainId: String? = null
 
     override fun receivedChains(
         existing: Map<String, Any>?,
