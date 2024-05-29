@@ -282,7 +282,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "marginMode": "ISOLATED",
                             "targetLeverage": 1.0,
                             "options": {
-                                "needsMarginMode": true
+                                "needsMarginMode": false
                             }
                         }
                     }
@@ -301,7 +301,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "trade": {
                             "marginMode": "CROSS",
                             "options": {
-                                "needsMarginMode": true
+                                "needsMarginMode": false
                             }
                         }
                     }
@@ -320,7 +320,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "trade": {
                             "marginMode": "ISOLATED",
                             "options": {
-                                "needsMarginMode": true
+                                "needsMarginMode": false
                             }
                         }
                     }
@@ -339,7 +339,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "trade": {
                             "marginMode": "CROSS",
                             "options": {
-                                "needsMarginMode": true
+                                "needsMarginMode": false
                             }
                         }
                     }
