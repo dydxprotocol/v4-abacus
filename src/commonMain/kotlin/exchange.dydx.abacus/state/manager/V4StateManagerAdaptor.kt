@@ -27,8 +27,6 @@ import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.model.onChainRewardsParams
 import exchange.dydx.abacus.state.model.onChainUserFeeTier
 import exchange.dydx.abacus.state.model.onChainUserStats
-import exchange.dydx.abacus.state.model.squidChains
-import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.CoroutineTimer
@@ -294,20 +292,8 @@ class V4StateManagerAdaptor(
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
-            when (appConfigs.squidVersion) {
-                AppConfigs.SquidVersion.V1 -> {
-                    retrieveTransferChains()
-                    retrieveTransferTokens()
-                }
-
-                AppConfigs.SquidVersion.V2,
-                AppConfigs.SquidVersion.V2DepositOnly,
-                AppConfigs.SquidVersion.V2WithdrawalOnly -> {
-                    retrieveTransferAssets()
-                    retrieveCctpChainIds()
-                }
-            }
-
+            retrieveTransferAssets()
+            retrieveCctpChainIds()
             retrieveDepositExchanges()
             bestEffortConnectChain()
             retrieveLaunchIncentiveSeasons()
@@ -734,20 +720,6 @@ class V4StateManagerAdaptor(
         }
     }
 
-    private fun retrieveTransferChains() {
-        val oldState = stateMachine.state
-        val url = configs.squidChains()
-        val squidIntegratorId = environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            get(url, null, header) { _, response, httpCode, _ ->
-                if (success(httpCode) && response != null) {
-                    update(stateMachine.squidChains(response), oldState)
-                }
-            }
-        }
-    }
-
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
         val url = configs.squidV2Assets()
@@ -757,20 +729,6 @@ class V4StateManagerAdaptor(
             get(url, null, header) { _, response, httpCode, _ ->
                 if (success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
-                }
-            }
-        }
-    }
-
-    private fun retrieveTransferTokens() {
-        val oldState = stateMachine.state
-        val url = configs.squidToken()
-        val squidIntegratorId = environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            get(url, null, header) { _, response, httpCode, _ ->
-                if (success(httpCode) && response != null) {
-                    update(stateMachine.squidTokens(response), oldState)
                 }
             }
         }

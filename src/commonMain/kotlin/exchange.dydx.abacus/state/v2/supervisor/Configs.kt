@@ -164,13 +164,12 @@ data class OnboardingConfigs(
     val retrieveSquidRoutes: Boolean,
 ) {
     enum class SquidVersion {
-        V1,
         V2,
         V2DepositOnly,
         V2WithdrawalOnly,
     }
 
-    var squidVersion: SquidVersion = SquidVersion.V1
+    var squidVersion: SquidVersion = SquidVersion.V2
 
     companion object {
         val forApp = OnboardingConfigs(

@@ -24,11 +24,9 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
-import exchange.dydx.abacus.state.model.squidChains
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
-import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -67,33 +65,8 @@ internal class OnboardingSupervisor(
     }
 
     private fun retrieveSquidRoutes() {
-        when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1 -> {
-                retrieveTransferChains()
-                retrieveTransferTokens()
-            }
-
-            OnboardingConfigs.SquidVersion.V2,
-            OnboardingConfigs.SquidVersion.V2DepositOnly,
-            OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> {
-                retrieveTransferAssets()
-                retrieveCctpChainIds()
-            }
-        }
-    }
-
-    private fun retrieveTransferChains() {
-        val oldState = stateMachine.state
-        val url = helper.configs.squidChains()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidChains(response), oldState)
-                }
-            }
-        }
+        retrieveTransferAssets()
+        retrieveCctpChainIds()
     }
 
     private fun retrieveTransferAssets() {
@@ -105,20 +78,6 @@ internal class OnboardingSupervisor(
             helper.get(url, null, header) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
-                }
-            }
-        }
-    }
-
-    private fun retrieveTransferTokens() {
-        val oldState = stateMachine.state
-        val url = helper.configs.squidToken()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidTokens(response), oldState)
                 }
             }
         }
@@ -176,7 +135,7 @@ internal class OnboardingSupervisor(
     ) {
         val isCctp = state?.input?.transfer?.isCctp ?: false
         when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
+            OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
                 state,
                 accountAddress,
                 sourceAddress,
@@ -530,7 +489,7 @@ internal class OnboardingSupervisor(
             CctpConfig.cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
         val isExchange = state?.input?.transfer?.exchange != null
         when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+            OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
                 state,
                 decimals,
                 gas,
