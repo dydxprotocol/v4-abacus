@@ -10,12 +10,11 @@ class AppConfigs(
     var enableLogger: Boolean = false,
 ) {
     enum class SquidVersion {
-        V1,
         V2,
         V2DepositOnly,
         V2WithdrawalOnly,
     }
-    var squidVersion: SquidVersion = SquidVersion.V1
+    var squidVersion: SquidVersion = SquidVersion.V2
 
     companion object {
         val forApp = AppConfigs(subscribeToCandles = true, loadRemote = true)

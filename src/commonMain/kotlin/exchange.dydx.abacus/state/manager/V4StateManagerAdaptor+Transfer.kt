@@ -73,7 +73,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
     val isCctp = state?.input?.transfer?.isCctp ?: false
     when (appConfigs.squidVersion) {
-        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
+        AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
             state,
         )
 
@@ -273,7 +273,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(
     val isCctp = cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
     val isExchange = state?.input?.transfer?.exchange != null
     when (appConfigs.squidVersion) {
-        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+        AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
             state,
             decimals,
             gas,

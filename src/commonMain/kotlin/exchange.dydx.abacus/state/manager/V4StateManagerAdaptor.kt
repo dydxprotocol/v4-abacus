@@ -294,20 +294,8 @@ class V4StateManagerAdaptor(
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
-            when (appConfigs.squidVersion) {
-                AppConfigs.SquidVersion.V1 -> {
-                    retrieveTransferChains()
-                    retrieveTransferTokens()
-                }
-
-                AppConfigs.SquidVersion.V2,
-                AppConfigs.SquidVersion.V2DepositOnly,
-                AppConfigs.SquidVersion.V2WithdrawalOnly -> {
-                    retrieveTransferAssets()
-                    retrieveCctpChainIds()
-                }
-            }
-
+            retrieveTransferAssets()
+            retrieveCctpChainIds()
             retrieveDepositExchanges()
             bestEffortConnectChain()
             retrieveLaunchIncentiveSeasons()

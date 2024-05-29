@@ -67,19 +67,8 @@ internal class OnboardingSupervisor(
     }
 
     private fun retrieveSquidRoutes() {
-        when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1 -> {
-                retrieveTransferChains()
-                retrieveTransferTokens()
-            }
-
-            OnboardingConfigs.SquidVersion.V2,
-            OnboardingConfigs.SquidVersion.V2DepositOnly,
-            OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> {
-                retrieveTransferAssets()
-                retrieveCctpChainIds()
-            }
-        }
+        retrieveTransferAssets()
+        retrieveCctpChainIds()
     }
 
     private fun retrieveTransferChains() {
@@ -176,7 +165,7 @@ internal class OnboardingSupervisor(
     ) {
         val isCctp = state?.input?.transfer?.isCctp ?: false
         when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
+            OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
                 state,
                 accountAddress,
                 sourceAddress,
@@ -530,7 +519,7 @@ internal class OnboardingSupervisor(
             CctpConfig.cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
         val isExchange = state?.input?.transfer?.exchange != null
         when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+           OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
                 state,
                 decimals,
                 gas,
