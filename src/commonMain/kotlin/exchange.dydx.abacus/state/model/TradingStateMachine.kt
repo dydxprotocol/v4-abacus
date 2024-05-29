@@ -1178,6 +1178,7 @@ open class TradingStateMachine(
                     Account(
                         account.balances,
                         account.stakingBalances,
+                        account.stakingDelegations,
                         subaccounts,
                         groupedSubaccounts,
                         account.tradingRewards,
