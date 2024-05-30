@@ -1,13 +1,20 @@
 package exchange.dydx.abacus.processor.router.skip
 
+import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.SharedRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("NotImplementedDeclaration")
-internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IRouterProcessor {
+internal class SkipProcessor(
+    parser: ParserProtocol,
+    private val internalState: InternalTransferInputState
+) : BaseProcessor(parser), IRouterProcessor {
     override var chains: List<Any>? = null
 
 //    possibly want to use a different variable so we aren't stuck with this bad type
@@ -26,8 +33,25 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        throw NotImplementedError("receivedChains is not implemented in SkipProcessor!")
+        if (this.chains != null) {
+            return existing
+        }
+        this.chains = parser.asNativeList(payload["chains"])
+        var modified = mutableMapOf<String, Any>()
+        existing?.let {
+            modified = it.mutable()
+        }
+        val chainOptions = chainOptions()
+
+        internalState.chains = chainOptions
+        val selectedChainId = defaultChainId()
+        modified.safeSet("transfer.chain", selectedChainId)
+        selectedChainId?.let {
+            internalState.chainResources = chainResources(chainId = selectedChainId)
+        }
+        return modified
     }
+
     override fun receivedTokens(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
@@ -72,7 +96,9 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
     }
 
     override fun defaultChainId(): String? {
-        throw NotImplementedError("defaultChainId is not implemented in SkipProcessor!")
+        val selectedChain = parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == "1" })
+
+        return parser.asString(selectedChain?.get("chain_id"))
     }
 
     override fun selectedTokenSymbol(tokenAddress: String?): String? {
@@ -91,16 +117,41 @@ internal class SkipProcessor(parser: ParserProtocol) : BaseProcessor(parser), IR
         throw NotImplementedError("defaultTokenAddress is not implemented in SkipProcessor!")
     }
 
-    override fun chainResources(chainId: String?): Map<String, Any>? {
-        throw NotImplementedError("chainResources is not implemented in SkipProcessor!")
+    override fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
+        val chainResources = mutableMapOf<String, TransferInputChainResource>()
+        chainId?.let {
+            this.chains?.find {
+                parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId
+            }?.let {
+                val processor = SkipChainResourceProcessor(parser)
+                parser.asNativeMap(it)?.let { payload ->
+                    chainResources[chainId] = processor.received(payload)
+                }
+            }
+        }
+        return chainResources
     }
 
     override fun tokenResources(chainId: String?): Map<String, Any>? {
         throw NotImplementedError("tokenResources is not implemented in SkipProcessor!")
     }
 
-    override fun chainOptions(): List<Any> {
-        throw NotImplementedError("chainOptions is not implemented in SkipProcessor!")
+    override fun chainOptions(): List<SelectionOption> {
+        val chainProcessor = SkipChainProcessor(parser)
+        val options = mutableListOf<SelectionOption>()
+
+        this.chains?.let {
+            for (chain in it) {
+                parser.asNativeMap(chain)?.let { chain ->
+                    if (parser.asString(chain.get("chainType")) != "cosmos") {
+                        options.add(chainProcessor.received(chain))
+                    }
+                }
+            }
+        }
+
+        options.sortBy { parser.asString(it.stringKey) }
+        return options
     }
 
     override fun tokenOptions(chainId: String?): List<Any> {
