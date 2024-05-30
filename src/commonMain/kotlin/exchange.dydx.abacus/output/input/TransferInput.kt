@@ -149,7 +149,7 @@ data class TransferOutInputOptions(
     val needsSize: Boolean?,
     val needsAddress: Boolean?,
     val chains: IList<SelectionOption>?,
-    val assets: IList<SelectionOption>?
+    val assets: IList<SelectionOption>?,
 ) {
     companion object {
         internal fun create(
@@ -474,6 +474,7 @@ data class TransferInput(
     val chain: String?,
     val token: String?,
     val address: String?,
+    val memo: String?,
     val depositOptions: DepositInputOptions?,
     val withdrawalOptions: WithdrawalInputOptions?,
     val transferOutOptions: TransferOutInputOptions?,
@@ -509,6 +510,7 @@ data class TransferInput(
                 val chain = parser.asString(data["chain"])
                 val token = parser.asString(data["token"])
                 val address = parser.asString(data["address"])
+                val memo = parser.asString(data["memo"])
 
                 var depositOptions: DepositInputOptions? = null
                 if (type == TransferType.deposit) {
@@ -577,6 +579,7 @@ data class TransferInput(
                     existing.chain != chain ||
                     existing.token != token ||
                     existing.address != address ||
+                    existing.memo != memo ||
                     existing.depositOptions != depositOptions ||
                     existing.withdrawalOptions != withdrawalOptions ||
                     existing.transferOutOptions != transferOutOptions ||
@@ -595,6 +598,7 @@ data class TransferInput(
                         chain,
                         token,
                         address,
+                        memo,
                         depositOptions,
                         withdrawalOptions,
                         transferOutOptions,

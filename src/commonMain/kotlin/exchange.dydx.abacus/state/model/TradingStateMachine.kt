@@ -82,7 +82,7 @@ open class TradingStateMachine(
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
 ) {
-    private val internalState: InternalState = InternalState()
+    internal val internalState: InternalState = InternalState()
 
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
