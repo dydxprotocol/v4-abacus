@@ -25,6 +25,7 @@ enum class TransferInputField(val rawValue: String) {
     chain("chain"),
     token("token"),
     address("address"),
+    MEMO("memo"),
     fastSpeed("fastSpeed");
 
     companion object {
@@ -69,6 +70,7 @@ fun TradingStateMachine.transfer(
                         transfer.safeSet("size.usdcSize", null)
                         transfer.safeSet("route", null)
                         transfer.safeSet("requestPayload", null)
+                        transfer.safeSet("memo", null)
                         if (parser.asString(data) == "TRANSFER_OUT") {
                             transfer.safeSet("chain", "chain")
                             transfer.safeSet("token", "usdc")
@@ -135,7 +137,6 @@ fun TradingStateMachine.transfer(
                         iListOf(subaccountNumber),
                     )
                 }
-
                 TransferInputField.fastSpeed.rawValue -> {
                     transfer.safeSet(typeText, parser.asBool(data))
                     changes = StateChanges(
@@ -162,6 +163,14 @@ fun TradingStateMachine.transfer(
                     }
                     changes = StateChanges(
                         iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+                        null,
+                        iListOf(subaccountNumber),
+                    )
+                }
+                TransferInputField.MEMO.rawValue -> {
+                    transfer.safeSet(typeText, parser.asString(data))
+                    changes = StateChanges(
+                        iListOf(Changes.input),
                         null,
                         iListOf(subaccountNumber),
                     )

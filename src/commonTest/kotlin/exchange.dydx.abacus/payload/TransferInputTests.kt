@@ -28,6 +28,8 @@ class TransferInputTests : V3BaseTests() {
 
         testTransferOutTransferInput()
         perp.log("Transfer Out", time)
+
+        testTransferInputTypeChange()
     }
 
     private fun testDepositTransferInput() {
@@ -414,6 +416,10 @@ class TransferInputTests : V3BaseTests() {
             perp.transfer("5000.0", TransferInputField.usdcSize)
         }, null)
 
+        test({
+            perp.transfer("test memo", TransferInputField.MEMO)
+        }, null)
+
         test(
             {
                 perp.transfer("1000.0", TransferInputField.usdcSize)
@@ -423,6 +429,7 @@ class TransferInputTests : V3BaseTests() {
                     "input": {
                         "transfer": {
                             "type": "TRANSFER_OUT",
+                            "memo": "test memo",
                             "size": {
                                 "usdcSize": 1000.0
                             },
@@ -467,6 +474,72 @@ class TransferInputTests : V3BaseTests() {
                 assertTrue { response.state?.input?.transfer?.transferOutOptions?.assets?.count() == 2 }
                 assertTrue { response.state?.input?.transfer?.transferOutOptions?.chains?.count() == 1 }
             },
+        )
+    }
+
+    private fun testTransferInputTypeChange() {
+        test(
+            {
+                perp.transfer("DEPOSIT", TransferInputField.type)
+            },
+            """
+        {
+            "input": {
+                "transfer": {
+                    "type": "DEPOSIT",
+                    "memo": null
+                }
+            }
+        }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.transfer("TRANSFER_OUT", TransferInputField.type)
+            },
+            """
+    {
+        "input": {
+            "transfer": {
+                "type": "TRANSFER_OUT",
+                "memo": null
+            }
+        }
+    }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.transfer("test memo", TransferInputField.MEMO)
+            },
+            """
+        {
+            "input": {
+                "transfer": {
+                    "type": "TRANSFER_OUT",
+                    "memo": "test memo"
+                }
+            }
+        }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.transfer("WITHDRAWAL", TransferInputField.type)
+            },
+            """
+    {
+        "input": {
+            "transfer": {
+                "type": "WITHDRAWAL",
+                "memo": null
+            }
+        }
+    }
+            """.trimIndent(),
         )
     }
 }

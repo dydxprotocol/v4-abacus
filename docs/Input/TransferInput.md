@@ -7,7 +7,10 @@ data class TransferInput(
 &emsp;val fee: Double?,
 &emsp;val chain: String?,
 &emsp;val address: String?,
+&emsp;val memo: String?,
 &emsp;val depositOptions: DepositInputOptions?,  
+&emsp;val withdrawalOptions: WithdrawalInputOptions?,  
+&emsp;val transferOutOptions: TransferOutInputOptions?,
 &emsp;val summary: TransferInputSummary?,
 &emsp;val resources: TransferInputResources?,
 &emsp;val requestPayload: TransferInputRequestPayload?
@@ -39,9 +42,21 @@ Selected chain to perform the transfer
 
 Selected token address of the chain to perform the transfer
 
+## memo
+
+Memo for transfer
+
 ## depositOptions
 
 structure of [DepositInputOptions](#DepositInputOptions)
+
+## withdrawalOptions
+
+structure of [WithdrawalInputOptions](#WithdrawalInputOptions)
+
+## transferOutOptions
+
+structure of [TransferOutInputOptions](#TransferOutInputOptions)
 
 ## summary
 
@@ -80,6 +95,66 @@ UX should let the user choose whether to use fast speed
 
 Option of assets to choose from
 
+# WithdrawalInputOptions
+
+data class DepositInputOptions(  
+&emsp;val needsSize: Boolean?,  
+&emsp;val needsAddress: Boolean?,  
+&emsp;val needsFastSpeed: Boolean?,  
+&emsp;val exchanges: Array<SelectionOption>?  
+&emsp;val chains: Array<SelectionOption>?  
+&emsp;val assets: Array<SelectionOption>?  
+)
+
+## needsSize
+
+UX should let user enter the size
+
+## needsAddress
+
+UX should let user enter a wallet address
+
+## needsFastSpeed
+
+UX should let the user choose whether to use fast speed
+
+## exchanges
+
+Option of exchanges to choose from
+
+## chains
+
+Option of chains to choose from
+
+## assets
+
+Option of assets to choose from
+
+# TransferOutInputOptions
+
+data class TransferOutInputOptions(  
+&emsp;val needsSize: Boolean?,  
+&emsp;val needsAddress: Boolean?,  
+&emsp;val chains: Array<SelectionOption>?,
+&emsp;val assets: Array<SelectionOption>?  
+)
+
+## needsSize
+
+UX should let user enter the size
+
+## needsAddress
+
+UX should let user enter a wallet address
+
+## chains
+
+Option of chains to choose from
+
+## assets
+
+Option of assets to choose from
+
 # TransferInputSummary
 
 data class TransferInputSummary(  
@@ -102,7 +177,7 @@ Whether the transfer transaction can be filled
 
 # TransferInputResources
 
-The chain and token resources of the selected chain and its associated tokens.  Use the chainId
+The chain and token resources of the selected chain and its associated tokens. Use the chainId
 and token address of the key to the maps, respectively, to get the resource.
 
 data class TransferInputResources(
