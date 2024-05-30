@@ -223,6 +223,23 @@ private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<S
     transfer.safeSet("size.size", null)
     transfer.safeSet("route", null)
     transfer.safeSet("requestPayload", null)
+//    needed to pass tests, remove later
+    transfer.safeSet(
+        "depositOptions.assets",
+        tokenOptions,
+    )
+    transfer.safeSet(
+        "withdrawalOptions.assets",
+        tokenOptions,
+    )
+    transfer.safeSet(
+        "resources.chainResources",
+        squidProcessor.chainResources(chainType),
+    )
+    transfer.safeSet(
+        "resources.tokenResources",
+        squidProcessor.tokenResources(chainType),
+    )
 }
 
 private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<String, Any>, exchange: String) {
@@ -232,6 +249,20 @@ private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<
         internalState.transfer.tokens = tokenOptions
         transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
         internalState.transfer.tokenResources = squidProcessor.tokenResources(exchangeDestinationChainId)
+
+//        needed to pass tests, remove later
+        transfer.safeSet(
+            "depositOptions.assets",
+            tokenOptions,
+        )
+        transfer.safeSet(
+            "withdrawalOptions.assets",
+            tokenOptions,
+        )
+        transfer.safeSet(
+            "resources.tokenResources",
+            squidProcessor.tokenResources(exchangeDestinationChainId),
+        )
     }
     transfer.safeSet("exchange", exchange)
     transfer.safeSet("chain", null)
