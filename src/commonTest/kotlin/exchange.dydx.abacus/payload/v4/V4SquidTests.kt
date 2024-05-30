@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.state.model.TransferInputField
-import exchange.dydx.abacus.state.model.squidChains
+import exchange.dydx.abacus.state.model.routerChains
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
@@ -20,7 +20,7 @@ class V4SquidTests : V4BaseTests() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
         setup()
 
-        val stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        val stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         test({
@@ -47,7 +47,7 @@ class V4SquidTests : V4BaseTests() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
         setup()
 
-        var stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
@@ -112,7 +112,7 @@ class V4SquidTests : V4BaseTests() {
 
         perp.transfer("DEPOSIT", TransferInputField.type, 0)
 
-        var stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
@@ -148,7 +148,7 @@ class V4SquidTests : V4BaseTests() {
 
         perp.transfer("DEPOSIT", TransferInputField.type, 0)
 
-        var stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
@@ -219,7 +219,7 @@ class V4SquidTests : V4BaseTests() {
     fun testDefaultTokenAddress() {
         setup()
 
-        var stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
@@ -232,7 +232,7 @@ class V4SquidTests : V4BaseTests() {
     fun testChainResources() {
         setup()
 
-        val stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        val stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         val result = perp.squidProcessor.chainResources("1")
@@ -245,7 +245,7 @@ class V4SquidTests : V4BaseTests() {
     fun testTokenResources() {
         setup()
 
-        var stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
@@ -259,7 +259,7 @@ class V4SquidTests : V4BaseTests() {
     fun testTokenOptions() {
         setup()
 
-        var stateChange = perp.squidChains(mock.squidChainsMock.payload)
+        var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidTokens(mock.squidTokensMock.payload)
