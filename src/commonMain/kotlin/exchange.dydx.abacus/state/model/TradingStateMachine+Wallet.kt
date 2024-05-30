@@ -5,9 +5,11 @@ import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.utils.Logger
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 
@@ -226,7 +228,11 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
         val account = json.jsonArray.toList()
         this.wallet = walletProcessor.receivedAccountBalances(wallet, account)
         return StateChanges(iListOf(Changes.accountBalances), null)
-    } catch (e: Exception) {
+    } catch (exception: SerializationException) {
+        Logger.e {
+            "Failed to deserialize onChainAccountBalances: $payload \n" +
+                "Exception: $exception"
+        }
         StateChanges(iListOf())
     }
 }

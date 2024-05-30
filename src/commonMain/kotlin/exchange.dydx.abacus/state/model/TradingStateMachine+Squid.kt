@@ -2,7 +2,10 @@ package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.Logger
+import kollections.iEmptyList
 import kollections.iListOf
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
@@ -73,8 +76,13 @@ internal fun TradingStateMachine.squidRouteV2(
 internal fun TradingStateMachine.squidStatus(
     payload: String,
     transactionId: String?
-): StateChanges? {
-    val json = Json.parseToJsonElement(payload).jsonObject.toMap()
+): StateChanges {
+    val json = try {
+        Json.parseToJsonElement(payload).jsonObject.toMap()
+    } catch (exception: SerializationException) {
+        Logger.e { "Failed to deserialize squidStatus: $payload \nException: $exception" }
+        return StateChanges(iEmptyList())
+    }
     transferStatuses = routerProcessor.receivedStatus(transferStatuses, json, transactionId)
     return StateChanges(iListOf(Changes.transferStatuses))
 }

@@ -6,12 +6,22 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.utils.Logger
 import kollections.iListOf
 import kollections.toIList
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 internal fun TradingStateMachine.account(payload: String): StateChanges {
-    val json = parser.asMap(Json.parseToJsonElement(payload))
+    val json = try {
+        parser.asMap(Json.parseToJsonElement(payload))
+    } catch (exception: SerializationException) {
+        Logger.e {
+            "Failed to deserialize account: $payload \n" +
+                "Exception: $exception"
+        }
+        null
+    }
     return if (json != null) {
         receivedAccount(json)
     } else {
