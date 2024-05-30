@@ -1,9 +1,10 @@
-package exchange.dydx.abacus.processor.squid
+package exchange.dydx.abacus.processor.router.squid
 
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
@@ -13,12 +14,12 @@ import exchange.dydx.abacus.utils.safeSet
 internal class SquidProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState,
-) : BaseProcessor(parser) {
-    private var chains: List<Any>? = null
-    private var tokens: List<Any>? = null
-    var exchangeDestinationChainId: String? = null
+) : BaseProcessor(parser), IRouterProcessor {
+    override var chains: List<Any>? = null
+    override var tokens: List<Any>? = null
+    override var exchangeDestinationChainId: String? = null
 
-    internal fun receivedChains(
+    override fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
@@ -46,7 +47,7 @@ internal class SquidProcessor(
         return modified
     }
 
-    internal fun receivedTokens(
+    override fun receivedTokens(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
@@ -66,7 +67,7 @@ internal class SquidProcessor(
         return modified
     }
 
-    internal fun receivedV2SdkInfo(
+    override fun receivedV2SdkInfo(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
@@ -95,7 +96,7 @@ internal class SquidProcessor(
         return modified
     }
 
-    internal fun receivedRoute(
+    override fun receivedRoute(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         requestId: String?,
@@ -121,7 +122,7 @@ internal class SquidProcessor(
         return modified
     }
 
-    internal fun receivedRouteV2(
+    override fun receivedRouteV2(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         requestId: String?
@@ -147,7 +148,7 @@ internal class SquidProcessor(
         return modified
     }
 
-    private fun usdcAmount(data: Map<String, Any>): Double? {
+    override fun usdcAmount(data: Map<String, Any>): Double? {
         var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
         toAmountUSD = toAmountUSD?.replace(",", "")
         var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
@@ -155,7 +156,7 @@ internal class SquidProcessor(
         return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
     }
 
-    internal fun receivedStatus(
+    override fun receivedStatus(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         transactionId: String?,
@@ -169,19 +170,19 @@ internal class SquidProcessor(
         return processor.received(existing, payload)
     }
 
-    private fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
+    override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
-    internal fun defaultChainId(): String? {
+    override fun defaultChainId(): String? {
         val selectedChain = parser.asNativeMap(this.chains?.firstOrNull())
         return parser.asString(selectedChain?.get("chainId"))
     }
 
-    internal fun selectedTokenSymbol(tokenAddress: String?): String? {
+    override fun selectedTokenSymbol(tokenAddress: String?): String? {
         this.tokens?.find {
             parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress
         }?.let {
@@ -190,7 +191,7 @@ internal class SquidProcessor(
         return null
     }
 
-    internal fun selectedTokenDecimals(tokenAddress: String?): String? {
+    override fun selectedTokenDecimals(tokenAddress: String?): String? {
         this.tokens?.find {
             parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress
         }?.let {
@@ -199,7 +200,7 @@ internal class SquidProcessor(
         return null
     }
 
-    private fun filteredTokens(chainId: String?): List<Any>? {
+    override fun filteredTokens(chainId: String?): List<Any>? {
         chainId?.let {
             val filteredTokens = mutableListOf<Map<String, Any>>()
             this.tokens?.let {
@@ -216,7 +217,7 @@ internal class SquidProcessor(
         return tokens
     }
 
-    internal fun defaultTokenAddress(chainId: String?): String? {
+    override fun defaultTokenAddress(chainId: String?): String? {
         return chainId?.let { cid ->
             // Retrieve the list of filtered tokens for the given chainId
             val filteredTokens = this.filteredTokens(cid)?.mapNotNull {
@@ -232,7 +233,7 @@ internal class SquidProcessor(
         }
     }
 
-    internal fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
+    override fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
         val chainResources = mutableMapOf<String, TransferInputChainResource>()
         chainId?.let {
             this.chains?.find {
@@ -247,7 +248,7 @@ internal class SquidProcessor(
         return chainResources
     }
 
-    internal fun tokenResources(chainId: String?): Map<String, TransferInputTokenResource>? {
+    override fun tokenResources(chainId: String?): Map<String, TransferInputTokenResource>? {
         val tokenResources = mutableMapOf<String, TransferInputTokenResource>()
         filteredTokens(chainId)?.forEach {
             parser.asString(parser.asNativeMap(it)?.get("address"))?.let { key ->
@@ -260,7 +261,7 @@ internal class SquidProcessor(
         return tokenResources
     }
 
-    private fun chainOptions(): List<SelectionOption> {
+    override fun chainOptions(): List<SelectionOption> {
         val chainProcessor = SquidChainProcessor(parser)
         val options = mutableListOf<SelectionOption>()
 
@@ -278,7 +279,7 @@ internal class SquidProcessor(
         return options
     }
 
-    internal fun tokenOptions(chainId: String?): List<SelectionOption> {
+    override fun tokenOptions(chainId: String?): List<SelectionOption> {
         val processor = SquidTokenProcessor(parser)
         val options = mutableListOf<SelectionOption>()
 
