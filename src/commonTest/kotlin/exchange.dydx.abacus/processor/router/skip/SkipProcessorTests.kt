@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.router.skip
 import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.utils.Parser
@@ -37,18 +38,18 @@ class SkipProcessorTests {
         )
         assertEquals(expectedChains, internalState.chains)
 
+        val expectedChainResources = mapOf(
+            "1" to TransferInputChainResource(
+                chainName = "Ethereum",
+                chainId = 1,
+                iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
+            )
+        )
+        assertEquals(expectedChainResources, internalState.chainResources)
+
         val expectedModified = mapOf(
             "transfer" to mapOf(
                 "chain" to "1",
-                "resources" to mapOf(
-                    "chainResources" to mapOf(
-                        "1" to mapOf(
-                            "chainName" to "Ethereum",
-                            "chainId" to "1",
-                            "iconUrl" to "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
-                        ),
-                    ),
-                ),
             ),
         )
         assertEquals(expectedModified, modified)

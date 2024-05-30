@@ -208,8 +208,8 @@ data class TransferOutInputOptions(
 @Serializable
 data class TransferInputChainResource(
     val chainName: String?,
-    val rpc: String?,
-    val networkName: String?,
+    val rpc: String? = null,
+    val networkName: String? = null,
     val chainId: Int?,
     val iconUrl: String?
 )

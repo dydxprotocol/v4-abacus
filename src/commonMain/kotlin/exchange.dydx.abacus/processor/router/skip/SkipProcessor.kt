@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.SharedRouterProcessor
@@ -47,7 +48,7 @@ internal class SkipProcessor(
         val selectedChainId = defaultChainId()
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
-            modified.safeSet("transfer.resources.chainResources", chainResources(selectedChainId))
+            internalState.chainResources = chainResources(chainId = selectedChainId)
         }
         return modified
     }
@@ -117,15 +118,15 @@ internal class SkipProcessor(
         throw NotImplementedError("defaultTokenAddress is not implemented in SkipProcessor!")
     }
 
-    override fun chainResources(chainId: String?): Map<String, Any>? {
-        val chainResources = mutableMapOf<String, Any>()
+    override fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
+        val chainResources = mutableMapOf<String, TransferInputChainResource>()
         chainId?.let {
             this.chains?.find {
                 parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId
             }?.let {
                 val processor = SkipChainResourceProcessor(parser)
                 parser.asNativeMap(it)?.let { payload ->
-                    chainResources[chainId] = processor.received(null, payload)
+                    chainResources[chainId] = processor.received(payload)
                 }
             }
         }
