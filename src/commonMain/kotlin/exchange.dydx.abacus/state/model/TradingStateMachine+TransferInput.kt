@@ -204,24 +204,11 @@ private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<S
 private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<String, Any>, chainType: String) {
     val tokenOptions = squidProcessor.tokenOptions(chainType)
     if (transfer["type"] != "TRANSFER_OUT") {
-        transfer.safeSet(
-            "depositOptions.assets",
-            tokenOptions,
-        )
-        transfer.safeSet(
-            "withdrawalOptions.assets",
-            tokenOptions,
-        )
+        internalState.transfer.tokens = tokenOptions
         transfer.safeSet("chain", chainType)
         transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
-        transfer.safeSet(
-            "resources.chainResources",
-            squidProcessor.chainResources(chainType),
-        )
-        transfer.safeSet(
-            "resources.tokenResources",
-            squidProcessor.tokenResources(chainType),
-        )
+        internalState.transfer.chainResources = squidProcessor.chainResources(chainType)
+        internalState.transfer.tokenResources = squidProcessor.tokenResources(chainType)
     }
     transfer.safeSet("exchange", null)
     transfer.safeSet("size.size", null)
@@ -233,19 +220,9 @@ private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<
     val exchangeDestinationChainId = squidProcessor.exchangeDestinationChainId
     val tokenOptions = squidProcessor.tokenOptions(exchangeDestinationChainId)
     if (transfer["type"] != "TRANSFER_OUT") {
-        transfer.safeSet(
-            "depositOptions.assets",
-            tokenOptions,
-        )
-        transfer.safeSet(
-            "withdrawalOptions.assets",
-            tokenOptions,
-        )
+        internalState.transfer.tokens = tokenOptions
         transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
-        transfer.safeSet(
-            "resources.tokenResources",
-            squidProcessor.tokenResources(exchangeDestinationChainId),
-        )
+        internalState.transfer.tokenResources = squidProcessor.tokenResources(exchangeDestinationChainId)
     }
     transfer.safeSet("exchange", exchange)
     transfer.safeSet("chain", null)
