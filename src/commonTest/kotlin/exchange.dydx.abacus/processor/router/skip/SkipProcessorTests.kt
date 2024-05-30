@@ -43,7 +43,7 @@ class SkipProcessorTests {
                 chainName = "Ethereum",
                 chainId = 1,
                 iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
-            )
+            ),
         )
         assertEquals(expectedChainResources, internalState.chainResources)
 
