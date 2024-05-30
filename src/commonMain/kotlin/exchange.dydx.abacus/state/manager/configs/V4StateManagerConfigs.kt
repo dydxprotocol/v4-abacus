@@ -115,9 +115,18 @@ class V4StateManagerConfigs(
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
 
+    fun skipV1Chains(): String {
+        return "$skipHost/v1/info/chains?include_evm=true"
+    }
+
     fun nobleDenom(): String? {
         return "uusdc"
     }
+
+    private val skipHost: String
+        get() {
+            return "https://api.skip.money"
+        }
 
     private val squidV2Host: String
         get() {

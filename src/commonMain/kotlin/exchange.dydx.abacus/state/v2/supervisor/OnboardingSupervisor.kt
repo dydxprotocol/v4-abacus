@@ -24,6 +24,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.routerChains
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
@@ -67,6 +68,17 @@ internal class OnboardingSupervisor(
     private fun retrieveSquidRoutes() {
         retrieveTransferAssets()
         retrieveCctpChainIds()
+    }
+
+    @Suppress("UnusedPrivateMember")
+    private fun retrieveSkipTransferChains() {
+        val oldState = stateMachine.state
+        val chainsUrl = helper.configs.skipV1Chains()
+        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.routerChains(response), oldState)
+            }
+        }
     }
 
     private fun retrieveTransferAssets() {
