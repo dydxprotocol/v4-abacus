@@ -912,45 +912,46 @@ open class TradingStateMachine(
             "trade" -> {
                 val trade = parser.asNativeMap(input["trade"]) ?: return null
                 val type = parser.asString(trade["type"]) ?: return null
-                val isolatedMargin = (parser.asString(trade["marginMode"]) == "ISOLATED")
+                val isolatedMargin = parser.asString(trade["marginMode"]) == "ISOLATED"
                 return when (type) {
                     "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET", "TRAILING_STOP" -> {
-                        listOfNotNull(
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.MarginUsage.rawValue,
-                            if (isolatedMargin) {
-                                ReceiptLine.PositionLeverage.rawValue
-                            } else {
-                                null
-                            },
-                            if (isolatedMargin) {
-                                ReceiptLine.PositionMargin.rawValue
-                            } else {
-                                null
-                            },
-                            ReceiptLine.ExpectedPrice.rawValue,
-                            ReceiptLine.Fee.rawValue,
-                            ReceiptLine.Reward.rawValue,
-                        )
+                        if (isolatedMargin) {
+                            listOf(
+                                ReceiptLine.ExpectedPrice.rawValue,
+                                ReceiptLine.LiquidationPrice.rawValue,
+                                ReceiptLine.PositionMargin.rawValue,
+                                ReceiptLine.PositionLeverage.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        } else {
+                            listOf(
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.MarginUsage.rawValue,
+                                ReceiptLine.ExpectedPrice.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        }
                     }
 
                     else -> {
-                        listOfNotNull(
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.MarginUsage.rawValue,
-                            if (isolatedMargin) {
-                                ReceiptLine.PositionLeverage.rawValue
-                            } else {
-                                null
-                            },
-                            if (isolatedMargin) {
-                                ReceiptLine.PositionMargin.rawValue
-                            } else {
-                                null
-                            },
-                            ReceiptLine.Fee.rawValue,
-                            ReceiptLine.Reward.rawValue,
-                        )
+                        if (isolatedMargin) {
+                            listOf(
+                                ReceiptLine.LiquidationPrice.rawValue,
+                                ReceiptLine.PositionMargin.rawValue,
+                                ReceiptLine.PositionLeverage.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        } else {
+                            listOf(
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.MarginUsage.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        }
                     }
                 }
             }
