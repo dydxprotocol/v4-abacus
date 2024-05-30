@@ -5,7 +5,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 
 internal class SkipChainProcessor(private val parser: ParserProtocol) {
     fun received(
-        existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): SelectionOption {
         return SelectionOption(

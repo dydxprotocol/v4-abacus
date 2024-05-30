@@ -1,4 +1,6 @@
 package exchange.dydx.abacus.processor.router.skip
+import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.utils.Parser
 import kotlinx.serialization.json.Json
@@ -12,7 +14,8 @@ internal fun templateToJson(template: String): Map<String, Any> {
 
 class SkipProcessorTests {
 
-    internal val skipProcessor = SkipProcessor(parser = Parser())
+    internal val internalState = InternalTransferInputState()
+    internal val skipProcessor = SkipProcessor(parser = Parser(), internalState = internalState)
     internal val skipChainsMock = SkipChainsMock()
 
     @Test
@@ -24,28 +27,30 @@ class SkipProcessorTests {
             ),
         )
 
-        val expected = mapOf(
+        val expectedChains = listOf(
+            SelectionOption(stringKey = "Ethereum", string = "Ethereum", type = "1", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png"),
+            SelectionOption(stringKey = "aura", string = "aura", type = "xstaxy-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/xstaxy/chain.png"),
+            SelectionOption(stringKey = "cheqd", string = "cheqd", type = "cheqd-mainnet-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/cheqd-mainnet/chain.png"),
+            SelectionOption(stringKey = "kujira", string = "kujira", type = "kaiyo-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/kaiyo/chain.png"),
+            SelectionOption(stringKey = "osmosis", string = "osmosis", type = "osmosis-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/chain.png"),
+            SelectionOption(stringKey = "stride", string = "stride", type = "stride-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stride/chain.png"),
+        )
+        assertEquals(expectedChains, internalState.chains)
+
+        val expectedModified = mapOf(
             "transfer" to mapOf(
-                "depositOptions" to mapOf(
-                    "chains" to listOf(
-                        mapOf("stringKey" to "aura", "type" to "xstaxy-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/xstaxy/chain.png"),
-                        mapOf("stringKey" to "cheqd", "type" to "cheqd-mainnet-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/cheqd-mainnet/chain.png"),
-                        mapOf("stringKey" to "kujira", "type" to "kaiyo-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/kaiyo/chain.png"),
-                        mapOf("stringKey" to "osmosis", "type" to "osmosis-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/chain.png"),
-                        mapOf("stringKey" to "stride", "type" to "stride-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stride/chain.png"),
-                    ),
-                ),
-                "withdrawalOptions" to mapOf(
-                    "chains" to listOf(
-                        mapOf("stringKey" to "aura", "type" to "xstaxy-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/xstaxy/chain.png"),
-                        mapOf("stringKey" to "cheqd", "type" to "cheqd-mainnet-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/cheqd-mainnet/chain.png"),
-                        mapOf("stringKey" to "kujira", "type" to "kaiyo-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/kaiyo/chain.png"),
-                        mapOf("stringKey" to "osmosis", "type" to "osmosis-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/chain.png"),
-                        mapOf("stringKey" to "stride", "type" to "stride-1", "iconUrl" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stride/chain.png"),
+                "chain" to "1",
+                "resources" to mapOf(
+                    "chainResources" to mapOf(
+                        "1" to mapOf(
+                            "chainName" to "Ethereum",
+                            "chainId" to "1",
+                            "iconUrl" to "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
+                        ),
                     ),
                 ),
             ),
         )
-        assertEquals(modified, expected)
+        assertEquals(expectedModified, modified)
     }
 }

@@ -96,7 +96,7 @@ internal class SkipProcessor(
     }
 
     override fun defaultChainId(): String? {
-        val selectedChain = parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) === "1" })
+        val selectedChain = parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == "1" })
 
         return parser.asString(selectedChain?.get("chain_id"))
     }
@@ -121,7 +121,7 @@ internal class SkipProcessor(
         val chainResources = mutableMapOf<String, Any>()
         chainId?.let {
             this.chains?.find {
-                parser.asString(parser.asNativeMap(it)?.get("chainId")) == chainId
+                parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId
             }?.let {
                 val processor = SkipChainResourceProcessor(parser)
                 parser.asNativeMap(it)?.let { payload ->
@@ -144,13 +144,13 @@ internal class SkipProcessor(
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
                     if (parser.asString(chain.get("chainType")) != "cosmos") {
-                        options.add(chainProcessor.received(null, chain))
+                        options.add(chainProcessor.received(chain))
                     }
                 }
             }
         }
 
-        options.sortBy { parser.asString(parser.asNativeMap(it)?.get("stringKey")) }
+        options.sortBy { parser.asString(it.stringKey) }
         return options
     }
 
