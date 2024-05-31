@@ -286,10 +286,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             }
                         },
                         "receiptLines": [
-                            "BUYING_POWER",
-                            "MARGIN_USAGE",
-                            "POSITION_LEVERAGE",
+                            "LIQUIDATION_PRICE",
                             "POSITION_MARGIN",
+                            "POSITION_LEVERAGE",
                             "FEE",
                             "REWARD"
                         ]
