@@ -4,6 +4,7 @@ import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
+import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import kotlin.math.max
@@ -57,6 +58,7 @@ internal class SubaccountTransformer {
         market: Map<String, Any>?,
         usePessimisticCollateralCheck: Boolean,
         useOptimisticCollateralCheck: Boolean,
+        transfer: Double? = null,
     ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
         val side = parser.asString(trade["side"])
@@ -82,7 +84,7 @@ internal class SubaccountTransformer {
                     val usdcSize = (price ?: Numeric.double.ZERO) * (
                         parser.asDouble(summary["size"])
                             ?: Numeric.double.ZERO
-                        ) * multiplier
+                        ) * multiplier + (transfer ?: 0.0)
                     val fee = (
                         parser.asDouble(summary["fee"])
                             ?: Numeric.double.ZERO
@@ -97,13 +99,14 @@ internal class SubaccountTransformer {
                             "fee" to fee,
                             "feeRate" to feeRate,
                             "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false),
-                        )
+                        ).filterNotNull()
                     }
                 }
             }
             return mapOf(
                 "marketId" to marketId,
-            )
+                "usdcSize" to transfer,
+            ).filterNotNull()
         }
         return null
     }
@@ -227,6 +230,7 @@ internal class SubaccountTransformer {
         period: String,
         usePessimisticCollateralCheck: Boolean,
         useOptimisticCollateralCheck: Boolean,
+        transfer: Double? = null
     ): Map<String, Any>? {
         if (subaccount != null) {
             val delta = deltaFromTrade(
@@ -235,6 +239,7 @@ internal class SubaccountTransformer {
                 market,
                 usePessimisticCollateralCheck,
                 useOptimisticCollateralCheck,
+                transfer,
             )
             return applyDeltaToSubaccount(subaccount, delta, parser, period)
         }
@@ -270,6 +275,20 @@ internal class SubaccountTransformer {
                     "current" to "none",
                 ),
             ),
+        )
+    }
+
+    internal fun applyTransferToSubaccount(
+        subaccount: Map<String, Any>,
+        transfer: Double,
+        parser: ParserProtocol,
+        period: String
+    ): Map<String, Any> {
+        return applyDeltaToSubaccount(
+            subaccount,
+            mapOf("usdcSize" to transfer),
+            parser,
+            period,
         )
     }
 
@@ -328,7 +347,21 @@ internal class SubaccountTransformer {
             modified[deltaMarketId] = applyDeltaToPosition(position, modifiedDelta, parser, period)
         }
 
-        return modified
+        return removeNullPositions(parser, modified, deltaMarketId)
+    }
+
+    private fun removeNullPositions(
+        parser: ParserProtocol,
+        positions: Map<String, Any>,
+        exceptMarketId: String?
+    ): Map<String, Any> {
+        return positions.filterValues { position ->
+            val marketId = parser.asString(parser.value(position, "marketId"))
+            val current = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
+            val postOrder = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+
+            (marketId != exceptMarketId) || (current != 0.0 || postOrder != 0.0)
+        }
     }
 
     private fun applyDeltaToSubaccount(

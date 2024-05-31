@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.model
 
+import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
@@ -26,7 +27,21 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.historicalPnl)
     changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
-    return StateChanges(changes, null, iListOf(subaccountNumber))
+    val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+        parser,
+        account,
+        subaccountNumber ?: 0,
+        parser.asMap(input?.get("trade")),
+    )
+    return StateChanges(
+        changes,
+        null,
+        if (subaccountNumber != childSubaccountNumber) {
+            iListOf(subaccountNumber, childSubaccountNumber)
+        } else {
+            iListOf(subaccountNumber)
+        },
+    )
 }
 
 internal fun TradingStateMachine.receivedSubaccountsChanges(
@@ -41,6 +56,19 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     val subaccountNumber =
         if (idElements?.size == 2) parser.asInt(idElements.lastOrNull()) ?: 0 else 0
     val childSubaccountNumber = info.childSubaccountNumber
+    val tradeChildSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+        parser,
+        account,
+        subaccountNumber,
+        parser.asMap(input?.get("trade")),
+    )
+    val subaccountNumbers = iMutableListOf(subaccountNumber)
+    if (childSubaccountNumber != null && !subaccountNumbers.contains(childSubaccountNumber)) {
+        subaccountNumbers.add(childSubaccountNumber)
+    }
+    if (!subaccountNumbers.contains(tradeChildSubaccountNumber)) {
+        subaccountNumbers.add(tradeChildSubaccountNumber)
+    }
     if (payload["accounts"] != null ||
         payload["subaccounts"] != null ||
         payload["positions"] != null ||
@@ -67,14 +95,7 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     return StateChanges(
         changes,
         null,
-        if (childSubaccountNumber != null) {
-            iListOf(
-                subaccountNumber,
-                childSubaccountNumber,
-            )
-        } else {
-            iListOf(subaccountNumber)
-        },
+        subaccountNumbers,
     )
 }
 

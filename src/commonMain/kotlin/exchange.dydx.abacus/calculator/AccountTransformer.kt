@@ -17,38 +17,89 @@ class AccountTransformer() {
         useOptimisticCollateralCheck: Boolean
     ): Map<String, Any>? {
         val modified = account?.mutable() ?: return null
-        val targetSubaccountNumber =
+        val childSubaccountNumber =
             MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
                 parser,
                 account,
                 subaccountNumber ?: 0,
-                parser.asString(trade["marketId"]),
-            )
-        val subaccount = parser.asNativeMap(
-            parser.value(
-                account,
-                "subaccounts.$targetSubaccountNumber",
-            )
-        ) ?: mapOf()
-        if (targetSubaccountNumber != subaccountNumber) {
-            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
-                parser,
-                account,
-                subaccountNumber ?: 0,
-                parser.asString(trade["marketId"]),
-            )
-        }
-        val modifiedSubaccount =
-            subaccountTransformer.applyTradeToSubaccount(
-                subaccount,
                 trade,
-                market,
-                parser,
-                period,
-                usePessimisticCollateralCheck,
-                useOptimisticCollateralCheck,
             )
-        modified.safeSet("subaccounts.$targetSubaccountNumber", modifiedSubaccount)
-        return modified
+        if (subaccountNumber == childSubaccountNumber) {
+            // CROSS
+            val subaccount = parser.asNativeMap(
+                parser.value(
+                    account,
+                    "subaccounts.$subaccountNumber",
+                ),
+            ) ?: mapOf()
+            val modifiedSubaccount =
+                subaccountTransformer.applyTradeToSubaccount(
+                    subaccount,
+                    trade,
+                    market,
+                    parser,
+                    period,
+                    usePessimisticCollateralCheck,
+                    useOptimisticCollateralCheck,
+                )
+            modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
+            return modified
+        } else {
+            val transferAmount = calculateIsolatedMarginTransferAmount(
+                parser,
+                trade,
+            )
+            if (transferAmount != null) {
+                val subaccount = parser.asNativeMap(
+                    parser.value(
+                        account,
+                        "subaccounts.$subaccountNumber",
+                    ),
+                ) ?: mapOf()
+
+                val modifiedSubaccount =
+                    subaccountTransformer.applyTransferToSubaccount(
+                        subaccount,
+                        transferAmount * -1.0,
+                        parser,
+                        period,
+                    )
+                modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
+            }
+
+            val childSubaccount = parser.asNativeMap(
+                parser.value(
+                    account,
+                    "subaccounts.$childSubaccountNumber",
+                ),
+            ) ?: mapOf()
+
+            val modifiedChildSubaccount =
+                subaccountTransformer.applyTradeToSubaccount(
+                    childSubaccount,
+                    trade,
+                    market,
+                    parser,
+                    period,
+                    usePessimisticCollateralCheck,
+                    useOptimisticCollateralCheck,
+                    transferAmount,
+                )
+            modified.safeSet("subaccounts.$childSubaccountNumber", modifiedChildSubaccount)
+            return modified
+        }
+    }
+
+    fun calculateIsolatedMarginTransferAmount(
+        parser: ParserProtocol,
+        trade: Map<String, Any>,
+    ): Double? {
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: return null
+        return if (targetLeverage == 0.0) {
+            null
+        } else {
+            val usdcSize = parser.asDouble(parser.value(trade, "size.usdcSize")) ?: return null
+            usdcSize / targetLeverage
+        }
     }
 }

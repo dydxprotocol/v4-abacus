@@ -17,9 +17,9 @@ internal object MarginModeCalculator {
             ),
         )
         if (position != null && (
-                    parser.asDouble(parser.value(position, "size.current"))
-                        ?: 0.0
-                    ) != 0.0
+                parser.asDouble(parser.value(position, "size.current"))
+                    ?: 0.0
+                ) != 0.0
         ) {
             return if (position["equity"] == null) {
                 "CROSS"
@@ -34,13 +34,13 @@ internal object MarginModeCalculator {
         }
         if (order != null) {
             return if ((
-                        parser.asInt(
-                            parser.value(
-                                order,
-                                "subaccountNumber",
-                            ),
-                        ) ?: subaccountNumber
-                        ) != subaccountNumber
+                    parser.asInt(
+                        parser.value(
+                            order,
+                            "subaccountNumber",
+                        ),
+                    ) ?: subaccountNumber
+                    ) != subaccountNumber
             ) {
                 "ISOLATED"
             } else {
@@ -81,7 +81,6 @@ internal object MarginModeCalculator {
         }
     }
 
-
     /**
      * @description Get the childSubaccount number that is available for the given marketId
      * @param marketId
@@ -90,9 +89,13 @@ internal object MarginModeCalculator {
         parser: ParserProtocol,
         account: Map<String, Any>?,
         subaccountNumber: Int,
-        marketId: String?
+        tradeInput: Map<String, Any>?
     ): Int {
-        val marketId = marketId ?: return subaccountNumber
+        val marginMode = parser.asString(tradeInput?.get("marginMode"))
+        if (marginMode != "ISOLATED") {
+            return subaccountNumber
+        }
+        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return subaccountNumber
         val subaccounts = parser.asMap(account?.get("subaccounts")) ?: return subaccountNumber
 
         var lastSubaccountNumber = subaccountNumber
@@ -119,8 +122,9 @@ internal object MarginModeCalculator {
         subaccount: Map<String, Any>,
         marketId: String
     ): Boolean {
-        val openPositions = parser.asMap(subaccount["openPositions"])
-        if (openPositions?.containsKey(marketId) ?: false) {
+        val positionSize = parser.asDouble(parser.value(subaccount, "openPositions.$marketId.size.current"))
+
+        if ((positionSize ?: 0.0) > 0.0) {
             return true
         }
         val orders = parser.asMap(subaccount["orders"])
@@ -134,5 +138,4 @@ internal object MarginModeCalculator {
         }
         return foundOrder != null
     }
-
 }

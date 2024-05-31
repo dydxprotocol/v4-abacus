@@ -387,7 +387,6 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
             """.trimIndent(),
         )
 
-
         test(
             {
                 perp.tradeInMarket("AVAX-USD", 0)
@@ -443,6 +442,30 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
             },
             """
                 {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "0": {
+                                    "quoteBalance": {
+                                        "current": 100000.0,
+                                        "postOrder": 99900.0
+                                    }
+                                },
+                                "384": {
+                                    "quoteBalance": {
+                                        "postOrder": -100.0
+                                    },
+                                    "openPositions": {
+                                        "AVAX-USD": {
+                                            "size": {
+                                                "postOrder": 10.0
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             """.trimIndent(),
         )
