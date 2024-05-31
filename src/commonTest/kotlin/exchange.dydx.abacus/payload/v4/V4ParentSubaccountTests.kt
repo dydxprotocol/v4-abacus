@@ -2,6 +2,8 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
@@ -381,6 +383,66 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             }
                         }
                     }
+                }
+            """.trimIndent(),
+        )
+
+
+        test(
+            {
+                perp.tradeInMarket("AVAX-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": false
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("2,0", TradeInputField.targetLeverage, 0)
+            },
+            """
+                {
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("10", TradeInputField.size, 0)
+            },
+            """
+                {
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("LIMIT", TradeInputField.type, 0)
+            },
+            """
+                {
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("20", TradeInputField.limitPrice, 0)
+            },
+            """
+                {
                 }
             """.trimIndent(),
         )

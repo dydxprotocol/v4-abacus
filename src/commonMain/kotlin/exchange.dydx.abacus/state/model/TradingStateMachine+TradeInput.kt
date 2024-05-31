@@ -101,11 +101,20 @@ internal fun TradingStateMachine.tradeInMarket(
         input["trade"] = trade
         input["current"] = "trade"
         this.input = input
+        val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+            parser,
+            account,
+            subaccountNumber,
+            marketId,
+        )
         val changes =
             StateChanges(
                 iListOf(Changes.subaccount, Changes.input),
                 null,
-                iListOf(subaccountNumber),
+                if (subaccountNumber == childSubaccountNumber)
+                    iListOf(subaccountNumber)
+                else
+                    iListOf(subaccountNumber, childSubaccountNumber)
             )
 
         changes.let {

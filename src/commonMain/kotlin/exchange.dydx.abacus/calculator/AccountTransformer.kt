@@ -17,15 +17,26 @@ class AccountTransformer() {
         useOptimisticCollateralCheck: Boolean
     ): Map<String, Any>? {
         val modified = account?.mutable() ?: return null
-        val subaccount = if (subaccountNumber != null) {
-            parser.asNativeMap(
-                parser.value(
-                    account,
-                    "subaccounts.$subaccountNumber",
-                ),
-            ) ?: mapOf()
-        } else {
-            null
+        val targetSubaccountNumber =
+            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                parser,
+                account,
+                subaccountNumber ?: 0,
+                parser.asString(trade["marketId"]),
+            )
+        val subaccount = parser.asNativeMap(
+            parser.value(
+                account,
+                "subaccounts.$targetSubaccountNumber",
+            )
+        ) ?: mapOf()
+        if (targetSubaccountNumber != subaccountNumber) {
+            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                parser,
+                account,
+                subaccountNumber ?: 0,
+                parser.asString(trade["marketId"]),
+            )
         }
         val modifiedSubaccount =
             subaccountTransformer.applyTradeToSubaccount(
@@ -37,7 +48,7 @@ class AccountTransformer() {
                 usePessimisticCollateralCheck,
                 useOptimisticCollateralCheck,
             )
-        modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
+        modified.safeSet("subaccounts.$targetSubaccountNumber", modifiedSubaccount)
         return modified
     }
 }
