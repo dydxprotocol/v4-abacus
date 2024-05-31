@@ -192,18 +192,19 @@ fun TradingStateMachine.transfer(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<String, Any>, token: String) {
+private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<String, Any>, tokenAddress: String) {
+    val selectedChainId = transfer["chain"] as? String
     if (transfer["type"] == "TRANSFER_OUT") {
         transfer.safeSet("size.usdcSize", null)
         transfer.safeSet("size.size", null)
     } else {
         transfer.safeSet(
             "resources.tokenSymbol",
-            squidProcessor.selectedTokenSymbol(token),
+            squidProcessor.selectedTokenSymbol(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
         )
         transfer.safeSet(
             "resources.tokenDecimals",
-            squidProcessor.selectedTokenDecimals(token),
+            squidProcessor.selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
         )
     }
     transfer.safeSet("route", null)

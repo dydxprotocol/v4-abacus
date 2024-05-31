@@ -16,7 +16,7 @@ internal fun TradingStateMachine.routerChains(payload: String): StateChanges? {
     }
 }
 
-internal fun TradingStateMachine.squidTokens(payload: String): StateChanges? {
+internal fun TradingStateMachine.routerTokens(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
         input = squidProcessor.receivedTokens(input, json)

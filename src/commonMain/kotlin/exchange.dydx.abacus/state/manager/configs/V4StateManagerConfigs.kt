@@ -119,6 +119,10 @@ class V4StateManagerConfigs(
         return "$skipHost/v1/info/chains?include_evm=true"
     }
 
+    fun skipV1Assets(): String {
+        return "$skipHost/v1/fungible/assets?include_evm_assets=true"
+    }
+
     fun nobleDenom(): String? {
         return "uusdc"
     }

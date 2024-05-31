@@ -184,7 +184,7 @@ internal class SquidProcessor(
         return parser.asString(selectedChain?.get("chainId"))
     }
 
-    override fun selectedTokenSymbol(tokenAddress: String?): String? {
+    override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
         this.tokens?.find {
             parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress
         }?.let {
@@ -193,7 +193,7 @@ internal class SquidProcessor(
         return null
     }
 
-    override fun selectedTokenDecimals(tokenAddress: String?): String? {
+    override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
         this.tokens?.find {
             parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress
         }?.let {

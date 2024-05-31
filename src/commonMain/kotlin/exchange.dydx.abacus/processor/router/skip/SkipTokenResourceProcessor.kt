@@ -1,23 +1,20 @@
 package exchange.dydx.abacus.processor.router.skip
 
-import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-internal class SkipTokenResourceProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val keyMap = mapOf(
-        "string" to mapOf(
-            "name" to "name",
-            "denom" to "address",
-            "symbol" to "symbol",
-            "decimals" to "decimals",
-            "logo_uri" to "iconUrl",
-        ),
-    )
-
-    override fun received(
-        existing: Map<String, Any>?,
+internal class SkipTokenResourceProcessor(
+    private val parser: ParserProtocol
+) {
+    fun received(
         payload: Map<String, Any>
-    ): Map<String, Any> {
-        return transform(existing, payload, keyMap)
+    ): TransferInputTokenResource {
+        return TransferInputTokenResource(
+            name = parser.asString(payload["name"]),
+            address = parser.asString(payload["denom"]),
+            symbol = parser.asString(payload["symbol"]),
+            decimals = parser.asInt(payload["decimals"]),
+            iconUrl = parser.asString(payload["logo_uri"]),
+        )
     }
 }
