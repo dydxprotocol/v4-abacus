@@ -195,6 +195,8 @@ open class StateManagerAdaptor(
             }
         }
 
+    var cosmosWalletConnected: Boolean? = false
+
     private var accountAddressTimer: LocalTimerProtocol? = null
         set(value) {
             if (field !== value) {

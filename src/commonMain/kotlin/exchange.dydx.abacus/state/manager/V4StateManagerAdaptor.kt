@@ -477,6 +477,9 @@ class V4StateManagerAdaptor(
     }
 
     private fun pollNobleBalance() {
+        if (cosmosWalletConnected == true) {
+            return
+        }
         val timer = ioImplementations.timer ?: CoroutineTimer.instance
         nobleBalancesTimer = timer.schedule(0.0, nobleBalancePollingDuration) {
             if (validatorConnected && accountAddress != null) {
