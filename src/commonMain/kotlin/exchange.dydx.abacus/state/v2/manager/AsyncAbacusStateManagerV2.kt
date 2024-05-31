@@ -291,9 +291,11 @@ class AsyncAbacusStateManagerV2(
                     configFileUrl,
                     null,
                     callback = { response, httpCode, headers ->
-                        if (success(httpCode) && response != null) {
-                            if (parse(response, configFile)) {
-                                writeToLocalFile(response, path)
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            if (success(httpCode) && response != null) {
+                                if (parse(response, configFile)) {
+                                    writeToLocalFile(response, path)
+                                }
                             }
                         }
                     },
@@ -341,10 +343,12 @@ class AsyncAbacusStateManagerV2(
     }
 
     private fun writeToLocalFile(response: String, file: String) {
-        ioImplementations.fileSystem?.writeTextFile(
-            file,
-            response,
-        )
+        ioImplementations.threading?.async(ThreadingType.network) {
+            ioImplementations.fileSystem?.writeTextFile(
+                file,
+                response,
+            )
+        }
     }
 
     private fun parseDocumentation(response: String) {
