@@ -64,6 +64,7 @@ import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
+import exchange.dydx.abacus.state.v2.supervisor.cosmosWalletConnected
 import exchange.dydx.abacus.state.v2.supervisor.depositPayload
 import exchange.dydx.abacus.state.v2.supervisor.faucet
 import exchange.dydx.abacus.state.v2.supervisor.marketId
@@ -257,6 +258,14 @@ internal class StateManagerAdaptorV2(
         }
         set(value) {
             accounts.accountAddress = value
+        }
+
+    internal var cosmosWalletConnected: Boolean?
+        get() {
+            return accounts.cosmosWalletConnected
+        }
+        set(value) {
+            accounts.cosmosWalletConnected = value
         }
 
     internal var sourceAddress: String?
