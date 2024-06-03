@@ -98,7 +98,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         val crossMarginUsage = parentSubaccount?.get("marginUsage")
         val openPositions = parser.asNativeMap(childSubaccount?.get("openPositions"))
         val marketId = openPositions?.keys?.firstOrNull()
-        val positionMargin = childSubaccount?.get("freeCollateral")
+        val positionMargin = childSubaccount?.get("equity")
         val positionLeverage = parser.value(childSubaccount, "openPositions.$marketId.leverage")
         val liquidationPrice = parser.value(childSubaccount, "openPositions.$marketId.liquidationPrice")
 

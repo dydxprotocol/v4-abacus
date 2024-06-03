@@ -286,7 +286,14 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "options": {
                                 "needsMarginMode": false
                             }
-                        }
+                        },
+                        "receiptLines": [
+                            "LIQUIDATION_PRICE",
+                            "POSITION_MARGIN",
+                            "POSITION_LEVERAGE",
+                            "FEE",
+                            "REWARD"
+                        ]
                     }
                 }
             """.trimIndent(),
@@ -305,7 +312,13 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "options": {
                                 "needsMarginMode": false
                             }
-                        }
+                        },
+                        "receiptLines": [
+                            "BUYING_POWER",
+                            "MARGIN_USAGE",
+                            "FEE",
+                            "REWARD"
+                        ]
                     }
                 }
             """.trimIndent(),

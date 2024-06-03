@@ -2,10 +2,10 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
-import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import kotlin.test.Test
@@ -50,7 +50,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
         test({
@@ -115,7 +115,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidRoute(mock.squidRouteMock.payload, 0, null)
@@ -151,7 +151,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
         stateChange = perp.squidRoute(mock.squidRouteMock.errors_payload, 0, null)
@@ -199,20 +199,20 @@ class V4SquidTests : V4BaseTests() {
     fun testSelectedTokenSymbol() {
         setup()
 
-        val stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        val stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        assertTrue(perp.squidProcessor.selectedTokenSymbol("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") == "ETH")
+        assertTrue(perp.squidProcessor.selectedTokenSymbol("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "should_not_matter") == "ETH")
     }
 
     @Test
     fun testSelectedTokenDecimals() {
         setup()
 
-        val stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        val stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        assertTrue(perp.squidProcessor.selectedTokenDecimals("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") == "18")
+        assertTrue(perp.squidProcessor.selectedTokenDecimals("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "should_not_matter") == "18")
     }
 
     @Test
@@ -222,7 +222,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
         assertTrue(perp.squidProcessor.defaultTokenAddress("1") == "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
@@ -248,7 +248,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
         val result = perp.squidProcessor.tokenResources("1")
@@ -262,7 +262,7 @@ class V4SquidTests : V4BaseTests() {
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        stateChange = perp.squidTokens(mock.squidTokensMock.payload)
+        stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
         val result = perp.squidProcessor.tokenOptions("1")
