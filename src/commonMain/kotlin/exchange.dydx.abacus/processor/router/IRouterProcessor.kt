@@ -40,8 +40,8 @@ interface IRouterProcessor {
 
     fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?)
     fun defaultChainId(): String?
-    fun selectedTokenSymbol(tokenAddress: String?): String?
-    fun selectedTokenDecimals(tokenAddress: String?): String?
+    fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String?
+    fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String?
     fun filteredTokens(chainId: String?): List<Any>?
     fun defaultTokenAddress(chainId: String?): String?
     fun chainResources(chainId: String?): Map<String, Any>?

@@ -25,6 +25,7 @@ import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
@@ -77,6 +78,19 @@ internal class OnboardingSupervisor(
         helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.routerChains(response), oldState)
+            }
+        }
+    }
+
+    @Suppress("UnusedPrivateMember")
+    private fun retrieveSkipTransferTokens() {
+        val oldState = stateMachine.state
+        val tokensUrl = helper.configs.skipV1Assets()
+//            add API key injection
+//            val header = iMapOf("authorization" to skipAPIKey)
+        helper.get(tokensUrl, null, null) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.routerTokens(response), oldState)
             }
         }
     }
@@ -183,7 +197,7 @@ internal class OnboardingSupervisor(
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
@@ -245,7 +259,7 @@ internal class OnboardingSupervisor(
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
