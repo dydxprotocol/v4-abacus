@@ -420,6 +420,24 @@ class V4TransactionTests : NetworkTests() {
     }
 
     @Test
+    fun testIsolatedMarginPlaceOrderWithReduceOnly() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(true)
+        stateManager.trade("true", TradeInputField.reduceOnly)
+        var transactionData: Any? = null
+
+        val transactionCallback: TransactionCallback = { _, _, data ->
+            transactionData = data
+        }
+
+        val orderPayload = subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertNotNull(orderPayload, "Order payload should not be null")
+
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        assertEquals(orderPayload, transactionData, "Transaction data should match order payload instead of transfer payload")
+    }
+
+    @Test
     fun testCancelOrderForChildSubaccount() {
         setStateMachineForIsolatedMarginTests(stateManager)
         val transactionCallback: TransactionCallback = { _, _, _ -> }
