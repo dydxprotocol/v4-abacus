@@ -180,39 +180,8 @@ class TradeInputOptionsTests : V3BaseTests() {
                                 {
                                     "type": "IOC",
                                     "stringKey": "APP.TRADE.IMMEDIATE_OR_CANCEL"
-                                },
-                                {
-                                    "type": "FOK",
-                                    "stringKey": "APP.TRADE.FILL_OR_KILL"
                                 }
                             ]
-                        }
-                    }
-                }
-            }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("FOK", TradeInputField.timeInForceType, 0)
-            },
-            """
-            {
-                "input": {
-                    "trade": {
-                        "options": {
-                            "needsSize": true,
-                            "needsLeverage": false,
-                            "needsTriggerPrice": false,
-                            "needsLimitPrice": true,
-                            "needsTrailingPercent": false,
-                            "needsReduceOnly": true,
-                            "needsPostOnly": false,
-                            "needsBrackets": false,
-                            "needsTimeInForce": true,
-                            "needsGoodUntil": false,
-                            "needsExecution": false
                         }
                     }
                 }
