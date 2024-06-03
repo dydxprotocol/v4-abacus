@@ -2,18 +2,28 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.modify
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 internal class PerpetualPositionsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = PerpetualPositionProcessor(parser = parser)
 
-    internal fun received(payload: Map<String, Any>?): Map<String, Any>? {
+    internal fun received(
+        payload: Map<String, Any>?,
+        subaccountNumber: Int?,
+    ): Map<String, Any>? {
         if (payload != null) {
             val result = mutableMapOf<String, Any>()
             for ((key, value) in payload) {
-                parser.asNativeMap(value)?.let { value ->
-                    val item = itemProcessor.received(null, value)
+                parser.asNativeMap(value)?.let { data ->
+
+                    var modifiedData = data.toMutableMap()
+                    subaccountNumber?.run {
+                        modifiedData.modify("subaccountNumber", subaccountNumber)
+                    }
+
+                    val item = itemProcessor.received(null, modifiedData)
                     result.safeSet(key, item)
                 }
             }

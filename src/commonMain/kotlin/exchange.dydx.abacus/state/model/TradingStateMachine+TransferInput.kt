@@ -25,6 +25,7 @@ enum class TransferInputField(val rawValue: String) {
     chain("chain"),
     token("token"),
     address("address"),
+    MEMO("memo"),
     fastSpeed("fastSpeed");
 
     companion object {
@@ -69,6 +70,7 @@ fun TradingStateMachine.transfer(
                         transfer.safeSet("size.usdcSize", null)
                         transfer.safeSet("route", null)
                         transfer.safeSet("requestPayload", null)
+                        transfer.safeSet("memo", null)
                         if (parser.asString(data) == "TRANSFER_OUT") {
                             transfer.safeSet("chain", "chain")
                             transfer.safeSet("token", "usdc")
@@ -135,7 +137,6 @@ fun TradingStateMachine.transfer(
                         iListOf(subaccountNumber),
                     )
                 }
-
                 TransferInputField.fastSpeed.rawValue -> {
                     transfer.safeSet(typeText, parser.asBool(data))
                     changes = StateChanges(
@@ -166,6 +167,14 @@ fun TradingStateMachine.transfer(
                         iListOf(subaccountNumber),
                     )
                 }
+                TransferInputField.MEMO.rawValue -> {
+                    transfer.safeSet(typeText, parser.asString(data))
+                    changes = StateChanges(
+                        iListOf(Changes.input),
+                        null,
+                        iListOf(subaccountNumber),
+                    )
+                }
                 else -> {}
             }
         } else {
@@ -183,18 +192,19 @@ fun TradingStateMachine.transfer(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<String, Any>, token: String) {
+private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<String, Any>, tokenAddress: String) {
+    val selectedChainId = transfer["chain"] as? String
     if (transfer["type"] == "TRANSFER_OUT") {
         transfer.safeSet("size.usdcSize", null)
         transfer.safeSet("size.size", null)
     } else {
         transfer.safeSet(
             "resources.tokenSymbol",
-            squidProcessor.selectedTokenSymbol(token),
+            squidProcessor.selectedTokenSymbol(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
         )
         transfer.safeSet(
             "resources.tokenDecimals",
-            squidProcessor.selectedTokenDecimals(token),
+            squidProcessor.selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
         )
     }
     transfer.safeSet("route", null)
@@ -204,35 +214,44 @@ private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<S
 private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<String, Any>, chainType: String) {
     val tokenOptions = squidProcessor.tokenOptions(chainType)
     if (transfer["type"] != "TRANSFER_OUT") {
-        transfer.safeSet(
-            "depositOptions.assets",
-            tokenOptions,
-        )
-        transfer.safeSet(
-            "withdrawalOptions.assets",
-            tokenOptions,
-        )
+        internalState.transfer.tokens = tokenOptions
         transfer.safeSet("chain", chainType)
         transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
-        transfer.safeSet(
-            "resources.chainResources",
-            squidProcessor.chainResources(chainType),
-        )
-        transfer.safeSet(
-            "resources.tokenResources",
-            squidProcessor.tokenResources(chainType),
-        )
+        internalState.transfer.chainResources = squidProcessor.chainResources(chainType)
+        internalState.transfer.tokenResources = squidProcessor.tokenResources(chainType)
     }
     transfer.safeSet("exchange", null)
     transfer.safeSet("size.size", null)
     transfer.safeSet("route", null)
     transfer.safeSet("requestPayload", null)
+//    needed to pass tests, remove later
+    transfer.safeSet(
+        "depositOptions.assets",
+        tokenOptions,
+    )
+    transfer.safeSet(
+        "withdrawalOptions.assets",
+        tokenOptions,
+    )
+    transfer.safeSet(
+        "resources.chainResources",
+        squidProcessor.chainResources(chainType),
+    )
+    transfer.safeSet(
+        "resources.tokenResources",
+        squidProcessor.tokenResources(chainType),
+    )
 }
 
 private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<String, Any>, exchange: String) {
     val exchangeDestinationChainId = squidProcessor.exchangeDestinationChainId
     val tokenOptions = squidProcessor.tokenOptions(exchangeDestinationChainId)
     if (transfer["type"] != "TRANSFER_OUT") {
+        internalState.transfer.tokens = tokenOptions
+        transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
+        internalState.transfer.tokenResources = squidProcessor.tokenResources(exchangeDestinationChainId)
+
+//        needed to pass tests, remove later
         transfer.safeSet(
             "depositOptions.assets",
             tokenOptions,
@@ -241,7 +260,6 @@ private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<
             "withdrawalOptions.assets",
             tokenOptions,
         )
-        transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
         transfer.safeSet(
             "resources.tokenResources",
             squidProcessor.tokenResources(exchangeDestinationChainId),

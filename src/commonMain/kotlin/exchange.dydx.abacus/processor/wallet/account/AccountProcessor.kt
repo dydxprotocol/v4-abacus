@@ -299,13 +299,14 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         modified = transform(modified, payload, "current", currentAccountKeyMap)
 
         if (firstTime) {
+            val subaccountNumber = parser.asInt(modified["subaccountNumber"])
             val openPerpetualPositionsData =
                 (
                     parser.asNativeMap(payload["openPositions"])
                         ?: parser.asNativeMap(payload["openPerpetualPositions"])
                     )
 
-            val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData)
+            val positions = perpetualPositionsProcessor.received(openPerpetualPositionsData, subaccountNumber)
             modified.safeSet(
                 "positions",
                 positions,
@@ -371,12 +372,14 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: List<Any>?,
         height: BlockAndTime?,
     ): Map<String, Any> {
+        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"])
         return if (payload != null) {
             val modified = subaccount.mutable()
             val transformed = ordersProcessor.received(
                 parser.asNativeMap(subaccount["orders"]),
                 payload,
                 height,
+                subaccountNumber,
             )
             modified.safeSet("orders", transformed)
             modified
@@ -809,8 +812,9 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
         return if (payload != null) {
             val modified = mutableMapOf<String, Any>()
             for (itemPayload in payload) {
-                val delegation = parser.asNativeMap(itemPayload)
-                val balance = parser.asNativeMap(delegation?.get("balance"))
+                val item = parser.asNativeMap(itemPayload)
+                val balance = parser.asNativeMap(item?.get("balance"))
+
                 if (balance != null) {
                     val denom = parser.asString(balance["denom"])
                     if (denom != null) {
@@ -835,6 +839,33 @@ private class V4AccountDelegationsProcessor(parser: ParserProtocol) : BaseProces
                             }
                         }
                     }
+                }
+            }
+            return modified
+        } else {
+            null
+        }
+    }
+
+    fun receivedDelegations(
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): List<Any>? {
+        return if (payload != null) {
+            val modified = mutableListOf<Any>()
+            for (itemPayload in payload) {
+                val item = parser.asNativeMap(itemPayload)
+                val validator = parser.asString(parser.value(item, "delegation.validatorAddress"))
+                val amount = parser.asDecimal(parser.value(item, "balance.amount"))
+                val denom = parser.asString(parser.value(item, "balance.denom"))
+                if (validator != null && amount != null) {
+                    modified.add(
+                        mapOf(
+                            "validator" to validator,
+                            "amount" to amount,
+                            "denom" to denom,
+                        ),
+                    )
                 }
             }
             return modified
@@ -914,8 +945,10 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val delegations = parser.asNativeMap(parser.value(existing, "stakingBalances"))
-        val modifiedDelegations = delegationsProcessor.received(delegations, payload)
-        modified.safeSet("stakingBalances", modifiedDelegations)
+        val modifiedStakingBalance = delegationsProcessor.received(delegations, payload)
+        modified.safeSet("stakingBalances", modifiedStakingBalance)
+        val modifiedDelegations = delegationsProcessor.receivedDelegations(delegations, payload)
+        modified.safeSet("stakingDelegations", modifiedDelegations)
         return modified
     }
 

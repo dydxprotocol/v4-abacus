@@ -350,14 +350,15 @@ class V4TransactionTests : NetworkTests() {
         testWebSocket?.simulateConnected(true)
         testWebSocket?.simulateReceived(mock.connectionMock.connectedMessage)
         testWebSocket?.simulateReceived(mock.marketsChannel.v4_subscribed_r1)
-
+        stateManager.market = "ETH-USD"
+        testWebSocket?.simulateReceived(mock.orderbookChannel.load_test_2_subscribed)
         stateManager.setAddresses(null, "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5")
+
         if (withPositions) {
             testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed_with_positions)
         } else {
             testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)
         }
-        stateManager.market = "BTC-USD"
     }
 
     private fun prepareIsolatedMarginClosePosition() {
@@ -372,7 +373,7 @@ class V4TransactionTests : NetworkTests() {
         stateManager.trade("2", TradeInputField.targetLeverage)
 
         if (isShortTerm) {
-            stateManager.trade("MARKET", TradeInputField.timeInForceType)
+            stateManager.trade("MARKET", TradeInputField.type)
         } else {
             stateManager.trade("LIMIT", TradeInputField.type)
             stateManager.trade("GTT", TradeInputField.timeInForceType)
@@ -401,6 +402,39 @@ class V4TransactionTests : NetworkTests() {
         assertNotNull(transferPayload, "Transfer payload should not be null")
         assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
         assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+    }
+
+    @Test
+    fun testIsolatedMarginPlaceShortTermOrderTransactions() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(true)
+
+        val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
+        assertNotNull(orderPayload, "Order payload should not be null")
+        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+
+        val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
+        assertNotNull(transferPayload, "Transfer payload should not be null")
+        assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
+        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+    }
+
+    @Test
+    fun testIsolatedMarginPlaceOrderWithReduceOnly() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(true)
+        stateManager.trade("true", TradeInputField.reduceOnly)
+        var transactionData: Any? = null
+
+        val transactionCallback: TransactionCallback = { _, _, data ->
+            transactionData = data
+        }
+
+        val orderPayload = subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertNotNull(orderPayload, "Order payload should not be null")
+
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        assertEquals(orderPayload, transactionData, "Transaction data should match order payload instead of transfer payload")
     }
 
     @Test

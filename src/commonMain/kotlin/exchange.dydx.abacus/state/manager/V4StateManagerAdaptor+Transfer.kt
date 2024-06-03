@@ -73,7 +73,7 @@ internal fun V4StateManagerAdaptor.retrieveDepositExchanges() {
 internal fun V4StateManagerAdaptor.retrieveDepositRoute(state: PerpetualState?) {
     val isCctp = state?.input?.transfer?.isCctp ?: false
     when (appConfigs.squidVersion) {
-        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
+        AppConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
             state,
         )
 
@@ -86,7 +86,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV1(state: PerpetualState?)
     val fromChain = state?.input?.transfer?.chain
     val fromToken = state?.input?.transfer?.token
     val fromAmount = parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
-        val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+        val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
         if (decimals != null) {
             (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
@@ -144,7 +144,7 @@ private fun V4StateManagerAdaptor.retrieveDepositRouteV2(state: PerpetualState?)
     val fromChain = state?.input?.transfer?.chain
     val fromToken = state?.input?.transfer?.token
     val fromAmount = parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
-        val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+        val decimals = parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
         if (decimals != null) {
             (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
@@ -273,7 +273,7 @@ internal fun V4StateManagerAdaptor.retrieveWithdrawalRoute(
     val isCctp = cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
     val isExchange = state?.input?.transfer?.exchange != null
     when (appConfigs.squidVersion) {
-        AppConfigs.SquidVersion.V1, AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+        AppConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
             state,
             decimals,
             gas,

@@ -82,7 +82,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "leverage": {
                                                 "current": -0.12
-                                            }
+                                            },
+                                            "subaccountNumber": 0,
+                                            "marginMode": "CROSS"
                                         }
                                     }
                                 },
@@ -128,7 +130,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "buyingPower": {
                                                 "current": 7962.44
-                                            }
+                                            },
+                                            "subaccountNumber": 128,
+                                            "marginMode": "ISOLATED"
                                         }
                                     },
                                     "orders": {
@@ -144,7 +148,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "timeInForce": "GTT",
                                             "postOnly": false,
                                             "reduceOnly": false,
-                                            "goodTilBlock": "5837"
+                                            "goodTilBlock": "5837",
+                                            "subaccountNumber": 128,
+                                            "marginMode": "ISOLATED"
                                         }
                                     }
                                 }
@@ -186,7 +192,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "leverage": {
                                                 "current": -0.12
-                                            }
+                                            },
+                                            "subaccountNumber": 0,
+                                            "marginMode": "CROSS"
                                         },
                                         "RUNE-USD": {
                                             "id": "RUNE-USD",
@@ -229,7 +237,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "marginUsage": {
                                                 "current": 0.0397
-                                            }
+                                            },
+                                            "subaccountNumber": 128,
+                                            "marginMode": "ISOLATED"
                                         }
                                     },
                                     "pendingPositions": [
@@ -274,7 +284,14 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "options": {
                                 "needsMarginMode": false
                             }
-                        }
+                        },
+                        "receiptLines": [
+                            "LIQUIDATION_PRICE",
+                            "POSITION_MARGIN",
+                            "POSITION_LEVERAGE",
+                            "FEE",
+                            "REWARD"
+                        ]
                     }
                 }
             """.trimIndent(),
@@ -293,7 +310,13 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "options": {
                                 "needsMarginMode": false
                             }
-                        }
+                        },
+                        "receiptLines": [
+                            "BUYING_POWER",
+                            "MARGIN_USAGE",
+                            "FEE",
+                            "REWARD"
+                        ]
                     }
                 }
             """.trimIndent(),

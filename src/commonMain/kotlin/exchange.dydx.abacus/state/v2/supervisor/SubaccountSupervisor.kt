@@ -836,7 +836,7 @@ internal class SubaccountSupervisor(
         val isIsolatedMarginOrder =
             helper.parser.asInt(orderPayload.subaccountNumber) != subaccountNumber
         val transferPayload =
-            if (isIsolatedMarginOrder) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
+            if (isIsolatedMarginOrder && orderPayload.reduceOnly != true) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, orderPayload, analyticsPayload, uiClickTimeMs, false, transferPayload)
@@ -1049,7 +1049,7 @@ internal class SubaccountSupervisor(
         val reduceOnly = true
         val postOnly = false
 
-        // TP/SL orders always have a null timeInForce. IOC/FOK/PostOnly/GTD is distinguished by the execution field.
+        // TP/SL orders always have a null timeInForce. IOC/PostOnly/GTD is distinguished by the execution field.
         val timeInForce = null;
 
         /**

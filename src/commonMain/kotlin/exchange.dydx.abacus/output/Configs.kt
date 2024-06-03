@@ -6,6 +6,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
+import kollections.iListOf
 import kollections.iMutableListOf
 import kotlinx.serialization.Serializable
 
@@ -249,6 +250,103 @@ data class FeeTier(
 
 @JsExport
 @Serializable
+data class EquityTiers(
+    val shortTermOrderEquityTiers: IList<EquityTier>,
+    val statefulOrderEquityTiers: IList<EquityTier>,
+) {
+    companion object {
+        internal fun create(
+            existing: EquityTiers?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
+        ): EquityTiers? {
+            data?.let {
+                val shortTermOrderEquityTiers = parser.asNativeList(data["shortTermOrderEquityTiers"])?.let { tiers ->
+                    create(existing?.shortTermOrderEquityTiers, parser, tiers)
+                } ?: iListOf()
+
+                val statefulOrderEquityTiers = parser.asNativeList(data["statefulOrderEquityTiers"])?.let { tiers ->
+                    create(existing?.statefulOrderEquityTiers, parser, tiers)
+                } ?: iListOf()
+
+                return EquityTiers(shortTermOrderEquityTiers, statefulOrderEquityTiers)
+            }
+
+            Logger.d { "Equity Tiers not valid" }
+            return null
+        }
+
+        internal fun create(
+            existing: IList<EquityTier>?,
+            parser: ParserProtocol,
+            data: List<*>?
+        ): IList<EquityTier>? {
+            data?.let {
+                val equityTiers = iMutableListOf<EquityTier>()
+                for (i in data.indices) {
+                    val item = data[i]
+                    val nextItem = data.getOrNull(i + 1)
+                    parser.asMap(item)?.let {
+                        val tier = existing?.getOrNull(i)
+                        val nextTierData = parser.asMap(nextItem)
+                        EquityTier.create(tier, parser, it, nextTierData)?.let { equityTier ->
+                            equityTiers.add(equityTier)
+                        }
+                    }
+                }
+                return equityTiers
+            }
+            Logger.d { "Equity Tiers not valid" }
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
+data class EquityTier(
+    val requiredTotalNetCollateralUSD: Double,
+    val nextLevelRequiredTotalNetCollateralUSD: Double?,
+    val maxOrders: Int,
+) {
+    companion object {
+        internal fun create(
+            existing: EquityTier?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
+            nextTierData: Map<*, *>?
+        ): EquityTier? {
+            data?.let {
+                val requiredTotalNetCollateralUSD = parser.asDouble(data["requiredTotalNetCollateralUSD"])
+                val nextLevelRequiredTotalNetCollateralUSD = nextTierData?.let {
+                    parser.asDouble(nextTierData["requiredTotalNetCollateralUSD"])
+                }
+                val maxOrders = parser.asInt(data["maxOrders"])
+
+                if (requiredTotalNetCollateralUSD != null && maxOrders != null) {
+                    return if (
+                        existing?.requiredTotalNetCollateralUSD != requiredTotalNetCollateralUSD ||
+                        existing?.nextLevelRequiredTotalNetCollateralUSD != nextLevelRequiredTotalNetCollateralUSD ||
+                        existing?.maxOrders != maxOrders
+                    ) {
+                        EquityTier(
+                            requiredTotalNetCollateralUSD,
+                            nextLevelRequiredTotalNetCollateralUSD,
+                            maxOrders,
+                        )
+                    } else {
+                        existing
+                    }
+                }
+            }
+            Logger.d { "Equity Tier not valid" }
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class WithdrawalGating(
     val withdrawalsAndTransfersUnblockedAtBlock: Int?
 ) {
@@ -346,6 +444,7 @@ data class Configs(
     val network: NetworkConfigs?,
     val feeTiers: IList<FeeTier>?,
     val feeDiscounts: IList<FeeDiscount>?,
+    val equityTiers: EquityTiers?,
     val withdrawalGating: WithdrawalGating?,
     val withdrawalCapacity: WithdrawalCapacity?,
 ) {
@@ -371,6 +470,11 @@ data class Configs(
                     parser.asList(data["feeDiscounts"]),
                     localizer,
                 )
+                val equityTiers = EquityTiers.create(
+                    existing?.equityTiers,
+                    parser,
+                    parser.asMap(data["equityTiers"]),
+                )
                 var withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
@@ -383,17 +487,20 @@ data class Configs(
                 )
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
-                    existing?.feeDiscounts != feeDiscounts
+                    existing?.feeDiscounts != feeDiscounts ||
+                    existing?.equityTiers != equityTiers
                 ) {
                     Configs(
                         network,
                         feeTiers,
                         feeDiscounts,
+                        equityTiers,
                         withdrawalGating,
                         withdrawalCapacity,
                     )
                 } else {
                     existing ?: Configs(
+                        null,
                         null,
                         null,
                         null,

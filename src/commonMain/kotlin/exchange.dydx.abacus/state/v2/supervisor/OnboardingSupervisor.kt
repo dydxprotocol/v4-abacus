@@ -24,11 +24,11 @@ import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
-import exchange.dydx.abacus.state.model.squidChains
+import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
-import exchange.dydx.abacus.state.model.squidTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -67,31 +67,30 @@ internal class OnboardingSupervisor(
     }
 
     private fun retrieveSquidRoutes() {
-        when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1 -> {
-                retrieveTransferChains()
-                retrieveTransferTokens()
-            }
+        retrieveTransferAssets()
+        retrieveCctpChainIds()
+    }
 
-            OnboardingConfigs.SquidVersion.V2,
-            OnboardingConfigs.SquidVersion.V2DepositOnly,
-            OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> {
-                retrieveTransferAssets()
-                retrieveCctpChainIds()
+    @Suppress("UnusedPrivateMember")
+    private fun retrieveSkipTransferChains() {
+        val oldState = stateMachine.state
+        val chainsUrl = helper.configs.skipV1Chains()
+        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.routerChains(response), oldState)
             }
         }
     }
 
-    private fun retrieveTransferChains() {
+    @Suppress("UnusedPrivateMember")
+    private fun retrieveSkipTransferTokens() {
         val oldState = stateMachine.state
-        val url = helper.configs.squidChains()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidChains(response), oldState)
-                }
+        val tokensUrl = helper.configs.skipV1Assets()
+//            add API key injection
+//            val header = iMapOf("authorization" to skipAPIKey)
+        helper.get(tokensUrl, null, null) { _, response, httpCode, _ ->
+            if (helper.success(httpCode) && response != null) {
+                update(stateMachine.routerTokens(response), oldState)
             }
         }
     }
@@ -105,20 +104,6 @@ internal class OnboardingSupervisor(
             helper.get(url, null, header) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
-                }
-            }
-        }
-    }
-
-    private fun retrieveTransferTokens() {
-        val oldState = stateMachine.state
-        val url = helper.configs.squidToken()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidTokens(response), oldState)
                 }
             }
         }
@@ -176,7 +161,7 @@ internal class OnboardingSupervisor(
     ) {
         val isCctp = state?.input?.transfer?.isCctp ?: false
         when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
+            OnboardingConfigs.SquidVersion.V2WithdrawalOnly -> retrieveDepositRouteV1(
                 state,
                 accountAddress,
                 sourceAddress,
@@ -212,7 +197,7 @@ internal class OnboardingSupervisor(
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
@@ -274,7 +259,7 @@ internal class OnboardingSupervisor(
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(fromToken))
+                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
@@ -530,7 +515,7 @@ internal class OnboardingSupervisor(
             CctpConfig.cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
         val isExchange = state?.input?.transfer?.exchange != null
         when (configs.squidVersion) {
-            OnboardingConfigs.SquidVersion.V1, OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
+            OnboardingConfigs.SquidVersion.V2DepositOnly -> retrieveWithdrawalRouteV1(
                 state,
                 decimals,
                 gas,

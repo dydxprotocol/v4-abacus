@@ -114,6 +114,7 @@ class AsyncAbacusStateManager(
                 value?.historicalPnlPeriod = historicalPnlPeriod
                 value?.candlesResolution = candlesResolution
                 value?.readyToConnect = readyToConnect
+                value?.cosmosWalletConnected = cosmosWalletConnected
                 field = value
             }
         }
@@ -141,6 +142,14 @@ class AsyncAbacusStateManager(
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.accountAddress = field
+            }
+        }
+
+    override var cosmosWalletConnected: Boolean? = false
+        set(value) {
+            field = value
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                adaptor?.cosmosWalletConnected = field
             }
         }
 
@@ -251,19 +260,27 @@ class AsyncAbacusStateManager(
     }
 
     private fun load(configFile: ConfigFile) {
-        val path = configFile.path
-        if (appConfigs.loadRemote) {
-            loadFromRemoteConfigFile(configFile)
-            val configFileUrl = "$deploymentUri$path"
-            ioImplementations.rest?.get(configFileUrl, null, callback = { response, httpCode, _ ->
-                if (success(httpCode) && response != null) {
-                    if (parse(response, configFile)) {
-                        writeToLocalFile(response, path)
-                    }
-                }
-            })
-        } else {
-            loadFromBundledLocalConfigFile(configFile)
+        ioImplementations.threading?.async(ThreadingType.network) {
+            val path = configFile.path
+            if (appConfigs.loadRemote) {
+                loadFromRemoteConfigFile(configFile)
+                val configFileUrl = "$deploymentUri$path"
+                ioImplementations.rest?.get(
+                    configFileUrl,
+                    null,
+                    callback = { response, httpCode, _ ->
+                        ioImplementations.threading?.async(ThreadingType.abacus) {
+                            if (success(httpCode) && response != null) {
+                                if (parse(response, configFile)) {
+                                    writeToLocalFile(response, path)
+                                }
+                            }
+                        }
+                    },
+                )
+            } else {
+                loadFromBundledLocalConfigFile(configFile)
+            }
         }
     }
 
@@ -271,7 +288,9 @@ class AsyncAbacusStateManager(
         ioImplementations.fileSystem?.readCachedTextFile(
             configFile.path,
         )?.let {
-            parse(it, configFile)
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                parse(it, configFile)
+            }
         }
     }
 
@@ -280,7 +299,9 @@ class AsyncAbacusStateManager(
             FileLocation.AppBundle,
             configFile.path,
         )?.let {
-            parse(it, configFile)
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                parse(it, configFile)
+            }
         }
     }
 
@@ -300,10 +321,12 @@ class AsyncAbacusStateManager(
     }
 
     private fun writeToLocalFile(response: String, file: String) {
-        ioImplementations.fileSystem?.writeTextFile(
-            file,
-            response,
-        )
+        ioImplementations.threading?.async(ThreadingType.network) {
+            ioImplementations.fileSystem?.writeTextFile(
+                file,
+                response,
+            )
+        }
     }
 
     private fun parseDocumentation(response: String) {

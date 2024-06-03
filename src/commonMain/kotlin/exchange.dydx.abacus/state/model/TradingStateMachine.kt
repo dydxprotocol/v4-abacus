@@ -32,7 +32,7 @@ import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
-import exchange.dydx.abacus.processor.squid.SquidProcessor
+import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -45,6 +45,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.state.manager.TokenInfo
@@ -81,6 +82,8 @@ open class TradingStateMachine(
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
 ) {
+    internal val internalState: InternalState = InternalState()
+
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
     internal val assetsProcessor = run {
@@ -90,7 +93,7 @@ open class TradingStateMachine(
     }
     internal val walletProcessor = WalletProcessor(parser)
     internal val configsProcessor = ConfigsProcessor(parser)
-    internal val squidProcessor = SquidProcessor(parser)
+    internal val squidProcessor = SquidProcessor(parser, internalState.transfer)
     internal val rewardsProcessor = RewardsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
@@ -909,24 +912,46 @@ open class TradingStateMachine(
             "trade" -> {
                 val trade = parser.asNativeMap(input["trade"]) ?: return null
                 val type = parser.asString(trade["type"]) ?: return null
+                val isolatedMargin = parser.asString(trade["marginMode"]) == "ISOLATED"
                 return when (type) {
                     "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET", "TRAILING_STOP" -> {
-                        listOf(
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.MarginUsage.rawValue,
-                            ReceiptLine.ExpectedPrice.rawValue,
-                            ReceiptLine.Fee.rawValue,
-                            ReceiptLine.Reward.rawValue,
-                        )
+                        if (isolatedMargin) {
+                            listOf(
+                                ReceiptLine.ExpectedPrice.rawValue,
+                                ReceiptLine.LiquidationPrice.rawValue,
+                                ReceiptLine.PositionMargin.rawValue,
+                                ReceiptLine.PositionLeverage.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        } else {
+                            listOf(
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.MarginUsage.rawValue,
+                                ReceiptLine.ExpectedPrice.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        }
                     }
 
                     else -> {
-                        listOf(
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.MarginUsage.rawValue,
-                            ReceiptLine.Fee.rawValue,
-                            ReceiptLine.Reward.rawValue,
-                        )
+                        if (isolatedMargin) {
+                            listOf(
+                                ReceiptLine.LiquidationPrice.rawValue,
+                                ReceiptLine.PositionMargin.rawValue,
+                                ReceiptLine.PositionLeverage.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        } else {
+                            listOf(
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.MarginUsage.rawValue,
+                                ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Reward.rawValue,
+                            )
+                        }
                     }
                 }
             }
@@ -1175,6 +1200,7 @@ open class TradingStateMachine(
                     Account(
                         account.balances,
                         account.stakingBalances,
+                        account.stakingDelegations,
                         subaccounts,
                         groupedSubaccounts,
                         account.tradingRewards,
@@ -1272,7 +1298,7 @@ open class TradingStateMachine(
                     this.environment,
                 )
                 this.input?.let {
-                    input = Input.create(input, parser, it, environment)
+                    input = Input.create(input, parser, it, environment, internalState)
                 }
             }
         }

@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
@@ -39,7 +40,8 @@ data class Input(
             existing: Input?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            environment: V4Environment?
+            environment: V4Environment?,
+            internalState: InternalState?
         ): Input? {
             Logger.d { "creating Input\n" }
 
@@ -50,7 +52,7 @@ data class Input(
                 val closePosition =
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
                 val transfer =
-                    TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment)
+                    TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment, internalState?.transfer)
                 val triggerOrders =
                     TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data["triggerOrders"]))
                 val adjustIsolatedMargin =

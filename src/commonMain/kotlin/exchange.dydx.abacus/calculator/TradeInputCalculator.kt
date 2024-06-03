@@ -8,6 +8,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPP
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
 import exchange.dydx.abacus.utils.Numeric
@@ -415,12 +416,9 @@ internal class TradeInputCalculator(
             when (marginMode) {
                 "ISOLATED" -> {
                     // TODO: When the collateral of child subaccounts is implemented, return from here. The below code is the CROSS implementation.
-                    val currentNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.current"))
-                    val postOrderNotionalTotal =
-                        parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
-                    val mmf =
-                        parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
+                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
+                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
+                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
                     if (currentNotionalTotal != null && mmf != null) {
                         if (postOrderNotionalTotal != null) {
                             return postOrderNotionalTotal.times(mmf)
@@ -824,7 +822,7 @@ internal class TradeInputCalculator(
 
                 @Suppress("LocalVariableName", "PropertyName")
                 val X = ((LV * AE) - (SZ * OR)) /
-                        (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
+                    (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
                     val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
@@ -926,14 +924,24 @@ internal class TradeInputCalculator(
     ): List<Any>? {
         val type = parser.asString(trade["type"])
         return when (type) {
-            "MARKET" ->
-                listOf(
-                    sizeField(),
-                    leverageField(),
-                    bracketsField(),
-                    marginModeField(market, account, subaccount),
-                    reduceOnlyField(),
-                ).filterNotNull()
+            "MARKET" -> {
+                val marginMode = parser.asString(trade["marginMode"])
+                return when (MarginMode.invoke(marginMode)) {
+                    MarginMode.isolated -> listOf(
+                        sizeField(),
+                        bracketsField(),
+                        marginModeField(market, account, subaccount),
+                        reduceOnlyField(),
+                    ).filterNotNull()
+                    else -> listOf(
+                        sizeField(),
+                        leverageField(),
+                        bracketsField(),
+                        marginModeField(market, account, subaccount),
+                        reduceOnlyField(),
+                    ).filterNotNull()
+                }
+            }
 
             "LIMIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
@@ -969,7 +977,7 @@ internal class TradeInputCalculator(
                     executionField(true),
                     marginModeField(market, account, subaccount),
                     when (execution) {
-                        "FOK", "IOC" -> reduceOnlyField()
+                        "IOC" -> reduceOnlyField()
                         else -> null
                     },
                 ).filterNotNull()
@@ -1069,10 +1077,10 @@ internal class TradeInputCalculator(
         return mapOf(
             "field" to "stopLoss",
             "type" to
-                    listOf(
-                        priceField(),
-                        reduceOnlyField(),
-                    ).filterNotNull(),
+                listOf(
+                    priceField(),
+                    reduceOnlyField(),
+                ).filterNotNull(),
         )
     }
 
@@ -1080,10 +1088,10 @@ internal class TradeInputCalculator(
         return mapOf(
             "field" to "takeProfit",
             "type" to
-                    listOf(
-                        priceField(),
-                        reduceOnlyField(),
-                    ).filterNotNull(),
+                listOf(
+                    priceField(),
+                    reduceOnlyField(),
+                ).filterNotNull(),
         )
     }
 
@@ -1101,7 +1109,6 @@ internal class TradeInputCalculator(
             "options" to listOf(
                 timeInForceOptionGTT,
                 timeInForceOptionIOC,
-                timeInForceOptionFOK,
             ),
         )
     }
@@ -1141,19 +1148,17 @@ internal class TradeInputCalculator(
             "field" to "execution",
             "type" to "string",
             "options" to
-                    if (includesDefaultAndPostOnly) {
-                        listOf(
-                            executionDefault,
-                            executionIOC,
-                            executionFOK,
-                            executionPostOnly,
-                        )
-                    } else {
-                        listOf(
-                            executionIOC,
-                            executionFOK,
-                        )
-                    },
+                if (includesDefaultAndPostOnly) {
+                    listOf(
+                        executionDefault,
+                        executionIOC,
+                        executionPostOnly,
+                    )
+                } else {
+                    listOf(
+                        executionIOC,
+                    )
+                },
         )
     }
 
@@ -1297,9 +1302,9 @@ internal class TradeInputCalculator(
     ): String? {
         return if (featureFlags.reduceOnlySupported) {
             when (parser.asString(trade["type"])) {
-                "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
+                "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
 
-                "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
 
                 else -> return null
             }
@@ -1462,10 +1467,10 @@ internal class TradeInputCalculator(
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
             return feeMultiplier * (fee - maxMakerRebate * notional) / (
-                    tokenPrice * 10.0.pow(
-                        tokenPriceExponent,
-                    )
-                    )
+                tokenPrice * 10.0.pow(
+                    tokenPriceExponent,
+                )
+                )
         }
         return null
     }
@@ -1536,11 +1541,11 @@ internal class TradeInputCalculator(
                     val total =
                         if (usdcSize != null) {
                             (
-                                    usdcSize * multiplier + (
-                                            fee
-                                                ?: Numeric.double.ZERO
-                                            ) * Numeric.double.NEGATIVE
-                                    )
+                                usdcSize * multiplier + (
+                                    fee
+                                        ?: Numeric.double.ZERO
+                                    ) * Numeric.double.NEGATIVE
+                                )
                         } else {
                             null
                         }
@@ -1669,11 +1674,11 @@ internal class TradeInputCalculator(
                     val total =
                         if (usdcSize != null) {
                             (
-                                    usdcSize * multiplier + (
-                                            fee
-                                                ?: Numeric.double.ZERO
-                                            ) * Numeric.double.NEGATIVE
-                                    )
+                                usdcSize * multiplier + (
+                                    fee
+                                        ?: Numeric.double.ZERO
+                                    ) * Numeric.double.NEGATIVE
+                                )
                         } else {
                             null
                         }
@@ -1726,11 +1731,11 @@ internal class TradeInputCalculator(
                 val total =
                     if (usdcSize != null) {
                         (
-                                usdcSize * multiplier + (
-                                        fee
-                                            ?: Numeric.double.ZERO
-                                        ) * Numeric.double.NEGATIVE
-                                )
+                            usdcSize * multiplier + (
+                                fee
+                                    ?: Numeric.double.ZERO
+                                ) * Numeric.double.NEGATIVE
+                            )
                     } else {
                         null
                     }
@@ -1846,8 +1851,6 @@ internal class TradeInputCalculator(
 
     private val timeInForceOptionGTT: Map<String, Any>
         get() = mapOf("type" to "GTT", "stringKey" to "APP.TRADE.GOOD_TIL_TIME")
-    private val timeInForceOptionFOK: Map<String, Any>
-        get() = mapOf("type" to "FOK", "stringKey" to "APP.TRADE.FILL_OR_KILL")
     private val timeInForceOptionIOC: Map<String, Any>
         get() = mapOf("type" to "IOC", "stringKey" to "APP.TRADE.IMMEDIATE_OR_CANCEL")
 
@@ -1876,11 +1879,8 @@ internal class TradeInputCalculator(
         get() = mapOf("type" to "DEFAULT", "stringKey" to "APP.TRADE.GOOD_TIL_DATE")
     private val executionPostOnly: Map<String, Any>
         get() = mapOf("type" to "POST_ONLY", "stringKey" to "APP.TRADE.POST_ONLY")
-    private val executionFOK: Map<String, Any>
-        get() = mapOf("type" to "FOK", "stringKey" to "APP.TRADE.FILL_OR_KILL")
     private val executionIOC: Map<String, Any>
         get() = mapOf("type" to "IOC", "stringKey" to "APP.TRADE.IMMEDIATE_OR_CANCEL")
-
     private val marginModeCross: Map<String, Any>
         get() = mapOf("type" to "CROSS", "stringKey" to "APP.TRADE.CROSS_MARGIN")
     private val marginModeIsolated: Map<String, Any>

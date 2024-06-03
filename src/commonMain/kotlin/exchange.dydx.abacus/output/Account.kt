@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output
 
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
@@ -255,6 +256,7 @@ data class SubaccountPosition(
     val marginUsage: TradeStatesWithDoubleValues,
     val quoteBalance: TradeStatesWithDoubleValues, // available for isolated market position
     val equity: TradeStatesWithDoubleValues, // available for isolated market position
+    val marginMode: MarginMode?
 ) {
     companion object {
         internal fun create(
@@ -383,6 +385,7 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["equity"]),
                     )
+                    val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
 
                     return if (existing?.id != id ||
                         existing.assetId != assetId ||
@@ -410,7 +413,8 @@ data class SubaccountPosition(
                         existing.freeCollateral !== freeCollateral ||
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
-                        existing.equity !== equity
+                        existing.equity !== equity ||
+                        existing.marginMode != marginMode
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
@@ -442,6 +446,7 @@ data class SubaccountPosition(
                             marginUsage,
                             quoteBalance,
                             equity,
+                            marginMode,
                         )
                     } else {
                         existing
@@ -662,6 +667,7 @@ data class SubaccountOrder(
     val reduceOnly: Boolean,
     val cancelReason: String?,
     val resources: SubaccountOrderResources,
+    val marginMode: MarginMode?
 ) {
     companion object {
         internal fun create(
@@ -695,6 +701,7 @@ data class SubaccountOrder(
                 val resources = parser.asMap(data["resources"])?.let {
                     SubaccountOrderResources.create(existing?.resources, parser, it, localizer)
                 }
+                val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
                 if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null &&
                     resources != null
                 ) {
@@ -744,7 +751,9 @@ data class SubaccountOrder(
                         existing.postOnly != postOnly ||
                         existing.reduceOnly != reduceOnly ||
                         existing.cancelReason != cancelReason ||
-                        existing.resources !== resources
+                        existing.resources !== resources ||
+                        existing.subaccountNumber != subaccountNumber ||
+                        existing.marginMode != marginMode
                     ) {
                         SubaccountOrder(
                             subaccountNumber,
@@ -774,6 +783,7 @@ data class SubaccountOrder(
                             reduceOnly,
                             cancelReason,
                             resources,
+                            marginMode,
                         )
                     } else {
                         existing
@@ -1569,6 +1579,38 @@ data class AccountBalance(
 
 @JsExport
 @Serializable
+data class StakingDelegation(
+    var validator: String,
+    var amount: String,
+) {
+    companion object {
+        internal fun create(
+            existing: StakingDelegation?,
+            parser: ParserProtocol,
+            data: Map<String, Any>,
+            decimals: Int,
+        ): StakingDelegation? {
+            Logger.d { "creating Staking Delegation\n" }
+
+            val validator = parser.asString(data["validator"])
+            val amount = parser.asDecimal(data["amount"])
+            if (validator != null && amount != null) {
+                val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
+                val decimalAmountString = parser.asString(decimalAmount)!!
+                return if (existing?.validator != validator || existing.amount != decimalAmountString) {
+                    StakingDelegation(validator, decimalAmountString)
+                } else {
+                    existing
+                }
+            }
+            Logger.d { "Staking Delegation not valid" }
+            return null
+        }
+    }
+}
+
+@JsExport
+@Serializable
 data class HistoricalTradingReward(
     val amount: Double,
     val cumulativeAmount: Double,
@@ -2020,6 +2062,7 @@ data class TradingRewards(
 data class Account(
     var balances: IMap<String, AccountBalance>?,
     var stakingBalances: IMap<String, AccountBalance>?,
+    var stakingDelegations: IList<StakingDelegation>?,
     var subaccounts: IMap<String, Subaccount>?,
     var groupedSubaccounts: IMap<String, Subaccount>?,
     var tradingRewards: TradingRewards?,
@@ -2057,26 +2100,20 @@ data class Account(
             }
 
             val stakingBalances: IMutableMap<String, AccountBalance> =
-                iMutableMapOf()
-            val stakingBalancesData = parser.asMap(data["stakingBalances"])
-            if (stakingBalancesData != null) {
-                for ((key, value) in stakingBalancesData) {
-                    // key is the denom
-                    // It should be chain token denom here
-                    val tokenInfo = findTokenInfo(tokensInfo, key)
-                    if (tokenInfo != null) {
-                        val balanceData = parser.asMap(value) ?: iMapOf()
-                        AccountBalance.create(
-                            existing?.stakingBalances?.get(key),
-                            parser,
-                            balanceData,
-                            tokenInfo.decimals,
-                        )?.let { balance ->
-                            stakingBalances[key] = balance
-                        }
-                    }
-                }
-            }
+                processStakingBalance(
+                    existing,
+                    parser,
+                    data,
+                    tokensInfo,
+                )
+
+            val stakingDelegations: IMutableList<StakingDelegation> =
+                processStakingDelegations(
+                    existing,
+                    parser,
+                    data,
+                    tokensInfo,
+                )
 
             val tradingRewardsData = parser.asMap(data["tradingRewards"])
             val tradingRewards = if (tradingRewardsData != null) {
@@ -2132,6 +2169,7 @@ data class Account(
             return Account(
                 balances,
                 stakingBalances,
+                stakingDelegations,
                 subaccounts,
                 groupedSubaccounts,
                 tradingRewards,
@@ -2141,6 +2179,62 @@ data class Account(
 
         private fun findTokenInfo(tokensInfo: Map<String, TokenInfo>, denom: String): TokenInfo? {
             return tokensInfo.firstNotNullOfOrNull { if (it.value.denom == denom) it.value else null }
+        }
+
+        private fun processStakingDelegations(
+            existing: Account?,
+            parser: ParserProtocol,
+            data: Map<String, Any>,
+            tokensInfo: Map<String, TokenInfo>,
+        ): IMutableList<StakingDelegation> {
+            val stakingDelegations: IMutableList<StakingDelegation> =
+                iMutableListOf()
+            val stakingDelegationsData = parser.asList(data["stakingDelegations"])
+            stakingDelegationsData?.forEachIndexed { index, value ->
+                val stakingDelegationData = parser.asMap(value) ?: iMapOf()
+                val tokenInfo = findTokenInfo(tokensInfo, stakingDelegationData["denom"] as String)
+                if (tokenInfo != null) {
+                    StakingDelegation.create(
+                        existing?.stakingDelegations?.getOrNull(index),
+                        parser,
+                        stakingDelegationData,
+                        tokenInfo.decimals,
+                    )?.let { stakingDelegation ->
+                        stakingDelegations.add(stakingDelegation)
+                    }
+                }
+            }
+            return stakingDelegations
+        }
+
+        private fun processStakingBalance(
+            existing: Account?,
+            parser: ParserProtocol,
+            data: Map<String, Any>,
+            tokensInfo: Map<String, TokenInfo>,
+        ): IMutableMap<String, AccountBalance> {
+            val stakingBalances: IMutableMap<String, AccountBalance> =
+                iMutableMapOf()
+            val stakingBalancesData = parser.asMap(data["stakingBalances"])
+            if (stakingBalancesData != null) {
+                for ((key, value) in stakingBalancesData) {
+                    // key is the denom
+                    // It should be chain token denom here
+                    val tokenInfo = findTokenInfo(tokensInfo, key)
+                    if (tokenInfo != null) {
+                        val balanceData = parser.asMap(value) ?: iMapOf()
+                        AccountBalance.create(
+                            existing?.stakingBalances?.get(key),
+                            parser,
+                            balanceData,
+                            tokenInfo.decimals,
+                        )?.let { balance ->
+                            stakingBalances[key] = balance
+                        }
+                    }
+                }
+            }
+            return stakingBalances
         }
     }
 }
