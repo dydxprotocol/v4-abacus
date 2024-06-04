@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.model
 
+import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
