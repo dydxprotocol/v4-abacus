@@ -4,6 +4,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
@@ -25,39 +26,60 @@ internal class TradeAccountStateValidator(
         environment: V4Environment?,
     ): List<Any>? {
         return if (subaccount != null) {
+            val subaccountNumber = parser.asInt(subaccount["subaccountNumber"])
+            val isIsolatedMarginTrade = subaccountNumber == null || subaccountNumber >= NUM_PARENT_SUBACCOUNTS
+
             val errors = mutableListOf<Any>()
-            val marginError = validateSubaccountMarginUsage(
-                parser,
-                subaccount,
-                change,
-            )
-            if (marginError != null) {
-                errors.add(marginError)
+
+            when (isIsolatedMarginTrade) {
+                true -> {
+                    val crossOrdersError = validateSubaccountCrossOrders(
+                        parser,
+                        subaccount,
+                        trade,
+                    )
+                    if (crossOrdersError != null) {
+                        errors.add(crossOrdersError)
+                    }
+                    val postAllOrdersError = validateSubaccountPostOrders(
+                        parser,
+                        subaccount,
+                        trade,
+                        change,
+                    )
+                    if (postAllOrdersError != null) {
+                        errors.add(postAllOrdersError)
+                    }
+                }
+                false -> {
+                    val marginError = validateSubaccountMarginUsage(
+                        parser,
+                        subaccount,
+                        change,
+                    )
+                    if (marginError != null) {
+                        errors.add(marginError)
+                    }
+                    val crossOrdersError = validateSubaccountCrossOrders(
+                        parser,
+                        subaccount,
+                        trade,
+                    )
+                    if (crossOrdersError != null) {
+                        errors.add(crossOrdersError)
+                    }
+                    val postAllOrdersError = validateSubaccountPostOrders(
+                        parser,
+                        subaccount,
+                        trade,
+                        change,
+                    )
+                    if (postAllOrdersError != null) {
+                        errors.add(postAllOrdersError)
+                    }
+                }
             }
-            val totalOrderError = validateSubaccountOrders(
-                parser,
-                subaccount,
-            )
-            if (totalOrderError != null) {
-                errors.add(totalOrderError)
-            }
-            val crossOrdersError = validateSubaccountCrossOrders(
-                parser,
-                subaccount,
-                trade,
-            )
-            if (crossOrdersError != null) {
-                errors.add(crossOrdersError)
-            }
-            val postAllOrdersError = validateSubaccountPostOrders(
-                parser,
-                subaccount,
-                trade,
-                change,
-            )
-            if (postAllOrdersError != null) {
-                errors.add(postAllOrdersError)
-            }
+
             if (errors.size > 0) errors else null
         } else {
             null
@@ -98,17 +120,6 @@ internal class TradeAccountStateValidator(
                 }
             }
         }
-    }
-
-    private fun validateSubaccountOrders(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>,
-    ): Map<String, Any>? {
-        /*
-        USER_MAX_ORDERS
-        In v3, this error comes from backend. Holding off implementation for v4
-         */
-        return null
     }
 
     private fun validateSubaccountCrossOrders(

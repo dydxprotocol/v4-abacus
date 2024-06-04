@@ -836,7 +836,7 @@ internal class SubaccountSupervisor(
         val isIsolatedMarginOrder =
             helper.parser.asInt(orderPayload.subaccountNumber) != subaccountNumber
         val transferPayload =
-            if (isIsolatedMarginOrder) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
+            if (isIsolatedMarginOrder && orderPayload.reduceOnly != true) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, orderPayload, analyticsPayload, uiClickTimeMs, false, transferPayload)

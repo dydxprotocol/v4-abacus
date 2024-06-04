@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 
 internal class AccountInputValidator(
     localizer: LocalizerProtocol?,
@@ -75,7 +76,14 @@ internal class AccountInputValidator(
         subaccount: Map<String, Any>?,
     ): Map<String, Any>? {
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
+        val subaccountNumber = parser.asInt(subaccount?.get("subaccountNumber"))
+        val isChildSubaccountForIsolatedMargin = subaccountNumber == null || subaccountNumber >= NUM_PARENT_SUBACCOUNTS
+
         return if (equity != null && equity > 0) {
+            null
+        } else if (isChildSubaccountForIsolatedMargin) {
+            // Equity is null when a user is placing an Isolated Margin trade on a childSubaccount
+            // subaccountNumber is null when a childSubaccount has not been created yet
             null
         } else {
             error(
