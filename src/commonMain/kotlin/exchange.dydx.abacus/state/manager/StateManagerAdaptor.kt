@@ -1879,7 +1879,7 @@ open class StateManagerAdaptor(
         val reduceOnly = true
         val postOnly = false
 
-        // TP/SL orders always have a null timeInForce. IOC/FOK/PostOnly/GTD is distinguished by the execution field.
+        // TP/SL orders always have a null timeInForce. IOC/PostOnly/GTD is distinguished by the execution field.
         val timeInForce = null;
 
         /**

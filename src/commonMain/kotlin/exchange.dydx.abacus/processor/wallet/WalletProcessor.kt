@@ -119,6 +119,30 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
     }
 
+    internal fun receivedUnbonding(
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): Map<String, Any>? {
+        return receivedObject(existing, "account", payload) { existing, payload ->
+            v4accountProcessor.receivedUnbonding(
+                parser.asNativeMap(existing),
+                payload as? List<Any>,
+            )
+        }
+    }
+
+    internal fun receivedStakingRewards(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?,
+    ): Map<String, Any>? {
+        return receivedObject(existing, "account", payload) { existing, payload ->
+            v4accountProcessor.receivedStakingRewards(
+                parser.asNativeMap(existing),
+                payload as? Map<String, Any>,
+            )
+        }
+    }
+
     internal fun receivedHistoricalTradingRewards(
         existing: Map<String, Any>?,
         payload: List<Any>?,

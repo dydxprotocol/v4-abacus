@@ -305,7 +305,7 @@ Order status
 
 ## timeInForce
 
-Time in force, GTT (Good Til Time), IOC (Immediate or Cancel) or FOK (Fill or Kill)
+Time in force, GTT (Good Til Time) or  IOC (Immediate or Cancel)
 
 ## marketId
 

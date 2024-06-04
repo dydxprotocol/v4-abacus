@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
@@ -65,8 +64,7 @@ internal fun TradingStateMachine.tradeInMarket(
             return StateResponse(state, StateChanges(iListOf()), null)
         } else {
             input["current"] = "trade"
-            input["trade"] =
-                updateTradeInputFromMarket(parser.asNativeMap(input["trade"])!!, subaccountNumber)
+            input["trade"] = parser.asNativeMap(input["trade"]) ?: mutableMapOf<String, Any>()
             val changes =
                 StateChanges(
                     iListOf(Changes.input),
@@ -88,13 +86,12 @@ internal fun TradingStateMachine.tradeInMarket(
             // If we changed market, we should also reset the price and size
             modified.safeSet("size", null)
             modified.safeSet("price", null)
-            updateTradeInputFromMarket(modified, subaccountNumber)
+            modified.safeSet("marginMode", null)
+            modified.safeSet("targetLeverage", null)
+            modified
         } else {
-            updateTradeInputFromMarket(
-                initiateTrade(
-                    marketId,
-                    subaccountNumber,
-                ),
+            initiateTrade(
+                marketId,
                 subaccountNumber,
             )
         }
@@ -126,31 +123,6 @@ internal fun TradingStateMachine.tradeInMarket(
     }
 }
 
-internal fun TradingStateMachine.updateTradeInputFromMarket(
-    trade: Map<String, Any>,
-    subaccountNumber: Int,
-): MutableMap<String, Any> {
-    val modified = trade.mutable()
-    val account = this.account
-    val marketId = parser.asString(trade["marketId"])
-    val existingMarginMode =
-        MarginModeCalculator.findExistingMarginMode(
-            parser,
-            account,
-            marketId,
-            subaccountNumber,
-        ) ?: MarginModeCalculator.findMarketMarginMode(
-            parser,
-            parser.asMap(parser.value(marketsSummary, "markets.$marketId")),
-        )
-    // If there is an existing position or order, we have to use the same margin mode
-    modified["marginMode"] = existingMarginMode
-    if (existingMarginMode == "ISOLATED" && parser.asDouble(trade["targetLeverage"]) == null) {
-        modified["targetLeverage"] = 1.0
-    }
-    return modified
-}
-
 internal fun TradingStateMachine.initiateTrade(
     marketId: String?,
     subaccountNumber: Int,
@@ -159,7 +131,8 @@ internal fun TradingStateMachine.initiateTrade(
     trade["type"] = "LIMIT"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
-    trade["marginMode"] = "CROSS"
+
+    trade.safeSet("marginMode", null)
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.trade, featureFlags)
     val params = mutableMapOf<String, Any>()

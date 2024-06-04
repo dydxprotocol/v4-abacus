@@ -25,6 +25,8 @@ import exchange.dydx.abacus.state.model.onChainEquityTiers
 import exchange.dydx.abacus.state.model.onChainFeeTiers
 import exchange.dydx.abacus.state.model.onChainRewardTokenPrice
 import exchange.dydx.abacus.state.model.onChainRewardsParams
+import exchange.dydx.abacus.state.model.onChainStakingRewards
+import exchange.dydx.abacus.state.model.onChainUnbonding
 import exchange.dydx.abacus.state.model.onChainUserFeeTier
 import exchange.dydx.abacus.state.model.onChainUserStats
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
@@ -473,6 +475,14 @@ class V4StateManagerAdaptor(
         getOnChain(QueryType.GetDelegations, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainDelegations(response), oldState)
+        }
+        getOnChain(QueryType.GetCurrentUnstaking, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainUnbonding(response), oldState)
+        }
+        getOnChain(QueryType.GetStakingRewards, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainStakingRewards(response), oldState)
         }
     }
 

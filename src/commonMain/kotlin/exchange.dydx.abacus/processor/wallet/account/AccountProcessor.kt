@@ -1,13 +1,18 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import exchange.dydx.abacus.output.AccountBalance
+import exchange.dydx.abacus.output.StakingRewards
+import exchange.dydx.abacus.output.UnbondingDelegation
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import kollections.iMutableListOf
 
 /*
 "account": {
@@ -949,6 +954,56 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         modified.safeSet("stakingBalances", modifiedStakingBalance)
         val modifiedDelegations = delegationsProcessor.receivedDelegations(delegations, payload)
         modified.safeSet("stakingDelegations", modifiedDelegations)
+        return modified
+    }
+
+    internal fun receivedUnbonding(
+        existing: Map<String, Any>?,
+        payload: List<Any>?,
+    ): Map<String, Any>? {
+        if (payload == null) {
+            return existing
+        }
+        val modified = existing?.mutable() ?: mutableMapOf()
+        val unbondingDelegations: IMutableList<UnbondingDelegation> = iMutableListOf()
+
+        for (validator in payload) {
+            val validatorAddress = parser.asString(parser.value(validator, "validatorAddress")) ?: continue
+            val entries = parser.asList(parser.value(validator, "entries")) ?: continue
+
+            for (entry in entries) {
+                val completionTime = parser.asString(parser.value(entry, "completionTime")) ?: continue
+                val balance = parser.asString(parser.value(entry, "balance")) ?: continue
+
+                unbondingDelegations.add(UnbondingDelegation(validatorAddress, completionTime, balance))
+            }
+        }
+        modified.safeSet("unbondingDelegation", unbondingDelegations)
+        return modified
+    }
+
+    internal fun receivedStakingRewards(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>?,
+    ): Map<String, Any>? {
+        val rewards = parser.asList(parser.value(payload, "rewards"))
+        val total = parser.asList(parser.value(payload, "total"))
+        if (payload == null || rewards == null || total == null) {
+            return existing
+        }
+        val modified = existing?.mutable() ?: mutableMapOf()
+        val validators: IMutableList<String> = iMutableListOf()
+        val totalRewards: IMutableList<AccountBalance> = iMutableListOf()
+        for (validator in rewards) {
+            val validatorAddress = parser.asString(parser.value(validator, "validatorAddress")) ?: continue
+            validators.add(validatorAddress)
+        }
+        for (reward in total) {
+            val denom = parser.asString(parser.value(reward, "denom")) ?: continue
+            val amount = parser.asString(parser.value(reward, "amount")) ?: continue
+            totalRewards.add(AccountBalance(denom, amount))
+        }
+        modified.safeSet("stakingRewards", StakingRewards(validators, totalRewards))
         return modified
     }
 

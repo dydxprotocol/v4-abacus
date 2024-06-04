@@ -412,6 +412,8 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getHeight",
                    "getAccountBalances",
                    "getDelegatorDelegations",
+                   "getCurrentUnstaking",
+                   "getStakingRewards",
                    "getNobleBalance"
                 ]
             """.trimIndent(),
@@ -480,6 +482,8 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getUserStats",
                    "getAccountBalances",
                    "getDelegatorDelegations",
+                   "getCurrentUnstaking",
+                   "getStakingRewards",
                    "getNobleBalance"
                 ]
             """.trimIndent(),
@@ -643,9 +647,13 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getUserStats",
                    "getAccountBalances",
                    "getDelegatorDelegations",
+                   "getCurrentUnstaking",
+                   "getStakingRewards",
                    "getNobleBalance",
                    "getAccountBalances",
                    "getDelegatorDelegations",
+                   "getCurrentUnstaking",
+                   "getStakingRewards",
                    "getNobleBalance"
                 ]
             """.trimIndent(),
@@ -719,6 +727,8 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "getUserStats",
                    "getAccountBalances",
                    "getDelegatorDelegations",
+                   "getCurrentUnstaking",
+                   "getStakingRewards",
                    "getNobleBalance"
                 ]
             """.trimIndent(),
