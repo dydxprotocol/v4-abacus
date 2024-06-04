@@ -130,6 +130,8 @@ enum class QueryType(val rawValue: String) {
     GetAccountBalances("getAccountBalances"),
     GetMarketPrice("getMarketPrice"),
     GetDelegations("getDelegatorDelegations"),
+    GetStakingRewards("getStakingRewards"),
+    GetCurrentUnstaking("getCurrentUnstaking"),
     RewardsParams("getRewardsParams"),
     GetNobleBalance("getNobleBalance"),
     GetWithdrawalAndTransferGatingStatus("getWithdrawalAndTransferGatingStatus"),

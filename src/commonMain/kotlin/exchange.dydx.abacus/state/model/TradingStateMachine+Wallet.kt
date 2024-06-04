@@ -222,3 +222,26 @@ internal fun TradingStateMachine.onChainDelegations(payload: String): StateChang
         StateChanges(iListOf())
     }
 }
+
+internal fun TradingStateMachine.onChainUnbonding(payload: String): StateChanges {
+    val response = parser.decodeJsonObject(payload)
+    return try {
+        val unbonding = response?.get("unbondingResponses")?.let {
+            parser.asList(it)
+        } ?: iListOf()
+        this.wallet = walletProcessor.receivedUnbonding(wallet, unbonding)
+        return StateChanges(iListOf(Changes.accountBalances), null)
+    } catch (e: Exception) {
+        StateChanges(iListOf())
+    }
+}
+
+internal fun TradingStateMachine.onChainStakingRewards(payload: String): StateChanges {
+    val response = parser.decodeJsonObject(payload)
+    return try {
+        this.wallet = walletProcessor.receivedStakingRewards(wallet, response)
+        return StateChanges(iListOf(Changes.accountBalances), null)
+    } catch (e: Exception) {
+        StateChanges(iListOf())
+    }
+}
