@@ -40,6 +40,8 @@ import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
+import exchange.dydx.abacus.state.model.onChainStakingRewards
+import exchange.dydx.abacus.state.model.onChainUnbonding
 import exchange.dydx.abacus.state.model.onChainUserFeeTier
 import exchange.dydx.abacus.state.model.onChainUserStats
 import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
@@ -413,6 +415,14 @@ internal open class AccountSupervisor(
         helper.getOnChain(QueryType.GetDelegations, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainDelegations(response), oldState)
+        }
+        helper.getOnChain(QueryType.GetCurrentUnstaking, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainUnbonding(response), oldState)
+        }
+        helper.getOnChain(QueryType.GetStakingRewards, paramsInJson) { response ->
+            val oldState = stateMachine.state
+            update(stateMachine.onChainStakingRewards(response), oldState)
         }
     }
 
