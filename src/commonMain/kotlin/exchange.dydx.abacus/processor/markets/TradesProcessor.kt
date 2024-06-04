@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.ParserProtocol
 
 @Suppress("UNCHECKED_CAST")
@@ -40,18 +41,15 @@ internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         payload: List<Any>?,
     ): List<Any>? {
         if (payload != null) {
-            val merged = mutableListOf<Any>()
-            for (value in payload) {
-                parser.asNativeMap(value)?.let {
-                    val trade = tradeProcessor.received(null, it)
-                    merged.add(trade)
-                }
+            val new = payload.mapNotNull { eachPayload ->
+                parser.asNativeMap(eachPayload)?.let { eachPayloadData -> tradeProcessor.received(null, eachPayloadData) }
             }
-            if (existing?.isNotEmpty() == true) {
-                merged.addAll(existing)
-            }
+            val merged = existing?.let {
+                mergeWithIds(new, existing) { data -> parser.asNativeMap(data)?.let { parser.asString(it["id"]) } }
+            } ?: new
+
             return if (merged.size > LIMIT) {
-                merged.subList(0, LIMIT).toList()
+                merged.subList(0, LIMIT)
             } else {
                 merged
             }

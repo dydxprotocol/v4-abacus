@@ -753,6 +753,7 @@ internal class TradesChannelMock {
            "contents":{
               "trades":[
                  {
+                    "id":"1",
                     "side":"SELL",
                     "size":"0.00095",
                     "price":"1255.98",
@@ -761,6 +762,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"2",
                     "side":"BUY",
                     "size":"0.000661",
                     "price":"1256.387",
@@ -768,6 +770,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"3",
                     "side":"SELL",
                     "size":"0.000598",
                     "price":"1256.087",
@@ -775,6 +778,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"4",
                     "side":"SELL",
                     "size":"0.000118",
                     "price":"1255.98",
@@ -782,6 +786,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"5",
                     "side":"SELL",
                     "size":"0.001356",
                     "price":"1256.005",
@@ -789,6 +794,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"6",
                     "side":"SELL",
                     "size":"0.126606",
                     "price":"1255.588",
@@ -796,6 +802,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"7",
                     "side":"BUY",
                     "size":"0.000038",
                     "price":"1256.39",
@@ -803,6 +810,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"8",
                     "side":"SELL",
                     "size":"1.585665",
                     "price":"1256.108",
@@ -810,6 +818,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"9",
                     "side":"SELL",
                     "size":"0.000268",
                     "price":"1255.98",
@@ -817,6 +826,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"10",
                     "side":"SELL",
                     "size":"0.000272",
                     "price":"1255.98",
@@ -824,6 +834,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"11",
                     "side":"SELL",
                     "size":"0.001137",
                     "price":"1255.602",
@@ -831,6 +842,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"12",
                     "side":"BUY",
                     "size":"0.00032",
                     "price":"1256.302",
@@ -838,6 +850,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"13",
                     "side":"SELL",
                     "size":"0.000874",
                     "price":"1255.502",
@@ -845,6 +858,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"14",
                     "side":"SELL",
                     "size":"0.001584",
                     "price":"1255.579",
@@ -852,6 +866,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"15",
                     "side":"BUY",
                     "size":"0.001026",
                     "price":"1256.327",
@@ -859,6 +874,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"16",
                     "side":"BUY",
                     "size":"0.000115",
                     "price":"1256.39",
@@ -866,6 +882,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"17",
                     "side":"SELL",
                     "size":"1.329001",
                     "price":"1255.528",
@@ -873,6 +890,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"18",
                     "side":"SELL",
                     "size":"0.000336",
                     "price":"1256.108",
@@ -880,6 +898,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"19",
                     "side":"SELL",
                     "size":"0.840569",
                     "price":"1255.98",
@@ -887,6 +906,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"20",
                     "side":"SELL",
                     "size":"0.000542",
                     "price":"1255.98",
@@ -894,6 +914,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"21",
                     "side":"BUY",
                     "size":"0.001137",
                     "price":"1255.694",
@@ -901,6 +922,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"22",
                     "side":"SELL",
                     "size":"0.000702",
                     "price":"1255.98",
@@ -908,6 +930,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"23",
                     "side":"BUY",
                     "size":"0.000306",
                     "price":"1256.302",
@@ -915,6 +938,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"24",
                     "side":"BUY",
                     "size":"0.000072",
                     "price":"1255.727",
@@ -922,6 +946,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"25",
                     "side":"BUY",
                     "size":"0.000956",
                     "price":"1255.85",
@@ -929,6 +954,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"26",
                     "side":"SELL",
                     "size":"0.000913",
                     "price":"1255.602",
@@ -936,6 +962,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"27",
                     "side":"BUY",
                     "size":"0.624335",
                     "price":"1256.306",
@@ -943,6 +970,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"28",
                     "side":"SELL",
                     "size":"0.144818",
                     "price":"1256.025",
@@ -950,6 +978,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"29",
                     "side":"BUY",
                     "size":"1.198397",
                     "price":"1256.391",
@@ -957,6 +986,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"30",
                     "side":"SELL",
                     "size":"0.000752",
                     "price":"1255.564",
@@ -964,6 +994,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"31",
                     "side":"BUY",
                     "size":"0.000036",
                     "price":"1256.306",
@@ -971,6 +1002,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"32",
                     "side":"BUY",
                     "size":"1.69957",
                     "price":"1256.311",
@@ -978,6 +1010,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"33",
                     "side":"BUY",
                     "size":"0.1011",
                     "price":"1256.334",
@@ -985,6 +1018,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"34",
                     "side":"BUY",
                     "size":"0.874452",
                     "price":"1256.39",
@@ -992,6 +1026,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"35",
                     "side":"SELL",
                     "size":"1.410025",
                     "price":"1255.564",
@@ -999,6 +1034,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"36",
                     "side":"SELL",
                     "size":"0.303303",
                     "price":"1255.564",
@@ -1006,6 +1042,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"37",
                     "side":"SELL",
                     "size":"0.00117",
                     "price":"1255.528",
@@ -1013,6 +1050,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"38",
                     "side":"SELL",
                     "size":"0.000591",
                     "price":"1255.468",
@@ -1020,6 +1058,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"39",
                     "side":"SELL",
                     "size":"0.000357",
                     "price":"1256.025",
@@ -1027,6 +1066,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"40",
                     "side":"SELL",
                     "size":"0.000633",
                     "price":"1255.997",
@@ -1034,6 +1074,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"41",
                     "side":"SELL",
                     "size":"0.000863",
                     "price":"1255.98",
@@ -1041,6 +1082,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"42",
                     "side":"SELL",
                     "size":"0.001263",
                     "price":"1255.98",
@@ -1048,6 +1090,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"43",
                     "side":"SELL",
                     "size":"0.0005",
                     "price":"1255.616",
@@ -1055,6 +1098,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"44",
                     "side":"SELL",
                     "size":"0.00081",
                     "price":"1255.616",
@@ -1062,6 +1106,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"45",
                     "side":"BUY",
                     "size":"0.000913",
                     "price":"1255.636",
@@ -1069,6 +1114,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"46",
                     "side":"BUY",
                     "size":"0.000546",
                     "price":"1255.706",
@@ -1076,6 +1122,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"47",
                     "side":"BUY",
                     "size":"0.00138",
                     "price":"1255.75",
@@ -1083,6 +1130,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"48",
                     "side":"BUY",
                     "size":"0.000554",
                     "price":"1255.685",
@@ -1090,6 +1138,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"49",
                     "side":"BUY",
                     "size":"0.000115",
                     "price":"1255.715",
@@ -1097,6 +1146,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"50",
                     "side":"BUY",
                     "size":"0.001214",
                     "price":"1255.716",
@@ -1104,6 +1154,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"51",
                     "side":"BUY",
                     "size":"0.001042",
                     "price":"1255.762",
@@ -1111,6 +1162,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"52",
                     "side":"BUY",
                     "size":"0.001332",
                     "price":"1255.762",
@@ -1118,6 +1170,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"53",
                     "side":"BUY",
                     "size":"0.000506",
                     "price":"1255.854",
@@ -1125,6 +1178,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"54",
                     "side":"BUY",
                     "size":"0.00006",
                     "price":"1255.86",
@@ -1132,6 +1186,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"55",
                     "side":"BUY",
                     "size":"0.000579",
                     "price":"1256.302",
@@ -1139,6 +1194,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"56",
                     "side":"BUY",
                     "size":"1.037983",
                     "price":"1256.302",
@@ -1146,6 +1202,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"57",
                     "side":"SELL",
                     "size":"1.455303",
                     "price":"1256.025",
@@ -1153,6 +1210,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"58",
                     "side":"SELL",
                     "size":"0.000019",
                     "price":"1256.025",
@@ -1160,6 +1218,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"59",
                     "side":"BUY",
                     "size":"0.001999",
                     "price":"1256.305",
@@ -1167,6 +1226,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"60",
                     "side":"SELL",
                     "size":"0.113976",
                     "price":"1255.528",
@@ -1174,6 +1234,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"61",
                     "side":"BUY",
                     "size":"0.720382",
                     "price":"1256.39",
@@ -1181,6 +1242,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"62",
                     "side":"BUY",
                     "size":"0.000613",
                     "price":"1256.39",
@@ -1188,6 +1250,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"63",
                     "side":"BUY",
                     "size":"0.000759",
                     "price":"1256.306",
@@ -1195,6 +1258,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"64",
                     "side":"SELL",
                     "size":"0.000072",
                     "price":"1255.602",
@@ -1202,6 +1266,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"65",
                     "side":"BUY",
                     "size":"0.117781",
                     "price":"1256.306",
@@ -1209,6 +1274,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"66",
                     "side":"BUY",
                     "size":"0.000457",
                     "price":"1256.307",
@@ -1216,6 +1282,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"67",
                     "side":"BUY",
                     "size":"0.000627",
                     "price":"1256.328",
@@ -1223,6 +1290,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"68",
                     "side":"BUY",
                     "size":"0.000744",
                     "price":"1256.332",
@@ -1230,6 +1298,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"69",
                     "side":"BUY",
                     "size":"0.00073",
                     "price":"1256.378",
@@ -1237,6 +1306,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"70",
                     "side":"BUY",
                     "size":"0.000563",
                     "price":"1256.364",
@@ -1244,6 +1314,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"71",
                     "side":"BUY",
                     "size":"0.000421",
                     "price":"1256.225",
@@ -1251,6 +1322,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"72",
                     "side":"BUY",
                     "size":"0.960609",
                     "price":"1256.225",
@@ -1258,6 +1330,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"73",
                     "side":"SELL",
                     "size":"0.001351",
                     "price":"1255.46",
@@ -1265,6 +1338,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"74",
                     "side":"SELL",
                     "size":"0.0005",
                     "price":"1255.602",
@@ -1272,6 +1346,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"75",
                     "side":"BUY",
                     "size":"0.67952",
                     "price":"1256.35",
@@ -1279,6 +1354,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"76",
                     "side":"BUY",
                     "size":"0.261397",
                     "price":"1256.391",
@@ -1286,6 +1362,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"77",
                     "side":"BUY",
                     "size":"0.000557",
                     "price":"1256.264",
@@ -1293,6 +1370,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"78",
                     "side":"SELL",
                     "size":"0.001647",
                     "price":"1255.46",
@@ -1300,6 +1378,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"79",
                     "side":"BUY",
                     "size":"0.000243",
                     "price":"1256.391",
@@ -1307,6 +1386,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"80",
                     "side":"SELL",
                     "size":"0.000236",
                     "price":"1255.591",
@@ -1314,6 +1394,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"81",
                     "side":"BUY",
                     "size":"0.732272",
                     "price":"1256.354",
@@ -1321,6 +1402,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"82",
                     "side":"BUY",
                     "size":"0.00143",
                     "price":"1256.334",
@@ -1328,6 +1410,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"83",
                     "side":"BUY",
                     "size":"0.000292",
                     "price":"1256.354",
@@ -1335,6 +1418,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"84",
                     "side":"BUY",
                     "size":"0.803842",
                     "price":"1256.354",
@@ -1342,6 +1426,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"85",
                     "side":"SELL",
                     "size":"0.001137",
                     "price":"1255.46",
@@ -1349,6 +1434,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"86",
                     "side":"SELL",
                     "size":"0.000072",
                     "price":"1255.46",
@@ -1356,6 +1442,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"87",
                     "side":"SELL",
                     "size":"0.000068",
                     "price":"1255.602",
@@ -1363,6 +1450,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"88",
                     "side":"BUY",
                     "size":"0.000506",
                     "price":"1256.225",
@@ -1370,6 +1458,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"89",
                     "side":"BUY",
                     "size":"0.000035",
                     "price":"1256.415",
@@ -1377,6 +1466,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"90",
                     "side":"BUY",
                     "size":"1.426809",
                     "price":"1256.408",
@@ -1384,6 +1474,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"91",
                     "side":"BUY",
                     "size":"0.000608",
                     "price":"1256.393",
@@ -1391,6 +1482,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"92",
                     "side":"SELL",
                     "size":"0.119099",
                     "price":"1255.588",
@@ -1398,6 +1490,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"93",
                     "side":"SELL",
                     "size":"0.00117",
                     "price":"1255.602",
@@ -1405,6 +1498,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"94",
                     "side":"BUY",
                     "size":"0.000435",
                     "price":"1256.296",
@@ -1412,6 +1506,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"95",
                     "side":"BUY",
                     "size":"0.000622",
                     "price":"1256.35",
@@ -1419,6 +1514,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"96",
                     "side":"BUY",
                     "size":"0.865902",
                     "price":"1256.35",
@@ -1426,6 +1522,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"97",
                     "side":"BUY",
                     "size":"1.02526",
                     "price":"1256.334",
@@ -1433,6 +1530,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"98",
                     "side":"SELL",
                     "size":"0.000419",
                     "price":"1255.602",
@@ -1440,6 +1538,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"99",
                     "side":"SELL",
                     "size":"0.001351",
                     "price":"1255.602",
@@ -1447,6 +1546,7 @@ internal class TradesChannelMock {
                     "createdAtHeight":"5818"
                  },
                  {
+                    "id":"100",
                     "side":"SELL",
                     "size":"1.473096",
                     "price":"1255.602",
@@ -1468,6 +1568,7 @@ internal class TradesChannelMock {
            "contents":{
               "trades":[
                  {
+                    "id": "8ee6d90d-272d-5edd-bf0f-2e4d6ae3d3b7",
                     "size":"1.593707",
                     "price":"1255.949",
                     "side":"BUY",
@@ -1489,6 +1590,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"101",
                        "size":"0.00038",
                        "price":"1291.05",
                        "side":"BUY",
@@ -1499,6 +1601,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"102",
                        "size":"0.001061",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1509,6 +1612,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"103",
                        "size":"0.000151",
                        "price":"1291.05",
                        "side":"BUY",
@@ -1519,6 +1623,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"104",
                        "size":"0.00014",
                        "price":"1291.05",
                        "side":"BUY",
@@ -1529,6 +1634,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"105",
                        "size":"0.000868",
                        "price":"1291.052",
                        "side":"BUY",
@@ -1539,6 +1645,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"106",
                        "size":"0.000182",
                        "price":"1291.162",
                        "side":"BUY",
@@ -1549,6 +1656,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"107",
                        "size":"0.00034",
                        "price":"1291.162",
                        "side":"BUY",
@@ -1559,6 +1667,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"108",
                        "size":"0.00204",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1569,6 +1678,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"109",
                        "size":"0.00021",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1579,6 +1689,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"110",
                        "size":"0.000777",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1589,6 +1700,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"111",
                        "size":"0.000263",
                        "price":"1291.162",
                        "side":"BUY",
@@ -1599,6 +1711,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"112",
                        "size":"0.000276",
                        "price":"1291.162",
                        "side":"BUY",
@@ -1609,6 +1722,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"113",
                        "size":"0.000829",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1619,6 +1733,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"114",
                        "size":"0.000885",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1629,6 +1744,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"115",
                        "size":"0.000255",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1639,6 +1755,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"116",
                        "size":"0.001369",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1649,6 +1766,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"117",
                        "size":"0.00076",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1659,6 +1777,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"118",
                        "size":"1.450008",
                        "price":"1291.026",
                        "side":"SELL",
@@ -1669,6 +1788,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"119",
                        "size":"0.090702",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1679,6 +1799,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"120",
                        "size":"1.073614",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1689,6 +1810,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"121",
                        "size":"0.001043",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1699,6 +1821,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"122",
                        "size":"0.001686",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1709,6 +1832,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"123",
                        "size":"0.00079",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1719,6 +1843,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"124",
                        "size":"0.000144",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1729,6 +1854,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"125",
                        "size":"0.000177",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1739,6 +1865,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"126",
                        "size":"0.001786",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1749,6 +1876,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"127",
                        "size":"0.001061",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1759,6 +1887,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"128",
                        "size":"0.00204",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1769,6 +1898,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"129",
                        "size":"0.00021",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1779,6 +1909,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"130",
                        "size":"1.245273",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1789,6 +1920,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"131",
                        "size":"0.000309",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1799,6 +1931,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"132",
                        "size":"0.000774",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1809,6 +1942,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"133",
                        "size":"0.001876",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1819,6 +1953,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"134",
                        "size":"0.436212",
                        "price":"1291.193",
                        "side":"BUY",
@@ -1829,6 +1964,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"135",
                        "size":"0.001814",
                        "price":"1291.208",
                        "side":"BUY",
@@ -1839,6 +1975,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"136",
                        "size":"0.000285",
                        "price":"1291.275",
                        "side":"BUY",
@@ -1849,6 +1986,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"137",
                        "size":"1.027468",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1859,6 +1997,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"138",
                        "size":"0.001798",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1869,6 +2008,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"139",
                        "size":"0.000795",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1879,6 +2019,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"140",
                        "size":"0.001875",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1889,6 +2030,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"141",
                        "size":"0.000885",
                        "price":"1291.02",
                        "side":"SELL",
@@ -1899,6 +2041,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"142",
                        "size":"0.000701",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1909,6 +2052,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"143",
                        "size":"0.000207",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1919,6 +2063,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"144",
                        "size":"0.001657",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1929,6 +2074,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"145",
                        "size":"0.00041",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1939,6 +2085,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"146",
                        "size":"0.001105",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1949,6 +2096,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"147",
                        "size":"0.000255",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1959,6 +2107,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"148",
                        "size":"0.003268",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1969,6 +2118,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"149",
                        "size":"0.234861",
                        "price":"1291.289",
                        "side":"BUY",
@@ -1979,6 +2129,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"150",
                        "size":"0.000219",
                        "price":"1291.339",
                        "side":"BUY",
@@ -1989,6 +2140,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"151",
                        "size":"0.838534",
                        "price":"1291.346",
                        "side":"BUY",
@@ -1999,6 +2151,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"152",
                        "size":"0.303145",
                        "price":"1291.346",
                        "side":"BUY",
@@ -2009,6 +2162,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"153",
                        "size":"0.001162",
                        "price":"1291.363",
                        "side":"BUY",
@@ -2019,6 +2173,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"154",
                        "size":"0.000604",
                        "price":"1291.395",
                        "side":"BUY",
@@ -2029,6 +2184,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"155",
                        "size":"0.000159",
                        "price":"1291.396",
                        "side":"BUY",
@@ -2039,6 +2195,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"156",
                        "size":"0.000326",
                        "price":"1291.422",
                        "side":"BUY",
@@ -2049,6 +2206,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"157",
                        "size":"0.000505",
                        "price":"1291.43",
                        "side":"BUY",
@@ -2059,6 +2217,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"158",
                        "size":"1.409194",
                        "price":"1291.434",
                        "side":"BUY",
@@ -2069,6 +2228,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"159",
                        "size":"0.000375",
                        "price":"1291.472",
                        "side":"BUY",
@@ -2079,6 +2239,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"160",
                        "size":"0.172366",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2089,6 +2250,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"161",
                        "size":"0.00175",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2099,6 +2261,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"162",
                        "size":"0.002299",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2109,6 +2272,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"163",
                        "size":"0.00057",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2119,6 +2283,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"164",
                        "size":"0.000083",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2129,6 +2294,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"165",
                        "size":"0.000498",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2139,6 +2305,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"166",
                        "size":"0.000978",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2149,6 +2316,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"167",
                        "size":"0.002395",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2159,6 +2327,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"168",
                        "size":"0.000468",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2169,6 +2338,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"169",
                        "size":"0.000681",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2179,6 +2349,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"170",
                        "size":"0.000177",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2189,6 +2360,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"171",
                        "size":"0.002084",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2199,6 +2371,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"172",
                        "size":"0.000832",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2209,6 +2382,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"173",
                        "size":"0.00348",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2219,6 +2393,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"174",
                        "size":"0.000414",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2229,6 +2404,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"175",
                        "size":"0.00038",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2239,6 +2415,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"176",
                        "size":"0.112642",
                        "price":"1291.02",
                        "side":"SELL",
@@ -2249,6 +2426,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"177",
                        "size":"0.323473",
                        "price":"1291.008",
                        "side":"SELL",
@@ -2259,6 +2437,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"178",
                        "size":"0.000104",
                        "price":"1291.003",
                        "side":"SELL",
@@ -2269,6 +2448,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"179",
                        "size":"0.90841",
                        "price":"1290.979",
                        "side":"SELL",
@@ -2279,6 +2459,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"180",
                        "size":"0.000563",
                        "price":"1290.979",
                        "side":"SELL",
@@ -2289,6 +2470,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"181",
                        "size":"1.259539",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2299,6 +2481,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"182",
                        "size":"0.649674",
                        "price":"1290.979",
                        "side":"SELL",
@@ -2309,6 +2492,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"183",
                        "size":"0.000206",
                        "price":"1290.964",
                        "side":"SELL",
@@ -2319,6 +2503,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"184",
                        "size":"0.774692",
                        "price":"1290.958",
                        "side":"SELL",
@@ -2329,6 +2514,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"185",
                        "size":"0.001655",
                        "price":"1290.958",
                        "side":"SELL",
@@ -2339,6 +2525,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"186",
                        "size":"0.00021",
                        "price":"1290.958",
                        "side":"SELL",
@@ -2349,6 +2536,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"187",
                        "size":"0.000219",
                        "price":"1290.958",
                        "side":"SELL",
@@ -2359,6 +2547,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"188",
                        "size":"0.431288",
                        "price":"1290.958",
                        "side":"SELL",
@@ -2369,6 +2558,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"189",
                        "size":"0.710391",
                        "price":"1290.953",
                        "side":"SELL",
@@ -2379,6 +2569,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"190",
                        "size":"0.000159",
                        "price":"1290.953",
                        "side":"SELL",
@@ -2389,6 +2580,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"191",
                        "size":"0.000505",
                        "price":"1290.953",
                        "side":"SELL",
@@ -2399,6 +2591,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"192",
                        "size":"0.000889",
                        "price":"1290.953",
                        "side":"SELL",
@@ -2409,6 +2602,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"193",
                        "size":"0.580335",
                        "price":"1290.953",
                        "side":"SELL",
@@ -2419,6 +2613,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"194",
                        "size":"1.108181",
                        "price":"1290.952",
                        "side":"SELL",
@@ -2429,6 +2624,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"195",
                        "size":"0.250179",
                        "price":"1291.488",
                        "side":"BUY",
@@ -2439,6 +2635,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"196",
                        "size":"0.000212",
                        "price":"1291.51",
                        "side":"BUY",
@@ -2449,6 +2646,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"197",
                        "size":"1.07069",
                        "price":"1291.528",
                        "side":"BUY",
@@ -2459,6 +2657,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"239",
                        "size":"0.002117",
                        "price":"1291.528",
                        "side":"BUY",
@@ -2469,6 +2668,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"198",
                        "size":"0.000777",
                        "price":"1290.952",
                        "side":"SELL",
@@ -2479,6 +2679,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"199",
                        "size":"0.000638",
                        "price":"1291.528",
                        "side":"BUY",
@@ -2489,6 +2690,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"200",
                        "size":"0.000375",
                        "price":"1290.952",
                        "side":"SELL",
@@ -2499,6 +2701,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"201",
                        "size":"0.889535",
                        "price":"1291.528",
                        "side":"BUY",
@@ -2509,6 +2712,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"202",
                        "size":"0.000421",
                        "price":"1291.529",
                        "side":"BUY",
@@ -2519,6 +2723,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"203",
                        "size":"0.000532",
                        "price":"1291.576",
                        "side":"BUY",
@@ -2529,6 +2734,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"204",
                        "size":"0.575291",
                        "price":"1291.589",
                        "side":"BUY",
@@ -2539,6 +2745,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"205",
                        "size":"0.000716",
                        "price":"1290.952",
                        "side":"SELL",
@@ -2549,6 +2756,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"206",
                        "size":"0.000795",
                        "price":"1290.952",
                        "side":"SELL",
@@ -2559,6 +2767,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"207",
                        "size":"0.000212",
                        "price":"1291.51",
                        "side":"SELL",
@@ -2569,6 +2778,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"208",
                        "size":"0.77926",
                        "price":"1290.952",
                        "side":"SELL",
@@ -2579,6 +2789,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"209",
                        "size":"0.000552",
                        "price":"1290.951",
                        "side":"SELL",
@@ -2589,6 +2800,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"210",
                        "size":"0.574991",
                        "price":"1290.946",
                        "side":"SELL",
@@ -2599,6 +2811,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"211",
                        "size":"0.000446",
                        "price":"1291.493",
                        "side":"SELL",
@@ -2609,6 +2822,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"212",
                        "size":"0.001563",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2619,6 +2833,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"213",
                        "size":"0.001693",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2629,6 +2844,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"214",
                        "size":"0.000732",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2639,6 +2855,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"215",
                        "size":"1.116469",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2649,6 +2866,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"216",
                        "size":"0.001051",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2659,6 +2877,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"217",
                        "size":"0.001736",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2669,6 +2888,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"218",
                        "size":"1.54071",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2679,6 +2899,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"219",
                        "size":"0.00038",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2689,6 +2910,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"220",
                        "size":"0.002053",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2699,6 +2921,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"221",
                        "size":"0.000308",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2709,6 +2932,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"222",
                        "size":"0.023085",
                        "price":"1291.434",
                        "side":"SELL",
@@ -2719,6 +2943,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"223",
                        "size":"1.95232",
                        "price":"1291.43",
                        "side":"SELL",
@@ -2729,6 +2954,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"224",
                        "size":"0.001875",
                        "price":"1291.42",
                        "side":"SELL",
@@ -2739,6 +2965,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"225",
                        "size":"0.000604",
                        "price":"1291.395",
                        "side":"SELL",
@@ -2749,6 +2976,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"226",
                        "size":"0.00022",
                        "price":"1291.365",
                        "side":"SELL",
@@ -2759,6 +2987,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"227",
                        "size":"0.000701",
                        "price":"1291.351",
                        "side":"SELL",
@@ -2769,6 +2998,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"228",
                        "size":"0.105217",
                        "price":"1291.35",
                        "side":"SELL",
@@ -2779,6 +3009,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"229",
                        "size":"0.097208",
                        "price":"1291.325",
                        "side":"SELL",
@@ -2789,6 +3020,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"230",
                        "size":"1.59517",
                        "price":"1291.325",
                        "side":"SELL",
@@ -2799,6 +3031,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"231",
                        "size":"0.161708",
                        "price":"1291.304",
                        "side":"SELL",
@@ -2809,6 +3042,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"232",
                        "size":"0.000919",
                        "price":"1291.304",
                        "side":"SELL",
@@ -2819,6 +3053,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"233",
                        "size":"1.23975",
                        "price":"1291.304",
                        "side":"SELL",
@@ -2829,6 +3064,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"234",
                        "size":"0.000186",
                        "price":"1291.275",
                        "side":"SELL",
@@ -2839,6 +3075,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"235",
                        "size":"0.312544",
                        "price":"1291.255",
                        "side":"SELL",
@@ -2849,6 +3086,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"236",
                        "size":"0.002084",
                        "price":"1291.255",
                        "side":"SELL",
@@ -2859,6 +3097,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"237",
                        "size":"0.000412",
                        "price":"1291.255",
                        "side":"SELL",
@@ -2869,6 +3108,7 @@ internal class TradesChannelMock {
               {
                  "trades":[
                     {
+                       "id":"238",
                        "size":"0.000102",
                        "price":"1291.255",
                        "side":"SELL",
