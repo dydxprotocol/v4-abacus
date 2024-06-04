@@ -329,7 +329,7 @@ class V3PerpTests : V3BaseTests() {
                                                 "sideStringKey": "APP.GENERAL.BUY",
                                                 "typeStringKey": "APP.TRADE.MARKET_ORDER_SHORT",
                                                 "statusStringKey": "APP.TRADE.ORDER_FILLED",
-                                                "timeInForceStringKey": "APP.TRADE.FILL_OR_KILL"
+                                                "timeInForceStringKey": "APP.TRADE.IMMEDIATE_OR_CANCEL"
                                             }
                                         }
                                     },

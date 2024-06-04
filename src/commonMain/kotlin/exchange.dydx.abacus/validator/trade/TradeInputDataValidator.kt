@@ -155,7 +155,7 @@ internal class TradeInputDataValidator(
         return when (parser.asString(trade["type"])) {
             "STOP_LIMIT", "TAKE_PROFIT" -> {
                 val execution = parser.asString(trade["execution"])
-                if (execution == "IOC" || execution == "FOK") {
+                if (execution == "IOC") {
                     parser.asString(parser.value(trade, "side"))?.let { side ->
                         parser.asDouble(parser.value(trade, "price.limitPrice"))
                             ?.let { limitPrice ->

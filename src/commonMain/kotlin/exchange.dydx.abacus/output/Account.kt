@@ -1611,6 +1611,21 @@ data class StakingDelegation(
 
 @JsExport
 @Serializable
+data class UnbondingDelegation(
+    var validator: String,
+    var completionTime: String,
+    var balance: String,
+)
+
+@JsExport
+@Serializable
+data class StakingRewards(
+    var validators: IList<String>,
+    var totalRewards: IList<AccountBalance>,
+)
+
+@JsExport
+@Serializable
 data class HistoricalTradingReward(
     val amount: Double,
     val cumulativeAmount: Double,
@@ -2063,6 +2078,8 @@ data class Account(
     var balances: IMap<String, AccountBalance>?,
     var stakingBalances: IMap<String, AccountBalance>?,
     var stakingDelegations: IList<StakingDelegation>?,
+    var unbondingDelegation: IList<UnbondingDelegation>?,
+    var stakingRewards: StakingRewards?,
     var subaccounts: IMap<String, Subaccount>?,
     var groupedSubaccounts: IMap<String, Subaccount>?,
     var tradingRewards: TradingRewards?,
@@ -2114,6 +2131,9 @@ data class Account(
                     data,
                     tokensInfo,
                 )
+
+            val unbondingDelegations = data["unbondingDelegation"] as IList<UnbondingDelegation>?
+            val stakingRewards = data["stakingRewards"] as StakingRewards?
 
             val tradingRewardsData = parser.asMap(data["tradingRewards"])
             val tradingRewards = if (tradingRewardsData != null) {
@@ -2170,6 +2190,8 @@ data class Account(
                 balances,
                 stakingBalances,
                 stakingDelegations,
+                unbondingDelegations,
+                stakingRewards,
                 subaccounts,
                 groupedSubaccounts,
                 tradingRewards,

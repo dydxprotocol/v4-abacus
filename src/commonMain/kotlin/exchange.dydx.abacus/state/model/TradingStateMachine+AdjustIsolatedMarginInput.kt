@@ -162,11 +162,11 @@ fun TradingStateMachine.validAdjustIsolatedMarginInput(
         }
         AdjustIsolatedMarginInputField.Amount.name -> {
             val amount = parser.asDouble(adjustIsolatedMargin["Amount"])
-            return amount == null || amount > 0
+            return amount == null || amount >= 0
         }
         AdjustIsolatedMarginInputField.AmountPercent.name -> {
             val amountPercent = parser.asDouble(adjustIsolatedMargin["AmountPercent"])
-            return amountPercent == null || amountPercent > 0
+            return amountPercent == null || amountPercent >= 0
         }
         AdjustIsolatedMarginInputField.ChildSubaccountNumber.name -> {
             val childSubaccountNumber = parser.asInt(adjustIsolatedMargin["ChildSubaccountNumber"])

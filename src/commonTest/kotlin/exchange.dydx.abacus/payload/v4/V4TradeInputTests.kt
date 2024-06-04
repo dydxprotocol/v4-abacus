@@ -919,28 +919,6 @@ open class V4TradeInputTests : V4BaseTests() {
             """.trimIndent(),
         )
 
-        test(
-            {
-                perp.trade("FOK", TradeInputField.timeInForceType, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "LIMIT",
-                            "options": {
-                                "needsReduceOnly": true,
-                                "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null,
-                                "postOnlyPromptStringKey": "GENERAL.TRADE.POST_ONLY_TIMEINFORCE_GTT"
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
 
         test(
@@ -967,28 +945,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("IOC", TradeInputField.execution, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_LIMIT",
-                            "options": {
-                                "needsReduceOnly": true,
-                                "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null,
-                                "postOnlyPromptStringKey": null
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("FOK", TradeInputField.execution, 0)
             },
             """
                 {
@@ -1076,28 +1032,6 @@ open class V4TradeInputTests : V4BaseTests() {
 
         test(
             {
-                perp.trade("FOK", TradeInputField.execution, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT",
-                            "options": {
-                                "needsReduceOnly": true,
-                                "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null,
-                                "postOnlyPromptStringKey": null
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
                 perp.trade("POST_ONLY", TradeInputField.execution, 0)
             },
             """
@@ -1122,28 +1056,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("IOC", TradeInputField.execution, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_MARKET",
-                            "options": {
-                                "needsReduceOnly": true,
-                                "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null,
-                                "postOnlyPromptStringKey": null
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("FOK", TradeInputField.execution, 0)
             },
             """
                 {
@@ -1186,28 +1098,6 @@ open class V4TradeInputTests : V4BaseTests() {
                 }
             """.trimIndent(),
         )
-
-        test(
-            {
-                perp.trade("FOK", TradeInputField.execution, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT_MARKET",
-                            "options": {
-                                "needsReduceOnly": true,
-                                "needsPostOnly": false,
-                                "reduceOnlyPromptStringKey": null,
-                                "postOnlyPromptStringKey": null
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
     }
 
     private fun testExecution() {
@@ -1230,7 +1120,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1250,7 +1139,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1266,32 +1154,11 @@ open class V4TradeInputTests : V4BaseTests() {
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_MARKET",
-                            "execution": "FOK"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
 
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1314,7 +1181,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1334,7 +1200,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1350,32 +1215,11 @@ open class V4TradeInputTests : V4BaseTests() {
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT",
-                            "execution": "FOK"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
 
         test(
             {
                 perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1398,7 +1242,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1434,32 +1277,11 @@ open class V4TradeInputTests : V4BaseTests() {
         )
 
         perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT_MARKET",
-                            "execution": "FOK"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("STOP_LIMIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
 
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1488,7 +1310,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1497,26 +1318,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_LIMIT",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("STOP_MARKET", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_LIMIT",
-                            "execution": "FOK"
                         }
                     }
                 }
@@ -1530,7 +1331,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1539,26 +1339,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("STOP_MARKET", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT",
-                            "execution": "FOK"
                         }
                     }
                 }
@@ -1572,7 +1352,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1581,26 +1360,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT_MARKET",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("STOP_MARKET", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT_MARKET",
-                            "execution": "FOK"
                         }
                     }
                 }
@@ -1621,7 +1380,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1657,32 +1415,11 @@ open class V4TradeInputTests : V4BaseTests() {
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_MARKET",
-                            "execution": "FOK"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
 
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1724,7 +1461,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1733,26 +1469,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_LIMIT",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_LIMIT",
-                            "execution": "FOK"
                         }
                     }
                 }
@@ -1787,7 +1503,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1807,7 +1522,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1823,32 +1537,11 @@ open class V4TradeInputTests : V4BaseTests() {
         )
 
         perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT_MARKET",
-                            "execution": "FOK"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
         perp.trade("POST_ONLY", TradeInputField.execution, 0)
 
         test(
             {
                 perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1877,7 +1570,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1886,26 +1578,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_LIMIT",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("STOP_LIMIT", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_LIMIT",
-                            "execution": "FOK"
                         }
                     }
                 }
@@ -1919,7 +1591,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1928,26 +1599,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "TAKE_PROFIT",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("TAKE_PROFIT", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "TAKE_PROFIT",
-                            "execution": "FOK"
                         }
                     }
                 }
@@ -1961,7 +1612,6 @@ open class V4TradeInputTests : V4BaseTests() {
         test(
             {
                 perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
             },
             """
                 {
@@ -1970,26 +1620,6 @@ open class V4TradeInputTests : V4BaseTests() {
                         "trade": {
                             "type": "STOP_MARKET",
                             "execution": "IOC"
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        perp.trade("TAKE_PROFIT_MARKET", TradeInputField.type, 0)
-        perp.trade("FOK", TradeInputField.execution, 0)
-        test(
-            {
-                perp.trade("STOP_MARKET", TradeInputField.type, 0)
-                // should change to IOC
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "type": "STOP_MARKET",
-                            "execution": "FOK"
                         }
                     }
                 }

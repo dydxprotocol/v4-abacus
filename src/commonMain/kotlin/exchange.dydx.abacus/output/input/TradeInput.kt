@@ -721,8 +721,7 @@ enum class OrderStatus(val rawValue: String) {
 @Serializable
 enum class OrderTimeInForce(val rawValue: String) {
     GTT("GTT"),
-    IOC("IOC"),
-    FOK("FOK");
+    IOC("IOC");
 
     companion object {
         operator fun invoke(rawValue: String) =

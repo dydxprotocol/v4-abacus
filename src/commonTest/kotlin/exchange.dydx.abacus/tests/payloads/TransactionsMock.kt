@@ -15,18 +15,4 @@ internal class TransactionsMock {
         	}
         }
     """.trimIndent()
-
-    internal val place_order_fok_failed_transaction = """
-        {
-        	"jsonrpc": "2.0",
-        	"id": 106799053660,
-        	"result": {
-        		"code": 2000,
-        		"data": "",
-        		"log": "FillOrKill order could not be fully filled",
-        		"codespace": "clob",
-        		"hash": "E8E355275220AEF2C38E51B9B901FA448F42C8CBECAB2C25886E0D682D843BCA"
-        	}
-        }
-    """.trimIndent()
 }

@@ -70,7 +70,12 @@ internal class TradeInputCalculator(
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
-        val trade = parser.asNativeMap(state["trade"])
+        val trade = updateTradeInputFromMarket(
+            markets,
+            account,
+            parser.asNativeMap(state["trade"]),
+            subaccountNumber ?: 0,
+        )
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
         val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
@@ -133,6 +138,53 @@ internal class TradeInputCalculator(
         } else {
             state
         }
+    }
+
+    private fun updateTradeInputFromMarket(
+        markets: Map<String, Any>?,
+        account: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+        subaccountNumber: Int,
+    ): MutableMap<String, Any>? {
+        val modified = tradeInput?.mutable() ?: return null
+        val marketId = parser.asString(tradeInput["marketId"])
+        val existingMarginMode =
+            MarginModeCalculator.findExistingMarginMode(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+        // If there is an existing position or order, we have to use the same margin mode
+        if (existingMarginMode != null) {
+            modified["marginMode"] = existingMarginMode
+            if (
+                existingMarginMode == "ISOLATED" &&
+                parser.asDouble(tradeInput["targetLeverage"]) == null
+            ) {
+                modified["targetLeverage"] = 1.0
+            }
+        } else {
+            val marketMarginMode = MarginModeCalculator.findMarketMarginMode(
+                parser,
+                parser.asMap(markets?.get(marketId)),
+            )
+            when (marketMarginMode) {
+                "ISOLATED" -> {
+                    modified["marginMode"] = marketMarginMode
+                    if (parser.asDouble(tradeInput["targetLeverage"]) == null) {
+                        modified["targetLeverage"] = 1.0
+                    }
+                }
+
+                "CROSS" -> {
+                    if (modified["marginMode"] == null) {
+                        modified["marginMode"] = marketMarginMode
+                    }
+                }
+            }
+        }
+        return modified
     }
 
     private fun calculateNonMarketTrade(
@@ -925,7 +977,7 @@ internal class TradeInputCalculator(
                     executionField(true),
                     marginModeField(market, account, subaccount),
                     when (execution) {
-                        "FOK", "IOC" -> reduceOnlyField()
+                        "IOC" -> reduceOnlyField()
                         else -> null
                     },
                 ).filterNotNull()
@@ -1057,7 +1109,6 @@ internal class TradeInputCalculator(
             "options" to listOf(
                 timeInForceOptionGTT,
                 timeInForceOptionIOC,
-                timeInForceOptionFOK,
             ),
         )
     }
@@ -1101,13 +1152,11 @@ internal class TradeInputCalculator(
                     listOf(
                         executionDefault,
                         executionIOC,
-                        executionFOK,
                         executionPostOnly,
                     )
                 } else {
                     listOf(
                         executionIOC,
-                        executionFOK,
                     )
                 },
         )
@@ -1253,9 +1302,9 @@ internal class TradeInputCalculator(
     ): String? {
         return if (featureFlags.reduceOnlySupported) {
             when (parser.asString(trade["type"])) {
-                "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC_FOK"
+                "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
 
-                "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_EXECUTION_IOC_FOK"
+                "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
 
                 else -> return null
             }
@@ -1802,8 +1851,6 @@ internal class TradeInputCalculator(
 
     private val timeInForceOptionGTT: Map<String, Any>
         get() = mapOf("type" to "GTT", "stringKey" to "APP.TRADE.GOOD_TIL_TIME")
-    private val timeInForceOptionFOK: Map<String, Any>
-        get() = mapOf("type" to "FOK", "stringKey" to "APP.TRADE.FILL_OR_KILL")
     private val timeInForceOptionIOC: Map<String, Any>
         get() = mapOf("type" to "IOC", "stringKey" to "APP.TRADE.IMMEDIATE_OR_CANCEL")
 
@@ -1832,11 +1879,8 @@ internal class TradeInputCalculator(
         get() = mapOf("type" to "DEFAULT", "stringKey" to "APP.TRADE.GOOD_TIL_DATE")
     private val executionPostOnly: Map<String, Any>
         get() = mapOf("type" to "POST_ONLY", "stringKey" to "APP.TRADE.POST_ONLY")
-    private val executionFOK: Map<String, Any>
-        get() = mapOf("type" to "FOK", "stringKey" to "APP.TRADE.FILL_OR_KILL")
     private val executionIOC: Map<String, Any>
         get() = mapOf("type" to "IOC", "stringKey" to "APP.TRADE.IMMEDIATE_OR_CANCEL")
-
     private val marginModeCross: Map<String, Any>
         get() = mapOf("type" to "CROSS", "stringKey" to "APP.TRADE.CROSS_MARGIN")
     private val marginModeIsolated: Map<String, Any>
