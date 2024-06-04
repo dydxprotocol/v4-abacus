@@ -99,7 +99,7 @@ internal object MarginModeCalculator {
         val subaccounts = parser.asMap(account?.get("subaccounts")) ?: return subaccountNumber
 
         var lastSubaccountNumber = subaccountNumber
-        for ((key, item) in subaccounts) {
+        for ((_, item) in subaccounts) {
             val subaccount = parser.asMap(item) ?: continue
             val childSubaccountNumber =
                 parser.asInt(subaccount["subaccountNumber"]) ?: subaccountNumber
