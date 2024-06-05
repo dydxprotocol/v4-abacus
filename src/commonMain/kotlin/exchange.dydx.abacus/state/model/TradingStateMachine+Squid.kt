@@ -39,6 +39,7 @@ internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? 
     }
 }
 
+@Suppress("ForbiddenComment")
 // TODO: rename this to routerRoute/routerMsg/routerTxPayload
 internal fun TradingStateMachine.squidRoute(
     payload: String,
