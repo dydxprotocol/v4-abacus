@@ -884,6 +884,176 @@ internal class OnboardingSupervisor(
         }
     }
 
+    private fun retrieveSkipWithdrawalRouteExchange(
+        state: PerpetualState?,
+        decimals: Int,
+        gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?,
+    ) {
+        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
+        val fromAmount = if (usdcSize != null && usdcSize > gas) {
+            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+        } else {
+            null
+        }
+        val chainId = helper.environment.dydxChainId
+        val squidIntegratorId = helper.environment.squidIntegratorId
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
+        val fromAmountString = helper.parser.asString(fromAmount)
+        val url = helper.configs.skipV2MsgsDirect()
+        val fromAddress = accountAddress
+        if (
+            fromAmount != null &&
+            fromAmount > 0 &&
+            fromAmountString != null &&
+            chainId != null &&
+            dydxTokenDemon != null &&
+            squidIntegratorId != null
+        ) {
+            val body: Map<String, Any> = mapOf(
+                "amount_in" to fromAmountString,
+                "source_asset_denom" to dydxTokenDemon,
+                "source_asset_chain_id" to chainId,
+                "dest_asset_denom" to dydxTokenDemon,
+                "dest_asset_chain_id" to chainId,
+                "chain_ids_to_addresses" to mapOf(
+                    "fromChain" to sourceAddress,
+                    "toChain" to fromAddress,
+                ),
+                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            )
+
+            val oldState = stateMachine.state
+            val header = iMapOf(
+                "Content-Type" to "application/json",
+            )
+            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+                if (response != null) {
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
+                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
+                } else {
+                    Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
+                }
+            }
+        }
+    }
+
+    private fun retrieveSkipWithdrawalRouteNonCCTP(
+        state: PerpetualState?,
+        decimals: Int,
+        gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?,
+    ) {
+        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
+        val fromAmount = if (usdcSize != null && usdcSize > gas) {
+            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+        } else {
+            null
+        }
+        val chainId = helper.environment.dydxChainId
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
+        val fromAmountString = helper.parser.asString(fromAmount)
+        val url = helper.configs.squidRoute()
+        val fromAddress = accountAddress
+        if (
+            fromAmount != null &&
+            fromAmount > 0 &&
+            fromAmountString != null &&
+            chainId != null &&
+            dydxTokenDemon != null &&
+            url != null
+        ) {
+            val body: Map<String, Any> = mapOf(
+                "amount_in" to fromAmountString,
+                "source_asset_denom" to dydxTokenDemon,
+                "source_asset_chain_id" to chainId,
+                "dest_asset_denom" to dydxTokenDemon,
+                "dest_asset_chain_id" to chainId,
+                "chain_ids_to_addresses" to mapOf(
+                    "fromChain" to sourceAddress,
+                    "toChain" to fromAddress,
+                ),
+                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            )
+            val header = iMapOf(
+                "Content-Type" to "application/json",
+            )
+            val oldState = stateMachine.state
+            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+                if (response != null) {
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
+                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
+                } else {
+                    Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
+                }
+            }
+        }
+    }
+
+    private fun retrieveSkipWithdrawalRouteCCTP(
+        state: PerpetualState?,
+        decimals: Int,
+        gas: BigDecimal,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?,
+    ) {
+        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
+        val fromAmount = if (usdcSize != null && usdcSize > gas) {
+            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+        } else {
+            null
+        }
+        val chainId = helper.environment.dydxChainId
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
+        val fromAmountString = helper.parser.asString(fromAmount)
+        val url = helper.configs.skipV2MsgsDirect()
+        val fromChain = helper.configs.nobleChainId()
+        val fromToken = helper.configs.nobleDenom()
+        if (
+            fromAmount != null &&
+            fromAmount > 0 &&
+            fromAmountString != null &&
+            chainId != null &&
+            dydxTokenDemon != null &&
+            fromChain != null &&
+            fromToken != null
+        ) {
+            val body: Map<String, Any> = mapOf(
+                "amount_in" to fromAmountString,
+                "source_asset_denom" to fromToken,
+                "source_asset_chain_id" to fromChain,
+                "dest_asset_denom" to dydxTokenDemon,
+                "dest_asset_chain_id" to chainId,
+                "chain_ids_to_addresses" to mapOf(
+                    "fromChain" to sourceAddress,
+                    "toChain" to accountAddress,
+                ),
+                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            )
+            val oldState = stateMachine.state
+            val header = iMapOf(
+                "Content-Type" to "application/json",
+            )
+            helper.post(url, header, body.toJsonPrettyPrint()) { url, response, code, headers ->
+                if (response != null) {
+                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                    val oldFromAmount = oldState?.input?.transfer?.size?.size
+                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
+                    if (currentFromAmount == oldFromAmount) {
+                        update(stateMachine.squidRouteV2(response, subaccountNumber ?: 0, requestId), oldState)
+                    }
+                } else {
+                    Logger.e { "retrieveSkipWithdrawalRouteCCTP error, code: $code" }
+                }
+            }
+        }
+    }
+
     private fun fetchTransferStatus(
         hash: String,
         fromChainId: String?,
