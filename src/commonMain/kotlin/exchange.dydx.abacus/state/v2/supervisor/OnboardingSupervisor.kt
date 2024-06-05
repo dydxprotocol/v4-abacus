@@ -35,6 +35,7 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
@@ -185,6 +186,137 @@ internal class OnboardingSupervisor(
                         subaccountNumber,
                     )
                 }
+        }
+    }
+
+    @Suppress("UnusedPrivateMember", "ForbiddenComment")
+    private fun retrieveSkipDepositRouteNonCCTP(
+        state: PerpetualState?,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?,
+    ) {
+//      We have a lot of duplicate code for these deposit/withdrawal route calls
+//      It's easier to dedupe now that he url is the same and only the args differ
+//      TODO: Consider creating generateArgs fun to reduce code duplication
+        val fromChain = state?.input?.transfer?.chain
+        val fromToken = state?.input?.transfer?.token
+        val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
+            val decimals =
+                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
+            if (decimals != null) {
+                (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+            } else {
+                null
+            }
+        }
+        val chainId = helper.environment.dydxChainId
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
+        val fromAmountString = helper.parser.asString(fromAmount)
+        val url = helper.configs.squidRoute()
+        if (fromChain != null &&
+            fromToken != null &&
+            fromAmount != null && fromAmount > 0 &&
+            fromAmountString != null &&
+            chainId != null &&
+            dydxTokenDemon != null &&
+            url != null
+        ) {
+            val body: Map<String, Any> = mapOf(
+                "amount_in" to fromAmountString,
+                "source_asset_denom" to fromToken,
+                "source_asset_chain_id" to fromChain,
+                "dest_asset_denom" to dydxTokenDemon,
+                "dest_asset_chain_id" to chainId,
+                "chain_ids_to_addresses" to mapOf(
+                    "fromChain" to sourceAddress,
+                    "toChain" to accountAddress,
+                ),
+                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            )
+
+            val oldState = stateMachine.state
+            val header = iMapOf(
+                "Content-Type" to "application/json",
+            )
+            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+                if (response != null) {
+                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                    val oldFromAmount = oldState?.input?.transfer?.size?.size
+                    if (currentFromAmount == oldFromAmount) {
+                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                    }
+                } else {
+                    Logger.e { "retrieveSkipDepositRouteNonCCTP error, code: $code" }
+                }
+            }
+        }
+    }
+
+    @Suppress("UnusedPrivateMember", "ForbiddenComment")
+    private fun retrieveSkipDepositRouteCCTP(
+        state: PerpetualState?,
+        accountAddress: String,
+        sourceAddress: String,
+        subaccountNumber: Int?,
+    ) {
+//      We have a lot of duplicate code for these deposit/withdrawal route calls
+//      It's easier to dedupe now that he url is the same and only the args differ
+//      TODO: Consider creating generateArgs fun to reduce code duplication
+        val fromChain = state?.input?.transfer?.chain
+        val fromToken = state?.input?.transfer?.token
+        val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
+            val decimals = helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
+            if (decimals != null) {
+                (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
+            } else {
+                null
+            }
+        }
+        val chainId = helper.environment.dydxChainId
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
+        val fromAmountString = helper.parser.asString(fromAmount)
+        val nobleAddress = accountAddress?.toNobleAddress()
+        val url = helper.configs.skipV2MsgsDirect()
+        val toChain = helper.configs.nobleChainId()
+        val toToken = helper.configs.nobleDenom()
+        if (fromChain != null &&
+            fromToken != null &&
+            fromAmount != null && fromAmount > 0 &&
+            fromAmountString != null &&
+            nobleAddress != null &&
+            chainId != null &&
+            dydxTokenDemon != null &&
+            toChain != null &&
+            toToken != null
+        ) {
+            val body: Map<String, Any> = mapOf(
+                "amount_in" to fromAmountString,
+                "source_asset_denom" to fromToken,
+                "source_asset_chain_id" to fromChain,
+                "dest_asset_denom" to toToken,
+                "dest_asset_chain_id" to toChain,
+                "chain_ids_to_addresses" to mapOf(
+                    fromChain to sourceAddress,
+                    toChain to nobleAddress,
+                ),
+                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            )
+            val oldState = stateMachine.state
+            val header = iMapOf(
+                "Content-Type" to "application/json",
+            )
+            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+                if (response != null) {
+                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                    val oldFromAmount = oldState?.input?.transfer?.size?.size
+                    if (currentFromAmount == oldFromAmount) {
+                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+                    }
+                } else {
+                    Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
+                }
+            }
         }
     }
 
