@@ -35,6 +35,7 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.isAddressValid
@@ -242,12 +243,11 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
+                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                     }
                 } else {
-                    Logger.e { "retrieveDepositRouteV1 error, code: $code" }
+                    Logger.e { "retrieveSkipDepositRouteNonCCTP error, code: $code" }
                 }
             }
         }
@@ -310,12 +310,11 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
+                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                     }
                 } else {
-                    Logger.e { "retrieveSkipDepositRoute error, code: $code" }
+                    Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
                 }
             }
         }
