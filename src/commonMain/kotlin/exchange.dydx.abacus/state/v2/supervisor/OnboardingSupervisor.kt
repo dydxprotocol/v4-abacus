@@ -937,6 +937,7 @@ internal class OnboardingSupervisor(
         }
     }
 
+    @Suppress("UnusedPrivateMember")
     private fun retrieveSkipWithdrawalRouteExchange(
         state: PerpetualState?,
         decimals: Int,
@@ -986,6 +987,7 @@ internal class OnboardingSupervisor(
         }
     }
 
+    @Suppress("UnusedPrivateMember")
     private fun retrieveSkipWithdrawalRouteNonCCTP(
         state: PerpetualState?,
         decimals: Int,
@@ -1032,6 +1034,7 @@ internal class OnboardingSupervisor(
         }
     }
 
+    @Suppress("UnusedPrivateMember")
     private fun retrieveSkipWithdrawalRouteCCTP(
         state: PerpetualState?,
         decimals: Int,
