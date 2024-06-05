@@ -171,6 +171,13 @@ data class OnboardingConfigs(
 
     var squidVersion: SquidVersion = SquidVersion.V2
 
+    enum class RouterVendor {
+        Squid,
+        Skip
+    }
+
+    var routerVendor: RouterVendor = RouterVendor.Squid
+
     companion object {
         val forApp = OnboardingConfigs(
             retrieveSquidRoutes = true,

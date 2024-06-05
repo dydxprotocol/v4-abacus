@@ -133,6 +133,7 @@ open class StateManagerAdaptor(
         Formatter(uiImplementations.formatter),
         127,
         false,
+        useSkip = appConfigs.routerVendor == AppConfigs.RouterVendor.Skip,
     )
 
     internal var indexerConfig: IndexerURIs?

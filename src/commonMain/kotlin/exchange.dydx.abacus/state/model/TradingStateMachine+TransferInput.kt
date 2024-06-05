@@ -75,11 +75,11 @@ fun TradingStateMachine.transfer(
                             transfer.safeSet("chain", "chain")
                             transfer.safeSet("token", "usdc")
                         } else {
-                            val chainType = squidProcessor.defaultChainId()
+                            val chainType = routerProcessor.defaultChainId()
                             if (chainType != null) {
                                 updateTransferToChainType(transfer, chainType)
                             }
-                            transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
+                            transfer.safeSet("token", routerProcessor.defaultTokenAddress(chainType))
                         }
                     }
                     changes = StateChanges(
@@ -200,11 +200,11 @@ private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<S
     } else {
         transfer.safeSet(
             "resources.tokenSymbol",
-            squidProcessor.selectedTokenSymbol(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
+            routerProcessor.selectedTokenSymbol(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
         )
         transfer.safeSet(
             "resources.tokenDecimals",
-            squidProcessor.selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
+            routerProcessor.selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId),
         )
     }
     transfer.safeSet("route", null)
@@ -212,13 +212,13 @@ private fun TradingStateMachine.updateTransferToTokenType(transfer: MutableMap<S
 }
 
 private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<String, Any>, chainType: String) {
-    val tokenOptions = squidProcessor.tokenOptions(chainType)
+    val tokenOptions = routerProcessor.tokenOptions(chainType)
     if (transfer["type"] != "TRANSFER_OUT") {
         internalState.transfer.tokens = tokenOptions
         transfer.safeSet("chain", chainType)
-        transfer.safeSet("token", squidProcessor.defaultTokenAddress(chainType))
-        internalState.transfer.chainResources = squidProcessor.chainResources(chainType)
-        internalState.transfer.tokenResources = squidProcessor.tokenResources(chainType)
+        transfer.safeSet("token", routerProcessor.defaultTokenAddress(chainType))
+        internalState.transfer.chainResources = routerProcessor.chainResources(chainType)
+        internalState.transfer.tokenResources = routerProcessor.tokenResources(chainType)
     }
     transfer.safeSet("exchange", null)
     transfer.safeSet("size.size", null)
@@ -235,21 +235,21 @@ private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<S
     )
     transfer.safeSet(
         "resources.chainResources",
-        squidProcessor.chainResources(chainType),
+        routerProcessor.chainResources(chainType),
     )
     transfer.safeSet(
         "resources.tokenResources",
-        squidProcessor.tokenResources(chainType),
+        routerProcessor.tokenResources(chainType),
     )
 }
 
 private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<String, Any>, exchange: String) {
-    val exchangeDestinationChainId = squidProcessor.exchangeDestinationChainId
-    val tokenOptions = squidProcessor.tokenOptions(exchangeDestinationChainId)
+    val exchangeDestinationChainId = routerProcessor.exchangeDestinationChainId
+    val tokenOptions = routerProcessor.tokenOptions(exchangeDestinationChainId)
     if (transfer["type"] != "TRANSFER_OUT") {
         internalState.transfer.tokens = tokenOptions
-        transfer.safeSet("token", squidProcessor.defaultTokenAddress(exchangeDestinationChainId))
-        internalState.transfer.tokenResources = squidProcessor.tokenResources(exchangeDestinationChainId)
+        transfer.safeSet("token", routerProcessor.defaultTokenAddress(exchangeDestinationChainId))
+        internalState.transfer.tokenResources = routerProcessor.tokenResources(exchangeDestinationChainId)
 
 //        needed to pass tests, remove later
         transfer.safeSet(
@@ -262,7 +262,7 @@ private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<
         )
         transfer.safeSet(
             "resources.tokenResources",
-            squidProcessor.tokenResources(exchangeDestinationChainId),
+            routerProcessor.tokenResources(exchangeDestinationChainId),
         )
     }
     transfer.safeSet("exchange", exchange)
