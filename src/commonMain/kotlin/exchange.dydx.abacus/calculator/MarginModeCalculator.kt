@@ -128,7 +128,7 @@ internal object MarginModeCalculator {
             return true
         }
         val orders = parser.asMap(subaccount["orders"])
-        val foundOrder = orders?.firstOrNull { item ->
+        val foundOrder = orders?.values?.firstOrNull { item ->
             val order = parser.asMap(item)
             return if (order != null) {
                 parser.asString(order["marketId"]) == marketId
