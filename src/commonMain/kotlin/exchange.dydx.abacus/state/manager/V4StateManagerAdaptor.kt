@@ -29,6 +29,8 @@ import exchange.dydx.abacus.state.model.onChainStakingRewards
 import exchange.dydx.abacus.state.model.onChainUnbonding
 import exchange.dydx.abacus.state.model.onChainUserFeeTier
 import exchange.dydx.abacus.state.model.onChainUserStats
+import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.updateHeight
 import exchange.dydx.abacus.utils.CoroutineTimer
@@ -302,6 +304,30 @@ class V4StateManagerAdaptor(
         } else {
             validatorConnected = false
             heightTimer = null
+        }
+    }
+
+    @Suppress("UnusedPrivateMember")
+    private fun retrieveSkipTransferChains() {
+        val oldState = stateMachine.state
+        val chainsUrl = configs.skipV1Chains()
+        get(chainsUrl, null, null) { _, response, httpCode, _ ->
+            if (success(httpCode) && response != null) {
+                update(stateMachine.routerChains(response), oldState)
+            }
+        }
+    }
+
+    @Suppress("UnusedPrivateMember")
+    private fun retrieveSkipTransferTokens() {
+        val oldState = stateMachine.state
+        val tokensUrl = configs.skipV1Assets()
+//            add API key injection
+//            val header = iMapOf("authorization" to skipAPIKey)
+        get(tokensUrl, null, null) { _, response, httpCode, _ ->
+            if (success(httpCode) && response != null) {
+                update(stateMachine.routerTokens(response), oldState)
+            }
         }
     }
 

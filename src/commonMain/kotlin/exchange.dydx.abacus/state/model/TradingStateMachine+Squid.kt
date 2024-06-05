@@ -9,7 +9,7 @@ import kotlinx.serialization.json.jsonObject
 internal fun TradingStateMachine.routerChains(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedChains(input, json)
+        input = routerProcessor.receivedChains(input, json)
         StateChanges(iListOf(Changes.input))
     } else {
         StateChanges.noChange
@@ -19,7 +19,7 @@ internal fun TradingStateMachine.routerChains(payload: String): StateChanges? {
 internal fun TradingStateMachine.routerTokens(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedTokens(input, json)
+        input = routerProcessor.receivedTokens(input, json)
         StateChanges(iListOf(Changes.input))
     } else {
         StateChanges.noChange
@@ -29,7 +29,7 @@ internal fun TradingStateMachine.routerTokens(payload: String): StateChanges? {
 internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedV2SdkInfo(input, json)
+        input = routerProcessor.receivedV2SdkInfo(input, json)
         StateChanges(iListOf(Changes.input))
     } else {
         StateChanges.noChange
@@ -43,7 +43,7 @@ internal fun TradingStateMachine.squidRoute(
 ): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedRoute(input, json, requestId)
+        input = routerProcessor.receivedRoute(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
             subaccountNumbers = iListOf(subaccountNumber),
@@ -60,7 +60,7 @@ internal fun TradingStateMachine.squidRouteV2(
 ): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {
-        input = squidProcessor.receivedRouteV2(input, json, requestId)
+        input = routerProcessor.receivedRouteV2(input, json, requestId)
         StateChanges(
             iListOf(Changes.input, Changes.subaccount),
             subaccountNumbers = iListOf(subaccountNumber),
@@ -75,6 +75,6 @@ internal fun TradingStateMachine.squidStatus(
     transactionId: String?
 ): StateChanges? {
     val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-    transferStatuses = squidProcessor.receivedStatus(transferStatuses, json, transactionId)
+    transferStatuses = routerProcessor.receivedStatus(transferStatuses, json, transactionId)
     return StateChanges(iListOf(Changes.transferStatuses))
 }

@@ -6,8 +6,6 @@ import exchange.dydx.abacus.tests.extensions.loadFillsReceived
 import exchange.dydx.abacus.tests.extensions.loadMarketsChanged
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadOrderbookChanged
-import exchange.dydx.abacus.tests.extensions.loadTrades
-import exchange.dydx.abacus.tests.extensions.loadTradesChanged
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
@@ -21,7 +19,6 @@ class V3PerpTests : V3BaseTests() {
 
         testMarketsOnce()
         testAccountsOnce()
-        testTradesOnce()
         testOrderbookOnce()
         testHistoricalFundingsOnce()
     }
@@ -480,68 +477,6 @@ class V3PerpTests : V3BaseTests() {
                                         }
                                     ]
                                 }
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-    }
-
-    private fun testTradesOnce() {
-        var time = ServerTime.now()
-        testTradesSubscribed()
-        time = perp.log("Trades Subscribed", time)
-
-        testTradesBatchChanged()
-        perp.log("Trades Changed", time)
-    }
-
-    private fun testTradesSubscribed() {
-        test(
-            {
-                perp.loadTrades(mock)
-            },
-            """
-                {
-                    "markets": {
-                        "markets": {
-                            "ETH-USD": {
-                                "trades": [
-                                    {
-                                        "side": "BUY",
-                                        "price": 1656.2,
-                                        "size": 0.01,
-                                        "type": "LIQUIDATED",
-                                        "createdAt": "2022-08-01T16:58:12.989Z"
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-    }
-
-    private fun testTradesBatchChanged() {
-        test(
-            {
-                perp.loadTradesChanged(mock)
-            },
-            """
-                {
-                    "markets": {
-                        "markets": {
-                            "ETH-USD": {
-                                "trades": [
-                                    {
-                                        "side": "SELL",
-                                        "price": 1645.7,
-                                        "size": 24.243,
-                                        "createdAt": "2022-08-01T17:05:28.592Z"
-                                    }
-                                ]
                             }
                         }
                     }

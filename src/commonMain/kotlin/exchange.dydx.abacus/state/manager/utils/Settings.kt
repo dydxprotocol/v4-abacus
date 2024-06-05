@@ -16,6 +16,12 @@ class AppConfigs(
     }
     var squidVersion: SquidVersion = SquidVersion.V2
 
+    enum class RouterVendor {
+        Skip,
+        Squid
+    }
+    var routerVendor: RouterVendor = RouterVendor.Squid
+
     companion object {
         val forApp = AppConfigs(subscribeToCandles = true, loadRemote = true)
         val forAppDebug = AppConfigs(subscribeToCandles = true, loadRemote = false, enableLogger = true)

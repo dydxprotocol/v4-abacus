@@ -202,7 +202,7 @@ class V4SquidTests : V4BaseTests() {
         val stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        assertTrue(perp.squidProcessor.selectedTokenSymbol("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "should_not_matter") == "ETH")
+        assertTrue(perp.routerProcessor.selectedTokenSymbol("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "should_not_matter") == "ETH")
     }
 
     @Test
@@ -212,7 +212,7 @@ class V4SquidTests : V4BaseTests() {
         val stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        assertTrue(perp.squidProcessor.selectedTokenDecimals("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "should_not_matter") == "18")
+        assertTrue(perp.routerProcessor.selectedTokenDecimals("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "should_not_matter") == "18")
     }
 
     @Test
@@ -225,7 +225,7 @@ class V4SquidTests : V4BaseTests() {
         stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        assertTrue(perp.squidProcessor.defaultTokenAddress("1") == "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
+        assertTrue(perp.routerProcessor.defaultTokenAddress("1") == "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
     }
 
     @Test
@@ -235,7 +235,7 @@ class V4SquidTests : V4BaseTests() {
         val stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
 
-        val result = perp.squidProcessor.chainResources("1")
+        val result = perp.routerProcessor.chainResources("1")
         val resource = result?.get("1")
         assertTrue(resource?.chainId == 1) // Ethereum
         assertTrue(resource?.chainName == "Ethereum") // Ethereum
@@ -251,7 +251,7 @@ class V4SquidTests : V4BaseTests() {
         stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        val result = perp.squidProcessor.tokenResources("1")
+        val result = perp.routerProcessor.tokenResources("1")
         assertTrue((result?.keys?.size ?: 0) > 0)
     }
 
@@ -265,7 +265,7 @@ class V4SquidTests : V4BaseTests() {
         stateChange = perp.routerTokens(mock.squidTokensMock.payload)
         assertNotNull(stateChange)
 
-        val result = perp.squidProcessor.tokenOptions("1")
+        val result = perp.routerProcessor.tokenOptions("1")
         assertTrue(result.size > 0)
     }
 }
