@@ -39,7 +39,11 @@ internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? 
     }
 }
 
+<<<<<<< HEAD
 // DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
+=======
+// TODO: rename this to routerRoute/routerMsg/routerTxPayload
+>>>>>>> c72c521 (cleanup unused requestId param. add TODO for renaming squidRoute method)
 internal fun TradingStateMachine.squidRoute(
     payload: String,
     subaccountNumber: Int,
