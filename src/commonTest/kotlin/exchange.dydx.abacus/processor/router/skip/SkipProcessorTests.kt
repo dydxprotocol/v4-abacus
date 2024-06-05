@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
+import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
 import exchange.dydx.abacus.utils.Parser
 import kotlinx.serialization.json.Json
@@ -11,6 +12,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal fun templateToJson(template: String): Map<String, Any> {
     return Json.parseToJsonElement(template.trimIndent()).jsonObject.toMap()
@@ -23,6 +25,7 @@ class SkipProcessorTests {
     internal val skipProcessor = SkipProcessor(parser = parser, internalState = internalState)
     internal val skipChainsMock = SkipChainsMock()
     internal val skipTokensMock = SkipTokensMock()
+    internal val skipRouteMock = SkipRouteMock()
     internal val selectedChainId = "osmosis-1"
     internal val selectedTokenAddress = "selectedTokenDenom"
     internal val selectedTokenSymbol = "selectedTokenSymbol"
@@ -301,5 +304,36 @@ class SkipProcessorTests {
         assertEquals(payload["chain_to_assets_map"], skipProcessor.skipTokens)
         assertEquals(expectedTokens, internalState.tokens)
         assertEquals(expectedTokenResources, internalState.tokenResources)
+    }
+
+    @Test
+    fun testReceivedRoute() {
+        val payload = templateToJson(skipRouteMock.payload)
+        val result = skipProcessor.receivedRoute(
+            existing = mapOf(),
+            payload = payload,
+            requestId = null,
+        )
+        val expected = mapOf(
+            "transfer" to mapOf(
+                "route" to mapOf(
+//                    TODO: set up text properly so we get a decimals value
+                    "toAmount" to "11640000",
+                    "toAmountUSD" to 11.64,
+                    "bridgeFees" to 0.36,
+                    "slippage" to "1",
+                    "requestPayload" to mapOf(
+                        "targetAddress" to "0xBC8552339dA68EB65C8b88B414B5854E0E366cFc",
+                        "data" to "0xd77d6ec00000000000000000000000000000000000000000000000000000000000b19cc000000000000000000000000000000000000000000000000000000000000000040000000000000000000000009dc5ce8a5722795f5723d32b921c53d3bb449348000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000057e40000000000000000000000000691cf4641d5608f085b2c1921172120bb603d074",
+                        "value" to "0",
+                        "fromChainId" to "1",
+                        "fromAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                        "toChainId" to "noble-1",
+                        "toAddress" to "uusdc",
+                    ),
+                ),
+            ),
+        )
+        assertTrue(expected == result)
     }
 }

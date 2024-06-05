@@ -12,7 +12,7 @@ import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-@Suppress("NotImplementedDeclaration")
+@Suppress("NotImplementedDeclaration", "ForbiddenComment")
 internal class SkipProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState
@@ -85,7 +85,28 @@ internal class SkipProcessor(
         payload: Map<String, Any>,
         requestId: String?,
     ): Map<String, Any>? {
-        throw NotImplementedError("receivedRoute is not implemented in SkipProcessor!")
+        var modified = mutableMapOf<String, Any>()
+        existing?.let {
+            modified = it.mutable()
+        }
+        val tokenAddress = parser.asString(parser.value(modified, "transfer.token"))
+        val selectedChainId = parser.asString(parser.value(modified, "transfer.chain"))
+        val decimals = parser.asDouble(selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId))
+        val processor = SkipRouteProcessor(parser)
+
+        modified.safeSet(
+            "transfer.route",
+            processor.received(null, payload, decimals = decimals) as MutableMap<String, Any>,
+        )
+        if (requestId != null) {
+            modified.safeSet("transfer.route.requestPayload.requestId", requestId)
+        }
+        if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
+            val value = usdcAmount(modified)
+            modified.safeSet("transfer.size.usdcSize", value)
+        }
+
+        return modified
     }
 
     override fun receivedRouteV2(
@@ -93,11 +114,16 @@ internal class SkipProcessor(
         payload: Map<String, Any>,
         requestId: String?
     ): Map<String, Any>? {
-        throw NotImplementedError("receivedRouteV2 is not implemented in SkipProcessor!")
+        return receivedRoute(existing, payload, requestId)
     }
 
+//    TODO: deduplicate this from squid
     override fun usdcAmount(data: Map<String, Any>): Double? {
-        throw NotImplementedError("usdcAmount is not implemented in SkipProcessor!")
+        var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
+        toAmountUSD = toAmountUSD?.replace(",", "")
+        var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
+        toAmount = toAmount?.replace(",", "")
+        return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
     }
 
     override fun receivedStatus(
