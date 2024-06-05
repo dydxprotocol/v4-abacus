@@ -95,6 +95,7 @@ internal class OnboardingSupervisor(
         }
     }
 
+    @Suppress("UnusedPrivateMember")
     private fun retrieveTransferAssets() {
         val oldState = stateMachine.state
         val url = helper.configs.squidV2Assets()
@@ -147,7 +148,7 @@ internal class OnboardingSupervisor(
                     }
                 }
                 ExchangeConfig.exchangeList = exchanges
-                stateMachine.squidProcessor.exchangeDestinationChainId =
+                stateMachine.routerProcessor.exchangeDestinationChainId =
                     helper.configs.nobleChainId()
             }
         }
@@ -197,7 +198,7 @@ internal class OnboardingSupervisor(
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
+                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
@@ -259,7 +260,7 @@ internal class OnboardingSupervisor(
         val fromToken = state?.input?.transfer?.token
         val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.squidProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
+                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
