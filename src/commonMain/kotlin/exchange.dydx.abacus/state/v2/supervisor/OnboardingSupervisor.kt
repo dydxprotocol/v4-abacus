@@ -932,8 +932,7 @@ internal class OnboardingSupervisor(
             )
             helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
                 if (response != null) {
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
+                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                 } else {
                     Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
                 }
@@ -987,8 +986,7 @@ internal class OnboardingSupervisor(
             val oldState = stateMachine.state
             helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
                 if (response != null) {
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
+                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                 } else {
                     Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
                 }
@@ -1046,9 +1044,8 @@ internal class OnboardingSupervisor(
                 if (response != null) {
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
                     if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRouteV2(response, subaccountNumber ?: 0, requestId), oldState)
+                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                     }
                 } else {
                     Logger.e { "retrieveSkipWithdrawalRouteCCTP error, code: $code" }
