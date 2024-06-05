@@ -148,7 +148,7 @@ internal class ParentSubaccountsChannelMock {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8b9",
                     "market":"RUNE-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
-                    "subaccountNumber":256,
+                    "subaccountNumber":128,
                     "clientId":"194126270",
                     "clobPairId":"134",
                     "orderFlags": "0",
