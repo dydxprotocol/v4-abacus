@@ -5,7 +5,6 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
-import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
@@ -21,22 +20,8 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
         testAccountsOnce()
     }
 
-    internal override fun loadSubaccounts(): StateResponse {
-        return test({
-            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
-        }, null)
-    }
-
-    private fun testAccountsOnce() {
-        var time = ServerTime.now()
-        testSubaccountSubscribed()
-        testTradeInput()
-        testSubaccountChannelData()
-        time = perp.log("Accounts Subscribed", time)
-    }
-
-    private fun testSubaccountSubscribed() {
-        test(
+    internal fun loadSubaccounts2(): StateResponse {
+        return test(
             {
                 perp.socket(testWsUrl, mock.parentSubaccountsChannel.subscribed, 0, null)
             },
@@ -44,16 +29,13 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 {
                     "wallet": {
                         "account": {
-                            "tradingRewards": {
-                                "total": 2800.8
-                            },
                             "subaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 89358.63
+                                        "current": 100000.0
                                     },
                                     "freeCollateral": {
-                                        "current": 88826.56
+                                        "current": 100000.0
                                     },
                                     "quoteBalance": {
                                         "current": 100000.0
@@ -71,19 +53,19 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "resources": {
                                             },
                                             "valueTotal": {
-                                                "current": -10641.37
+                                                "current": -27928.13
                                             },
                                             "notionalTotal": {
-                                                "current": 10641.37
+                                                "current": 27928.13
                                             },
                                             "adjustedImf": {
                                                 "current": 5.0E-2
                                             },
                                             "initialRiskTotal": {
-                                                "current": 532.07
+                                                "current": 1396.41
                                             },
                                             "leverage": {
-                                                "current": -0.12
+                                                "current": -0.39
                                             },
                                             "subaccountNumber": 0,
                                             "marginMode": "CROSS"
@@ -92,16 +74,16 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                 },
                                 "128": {
                                     "equity": {
-                                        "current": 829.16
+                                        "current": 1132.02
                                     },
                                     "freeCollateral": {
-                                        "current": 796.244
+                                        "current": 1005.612
                                     },
                                     "quoteBalance": {
                                         "current": 500.0
                                     },
                                     "marginUsage": {
-                                        "current": 0.0397
+                                        "current": 0.1117
                                     },
                                     "openPositions": {
                                         "RUNE-USD": {
@@ -119,19 +101,19 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "resources": {
                                             },
                                             "notionalTotal": {
-                                                "current": 329.16
+                                                "current": 632.02
                                             },
                                             "valueTotal": {
-                                                "current": 329.16
+                                                "current": 632.02
                                             },
                                             "initialRiskTotal": {
-                                                "current": 32.916
+                                                "current": 126.403
                                             },
                                             "leverage": {
-                                                "current": 0.397
+                                                "current": 0.56
                                             },
                                             "buyingPower": {
-                                                "current": 7962.44
+                                                "current": 5028.06
                                             },
                                             "subaccountNumber": 128,
                                             "marginMode": "ISOLATED"
@@ -160,10 +142,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 90687.79
+                                        "current": 73703.88
                                     },
                                     "freeCollateral": {
-                                        "current": 88826.56
+                                        "current": 70675.46
                                     },
                                     "quoteBalance": {
                                         "current": 100000.0
@@ -181,19 +163,19 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "resources": {
                                             },
                                             "valueTotal": {
-                                                "current": -10641.37
+                                                "current": -27928.13
                                             },
                                             "notionalTotal": {
-                                                "current": 10641.37
+                                                "current": 27928.13
                                             },
                                             "adjustedImf": {
                                                 "current": 5.0E-2
                                             },
                                             "initialRiskTotal": {
-                                                "current": 532.07
+                                                "current": 1396.41
                                             },
                                             "leverage": {
-                                                "current": -0.12
+                                                "current": -0.39
                                             },
                                             "subaccountNumber": 0,
                                             "marginMode": "CROSS"
@@ -213,32 +195,32 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "resources": {
                                             },
                                             "notionalTotal": {
-                                                "current": 329.16
+                                                "current": 632.02
                                             },
                                             "valueTotal": {
-                                                "current": 329.16
+                                                "current": 632.02
                                             },
                                             "initialRiskTotal": {
-                                                "current": 32.916
+                                                "current": 126.403
                                             },
                                             "leverage": {
-                                                "current": 0.397
+                                                "current": 0.56
                                             },
                                             "buyingPower": {
-                                                "current": 7962.44
+                                                "current": 5028.06
                                             },
                                             "childSubaccountNumber": 128,
                                             "equity": {
-                                                "current": 829.16
+                                                "current": 1132.02
                                             },
                                             "quoteBalance": {
                                                 "current": 500.0
                                             },
                                             "freeCollateral": {
-                                                "current": 796.244
+                                                "current": 1005.612
                                             },
                                             "marginUsage": {
-                                                "current": 0.0397
+                                                "current": 0.1117
                                             },
                                             "subaccountNumber": 128,
                                             "marginMode": "ISOLATED"
@@ -247,19 +229,6 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                     "pendingPositions": [
                                         {
                                             "assetId": "APE"
-                                        },
-                                        {
-                                            "assetId": "RUNE",
-                                            "orderCount": 1,
-                                            "quoteBalance": {
-                                                "current": 500.0
-                                            },
-                                            "freeCollateral": {
-                                                "current": 500.0
-                                            },
-                                            "equity": {
-                                                "current": 500.0
-                                            }
                                         }
                                     ]
                                 }
@@ -269,6 +238,20 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 }
             """.trimIndent(),
         )
+    }
+
+    internal override fun loadMarkets(): StateResponse {
+        return test({
+            perp.socket(testWsUrl, mock.marketsChannel.subscribed_2, 0, null)
+        }, null)
+    }
+
+    private fun testAccountsOnce() {
+        var time = ServerTime.now()
+        loadSubaccounts2()
+        testTradeInput()
+        testSubaccountChannelData()
+        time = perp.log("Accounts Subscribed", time)
     }
 
     private fun testTradeInput() {
@@ -281,6 +264,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
+                            "marketId": "RUNE-USD",
                             "marginMode": "ISOLATED",
                             "targetLeverage": 1.0,
                             "options": {
@@ -308,6 +292,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
+                            "marketId": "BTC-USD",
                             "marginMode": "CROSS",
                             "options": {
                                 "needsMarginMode": false
@@ -333,6 +318,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                     "input": {
                         "current": "trade",
                         "trade": {
+                            "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
                             "options": {
                                 "needsMarginMode": false
@@ -362,9 +348,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
             """.trimIndent(),
         )
 
+        // Test tradeInMarket when market has a marketType of ISOLATED
         test(
             {
-                perp.tradeInMarket("AVAX-USD", 0)
+                perp.tradeInMarket("ISO-USD", 0)
             },
             """
                 {
@@ -402,7 +389,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
 
         test(
             {
-                perp.tradeInMarket("AVAX-USD", 0)
+                perp.tradeInMarket("ISO-USD", 0)
             },
             """
                 {
@@ -469,7 +456,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                         "postOrder": -100.0
                                     },
                                     "openPositions": {
-                                        "AVAX-USD": {
+                                        "ISO-USD": {
                                             "size": {
                                                 "postOrder": 10.0
                                             }
@@ -496,16 +483,16 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "subaccounts": {
                                 "129": {
                                     "equity": {
-                                        "current": 9822.9
+                                        "current": 10580.0
                                     },
                                     "freeCollateral": {
-                                        "current": 9740.61
+                                        "current": 10264.03
                                     },
                                     "quoteBalance": {
                                         "current": 9000.0
                                     },
                                     "marginUsage": {
-                                        "current": 0.0084
+                                        "current": 0.0299
                                     },
                                     "openPositions": {
                                         "RUNE-USD": {
@@ -519,19 +506,19 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "resources": {
                                             },
                                             "notionalTotal": {
-                                                "current": 822.9
+                                                "current": 1580.0
                                             },
                                             "valueTotal": {
-                                                "current": 822.9
+                                                "current": 1580.0
                                             },
                                             "initialRiskTotal": {
-                                                "current": 82.29
+                                                "current": 316.01
                                             },
                                             "leverage": {
-                                                "current": 0.084
+                                                "current": 0.149
                                             },
                                             "buyingPower": {
-                                                "current": 97406.1
+                                                "current": 51320.2
                                             }
                                         }
                                     }
@@ -540,7 +527,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "1": {
                                     "equity": {
-                                        "current": 9822.9
+                                        "current": 10580.0
                                     },
                                     "openPositions": {
                                         "RUNE-USD": {
@@ -554,19 +541,19 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             "resources": {
                                             },
                                             "notionalTotal": {
-                                                "current": 822.9
+                                                "current": 1580.0
                                             },
                                             "valueTotal": {
-                                                "current": 822.9
+                                                "current": 1580.0
                                             },
                                             "initialRiskTotal": {
-                                                "current": 82.29
+                                                "current": 316.01
                                             },
                                             "leverage": {
-                                                "current": 0.084
+                                                "current": 0.149
                                             },
                                             "buyingPower": {
-                                                "current": 97406.1
+                                                "current": 51320.2
                                             }
                                         }
                                     }
@@ -665,7 +652,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 1997.66
+                                        "current": 2001.4
                                     },
                                     "freeCollateral": {
                                         "current": 1711.96
@@ -682,29 +669,29 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "assetId": "LDO",
                                             "valueTotal": {
-                                                "current": 17.81
+                                                "current": 21.55
                                             },
                                             "notionalTotal": {
-                                                "current": 17.81
+                                                "current": 21.55
                                             },
                                             "leverage": {
-                                                "current": 0.06
+                                                "current": 0.07
                                             },
                                             "buyingPower": {
-                                                "current": 1410.69
+                                                "current": 1425.66
                                             },
                                             "childSubaccountNumber": 128,
                                             "quoteBalance": {
                                                 "current": 267.89
                                             },
                                             "freeCollateral": {
-                                                "current": 282.14
+                                                "current": 285.13
                                             },
                                             "marginUsage": {
-                                                "current": 0.012
+                                                "current": 0.015
                                             },
                                             "equity": {
-                                                "current": 285.70
+                                                "current": 289.4
                                             }
                                         }
                                     },
@@ -735,7 +722,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 2107.37
+                                        "current": 2113.16
                                     },
                                     "freeCollateral": {
                                         "current": 1711.96
@@ -752,29 +739,29 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "assetId": "LDO",
                                             "valueTotal": {
-                                                "current": 27.52
+                                                "current": 33.31
                                             },
                                             "notionalTotal": {
-                                                "current": 27.52
+                                                "current": 33.31
                                             },
                                             "leverage": {
-                                                "current": 0.07
+                                                "current": 0.08
                                             },
                                             "buyingPower": {
-                                                "current": 1949.55
+                                                "current": 1972.69
                                             },
                                             "childSubaccountNumber": 128,
                                             "quoteBalance": {
                                                 "current": 367.89
                                             },
                                             "freeCollateral": {
-                                                "current": 389.91
+                                                "current": 394.54
                                             },
                                             "marginUsage": {
-                                                "current": 0.014
+                                                "current": 0.017
                                             },
                                             "equity": {
-                                                "current": 395.41
+                                                "current": 401.2
                                             }
                                         }
                                     },

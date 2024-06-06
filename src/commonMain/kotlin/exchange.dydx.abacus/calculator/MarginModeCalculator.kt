@@ -4,36 +4,61 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 
 internal object MarginModeCalculator {
-    fun findExistingMarginMode(
+    fun findExistingPosition(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         marketId: String?,
         subaccountNumber: Int,
-    ): String? {
+    ): Map<String, Any>? {
         val position = parser.asNativeMap(
             parser.value(
                 account,
                 "groupedSubaccounts.$subaccountNumber.openPositions.$marketId",
             ),
         )
-        if (position != null && (
-                parser.asDouble(parser.value(position, "size.current"))
-                    ?: 0.0
-                ) != 0.0
+
+        return if (
+            position != null &&
+            (parser.asDouble(parser.value(position, "size.current")) ?: 0.0) != 0.0
         ) {
-            return if (position["equity"] == null) {
-                "CROSS"
-            } else {
-                "ISOLATED"
-            }
+            position
+        } else {
+            null
         }
-        val openOrder = parser.asNativeMap(
-            parser.value(account, "groupedSubaccounts.$subaccountNumber.orders"),
+    }
+
+    fun findExistingOrder(
+        parser: ParserProtocol,
+        account: Map<String, Any>?,
+        marketId: String?,
+        subaccountNumber: Int,
+    ): Map<String, Any>? {
+        val order = parser.asNativeMap(
+            parser.value(
+                account,
+                "groupedSubaccounts.$subaccountNumber.orders",
+            ),
         )?.values?.firstOrNull {
             val orderMarketId = parser.asString(parser.value(it, "marketId"))
             val orderStatus = parser.asString(parser.value(it, "status"))
             orderMarketId == marketId && !listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
         }
+
+        return if (order != null) order as Map<String, Any> else null
+    }
+
+    fun findExistingMarginMode(
+        parser: ParserProtocol,
+        account: Map<String, Any>?,
+        marketId: String?,
+        subaccountNumber: Int,
+    ): String? {
+        val position = findExistingPosition(parser, account, marketId, subaccountNumber)
+        if (position != null) {
+            return if (position["equity"] != null) "ISOLATED" else "CROSS"
+        }
+
+        val openOrder = findExistingOrder(parser, account, marketId, subaccountNumber)
         if (openOrder != null) {
             return if ((
                     parser.asInt(
@@ -49,6 +74,7 @@ internal object MarginModeCalculator {
                 "CROSS"
             }
         }
+
         return null
     }
 

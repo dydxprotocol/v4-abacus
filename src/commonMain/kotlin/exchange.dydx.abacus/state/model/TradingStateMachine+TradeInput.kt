@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.model
 import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
@@ -87,8 +88,33 @@ internal fun TradingStateMachine.tradeInMarket(
             // If we changed market, we should also reset the price and size
             modified.safeSet("size", null)
             modified.safeSet("price", null)
-            modified.safeSet("marginMode", null)
-            modified.safeSet("targetLeverage", null)
+
+            val existingPosition = MarginModeCalculator.findExistingPosition(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+            val existingOrder = MarginModeCalculator.findExistingOrder(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+            if (existingPosition != null) {
+                modified.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
+                val positionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current")) ?: 1.0
+                modified.safeSet("targetLeverage", positionLeverage)
+            } else if (existingOrder != null) {
+                val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.cross.rawValue else MarginMode.isolated.rawValue
+                modified.safeSet("marginMode", orderMarginMode)
+                modified.safeSet("targetLeverage", 1.0)
+            } else {
+                val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
+                modified.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
+                modified.safeSet("targetLeverage", 1.0)
+            }
+
             modified
         } else {
             initiateTrade(

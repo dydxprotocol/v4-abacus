@@ -356,11 +356,11 @@ internal class SubaccountTransformer {
         exceptMarketId: String?
     ): Map<String, Any> {
         return positions.filterValues { position ->
-            val marketId = parser.asString(parser.value(position, "marketId"))
+            val marketId = parser.asString(parser.value(position, "id"))
             val current = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
             val postOrder = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
 
-            (marketId != exceptMarketId) || (current != 0.0 || postOrder != 0.0)
+            (marketId == exceptMarketId) || (current != 0.0 || postOrder != 0.0)
         }
     }
 
