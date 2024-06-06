@@ -1168,10 +1168,10 @@ internal class TradeInputCalculator(
         subaccount: Map<String, Any>?
     ): Map<String, Any>? {
         val selectableMarginMode = MarginModeCalculator.selectableMarginModes(
-            parser,
-            account,
-            market,
-            parser.asInt(subaccount?.get("subaccountNumber")) ?: 0,
+            parser = parser,
+            account = account,
+            market = market,
+            subaccountNumber = parser.asInt(subaccount?.get("subaccountNumber")) ?: 0,
         )
         return if (selectableMarginMode) {
             mapOf(

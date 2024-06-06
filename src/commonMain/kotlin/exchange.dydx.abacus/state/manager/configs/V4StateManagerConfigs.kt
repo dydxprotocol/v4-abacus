@@ -123,6 +123,10 @@ class V4StateManagerConfigs(
         return "$skipHost/v1/fungible/assets?include_evm_assets=true"
     }
 
+    fun skipV2MsgsDirect(): String {
+        return "$skipHost/v2/fungible/msgs_direct"
+    }
+
     fun nobleDenom(): String? {
         return "uusdc"
     }
