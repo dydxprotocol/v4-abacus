@@ -330,6 +330,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
             """.trimIndent(),
         )
 
+        // needsMarginMode should be true because it does not exist in openPositions and the order has a status of BEST_EFFORT_CANCELED
         test(
             {
                 perp.tradeInMarket("ETH-USD", 0)
@@ -341,7 +342,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         "trade": {
                             "marginMode": "CROSS",
                             "options": {
-                                "needsMarginMode": false
+                                "needsMarginMode": true
                             }
                         }
                     }
