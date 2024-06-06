@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V4ParentSubaccountTests : V4BaseTests(true) {
     @Test
@@ -594,7 +595,7 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
             {
                 perp.socket(
                     testWsUrl,
-                    mock.parentSubaccountsChannel.read_subscribed_with_pending,
+                    mock.parentSubaccountsChannel.real_subscribed_with_pending,
                     0,
                     null,
                 )
@@ -638,6 +639,162 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 }
             """.trimIndent(),
         )
+
+        // needsMarginMode should be false to prevent user from changing margin mode
+        // Attaching to V4ParentSubaccountTests to test the tradeInMarket function with a subaccount that has a pending position
+        // TODO: Move to IsolatedMarketsTests
+        test(
+            {
+                perp.tradeInMarket("LDO-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "LDO-USD",
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": false,
+                                "marginModeOptions": null
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        // Test the placeholder openPosition's equity
+        test(
+            {
+                perp.tradeInMarket("APE-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "CROSS",
+                            "options": {
+                                "needsMarginMode": true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("ISOLATED", TradeInputField.marginMode, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "options": {
+                                "needsMarginMode": true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("20", TradeInputField.usdcSize, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "size": {
+                                "usdcSize": 20.0
+                            },
+                            "options": {
+                                "needsMarginMode": true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("2", TradeInputField.limitPrice, 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "size": {
+                                "usdcSize": 20.0
+                            },
+                            "price": {
+                                "limitPrice": 2.0
+                            },
+                            "options": {
+                                "needsMarginMode": true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("2", TradeInputField.targetLeverage, 0)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "openPositions": {
+                                        "APE-USD": {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "size": {
+                                "usdcSize": 20.0
+                            },
+                            "price": {
+                                "limitPrice": 2.0
+                            },
+                            "targetLeverage": 2.0,
+                            "options": {
+                                "needsMarginMode": true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        val postOrderEquity = parser.asDouble(parser.value(perp.data, "wallet.account.groupedSubaccounts.0.openPositions.APE-USD.equity.postOrder")) ?: 0.0
+        assertEquals(postOrderEquity, 10.0)
     }
 
     private fun testParentSubaccountSubscribed() {

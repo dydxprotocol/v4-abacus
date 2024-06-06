@@ -395,7 +395,7 @@ internal class ParentSubaccountsChannelMock {
         }
     """.trimIndent()
 
-    internal val read_subscribed_with_pending = """
+    internal val real_subscribed_with_pending = """
         {
            "type":"subscribed",
            "connection_id":"51b652ba-3264-4c46-a410-3439c8ea4020",
