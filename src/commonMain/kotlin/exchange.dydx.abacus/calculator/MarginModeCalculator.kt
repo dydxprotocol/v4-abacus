@@ -33,18 +33,19 @@ internal object MarginModeCalculator {
         marketId: String?,
         subaccountNumber: Int,
     ): Map<String, Any>? {
-        val order = parser.asNativeMap(
+        val orders = parser.asNativeMap(
             parser.value(
                 account,
                 "groupedSubaccounts.$subaccountNumber.orders",
             ),
-        )?.values?.firstOrNull {
-            val orderMarketId = parser.asString(parser.value(it, "marketId"))
-            val orderStatus = parser.asString(parser.value(it, "status"))
-            orderMarketId == marketId && !listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
+        )
+        val order = orders?.entries?.firstOrNull {
+            val orderMarketId = parser.asString(parser.value(it.value, "marketId"))
+            val orderStatus = parser.asString(parser.value(it.value, "status"))
+            orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
         }
 
-        return if (order != null) order as Map<String, Any> else null
+        return if (order != null) order.value as Map<String, Any> else null
     }
 
     fun findExistingMarginMode(
