@@ -26,16 +26,18 @@ internal object MarginModeCalculator {
                 "ISOLATED"
             }
         }
-        val order = parser.asNativeMap(
+        val openOrder = parser.asNativeMap(
             parser.value(account, "groupedSubaccounts.$subaccountNumber.orders"),
         )?.values?.firstOrNull {
-            parser.asString(parser.value(it, "marketId")) == marketId
+            val orderMarketId = parser.asString(parser.value(it, "marketId"))
+            val orderStatus = parser.asString(parser.value(it, "status"))
+            orderMarketId == marketId && !listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
         }
-        if (order != null) {
+        if (openOrder != null) {
             return if ((
                     parser.asInt(
                         parser.value(
-                            order,
+                            openOrder,
                             "subaccountNumber",
                         ),
                     ) ?: subaccountNumber
