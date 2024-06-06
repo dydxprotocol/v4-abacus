@@ -159,7 +159,10 @@ internal fun TradingStateMachine.initiateTrade(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    trade.safeSet("marginMode", null)
+    val marginMode = MarginModeCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
+        ?: MarginModeCalculator.findMarketMarginMode(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
+
+    trade.safeSet("marginMode", marginMode)
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.trade, featureFlags)
     val params = mutableMapOf<String, Any>()
