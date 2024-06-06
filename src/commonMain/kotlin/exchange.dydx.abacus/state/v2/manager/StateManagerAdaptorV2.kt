@@ -232,7 +232,13 @@ internal class StateManagerAdaptorV2(
 
                 if (value != null) {
                     networkHelper.ioImplementations.threading?.async(ThreadingType.abacus) {
-                        stateMachine.tradeInMarket(value, subaccountNumber)
+                        val stateResponse = stateMachine.tradeInMarket(value, subaccountNumber)
+                        ioImplementations.threading?.async(ThreadingType.main) {
+                            stateNotification?.stateChanged(
+                                stateResponse.state,
+                                stateResponse.changes,
+                            )
+                        }
                     }
                 }
             }
