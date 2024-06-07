@@ -694,7 +694,7 @@ internal class StateManagerAdaptorV2(
             stateNotification?.stateChanged(
                 stateMachine.state,
                 StateChanges(
-                    iListOf(Changes.restriction),
+                    iListOf(Changes.compliance),
                 ),
             )
         }
