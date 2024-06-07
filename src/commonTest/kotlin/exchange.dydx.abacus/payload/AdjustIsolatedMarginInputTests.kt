@@ -2,45 +2,46 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.adjustIsolatedMargin
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-class AdjustIsolatedMarginInputTests : V4BaseTests() {
+class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
 
-    override fun loadSubaccounts(): StateResponse {
-        return perp.socket(testWsUrl, "", 0, null)
-    }
-
-    fun loadSubaccountWithoutChildren(): StateResponse {
-        return perp.socket(
-            testWsUrl,
-            mock.accountsChannel.v4_subscribed_for_calculation,
-            0,
-            null,
-        )
+    internal override fun loadMarkets(): StateResponse {
+        return test({
+            perp.socket(testWsUrl, mock.marketsChannel.subscribed_2, 0, null)
+        }, null)
     }
 
     fun loadSubaccountsWithChildren(): StateResponse {
         return perp.socket(testWsUrl, mock.parentSubaccountsChannel.subscribed, 0, null)
     }
 
-//    @Test
-//    fun testInputsWithoutChildren() {
-//        setup()
-//        loadSubaccountWithoutChildren()
-//
-//        testChildSubaccountNumberInput()
-//        testMarginAddition()
-//        testMarginRemoval()
-//        testZeroAmount()
-//    }
+    private fun loadSubaccountsWithRealData(): StateResponse {
+        return test({
+            perp.rest(
+                AbUrl.fromString("$testRestUrl/v4/addresses/dydxaddress"),
+                mock.parentSubaccountsChannel.rest_response,
+                0,
+                null,
+            )
+        }, null)
+    }
+
+    @BeforeTest
+    private fun prepareTest() {
+        reset()
+        loadMarketsConfigurations()
+        loadMarkets()
+        perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+        loadSubaccountsWithChildren()
+    }
 
     @Test
     fun testInputs() {
-        setup()
-        loadSubaccountsWithChildren()
-
         testChildSubaccountNumberInput()
         testMarginAddition()
         testMarginRemoval()
@@ -230,12 +231,23 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
             },
             """
             {
+                "wallet": {
+                    "account": {
+                        "groupedSubaccounts": {
+                            "0": {
+                                "freeCollateral": {
+                                    "current": 70675.4609861851
+                                }
+                            }
+                        }
+                    }
+                },
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
                         "Type": "Add",
                         "AmountPercent": "0.1",
-                        "Amount": "8882.656169898173"
+                        "Amount": "7067.54609861851"
                     }
                 }
             }
@@ -270,12 +282,23 @@ class AdjustIsolatedMarginInputTests : V4BaseTests() {
             },
             """
             {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "128": {
+                                "equity": {
+                                    "current": 1132.02
+                                }
+                            }
+                        }
+                    }
+                },
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
                         "Type": "Remove",
                         "AmountPercent": "0.1",
-                        "Amount": "79.62439999999999"
+                        "Amount": "113.202"
                     }
                 }
             }

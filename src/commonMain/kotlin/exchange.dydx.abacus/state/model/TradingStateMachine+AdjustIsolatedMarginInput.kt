@@ -81,8 +81,13 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     val subaccount = parser.asNativeMap(
                         parser.value(this.account, "subaccounts.$subaccountNumber"),
                     )
-
+                    val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current"))
                     val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
+                    val baseAmount = if (isolatedMarginAdjustmentType == IsolatedMarginAdjustmentType.Add.name) {
+                        freeCollateral
+                    } else {
+                        equity
+                    }
                     val amountValue = parser.asDouble(data)
 
                     if (amountValue == null) {
@@ -91,8 +96,8 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     } else if (type == AdjustIsolatedMarginInputField.Amount) {
                         adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
 
-                        if (equity != null) {
-                            val amountPercent = amountValue / equity
+                        if (baseAmount != null && baseAmount > 0.0) {
+                            val amountPercent = amountValue / baseAmount
                             adjustIsolatedMargin.safeSet("AmountPercent", amountPercent.toString())
                         } else {
                             adjustIsolatedMargin.safeSet("AmountPercent", null)
@@ -100,8 +105,8 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     } else if (type == AdjustIsolatedMarginInputField.AmountPercent) {
                         adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
 
-                        if (equity != null) {
-                            val amount = amountValue * equity
+                        if (baseAmount != null && baseAmount > 0.0) {
+                            val amount = amountValue * baseAmount
                             adjustIsolatedMargin.safeSet("Amount", amount.toString())
                         } else {
                             adjustIsolatedMargin.safeSet("Amount", null)
