@@ -175,6 +175,8 @@ internal class StateManagerAdaptorV2(
         ioImplementations.threading,
     )
 
+    private val geoPollingDuration = 10.0
+
     internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
         set(value) {
             if (field != value) {
@@ -342,7 +344,7 @@ internal class StateManagerAdaptorV2(
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
         if (readyToConnect) {
-            fetchGeo()
+            pollGeo()
         }
     }
 
@@ -473,6 +475,15 @@ internal class StateManagerAdaptorV2(
 
     private fun height(): BlockAndTime? {
         return null
+    }
+
+    private fun pollGeo() {
+        ioImplementations.timer?.schedule(
+            0.0,
+            geoPollingDuration) {
+                fetchGeo()
+                true
+            }
     }
 
     private fun fetchGeo() {
@@ -635,8 +646,8 @@ internal class StateManagerAdaptorV2(
         accounts.screen(address, callback)
     }
 
-    internal fun triggerCompliance(address: ComplianceAction, callback: TransactionCallback) {
-        accounts.triggerCompliance(address, callback)
+    internal fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback?) {
+        accounts.triggerCompliance(action, callback)
     }
 
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {
@@ -707,5 +718,6 @@ internal class StateManagerAdaptorV2(
                 ),
             )
         }
+        triggerCompliance(ComplianceAction.CONNECT, null)
     }
 }

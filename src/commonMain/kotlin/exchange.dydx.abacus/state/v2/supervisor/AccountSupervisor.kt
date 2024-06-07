@@ -817,12 +817,16 @@ internal open class AccountSupervisor(
         }
     }
 
-    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback?) {
         if (compliance.status != ComplianceStatus.UNKNOWN) {
             updateCompliance(DydxAddress(accountAddress), compliance.status, action)
-            callback(true, null, null)
+            if (callback != null) {
+                callback(true, null, null)
+            }
         }
-        callback(false, V4TransactionErrors.error(null, "No account address"), null)
+        if (callback != null) {
+            callback(false, V4TransactionErrors.error(null, "No account address"), null)
+        }
     }
 
     private fun complianceScreenUrl(address: String): String? {
