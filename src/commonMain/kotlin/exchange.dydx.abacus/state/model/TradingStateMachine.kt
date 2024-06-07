@@ -69,6 +69,7 @@ import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
 import kollections.toIMutableMap
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
@@ -246,7 +247,7 @@ open class TradingStateMachine(
         val json =
             try {
                 Json.parseToJsonElement(jsonString).jsonObject.toMap()
-            } catch (e: Exception) {
+            } catch (e: SerializationException) {
                 errors.add(
                     ParsingError(
                         ParsingErrorType.ParsingError,

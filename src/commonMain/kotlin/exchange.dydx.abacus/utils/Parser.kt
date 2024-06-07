@@ -8,6 +8,7 @@ import kollections.toIList
 import kollections.toIMap
 import kollections.toIMutableList
 import kotlinx.datetime.Instant
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
@@ -373,9 +374,8 @@ class Parser : ParserProtocol {
         if (text == null) return null
         val map = try {
             Json.parseToJsonElement(text).jsonObject.toMap().toIMap()
-        } catch (e: Exception) {
+        } catch (e: SerializationException) {
             Logger.e { "Unable to decode json object: $text" }
-            Logger.e { "Exception: $e" }
             null
         }
         return map
@@ -385,9 +385,8 @@ class Parser : ParserProtocol {
         if (text == null) return null
         val list = try {
             Json.parseToJsonElement(text).jsonArray.toIList()
-        } catch (e: Exception) {
+        } catch (e: SerializationException) {
             Logger.e { "Unable to decode json object: $text" }
-            Logger.e { "Exception: $e" }
             null
         }
         return list
