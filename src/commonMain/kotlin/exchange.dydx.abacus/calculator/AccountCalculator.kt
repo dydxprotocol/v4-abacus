@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -164,7 +165,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
             if (childOpenPositions?.containsKey(marketId) == true) {
                 val existingPositionCurrentSize = parser.asDouble(parser.value(childOpenPositions, "$marketId.size.current"))
-                if (existingPositionCurrentSize != null && existingPositionCurrentSize > 0.0) {
+                if (existingPositionCurrentSize != null && existingPositionCurrentSize.abs() > 0.0) {
                     continue
                 }
             }
