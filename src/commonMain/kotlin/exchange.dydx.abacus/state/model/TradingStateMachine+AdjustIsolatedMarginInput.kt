@@ -7,6 +7,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -82,7 +83,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                         parser.value(this.account, "subaccounts.$subaccountNumber"),
                     )
 
-                    val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current"))
+                    val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
                     val amountValue = parser.asDouble(data)
 
                     if (amountValue == null) {
@@ -91,8 +92,8 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     } else if (type == AdjustIsolatedMarginInputField.Amount) {
                         adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
 
-                        if (freeCollateral != null) {
-                            val amountPercent = amountValue / freeCollateral
+                        if (equity != null) {
+                            val amountPercent = amountValue / equity
                             adjustIsolatedMargin.safeSet("AmountPercent", amountPercent.toString())
                         } else {
                             adjustIsolatedMargin.safeSet("AmountPercent", null)
@@ -100,8 +101,8 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     } else if (type == AdjustIsolatedMarginInputField.AmountPercent) {
                         adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
 
-                        if (freeCollateral != null) {
-                            val amount = amountValue * freeCollateral
+                        if (equity != null) {
+                            val amount = amountValue * equity
                             adjustIsolatedMargin.safeSet("Amount", amount.toString())
                         } else {
                             adjustIsolatedMargin.safeSet("Amount", null)

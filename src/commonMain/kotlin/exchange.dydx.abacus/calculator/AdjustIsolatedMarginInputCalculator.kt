@@ -2,9 +2,12 @@ package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.toJsonObject
+import exchange.dydx.abacus.utils.toJsonPrettyPrint
 
 @Suppress("UNCHECKED_CAST")
 internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
@@ -98,7 +101,7 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
         val crossMarginUsage = parentSubaccount?.get("marginUsage")
         val openPositions = parser.asNativeMap(childSubaccount?.get("openPositions"))
         val marketId = openPositions?.keys?.firstOrNull()
-        val positionMargin = childSubaccount?.get("equity")
+        val positionMargin = parser.value(childSubaccount, "equity")
         val positionLeverage = parser.value(childSubaccount, "openPositions.$marketId.leverage")
         val liquidationPrice = parser.value(childSubaccount, "openPositions.$marketId.liquidationPrice")
 
