@@ -1407,7 +1407,8 @@ class V4StateManagerAdaptor(
                 if (error != null) {
                     val message = parser.asString(error["message"])
                     val code = parser.asInt(error["code"])
-                    return V4TransactionErrors.error(code, message)
+                    val codespace = parser.asString(error["codespace"])
+                    return V4TransactionErrors.error(code, message, codespace)
                 } else {
                     null
                 }
