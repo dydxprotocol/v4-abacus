@@ -2,12 +2,9 @@ package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.toJsonObject
-import exchange.dydx.abacus.utils.toJsonPrettyPrint
 
 @Suppress("UNCHECKED_CAST")
 internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
