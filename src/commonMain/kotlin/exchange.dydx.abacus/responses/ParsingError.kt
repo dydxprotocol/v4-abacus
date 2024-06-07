@@ -32,7 +32,8 @@ data class ParsingError(
     val type: ParsingErrorType,
     val message: String,
     val stringKey: String? = null,
-    val stackTrace: String? = null
+    val stackTrace: String? = null,
+    val codespace: String? = null
 )
 
 class ParsingException(
