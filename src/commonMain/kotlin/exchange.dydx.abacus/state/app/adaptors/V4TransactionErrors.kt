@@ -5,13 +5,13 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 
 class V4TransactionErrors {
     companion object {
-        fun error(code: Int?, message: String?): ParsingError? {
+        fun error(code: Int?, message: String?, codespace: String? = null): ParsingError? {
             return if (code != null) {
-                if (code != 0) {
+                if (code != 0 && codespace != null) {
                     ParsingError(
                         ParsingErrorType.BackendError,
                         message ?: "Unknown error",
-                        "ERRORS.BROADCAST_ERROR_$code",
+                        "ERRORS.BROADCAST_ERROR_${codespace.uppercase()}_${code}",
                     )
                 } else {
                     null

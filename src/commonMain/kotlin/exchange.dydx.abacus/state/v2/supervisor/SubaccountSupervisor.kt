@@ -685,7 +685,9 @@ internal class SubaccountSupervisor(
                     useTransactionQueue,
                 )
             } else {
-                helper.send(error, callback, transferPayload)
+                // callback with order payload instead of transfer payload since
+                // client shows it as a place order error and needs order client id
+                helper.send(error, callback, payload)
             }
         }
 
@@ -698,7 +700,7 @@ internal class SubaccountSupervisor(
                 transferPayloadString,
                 null,
                 isolatedMarginTransactionCallback,
-                useTransactionQueue,
+                true,
             )
         } else {
             submitTransaction(
