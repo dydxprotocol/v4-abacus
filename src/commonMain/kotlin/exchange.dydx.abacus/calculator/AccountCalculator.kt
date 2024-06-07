@@ -72,6 +72,9 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
                     val childOpenPositions =
                         parser.asNativeMap(parser.value(subaccount, "openPositions"))
+
+                    val childOrders = parser.asNativeMap(parser.value(subaccount, "orders"))
+
                     parentSubaccount = if (!childOpenPositions.isNullOrEmpty()) {
                         mergeChildOpenPositions(
                             parentSubaccount,
@@ -80,18 +83,18 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                             childOpenPositions,
                         )
                     } else {
-                        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
-                        if (orders != null) {
-                            mergeChildPendingPositions(
-                                parentSubaccount,
-                                subaccountNumber,
-                                subaccount,
-                                orders,
-                                markets,
-                            )
-                        } else {
-                            parentSubaccount
-                        }
+                        parentSubaccount
+                    }
+
+                    parentSubaccount = if (!childOrders.isNullOrEmpty()) {
+                        mergeChildPendingPositions(
+                            parentSubaccount,
+                            subaccount,
+                            childOrders,
+                            markets,
+                        )
+                    } else {
+                        parentSubaccount
                     }
                     parentSubaccount = mergeOrders(parentSubaccount, subaccount)
                     parentSubaccount = sumEquity(parentSubaccount, subaccount)
@@ -144,7 +147,6 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
     private fun mergeChildPendingPositions(
         parentSubaccount: Map<String, Any>,
-        childSubaccountNumber: Int,
         childSubaccount: Map<String, Any>,
         childOrders: Map<String, Any>,
         markets: Map<String, Any>?,
@@ -157,6 +159,12 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
         for ((orderId, order) in childOrders) {
             val marketId =
                 parser.asString(parser.value(order, "marketId")) ?: continue
+
+            val orderStatus = parser.asString(parser.value(order, "status"))
+            if (!listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)) {
+                continue
+            }
+
             val pending =
                 pendingByMarketId[marketId] as? MutableMap<String, Any>
             if (pending == null) {
@@ -165,7 +173,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                     "orderCount" to 1,
                 )
             } else {
-                pendingByMarketId.safeSet(
+                pending.safeSet(
                     "orderCount",
                     (parser.asInt(pending["orderCount"]) ?: 0) + 1,
                 )
@@ -201,6 +209,15 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
             modifiedPendingPositions.add(modifiedPendingPosition)
         }
         val modifiedParentSubaccount = parentSubaccount.toMutableMap()
+        val existingPendingPositions = parser.asNativeList(
+            parser.value(parentSubaccount, "pendingPositions"),
+        ) ?: mutableListOf()
+
+        // Append the new pending positions to the parentSubaccounts existing ones
+        existingPendingPositions.let {
+            modifiedPendingPositions.addAll(it)
+        }
+
         modifiedParentSubaccount.safeSet(
             "pendingPositions",
             modifiedPendingPositions.sortedWith { pending1, pending2 ->

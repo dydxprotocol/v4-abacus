@@ -363,6 +363,26 @@ internal class MarketConfigurationsMock {
                "primaryDescriptionKey":"ICP_PRIMARY_DESCRIPTION",
                "secondaryDescriptionKey":"ICP_SECONDARY_DESCRIPTION"
             },
+            "ISO-USD": {
+               "name":"Generic Isolated",
+               "tags":[
+                  "Layer 1"
+               ],
+               "circulatingSupply":18882437,
+               "baseSymbol":"ISO",
+               "baseSymbolName":"Isolated",
+               "quoteSymbol":"USD",
+               "largeSize":1,
+               "route":"/trade/BTC-USD",
+               "websiteLink":"https://bitcoin.org/",
+               "whitepaperLink":"https://bitcoin.org/bitcoin.pdf",
+               "coinMarketCapsLink":"https://coinmarketcap.com/currencies/bitcoin/",
+               "imageUrl":"https://s3.amazonaws.com/dydx.exchange/currencies/btc.png",
+               "primaryDescriptionKey":"BITCOIN_PRIMARY_DESCRIPTION",
+               "secondaryDescriptionKey":"BITCOIN_SECONDARY_DESCRIPTION",
+               "displayStepSize":"0.0001",
+               "displayTickSize":"1"
+            },
             "LINK-USD":{
                "name":"Chainlink",
                "tags":[

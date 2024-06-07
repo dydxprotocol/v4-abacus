@@ -54,6 +54,7 @@ import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
@@ -1197,13 +1198,15 @@ open class TradingStateMachine(
                     }
                     val groupedSubaccounts = account.groupedSubaccounts?.toIMutableMap() ?: mutableMapOf()
                     for (subaccountNumber in subaccountNumbers) {
-                        val subaccount = Subaccount.create(
-                            account.groupedSubaccounts?.get("$subaccountNumber"),
-                            parser,
-                            groupedSubaccount(subaccountNumber),
-                            localizer,
-                        )
-                        groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
+                        if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
+                            val subaccount = Subaccount.create(
+                                account.groupedSubaccounts?.get("$subaccountNumber"),
+                                parser,
+                                groupedSubaccount(subaccountNumber),
+                                localizer,
+                            )
+                            groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
+                        }
                     }
                     Account(
                         account.balances,

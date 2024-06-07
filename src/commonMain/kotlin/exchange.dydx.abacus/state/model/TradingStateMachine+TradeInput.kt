@@ -1,7 +1,10 @@
 package exchange.dydx.abacus.state.model
 
+import abs
+import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
@@ -86,8 +89,33 @@ internal fun TradingStateMachine.tradeInMarket(
             // If we changed market, we should also reset the price and size
             modified.safeSet("size", null)
             modified.safeSet("price", null)
-            modified.safeSet("marginMode", null)
-            modified.safeSet("targetLeverage", null)
+
+            val existingPosition = MarginModeCalculator.findExistingPosition(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+            val existingOrder = MarginModeCalculator.findExistingOrder(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+            if (existingPosition != null) {
+                modified.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
+                val positionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs() ?: 1.0
+                modified.safeSet("targetLeverage", positionLeverage)
+            } else if (existingOrder != null) {
+                val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.cross.rawValue else MarginMode.isolated.rawValue
+                modified.safeSet("marginMode", orderMarginMode)
+                modified.safeSet("targetLeverage", 1.0)
+            } else {
+                val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
+                modified.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
+                modified.safeSet("targetLeverage", 1.0)
+            }
+
             modified
         } else {
             initiateTrade(
@@ -98,11 +126,22 @@ internal fun TradingStateMachine.tradeInMarket(
         input["trade"] = trade
         input["current"] = "trade"
         this.input = input
+        val childSubaccountNumber =
+            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                parser,
+                account,
+                subaccountNumber,
+                trade,
+            )
         val changes =
             StateChanges(
                 iListOf(Changes.subaccount, Changes.input),
                 null,
-                iListOf(subaccountNumber),
+                if (subaccountNumber == childSubaccountNumber) {
+                    iListOf(subaccountNumber)
+                } else {
+                    iListOf(subaccountNumber, childSubaccountNumber)
+                },
             )
 
         changes.let {
@@ -121,7 +160,10 @@ internal fun TradingStateMachine.initiateTrade(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    trade.safeSet("marginMode", null)
+    val marginMode = MarginModeCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
+        ?: MarginModeCalculator.findMarketMarginMode(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
+
+    trade.safeSet("marginMode", marginMode)
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.trade, featureFlags)
     val params = mutableMapOf<String, Any>()
@@ -177,6 +219,13 @@ fun TradingStateMachine.trade(
     var sizeChanged = false
     if (typeText != null) {
         if (validTradeInput(trade, typeText)) {
+            var childsubaccountNumber =
+                MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                    parser,
+                    account,
+                    subaccountNumber,
+                    trade,
+                )
             when (typeText) {
                 TradeInputField.type.rawValue, TradeInputField.side.rawValue -> {
                     val text = parser.asString(data)
@@ -188,7 +237,11 @@ fun TradingStateMachine.trade(
                         changes = StateChanges(
                             iListOf(Changes.subaccount, Changes.input),
                             null,
-                            iListOf(subaccountNumber),
+                            if (subaccountNumber != childsubaccountNumber) {
+                                iListOf(subaccountNumber, childsubaccountNumber)
+                            } else {
+                                iListOf(subaccountNumber)
+                            },
                         )
                     } else {
                         error = ParsingError(
@@ -209,7 +262,11 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber),
+                        if (subaccountNumber != childsubaccountNumber) {
+                            iListOf(subaccountNumber, childsubaccountNumber)
+                        } else {
+                            iListOf(subaccountNumber)
+                        },
                     )
                 }
 
@@ -225,11 +282,35 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber),
+                        if (subaccountNumber != childsubaccountNumber) {
+                            iListOf(subaccountNumber, childsubaccountNumber)
+                        } else {
+                            iListOf(subaccountNumber)
+                        },
                     )
                 }
 
-                TradeInputField.marginMode.rawValue,
+                TradeInputField.marginMode.rawValue
+                -> {
+                    trade.safeSet(typeText, parser.asString(data))
+                    childsubaccountNumber =
+                        MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                            parser,
+                            account,
+                            subaccountNumber,
+                            trade,
+                        )
+                    changes = StateChanges(
+                        iListOf(Changes.input, Changes.subaccount),
+                        null,
+                        if (subaccountNumber != childsubaccountNumber) {
+                            iListOf(subaccountNumber, childsubaccountNumber)
+                        } else {
+                            iListOf(subaccountNumber)
+                        },
+                    )
+                }
+
                 TradeInputField.timeInForceType.rawValue,
                 TradeInputField.goodTilUnit.rawValue,
                 TradeInputField.bracketsGoodUntilUnit.rawValue,
@@ -240,7 +321,11 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.input),
                         null,
-                        iListOf(subaccountNumber),
+                        if (subaccountNumber != childsubaccountNumber) {
+                            iListOf(subaccountNumber, childsubaccountNumber)
+                        } else {
+                            iListOf(subaccountNumber)
+                        },
                     )
                 }
 
@@ -251,7 +336,11 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.input),
                         null,
-                        iListOf(subaccountNumber),
+                        if (subaccountNumber != childsubaccountNumber) {
+                            iListOf(subaccountNumber, childsubaccountNumber)
+                        } else {
+                            iListOf(subaccountNumber)
+                        },
                     )
                 }
 
@@ -264,7 +353,11 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        iListOf(subaccountNumber),
+                        if (subaccountNumber != childsubaccountNumber) {
+                            iListOf(subaccountNumber, childsubaccountNumber)
+                        } else {
+                            iListOf(subaccountNumber)
+                        },
                     )
                 }
 

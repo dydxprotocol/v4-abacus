@@ -1140,6 +1140,26 @@ internal class MarketsChannelMock {
           "channel": "v4_markets",
           "contents": {
             "markets": {
+              "ISO-USD": {
+                "clobPairId": "9999",
+                "ticker": "ISO-USD",
+                "status": "ACTIVE",
+                "oraclePrice": "63132.81233",
+                "priceChange24H": "-330.41492",
+                "volume24H": "407628259.2847",
+                "trades24H": 130669,
+                "nextFundingRate": "0.00003210681818181818",
+                "initialMarginFraction": "0.05",
+                "maintenanceMarginFraction": "0.03",
+                "openInterest": "630.9279",
+                "atomicResolution": -10,
+                "quantumConversionExponent": -9,
+                "tickSize": "1",
+                "stepSize": "0.0001",
+                "stepBaseQuantums": 1000000,
+                "subticksPerTick": 100000,
+                "marketType": "ISOLATED"
+              },
               "BTC-USD": {
                 "clobPairId": "0",
                 "ticker": "BTC-USD",
@@ -1157,7 +1177,8 @@ internal class MarketsChannelMock {
                 "tickSize": "1",
                 "stepSize": "0.0001",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 100000
+                "subticksPerTick": 100000,
+                "marketType": "CROSS"
               },
               "ETH-USD": {
                 "clobPairId": "1",
@@ -1176,7 +1197,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.1",
                 "stepSize": "0.001",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 100000
+                "subticksPerTick": 100000,
+                "marketType": "CROSS"
               },
               "LINK-USD": {
                 "clobPairId": "2",
@@ -1195,7 +1217,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "MATIC-USD": {
                 "clobPairId": "3",
@@ -1214,7 +1237,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "CRV-USD": {
                 "clobPairId": "4",
@@ -1233,7 +1257,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "SOL-USD": {
                 "clobPairId": "5",
@@ -1252,7 +1277,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ADA-USD": {
                 "clobPairId": "6",
@@ -1271,7 +1297,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "AVAX-USD": {
                 "clobPairId": "7",
@@ -1290,7 +1317,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "FIL-USD": {
                 "clobPairId": "8",
@@ -1309,7 +1337,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "LTC-USD": {
                 "clobPairId": "9",
@@ -1328,7 +1357,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "DOGE-USD": {
                 "clobPairId": "10",
@@ -1347,7 +1377,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.00001",
                 "stepSize": "100",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ATOM-USD": {
                 "clobPairId": "11",
@@ -1366,7 +1397,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "DOT-USD": {
                 "clobPairId": "12",
@@ -1385,7 +1417,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "UNI-USD": {
                 "clobPairId": "13",
@@ -1404,7 +1437,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "BCH-USD": {
                 "clobPairId": "14",
@@ -1423,7 +1457,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.1",
                 "stepSize": "0.01",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "TRX-USD": {
                 "clobPairId": "15",
@@ -1442,7 +1477,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.00001",
                 "stepSize": "100",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "NEAR-USD": {
                 "clobPairId": "16",
@@ -1461,7 +1497,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "MKR-USD": {
                 "clobPairId": "17",
@@ -1480,7 +1517,8 @@ internal class MarketsChannelMock {
                 "tickSize": "1",
                 "stepSize": "0.001",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "XLM-USD": {
                 "clobPairId": "18",
@@ -1499,7 +1537,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ETC-USD": {
                 "clobPairId": "19",
@@ -1518,7 +1557,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "COMP-USD": {
                 "clobPairId": "20",
@@ -1537,7 +1577,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "WLD-USD": {
                 "clobPairId": "21",
@@ -1556,7 +1597,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "APE-USD": {
                 "clobPairId": "22",
@@ -1575,7 +1617,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "APT-USD": {
                 "clobPairId": "23",
@@ -1594,7 +1637,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ARB-USD": {
                 "clobPairId": "24",
@@ -1613,7 +1657,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "BLUR-USD": {
                 "clobPairId": "25",
@@ -1632,7 +1677,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "LDO-USD": {
                 "clobPairId": "26",
@@ -1651,7 +1697,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "OP-USD": {
                 "clobPairId": "27",
@@ -1670,7 +1717,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "PEPE-USD": {
                 "clobPairId": "28",
@@ -1689,7 +1737,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0000000001",
                 "stepSize": "10000000",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "SEI-USD": {
                 "clobPairId": "29",
@@ -1708,7 +1757,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "SHIB-USD": {
                 "clobPairId": "30",
@@ -1727,7 +1777,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.000000001",
                 "stepSize": "1000000",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "SUI-USD": {
                 "clobPairId": "31",
@@ -1746,7 +1797,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "XRP-USD": {
                 "clobPairId": "32",
@@ -1765,7 +1817,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "TIA-USD": {
                 "clobPairId": "33",
@@ -1784,7 +1837,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "JUP-USD": {
                 "clobPairId": "35",
@@ -1803,7 +1857,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "AAVE-USD": {
                 "clobPairId": "36",
@@ -1822,7 +1877,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "BNB-USD": {
                 "clobPairId": "37",
@@ -1841,7 +1897,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.1",
                 "stepSize": "0.01",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "JTO-USD": {
                 "clobPairId": "38",
@@ -1860,7 +1917,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ORDI-USD": {
                 "clobPairId": "39",
@@ -1879,7 +1937,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "EOS-USD": {
                 "clobPairId": "40",
@@ -1898,7 +1957,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ICP-USD": {
                 "clobPairId": "41",
@@ -1917,7 +1977,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "DYM-USD": {
                 "clobPairId": "42",
@@ -1936,7 +1997,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "STRK-USD": {
                 "clobPairId": "43",
@@ -1955,7 +2017,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "FET-USD": {
                 "clobPairId": "44",
@@ -1974,7 +2037,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "WOO-USD": {
                 "clobPairId": "45",
@@ -1993,7 +2057,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "PYTH-USD": {
                 "clobPairId": "46",
@@ -2012,7 +2077,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "BONK-USD": {
                 "clobPairId": "47",
@@ -2031,7 +2097,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.00000001",
                 "stepSize": "100000",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "AGIX-USD": {
                 "clobPairId": "48",
@@ -2050,7 +2117,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "RNDR-USD": {
                 "clobPairId": "49",
@@ -2069,7 +2137,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "STX-USD": {
                 "clobPairId": "50",
@@ -2088,7 +2157,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "INJ-USD": {
                 "clobPairId": "51",
@@ -2107,7 +2177,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.01",
                 "stepSize": "0.1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "IMX-USD": {
                 "clobPairId": "52",
@@ -2126,7 +2197,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "HBAR-USD": {
                 "clobPairId": "53",
@@ -2145,7 +2217,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ALGO-USD": {
                 "clobPairId": "54",
@@ -2164,7 +2237,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "GRT-USD": {
                 "clobPairId": "55",
@@ -2183,7 +2257,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "MANA-USD": {
                 "clobPairId": "56",
@@ -2202,7 +2277,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "RUNE-USD": {
                 "clobPairId": "57",
@@ -2221,7 +2297,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "AXL-USD": {
                 "clobPairId": "58",
@@ -2240,7 +2317,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "AEVO-USD": {
                 "clobPairId": "59",
@@ -2259,7 +2337,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ASTR-USD": {
                 "clobPairId": "60",
@@ -2278,7 +2357,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "SNX-USD": {
                 "clobPairId": "61",
@@ -2297,7 +2377,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ARKM-USD": {
                 "clobPairId": "62",
@@ -2316,7 +2397,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "DYDX-USD": {
                 "clobPairId": "63",
@@ -2335,7 +2417,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "CHZ-USD": {
                 "clobPairId": "64",
@@ -2354,7 +2437,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.0001",
                 "stepSize": "10",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "WIF-USD": {
                 "clobPairId": "65",
@@ -2373,7 +2457,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               },
               "ETHFI-USD": {
                 "clobPairId": "66",
@@ -2392,7 +2477,8 @@ internal class MarketsChannelMock {
                 "tickSize": "0.001",
                 "stepSize": "1",
                 "stepBaseQuantums": 1000000,
-                "subticksPerTick": 1000000
+                "subticksPerTick": 1000000,
+                "marketType": "CROSS"
               }
             }
           }

@@ -37,7 +37,7 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         }, null)
     }
 
-    internal fun loadMarketsConfigurations(): StateResponse {
+    internal open fun loadMarketsConfigurations(): StateResponse {
         return test({
             perp.loadMarketsConfigurations(mock, deploymentUri)
         }, null)
