@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -154,11 +155,20 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
         // Each empty subaccount should have order for one market only
         // Just in case it has more than one market, we will create
         // two separate pending positions.
-
+        val childOpenPositions = parser.asNativeMap(
+            parser.value(childSubaccount, "openPositions"),
+        )
         val pendingByMarketId = mutableMapOf<String, Any>()
         for ((orderId, order) in childOrders) {
             val marketId =
                 parser.asString(parser.value(order, "marketId")) ?: continue
+
+            if (childOpenPositions?.containsKey(marketId) == true) {
+                val existingPositionCurrentSize = parser.asDouble(parser.value(childOpenPositions, "$marketId.size.current"))
+                if (existingPositionCurrentSize != null && existingPositionCurrentSize.abs() > 0.0) {
+                    continue
+                }
+            }
 
             val orderStatus = parser.asString(parser.value(order, "status"))
             if (!listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)) {

@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 
@@ -153,7 +154,7 @@ internal object MarginModeCalculator {
     ): Boolean {
         val positionSize = parser.asDouble(parser.value(subaccount, "openPositions.$marketId.size.current"))
 
-        if ((positionSize ?: 0.0) > 0.0) {
+        if ((positionSize ?: 0.0).abs() > 0.0) {
             return true
         }
         val orders = parser.asMap(subaccount["orders"])

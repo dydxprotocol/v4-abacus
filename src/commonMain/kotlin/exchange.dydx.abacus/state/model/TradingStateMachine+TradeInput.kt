@@ -104,7 +104,8 @@ internal fun TradingStateMachine.tradeInMarket(
             )
             if (existingPosition != null) {
                 modified.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
-                val positionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs() ?: 1.0
+                val currentPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs()
+                val positionLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
                 modified.safeSet("targetLeverage", positionLeverage)
             } else if (existingOrder != null) {
                 val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.cross.rawValue else MarginMode.isolated.rawValue
