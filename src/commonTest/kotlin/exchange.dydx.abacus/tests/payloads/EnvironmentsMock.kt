@@ -90,9 +90,6 @@ class EnvironmentsMock {
                     "geo": "https://api.dydx.exchange/v4/geo"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":true,
-                     "usePessimisticCollateralCheck":false,
-                     "useOptimisticCollateralCheck":true
                  },
                  "governance": {
                     "newMarketProposal": {
@@ -126,9 +123,6 @@ class EnvironmentsMock {
                     "geo": "https://api.dydx.exchange/v4/geo"
                  },
                  "featureFlags":{
-                     "reduceOnlySupported":false,
-                     "usePessimisticCollateralCheck":true,
-                     "useOptimisticCollateralCheck":false
                   },
                  "governance": {
                     "newMarketProposal": {

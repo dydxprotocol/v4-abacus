@@ -107,9 +107,6 @@ class AbacusMockData {
         ).toIMap(),
         null,
         EnvironmentFeatureFlags(
-            reduceOnlySupported = true,
-            usePessimisticCollateralCheck = false,
-            useOptimisticCollateralCheck = true,
             withdrawalSafetyEnabled = true,
             isSlTpEnabled = true,
             isSlTpLimitOrdersEnabled = true,

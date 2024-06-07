@@ -29,23 +29,14 @@ internal class SubaccountTransformer {
         oraclePrice: Double?,
         limitPrice: Double?,
         isBuying: Boolean,
-        usePessimisticPrice: Boolean,
-        useOptimisticPrice: Boolean,
     ): Double? {
+        // use optimistic price by default
         oraclePrice?.let { oraclePrice ->
             limitPrice?.let { limitPrice ->
-                if (usePessimisticPrice) {
-                    return if (isBuying) {
-                        max(oraclePrice, limitPrice)
-                    } else {
-                        min(oraclePrice, limitPrice)
-                    }
-                } else if (useOptimisticPrice) {
-                    return if (isBuying) {
-                        min(oraclePrice, limitPrice)
-                    } else {
-                        max(oraclePrice, limitPrice)
-                    }
+                return if (isBuying) {
+                    min(oraclePrice, limitPrice)
+                } else {
+                    max(oraclePrice, limitPrice)
                 }
             }
         }
@@ -56,8 +47,6 @@ internal class SubaccountTransformer {
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
-        usePessimisticCollateralCheck: Boolean,
-        useOptimisticCollateralCheck: Boolean,
         transfer: Double? = null,
     ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
@@ -73,8 +62,6 @@ internal class SubaccountTransformer {
                             parser.asDouble(market["oraclePrice"]),
                             originalPrice,
                             side == "BUY",
-                            usePessimisticCollateralCheck,
-                            useOptimisticCollateralCheck,
                         )
                     } ?: originalPrice
                     val size = (
@@ -228,8 +215,6 @@ internal class SubaccountTransformer {
         market: Map<String, Any>?,
         parser: ParserProtocol,
         period: String,
-        usePessimisticCollateralCheck: Boolean,
-        useOptimisticCollateralCheck: Boolean,
         transfer: Double? = null
     ): Map<String, Any>? {
         if (subaccount != null) {
@@ -237,8 +222,6 @@ internal class SubaccountTransformer {
                 parser,
                 trade,
                 market,
-                usePessimisticCollateralCheck,
-                useOptimisticCollateralCheck,
                 transfer,
             )
             return applyDeltaToSubaccount(subaccount, delta, parser, period)

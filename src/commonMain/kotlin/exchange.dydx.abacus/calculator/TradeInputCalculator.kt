@@ -130,8 +130,6 @@ internal class TradeInputCalculator(
                     market,
                     parser,
                     "postOrder",
-                    featureFlags.usePessimisticCollateralCheck,
-                    featureFlags.useOptimisticCollateralCheck,
                 ),
             )
             modified
@@ -1042,15 +1040,11 @@ internal class TradeInputCalculator(
     }
 
     private fun reduceOnlyField(): Map<String, Any>? {
-        return if (featureFlags.reduceOnlySupported) {
-            mapOf(
-                "field" to "reduceOnly",
-                "type" to "bool",
-                "default" to false,
-            )
-        } else {
-            null
-        }
+        return mapOf(
+            "field" to "reduceOnly",
+            "type" to "bool",
+            "default" to false,
+        )
     }
 
     private fun postOnlyField(): Map<String, Any> {
@@ -1300,16 +1294,11 @@ internal class TradeInputCalculator(
     private fun reduceOnlyPromptFromTrade(
         trade: Map<String, Any>,
     ): String? {
-        return if (featureFlags.reduceOnlySupported) {
-            when (parser.asString(trade["type"])) {
-                "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
+        return when (parser.asString(trade["type"])) {
+            "LIMIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
+            "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
 
-                "STOP_LIMIT", "TAKE_PROFIT" -> "GENERAL.TRADE.REDUCE_ONLY_TIMEINFORCE_IOC"
-
-                else -> return null
-            }
-        } else {
-            null
+            else -> return null
         }
     }
 

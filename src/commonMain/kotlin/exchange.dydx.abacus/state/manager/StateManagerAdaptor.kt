@@ -2107,7 +2107,7 @@ open class StateManagerAdaptor(
         val size = summary.size ?: throw Exception("size is null")
         val timeInForce = "IOC"
         val execution = "DEFAULT"
-        val reduceOnly = environment.featureFlags.reduceOnlySupported
+        val reduceOnly = true
         val postOnly = false
         val goodTilTimeInSeconds = null
         val currentHeight = calculateCurrentHeight()

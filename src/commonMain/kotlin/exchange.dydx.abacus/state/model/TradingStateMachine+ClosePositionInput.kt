@@ -54,7 +54,7 @@ fun TradingStateMachine.closePosition(
                     }
                 }
                 trade["type"] = "MARKET"
-                trade["reduceOnly"] = featureFlags.reduceOnlySupported
+                trade["reduceOnly"] = true
 
                 val positionSize =
                     parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
