@@ -11,7 +11,7 @@ class V4TransactionErrors {
                     ParsingError(
                         ParsingErrorType.BackendError,
                         message ?: "Unknown error",
-                        "ERRORS.BROADCAST_ERROR_${codespace.uppercase()}_${code}",
+                        "ERRORS.BROADCAST_ERROR_${codespace.uppercase()}_$code",
                     )
                 } else {
                     null

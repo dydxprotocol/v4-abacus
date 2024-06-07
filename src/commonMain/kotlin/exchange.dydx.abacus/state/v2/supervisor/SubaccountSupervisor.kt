@@ -700,7 +700,7 @@ internal class SubaccountSupervisor(
                 transferPayloadString,
                 null,
                 isolatedMarginTransactionCallback,
-                true,
+                useTransactionQueue = true,
             )
         } else {
             submitTransaction(
