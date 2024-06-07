@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.model
 
+import abs
 import exchange.dydx.abacus.calculator.MarginModeCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
@@ -9,6 +10,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
@@ -103,7 +105,7 @@ internal fun TradingStateMachine.tradeInMarket(
             )
             if (existingPosition != null) {
                 modified.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
-                val positionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current")) ?: 1.0
+                val positionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs() ?: 1.0
                 modified.safeSet("targetLeverage", positionLeverage)
             } else if (existingOrder != null) {
                 val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.cross.rawValue else MarginMode.isolated.rawValue

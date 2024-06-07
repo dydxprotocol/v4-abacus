@@ -160,7 +160,9 @@ internal object MarginModeCalculator {
         val foundOrder = orders?.values?.firstOrNull { item ->
             val order = parser.asMap(item)
             return if (order != null) {
-                parser.asString(order["marketId"]) == marketId
+                val orderStatus = parser.asString(parser.value(order, "status"))
+                val orderMarketId = parser.asString(order["marketId"])
+                orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
             } else {
                 false
             }

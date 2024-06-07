@@ -72,8 +72,8 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
                     val childOpenPositions =
                         parser.asNativeMap(parser.value(subaccount, "openPositions"))
-                    val maybePlaceholderPosition = parser.asNativeMap(childOpenPositions?.values?.firstOrNull())
-                    val isPlaceholderPosition = (parser.asDouble(parser.value(maybePlaceholderPosition, "size.current")) ?: 0.0) == 0.0
+
+                    val childOrders = parser.asNativeMap(parser.value(subaccount, "orders"))
 
                     parentSubaccount = if (!childOpenPositions.isNullOrEmpty()) {
                         mergeChildOpenPositions(
@@ -82,18 +82,17 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
                             subaccount,
                             childOpenPositions,
                         )
-                    } else if (isPlaceholderPosition) {
-                        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
-                        if (orders != null) {
-                            mergeChildPendingPositions(
-                                parentSubaccount,
-                                subaccount,
-                                orders,
-                                markets,
-                            )
-                        } else {
-                            parentSubaccount
-                        }
+                    } else {
+                        parentSubaccount
+                    }
+
+                    parentSubaccount = if (!childOrders.isNullOrEmpty()) {
+                        mergeChildPendingPositions(
+                            parentSubaccount,
+                            subaccount,
+                            childOrders,
+                            markets,
+                        )
                     } else {
                         parentSubaccount
                     }
