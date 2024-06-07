@@ -714,6 +714,268 @@ internal class ParentSubaccountsChannelMock {
         }
     """.trimIndent()
 
+    internal val real_subscribe_with_multiple_pending = """
+        {
+          "type": "subscribed",
+          "connection_id": "12fb075c-885d-4095-8810-ab3bfd41cfd1",
+          "message_id": 2,
+          "channel": "v4_parent_subaccounts",
+          "id": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+          "contents": {
+            "subaccount": {
+              "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+              "parentSubaccountNumber": 0,
+              "equity": "1109.619011799",
+              "freeCollateral": "1107.3573440191",
+              "childSubaccounts": [
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 0,
+                  "equity": "1010.081475655",
+                  "freeCollateral": "1009.5504494895",
+                  "openPerpetualPositions": {
+                    "TIA-USD": {
+                      "market": "TIA-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "0.5",
+                      "maxSize": "0.5",
+                      "entryPrice": "10.51",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "0.055261655",
+                      "createdAt": "2024-06-07T06:38:33.129Z",
+                      "createdAtHeight": "13959584",
+                      "closedAt": null,
+                      "sumOpen": "0.5",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 0
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "1004.771214",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 0
+                    }
+                  },
+                  "marginEnabled": true
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 128,
+                  "equity": "19.537536144",
+                  "freeCollateral": "17.8068945296",
+                  "openPerpetualPositions": {
+                    "ARB-USD": {
+                      "market": "ARB-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "16",
+                      "maxSize": "16",
+                      "entryPrice": "1.11",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "-0.453583856",
+                      "createdAt": "2024-06-06T15:50:59.007Z",
+                      "createdAtHeight": "13917102",
+                      "closedAt": null,
+                      "sumOpen": "16",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "2.23112",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "marginEnabled": true
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 256,
+                  "equity": "60",
+                  "freeCollateral": "60",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "60",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 256
+                    }
+                  },
+                  "marginEnabled": true
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 384,
+                  "equity": "20",
+                  "freeCollateral": "20",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "20",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 384
+                    }
+                  },
+                  "marginEnabled": true
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 512,
+                  "equity": "0",
+                  "freeCollateral": "0",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {},
+                  "marginEnabled": true
+                },
+                {
+                  "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                  "subaccountNumber": 640,
+                  "equity": "0",
+                  "freeCollateral": "0",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {},
+                  "marginEnabled": true
+                }
+              ]
+            },
+            "orders": [
+              {
+                "id": "89d1fe83-5b0d-5c3e-aaf5-42d1b2537837",
+                "subaccountId": "b342d48a-d9ce-5725-980f-eb5ef3d00951",
+                "clientId": "1537457515",
+                "clobPairId": "18",
+                "side": "SELL",
+                "size": "10",
+                "totalFilled": "0",
+                "price": "2",
+                "type": "LIMIT",
+                "status": "OPEN",
+                "timeInForce": "GTT",
+                "reduceOnly": false,
+                "orderFlags": "64",
+                "goodTilBlockTime": "2024-07-05T06:46:53.000Z",
+                "createdAtHeight": "13959987",
+                "clientMetadata": "0",
+                "updatedAt": "2024-06-07T06:46:52.986Z",
+                "updatedAtHeight": "13959987",
+                "postOnly": false,
+                "ticker": "XLM-USD",
+                "subaccountNumber": 256
+              },
+              {
+                "id": "413db126-d62e-50f5-8d88-c7440ab975a3",
+                "subaccountId": "b342d48a-d9ce-5725-980f-eb5ef3d00951",
+                "clientId": "124525944",
+                "clobPairId": "18",
+                "side": "SELL",
+                "size": "30",
+                "totalFilled": "0",
+                "price": "2",
+                "type": "LIMIT",
+                "status": "OPEN",
+                "timeInForce": "GTT",
+                "reduceOnly": false,
+                "orderFlags": "64",
+                "goodTilBlockTime": "2024-07-05T06:43:48.000Z",
+                "createdAtHeight": "13959838",
+                "clientMetadata": "0",
+                "updatedAt": "2024-06-07T06:43:48.624Z",
+                "updatedAtHeight": "13959838",
+                "postOnly": false,
+                "ticker": "XLM-USD",
+                "subaccountNumber": 256
+              },
+              {
+                "id": "a6a43472-ea2f-57d2-89d1-563babc1c489",
+                "subaccountId": "b342d48a-d9ce-5725-980f-eb5ef3d00951",
+                "clientId": "1234966169",
+                "clobPairId": "18",
+                "side": "SELL",
+                "size": "40",
+                "totalFilled": "0",
+                "price": "1",
+                "type": "LIMIT",
+                "status": "OPEN",
+                "timeInForce": "GTT",
+                "reduceOnly": false,
+                "orderFlags": "64",
+                "goodTilBlockTime": "2024-07-05T06:42:18.000Z",
+                "createdAtHeight": "13959763",
+                "clientMetadata": "0",
+                "updatedAt": "2024-06-07T06:42:17.886Z",
+                "updatedAtHeight": "13959763",
+                "postOnly": false,
+                "ticker": "XLM-USD",
+                "subaccountNumber": 256
+              },
+              {
+                "id": "d65b720d-fd8f-5897-aa6a-343960d64b31",
+                "subaccountId": "2391dd63-6759-5ff8-adb2-d2a5022e0728",
+                "clientId": "386114797",
+                "clobPairId": "33",
+                "side": "BUY",
+                "size": "4",
+                "totalFilled": "0",
+                "price": "5",
+                "type": "LIMIT",
+                "status": "OPEN",
+                "timeInForce": "GTT",
+                "reduceOnly": false,
+                "orderFlags": "64",
+                "goodTilBlockTime": "2024-07-05T06:03:51.000Z",
+                "createdAtHeight": "13957923",
+                "clientMetadata": "0",
+                "updatedAt": "2024-06-07T06:03:51.710Z",
+                "updatedAtHeight": "13957923",
+                "postOnly": false,
+                "ticker": "TIA-USD",
+                "subaccountNumber": 0
+              },
+              {
+                "id": "5f7ad499-1d48-5ab1-acfd-d4664e07e7e3",
+                "subaccountId": "4f35148c-d290-52a4-a394-41b4d853eab0",
+                "clientId": "1345093492",
+                "clobPairId": "1",
+                "side": "SELL",
+                "size": "0.01",
+                "totalFilled": "0",
+                "price": "4000",
+                "type": "LIMIT",
+                "status": "OPEN",
+                "timeInForce": "GTT",
+                "reduceOnly": false,
+                "orderFlags": "64",
+                "goodTilBlockTime": "2024-07-05T04:53:48.000Z",
+                "createdAtHeight": "13954608",
+                "clientMetadata": "0",
+                "updatedAt": "2024-06-07T04:53:47.890Z",
+                "updatedAtHeight": "13954608",
+                "postOnly": false,
+                "ticker": "ETH-USD",
+                "subaccountNumber": 384
+              }
+            ],
+            "blockHeight": "13989984"
+          }
+        }
+    """.trimIndent()
+
     internal val real_channel_batch_data = """
         {
             "type": "channel_batch_data",
