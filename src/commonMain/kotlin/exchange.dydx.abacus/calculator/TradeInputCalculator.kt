@@ -71,10 +71,11 @@ internal class TradeInputCalculator(
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
         val trade = updateTradeInputFromMarket(
-            markets,
-            account,
-            parser.asNativeMap(state["trade"]),
-            subaccountNumber ?: 0,
+            markets = markets,
+            account = account,
+            subaccount = subaccount,
+            tradeInput = parser.asNativeMap(state["trade"]),
+            subaccountNumber = subaccountNumber ?: 0,
         )
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -88,34 +89,34 @@ internal class TradeInputCalculator(
                 val modifiedTrade = when (type) {
                     "MARKET", "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
                         calculateMarketOrderTrade(
-                            trade,
-                            market,
-                            subaccount,
-                            user,
-                            isBuying,
-                            input,
+                            trade = trade,
+                            market = market,
+                            subaccount = subaccount,
+                            user = user,
+                            isBuying = isBuying,
+                            input = input,
                         )
                     }
 
                     else -> {
                         calculateNonMarketTrade(
-                            trade,
-                            market,
-                            type,
-                            isBuying,
-                            input,
+                            trade = trade,
+                            market = market,
+                            type = type,
+                            isBuying = isBuying,
+                            input = input,
                         )
                     }
                 }
                 finalize(
-                    modifiedTrade,
-                    account,
-                    subaccount,
-                    user,
-                    market,
-                    rewardsParams,
-                    feeTiers,
-                    type,
+                    trade = modifiedTrade,
+                    account = account,
+                    subaccount = subaccount,
+                    user = user,
+                    market = market,
+                    rewardsParams = rewardsParams,
+                    feeTiers = feeTiers,
+                    type = type,
                 )
             } else {
                 finalize(trade, account, subaccount, user, market, rewardsParams, feeTiers, type)
@@ -124,14 +125,14 @@ internal class TradeInputCalculator(
             modified.safeSet(
                 "account",
                 accountTransformer.applyTradeToAccount(
-                    account,
-                    subaccountNumber,
-                    trade,
-                    market,
-                    parser,
-                    "postOrder",
-                    featureFlags.usePessimisticCollateralCheck,
-                    featureFlags.useOptimisticCollateralCheck,
+                    account = account,
+                    subaccountNumber = subaccountNumber,
+                    trade = trade,
+                    market = market,
+                    parser = parser,
+                    period = "postOrder",
+                    usePessimisticCollateralCheck = featureFlags.usePessimisticCollateralCheck,
+                    useOptimisticCollateralCheck = featureFlags.useOptimisticCollateralCheck,
                 ),
             )
             modified
@@ -143,6 +144,7 @@ internal class TradeInputCalculator(
     private fun updateTradeInputFromMarket(
         markets: Map<String, Any>?,
         account: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
         subaccountNumber: Int,
     ): MutableMap<String, Any>? {
@@ -150,10 +152,10 @@ internal class TradeInputCalculator(
         val marketId = parser.asString(tradeInput["marketId"])
         val existingMarginMode =
             MarginModeCalculator.findExistingMarginMode(
-                parser,
-                account,
-                marketId,
-                subaccountNumber,
+                parser = parser,
+                account = account,
+                marketId = marketId,
+                subaccountNumber = subaccountNumber,
             )
         // If there is an existing position or order, we have to use the same margin mode
         if (existingMarginMode != null) {
@@ -162,7 +164,7 @@ internal class TradeInputCalculator(
                 existingMarginMode == "ISOLATED" &&
                 parser.asDouble(tradeInput["targetLeverage"]) == null
             ) {
-                modified["targetLeverage"] = 1.0
+                modified["targetLeverage"] = getPositionLeverage(subaccount, marketId) ?: 1.0
             }
         } else {
             val marketMarginMode = MarginModeCalculator.findMarketMarginMode(
@@ -173,7 +175,7 @@ internal class TradeInputCalculator(
                 "ISOLATED" -> {
                     modified["marginMode"] = marketMarginMode
                     if (parser.asDouble(tradeInput["targetLeverage"]) == null) {
-                        modified["targetLeverage"] = 1.0
+                        modified["targetLeverage"] = getPositionLeverage(subaccount, marketId) ?: 1.0
                     }
                 }
 
@@ -454,11 +456,10 @@ internal class TradeInputCalculator(
      */
     private fun getPositionLeverage(
         subaccount: Map<String, Any>?,
-        market: Map<String, Any>?
+        marketId: String?
     ): Double? {
-        if (subaccount == null || market == null) return null
+        if (subaccount == null || marketId == null) return null
         // TODO: When Child Subaccounts are added to Subaccount data class, return the child subaccount's leverage
-        val marketId = parser.asString(market["id"])
         val position = parser.asNativeMap(
             parser.value(
                 subaccount,
@@ -1502,6 +1503,7 @@ internal class TradeInputCalculator(
         feeTiers: List<Any>?,
         type: String,
     ): Map<String, Any> {
+        val marketId = parser.asString(market?.get("id"))
         val summary = mutableMapOf<String, Any>()
         val multiplier =
             if (parser.asString(trade["side"]) == "SELL") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
@@ -1592,7 +1594,7 @@ internal class TradeInputCalculator(
                         "positionMargin",
                         calculatePositionMargin(trade, subaccount, market),
                     )
-                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
+                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount, marketId))
                 }
             }
 
@@ -1707,7 +1709,7 @@ internal class TradeInputCalculator(
                         "positionMargin",
                         calculatePositionMargin(trade, subaccount, market),
                     )
-                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
+                    summary.safeSet("positionLeverage", getPositionLeverage(subaccount, marketId))
                 }
             }
 
@@ -1768,7 +1770,7 @@ internal class TradeInputCalculator(
                     "positionMargin",
                     calculatePositionMargin(trade, subaccount, market),
                 )
-                summary.safeSet("positionLeverage", getPositionLeverage(subaccount, market))
+                summary.safeSet("positionLeverage", getPositionLeverage(subaccount, marketId))
             }
 
             "TRAILING_STOP" -> {
