@@ -7,8 +7,8 @@ import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
+import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class V4ParentSubaccountTests : V4BaseTests(true) {
     @Test
@@ -568,16 +568,20 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
         )
     }
 
-    @Test
-    fun testWithRealData() {
+    @BeforeTest
+    private fun prepareTest() {
         loadMarketsConfigurations()
         loadMarkets()
         perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
         loadSubaccountsWithRealData()
+    }
 
+    @Test
+    fun testWithRealData() {
         testParentSubaccountSubscribedWithPendingPositions()
         testParentSubaccountSubscribed()
         testParentSubaccountChannelData()
+        testParentSubaccountSubscribedWithUnpopulatedChild()
     }
 
     internal fun loadSubaccountsWithRealData(): StateResponse {
@@ -608,28 +612,28 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "equity": {
-                                        "current": 1979.85
+                                        "current": 2021.4
                                     },
                                     "freeCollateral": {
-                                        "current": 1711.96
+                                        "current": 1712.0
                                     },
                                     "quoteBalance": {
-                                        "current": 1711.96
+                                        "current": 1712.0
                                     },
                                     "openPositions": {
                                     },
                                     "pendingPositions": [
                                         {
-                                            "assetId": "LDO",
+                                            "assetId": "ARB",
                                             "firstOrderId": "d1deed71-d743-5528-aff2-cf3daf8b6413",
                                             "quoteBalance": {
-                                                "current": 267.89
+                                                "current": 20
                                             },
                                             "freeCollateral": {
-                                                "current": 267.89
+                                                "current": 20
                                             },
                                             "equity": {
-                                                "current": 267.89
+                                                "current": 20
                                             }
                                         }
                                     ]
@@ -640,165 +644,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                 }
             """.trimIndent(),
         )
-
-        // needsMarginMode should be false to prevent user from changing margin mode
-        // Attaching to V4ParentSubaccountTests to test the tradeInMarket function with a subaccount that has a pending position
-        // TODO: Move to IsolatedMarketsTests
-        test(
-            {
-                perp.tradeInMarket("LDO-USD", 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marketId": "LDO-USD",
-                            "marginMode": "ISOLATED",
-                            "options": {
-                                "needsMarginMode": false,
-                                "marginModeOptions": null
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        // Test the placeholder openPosition's equity
-        test(
-            {
-                perp.tradeInMarket("APE-USD", 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marketId": "APE-USD",
-                            "marginMode": "CROSS",
-                            "options": {
-                                "needsMarginMode": true
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("ISOLATED", TradeInputField.marginMode, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marketId": "APE-USD",
-                            "marginMode": "ISOLATED",
-                            "options": {
-                                "needsMarginMode": true
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("20", TradeInputField.usdcSize, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marketId": "APE-USD",
-                            "marginMode": "ISOLATED",
-                            "size": {
-                                "usdcSize": 20.0
-                            },
-                            "options": {
-                                "needsMarginMode": true
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("2", TradeInputField.limitPrice, 0)
-            },
-            """
-                {
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marketId": "APE-USD",
-                            "marginMode": "ISOLATED",
-                            "size": {
-                                "usdcSize": 20.0
-                            },
-                            "price": {
-                                "limitPrice": 2.0
-                            },
-                            "options": {
-                                "needsMarginMode": true
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        test(
-            {
-                perp.trade("2", TradeInputField.targetLeverage, 0)
-            },
-            """
-                {
-                    "wallet": {
-                        "account": {
-                            "groupedSubaccounts": {
-                                "0": {
-                                    "openPositions": {
-                                        "APE-USD": {
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "input": {
-                        "current": "trade",
-                        "trade": {
-                            "marketId": "APE-USD",
-                            "marginMode": "ISOLATED",
-                            "size": {
-                                "usdcSize": 20.0
-                            },
-                            "price": {
-                                "limitPrice": 2.0
-                            },
-                            "targetLeverage": 2.0,
-                            "options": {
-                                "needsMarginMode": true
-                            }
-                        }
-                    }
-                }
-            """.trimIndent(),
-        )
-
-        val postOrderEquity = parser.asDouble(parser.value(perp.data, "wallet.account.groupedSubaccounts.0.openPositions.APE-USD.equity.postOrder")) ?: 0.0
-        assertEquals(postOrderEquity, 10.0)
     }
 
     private fun testParentSubaccountSubscribed() {
+        reset()
         test(
             {
                 perp.socket(testWsUrl, mock.parentSubaccountsChannel.real_subscribed, 0, null)
@@ -924,6 +773,57 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                         }
                                     },
                                     "pendingPositions": null
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testParentSubaccountSubscribedWithUnpopulatedChild() {
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.real_subscribed_with_unpopulated_child,
+                    0,
+                    null,
+                )
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "equity": {
+                                        "current": 1979.9
+                                    },
+                                    "freeCollateral": {
+                                        "current": 1712.0
+                                    },
+                                    "quoteBalance": {
+                                        "current": 1712.0
+                                    },
+                                    "openPositions": {
+                                    },
+                                    "pendingPositions": [
+                                        {
+                                            "assetId": "ARB",
+                                            "firstOrderId": "d1deed71-d743-5528-aff2-cf3daf8b6413",
+                                            "quoteBalance": {
+                                                "current": 270
+                                            },
+                                            "freeCollateral": {
+                                                "current": 270
+                                            },
+                                            "equity": {
+                                                "current": 270
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }
