@@ -225,14 +225,16 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
 
     @Test
     fun testParentSubaccountSubscribedWithMultiplePendingPositions() {
-        test({
-            perp.socket(
-                testWsUrl,
-                mock.parentSubaccountsChannel.real_subscribe_with_multiple_pending,
-                0,
-                null,
-            )
-        }, """
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.real_subscribe_with_multiple_pending,
+                    0,
+                    null,
+                )
+            },
+            """
             {
                     "wallet": {
                         "account": {
@@ -283,8 +285,10 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                         }
                     }
                 }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
+
     @Test
     fun testParentSubaccountSubscribedWithUnpopulatedChild() {
         test(
