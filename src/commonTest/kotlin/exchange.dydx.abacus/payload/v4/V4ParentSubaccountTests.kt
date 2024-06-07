@@ -2,11 +2,6 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.trade
-import exchange.dydx.abacus.state.model.tradeInMarket
-import exchange.dydx.abacus.tests.extensions.log
-import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
