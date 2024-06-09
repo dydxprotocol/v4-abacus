@@ -588,7 +588,9 @@ open class TradingStateMachine(
             } else {
                 null
             }
+
             this.input = inputValidator.validate(
+                subaccountNumber,
                 this.wallet,
                 this.user,
                 subaccount,
@@ -598,6 +600,8 @@ open class TradingStateMachine(
                 this.currentBlockAndHeight,
                 this.environment,
             )
+
+//            this.input = inputValidator.mergeErrors(this.input)
 
             when (this.input?.get("current")) {
                 "trade" -> {
@@ -1302,6 +1306,7 @@ open class TradingStateMachine(
 
             if (changes.changes.contains(Changes.input)) {
                 this.input = inputValidator.validate(
+                    subaccountNumber,
                     this.wallet,
                     this.user,
                     subaccount,

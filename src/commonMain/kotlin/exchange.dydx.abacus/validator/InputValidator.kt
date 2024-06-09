@@ -5,6 +5,8 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.modify
 
 internal class InputValidator(
@@ -87,6 +89,7 @@ internal class InputValidator(
     )
 
     fun validate(
+        subaccountNumber: Int?,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -99,8 +102,11 @@ internal class InputValidator(
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
             val transaction = parser.asNativeMap(input[transactionType]) ?: return input
+            val isChildSubaccount = subaccountNumber != null && subaccountNumber >= NUM_PARENT_SUBACCOUNTS
+
             val errors = sort(
-                validate(
+                validateTransaction(
+                    subaccountNumber,
                     wallet,
                     user,
                     subaccount,
@@ -112,17 +118,28 @@ internal class InputValidator(
                     environment,
                 ),
             )
-            if (errors != input["errors"]) {
-                input.modify("errors", errors)
+
+            if (isChildSubaccount) {
+                if (errors != input["childSubaccountErrors"]) {
+                    input.modify("childSubaccountErrors", errors)
+                } else {
+                    input
+                }
             } else {
-                input
+                if (errors != input["parentSubaccountErrors"]) {
+                    input.modify("parentSubaccountErrors", errors)
+                } else {
+                    input
+                }
             }
         } else {
-            input?.modify("errors", null)
+            input?.modify("parentSubaccountErrors", null)
+            input?.modify("childSubaccountErrors", null)
         }
     }
 
-    private fun validate(
+    private fun validateTransaction(
+        subaccountNumber: Int?,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -133,6 +150,7 @@ internal class InputValidator(
         transactionType: String,
         environment: V4Environment?,
     ): List<Any>? {
+        Logger.e { "Validate subaccount: $subaccountNumber" }
         val validators = validatorsFor(transactionType)
         return if (validators != null) {
             val result = mutableListOf<Any>()
@@ -213,5 +231,25 @@ internal class InputValidator(
         } else {
             null
         }
+    }
+
+    fun mergeErrors(
+        input: Map<String, Any>?
+    ): Map<String, Any>? {
+        val parentSubaccountErrors = parser.asList(input?.get("parentSubaccountErrors"))
+        val childSubaccountErrors = parser.asList(input?.get("childSubaccountErrors"))
+
+        if (parentSubaccountErrors != null && childSubaccountErrors != null) {
+            val errors = mutableListOf<Any>()
+            errors.addAll(parentSubaccountErrors)
+//            errors.addAll(childSubaccountErrors)
+            return input?.modify("errors", errors)
+        } else if (parentSubaccountErrors != null) {
+            return input?.modify("errors", parentSubaccountErrors)
+        } else if (childSubaccountErrors != null) {
+            return input?.modify("errors", childSubaccountErrors)
+        }
+
+        return input
     }
 }
