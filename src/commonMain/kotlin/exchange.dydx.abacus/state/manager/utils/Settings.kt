@@ -94,6 +94,12 @@ enum class ApiData {
 }
 
 @JsExport
+enum class GasToken {
+    USDC,
+    NATIVE,
+}
+
+@JsExport
 enum class ConfigFile(val rawValue: String) {
     DOCUMENTATION("DOCUMENTATION") {
         override val path: String

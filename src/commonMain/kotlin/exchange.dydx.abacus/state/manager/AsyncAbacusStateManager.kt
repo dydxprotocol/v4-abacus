@@ -202,6 +202,8 @@ class AsyncAbacusStateManager(
             }
         }
 
+    override var gasToken: GasToken? = null
+
     companion object {
         private fun createIOImplementions(_nativeImplementations: ProtocolNativeImpFactory): IOImplementations {
             return IOImplementations(

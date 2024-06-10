@@ -34,6 +34,9 @@ interface AsyncAbacusStateManagerProtocol {
 
     val appSettings: AppSettings?
 
+    // client requested gas token
+    var gasToken: GasToken?
+
     // input fields
     fun trade(data: String?, type: TradeInputField?)
     fun closePosition(data: String?, type: ClosePositionInputField)

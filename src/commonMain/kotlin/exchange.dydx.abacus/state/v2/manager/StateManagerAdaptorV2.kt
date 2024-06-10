@@ -23,6 +23,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
@@ -220,6 +221,14 @@ internal class StateManagerAdaptorV2(
                 field = value
                 didSetValidatorConnected(validatorConnected)
             }
+        }
+
+    internal var gasToken: GasToken?
+        get() {
+            return connections.gasToken
+        }
+        set(value) {
+            connections.gasToken = value
         }
 
     internal var market: String?
