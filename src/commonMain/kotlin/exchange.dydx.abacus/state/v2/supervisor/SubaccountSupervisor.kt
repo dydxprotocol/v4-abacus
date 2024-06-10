@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
@@ -513,9 +514,9 @@ internal class SubaccountSupervisor(
     internal fun getChildSubaccountNumberForIsolatedMarginTrade(marketId: String): Int {
         val subaccounts = stateMachine.state?.account?.subaccounts
 
-        val utilizedSubaccountsMarketIdMap = subaccounts?.mapValues {
-            val openPositions = it.value.openPositions
-            val openOrders = it.value.orders?.filter { order ->
+        val utilizedSubaccountsMarketIdMap = subaccounts?.mapValues { (_, subaccount) ->
+            val openPositions = subaccount.openPositions
+            val openOrders = subaccount.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
                 status == "open" || status == "pending" || status == "untriggered" || status == "partiallyFilled"
             }
@@ -973,13 +974,13 @@ internal class SubaccountSupervisor(
     @Throws(Exception::class)
     fun placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {
         val trade = stateMachine.state?.input?.trade
-        val marketId = trade?.marketId ?: throw Exception("marketId is null")
-        val summary = trade.summary ?: throw Exception("summary is null")
+        val marketId = trade?.marketId ?: error("marketId is null")
+        val summary = trade.summary ?: error("summary is null")
         val clientId = Random.nextInt(0, Int.MAX_VALUE)
-        val marginMode = trade.marginMode?.rawValue ?: throw Exception("marginMode is null")
-        val type = trade.type?.rawValue ?: throw Exception("type is null")
-        val side = trade.side?.rawValue ?: throw Exception("side is null")
-        val price = summary.payloadPrice ?: throw Exception("price is null")
+        val marginMode = trade.marginMode.rawValue
+        val type = trade.type?.rawValue ?: error("type is null")
+        val side = trade.side?.rawValue ?: error("side is null")
+        val price = summary.payloadPrice ?: error("price is null")
         val triggerPrice =
             if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
@@ -1048,12 +1049,12 @@ internal class SubaccountSupervisor(
 
     private fun triggerOrderPayload(triggerOrder: TriggerOrder, marketId: String, currentHeight: Int?): HumanReadablePlaceOrderPayload {
         val clientId = Random.nextInt(0, Int.MAX_VALUE)
-        val type = triggerOrder.type?.rawValue ?: throw Exception("type is null")
-        val side = triggerOrder.side?.rawValue ?: throw Exception("side is null")
-        val size = triggerOrder.summary?.size ?: throw Exception("size is null")
+        val type = triggerOrder.type?.rawValue ?: error("type is null")
+        val side = triggerOrder.side?.rawValue ?: error("side is null")
+        val size = triggerOrder.summary?.size ?: error("size is null")
 
-        val price = triggerOrder.summary?.price ?: throw Exception("summary.price is null")
-        val triggerPrice = triggerOrder.price?.triggerPrice ?: throw Exception("triggerPrice is null")
+        val price = triggerOrder.summary.price ?: error("summary.price is null")
+        val triggerPrice = triggerOrder.price?.triggerPrice ?: error("triggerPrice is null")
 
         val reduceOnly = true
         val postOnly = false
@@ -1068,7 +1069,7 @@ internal class SubaccountSupervisor(
         val execution = when (triggerOrder.type) {
             OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
             OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT"
-            else -> throw Exception("invalid triggerOrderType")
+            else -> error("invalid triggerOrderType")
         }
 
         val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
@@ -1076,9 +1077,16 @@ internal class SubaccountSupervisor(
         val goodTilBlock = null
 
         val marketInfo = marketInfo(marketId)
+        val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId } ?: error("no existing position")
+
+        val subaccountNumberForOrder = if (position.marginMode == MarginMode.isolated) {
+            getChildSubaccountNumberForIsolatedMarginTrade(marketId)
+        } else {
+            subaccountNumber
+        }
 
         return HumanReadablePlaceOrderPayload(
-            subaccountNumber,
+            subaccountNumberForOrder,
             marketId,
             clientId,
             type,
@@ -1111,7 +1119,6 @@ internal class SubaccountSupervisor(
             limitPriceCheck
     }
 
-    @Throws(Exception::class)
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload {
         val placeOrderPayloads = iMutableListOf<HumanReadablePlaceOrderPayload>()
         val cancelOrderPayloads = iMutableListOf<HumanReadableCancelOrderPayload>()
