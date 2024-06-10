@@ -3,6 +3,8 @@ package exchange.dydx.abacus.state.v2.supervisor
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.ThreadingType
+import exchange.dydx.abacus.protocols.TransactionType
+import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.IndexerURIs
 import exchange.dydx.abacus.state.manager.NetworkState
 import exchange.dydx.abacus.state.manager.SystemUtils
@@ -10,6 +12,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.JsonEncoder
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kotlinx.datetime.Clock
@@ -77,6 +80,14 @@ internal class ConnectionsSupervisor(
     internal val validatorState: NetworkState
         get() = connectionStats.validatorState
 
+    internal var gasToken: GasToken? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                updateSelectedGasToken()
+            }
+        }
+
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
         if (readyToConnect) {
@@ -108,6 +119,20 @@ internal class ConnectionsSupervisor(
 
     private fun didSetIndexerConfig() {
         indexerConnected = (indexerConfig != null)
+    }
+
+    private fun updateSelectedGasToken() {
+        val gasTokenName = gasToken?.name
+        if (validatorConnected && gasTokenName != null) {
+            helper.ioImplementations.chain?.transaction(
+                type = TransactionType.SetSelectedGasDenom,
+                paramsInJson = gasTokenName,
+            ) { response ->
+                if (response != "success") {
+                    Logger.e { "Failed to set selected gas token: $response" }
+                }
+            }
+        }
     }
 
     private fun connectSocket() {
@@ -268,6 +293,7 @@ internal class ConnectionsSupervisor(
         delegate.didConnectToValidator(validatorConnected)
         if (validatorConnected) {
             retrieveHeights()
+            updateSelectedGasToken()
         } else {
             reconnectChain()
         }
