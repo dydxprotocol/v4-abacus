@@ -157,15 +157,22 @@ internal object MarginModeCalculator {
         }
 
         // Check if an existing childSubaccount is available to use for Isolated Margin Trade
+        var availableSubaccountNumber = subaccountNumber
         utilizedSubaccountsMarketIdMap.forEach { (key, marketIds) ->
             val subaccountNumberToCheck = key.toInt()
             if (subaccountNumberToCheck != subaccountNumber) {
                 if (marketIds.contains(marketId) && marketIds.size <= 1) {
                     return subaccountNumberToCheck
                 } else if (marketIds.isEmpty()) {
-                    return subaccountNumberToCheck
+                    if (availableSubaccountNumber == subaccountNumber) {
+                        availableSubaccountNumber = subaccountNumberToCheck
+                    }
                 }
             }
+        }
+
+        if (availableSubaccountNumber != subaccountNumber) {
+            return availableSubaccountNumber
         }
 
         // Find new childSubaccount number available for Isolated Margin Trade
