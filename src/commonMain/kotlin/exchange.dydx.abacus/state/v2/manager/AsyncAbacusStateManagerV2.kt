@@ -19,6 +19,7 @@ import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.AppSettings
 import exchange.dydx.abacus.state.manager.ConfigFile
+import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
@@ -221,6 +222,14 @@ class AsyncAbacusStateManagerV2(
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.historicalTradingRewardPeriod = field
+            }
+        }
+
+    override var gasToken: GasToken? = null
+        set(value) {
+            field = value
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                adaptor?.gasToken = field
             }
         }
 
