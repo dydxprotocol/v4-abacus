@@ -59,12 +59,14 @@ import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.toJsonElement
 import exchange.dydx.abacus.utils.values
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -520,18 +522,18 @@ internal class SubaccountSupervisor(
                 status == "open" || status == "pending" || status == "untriggered" || status == "partiallyFilled"
             }
 
-            val postionMarketIds = openPositions?.map { position ->
+            val positionMarketIds = openPositions?.map { position ->
                 val positionMarketId = helper.parser.asString(position.id)
                 positionMarketId
-            }
+            }?.filterNotNull() ?: iListOf()
 
             val openOrderMarketIds = openOrders?.map { order ->
                 val orderMarketId = helper.parser.asString(order.marketId)
                 orderMarketId
-            }
+            }?.filterNotNull() ?: iListOf()
 
             // Return the combined list of marketIds w/o duplicates
-            ((postionMarketIds ?: iListOf()) + (openOrderMarketIds ?: iListOf())).toSet()
+            (positionMarketIds + openOrderMarketIds).toSet()
         }
 
         // Check if an existing childSubaccount is available to use for Isolated Margin Trade
