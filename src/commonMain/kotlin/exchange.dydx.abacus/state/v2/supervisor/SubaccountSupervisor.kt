@@ -59,14 +59,12 @@ import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.toJsonElement
 import exchange.dydx.abacus.utils.values
 import kollections.iListOf
 import kollections.iMutableListOf
