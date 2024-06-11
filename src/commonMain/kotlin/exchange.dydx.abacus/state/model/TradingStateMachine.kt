@@ -588,7 +588,9 @@ open class TradingStateMachine(
             } else {
                 null
             }
+
             this.input = inputValidator.validate(
+                subaccountNumber,
                 this.wallet,
                 this.user,
                 subaccount,
@@ -1302,6 +1304,7 @@ open class TradingStateMachine(
 
             if (changes.changes.contains(Changes.input)) {
                 this.input = inputValidator.validate(
+                    subaccountNumber,
                     this.wallet,
                     this.user,
                     subaccount,

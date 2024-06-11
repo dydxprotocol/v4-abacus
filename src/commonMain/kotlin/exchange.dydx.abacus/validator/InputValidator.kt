@@ -5,6 +5,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.modify
 
 internal class InputValidator(
@@ -87,6 +88,7 @@ internal class InputValidator(
     )
 
     fun validate(
+        subaccountNumber: Int?,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -99,8 +101,10 @@ internal class InputValidator(
         return if (input != null) {
             val transactionType = parser.asString(input["current"]) ?: return input
             val transaction = parser.asNativeMap(input[transactionType]) ?: return input
+            val isChildSubaccount = subaccountNumber != null && subaccountNumber >= NUM_PARENT_SUBACCOUNTS
+
             val errors = sort(
-                validate(
+                validateTransaction(
                     wallet,
                     user,
                     subaccount,
@@ -112,17 +116,27 @@ internal class InputValidator(
                     environment,
                 ),
             )
-            if (errors != input["errors"]) {
-                input.modify("errors", errors)
+
+            if (isChildSubaccount) {
+                if (errors != input["childSubaccountErrors"]) {
+                    input.modify("childSubaccountErrors", errors)
+                } else {
+                    input
+                }
             } else {
-                input
+                if (errors != input["errors"]) {
+                    input.modify("errors", errors)
+                } else {
+                    input
+                }
             }
         } else {
             input?.modify("errors", null)
+            input?.modify("childSubaccountErrors", null)
         }
     }
 
-    private fun validate(
+    private fun validateTransaction(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
