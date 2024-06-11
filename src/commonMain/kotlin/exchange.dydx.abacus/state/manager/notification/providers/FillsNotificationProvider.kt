@@ -197,7 +197,7 @@ class FillsNotificationProvider(
                 )
             }
 
-            OrderType.liquidation -> {
+            OrderType.liquidated -> {
                 title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE")
                     ?: return null
                 text = uiImplementations.localizer?.localize(
