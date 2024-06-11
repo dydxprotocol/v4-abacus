@@ -1,8 +1,9 @@
 package exchange.dydx.abacus.calculator
 
-import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import kollections.iListOf
 
 internal object MarginModeCalculator {
     fun findExistingPosition(
@@ -113,7 +114,10 @@ internal object MarginModeCalculator {
 
     /**
      * @description Get the childSubaccount number that is available for the given marketId
-     * @param marketId
+     * @param parser ParserProtocol
+     * @param account Account data (data.wallet.account)
+     * @param subaccountNumber Parent subaccount number
+     * @param tradeInput Trade input data (data.input.trade)
      */
     fun getChildSubaccountNumberForIsolatedMarginTrade(
         parser: ParserProtocol,
@@ -126,48 +130,61 @@ internal object MarginModeCalculator {
             return subaccountNumber
         }
         val marketId = parser.asString(tradeInput?.get("marketId")) ?: return subaccountNumber
-        val subaccounts = parser.asMap(account?.get("subaccounts")) ?: return subaccountNumber
+        val subaccounts = parser.asNativeMap(account?.get("subaccounts")) ?: return subaccountNumber
 
-        var lastSubaccountNumber = subaccountNumber
-        for ((_, item) in subaccounts) {
-            val subaccount = parser.asMap(item) ?: continue
-            val childSubaccountNumber =
-                parser.asInt(subaccount["subaccountNumber"]) ?: subaccountNumber
+        val utilizedSubaccountsMarketIdMap = subaccounts.mapValues {
+            val openPositions = parser.asNativeMap(parser.value(it.value, "openPositions"))
+            val openOrders = parser.asNativeMap(parser.value(it.value, "orders"))?.filter {
+                val order = parser.asMap(it.value)
+                val status = parser.asString(parser.value(order, "status"))
+                status == "OPEN" || status == "PENDING" || status == "UNTRIGGERED" || status == "PARTIALLY_FILLED"
+            }
 
-            if (childSubaccountNumber % NUM_PARENT_SUBACCOUNTS == subaccountNumber) {
-                if (containsMarket(parser, subaccount, marketId)) {
-                    return childSubaccountNumber
-                } else {
-                    if (childSubaccountNumber > lastSubaccountNumber) {
-                        lastSubaccountNumber = childSubaccountNumber
+            val positionMarketIds = openPositions?.map { position ->
+                val positionObj = parser.asMap(position.value)
+                val positionMarketId = parser.asString(parser.value(positionObj, "id"))
+                positionMarketId
+            }?.filterNotNull() ?: iListOf()
+
+            val openOrderMarketIds = openOrders?.map { order ->
+                val orderObj = parser.asMap(order.value)
+                val orderMarketId = parser.asString(parser.value(orderObj, "marketId"))
+                orderMarketId
+            }?.filterNotNull() ?: iListOf()
+
+            // Return the combined list of marketIds w/o duplicates
+            (positionMarketIds + openOrderMarketIds).toSet()
+        }
+
+        // Check if an existing childSubaccount is available to use for Isolated Margin Trade
+        var availableSubaccountNumber = subaccountNumber
+        utilizedSubaccountsMarketIdMap.forEach { (key, marketIds) ->
+            val subaccountNumberToCheck = key.toInt()
+            if (subaccountNumberToCheck != subaccountNumber) {
+                if (marketIds.contains(marketId) && marketIds.size <= 1) {
+                    return subaccountNumberToCheck
+                } else if (marketIds.isEmpty()) {
+                    if (availableSubaccountNumber == subaccountNumber) {
+                        availableSubaccountNumber = subaccountNumberToCheck
                     }
                 }
             }
         }
-        return lastSubaccountNumber + NUM_PARENT_SUBACCOUNTS
-    }
 
-    private fun containsMarket(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>,
-        marketId: String
-    ): Boolean {
-        val positionSize = parser.asDouble(parser.value(subaccount, "openPositions.$marketId.size.current"))
-
-        if ((positionSize ?: 0.0).abs() > 0.0) {
-            return true
+        if (availableSubaccountNumber != subaccountNumber) {
+            return availableSubaccountNumber
         }
-        val orders = parser.asMap(subaccount["orders"])
-        val foundOrder = orders?.values?.firstOrNull { item ->
-            val order = parser.asMap(item)
-            return if (order != null) {
-                val orderStatus = parser.asString(parser.value(order, "status"))
-                val orderMarketId = parser.asString(order["marketId"])
-                orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
-            } else {
-                false
+
+        // Find new childSubaccount number available for Isolated Margin Trade
+        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap.keys
+        for (offset in NUM_PARENT_SUBACCOUNTS..MAX_SUBACCOUNT_NUMBER step NUM_PARENT_SUBACCOUNTS) {
+            val tentativeSubaccountNumber = offset + subaccountNumber
+            if (!existingSubaccountNumbers.contains(tentativeSubaccountNumber.toString())) {
+                return tentativeSubaccountNumber
             }
         }
-        return foundOrder != null
+
+        // User has reached the maximum number of childSubaccounts for their current parentSubaccount
+        error("No available subaccount number")
     }
 }

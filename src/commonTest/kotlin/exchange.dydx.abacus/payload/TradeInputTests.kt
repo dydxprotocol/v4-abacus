@@ -2123,25 +2123,6 @@ class TradeInputTests : V3BaseTests() {
                                     "buyingPower": {
                                         "current": 200000.0,
                                         "postOrder": null
-                                    },
-                                    "openPositions": {
-                                        "ETH-USD": {
-                                            "size": {
-                                                "postOrder": null
-                                            },
-                                            "valueTotal": {
-                                                "postOrder": null
-                                            },
-                                            "notionalTotal": {
-                                                "postOrder": null
-                                            },
-                                            "initialRiskTotal": {
-                                                "postOrder": null
-                                            },
-                                            "leverage": {
-                                                "postOrder": null
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -2212,25 +2193,6 @@ class TradeInputTests : V3BaseTests() {
                                     "buyingPower": {
                                         "current": 200000.0,
                                         "postOrder": null
-                                    },
-                                    "openPositions": {
-                                        "ETH-USD": {
-                                            "size": {
-                                                "postOrder": null
-                                            },
-                                            "valueTotal": {
-                                                "postOrder": null
-                                            },
-                                            "notionalTotal": {
-                                                "postOrder": null
-                                            },
-                                            "initialRiskTotal": {
-                                                "postOrder": null
-                                            },
-                                            "leverage": {
-                                                "postOrder": null
-                                            }
-                                        }
                                     }
                                 }
                             }
