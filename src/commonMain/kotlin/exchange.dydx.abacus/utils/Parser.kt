@@ -388,6 +388,9 @@ class Parser : ParserProtocol {
         } catch (e: SerializationException) {
             Logger.e { "Unable to decode json object: $text" }
             null
+        } catch (e: IllegalArgumentException) {
+            Logger.e { "Unable to decode json object: $text" }
+            null
         }
         return list
     }
