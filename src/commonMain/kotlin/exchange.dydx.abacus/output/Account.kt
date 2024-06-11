@@ -1796,13 +1796,13 @@ data class TradingRewards(
                     createHistoricalTradingRewards(
                         it,
                         existing?.filledHistory,
-                        parser.asMap(data["filledHistory"]),
+                        parser.asMap(data["historical"]),
                         fillZeros = true,
                         parser,
                     )
                 }
                 val rawHistory = total?.let {
-                    createHistoricalTradingRewards(it, existing?.rawHistory, parser.asMap(data["rawHistory"]), fillZeros = false, parser)
+                    createHistoricalTradingRewards(it, existing?.rawHistory, parser.asMap(data["historical"]), fillZeros = false, parser)
                 }
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
@@ -2044,7 +2044,7 @@ data class TradingRewards(
                 Instant.fromEpochMilliseconds(lastStart.toLong())
             }
             while (obj.startedAtInMilliseconds < lastStartTime.toEpochMilliseconds().toDouble()) {
-                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount + obj.amount)
+                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount)
                 if (obj.startedAtInMilliseconds < previous.startedAtInMilliseconds) {
                     result.add(previous)
                     lastStartTime =

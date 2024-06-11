@@ -30,25 +30,7 @@ class TradingRewardsTests {
             parser,
             mapOf(
                 "total" to 200.0,
-                "filledHistory" to mapOf(
-                    "DAILY" to iListOf(
-                        mapOf(
-                            "amount" to 3.0,
-                            "startedAt" to today,
-                        ),
-                        mapOf(
-                            "amount" to 2.0,
-                            "startedAt" to yesterday,
-                            "endedAt" to today,
-                        ),
-                        mapOf(
-                            "amount" to 1.0,
-                            "startedAt" to dayBeforeYesterday,
-                            "endedAt" to yesterday,
-                        ),
-                    ),
-                ),
-                "rawHistory" to mapOf(
+                "historical" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -104,6 +86,185 @@ class TradingRewardsTests {
     }
 
     @Test
+    fun testHistoricalDailyTradingRewardsWithoutExistingFillsAndDoesntFill() {
+        val tradingRewards = TradingRewards.create(
+            null,
+            parser,
+            mapOf(
+                "total" to 200.0,
+                "historical" to mapOf(
+                    "DAILY" to iListOf(
+                        mapOf(
+                            "amount" to 3.0,
+                            "startedAt" to today,
+                        ),
+                        mapOf(
+                            "amount" to 1.0,
+                            "startedAt" to dayBeforeYesterday,
+                            "endedAt" to yesterday,
+                        ),
+                    ),
+                ),
+                "blockRewards" to iListOf(
+                    BlockReward(2.0, yesterday.toEpochMilliseconds().toDouble(), 1),
+                ),
+            ).toIMap(),
+        )
+
+        assertEquals(200.0, tradingRewards?.total)
+
+        // DAILY
+        // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
+        assertEquals(3, tradingRewards?.filledHistory?.get("DAILY")?.size)
+        assertEquals(2, tradingRewards?.rawHistory?.get("DAILY")?.size)
+
+        // Ordered newest -> oldest
+        assertEquals(
+            iListOf(
+                HistoricalTradingReward(
+                    3.0,
+                    200.0,
+                    today.toEpochMilliseconds().toDouble(),
+                    tomorrow.toEpochMilliseconds().toDouble(),
+                ),
+                HistoricalTradingReward(
+                    0.0,
+                    197.0,
+                    yesterday.toEpochMilliseconds().toDouble(),
+                    today.toEpochMilliseconds().toDouble(),
+                ),
+                HistoricalTradingReward(
+                    1.0,
+                    197.0,
+                    dayBeforeYesterday.toEpochMilliseconds().toDouble(),
+                    yesterday.toEpochMilliseconds().toDouble(),
+                ),
+            ),
+            tradingRewards?.filledHistory?.get("DAILY"),
+        )
+        // Ordered newest -> oldest
+        assertEquals(
+            iListOf(
+                HistoricalTradingReward(
+                    3.0,
+                    200.0,
+                    today.toEpochMilliseconds().toDouble(),
+                    tomorrow.toEpochMilliseconds().toDouble(),
+                ),
+                HistoricalTradingReward(
+                    1.0,
+                    197.0,
+                    dayBeforeYesterday.toEpochMilliseconds().toDouble(),
+                    yesterday.toEpochMilliseconds().toDouble(),
+                ),
+            ),
+            tradingRewards?.rawHistory?.get("DAILY"),
+        )
+    }
+
+    @Test
+    fun testHistoricalDailyTradingRewardsWithExistingFillsAndDoesntFill() {
+        val tradingRewards = TradingRewards.create(
+            TradingRewards(
+                197.0,
+                iListOf(
+                    BlockReward(1.0, yesterday.toEpochMilliseconds().toDouble(), 1),
+                ),
+                mapOf(
+                    "DAILY" to iListOf(
+                        HistoricalTradingReward(
+                            1.0,
+                            197.0,
+                            dayBeforeYesterday.toEpochMilliseconds().toDouble(),
+                            yesterday.toEpochMilliseconds().toDouble(),
+                        ),
+                    ),
+                ).toIMap(),
+                mapOf(
+                    "DAILY" to iListOf(
+                        HistoricalTradingReward(
+                            1.0,
+                            197.0,
+                            dayBeforeYesterday.toEpochMilliseconds().toDouble(),
+                            yesterday.toEpochMilliseconds().toDouble(),
+                        ),
+                    ),
+                ).toIMap(),
+            ),
+            parser,
+            mapOf(
+                "total" to 200.0,
+                "historical" to mapOf(
+                    "DAILY" to iListOf(
+                        mapOf(
+                            "amount" to 3.0,
+                            "startedAt" to today,
+                        ),
+                        mapOf(
+                            "amount" to 1.0,
+                            "startedAt" to dayBeforeYesterday,
+                            "endedAt" to yesterday,
+                        ),
+                    ),
+                ),
+                "blockRewards" to iListOf(
+                    BlockReward(2.0, yesterday.toEpochMilliseconds().toDouble(), 1),
+                ),
+            ).toIMap(),
+        )
+
+        assertEquals(200.0, tradingRewards?.total)
+
+        // DAILY
+        // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
+        assertEquals(3, tradingRewards?.filledHistory?.get("DAILY")?.size)
+        assertEquals(2, tradingRewards?.rawHistory?.get("DAILY")?.size)
+
+        // Ordered newest -> oldest
+        assertEquals(
+            iListOf(
+                HistoricalTradingReward(
+                    3.0,
+                    200.0,
+                    today.toEpochMilliseconds().toDouble(),
+                    tomorrow.toEpochMilliseconds().toDouble(),
+                ),
+                HistoricalTradingReward(
+                    0.0,
+                    197.0,
+                    yesterday.toEpochMilliseconds().toDouble(),
+                    today.toEpochMilliseconds().toDouble(),
+                ),
+                HistoricalTradingReward(
+                    1.0,
+                    197.0,
+                    dayBeforeYesterday.toEpochMilliseconds().toDouble(),
+                    yesterday.toEpochMilliseconds().toDouble(),
+                ),
+            ),
+            tradingRewards?.filledHistory?.get("DAILY"),
+        )
+        // Ordered newest -> oldest
+        assertEquals(
+            iListOf(
+                HistoricalTradingReward(
+                    3.0,
+                    200.0,
+                    today.toEpochMilliseconds().toDouble(),
+                    tomorrow.toEpochMilliseconds().toDouble(),
+                ),
+                HistoricalTradingReward(
+                    1.0,
+                    197.0,
+                    dayBeforeYesterday.toEpochMilliseconds().toDouble(),
+                    yesterday.toEpochMilliseconds().toDouble(),
+                ),
+            ),
+            tradingRewards?.rawHistory?.get("DAILY"),
+        )
+    }
+
+    @Test
     fun testHistoricalDailyTradingRewardsWithExisting() {
         val total = 200.0
         val tradingRewards = TradingRewards.create(
@@ -136,21 +297,7 @@ class TradingRewardsTests {
             parser,
             mapOf(
                 "total" to total,
-                "filledHistory" to mapOf(
-                    "DAILY" to iListOf(
-                        mapOf(
-                            "amount" to 3.0,
-                            "startedAt" to today,
-                            "endedAt" to tomorrow,
-                        ),
-                        mapOf(
-                            "amount" to 1.0,
-                            "startedAt" to dayBeforeYesterday,
-                            "endedAt" to yesterday,
-                        ),
-                    ),
-                ),
-                "rawHistory" to mapOf(
+                "historical" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
