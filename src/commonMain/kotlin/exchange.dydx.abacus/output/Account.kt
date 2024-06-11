@@ -1817,7 +1817,7 @@ data class TradingRewards(
                         total,
                         blockRewards,
                         fullHistory,
-                        eventHistory
+                        eventHistory,
                     )
                 } else {
                     existing
