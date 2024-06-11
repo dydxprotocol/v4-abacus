@@ -230,7 +230,7 @@ internal open class AccountSupervisor(
             }
 
         // if this is the first realized subaccount, retrieve user fee tier and user stats
-        if (isSubaccountRealized && !subaccounts.values.any { it.realized }) {
+        if (validatorConnected && isSubaccountRealized && !subaccounts.values.any { it.realized }) {
             if (configs.retrieveUserFeeTier) {
                 retrieveUserFeeTier()
             }
