@@ -83,7 +83,7 @@ data class Input(
                         adjustIsolatedMargin,
                         receiptLines,
                         errors,
-                        childSubaccountErrors
+                        childSubaccountErrors,
                     )
                 } else {
                     existing
