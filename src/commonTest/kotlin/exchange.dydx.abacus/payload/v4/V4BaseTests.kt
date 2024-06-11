@@ -184,7 +184,7 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         if (data != null) {
             val totalData = parser.asDouble(data["total"])
             val blockRewardsData = parser.asList(data["blockRewards"])
-            val historicalData = parser.asNativeMap(data["historical"])
+            val historicalData = parser.asNativeMap(data["fullHistory"])
 
             if (totalData != null) {
                 assertNotNull(obj?.total)
@@ -208,9 +208,9 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
                 }
             }
             if (historicalData != null) {
-                assertNotNull(obj?.historical)
+                assertNotNull(obj?.fullHistory)
                 for ((period, rewardsData) in historicalData) {
-                    val rewardsListObjOrig = obj?.historical?.get(period)
+                    val rewardsListObjOrig = obj?.fullHistory?.get(period)
                     val rewardsListDataOrig = parser.asList(rewardsData)
 
                     assertTrue {

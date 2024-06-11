@@ -30,7 +30,25 @@ class TradingRewardsTests {
             parser,
             mapOf(
                 "total" to 200.0,
-                "historical" to mapOf(
+                "fullHistory" to mapOf(
+                    "DAILY" to iListOf(
+                        mapOf(
+                            "amount" to 3.0,
+                            "startedAt" to today,
+                        ),
+                        mapOf(
+                            "amount" to 2.0,
+                            "startedAt" to yesterday,
+                            "endedAt" to today,
+                        ),
+                        mapOf(
+                            "amount" to 1.0,
+                            "startedAt" to dayBeforeYesterday,
+                            "endedAt" to yesterday,
+                        ),
+                    ),
+                ),
+                "eventHistory" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -58,7 +76,7 @@ class TradingRewardsTests {
 
         // DAILY
         // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
-        assertEquals(3, tradingRewards?.historical?.get("DAILY")?.size)
+        assertEquals(3, tradingRewards?.fullHistory?.get("DAILY")?.size)
         // Ordered newest -> oldest
         assertEquals(
             iListOf(
@@ -81,7 +99,7 @@ class TradingRewardsTests {
                     yesterday.toEpochMilliseconds().toDouble(),
                 ),
             ),
-            tradingRewards?.historical?.get("DAILY"),
+            tradingRewards?.fullHistory?.get("DAILY"),
         )
     }
 
@@ -104,11 +122,35 @@ class TradingRewardsTests {
                         ),
                     ),
                 ).toIMap(),
+                mapOf(
+                    "DAILY" to iListOf(
+                        HistoricalTradingReward(
+                            2.0,
+                            total,
+                            yesterday.toEpochMilliseconds().toDouble(),
+                            today.toEpochMilliseconds().toDouble(),
+                        ),
+                    ),
+                ).toIMap(),
             ),
             parser,
             mapOf(
                 "total" to total,
-                "historical" to mapOf(
+                "fullHistory" to mapOf(
+                    "DAILY" to iListOf(
+                        mapOf(
+                            "amount" to 3.0,
+                            "startedAt" to today,
+                            "endedAt" to tomorrow,
+                        ),
+                        mapOf(
+                            "amount" to 1.0,
+                            "startedAt" to dayBeforeYesterday,
+                            "endedAt" to yesterday,
+                        ),
+                    ),
+                ),
+                "eventHistory" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -132,7 +174,7 @@ class TradingRewardsTests {
 
         // DAILY
         // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
-        assertEquals(3, tradingRewards?.historical?.get("DAILY")?.size)
+        assertEquals(3, tradingRewards?.fullHistory?.get("DAILY")?.size)
         // Ordered newest -> oldest
         assertEquals(
             iListOf(
@@ -155,7 +197,7 @@ class TradingRewardsTests {
                     yesterday.toEpochMilliseconds().toDouble(),
                 ),
             ),
-            tradingRewards?.historical?.get("DAILY"),
+            tradingRewards?.fullHistory?.get("DAILY"),
         )
     }
 }
