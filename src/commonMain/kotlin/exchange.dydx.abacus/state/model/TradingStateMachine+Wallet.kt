@@ -58,19 +58,12 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     val subaccountNumber =
         if (idElements?.size == 2) parser.asInt(idElements.lastOrNull()) ?: 0 else 0
     val childSubaccountNumber = info.childSubaccountNumber
-    val tradeChildSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
-        parser,
-        account,
-        subaccountNumber,
-        parser.asMap(input?.get("trade")),
-    )
     val subaccountNumbers = iMutableListOf(subaccountNumber)
+
     if (childSubaccountNumber != null && !subaccountNumbers.contains(childSubaccountNumber)) {
         subaccountNumbers.add(childSubaccountNumber)
     }
-    if (!subaccountNumbers.contains(tradeChildSubaccountNumber)) {
-        subaccountNumbers.add(tradeChildSubaccountNumber)
-    }
+
     if (payload["accounts"] != null ||
         payload["subaccounts"] != null ||
         payload["positions"] != null ||

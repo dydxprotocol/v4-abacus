@@ -87,11 +87,13 @@ class AccountTransformer() {
         parser: ParserProtocol,
         trade: Map<String, Any>,
     ): Double? {
+        val marketOrderUsdcSize = parser.asDouble(parser.value(trade, "marketOrder.usdcSize"))
         val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
+
         return if (targetLeverage == 0.0) {
             null
         } else {
-            val usdcSize = parser.asDouble(parser.value(trade, "size.usdcSize")) ?: return null
+            val usdcSize = marketOrderUsdcSize ?: parser.asDouble(parser.value(trade, "size.usdcSize")) ?: return null
             usdcSize / targetLeverage
         }
     }
