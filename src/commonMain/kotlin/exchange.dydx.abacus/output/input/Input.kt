@@ -34,7 +34,6 @@ data class Input(
     val adjustIsolatedMargin: AdjustIsolatedMarginInput?,
     val receiptLines: IList<ReceiptLine>?,
     val errors: IList<ValidationError>?,
-    val parentSubaccountErrors: IList<ValidationError>?,
     val childSubaccountErrors: IList<ValidationError>?
 ) {
     companion object {
@@ -61,7 +60,6 @@ data class Input(
                     AdjustIsolatedMarginInput.create(existing?.adjustIsolatedMargin, parser, parser.asMap(data["adjustIsolatedMargin"]))
                 val errors =
                     ValidationError.create(existing?.errors, parser, parser.asList(data["errors"]))
-                val parentSubaccountErrors = ValidationError.create(existing?.parentSubaccountErrors, parser, parser.asList(data["parentSubaccountErrors"]))
                 val childSubaccountErrors =
                     ValidationError.create(existing?.childSubaccountErrors, parser, parser.asList(data["childSubaccountErrors"]))
                 val receiptLines = ReceiptLine.create(parser, parser.asList(data["receiptLines"]))
@@ -74,7 +72,6 @@ data class Input(
                     existing?.adjustIsolatedMargin !== adjustIsolatedMargin ||
                     existing?.receiptLines != receiptLines ||
                     existing?.errors != errors ||
-                    existing?.parentSubaccountErrors != parentSubaccountErrors ||
                     existing?.childSubaccountErrors != childSubaccountErrors
                 ) {
                     Input(
@@ -86,7 +83,6 @@ data class Input(
                         adjustIsolatedMargin,
                         receiptLines,
                         errors,
-                        parentSubaccountErrors,
                         childSubaccountErrors
                     )
                 } else {

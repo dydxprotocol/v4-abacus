@@ -126,14 +126,14 @@ internal class InputValidator(
                     input
                 }
             } else {
-                if (errors != input["parentSubaccountErrors"]) {
-                    input.modify("parentSubaccountErrors", errors)
+                if (errors != input["errors"]) {
+                    input.modify("errors", errors)
                 } else {
                     input
                 }
             }
         } else {
-            input?.modify("parentSubaccountErrors", null)
+            input?.modify("errors", null)
             input?.modify("childSubaccountErrors", null)
         }
     }
@@ -231,25 +231,5 @@ internal class InputValidator(
         } else {
             null
         }
-    }
-
-    fun mergeErrors(
-        input: Map<String, Any>?
-    ): Map<String, Any>? {
-        val parentSubaccountErrors = parser.asList(input?.get("parentSubaccountErrors"))
-        val childSubaccountErrors = parser.asList(input?.get("childSubaccountErrors"))
-
-        if (parentSubaccountErrors != null && childSubaccountErrors != null) {
-            val errors = mutableListOf<Any>()
-            errors.addAll(parentSubaccountErrors)
-//            errors.addAll(childSubaccountErrors)
-            return input?.modify("errors", errors)
-        } else if (parentSubaccountErrors != null) {
-            return input?.modify("errors", parentSubaccountErrors)
-        } else if (childSubaccountErrors != null) {
-            return input?.modify("errors", childSubaccountErrors)
-        }
-
-        return input
     }
 }
