@@ -221,7 +221,13 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
         val account = json.jsonArray.toList()
         this.wallet = walletProcessor.receivedAccountBalances(wallet, account)
         return StateChanges(iListOf(Changes.accountBalances), null)
-    } catch (exception: SerializationException) {
+    } catch (exception: SerializationException) { // JSON Deserialization exception
+        Logger.e {
+            "Failed to deserialize onChainAccountBalances: $payload \n" +
+                "Exception: $exception"
+        }
+        StateChanges(iListOf())
+    } catch (exception: IllegalArgumentException) { // .jsonArray exception
         Logger.e {
             "Failed to deserialize onChainAccountBalances: $payload \n" +
                 "Exception: $exception"
