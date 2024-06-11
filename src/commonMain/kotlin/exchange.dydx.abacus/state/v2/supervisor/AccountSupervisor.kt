@@ -228,6 +228,17 @@ internal open class AccountSupervisor(
                 newSubaccountSupervisor.validatorConnected = validatorConnected
                 subaccounts[subaccountNumber] = newSubaccountSupervisor
             }
+
+        // if this is the first realized subaccount, retrieve user fee tier and user stats
+        if (validatorConnected && isSubaccountRealized && !subaccounts.values.any { it.realized }) {
+            if (configs.retrieveUserFeeTier) {
+                retrieveUserFeeTier()
+            }
+            if (configs.retrieveUserStats) {
+                retrieveUserStats()
+            }
+        }
+
         subaccounts[subaccountNumber]?.realized = isSubaccountRealized
     }
 
