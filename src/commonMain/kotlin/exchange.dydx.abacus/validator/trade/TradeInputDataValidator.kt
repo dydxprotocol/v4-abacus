@@ -6,7 +6,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.GoodTil
-import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
@@ -17,7 +16,6 @@ Covers basic check of required fields
 Covers checking
 LIMIT_MUST_ABOVE_TRIGGER_PRICE
 LIMIT_MUST_BELOW_TRIGGER_PRICE
-AMOUNT_INPUT_STEP_SIZE
 USER_MAX_ORDERS
 ORDER_SIZE_BELOW_MIN_SIZE
 
@@ -54,7 +52,6 @@ internal class TradeInputDataValidator(
         val errors = mutableListOf<Any>()
         validateSize(trade, market)?.let {
             /*
-            AMOUNT_INPUT_STEP_SIZE
             ORDER_SIZE_BELOW_MIN_SIZE
              */
             errors.addAll(it)
@@ -87,33 +84,12 @@ internal class TradeInputDataValidator(
         market: Map<String, Any>?,
     ): List<Any>? {
         /*
-        AMOUNT_INPUT_STEP_SIZE
         ORDER_SIZE_BELOW_MIN_SIZE
          */
         val symbol = parser.asString(market?.get("assetId")) ?: return null
         parser.asDouble(parser.value(trade, "size.size"))?.let { size ->
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
                 val errors = mutableListOf<Map<String, Any>>()
-                parser.asDouble(configs["stepSize"])?.let { stepSize ->
-                    if (Rounder.round(size, stepSize) != size) {
-                        errors.add(
-                            error(
-                                "ERROR",
-                                "AMOUNT_INPUT_STEP_SIZE",
-                                null,
-                                null,
-                                "ERRORS.TRADE_BOX_TITLE.AMOUNT_INPUT_STEP_SIZE",
-                                "ERRORS.TRADE_BOX.AMOUNT_INPUT_STEP_SIZE",
-                                mapOf(
-                                    "STEP_SIZE" to mapOf(
-                                        "value" to stepSize,
-                                        "format" to "size",
-                                    ),
-                                ),
-                            ),
-                        )
-                    }
-                }
                 parser.asDouble(configs["minOrderSize"])?.let { minOrderSize ->
                     if (size.abs() < minOrderSize) {
                         errors.add(
