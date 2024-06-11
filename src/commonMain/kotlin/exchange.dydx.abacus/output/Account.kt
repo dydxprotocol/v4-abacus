@@ -1780,8 +1780,8 @@ internal fun Instant.previousMonth(): Instant {
 data class TradingRewards(
     val total: Double?,
     val blockRewards: IList<BlockReward>?,
-    val fullHistory: IMap<String, IList<HistoricalTradingReward>>?,
-    val eventHistory: IMap<String, IList<HistoricalTradingReward>>?
+    val filledHistory: IMap<String, IList<HistoricalTradingReward>>?,
+    val rawHistory: IMap<String, IList<HistoricalTradingReward>>?
 ) {
     companion object {
         internal fun create(
@@ -1792,17 +1792,17 @@ data class TradingRewards(
             Logger.d { "creating TradingRewards\n" }
             data?.let {
                 val total = parser.asDouble(data["total"])
-                val fullHistory = total?.let {
+                val filledHistory = total?.let {
                     createHistoricalTradingRewards(
                         it,
-                        existing?.fullHistory,
-                        parser.asMap(data["fullHistory"]),
+                        existing?.filledHistory,
+                        parser.asMap(data["filledHistory"]),
                         fillZeros = true,
                         parser,
                     )
                 }
-                val eventHistory = total?.let {
-                    createHistoricalTradingRewards(it, existing?.eventHistory, parser.asMap(data["eventHistory"]), fillZeros = false, parser)
+                val rawHistory = total?.let {
+                    createHistoricalTradingRewards(it, existing?.rawHistory, parser.asMap(data["rawHistory"]), fillZeros = false, parser)
                 }
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
@@ -1810,14 +1810,14 @@ data class TradingRewards(
 
                 return if (existing?.total != total ||
                     existing?.blockRewards != blockRewards ||
-                    existing?.fullHistory != fullHistory ||
-                    existing?.eventHistory != eventHistory
+                    existing?.filledHistory != filledHistory ||
+                    existing?.rawHistory != rawHistory
                 ) {
                     TradingRewards(
                         total,
                         blockRewards,
-                        fullHistory,
-                        eventHistory,
+                        filledHistory,
+                        rawHistory,
                     )
                 } else {
                     existing

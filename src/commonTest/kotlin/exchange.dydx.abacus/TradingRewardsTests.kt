@@ -30,7 +30,7 @@ class TradingRewardsTests {
             parser,
             mapOf(
                 "total" to 200.0,
-                "fullHistory" to mapOf(
+                "filledHistory" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -48,7 +48,7 @@ class TradingRewardsTests {
                         ),
                     ),
                 ),
-                "eventHistory" to mapOf(
+                "rawHistory" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -76,7 +76,7 @@ class TradingRewardsTests {
 
         // DAILY
         // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
-        assertEquals(3, tradingRewards?.fullHistory?.get("DAILY")?.size)
+        assertEquals(3, tradingRewards?.filledHistory?.get("DAILY")?.size)
         // Ordered newest -> oldest
         assertEquals(
             iListOf(
@@ -99,7 +99,7 @@ class TradingRewardsTests {
                     yesterday.toEpochMilliseconds().toDouble(),
                 ),
             ),
-            tradingRewards?.fullHistory?.get("DAILY"),
+            tradingRewards?.filledHistory?.get("DAILY"),
         )
     }
 
@@ -136,7 +136,7 @@ class TradingRewardsTests {
             parser,
             mapOf(
                 "total" to total,
-                "fullHistory" to mapOf(
+                "filledHistory" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -150,7 +150,7 @@ class TradingRewardsTests {
                         ),
                     ),
                 ),
-                "eventHistory" to mapOf(
+                "rawHistory" to mapOf(
                     "DAILY" to iListOf(
                         mapOf(
                             "amount" to 3.0,
@@ -174,7 +174,7 @@ class TradingRewardsTests {
 
         // DAILY
         // day before yesterday -> yesterday, yesterday -> today, today -> tomorrow
-        assertEquals(3, tradingRewards?.fullHistory?.get("DAILY")?.size)
+        assertEquals(3, tradingRewards?.filledHistory?.get("DAILY")?.size)
         // Ordered newest -> oldest
         assertEquals(
             iListOf(
@@ -197,7 +197,7 @@ class TradingRewardsTests {
                     yesterday.toEpochMilliseconds().toDouble(),
                 ),
             ),
-            tradingRewards?.fullHistory?.get("DAILY"),
+            tradingRewards?.filledHistory?.get("DAILY"),
         )
     }
 }
