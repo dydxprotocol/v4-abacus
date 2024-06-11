@@ -18,6 +18,12 @@ internal fun TradingStateMachine.feeDiscounts(payload: String): StateChanges {
                 "Exception: $exception"
         }
         return StateChanges(iEmptyList())
+    } catch (exception: IllegalArgumentException) { // .jsonArray exception
+        Logger.e {
+            "Failed to deserialize feeDiscounts: $payload \n" +
+                "Exception: $exception"
+        }
+        return StateChanges(iEmptyList())
     }
     return receivedFeeDiscounts(json)
 }
