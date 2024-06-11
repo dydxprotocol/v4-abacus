@@ -601,8 +601,6 @@ open class TradingStateMachine(
                 this.environment,
             )
 
-//            this.input = inputValidator.mergeErrors(this.input)
-
             when (this.input?.get("current")) {
                 "trade" -> {
                     calculateTrade(subaccountNumber)
