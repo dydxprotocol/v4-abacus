@@ -106,7 +106,6 @@ internal class InputValidator(
 
             val errors = sort(
                 validateTransaction(
-                    subaccountNumber,
                     wallet,
                     user,
                     subaccount,
@@ -139,7 +138,6 @@ internal class InputValidator(
     }
 
     private fun validateTransaction(
-        subaccountNumber: Int?,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -150,7 +148,6 @@ internal class InputValidator(
         transactionType: String,
         environment: V4Environment?,
     ): List<Any>? {
-        Logger.e { "Validate subaccount: $subaccountNumber" }
         val validators = validatorsFor(transactionType)
         return if (validators != null) {
             val result = mutableListOf<Any>()
