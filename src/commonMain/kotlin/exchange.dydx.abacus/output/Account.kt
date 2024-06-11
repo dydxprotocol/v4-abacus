@@ -1797,12 +1797,12 @@ data class TradingRewards(
                         it,
                         existing?.fullHistory,
                         parser.asMap(data["fullHistory"]),
-                        true,
+                        fillZeros = true,
                         parser,
                     )
                 }
                 val eventHistory = total?.let {
-                    createHistoricalTradingRewards(it, existing?.eventHistory, parser.asMap(data["eventHistory"]), false, parser)
+                    createHistoricalTradingRewards(it, existing?.eventHistory, parser.asMap(data["eventHistory"]), fillZeros = false, parser)
                 }
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
