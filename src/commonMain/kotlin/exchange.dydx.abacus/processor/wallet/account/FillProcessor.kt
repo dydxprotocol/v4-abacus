@@ -14,6 +14,7 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "type" to "type",
             "market" to "marketId",
             "orderId" to "orderId",
+            "marginMode" to "marginMode",
         ),
         "datetime" to mapOf(
             "createdAt" to "createdAt",
