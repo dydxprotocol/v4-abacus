@@ -35,3 +35,9 @@ fun String.toDydxAddress(): String? {
         return null
     }
 }
+
+fun String.toCamelCase(): String {
+    return this.split("_", "-")
+        .mapIndexed { index, s -> if (index == 0) s.lowercase() else s.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } }
+        .joinToString("")
+}

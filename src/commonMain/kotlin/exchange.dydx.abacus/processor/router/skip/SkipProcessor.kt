@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.SharedRouterProcessor
+import exchange.dydx.abacus.processor.router.squid.SquidStatusProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
@@ -131,7 +132,10 @@ internal class SkipProcessor(
         payload: Map<String, Any>,
         transactionId: String?,
     ): Map<String, Any>? {
-        throw NotImplementedError("receivedStatus is not implemented in SkipProcessor!")
+//        using squid status processor until we implement it
+//        this lets us track our tx so we can more easily tell if tx are succeeding or not in QA
+        val processor = SquidStatusProcessor(parser, transactionId)
+        return processor.received(existing, payload)
     }
 
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
