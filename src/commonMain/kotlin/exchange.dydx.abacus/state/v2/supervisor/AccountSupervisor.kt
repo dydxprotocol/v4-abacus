@@ -652,6 +652,63 @@ internal open class AccountSupervisor(
             }
         }
     }
+    private fun transferNobleBalanceSkip(amount: BigDecimal) {
+        val url = helper.configs.skipV2MsgsDirect()
+        val fromChain = helper.configs.nobleChainId()
+        val fromToken = helper.configs.nobleDenom()
+        val nobleAddress = accountAddress.toNobleAddress()
+        val chainId = helper.environment.dydxChainId
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
+        if (
+            fromChain != null &&
+            fromToken != null &&
+            nobleAddress != null &&
+            chainId != null &&
+            dydxTokenDemon != null
+        ) {
+            val body: Map<String, Any> = mapOf(
+                "amount_in" to amount.toPlainString(),
+//              from noble denom and chain
+                "source_asset_denom" to fromToken,
+                "source_asset_chain_id" to fromChain,
+//              to dydx denom and chain
+                "dest_asset_denom" to dydxTokenDemon,
+                "dest_asset_chain_id" to chainId,
+                "chain_ids_to_addresses" to mapOf(
+                    fromChain to nobleAddress,
+                    chainId to accountAddress.toString(),
+                ),
+                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            )
+            val header =
+                iMapOf(
+                    "Content-Type" to "application/json",
+                )
+            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
+                if (response == null) {
+                    val json = helper.parser.decodeJsonObject(response)
+                    if (json != null) {
+                        val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
+                        val processedPayload = skipRoutePayloadProcessor.received(existing = mapOf(), payload = json)
+                        val ibcPayload =
+                            helper.parser.asString(
+                                processedPayload.get("data"),
+                            )
+                        if (ibcPayload != null) {
+                            helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
+                                val error = helper.parseTransactionResponse(it)
+                                if (error != null) {
+                                    Logger.e { "transferNobleBalanceSkip error: $error" }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Logger.e { "transferNobleBalanceSkip error, code: $code" }
+                }
+            }
+        }
+    }
 
     private fun transferNobleBalanceSkip(amount: BigDecimal) {
         val url = helper.configs.skipV2MsgsDirect()
