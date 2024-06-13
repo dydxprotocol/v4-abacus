@@ -8,7 +8,6 @@ import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import tickDecimals
-import kotlin.math.ceil
 
 @Suppress("UNCHECKED_CAST")
 internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
@@ -533,7 +532,6 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             var sizeCost = Numeric.double.ZERO
             var depth = Numeric.double.ZERO
 
-
             for (item in orderbook) {
                 val line = parser.asNativeMap(item)
                 val linePrice = parser.asDouble(line?.get("price"))
@@ -552,8 +550,8 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                                 "price" to (if (shouldFloor) floor else ceiling),
                                 "size" to size,
                                 "sizeCost" to sizeCost,
-                                "depth" to depth
-                            )
+                                "depth" to depth,
+                            ),
                         )
                         floor = Rounder.round(linePrice, grouping)
                         ceiling = floor + grouping
