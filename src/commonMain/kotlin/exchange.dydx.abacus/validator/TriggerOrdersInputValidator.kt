@@ -8,7 +8,6 @@ import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
-import exchange.dydx.abacus.utils.Rounder
 
 enum class RelativeToPrice(val rawValue: String) {
     ABOVE("ABOVE"),
@@ -104,7 +103,6 @@ internal class TriggerOrdersInputValidator(
         val triggerErrors = mutableListOf<Any>()
         validateSize(parser.asDouble(triggerOrders["size"]), market)?.let {
             /*
-                AMOUNT_INPUT_STEP_SIZE
                 ORDER_SIZE_BELOW_MIN_SIZE
              */
             triggerErrors.addAll(it)
@@ -129,7 +127,6 @@ internal class TriggerOrdersInputValidator(
         }
         validateSize(parser.asDouble(parser.value(triggerOrder, "summary.size")), market)?.let {
             /*
-                AMOUNT_INPUT_STEP_SIZE
                 ORDER_SIZE_BELOW_MIN_SIZE
              */
             triggerErrors.addAll(it)
@@ -449,26 +446,6 @@ internal class TriggerOrdersInputValidator(
             parser.asNativeMap(market?.get("configs"))?.let { configs ->
                 val errors = mutableListOf<Map<String, Any>>()
 
-                parser.asDouble(configs["stepSize"])?.let { stepSize ->
-                    if (Rounder.round(size, stepSize) != size) {
-                        errors.add(
-                            error(
-                                "ERROR",
-                                "AMOUNT_INPUT_STEP_SIZE",
-                                listOf(TriggerOrdersInputField.size.rawValue),
-                                null,
-                                "ERRORS.TRADE_BOX_TITLE.AMOUNT_INPUT_STEP_SIZE",
-                                "ERRORS.TRADE_BOX.AMOUNT_INPUT_STEP_SIZE",
-                                mapOf(
-                                    "STEP_SIZE" to mapOf(
-                                        "value" to stepSize,
-                                        "format" to "size",
-                                    ),
-                                ),
-                            ),
-                        )
-                    }
-                }
                 parser.asDouble(configs["minOrderSize"])?.let { minOrderSize ->
                     if (size.abs() < minOrderSize) {
                         errors.add(
