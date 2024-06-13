@@ -3,6 +3,7 @@ package exchange.dydx.abacus.output
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import kollections.JsExport
 import kollections.toIList
 import kotlinx.serialization.Serializable
@@ -81,6 +82,19 @@ data class PerpetualState(
     }
 
     fun subaccountFills(subaccountNumber: Int): IList<SubaccountFill>? {
+        // if useParentSubaccount is false in SubaccountConfigs, groupedSubaccounts will be null
+        if (account?.groupedSubaccounts?.get("$subaccountNumber") != null) {
+            val groupedSubaccountFills = mutableListOf<SubaccountFill>()
+            for ((subaccountNumberKey, subaccountFills) in fills ?: emptyMap()) {
+                val subaccountId = subaccountNumberKey.toInt()
+                if (subaccountId % NUM_PARENT_SUBACCOUNTS == subaccountNumber) {
+                    groupedSubaccountFills.addAll(subaccountFills)
+                }
+            }
+
+            return groupedSubaccountFills.sortedByDescending { it.createdAtMilliseconds }.toIList()
+        }
+
         return fills?.get("$subaccountNumber")
     }
 
