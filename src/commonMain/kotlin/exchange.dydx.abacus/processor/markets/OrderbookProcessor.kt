@@ -8,6 +8,7 @@ import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import tickDecimals
+import kotlin.math.ceil
 
 @Suppress("UNCHECKED_CAST")
 internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
@@ -329,18 +330,23 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val asks = parser.asNativeList(orderbook.get("asks"))?.map { ask ->
             val map = parser.asNativeMap(ask)!!
             val size = parser.asDouble(map["size"]) ?: 0.0
+            val price = parser.asDouble(map["price"]) ?: 0.0
             asksDepth += size
             val modified = map.mutable()
             modified["depth"] = asksDepth
+            modified["sizeCost"] = size * price
             modified
         }
         var bidsDepth = 0.0
         val bids = parser.asNativeList(orderbook.get("bids"))?.map { bid ->
             val map = parser.asNativeMap(bid)!!
             val size = parser.asDouble(map["size"]) ?: 0.0
+            val price = parser.asDouble(map["price"]) ?: 0.0
+
             bidsDepth += size
             val modified = map.mutable()
             modified["depth"] = bidsDepth
+            modified["sizeCost"] = size * price
             modified
         }
         val firstAsk = parser.asDouble(
@@ -361,17 +367,18 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         )
         val modified = orderbook.mutable()
         if (firstAsk != null && firstBid != null) {
-            val firstAskPrice = firstAsk
-            val midPrice = (firstAskPrice + firstBid) / 2.0
-            val spread = firstAskPrice.minus(firstBid)
+            val midPrice = (firstAsk + firstBid) / 2.0
+            val spread = firstAsk.minus(firstBid)
             val spreadPercent = spread / midPrice
             modified.safeSet("midPrice", midPrice)
             modified.safeSet("spreadPercent", spreadPercent)
+            modified.safeSet("spread", spread)
             modified.safeSet("asks", asks)
             modified.safeSet("bids", bids)
         } else {
             modified.safeSet("midPrice", null)
             modified.safeSet("spreadPercent", null)
+            modified.safeSet("spread", null)
             modified.safeSet("asks", asks)
             modified.safeSet("bids", bids)
         }
@@ -495,6 +502,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 )
                 modified.safeSet("midPrice", orderbook["midPrice"])
                 modified.safeSet("spreadPercent", orderbook["spreadPercent"])
+                modified.safeSet("spread", orderbook["spread"])
                 modified
             } else {
                 orderbook.toMutableMap()
@@ -510,43 +518,53 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     fun group(orderbook: List<Any>?, grouping: Double): List<Any>? {
-        return if (orderbook != null && orderbook.size > 0) {
+        return if (!orderbook.isNullOrEmpty()) {
+            // orderbook always ordered in increasing depth which is either increasing (asks) or decreasing (bids) price
+            // we want to round asks up and bids down so they don't have an overlapping group in the middle
             val firstPrice = parser.asDouble(parser.value(orderbook.firstOrNull(), "price"))!!
+            val lastPrice = parser.asDouble(parser.value(orderbook.lastOrNull(), "price"))!!
+            val shouldFloor = lastPrice <= firstPrice
+            val result = mutableListOf<Map<String, Any>>()
+
+            // properties of the current group
             var floor = Rounder.round(firstPrice, grouping)
             var ceiling = floor + grouping
             var size = Numeric.double.ZERO
+            var sizeCost = Numeric.double.ZERO
             var depth = Numeric.double.ZERO
-            val result = mutableListOf<Map<String, Any>>()
+
 
             for (item in orderbook) {
                 val line = parser.asNativeMap(item)
                 val linePrice = parser.asDouble(line?.get("price"))
                 if (linePrice != null) {
                     val lineSize = parser.asDouble(line?.get("size")) ?: Numeric.double.ZERO
-                    if (linePrice >= floor) {
-                        if (linePrice < ceiling) {
-                            size += lineSize
-                            depth += lineSize
-                        } else {
-                            result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
-                            floor = Rounder.round(linePrice, grouping)
-                            ceiling = floor + grouping
+                    val lineSizeCost = lineSize * linePrice
 
-                            size = lineSize
-                            depth += lineSize
-                        }
+                    // if in this group
+                    if ((linePrice > floor && linePrice < ceiling) || (linePrice == floor && shouldFloor) || (linePrice == ceiling && !shouldFloor)) {
+                        size += lineSize
+                        sizeCost += lineSizeCost
+                        depth += lineSize
                     } else {
-                        result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
+                        result.add(
+                            mapOf(
+                                "price" to (if (shouldFloor) floor else ceiling),
+                                "size" to size,
+                                "sizeCost" to sizeCost,
+                                "depth" to depth
+                            )
+                        )
                         floor = Rounder.round(linePrice, grouping)
                         ceiling = floor + grouping
 
                         size = lineSize
+                        sizeCost = lineSizeCost
                         depth += lineSize
                     }
                 }
             }
-            val item = mapOf("price" to floor, "size" to size, "depth" to depth)
-            result.add(item)
+            result.add(mapOf("price" to (if (shouldFloor) floor else ceiling), "size" to size, "sizeCost" to sizeCost, "depth" to depth))
 
             return result
         } else {
