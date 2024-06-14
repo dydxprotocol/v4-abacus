@@ -6,8 +6,7 @@ import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toCamelCaseKeys
 
-@Suppress("ForbiddenComment")
-// TODO: decide if we want to split this into one processor per network
+// We may later want to split this into one processor per network
 // For now we're not since it's just two, but at 3 we will
 internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val keyMap = mapOf(
@@ -35,6 +34,7 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
         COSMOS
     }
 
+//    DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
 //    Create custom exceptions for better error handling specificity and expressiveness
     @Suppress("TooGenericExceptionThrown")
     internal fun getTxType(payload: Map<String, Any>): TxType {
