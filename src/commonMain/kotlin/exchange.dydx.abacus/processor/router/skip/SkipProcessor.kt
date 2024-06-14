@@ -151,14 +151,19 @@ internal class SkipProcessor(
         return parser.asString(selectedChain?.get("chain_id"))
     }
 
-    override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
-        val tokensList = filteredTokens(selectedChainId)
+    override fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>? {
+        val tokensList = filteredTokens(chainId)
         tokensList?.find {
-            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress
+            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenDenom
         }?.let {
-            return parser.asString(parser.asNativeMap(it)?.get("symbol"))
+            return parser.asNativeMap(it)
         }
         return null
+    }
+
+    override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
+        val token = getTokenByDenomAndChainId(tokenAddress, selectedChainId) ?: return null
+        return parser.asString(token.get("symbol"))
     }
 
     override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
@@ -174,7 +179,31 @@ internal class SkipProcessor(
     override fun filteredTokens(chainId: String?): List<Any>? {
         val chainIdToUse = chainId ?: defaultChainId()
         val assetsMapForChainId = parser.asNativeMap(this.skipTokens?.get(chainIdToUse))
-        return parser.asNativeList(assetsMapForChainId?.get("assets"))
+        val assetsForChainId = parser.asNativeList(assetsMapForChainId?.get("assets"))
+//      coinbase exchange chainId is noble-1. we only allow usdc withdrawals from it
+        if (chainId === "noble-1") {
+            return assetsForChainId?.filter {
+                parser.asString(parser.asNativeMap(it)?.get("denom")) == "uusdc"
+            }
+        }
+
+        val filteredTokens = mutableListOf<Map<String, Any>>()
+//        we have to replace skip's {chain-name}-native naming bc it doesn't play well with
+//        any of our SDKs.
+//        however, their {chain-name}-native denom naming is required for their API
+//        so we need to store both values
+        assetsForChainId?.forEach {
+            val token = parser.asNativeMap(it)?.toMutableMap()
+            if (token != null) {
+                val denom = parser.asString(token["denom"])
+                if (denom?.endsWith("native") == true) {
+                    token["skipDenom"] = denom
+                    token["denom"] = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                }
+                filteredTokens.add(token.toMap())
+            }
+        }
+        return filteredTokens
     }
 
     override fun defaultTokenAddress(chainId: String?): String? {

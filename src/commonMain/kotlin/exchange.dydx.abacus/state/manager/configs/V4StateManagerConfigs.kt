@@ -103,6 +103,10 @@ class V4StateManagerConfigs(
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
 
+    fun osmosisChainId(): String? {
+        return if (environment.isMainNet) "osmosis-1" else "osmosis-5"
+    }
+
     fun skipV1Chains(): String {
         return "$skipHost/v1/info/chains?include_evm=true"
     }
