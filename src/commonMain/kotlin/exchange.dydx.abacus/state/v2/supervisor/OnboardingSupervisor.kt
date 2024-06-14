@@ -232,7 +232,7 @@ internal class OnboardingSupervisor(
             }
         }
         val chainId = helper.environment.dydxChainId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.skipV2MsgsDirect()
         if (fromChain != null &&
@@ -240,14 +240,14 @@ internal class OnboardingSupervisor(
             fromAmount != null && fromAmount > 0 &&
             fromAmountString != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             url != null
         ) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
                 "source_asset_denom" to fromToken,
                 "source_asset_chain_id" to fromChain,
-                "dest_asset_denom" to nativeTokenUSDCDenom,
+                "dest_asset_denom" to nativeChainUSDCDenom,
                 "dest_asset_chain_id" to chainId,
                 "chain_ids_to_addresses" to mapOf(
                     "fromChain" to sourceAddress,
@@ -295,7 +295,6 @@ internal class OnboardingSupervisor(
             }
         }
         val chainId = helper.environment.dydxChainId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val nobleAddress = accountAddress.toNobleAddress()
         val url = helper.configs.skipV2MsgsDirect()
@@ -307,7 +306,6 @@ internal class OnboardingSupervisor(
             fromAmountString != null &&
             nobleAddress != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
             toChain != null &&
             toToken != null
         ) {
@@ -363,7 +361,7 @@ internal class OnboardingSupervisor(
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.squidRoute()
         if (fromChain != null &&
@@ -371,7 +369,7 @@ internal class OnboardingSupervisor(
             fromAmount != null && fromAmount > 0 &&
             fromAmountString != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             url != null &&
             squidIntegratorId != null
         ) {
@@ -380,7 +378,7 @@ internal class OnboardingSupervisor(
                 "fromToken" to fromToken,
                 "fromAmount" to fromAmountString,
                 "toChain" to chainId,
-                "toToken" to nativeTokenUSDCDenom,
+                "toToken" to nativeChainUSDCDenom,
                 "toAddress" to accountAddress,
                 "slippage" to "1",
                 "enableForecall" to "false",
@@ -425,7 +423,7 @@ internal class OnboardingSupervisor(
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val nobleAddress = accountAddress.toNobleAddress()
         val url = helper.configs.squidV2Route()
@@ -437,7 +435,7 @@ internal class OnboardingSupervisor(
             fromAmountString != null &&
             nobleAddress != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             url != null &&
             squidIntegratorId != null &&
             toChain != null &&
@@ -763,7 +761,7 @@ internal class OnboardingSupervisor(
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.squidRoute()
         val fromAddress = accountAddress
@@ -774,13 +772,13 @@ internal class OnboardingSupervisor(
             fromAmount > 0 &&
             fromAmountString != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             url != null &&
             squidIntegratorId != null
         ) {
             val params: IMap<String, String> = iMapOf(
                 "fromChain" to chainId,
-                "fromToken" to nativeTokenUSDCDenom,
+                "fromToken" to nativeChainUSDCDenom,
                 "fromAmount" to fromAmountString,
                 "fromAddress" to fromAddress,
                 "toChain" to nobleChain,
@@ -822,7 +820,7 @@ internal class OnboardingSupervisor(
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.squidRoute()
         val fromAddress = accountAddress
@@ -833,13 +831,13 @@ internal class OnboardingSupervisor(
             fromAmount > 0 &&
             fromAmountString != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             url != null &&
             squidIntegratorId != null
         ) {
             val params: IMap<String, String> = iMapOf(
                 "fromChain" to chainId,
-                "fromToken" to nativeTokenUSDCDenom,
+                "fromToken" to nativeChainUSDCDenom,
                 "fromAmount" to fromAmountString,
                 "fromAddress" to fromAddress,
                 "toChain" to toChain,
@@ -882,7 +880,7 @@ internal class OnboardingSupervisor(
         }
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.squidV2Route()
         val fromAddress = accountAddress.toNobleAddress()
@@ -895,7 +893,7 @@ internal class OnboardingSupervisor(
             fromAmount > 0 &&
             fromAmountString != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             url != null &&
             fromAddress != null &&
             squidIntegratorId != null &&
@@ -957,7 +955,7 @@ internal class OnboardingSupervisor(
             null
         }
         val fromChain = helper.environment.dydxChainId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.skipV2MsgsDirect()
         val fromAddress = accountAddress
@@ -968,11 +966,11 @@ internal class OnboardingSupervisor(
             fromChain != null &&
             toToken != null &&
             toChain != null &&
-            nativeTokenUSDCDenom != null
+            nativeChainUSDCDenom != null
         ) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
-                "source_asset_denom" to nativeTokenUSDCDenom,
+                "source_asset_denom" to nativeChainUSDCDenom,
                 "source_asset_chain_id" to fromChain,
                 "dest_asset_denom" to toToken,
                 "dest_asset_chain_id" to toChain,
@@ -1073,7 +1071,6 @@ internal class OnboardingSupervisor(
             null
         }
         val chainId = helper.environment.dydxChainId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val fromAmountString = helper.parser.asString(fromAmount)
         val url = helper.configs.skipV2MsgsDirect()
         val fromAddress = accountAddress.toNobleAddress()
@@ -1087,7 +1084,6 @@ internal class OnboardingSupervisor(
             fromAddress != null &&
             fromAmountString != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
             fromChain != null &&
             fromToken != null
         ) {
@@ -1169,13 +1165,13 @@ internal class OnboardingSupervisor(
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         if (url != null &&
             fromChain != null &&
             fromToken != null &&
             nobleAddress != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             squidIntegratorId != null
         ) {
             val params: Map<String, String> = mapOf(
@@ -1184,7 +1180,7 @@ internal class OnboardingSupervisor(
                 "fromAddress" to nobleAddress,
                 "fromAmount" to amount.toPlainString(),
                 "toChain" to chainId,
-                "toToken" to nativeTokenUSDCDenom,
+                "toToken" to nativeChainUSDCDenom,
                 "toAddress" to accountAddress.toString(),
                 "slippage" to "1",
                 "enableForecall" to "false",
@@ -1422,7 +1418,7 @@ internal class OnboardingSupervisor(
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
         val fromAmount = if (usdcSize != null && usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
@@ -1436,7 +1432,7 @@ internal class OnboardingSupervisor(
             nobleToken != null &&
             nobleAddress != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             squidIntegratorId != null &&
             fromAmountString != null && fromAmount != null && fromAmount > 0
         ) {
@@ -1446,7 +1442,7 @@ internal class OnboardingSupervisor(
                 "toAddress" to nobleAddress,
                 "fromAmount" to fromAmountString,
                 "fromChain" to chainId,
-                "fromToken" to nativeTokenUSDCDenom,
+                "fromToken" to nativeChainUSDCDenom,
                 "fromAddress" to accountAddress,
                 "slippage" to "1",
                 "enableForecall" to "false",
@@ -1528,7 +1524,7 @@ internal class OnboardingSupervisor(
         val nobleToken = helper.configs.nobleDenom()
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
-        val nativeTokenUSDCDenom = helper.environment.tokens["usdc"]?.denom
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
         val fromAmount = if (usdcSize != null && usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
@@ -1542,13 +1538,13 @@ internal class OnboardingSupervisor(
             nobleToken != null &&
             nobleAddress != null &&
             chainId != null &&
-            nativeTokenUSDCDenom != null &&
+            nativeChainUSDCDenom != null &&
             fromAmountString != null && fromAmount != null && fromAmount > 0
         ) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
 //                from dydx denom and chain
-                "source_asset_denom" to nativeTokenUSDCDenom,
+                "source_asset_denom" to nativeChainUSDCDenom,
                 "source_asset_chain_id" to chainId,
 //                to noble denom and chain
                 "dest_asset_denom" to nobleToken,
