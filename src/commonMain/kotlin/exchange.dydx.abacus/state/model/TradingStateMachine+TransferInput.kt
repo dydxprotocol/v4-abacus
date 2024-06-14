@@ -5,6 +5,7 @@ import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
@@ -245,7 +246,9 @@ private fun TradingStateMachine.updateTransferToChainType(transfer: MutableMap<S
 
 private fun TradingStateMachine.updateTransferExchangeType(transfer: MutableMap<String, Any>, exchange: String) {
     val exchangeDestinationChainId = routerProcessor.exchangeDestinationChainId
+    Logger.e({ "exchangedestinationchainid:$exchangeDestinationChainId" })
     val tokenOptions = routerProcessor.tokenOptions(exchangeDestinationChainId)
+    Logger.e({ "tokenOptions:$tokenOptions" })
     if (transfer["type"] != "TRANSFER_OUT") {
         internalState.transfer.tokens = tokenOptions
         transfer.safeSet("token", routerProcessor.defaultTokenAddress(exchangeDestinationChainId))
