@@ -39,6 +39,7 @@ internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? 
     }
 }
 
+// DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
 internal fun TradingStateMachine.squidRoute(
     payload: String,
     subaccountNumber: Int,
