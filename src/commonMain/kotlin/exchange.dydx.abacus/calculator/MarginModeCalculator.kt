@@ -6,6 +6,7 @@ import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import kollections.iListOf
+import kotlin.math.min
 
 internal object MarginModeCalculator {
     fun findExistingPosition(
@@ -243,12 +244,12 @@ internal object MarginModeCalculator {
         val size = parser.asDouble(parser.value(trade, "size.size"))?.abs() ?: return null
         val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
         val askPrice = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
-        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction"))
-        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
+        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
+        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
 
-        val maxLeverageForMarket = if (effectiveImf != null) {
+        val maxLeverageForMarket = if (effectiveImf != 0.0) {
             1.0 / effectiveImf
-        } else if (initialMarginFraction != null) {
+        } else if (initialMarginFraction != 0.0) {
             1.0 / initialMarginFraction
         } else {
             null
@@ -257,11 +258,7 @@ internal object MarginModeCalculator {
         // Cap targetLeverage to 98% of max leverage
         val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
             val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
-            if (targetLeverage > cappedLeverage) {
-                cappedLeverage
-            } else {
-                targetLeverage
-            }
+            min(targetLeverage, cappedLeverage)
         } else {
             null
         }
