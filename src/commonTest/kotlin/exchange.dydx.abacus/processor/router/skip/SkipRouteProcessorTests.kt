@@ -246,7 +246,7 @@ class SkipRouteProcessorTests {
         )
         assertEquals(expected, result)
     }
-    
+
     @Test
     fun testReceivedError() {
         val payload = skipRouteMock.payloadError
