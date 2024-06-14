@@ -945,52 +945,43 @@ internal class OnboardingSupervisor(
         sourceAddress: String,
         subaccountNumber: Int?,
     ) {
-        val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom()
-        val toAddress = state?.input?.transfer?.address
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
+        val toChain = helper.configs.nobleChainId() ?: return
+        val toToken = helper.configs.nobleDenom() ?: return
+        val toAddress = state?.input?.transfer?.address ?: return
+        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
+        val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
-            null
+            return
         }
-        val fromChain = helper.environment.dydxChainId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
+        if (fromAmount <= 0) return
+        val fromChain = helper.environment.dydxChainId ?: return
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
+        val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
         val fromAddress = accountAddress
-        if (
-            fromAmount != null &&
-            fromAmount > 0 &&
-            fromAmountString != null &&
-            fromChain != null &&
-            toToken != null &&
-            toChain != null &&
-            nativeChainUSDCDenom != null
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "amount_in" to fromAmountString,
-                "source_asset_denom" to nativeChainUSDCDenom,
-                "source_asset_chain_id" to fromChain,
-                "dest_asset_denom" to toToken,
-                "dest_asset_chain_id" to toChain,
-                "chain_ids_to_addresses" to mapOf(
-                    fromChain to fromAddress,
-                    toChain to toAddress,
-                ),
-                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-            )
+        val body: Map<String, Any> = mapOf(
+            "amount_in" to fromAmountString,
+            "source_asset_denom" to nativeChainUSDCDenom,
+            "source_asset_chain_id" to fromChain,
+            "dest_asset_denom" to toToken,
+            "dest_asset_chain_id" to toChain,
+            "chain_ids_to_addresses" to mapOf(
+                fromChain to fromAddress,
+                toChain to toAddress,
+            ),
+            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+        )
 
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "Content-Type" to "application/json",
-            )
-            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
-                if (response != null) {
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
-                } else {
-                    Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
-                }
+        val oldState = stateMachine.state
+        val header = iMapOf(
+            "Content-Type" to "application/json",
+        )
+        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+            if (response != null) {
+                update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+            } else {
+                Logger.e { "retrieveSkipWithdrawalRouteExchange error, code: $code" }
             }
         }
     }
@@ -1003,52 +994,40 @@ internal class OnboardingSupervisor(
         sourceAddress: String,
         subaccountNumber: Int?,
     ) {
-        val toChain = state?.input?.transfer?.chain
-        val toToken = state?.input?.transfer?.token
-        val toAddress = state?.input?.transfer?.address
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
+        val toChain = state?.input?.transfer?.chain ?: return
+        val toToken = state?.input?.transfer?.token ?: return
+        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
+        val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
-            null
+            return
         }
-        val fromChain = helper.environment.dydxChainId
-        val fromToken = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
+        if (fromAmount <= 0) return
+        val fromChain = helper.environment.dydxChainId ?: return
+        val fromToken = helper.environment.tokens["usdc"]?.denom ?: return
+        val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val fromAddress = accountAddress
-        if (
-            toChain != null &&
-            toToken != null &&
-            toAddress != null &&
-            fromAmount != null &&
-            fromAmount > 0 &&
-            fromAmountString != null &&
-            fromChain != null &&
-            fromToken != null
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "amount_in" to fromAmountString,
-                "source_asset_denom" to fromToken,
-                "source_asset_chain_id" to fromChain,
-                "dest_asset_denom" to toToken,
-                "dest_asset_chain_id" to toChain,
-                "chain_ids_to_addresses" to mapOf(
-                    fromChain to sourceAddress,
-                    toChain to fromAddress,
-                ),
-                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-            )
-            val header = iMapOf(
-                "Content-Type" to "application/json",
-            )
-            val oldState = stateMachine.state
-            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
-                if (response != null) {
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
-                } else {
-                    Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
-                }
+        val body: Map<String, Any> = mapOf(
+            "amount_in" to fromAmountString,
+            "source_asset_denom" to fromToken,
+            "source_asset_chain_id" to fromChain,
+            "dest_asset_denom" to toToken,
+            "dest_asset_chain_id" to toChain,
+            "chain_ids_to_addresses" to mapOf(
+                fromChain to sourceAddress,
+                toChain to accountAddress,
+            ),
+            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+        )
+        val header = iMapOf(
+            "Content-Type" to "application/json",
+        )
+        val oldState = stateMachine.state
+        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+            if (response != null) {
+                update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
+            } else {
+                Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
             }
         }
     }
@@ -1061,59 +1040,48 @@ internal class OnboardingSupervisor(
         sourceAddress: String,
         subaccountNumber: Int?,
     ) {
-        val toChain = state?.input?.transfer?.chain
-        val toToken = state?.input?.transfer?.token
-        val toAddress = state?.input?.transfer?.address
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
+        val toChain = state?.input?.transfer?.chain ?: return
+        val toToken = state.input.transfer.token ?: return
+        val toAddress = state.input.transfer.address ?: return
+        val usdcSize = helper.parser.asDecimal(state.input.transfer.size?.usdcSize) ?: return
+        val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
-            null
+            return
         }
-        val chainId = helper.environment.dydxChainId
-        val fromAmountString = helper.parser.asString(fromAmount)
+        if (fromAmount <= 0) return
+        val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val fromAddress = accountAddress.toNobleAddress()
+        val fromAddress = accountAddress.toNobleAddress() ?: return
 
-        val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
-        if (toChain != null &&
-            toToken != null &&
-            fromAmount != null &&
-            fromAmount > 0 &&
-            fromAddress != null &&
-            fromAmountString != null &&
-            chainId != null &&
-            fromChain != null &&
-            fromToken != null
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "amount_in" to fromAmountString,
-                "source_asset_denom" to fromToken,
-                "source_asset_chain_id" to fromChain,
-                "dest_asset_denom" to toToken,
-                "dest_asset_chain_id" to toChain,
-                "chain_ids_to_addresses" to mapOf(
-                    fromChain to fromAddress,
-                    toChain to toAddress,
-                ),
-                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-                "smart_relay" to false,
-            )
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "Content-Type" to "application/json",
-            )
-            helper.post(url, header, body.toJsonPrettyPrint()) { url, response, code, headers ->
-                if (response != null) {
-                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
-                    val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
-                    }
-                } else {
-                    Logger.e { "retrieveSkipWithdrawalRouteCCTP error, code: $code" }
+        val fromChain = helper.configs.nobleChainId() ?: return
+        val fromToken = helper.configs.nobleDenom() ?: return
+        val body: Map<String, Any> = mapOf(
+            "amount_in" to fromAmountString,
+            "source_asset_denom" to fromToken,
+            "source_asset_chain_id" to fromChain,
+            "dest_asset_denom" to toToken,
+            "dest_asset_chain_id" to toChain,
+            "chain_ids_to_addresses" to mapOf(
+                fromChain to fromAddress,
+                toChain to toAddress,
+            ),
+            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            "smart_relay" to false,
+        )
+        val oldState = stateMachine.state
+        val header = iMapOf(
+            "Content-Type" to "application/json",
+        )
+        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
+            if (response != null) {
+                val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                val oldFromAmount = oldState?.input?.transfer?.size?.size
+                if (currentFromAmount == oldFromAmount) {
+                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                 }
+            } else {
+                Logger.e { "retrieveSkipWithdrawalRouteCCTP error, code: $code" }
             }
         }
     }
@@ -1518,7 +1486,8 @@ internal class OnboardingSupervisor(
     ) {
 //      We have a lot of duplicate code for these deposit/withdrawal route calls
 //      It's easier to dedupe now that the url is the same and only the args differ
-//      TODO: Consider creating generateArgs fun to reduce code duplication
+//      Consider creating generateArgs fun to reduce code duplication
+//      DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
         val url = helper.configs.skipV2MsgsDirect()
         val nobleChain = helper.configs.nobleChainId()
         val nobleToken = helper.configs.nobleDenom()
