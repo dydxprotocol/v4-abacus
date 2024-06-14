@@ -2,6 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import kollections.iListOf
@@ -255,7 +256,7 @@ internal object MarginModeCalculator {
 
         // Cap targetLeverage to 98% of max leverage
         val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
-            val cappedLeverage = maxLeverageForMarket * 0.98
+            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
             if (targetLeverage > cappedLeverage) {
                 cappedLeverage
             } else {
