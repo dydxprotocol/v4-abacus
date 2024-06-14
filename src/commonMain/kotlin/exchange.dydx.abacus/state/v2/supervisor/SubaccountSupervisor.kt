@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import abs
 import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.SubaccountOrder
@@ -567,23 +568,23 @@ internal class SubaccountSupervisor(
         error("No available subaccount number")
     }
 
-    internal fun getTransferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): HumanReadableSubaccountTransferPayload {
+    internal fun getTransferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): HumanReadableSubaccountTransferPayload? {
         val trade = stateMachine.state?.input?.trade
-
-        // Derive transfer params from trade input
-        val targetLeverage = trade?.targetLeverage ?: error("targetLeverage is null")
-        val usdcSize = trade.size?.usdcSize ?: error("usdcSize is null")
-        val amountToTransfer = (usdcSize / targetLeverage).toString()
+        val isolatedMarginTransferAmount = trade?.summary?.isolatedMarginTransferAmount
         val childSubaccountNumber = orderPayload.subaccountNumber
 
-        val transferPayload = HumanReadableSubaccountTransferPayload(
-            subaccountNumber,
-            amountToTransfer,
-            accountAddress,
-            childSubaccountNumber,
-        )
+        if (isolatedMarginTransferAmount != null && isolatedMarginTransferAmount > 0.0) {
+            val transferAmount = isolatedMarginTransferAmount.abs().toString()
 
-        return transferPayload
+            return HumanReadableSubaccountTransferPayload(
+                subaccountNumber,
+                transferAmount,
+                accountAddress,
+                childSubaccountNumber,
+            )
+        }
+
+        return null
     }
 
     private fun submitTransaction(
@@ -843,10 +844,7 @@ internal class SubaccountSupervisor(
         val orderPayload = placeOrderPayload(currentHeight)
         val midMarketPrice = stateMachine.state?.marketOrderbook(orderPayload.marketId)?.midPrice
         val analyticsPayload = analyticsUtils.placeOrderAnalyticsPayload(orderPayload, midMarketPrice, fromSlTpDialog = false, isClosePosition = false)
-        val isIsolatedMarginOrder =
-            helper.parser.asInt(orderPayload.subaccountNumber) != subaccountNumber
-        val transferPayload =
-            if (isIsolatedMarginOrder && orderPayload.reduceOnly != true) getTransferPayloadForIsolatedMarginTrade(orderPayload) else null
+        val transferPayload = getTransferPayloadForIsolatedMarginTrade(orderPayload)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradePlaceOrderClick)
 
         return submitPlaceOrder(callback, orderPayload, analyticsPayload, uiClickTimeMs, false, transferPayload)

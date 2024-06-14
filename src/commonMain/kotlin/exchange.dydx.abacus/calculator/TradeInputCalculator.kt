@@ -11,6 +11,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 import exchange.dydx.abacus.utils.Rounder
@@ -52,7 +53,7 @@ internal class TradeInputCalculator(
 
     internal fun calculate(
         state: Map<String, Any>,
-        subaccountNumber: Int?,
+        subaccountNumber: Int,
         input: String?,
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
@@ -402,6 +403,7 @@ internal class TradeInputCalculator(
         if (subaccount == null || market == null) {
             return null
         }
+
         val marginMode = parser.asString(parser.value(trade, "marginMode"))
         val marketId = parser.asString(market["id"]) ?: return null
         val position = parser.asNativeMap(
@@ -410,18 +412,17 @@ internal class TradeInputCalculator(
                 "openPositions.$marketId",
             ),
         )
+
         if (position != null) {
             when (marginMode) {
                 "ISOLATED" -> {
-                    // TODO: When the collateral of child subaccounts is implemented, return from here. The below code is the CROSS implementation.
-                    val currentNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current"))
-                    val postOrderNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.postOrder"))
-                    val mmf = parser.asDouble(parser.value(market, "configs.maintenanceMarginFraction"))
-                    if (currentNotionalTotal != null && mmf != null) {
-                        if (postOrderNotionalTotal != null) {
-                            return postOrderNotionalTotal.times(mmf)
+                    val currentEquity = parser.asDouble(parser.value(position, "equity.current"))
+                    val postOrderEquity = parser.asDouble(parser.value(position, "equity.postOrder"))
+                    if (currentEquity != null) {
+                        if (postOrderEquity != null) {
+                            return postOrderEquity
                         }
-                        return currentNotionalTotal.times(mmf)
+                        return currentEquity
                     }
                 }
 
@@ -455,7 +456,14 @@ internal class TradeInputCalculator(
         market: Map<String, Any>?
     ): Double? {
         if (subaccount == null || market == null) return null
-        // TODO: When Child Subaccounts are added to Subaccount data class, return the child subaccount's leverage
+        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"]) ?: return null
+
+        if (subaccountNumber >= NUM_PARENT_SUBACCOUNTS) {
+            val currentLeverage = parser.asDouble(parser.value(subaccount, "leverage.current"))
+            val postOrderLeverage = parser.asDouble(parser.value(subaccount, "leverage.postOrder"))
+            return postOrderLeverage ?: currentLeverage
+        }
+
         val marketId = parser.asString(market["id"])
         val position = parser.asNativeMap(
             parser.value(
@@ -1765,6 +1773,25 @@ internal class TradeInputCalculator(
 
             else -> {}
         }
+
+        // Calculate isolated margin transfer amount
+        if (MarginModeCalculator.getShouldTransferCollateral(
+                parser,
+                subaccount,
+                trade,
+            )
+        ) {
+            val isolatedMarginTransferAmount = MarginModeCalculator.calculateIsolatedMarginTransferAmount(
+                parser,
+                trade,
+                market,
+            )
+
+            summary.safeSet("isolatedMarginTransferAmount", isolatedMarginTransferAmount)
+        } else {
+            summary.safeSet("isolatedMarginTransferAmount", null)
+        }
+
         return summary
     }
 

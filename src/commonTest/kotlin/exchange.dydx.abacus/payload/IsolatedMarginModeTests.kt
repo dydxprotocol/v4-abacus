@@ -327,6 +327,9 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "targetLeverage": 2.0,
                             "options": {
                                 "needsMarginMode": true
+                            },
+                            "summary": {
+                                "isolatedMarginTransferAmount": 13.697401030000002
                             }
                         }
                     }
@@ -335,7 +338,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         )
 
         val postOrderEquity = parser.asDouble(parser.value(perp.data, "wallet.account.groupedSubaccounts.0.openPositions.APE-USD.equity.postOrder")) ?: 0.0
-        assertEquals(postOrderEquity, 10.0)
+        assertEquals(postOrderEquity, 13.697401030000002)
     }
 
     @Test

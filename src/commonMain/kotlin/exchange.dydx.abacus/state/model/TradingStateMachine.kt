@@ -601,28 +601,30 @@ open class TradingStateMachine(
                 this.environment,
             )
 
-            when (this.input?.get("current")) {
-                "trade" -> {
-                    calculateTrade(subaccountNumber)
-                }
+            if (subaccountNumber != null) {
+                when (this.input?.get("current")) {
+                    "trade" -> {
+                        calculateTrade(subaccountNumber)
+                    }
 
-                "closePosition" -> {
-                    calculateClosePosition(subaccountNumber)
-                }
+                    "closePosition" -> {
+                        calculateClosePosition(subaccountNumber)
+                    }
 
-                "transfer" -> {
-                    calculateTransfer(subaccountNumber)
-                }
+                    "transfer" -> {
+                        calculateTransfer(subaccountNumber)
+                    }
 
-                "triggerOrders" -> {
-                    calculateTriggerOrders(subaccountNumber)
-                }
+                    "triggerOrders" -> {
+                        calculateTriggerOrders(subaccountNumber)
+                    }
 
-                "adjustIsolatedMargin" -> {
-                    calculateAdjustIsolatedMargin(subaccountNumber)
-                }
+                    "adjustIsolatedMargin" -> {
+                        calculateAdjustIsolatedMargin(subaccountNumber)
+                    }
 
-                else -> {}
+                    else -> {}
+                }
             }
         }
         recalculateStates(changes)
@@ -674,11 +676,11 @@ open class TradingStateMachine(
         return StateChanges(realChanges, changes.markets, changes.subaccountNumbers)
     }
 
-    private fun calculateTrade(subaccountNumber: Int?) {
+    private fun calculateTrade(subaccountNumber: Int) {
         calculateTrade("trade", TradeCalculation.trade, subaccountNumber)
     }
 
-    private fun calculateTrade(tag: String, calculation: TradeCalculation, subaccountNumber: Int?) {
+    private fun calculateTrade(tag: String, calculation: TradeCalculation, subaccountNumber: Int) {
         val input = this.input?.mutable()
         val trade = parser.asNativeMap(input?.get(tag))
         val inputType = parser.asString(parser.value(trade, "size.input"))
@@ -699,7 +701,7 @@ open class TradingStateMachine(
         this.input = input
     }
 
-    private fun calculateClosePosition(subaccountNumber: Int?) {
+    private fun calculateClosePosition(subaccountNumber: Int) {
         calculateTrade("closePosition", TradeCalculation.closePosition, subaccountNumber)
     }
 
