@@ -526,8 +526,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val result = mutableListOf<Map<String, Any>>()
 
             // properties of the current group
-            var floor = Rounder.round(firstPrice, grouping)
-            var ceiling = floor + grouping
+            var curFloored = Rounder.round(firstPrice, grouping);
+            var groupMin = if (curFloored != firstPrice) curFloored else (if (shouldFloor) curFloored else curFloored - grouping)
+            var groupMax = groupMin + grouping
             var size = Numeric.double.ZERO
             var sizeCost = Numeric.double.ZERO
             var depth = Numeric.double.ZERO
@@ -540,21 +541,23 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                     val lineSizeCost = lineSize * linePrice
 
                     // if in this group
-                    if ((linePrice > floor && linePrice < ceiling) || (linePrice == floor && shouldFloor) || (linePrice == ceiling && !shouldFloor)) {
+                    // remember: if flooring then min inclusive max exclusive; if ceiling then min exclusive, max inclusive
+                    if ((linePrice > groupMin && linePrice < groupMax) || (linePrice == groupMin && shouldFloor) || (linePrice == groupMax && !shouldFloor)) {
                         size += lineSize
                         sizeCost += lineSizeCost
                         depth += lineSize
                     } else {
                         result.add(
                             mapOf(
-                                "price" to (if (shouldFloor) floor else ceiling),
+                                "price" to (if (shouldFloor) groupMin else groupMax),
                                 "size" to size,
                                 "sizeCost" to sizeCost,
                                 "depth" to depth,
                             ),
                         )
-                        floor = Rounder.round(linePrice, grouping)
-                        ceiling = floor + grouping
+                        curFloored = Rounder.round(linePrice, grouping);
+                        groupMin = if (curFloored != linePrice) curFloored else (if (shouldFloor) curFloored else curFloored - grouping)
+                        groupMax = groupMin + grouping
 
                         size = lineSize
                         sizeCost = lineSizeCost
@@ -562,7 +565,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                     }
                 }
             }
-            result.add(mapOf("price" to (if (shouldFloor) floor else ceiling), "size" to size, "sizeCost" to sizeCost, "depth" to depth))
+            result.add(mapOf("price" to (if (shouldFloor) groupMin else groupMax), "size" to size, "sizeCost" to sizeCost, "depth" to depth))
 
             return result
         } else {
