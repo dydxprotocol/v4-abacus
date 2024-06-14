@@ -42,6 +42,7 @@ interface IRouterProcessor {
         transactionId: String?,
     ): Map<String, Any>?
 
+    fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>?
     fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?)
     fun defaultChainId(): String?
     fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String?
