@@ -272,7 +272,7 @@ internal object MarginModeCalculator {
                 askPrice,
                 oraclePrice,
                 size,
-                targetLeverage=adjustedTargetLeverage,
+                targetLeverage = adjustedTargetLeverage,
             )
         }
     }

@@ -11,7 +11,6 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
-import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -1780,7 +1779,8 @@ internal class TradeInputCalculator(
                 parser,
                 subaccount,
                 trade,
-            )) {
+            )
+        ) {
             val isolatedMarginTransferAmount = MarginModeCalculator.calculateIsolatedMarginTransferAmount(
                 parser,
                 trade,
