@@ -5,7 +5,6 @@ import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class SkipRouteProcessorTests {
     val parser = Parser()
@@ -35,7 +34,7 @@ class SkipRouteProcessorTests {
                 "toAddress" to "uusdc",
             ),
         )
-        assertTrue(expected == result)
+        assertEquals(expected, result)
     }
 
     /**
@@ -134,9 +133,8 @@ class SkipRouteProcessorTests {
         val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
         val expected = mapOf(
             "slippage" to "1",
-            "requestPayload" to emptyMap<String, Any>(),
             "errors" to "[{code=3, message=\"difference in usd value of route input and output is too large. input usd value: 100000.00 output usd value: 98811.81\", details=[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"BAD_PRICE_ERROR\",\"domain\":\"skip.money\",\"metadata\":{}}]}]",
         )
-        assertEquals(expected.toString(), result.toString())
+        assertEquals(expected, result)
     }
 }
