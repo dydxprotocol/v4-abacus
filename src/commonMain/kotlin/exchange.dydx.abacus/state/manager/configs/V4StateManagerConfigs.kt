@@ -115,9 +115,7 @@ class V4StateManagerConfigs(
         return "$skipHost/v2/fungible/msgs_direct"
     }
 
-    fun nobleDenom(): String {
-        return "uusdc"
-    }
+    val nobleDenom = "uusdc"
 
     private val skipHost: String
         get() {
