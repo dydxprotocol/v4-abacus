@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -186,5 +187,93 @@ internal object MarginModeCalculator {
 
         // User has reached the maximum number of childSubaccounts for their current parentSubaccount
         error("No available subaccount number")
+    }
+
+    private fun getIsIncreasingPositionSize(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return true
+        val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+        val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
+        val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+        return postOrderSize.abs() > currentSize.abs()
+    }
+
+    /**
+     * @description Determine if collateral should be transferred for an isolated margin trade
+     */
+    fun getShouldTransferCollateral(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        val isIncreasingPositionSize = getIsIncreasingPositionSize(parser, subaccount, tradeInput)
+        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
+        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
+
+        return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
+    }
+
+    private fun getTransferAmountFromTargetLeverage(
+        askPrice: Double,
+        oraclePrice: Double,
+        size: Double,
+        targetLeverage: Double,
+    ): Double {
+        if (targetLeverage == 0.0) {
+            return 0.0
+        }
+
+        return (oraclePrice * size) / targetLeverage + (askPrice - oraclePrice) * size
+    }
+
+    /**
+     * @description Calculate the amount of collateral to transfer for an isolated margin trade.
+     * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
+     */
+    fun calculateIsolatedMarginTransferAmount(
+        parser: ParserProtocol,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): Double? {
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
+        val size = parser.asDouble(parser.value(trade, "size.size"))?.abs() ?: return null
+        val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
+        val askPrice = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
+        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction"))
+        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
+
+        val maxLeverageForMarket = if (effectiveImf != null) {
+            1.0 / effectiveImf
+        } else if (initialMarginFraction != null) {
+            1.0 / initialMarginFraction
+        } else {
+            null
+        }
+
+        // Cap targetLeverage to 98% of max leverage
+        val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
+            val cappedLeverage = maxLeverageForMarket * 0.98
+            if (targetLeverage > cappedLeverage) {
+                cappedLeverage
+            } else {
+                targetLeverage
+            }
+        } else {
+            null
+        }
+
+        return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
+            null
+        } else {
+            getTransferAmountFromTargetLeverage(
+                askPrice,
+                oraclePrice,
+                size,
+                targetLeverage=adjustedTargetLeverage,
+            )
+        }
     }
 }
