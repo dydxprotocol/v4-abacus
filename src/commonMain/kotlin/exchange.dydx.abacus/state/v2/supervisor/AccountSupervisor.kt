@@ -658,7 +658,7 @@ internal open class AccountSupervisor(
     private fun transferNobleBalanceSkip(amount: BigDecimal) {
         val url = helper.configs.skipV2MsgsDirect()
         val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
+        val fromToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress() ?: return
         val chainId = helper.environment.dydxChainId ?: return
         val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom ?: return
