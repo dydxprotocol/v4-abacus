@@ -1,11 +1,8 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import exchange.dydx.abacus.utils.safeSet
 
 internal class FillsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = FillProcessor(parser = parser)
@@ -18,7 +15,7 @@ internal class FillsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 itemProcessor.received(
                     null,
                     modified,
-                    subaccountNumber
+                    subaccountNumber,
                 )
             }
         }
