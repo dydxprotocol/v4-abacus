@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.BlockAndTime
@@ -52,6 +51,8 @@ class V4AccountTests : V4BaseTests() {
         time = perp.log("Accounts Changed", time)
 
         testBatchedSubaccountChanged()
+
+        testPartiallyFilledAndCanceledOrders()
 
         testEquityTiers()
 
@@ -701,7 +702,7 @@ class V4AccountTests : V4BaseTests() {
                                     "orders": {
                                         "80133551-6d61-573b-9788-c1488e11027a": {
                                             "id": "80133551-6d61-573b-9788-c1488e11027a",
-                                            "status": "BEST_EFFORT_CANCELED"
+                                            "status": "PENDING"
                                         }
                                     }
                                 }
@@ -845,9 +846,9 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-                val ioImplementations = BaseTests.testIOImplementations()
-                val localizer = BaseTests.testLocalizer(ioImplementations)
-                val uiImplementations = BaseTests.testUIImplementations(localizer)
+                val ioImplementations = testIOImplementations()
+                val localizer = testLocalizer(ioImplementations)
+                val uiImplementations = testUIImplementations(localizer)
                 val notificationsProvider =
                     NotificationsProvider(
                         perp,
@@ -872,6 +873,63 @@ class V4AccountTests : V4BaseTests() {
                 assertEquals(
                     "NOTIFICATIONS.POSITION_CLOSED.TITLE",
                     position.title,
+                )
+            },
+        )
+    }
+
+    private fun testPartiallyFilledAndCanceledOrders() {
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
+                    0,
+                    BlockAndTime(14689438, Clock.System.now()),
+                )
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "subaccounts": {
+                                "0": {
+                                    "orders": {
+                                        "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7": {
+                                            "status": "PARTIALLY_FILLED"
+                                        },
+                                        "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c": {
+                                            "status": "PARTIALLY_CANCELED"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+            {
+                val ioImplementations = testIOImplementations()
+                val localizer = testLocalizer(ioImplementations)
+                val uiImplementations = testUIImplementations(localizer)
+                val notificationsProvider =
+                    NotificationsProvider(
+                        perp,
+                        uiImplementations,
+                        environment = mock.v4Environment,
+                        Parser(),
+                        JsonEncoder(),
+                    )
+                val notifications = notificationsProvider.buildNotifications(0)
+                assertEquals(
+                    8,
+                    notifications.size,
+                )
+                val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
+                assertNotNull(order)
+                assertEquals(
+                    "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                    order.title,
                 )
             },
         )

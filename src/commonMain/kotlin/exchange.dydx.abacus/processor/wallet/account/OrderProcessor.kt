@@ -94,6 +94,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "BEST_EFFORT_CANCELED" to "APP.TRADE.CANCELING",
         "UNTRIGGERED" to "APP.TRADE.UNTRIGGERED",
         "PARTIALLY_FILLED" to "APP.TRADE.PARTIALLY_FILLED",
+        "PARTIALLY_CANCELED" to "APP.TRADE.PARTIALLY_FILLED",
     )
     private val timeInForceStringKeys = mapOf(
         "FOK" to "APP.TRADE.FILL_OR_KILL",
@@ -180,14 +181,13 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             return false
         }
         // If updatedAt and totalFilled are the same, we use status for best guess
-        return when (parser.asString(existing?.get("status"))) {
-            "FILLED", "CANCELED" -> false
+        return when (val status = parser.asString(existing?.get("status"))) {
             "BEST_EFFORT_CANCELED" -> {
                 val newStatus = parser.asString(payload["status"])
                 (newStatus == "FILLED") || (newStatus == "CANCELED") || (newStatus == "BEST_EFFORT_CANCELED")
             }
 
-            else -> true
+            else -> !isStatusFinalized(status)
         }
     }
 
@@ -209,26 +209,31 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
                 modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
             }
-            val size = parser.asDouble(payload["size"])
-            if (size != null) {
-                var totalFilled = parser.asDouble(payload["totalFilled"])
-                var remainingSize = parser.asDouble(payload["remainingSize"])
-                if (totalFilled != null && remainingSize == null) {
-                    remainingSize = size - totalFilled
-                } else if (totalFilled == null && remainingSize != null) {
-                    totalFilled = size - remainingSize
-                }
-                if (totalFilled != null && remainingSize != null) {
+            parser.asDouble(payload["size"])?.let { size ->
+                parser.asDouble(payload["totalFilled"])?.let { totalFilled ->
+                    val remainingSize = size - totalFilled
                     modified.safeSet("totalFilled", totalFilled)
                     modified.safeSet("remainingSize", remainingSize)
-
-                    if (totalFilled != Numeric.double.ZERO && modified["status"] == "OPEN") {
-                        modified.safeSet("status", "PARTIALLY_FILLED")
+                    if (totalFilled != Numeric.double.ZERO && remainingSize != Numeric.double.ZERO) {
+                        when (modified["status"]) {
+                            "OPEN" -> modified.safeSet("status", "PARTIALLY_FILLED")
+                            "CANCELED" -> modified.safeSet("status", "PARTIALLY_CANCELED") // finalized state
+                        }
                     }
                 }
             }
 
             modified.safeSet("cancelReason", payload["removalReason"] ?: payload["cancelReason"])
+
+            parser.asDouble(payload["orderFlags"])?.let { orderFlags ->
+                // if order is short-term order and indexer returns best effort canceled and has no partial fill
+                // treat as a pending order until it's partially filled or finalized
+                val isBestEffortCanceled = modified["status"] == "BEST_EFFORT_CANCELED"
+                val isNotUserCanceled = modified["cancelReason"] != "USER_CANCELED"
+                if (orderFlags.equals(Numeric.double.ZERO) && isBestEffortCanceled && isNotUserCanceled) {
+                    modified.safeSet("status", "PENDING")
+                }
+            }
 
             modified.safeSet(
                 "type",
@@ -286,12 +291,22 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     ): Pair<Map<String, Any>, Boolean> {
         if (height != null) {
             when (val status = parser.asString(existing["status"])) {
-                "BEST_EFFORT_CANCELED" -> {
+                "PENDING", "BEST_EFFORT_CANCELED", "PARTIALLY_FILLED" -> {
                     val goodTilBlock = parser.asInt(existing["goodTilBlock"])
                     if (goodTilBlock != null && goodTilBlock != 0 && height.block >= goodTilBlock) {
                         val modified = existing.mutable();
                         modified["status"] = "CANCELED"
                         modified["updatedAt"] = height.time
+
+                        parser.asDouble(existing["size"])?.let { size ->
+                            parser.asDouble(existing["totalFilled"])?.let { totalFilled ->
+                                val remainingSize = size - totalFilled
+                                if (totalFilled != Numeric.double.ZERO && remainingSize != Numeric.double.ZERO) {
+                                    modified["status"] = "PARTIALLY_CANCELED"
+                                }
+                            }
+                        }
+
                         updateResource(modified)
                         return Pair(modified, true)
                     }
@@ -303,11 +318,21 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return Pair(existing, false)
     }
 
+    private fun isStatusFinalized(status: Any?): Boolean {
+        // once an order is filled, canceled, or canceled with partial fill
+        // there is no need to update status again
+        return when (status) {
+            "FILLED", "CANCELED", "PARTIALLY_CANCELED" -> true
+            else -> false
+        }
+    }
+
     internal fun canceled(
         existing: Map<String, Any>,
     ): Map<String, Any> {
         val modified = existing.mutable()
-        if (modified["status"] !== "CANCELED" && modified["status"] !== "FILLED") {
+        // show order status as canceling if frontend initiated cancel
+        if (!isStatusFinalized(modified["status"])) {
             modified["status"] = "BEST_EFFORT_CANCELED"
         }
 

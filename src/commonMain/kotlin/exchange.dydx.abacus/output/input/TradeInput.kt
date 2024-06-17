@@ -709,7 +709,8 @@ enum class OrderStatus(val rawValue: String) {
     `open`("OPEN"),
     pending("PENDING"),
     untriggered("UNTRIGGERED"),
-    partiallyFilled("PARTIALLY_FILLED");
+    partiallyFilled("PARTIALLY_FILLED"),
+    partiallyCanceled("PARTIALLY_CANCELED");
 
     companion object {
         operator fun invoke(rawValue: String): OrderStatus? {
