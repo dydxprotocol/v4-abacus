@@ -56,9 +56,9 @@ class OrderStatusChangesNotificationProvider(
     ): Notification? {
         var timestamp: Double? = null
         val statusNotificationStringKey = when (order.status) {
-            OrderStatus.open -> {
+            OrderStatus.Open -> {
                 when (order.type) {
-                    OrderType.stopLimit, OrderType.stopMarket, OrderType.takeProfitLimit, OrderType.takeProfitMarket -> {
+                    OrderType.StopLimit, OrderType.StopMarket, OrderType.TakeProfitLimit, OrderType.TakeProfitMarket -> {
                         timestamp = order.updatedAtMilliseconds
                         if (timestamp != null && order.totalFilled == Numeric.double.ZERO) {
                             "NOTIFICATIONS.ORDER_TRIGGERED"
@@ -67,7 +67,7 @@ class OrderStatusChangesNotificationProvider(
                         }
                     }
 
-                    OrderType.limit, OrderType.market -> {
+                    OrderType.Limit, OrderType.Market -> {
                         /*
                         Short term orders should get filled/partially filled immediately, so we don't need to handle OPENED notification
                         And it doesn't have a timestamp
@@ -84,7 +84,7 @@ class OrderStatusChangesNotificationProvider(
                 }
             }
 
-            OrderStatus.cancelled -> {
+            OrderStatus.Canceled -> {
                 if ((order.totalFilled ?: Numeric.double.ZERO) > Numeric.double.ZERO) {
                     "NOTIFICATIONS.ORDER_CANCEL_WITH_PARTIAL_FILL"
                 } else {

@@ -349,21 +349,21 @@ internal class SubaccountSupervisor(
                         }
 
                         val orderStatusChangeEvent = when (order.status) {
-                            OrderStatus.cancelled -> AnalyticsEvent.TradePlaceOrderStatusCanceled
-                            OrderStatus.canceling -> AnalyticsEvent.TradePlaceOrderStatusCanceling
-                            OrderStatus.filled -> AnalyticsEvent.TradePlaceOrderStatusFilled
-                            OrderStatus.open -> AnalyticsEvent.TradePlaceOrderStatusOpen
-                            OrderStatus.pending -> AnalyticsEvent.TradePlaceOrderStatusPending
-                            OrderStatus.untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
-                            OrderStatus.partiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
-                            OrderStatus.partiallyCanceled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyCanceled
+                            OrderStatus.Canceled -> AnalyticsEvent.TradePlaceOrderStatusCanceled
+                            OrderStatus.Canceling -> AnalyticsEvent.TradePlaceOrderStatusCanceling
+                            OrderStatus.Filled -> AnalyticsEvent.TradePlaceOrderStatusFilled
+                            OrderStatus.Open -> AnalyticsEvent.TradePlaceOrderStatusOpen
+                            OrderStatus.Pending -> AnalyticsEvent.TradePlaceOrderStatusPending
+                            OrderStatus.Untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
+                            OrderStatus.PartiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
+                            OrderStatus.PartiallyCanceled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyCanceled
                         }
 
                         tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
 
                         when (order.status) {
                             // order reaches final state, can remove / skip further tracking
-                            OrderStatus.cancelled, OrderStatus.partiallyCanceled, OrderStatus.filled -> {
+                            OrderStatus.Canceled, OrderStatus.PartiallyCanceled, OrderStatus.Filled -> {
                                 placeOrderRecords.remove(placeOrderRecord)
                             }
                             else -> {}
@@ -410,7 +410,7 @@ internal class SubaccountSupervisor(
             val isConditionalOrder = order.orderFlags == 32
             val isReduceOnly = order.reduceOnly
             val isActiveOrder =
-                (order.status === OrderStatus.untriggered || order.status === OrderStatus.open)
+                (order.status === OrderStatus.Untriggered || order.status === OrderStatus.Open)
             isConditionalOrder && isReduceOnly && isActiveOrder
         } ?: return
 
@@ -419,8 +419,8 @@ internal class SubaccountSupervisor(
                 val marketPosition = subaccount.openPositions?.find { position -> position.id === order.marketId }
                 val hasPositionFlippedOrClosed = marketPosition?.let { position ->
                     when (position.side.current) {
-                        PositionSide.LONG -> order.side == OrderSide.buy
-                        PositionSide.SHORT -> order.side == OrderSide.sell
+                        PositionSide.LONG -> order.side == OrderSide.Buy
+                        PositionSide.SHORT -> order.side == OrderSide.Sell
                         else -> true
                     }
                 } ?: true
@@ -1023,7 +1023,7 @@ internal class SubaccountSupervisor(
 
         val timeInForce = if (trade.options?.timeInForceOptions != null) {
             when (trade.type) {
-                OrderType.market -> "IOC"
+                OrderType.Market -> "IOC"
                 else -> trade.timeInForce ?: "IOC"
             }
         } else {
@@ -1100,8 +1100,8 @@ internal class SubaccountSupervisor(
          * TP/SL limit orders default to GTD (default) execution.
          */
         val execution = when (triggerOrder.type) {
-            OrderType.stopMarket, OrderType.takeProfitMarket -> "IOC"
-            OrderType.stopLimit, OrderType.takeProfitLimit -> "DEFAULT"
+            OrderType.StopMarket, OrderType.TakeProfitMarket -> "IOC"
+            OrderType.StopLimit, OrderType.TakeProfitLimit -> "DEFAULT"
             else -> error("invalid triggerOrderType")
         }
 
@@ -1112,7 +1112,7 @@ internal class SubaccountSupervisor(
         val marketInfo = marketInfo(marketId)
         val position = stateMachine.state?.subaccount(subaccountNumber)?.openPositions?.find { it.id == marketId } ?: error("no existing position")
 
-        val subaccountNumberForOrder = if (position.marginMode == MarginMode.isolated) {
+        val subaccountNumberForOrder = if (position.marginMode == MarginMode.Isolated) {
             getChildSubaccountNumberForIsolatedMarginTrade(marketId)
         } else {
             subaccountNumber
@@ -1140,7 +1140,7 @@ internal class SubaccountSupervisor(
 
     private fun isTriggerOrderEqualToExistingOrder(triggerOrder: TriggerOrder, existingOrder: SubaccountOrder): Boolean {
         val limitPriceCheck = when (triggerOrder.type) {
-            OrderType.stopLimit, OrderType.takeProfitLimit -> triggerOrder.price?.limitPrice == existingOrder.price
+            OrderType.StopLimit, OrderType.TakeProfitLimit -> triggerOrder.price?.limitPrice == existingOrder.price
             else -> true
         }
         val size = triggerOrder.summary?.size

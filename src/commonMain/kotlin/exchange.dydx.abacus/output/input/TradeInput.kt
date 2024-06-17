@@ -85,33 +85,33 @@ data class TradeInputOptions(
         private val typeOptionsArray =
             iListOf(
                 SelectionOption(
-                    OrderType.limit.rawValue,
+                    OrderType.Limit.rawValue,
                     null,
                     "APP.TRADE.LIMIT_ORDER_SHORT",
                     null,
                 ),
                 SelectionOption(
-                    OrderType.market.rawValue,
+                    OrderType.Market.rawValue,
                     null,
                     "APP.TRADE.MARKET_ORDER_SHORT",
                     null,
                 ),
-                SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
+                SelectionOption(OrderType.StopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
+                SelectionOption(OrderType.StopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
                 SelectionOption(
-                    OrderType.trailingStop.rawValue,
+                    OrderType.TrailingStop.rawValue,
                     null,
                     "APP.TRADE.TRAILING_STOP",
                     null,
                 ),
                 SelectionOption(
-                    OrderType.takeProfitLimit.rawValue,
+                    OrderType.TakeProfitLimit.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT",
                     null,
                 ),
                 SelectionOption(
-                    OrderType.takeProfitMarket.rawValue,
+                    OrderType.TakeProfitMarket.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
                     null,
@@ -120,27 +120,27 @@ data class TradeInputOptions(
         private val typeOptionsV4Array =
             iListOf(
                 SelectionOption(
-                    OrderType.limit.rawValue,
+                    OrderType.Limit.rawValue,
                     null,
                     "APP.TRADE.LIMIT_ORDER_SHORT",
                     null,
                 ),
                 SelectionOption(
-                    OrderType.market.rawValue,
+                    OrderType.Market.rawValue,
                     null,
                     "APP.TRADE.MARKET_ORDER_SHORT",
                     null,
                 ),
-                SelectionOption(OrderType.stopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.stopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
+                SelectionOption(OrderType.StopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
+                SelectionOption(OrderType.StopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
                 SelectionOption(
-                    OrderType.takeProfitLimit.rawValue,
+                    OrderType.TakeProfitLimit.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT",
                     null,
                 ),
                 SelectionOption(
-                    OrderType.takeProfitMarket.rawValue,
+                    OrderType.TakeProfitMarket.rawValue,
                     null,
                     "APP.TRADE.TAKE_PROFIT_MARKET",
                     null,
@@ -149,8 +149,8 @@ data class TradeInputOptions(
 
         private val sideOptionsArray =
             iListOf(
-                SelectionOption(OrderSide.buy.rawValue, null, "APP.GENERAL.BUY", null),
-                SelectionOption(OrderSide.sell.rawValue, null, "APP.GENERAL.SELL", null),
+                SelectionOption(OrderSide.Buy.rawValue, null, "APP.GENERAL.BUY", null),
+                SelectionOption(OrderSide.Sell.rawValue, null, "APP.GENERAL.SELL", null),
             )
 
         private val goodTilUnitOptionsArray =
@@ -656,8 +656,8 @@ data class TradeInputBracket(
 @JsExport
 @Serializable
 enum class MarginMode(val rawValue: String) {
-    isolated("ISOLATED"),
-    cross("CROSS");
+    Isolated("ISOLATED"),
+    Cross("CROSS");
 
     companion object {
         operator fun invoke(rawValue: String?) =
@@ -668,18 +668,18 @@ enum class MarginMode(val rawValue: String) {
 @JsExport
 @Serializable
 enum class OrderType(val rawValue: String) {
-    market("MARKET"),
-    stopMarket("STOP_MARKET"),
-    takeProfitMarket("TAKE_PROFIT_MARKET"),
-    limit("LIMIT"),
-    stopLimit("STOP_LIMIT"),
-    takeProfitLimit("TAKE_PROFIT"),
-    trailingStop("TRAILING_STOP"),
-    liquidated("LIQUIDATED"),
-    liquidation("LIQUIDATION"),
-    offsetting("OFFSETTING"),
-    deleveraged("DELEVERAGED"),
-    finalSettlement("FINAL_SETTLEMENT"),
+    Market("MARKET"),
+    StopMarket("STOP_MARKET"),
+    TakeProfitMarket("TAKE_PROFIT_MARKET"),
+    Limit("LIMIT"),
+    StopLimit("STOP_LIMIT"),
+    TakeProfitLimit("TAKE_PROFIT"),
+    TrailingStop("TRAILING_STOP"),
+    Liquidated("LIQUIDATED"),
+    Liquidation("LIQUIDATION"),
+    Offsetting("OFFSETTING"),
+    Deleveraged("DELEVERAGED"),
+    FinalSettlement("FINAL_SETTLEMENT"),
     ;
 
     companion object {
@@ -691,8 +691,8 @@ enum class OrderType(val rawValue: String) {
 @JsExport
 @Serializable
 enum class OrderSide(val rawValue: String) {
-    buy("BUY"),
-    sell("SELL");
+    Buy("BUY"),
+    Sell("SELL");
 
     companion object {
         operator fun invoke(rawValue: String) =
@@ -703,19 +703,19 @@ enum class OrderSide(val rawValue: String) {
 @JsExport
 @Serializable
 enum class OrderStatus(val rawValue: String) {
-    cancelled("CANCELED"),
-    canceling("BEST_EFFORT_CANCELED"),
-    filled("FILLED"),
-    `open`("OPEN"),
-    pending("PENDING"), // indexer returns order as BEST_EFFORT_OPENED, or BEST_EFFORT_CANCELED when order is IOC
-    untriggered("UNTRIGGERED"),
-    partiallyFilled("PARTIALLY_FILLED"), // indexer returns order as OPEN but order is partially filled
-    partiallyCanceled("PARTIALLY_CANCELED"); // indexer returns order as CANCELED but order is partially filled
+    Canceled("CANCELED"),
+    Canceling("BEST_EFFORT_CANCELED"),
+    Filled("FILLED"),
+    Open("OPEN"),
+    Pending("PENDING"), // indexer returns order as BEST_EFFORT_OPENED, or BEST_EFFORT_CANCELED when order is IOC
+    Untriggered("UNTRIGGERED"),
+    PartiallyFilled("PARTIALLY_FILLED"), // indexer returns order as OPEN but order is partially filled
+    PartiallyCanceled("PARTIALLY_CANCELED"); // indexer returns order as CANCELED but order is partially filled
 
     companion object {
         operator fun invoke(rawValue: String): OrderStatus? {
             return if (rawValue == "BEST_EFFORT_OPENED") {
-                OrderStatus.pending
+                Pending
             } else {
                 OrderStatus.values().firstOrNull { it.rawValue == rawValue }
             }
@@ -826,7 +826,7 @@ data class TradeInput(
 
                 val marginMode = parser.asString(data["marginMode"])?.let {
                     MarginMode.invoke(it)
-                } ?: MarginMode.cross
+                } ?: MarginMode.Cross
 
                 val targetLeverage = parser.asDouble(data["targetLeverage"]) ?: 1.0
 

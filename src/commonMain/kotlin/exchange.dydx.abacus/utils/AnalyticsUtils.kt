@@ -34,8 +34,8 @@ class AnalyticsUtils {
         val placeOrderPayloads = payload.placeOrderPayloads
         val cancelOrderPayloads = payload.cancelOrderPayloads
 
-        val stopLossOrderTypes = listOf(OrderType.stopMarket, OrderType.stopLimit)
-        val takeProfitOrderTypes = listOf(OrderType.takeProfitMarket, OrderType.takeProfitLimit)
+        val stopLossOrderTypes = listOf(OrderType.StopMarket, OrderType.StopLimit)
+        val takeProfitOrderTypes = listOf(OrderType.TakeProfitMarket, OrderType.TakeProfitLimit)
 
         var stopLossOrderCancelClientId: Int? = null
         var stopLossOrderPlaceClientId: Int? = null

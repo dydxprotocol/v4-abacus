@@ -11,7 +11,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import kotlin.math.abs
 import kotlin.math.max
 
 internal object TriggerOrdersConstants {
@@ -281,7 +280,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         modified.safeSet("type", type?.rawValue)
 
         when (type) {
-            OrderType.takeProfitMarket, OrderType.stopMarket -> {
+            OrderType.TakeProfitMarket, OrderType.StopMarket -> {
                 val triggerPrice =
                     parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
                 val majorMarket = when (parser.asString(triggerOrder["marketId"])) {
@@ -289,13 +288,13 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                     else -> false
                 }
                 val slippagePercentage = if (majorMarket) {
-                    if (type == OrderType.stopMarket) {
+                    if (type == OrderType.StopMarket) {
                         STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     } else {
                         TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
                     }
                 } else {
-                    if (type == OrderType.stopMarket) {
+                    if (type == OrderType.StopMarket) {
                         STOP_MARKET_ORDER_SLIPPAGE_BUFFER
                     } else {
                         TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
@@ -312,7 +311,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
                 }
                 modified.safeSet("summary.price", calculatedLimitPrice)
             }
-            OrderType.takeProfitLimit, OrderType.stopLimit -> {
+            OrderType.TakeProfitLimit, OrderType.StopLimit -> {
                 modified.safeSet("summary.price", parser.asDouble(parser.value(triggerOrder, "price.limitPrice")))
             }
             else -> {}
@@ -328,8 +327,8 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
 
         return when (positionSide) {
-            "short" -> OrderSide.buy
-            "long" -> OrderSide.sell
+            "short" -> OrderSide.Buy
+            "long" -> OrderSide.Sell
             else -> null
         }
     }
@@ -341,14 +340,14 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         }
         if (limitPrice != null) {
             return when (type) {
-                OrderType.takeProfitMarket, OrderType.takeProfitLimit -> OrderType.takeProfitLimit
-                OrderType.stopMarket, OrderType.stopLimit -> OrderType.stopLimit
+                OrderType.TakeProfitMarket, OrderType.TakeProfitLimit -> OrderType.TakeProfitLimit
+                OrderType.StopMarket, OrderType.StopLimit -> OrderType.StopLimit
                 else -> null
             }
         } else {
             return when (type) {
-                OrderType.takeProfitMarket, OrderType.takeProfitLimit -> OrderType.takeProfitMarket
-                OrderType.stopMarket, OrderType.stopLimit -> OrderType.stopMarket
+                OrderType.TakeProfitMarket, OrderType.TakeProfitLimit -> OrderType.TakeProfitMarket
+                OrderType.StopMarket, OrderType.StopLimit -> OrderType.StopMarket
                 else -> null
             }
         }
