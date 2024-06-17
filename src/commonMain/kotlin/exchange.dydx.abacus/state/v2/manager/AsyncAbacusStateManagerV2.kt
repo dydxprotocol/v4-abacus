@@ -592,9 +592,9 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
-    override fun cancelOrder(orderId: String, callback: TransactionCallback) {
+    override fun cancelOrder(orderId: String, callback: TransactionCallback, isOrphanedTriggerOrder: Boolean) {
         try {
-            adaptor?.cancelOrder(orderId, callback)
+            adaptor?.cancelOrder(orderId, callback, isOrphanedTriggerOrder)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)
