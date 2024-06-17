@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import kollections.iListOf
+import kotlin.math.max
 import kotlin.math.min
 
 internal object MarginModeCalculator {
@@ -223,9 +224,10 @@ internal object MarginModeCalculator {
         return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
     }
 
-    private fun getTransferAmountFromTargetLeverage(
-        askPrice: Double,
+    internal fun getTransferAmountFromTargetLeverage(
+        price: Double,
         oraclePrice: Double,
+        side: String,
         size: Double,
         targetLeverage: Double,
     ): Double {
@@ -233,7 +235,16 @@ internal object MarginModeCalculator {
             return 0.0
         }
 
-        return (oraclePrice * size) / targetLeverage + (askPrice - oraclePrice) * size
+        val naiveTransferAmount = (price * size) / targetLeverage
+
+        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
+        val priceDiff = if (side == "BUY") {
+            price - oraclePrice
+        } else {
+            oraclePrice - price
+        }
+
+        return max((oraclePrice * size) / targetLeverage + priceDiff * size, naiveTransferAmount)
     }
 
     /**
@@ -247,8 +258,9 @@ internal object MarginModeCalculator {
     ): Double? {
         val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
         val size = parser.asDouble(parser.value(trade, "size.size"))?.abs() ?: return null
+        val side = parser.asString(parser.value(trade, "side")) ?: return null
         val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
-        val askPrice = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
+        val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
         val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
         val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
 
@@ -272,8 +284,9 @@ internal object MarginModeCalculator {
             null
         } else {
             getTransferAmountFromTargetLeverage(
-                askPrice,
+                price,
                 oraclePrice,
+                side,
                 size,
                 targetLeverage = adjustedTargetLeverage,
             )
