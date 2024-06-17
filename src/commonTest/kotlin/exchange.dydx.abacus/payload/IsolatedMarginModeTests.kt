@@ -437,7 +437,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         assertEquals(
             116.26514285714283,
             MarginModeCalculator.getTransferAmountFromTargetLeverage(
-                askPrice = 0.1465,
+                price = 0.1465,
                 oraclePrice = 0.1211,
                 side = "BUY",
                 size = 2320.0, // ~$400 usdcSize
@@ -449,7 +449,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         assertEquals(
             67.976,
             MarginModeCalculator.getTransferAmountFromTargetLeverage(
-                askPrice = 0.1465,
+                price = 0.1465,
                 oraclePrice = 0.1211,
                 side = "SELL",
                 size = 2320.0, // ~$400 usdcSize

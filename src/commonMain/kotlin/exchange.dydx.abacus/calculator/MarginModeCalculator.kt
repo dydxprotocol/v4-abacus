@@ -225,7 +225,7 @@ internal object MarginModeCalculator {
     }
 
     internal fun getTransferAmountFromTargetLeverage(
-        askPrice: Double,
+        price: Double,
         oraclePrice: Double,
         side: String,
         size: Double,
@@ -235,12 +235,13 @@ internal object MarginModeCalculator {
             return 0.0
         }
 
-        val naiveTransferAmount = (askPrice * size) / targetLeverage
+        val naiveTransferAmount = (price * size) / targetLeverage
 
+        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
         val priceDiff = if (side == "BUY") {
-            askPrice - oraclePrice
+            price - oraclePrice
         } else {
-            oraclePrice - askPrice
+            oraclePrice - price
         }
 
         return max((oraclePrice * size) / targetLeverage + priceDiff * size, naiveTransferAmount)
@@ -259,7 +260,7 @@ internal object MarginModeCalculator {
         val size = parser.asDouble(parser.value(trade, "size.size"))?.abs() ?: return null
         val side = parser.asString(parser.value(trade, "side")) ?: return null
         val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
-        val askPrice = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
+        val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
         val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
         val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
 
@@ -283,7 +284,7 @@ internal object MarginModeCalculator {
             null
         } else {
             getTransferAmountFromTargetLeverage(
-                askPrice,
+                price,
                 oraclePrice,
                 side,
                 size,
