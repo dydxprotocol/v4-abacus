@@ -187,11 +187,7 @@ internal class SkipProcessor(
         val assetsMapForChainId = parser.asNativeMap(this.skipTokens?.get(chainIdToUse))
         val assetsForChainId = parser.asNativeList(assetsMapForChainId?.get("assets"))
 //      coinbase exchange chainId is noble-1. we only allow usdc withdrawals from it
-<<<<<<< HEAD
         if (chainId === exchangeDestinationChainId) {
-=======
-        if (chainId === "noble-1") {
->>>>>>> e364db60 (enable non-cctp deposit and wihtdrawals)
             return assetsForChainId?.filter {
                 parser.asString(parser.asNativeMap(it)?.get("denom")) == "uusdc"
             }
@@ -208,11 +204,7 @@ internal class SkipProcessor(
                 val denom = parser.asString(token["denom"])
                 if (denom?.endsWith("native") == true) {
                     token["skipDenom"] = denom
-<<<<<<< HEAD
                     token["denom"] = NATIVE_TOKEN_DEFAULT_ADDRESS
-=======
-                    token["denom"] = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
->>>>>>> e364db60 (enable non-cctp deposit and wihtdrawals)
                 }
                 filteredTokens.add(token.toMap())
             }
