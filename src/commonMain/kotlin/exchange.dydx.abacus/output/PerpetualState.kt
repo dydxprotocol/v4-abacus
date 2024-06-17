@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Parser
 import kollections.JsExport
@@ -91,7 +92,11 @@ data class PerpetualState(
         if (account?.groupedSubaccounts?.get("$subaccountNumber") != null) {
             val groupedSubaccountFills = mutableListOf<SubaccountFill>()
             for ((subaccountNumberKey, subaccountFills) in fills ?: emptyMap()) {
-                val subaccountId = parser.asInt(subaccountNumberKey) ?: 0
+                val subaccountId = parser.asInt(subaccountNumberKey)
+                if (subaccountId == null) {
+                    Logger.e { "Invalid subaccount number: $subaccountNumber" }
+                    continue
+                }
                 if (subaccountId % NUM_PARENT_SUBACCOUNTS == subaccountNumber) {
                     groupedSubaccountFills.addAll(subaccountFills)
                 }
