@@ -14,8 +14,7 @@ import kotlinx.serialization.Serializable
 enum class TriggerOrderAction(val rawValue: String) {
     REPLACE("REPLACE"),
     CANCEL("CANCEL"),
-    CREATE("CREATE"),
-    ;
+    CREATE("CREATE");
 }
 
 class AnalyticsUtils {
