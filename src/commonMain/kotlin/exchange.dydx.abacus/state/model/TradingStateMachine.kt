@@ -1366,23 +1366,6 @@ open class TradingStateMachine(
         )
     }
 
-    private fun calculateAccount(subaccountNumbers: IList<Int>, period: CalculationPeriod) {
-        this.account?.let {
-            this.marketsSummary?.let { marketsSummary ->
-                parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
-                    this.account = accountCalculator.calculate(
-                        it,
-                        subaccountNumbers,
-                        null,
-                        markets,
-                        priceOverwrite(markets),
-                        setOf(period),
-                    )
-                }
-            }
-        }
-    }
-
     private fun priceOverwrite(markets: Map<String, Any>): Map<String, Any>? {
         // TODO(@aforaleka): Uncomment when protocol can match collateralization check at limit price
         // if (parser.asString(input?.get("current")) == "trade") {

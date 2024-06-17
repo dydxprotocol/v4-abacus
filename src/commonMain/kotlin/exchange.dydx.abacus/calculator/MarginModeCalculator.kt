@@ -2,6 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -162,7 +163,11 @@ internal object MarginModeCalculator {
         // Check if an existing childSubaccount is available to use for Isolated Margin Trade
         var availableSubaccountNumber = subaccountNumber
         utilizedSubaccountsMarketIdMap.forEach { (key, marketIds) ->
-            val subaccountNumberToCheck = key.toInt()
+            val subaccountNumberToCheck = parser.asInt(key)
+            if (subaccountNumberToCheck == null) {
+                Logger.e { "Invalid subaccount number: $key" }
+                return@forEach
+            }
             if (subaccountNumberToCheck != subaccountNumber) {
                 if (marketIds.contains(marketId) && marketIds.size <= 1) {
                     return subaccountNumberToCheck
