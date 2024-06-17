@@ -82,41 +82,6 @@ data class TradeInputOptions(
     val postOnlyTooltip: Tooltip?,
 ) {
     companion object {
-        private val typeOptionsArray =
-            iListOf(
-                SelectionOption(
-                    OrderType.Limit.rawValue,
-                    null,
-                    "APP.TRADE.LIMIT_ORDER_SHORT",
-                    null,
-                ),
-                SelectionOption(
-                    OrderType.Market.rawValue,
-                    null,
-                    "APP.TRADE.MARKET_ORDER_SHORT",
-                    null,
-                ),
-                SelectionOption(OrderType.StopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.StopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
-                SelectionOption(
-                    OrderType.TrailingStop.rawValue,
-                    null,
-                    "APP.TRADE.TRAILING_STOP",
-                    null,
-                ),
-                SelectionOption(
-                    OrderType.TakeProfitLimit.rawValue,
-                    null,
-                    "APP.TRADE.TAKE_PROFIT",
-                    null,
-                ),
-                SelectionOption(
-                    OrderType.TakeProfitMarket.rawValue,
-                    null,
-                    "APP.TRADE.TAKE_PROFIT_MARKET",
-                    null,
-                ),
-            )
         private val typeOptionsV4Array =
             iListOf(
                 SelectionOption(

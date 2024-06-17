@@ -59,6 +59,7 @@ import exchange.dydx.abacus.state.model.receivedTransfers
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.triggerOrders
 import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.CONDITIONAL_ORDER_FLAGS
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -67,6 +68,7 @@ import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.values
@@ -407,7 +409,7 @@ internal class SubaccountSupervisor(
     private fun cancelTriggerOrdersWithClosedOrFlippedPositions() {
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return
         val cancelableTriggerOrders = subaccount.orders?.filter { order ->
-            val isConditionalOrder = order.orderFlags == 32
+            val isConditionalOrder = order.orderFlags == CONDITIONAL_ORDER_FLAGS
             val isReduceOnly = order.reduceOnly
             val isActiveOrder =
                 (order.status === OrderStatus.Untriggered || order.status === OrderStatus.Open)
@@ -822,7 +824,7 @@ internal class SubaccountSupervisor(
 
         stopWatchingLastOrder()
 
-        val isShortTermOrder = payload.orderFlags == 0
+        val isShortTermOrder = payload.orderFlags == SHORT_TERM_ORDER_FLAGS
 
         submitTransaction(
             TransactionType.CancelOrder,

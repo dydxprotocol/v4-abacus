@@ -11,6 +11,7 @@ import exchange.dydx.abacus.tests.mock.PresentationProtocolMock
 import exchange.dydx.abacus.tests.mock.ThreadingProtocolMock
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import kollections.iListOf
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -139,7 +140,7 @@ class TriggerOrderToastGeneratorTests {
                         clientId = 0,
                         type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
-                        orderFlags = 0,
+                        orderFlags = SHORT_TERM_ORDER_FLAGS,
                         clobPairId = 0,
                         goodTilBlock = null,
                         goodTilBlockTime = null,
@@ -210,7 +211,7 @@ class TriggerOrderToastGeneratorTests {
                         clientId = 0,
                         type = "TAKE_PROFIT",
                         orderId = "existingOrderId",
-                        orderFlags = 0,
+                        orderFlags = SHORT_TERM_ORDER_FLAGS,
                         clobPairId = 0,
                         goodTilBlock = null,
                         goodTilBlockTime = null,
@@ -294,7 +295,7 @@ class TriggerOrderToastGeneratorTests {
                         type = "TAKE_PROFIT",
                         clientId = 0,
                         orderId = "existingOrderId",
-                        orderFlags = 0,
+                        orderFlags = SHORT_TERM_ORDER_FLAGS,
                         clobPairId = 0,
                         goodTilBlock = null,
                         goodTilBlockTime = null,
