@@ -103,16 +103,20 @@ class V4StateManagerConfigs(
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
 
-    fun osmosisChainId(): String? {
-        return if (environment.isMainNet) "osmosis-1" else "osmosis-5"
+    fun osmosisChainId(): String {
+        return if (environment.isMainNet) "osmosis-1" else "osmo-test-5"
+    }
+
+    fun neutronChainId(): String {
+        return if (environment.isMainNet) "neutron-1" else "pion-1"
     }
 
     fun skipV1Chains(): String {
-        return "$skipHost/v1/info/chains?include_evm=true"
+        return "$skipHost/v1/info/chains?include_evm=true$onlyTestnets"
     }
 
     fun skipV1Assets(): String {
-        return "$skipHost/v1/fungible/assets?include_evm_assets=true"
+        return "$skipHost/v1/fungible/assets?include_evm_assets=true$onlyTestnets"
     }
 
     fun skipV2MsgsDirect(): String {
@@ -120,6 +124,11 @@ class V4StateManagerConfigs(
     }
 
     val nobleDenom = "uusdc"
+
+    private val onlyTestnets: String
+        get() {
+            return if (environment.isMainNet) "" else "&only_testnets=true"
+        }
 
     private val skipHost: String
         get() {

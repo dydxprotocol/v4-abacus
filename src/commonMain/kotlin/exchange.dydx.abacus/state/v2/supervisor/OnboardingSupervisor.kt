@@ -1018,10 +1018,9 @@ internal class OnboardingSupervisor(
             return
         }
         if (fromAmount <= 0) return
-        val osmosisAddress = accountAddress.toOsmosisAddress() ?: return
-        val nobleAddress = accountAddress.toNobleAddress() ?: return
-        val osmosisChainId = helper.configs.osmosisChainId() ?: return
+        val osmosisChainId = helper.configs.osmosisChainId()
         val nobleChainId = helper.configs.nobleChainId()
+        val neutronChainId = helper.configs.neutronChainId()
         val fromChain = helper.environment.dydxChainId ?: return
         val fromToken = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
@@ -1034,9 +1033,9 @@ internal class OnboardingSupervisor(
             "dest_asset_chain_id" to toChain,
             "chain_ids_to_addresses" to mapOf(
                 fromChain to accountAddress,
-                osmosisChainId to osmosisAddress,
-                nobleChainId to nobleAddress,
-                "neutron-1" to accountAddress.toNeutronAddress(),
+                osmosisChainId to accountAddress.toOsmosisAddress(),
+                nobleChainId to accountAddress.toNobleAddress(),
+                neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
             ),
             "allow_multi_tx" to true,

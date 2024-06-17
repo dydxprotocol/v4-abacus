@@ -10,6 +10,7 @@ import exchange.dydx.abacus.processor.router.squid.SquidStatusProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -47,9 +48,12 @@ internal class SkipProcessor(
             modified = it.mutable()
         }
         val chainOptions = chainOptions()
-
         internalState.chains = chainOptions
         val selectedChainId = defaultChainId()
+//        We diff based on map values in order to determine whether to return new state
+//        Until we diff on `internalState` changes we need to update old map state as well
+        modified.safeSet("transfer.depositOptions.chains", chainOptions)
+        modified.safeSet("transfer.withdrawOptions.chains", chainOptions)
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
             internalState.chainResources = chainResources(chainId = selectedChainId)
@@ -118,7 +122,6 @@ internal class SkipProcessor(
         return receivedRoute(existing, payload, requestId)
     }
 
-//    TODO: deduplicate this from squid
     override fun usdcAmount(data: Map<String, Any>): Double? {
         var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
         toAmountUSD = toAmountUSD?.replace(",", "")
@@ -141,12 +144,19 @@ internal class SkipProcessor(
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
-        modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
+        modified.safeSet("transfer.token    ", defaultTokenAddress(selectedChainId))
+        modified.safeSet("transfer.depositOptions.tokens", tokenOptions)
+        modified.safeSet("transfer.withdrawalOptions.tokens", tokenOptions)
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
+    private fun getChainById(chainId: String): Map<String, Any>? {
+        return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId })
+    }
+
     override fun defaultChainId(): String? {
-        val selectedChain = parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == "1" })
+//        eth mainnet chainId is 1
+        val selectedChain = getChainById("1") ?: parser.asNativeMap(this.chains?.firstOrNull())
 
         return parser.asString(selectedChain?.get("chain_id"))
     }
@@ -181,7 +191,7 @@ internal class SkipProcessor(
         val assetsMapForChainId = parser.asNativeMap(this.skipTokens?.get(chainIdToUse))
         val assetsForChainId = parser.asNativeList(assetsMapForChainId?.get("assets"))
 //      coinbase exchange chainId is noble-1. we only allow usdc withdrawals from it
-        if (chainId === "noble-1") {
+        if (chainId === exchangeDestinationChainId) {
             return assetsForChainId?.filter {
                 parser.asString(parser.asNativeMap(it)?.get("denom")) == "uusdc"
             }
@@ -198,7 +208,7 @@ internal class SkipProcessor(
                 val denom = parser.asString(token["denom"])
                 if (denom?.endsWith("native") == true) {
                     token["skipDenom"] = denom
-                    token["denom"] = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                    token["denom"] = NATIVE_TOKEN_DEFAULT_ADDRESS
                 }
                 filteredTokens.add(token.toMap())
             }

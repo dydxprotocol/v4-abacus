@@ -17,3 +17,6 @@ internal const val MAX_LEVERAGE_BUFFER_PERCENT = 0.98
 // Order flags
 internal const val SHORT_TERM_ORDER_FLAGS = 0
 internal const val CONDITIONAL_ORDER_FLAGS = 32
+
+// Asset Constants
+internal const val NATIVE_TOKEN_DEFAULT_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
