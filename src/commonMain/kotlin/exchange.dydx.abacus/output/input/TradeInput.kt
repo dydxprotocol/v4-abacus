@@ -707,10 +707,10 @@ enum class OrderStatus(val rawValue: String) {
     canceling("BEST_EFFORT_CANCELED"),
     filled("FILLED"),
     `open`("OPEN"),
-    pending("PENDING"),
+    pending("PENDING"), // indexer returns order as BEST_EFFORT_OPENED, or BEST_EFFORT_CANCELED when order is IOC
     untriggered("UNTRIGGERED"),
-    partiallyFilled("PARTIALLY_FILLED"),
-    partiallyCanceled("PARTIALLY_CANCELED");
+    partiallyFilled("PARTIALLY_FILLED"), // indexer returns order as OPEN but order is partially filled
+    partiallyCanceled("PARTIALLY_CANCELED"); // indexer returns order as CANCELED but order is partially filled
 
     companion object {
         operator fun invoke(rawValue: String): OrderStatus? {

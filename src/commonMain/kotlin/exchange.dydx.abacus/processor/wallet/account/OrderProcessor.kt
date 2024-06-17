@@ -228,10 +228,11 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             parser.asDouble(payload["orderFlags"])?.let { orderFlags ->
                 // if order is short-term order and indexer returns best effort canceled and has no partial fill
                 // treat as a pending order until it's partially filled or finalized
+                val isShortTermOrder = orderFlags.equals(Numeric.double.ZERO)
                 val isBestEffortCanceled = modified["status"] == "BEST_EFFORT_CANCELED"
                 val cancelReason = parser.asString(modified["cancelReason"])
                 val isUserCanceled = cancelReason == "USER_CANCELED" || cancelReason == "ORDER_REMOVAL_REASON_USER_CANCELED"
-                if (orderFlags.equals(Numeric.double.ZERO) && isBestEffortCanceled && !isUserCanceled) {
+                if (isShortTermOrder && isBestEffortCanceled && !isUserCanceled) {
                     modified.safeSet("status", "PENDING")
                 }
             }
@@ -319,7 +320,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return Pair(existing, false)
     }
 
-    private fun isStatusFinalized(status: Any?): Boolean {
+    private fun isStatusFinalized(status: String?): Boolean {
         // once an order is filled, canceled, or canceled with partial fill
         // there is no need to update status again
         return when (status) {
@@ -333,7 +334,7 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     ): Map<String, Any> {
         val modified = existing.mutable()
         // show order status as canceling if frontend initiated cancel
-        if (!isStatusFinalized(modified["status"])) {
+        if (!isStatusFinalized(parser.asString(modified["status"]))) {
             modified["status"] = "BEST_EFFORT_CANCELED"
         }
 
