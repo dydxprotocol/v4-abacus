@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.validator.trade
 
-import abs
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -43,15 +42,6 @@ internal class TradePositionStateValidator(
             change,
         )
         if (position != null) {
-            val leverageError = validatePositionLeverage(
-                position,
-                trade,
-                change,
-                restricted,
-            )
-            if (leverageError != null) {
-                errors.add(leverageError)
-            }
             val positionSizeError = validatePositionSize(
                 position,
                 market,
@@ -103,107 +93,6 @@ internal class TradePositionStateValidator(
         } else {
             null
         }
-    }
-
-    private fun validatePositionLeverage(
-        position: Map<String, Any>,
-        trade: Map<String, Any>,
-        change: PositionChange,
-        restricted: Boolean,
-    ): Map<String, Any>? {
-        /*
-        MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE
-        MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE
-
-        INVALID_NEW_POSITION_LEVERAGE
-        INVALID_LARGE_POSITION_LEVERAGE
-         */
-        return if (overMaxLeverage(
-                position,
-            )
-        ) {
-            if (parser.asString(trade["type"]) == "MARKET") {
-                val increasingPosition = when (change) {
-                    PositionChange.NEW, PositionChange.CROSSING, PositionChange.INCREASING -> true
-                    else -> false
-                }
-
-                error(
-                    if (increasingPosition) "ERROR" else "WARNING",
-                    "MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                    if (increasingPosition) listOf("size.size") else null,
-                    if (increasingPosition) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
-                    "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                    "ERRORS.TRADE_BOX.MARKET_ORDER_PRICE_IMPACT_AT_MAX_LEVERAGE",
-                )
-            } else {
-                if (change == PositionChange.NEW) {
-                    error(
-                        "ERROR",
-                        "INVALID_NEW_POSITION_LEVERAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_POSITION_LEVERAGE",
-                        "ERRORS.TRADE_BOX.INVALID_NEW_POSITION_LEVERAGE",
-                    )
-                } else {
-                    error(
-                        "ERROR",
-                        "INVALID_LARGE_POSITION_LEVERAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "ERRORS.TRADE_BOX_TITLE.INVALID_LARGE_POSITION_LEVERAGE",
-                        "ERRORS.TRADE_BOX.INVALID_LARGE_POSITION_LEVERAGE",
-                    )
-                }
-            }
-        } else {
-            if (parser.asString(trade["type"]) == "MARKET") {
-                val increasingPosition = when (change) {
-                    PositionChange.NEW, PositionChange.CROSSING, PositionChange.INCREASING -> true
-                    else -> false
-                }
-
-                if (increasingPosition && orderOverMaxLeverage(position)) {
-                    error(
-                        "WARNING",
-                        "MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "WARNINGS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
-                        "WARNINGS.TRADE_BOX.MARKET_ORDER_CLOSE_TO_MAX_LEVERAGE",
-                    )
-                } else {
-                    null
-                }
-            } else {
-                null
-            }
-        }
-    }
-
-    private fun overMaxLeverage(
-        position: Map<String, Any>,
-    ): Boolean {
-        val leverage = parser.asDouble(parser.value(position, "leverage.postOrder"))?.abs()
-        val adjustedImf = parser.asDouble(parser.value(position, "adjustedImf.current"))
-        return overLeverage(leverage, adjustedImf)
-    }
-
-    private fun overLeverage(leverage: Double?, adjustedImf: Double?): Boolean {
-        return if (leverage != null && adjustedImf != null && adjustedImf > Numeric.double.ZERO) {
-            leverage > (Numeric.double.ONE / adjustedImf) || leverage < Numeric.double.ZERO
-        } else {
-            false
-        }
-    }
-
-    private fun orderOverMaxLeverage(
-        position: Map<String, Any>,
-    ): Boolean {
-        val leverage = parser.asDouble(parser.value(position, "leverage.postOrder"))?.abs()
-        val adjustedImf = parser.asDouble(parser.value(position, "adjustedImf.postOrder"))
-        return overLeverage(leverage, adjustedImf)
     }
 
     private fun validatePositionSize(

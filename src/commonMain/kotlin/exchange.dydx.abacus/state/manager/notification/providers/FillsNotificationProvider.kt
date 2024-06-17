@@ -257,7 +257,7 @@ class FillsNotificationProvider(
                 uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.TITLE")
             }
 
-            OrderStatus.partiallyFilled -> {
+            OrderStatus.partiallyFilled, OrderStatus.partiallyCanceled -> {
                 uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE")
             }
 
@@ -278,7 +278,7 @@ class FillsNotificationProvider(
                 )
             }
 
-            OrderStatus.partiallyFilled -> {
+            OrderStatus.partiallyFilled, OrderStatus.partiallyCanceled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_PARTIAL_FILL.BODY",
                     paramsAsJson,

@@ -3,10 +3,12 @@ package exchange.dydx.abacus.state.v2.supervisor
 import abs
 import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Notification
+import exchange.dydx.abacus.output.PositionSide
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.TransferRecordType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
@@ -354,13 +356,14 @@ internal class SubaccountSupervisor(
                             OrderStatus.pending -> AnalyticsEvent.TradePlaceOrderStatusPending
                             OrderStatus.untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
                             OrderStatus.partiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
+                            OrderStatus.partiallyCanceled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyCanceled
                         }
 
                         tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
 
                         when (order.status) {
                             // order reaches final state, can remove / skip further tracking
-                            OrderStatus.cancelled, OrderStatus.filled -> {
+                            OrderStatus.cancelled, OrderStatus.partiallyCanceled, OrderStatus.filled -> {
                                 placeOrderRecords.remove(placeOrderRecord)
                             }
                             else -> {}
@@ -390,6 +393,38 @@ internal class SubaccountSupervisor(
                     cancelOrderRecords.remove(cancelOrderRecord)
                     break
                 }
+            }
+        }
+    }
+
+    private var cancelingOrphanedTriggerOrders = mutableSetOf<String>()
+
+    private fun cancelTriggerOrder(orderId: String) {
+        cancelingOrphanedTriggerOrders.add(orderId)
+        cancelOrder(orderId, { _, _, _ -> cancelingOrphanedTriggerOrders.remove(orderId) }, true)
+    }
+
+    private fun cancelTriggerOrdersWithClosedOrFlippedPositions() {
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return
+        val cancelableTriggerOrders = subaccount.orders?.filter { order ->
+            val isConditionalOrder = order.orderFlags == 32
+            val isReduceOnly = order.reduceOnly
+            val isActiveOrder =
+                (order.status === OrderStatus.untriggered || order.status === OrderStatus.open)
+            isConditionalOrder && isReduceOnly && isActiveOrder
+        } ?: return
+
+        cancelableTriggerOrders.forEach { order ->
+            if (order.id !in cancelingOrphanedTriggerOrders) {
+                val marketPosition = subaccount.openPositions?.find { position -> position.id === order.marketId }
+                val hasPositionFlippedOrClosed = marketPosition?.let { position ->
+                    when (position.side.current) {
+                        PositionSide.LONG -> order.side == OrderSide.buy
+                        PositionSide.SHORT -> order.side == OrderSide.sell
+                        else -> true
+                    }
+                } ?: true
+                if (hasPositionFlippedOrClosed) cancelTriggerOrder(order.id)
             }
         }
     }
@@ -777,7 +812,7 @@ internal class SubaccountSupervisor(
         payload: HumanReadableCancelOrderPayload,
         analyticsPayload: IMap<String, Any>?,
         uiClickTimeMs: Double,
-        isTriggerOrder: Boolean = false,
+        fromSlTpDialog: Boolean = false,
     ): HumanReadableCancelOrderPayload {
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
@@ -800,7 +835,7 @@ internal class SubaccountSupervisor(
                             subaccountNumber,
                             clientId,
                             submitTimeMs,
-                            fromSlTpDialog = isTriggerOrder,
+                            fromSlTpDialog,
                         ),
                     )
                 }
@@ -819,7 +854,7 @@ internal class SubaccountSupervisor(
                 helper.send(
                     error,
                     callback,
-                    if (isTriggerOrder) {
+                    if (fromSlTpDialog) {
                         HumanReadableTriggerOrdersPayload(
                             marketId,
                             positionSize,
@@ -862,7 +897,7 @@ internal class SubaccountSupervisor(
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
-    internal fun cancelOrder(orderId: String, callback: TransactionCallback): HumanReadableCancelOrderPayload {
+    internal fun cancelOrder(orderId: String, callback: TransactionCallback, isOrphanedTriggerOrder: Boolean = false): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
         val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
@@ -870,7 +905,7 @@ internal class SubaccountSupervisor(
             "no existing order to be cancelled for $orderId",
         )
         val marketId = existingOrder.marketId
-        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTpDialog = false)
+        val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTpDialog = false, isOrphanedTriggerOrder)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
@@ -1423,6 +1458,7 @@ internal class SubaccountSupervisor(
         }
         if (changes.changes.contains(Changes.subaccount)) {
             parseOrdersToMatchPlaceOrdersAndCancelOrders()
+            cancelTriggerOrdersWithClosedOrFlippedPositions()
         }
     }
 

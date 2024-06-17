@@ -7,6 +7,8 @@ naming:
   MatchingDeclarationName:
     # Affects a lot of the TradingStateMachine+_.kt files
     active: false
+  EnumNaming:
+    active: false
 
 complexity:
   CognitiveComplexMethod:
