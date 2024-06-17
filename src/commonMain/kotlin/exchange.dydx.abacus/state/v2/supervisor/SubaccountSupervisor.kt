@@ -813,7 +813,6 @@ internal class SubaccountSupervisor(
         analyticsPayload: IMap<String, Any>?,
         uiClickTimeMs: Double,
         fromSlTpDialog: Boolean = false,
-        isOrphanedTriggerOrder: Boolean = false,
     ): HumanReadableCancelOrderPayload {
         val clientId = payload.clientId
         val string = Json.encodeToString(payload)
@@ -909,7 +908,7 @@ internal class SubaccountSupervisor(
         val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(payload, existingOrder, fromSlTpDialog = false, isOrphanedTriggerOrder)
         val uiClickTimeMs = trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
-        return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs, false, isOrphanedTriggerOrder)
+        return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
     internal fun commitTriggerOrders(
