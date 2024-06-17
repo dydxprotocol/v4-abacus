@@ -1784,11 +1784,11 @@ internal class AccountsChannelMock {
                     "goodTilBlock":"5837"
                  }
               ],
-                "tradingReward": {
-                    "tradingReward": "0.02",
-                    "createdAtHeight": "2422",
-                    "createdAt": "2023-08-09T20:00:00.000Z"
-                }
+              "tradingReward": {
+                "tradingReward": "0.02",
+                "createdAtHeight": "2422",
+                "createdAt": "2023-08-09T20:00:00.000Z"
+              }
            }
         }
     """.trimIndent()
@@ -3380,6 +3380,113 @@ internal class AccountsChannelMock {
                  ]
               }
            ]
+        }
+    """.trimIndent()
+
+    internal val v4_parent_subaccounts_partially_filled_and_canceled_orders = """
+        {
+          "type": "channel_batch_data",
+          "connection_id": "4eb5c0e7-de17-4a5c-beaa-17b674293b69",
+          "message_id": 100,
+          "id":"dydx1v7xhjjgyyhcjtetrm6f2g0r5gcax9zs380yv6q/0",
+          "channel": "v4_parent_subaccounts",
+          "version": "3.0.0",
+          "contents": [
+            {
+              "fills": [
+                    {
+                      "id": "7ebd919a-33e0-56ba-bf43-f0768eed90ab",
+                      "fee": "0.01668",
+                      "side": "BUY",
+                      "size": "16",
+                      "type": "LIMIT",
+                      "price": "2.085",
+                      "eventId": "00e0249e0000000200000002",
+                      "orderId": "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7",
+                      "createdAt": "2024-06-17T16:29:01.795Z",
+                      "liquidity": "TAKER",
+                      "clobPairId": "26",
+                      "quoteAmount": "33.36",
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689438",
+                      "transactionHash": "AEFB668CC357F5A1DCCE3A3B34CB6ACC99406058CA296C91DE534BAED0511250",
+                      "ticker": "LDO-USD"
+                    },
+                    {
+                      "id": "aa394a06-478b-5c55-960e-f667a7871794",
+                      "fee": "0.017152",
+                      "side": "BUY",
+                      "size": "16",
+                      "type": "LIMIT",
+                      "price": "2.144",
+                      "eventId": "00e026ba0000000200000002",
+                      "orderId": "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c",
+                      "createdAt": "2024-06-17T16:40:57.007Z",
+                      "liquidity": "TAKER",
+                      "clobPairId": "26",
+                      "quoteAmount": "34.304",
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689438",
+                      "transactionHash": "E16EFED4E63D2D9BD4AAEC4F1C459EF04CB7320013DF5E4F5CCCFA98F8ABBCF6",
+                      "ticker": "LDO-USD"
+                    }
+              ],
+              "blockHeight": "14689438",
+              "orders": [
+                    {
+                      "id": "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7",
+                      "side": "BUY",
+                      "size": "30",
+                      "type": "LIMIT",
+                      "price": "2.085",
+                      "status": "OPEN",
+                      "clientId": "1736188335",
+                      "updatedAt": "2024-06-17T16:29:01.795Z",
+                      "clobPairId": "26",
+                      "orderFlags": "64",
+                      "reduceOnly": false,
+                      "timeInForce": "GTT",
+                      "totalFilled": "16",
+                      "goodTilBlock": null,
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "triggerPrice": null,
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689437",
+                      "updatedAtHeight": "14689438",
+                      "goodTilBlockTime": "2024-07-15T16:28:56.000Z",
+                      "postOnly": false,
+                      "ticker": "LDO-USD"
+                    },
+                    {
+                      "id": "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c",
+                      "side": "BUY",
+                      "size": "30",
+                      "type": "LIMIT",
+                      "price": "2.144",
+                      "status": "CANCELED",
+                      "clientId": "1138384266",
+                      "updatedAt": "2024-06-17T16:40:57.007Z",
+                      "clobPairId": "26",
+                      "orderFlags": "0",
+                      "reduceOnly": false,
+                      "timeInForce": "IOC",
+                      "totalFilled": "16",
+                      "goodTilBlock": "14689446",
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "triggerPrice": null,
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689437",
+                      "updatedAtHeight": "14689438",
+                      "goodTilBlockTime": null,
+                      "postOnly": false,
+                      "ticker": "LDO-USD"
+                    }
+              ]
+            }
+          ],
+          "subaccountNumber": 0
         }
     """.trimIndent()
 

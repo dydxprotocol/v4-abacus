@@ -354,13 +354,14 @@ internal class SubaccountSupervisor(
                             OrderStatus.pending -> AnalyticsEvent.TradePlaceOrderStatusPending
                             OrderStatus.untriggered -> AnalyticsEvent.TradePlaceOrderStatusUntriggered
                             OrderStatus.partiallyFilled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyFilled
+                            OrderStatus.partiallyCanceled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyCanceled
                         }
 
                         tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
 
                         when (order.status) {
                             // order reaches final state, can remove / skip further tracking
-                            OrderStatus.cancelled, OrderStatus.filled -> {
+                            OrderStatus.cancelled, OrderStatus.partiallyCanceled, OrderStatus.filled -> {
                                 placeOrderRecords.remove(placeOrderRecord)
                             }
                             else -> {}
