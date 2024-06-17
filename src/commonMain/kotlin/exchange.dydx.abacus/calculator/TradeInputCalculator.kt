@@ -11,7 +11,6 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -19,7 +18,6 @@ import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.toJsonElement
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -83,8 +81,6 @@ internal class TradeInputCalculator(
         val type = parser.asString(trade?.get("type"))
         val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
         val feeTiers = parser.asNativeList(parser.value(state, "configs.feeTiers"))
-        val equityTiers = parser.asNativeMap(parser.value(state, "configs.equityTiers"))
-        Logger.e { "equityTiers, ${equityTiers.toJsonElement()}" }
 
         return if (trade != null && type != null) {
             val isBuying = isBuying(trade)
