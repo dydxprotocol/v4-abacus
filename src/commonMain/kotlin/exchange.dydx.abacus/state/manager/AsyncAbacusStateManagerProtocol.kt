@@ -79,7 +79,7 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Commit changes with params
     fun faucet(amount: Double, callback: TransactionCallback)
-    fun cancelOrder(orderId: String, callback: TransactionCallback, isOrphanedTriggerOrder: Boolean)
+    fun cancelOrder(orderId: String, callback: TransactionCallback)
 
     // Bridge functions.
     // If client is not using cancelOrder function, it should call orderCanceled function with
