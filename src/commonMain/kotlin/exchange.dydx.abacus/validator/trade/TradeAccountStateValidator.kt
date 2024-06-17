@@ -52,14 +52,6 @@ internal class TradeAccountStateValidator(
                     }
                 }
                 false -> {
-                    val marginError = validateSubaccountMarginUsage(
-                        parser,
-                        subaccount,
-                        change,
-                    )
-                    if (marginError != null) {
-                        errors.add(marginError)
-                    }
                     val crossOrdersError = validateSubaccountCrossOrders(
                         parser,
                         subaccount,
@@ -83,42 +75,6 @@ internal class TradeAccountStateValidator(
             if (errors.size > 0) errors else null
         } else {
             null
-        }
-    }
-
-    private fun validateSubaccountMarginUsage(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>,
-        change: PositionChange,
-    ): Map<String, Any>? {
-        /*
-        INVALID_NEW_ACCOUNT_MARGIN_USAGE
-         */
-        return when (change) {
-            PositionChange.CLOSING, PositionChange.DECREASING -> null
-            else -> {
-                val equity = parser.asDouble(parser.value(subaccount, "equity.postOrder"))
-                val marginUsage = parser.asDouble(parser.value(subaccount, "marginUsage.postOrder"))
-                if (equity != null &&
-                    (
-                        equity == Numeric.double.ZERO ||
-                            marginUsage == null ||
-                            marginUsage < Numeric.double.ZERO ||
-                            marginUsage > Numeric.double.ONE
-                        )
-                ) {
-                    error(
-                        "ERROR",
-                        "INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                        "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                    )
-                } else {
-                    null
-                }
-            }
         }
     }
 
