@@ -229,8 +229,9 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
                 // if order is short-term order and indexer returns best effort canceled and has no partial fill
                 // treat as a pending order until it's partially filled or finalized
                 val isBestEffortCanceled = modified["status"] == "BEST_EFFORT_CANCELED"
-                val isNotUserCanceled = modified["cancelReason"] != "USER_CANCELED"
-                if (orderFlags.equals(Numeric.double.ZERO) && isBestEffortCanceled && isNotUserCanceled) {
+                val cancelReason = parser.asString(modified["cancelReason"])
+                val isUserCanceled = cancelReason == "USER_CANCELED" || cancelReason == "ORDER_REMOVAL_REASON_USER_CANCELED"
+                if (orderFlags.equals(Numeric.double.ZERO) && isBestEffortCanceled && !isUserCanceled) {
                     modified.safeSet("status", "PENDING")
                 }
             }
