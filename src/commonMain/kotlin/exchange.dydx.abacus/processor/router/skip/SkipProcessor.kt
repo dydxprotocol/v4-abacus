@@ -144,7 +144,7 @@ internal class SkipProcessor(
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
-        modified.safeSet("transfer.token    ", defaultTokenAddress(selectedChainId))
+        modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
         modified.safeSet("transfer.depositOptions.tokens", tokenOptions)
         modified.safeSet("transfer.withdrawalOptions.tokens", tokenOptions)
         internalState.tokenResources = tokenResources(selectedChainId)
