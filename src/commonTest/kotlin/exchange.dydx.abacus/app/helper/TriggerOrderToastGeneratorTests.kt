@@ -52,9 +52,9 @@ class TriggerOrderToastGeneratorTests {
                 "orders": [
                     {
                         "id": "existingOrderId",
-                        "type": "takeProfitMarket",
-                        "side": "buy",
-                        "status": "untriggered",
+                        "type": "TakeProfitMarket",
+                        "side": "Buy",
+                        "status": "Untriggered",
                         "marketId": "ETH-USD",
                         "price": 1000,
                         "triggerPrice": 2000,
