@@ -78,7 +78,7 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         }
 
         parser.asInt(fill["subaccountNumber"])?.run {
-            fill.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
+            fill.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
         }
 
         fill.safeSet(
