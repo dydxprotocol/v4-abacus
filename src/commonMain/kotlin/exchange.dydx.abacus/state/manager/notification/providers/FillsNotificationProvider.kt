@@ -14,7 +14,6 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.JsonEncoder
-import exchange.dydx.abacus.utils.ParsingHelper.Companion.asset
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.iMapOf
@@ -178,7 +177,7 @@ class FillsNotificationProvider(
         var text: String? = null
 
         when (fill.type) {
-            OrderType.deleveraged -> {
+            OrderType.Deleveraged -> {
                 title = uiImplementations.localizer?.localize("NOTIFICATIONS.DELEVERAGED.TITLE")
                     ?: return null
                 text = uiImplementations.localizer?.localize(
@@ -187,7 +186,7 @@ class FillsNotificationProvider(
                 )
             }
 
-            OrderType.finalSettlement -> {
+            OrderType.FinalSettlement -> {
                 title =
                     uiImplementations.localizer?.localize("NOTIFICATIONS.FINAL_SETTLEMENT.TITLE")
                         ?: return null
@@ -197,7 +196,7 @@ class FillsNotificationProvider(
                 )
             }
 
-            OrderType.liquidated -> {
+            OrderType.Liquidated -> {
                 title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE")
                     ?: return null
                 text = uiImplementations.localizer?.localize(
@@ -206,7 +205,7 @@ class FillsNotificationProvider(
                 )
             }
 
-            OrderType.offsetting -> {
+            OrderType.Offsetting -> {
                 title = uiImplementations.localizer?.localize("NOTIFICATIONS.OFFSETTING.TITLE")
                     ?: return null
                 text = uiImplementations.localizer?.localize(
@@ -253,15 +252,15 @@ class FillsNotificationProvider(
 
     private fun orderStatusTitle(status: OrderStatus): String? {
         return when (status) {
-            OrderStatus.filled -> {
+            OrderStatus.Filled -> {
                 uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_FILL.TITLE")
             }
 
-            OrderStatus.partiallyFilled, OrderStatus.partiallyCanceled -> {
+            OrderStatus.PartiallyFilled, OrderStatus.PartiallyCanceled -> {
                 uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE")
             }
 
-            OrderStatus.cancelled -> {
+            OrderStatus.Canceled -> {
                 uiImplementations.localizer?.localize("NOTIFICATIONS.ORDER_CANCEL.TITLE")
             }
 
@@ -271,21 +270,21 @@ class FillsNotificationProvider(
 
     private fun orderStatusText(status: OrderStatus, paramsAsJson: String?): String? {
         return when (status) {
-            OrderStatus.filled -> {
+            OrderStatus.Filled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_FILL.BODY",
                     paramsAsJson,
                 )
             }
 
-            OrderStatus.partiallyFilled, OrderStatus.partiallyCanceled -> {
+            OrderStatus.PartiallyFilled, OrderStatus.PartiallyCanceled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_PARTIAL_FILL.BODY",
                     paramsAsJson,
                 )
             }
 
-            OrderStatus.cancelled -> {
+            OrderStatus.Canceled -> {
                 uiImplementations.localizer?.localize(
                     "NOTIFICATIONS.ORDER_CANCEL.BODY",
                     paramsAsJson,

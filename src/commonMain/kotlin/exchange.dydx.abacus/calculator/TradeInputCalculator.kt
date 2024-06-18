@@ -933,7 +933,7 @@ internal class TradeInputCalculator(
             "MARKET" -> {
                 val marginMode = parser.asString(trade["marginMode"])
                 return when (MarginMode.invoke(marginMode)) {
-                    MarginMode.isolated -> listOf(
+                    MarginMode.Isolated -> listOf(
                         sizeField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
