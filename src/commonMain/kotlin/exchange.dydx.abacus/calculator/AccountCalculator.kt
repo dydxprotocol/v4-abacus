@@ -177,6 +177,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
             }
 
             val orderStatus = parser.asString(parser.value(order, "status"))
+
             if (!listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)) {
                 continue
             }

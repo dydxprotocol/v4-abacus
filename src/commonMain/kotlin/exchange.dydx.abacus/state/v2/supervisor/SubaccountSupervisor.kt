@@ -64,6 +64,7 @@ import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -556,7 +557,13 @@ internal class SubaccountSupervisor(
             val openPositions = subaccount.openPositions
             val openOrders = subaccount.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                status == "open" || status == "pending" || status == "untriggered" || status == "partiallyFilled"
+
+                iListOf(
+                    OrderStatus.Open.name,
+                    OrderStatus.Pending.name,
+                    OrderStatus.Untriggered.name,
+                    OrderStatus.PartiallyFilled.name,
+                ).contains(status)
             }
 
             val positionMarketIds = openPositions?.map { position ->
@@ -1476,12 +1483,18 @@ internal class SubaccountSupervisor(
                 return@mapValues 0.0
             }
 
+            val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
             val openPositions = subaccount.value.openPositions
+
             val openOrders = subaccount.value.orders?.filter { order ->
                 val status = helper.parser.asString(order.status)
-                iListOf("open", "pending", "untriggered", "partiallyFilled").contains(status)
+                iListOf(
+                    OrderStatus.Open.name,
+                    OrderStatus.Pending.name,
+                    OrderStatus.Untriggered.name,
+                    OrderStatus.PartiallyFilled.name,
+                ).contains(status)
             }
-            val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
 
             // Only return a quoteBalance if the subaccount has no open positions or orders
             if (openPositions.isNullOrEmpty() && openOrders.isNullOrEmpty() && quoteBalance > 0.0) {
@@ -1496,8 +1509,13 @@ internal class SubaccountSupervisor(
         val transferPayloadStrings = iMutableListOf<String>()
 
         subaccountQuoteBalanceMap.forEach {
-            val childSubaccountNumber = it.key.toInt()
-            val amountToTransfer = it.value.toString()
+            val childSubaccountNumber = helper.parser.asInt(it.key)
+            val amountToTransfer = helper.parser.asString(it.value)
+
+            if (childSubaccountNumber == null || amountToTransfer == null) {
+                Logger.e { "Child Subaccount Number or Amount to Transfer is null" }
+                return@forEach
+            }
 
             val transferPayload = HumanReadableSubaccountTransferPayload(
                 childSubaccountNumber,
