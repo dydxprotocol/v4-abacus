@@ -418,9 +418,10 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: List<Any>?,
         reset: Boolean,
     ): Map<String, Any> {
+        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"]) ?: 0
         return receivedObject(subaccount, "fills", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
-                fillsProcessor.received(if (reset) null else parser.asNativeList(existing), it)
+                fillsProcessor.received(if (reset) null else parser.asNativeList(existing), it, subaccountNumber)
             }
         } ?: subaccount
     }
