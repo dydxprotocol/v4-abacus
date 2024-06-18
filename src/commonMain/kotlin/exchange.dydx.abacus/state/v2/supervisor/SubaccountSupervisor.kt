@@ -72,7 +72,6 @@ import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.toJsonElement
 import exchange.dydx.abacus.utils.values
 import kollections.iListOf
 import kollections.iMutableListOf
