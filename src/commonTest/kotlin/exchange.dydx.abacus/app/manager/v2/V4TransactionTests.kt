@@ -7,8 +7,10 @@ import exchange.dydx.abacus.app.manager.TestState
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.protocols.TransactionType
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
+import exchange.dydx.abacus.state.manager.TransactionParams
 import exchange.dydx.abacus.state.manager.setAddresses
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -18,11 +20,17 @@ import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
+import exchange.dydx.abacus.utils.satisfies
+import exchange.dydx.abacus.utils.toJsonElement
+import io.ktor.util.reflect.instanceOf
+import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class V4TransactionTests : NetworkTests() {
@@ -204,6 +212,29 @@ class V4TransactionTests : NetworkTests() {
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(4, transactionCalledCount)
         assertTransactionQueueEmpty()
+    }
+
+    @Test
+    fun testCancelTriggerOrdersWithClosedOrFlippedPositions() {
+        setStateMachineConnected(stateManager)
+        val canceldOrderPayloads = testChain!!.canceldOrderPayloads
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_parent_subaccounts_subscribed_with_trigger_orders_and_open_positions)
+        assertEquals(0, canceldOrderPayloads.size)
+
+        val triggerOrderWithClosedPositionIsolated = "f581f56c-9f1b-54e0-97d6-5f934dd0eb67"
+        val triggerOrderWithFlippedPositionCross = "aeb40307-861a-52c1-9568-2a95468e8687"
+        val orderIdsToBeCanceled = setOf(triggerOrderWithClosedPositionIsolated, triggerOrderWithFlippedPositionCross)
+
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_parent_subaccounts_batched_closed_and_flipped_positions)
+        // 3 total orders, while only 2 should be canceled
+        repeat(3) {
+            testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        }
+        assertEquals(2, canceldOrderPayloads.size)
+        val canceledOrderIds = canceldOrderPayloads.map {
+            parser.asNativeMap(Json.parseToJsonElement(it))?.get("orderId")?.toString()?.trim('"')
+        }.toSet()
+        assertEquals(orderIdsToBeCanceled, canceledOrderIds)
     }
 
     @Test
