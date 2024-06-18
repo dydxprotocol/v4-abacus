@@ -13,7 +13,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-internal fun templateToJson(template: String): Map<String, Any> {
+internal fun templateToMap(template: String): Map<String, Any> {
     return Json.parseToJsonElement(template.trimIndent()).jsonObject.toMap()
 }
 
@@ -196,7 +196,7 @@ class SkipProcessorTests {
 
     @Test
     fun testReceivedChains() {
-        val payload = templateToJson(
+        val payload = templateToMap(
             skipChainsMock.payload,
         )
         val modified = skipProcessor.receivedChains(
@@ -238,7 +238,7 @@ class SkipProcessorTests {
 
     @Test
     fun testReceivedTokens() {
-        val payload = templateToJson(skipTokensMock.payload)
+        val payload = templateToMap(skipTokensMock.payload)
         skipProcessor.skipTokens = null
         skipProcessor.chains = listOf(
             mapOf(
@@ -319,7 +319,7 @@ class SkipProcessorTests {
 
     @Test
     fun testReceivedRoute() {
-        val payload = templateToJson(skipRouteMock.payload)
+        val payload = templateToMap(skipRouteMock.payload)
         val result = skipProcessor.receivedRoute(
             existing = mapOf(),
             payload = payload,
