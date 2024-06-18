@@ -1121,8 +1121,8 @@ internal fun AccountSupervisor.faucet(amount: Double, callback: TransactionCallb
     subaccount?.faucet(amount, callback)
 }
 
-internal fun AccountSupervisor.cancelOrder(orderId: String, callback: TransactionCallback, isOrphanedTriggerOrder: Boolean) {
-    subaccount?.cancelOrder(orderId, callback, isOrphanedTriggerOrder)
+internal fun AccountSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {
+    subaccount?.cancelOrder(orderId, callback)
 }
 
 internal fun AccountSupervisor.orderCanceled(orderId: String) {

@@ -206,7 +206,8 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             }
             parser.asInt(modified["subaccountNumber"])?.run {
                 modified.safeSet("subaccountNumber", this)
-                modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
+                // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
+                modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
             }
             parser.asDouble(payload["size"])?.let { size ->
                 parser.asDouble(payload["totalFilled"])?.let { totalFilled ->

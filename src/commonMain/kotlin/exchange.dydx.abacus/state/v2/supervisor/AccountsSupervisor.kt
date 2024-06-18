@@ -333,8 +333,8 @@ internal fun AccountsSupervisor.faucet(amount: Double, callback: TransactionCall
     account?.faucet(amount, callback)
 }
 
-internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: TransactionCallback, isOrphanedTriggerOrder: Boolean) {
-    account?.cancelOrder(orderId, callback, isOrphanedTriggerOrder)
+internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {
+    account?.cancelOrder(orderId, callback)
 }
 
 internal fun AccountsSupervisor.orderCanceled(orderId: String) {
