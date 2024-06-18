@@ -404,7 +404,11 @@ internal class SubaccountSupervisor(
 
     private fun cancelTriggerOrder(orderId: String) {
         cancelingOrphanedTriggerOrders.add(orderId)
-        cancelOrder(orderId, { _, _, _ -> cancelingOrphanedTriggerOrders.remove(orderId) }, true)
+        cancelOrder(
+            orderId = orderId,
+            isOrphanedTriggerOrder = true,
+            callback = { _, _, _ -> cancelingOrphanedTriggerOrders.remove(orderId) },
+        )
     }
 
     private fun cancelTriggerOrdersWithClosedOrFlippedPositions() {
@@ -413,13 +417,13 @@ internal class SubaccountSupervisor(
             val isConditionalOrder = order.orderFlags == CONDITIONAL_ORDER_FLAGS
             val isReduceOnly = order.reduceOnly
             val isActiveOrder =
-                (order.status === OrderStatus.Untriggered || order.status === OrderStatus.Open)
+                (order.status == OrderStatus.Untriggered || order.status == OrderStatus.Open)
             isConditionalOrder && isReduceOnly && isActiveOrder
         } ?: return
 
         cancelableTriggerOrders.forEach { order ->
             if (order.id !in cancelingOrphanedTriggerOrders) {
-                val marketPosition = subaccount.openPositions?.find { position -> position.id === order.marketId }
+                val marketPosition = subaccount.openPositions?.find { position -> position.id == order.marketId }
                 val hasPositionFlippedOrClosed = marketPosition?.let { position ->
                     when (position.side.current) {
                         PositionSide.LONG -> order.side == OrderSide.Buy
@@ -427,7 +431,9 @@ internal class SubaccountSupervisor(
                         else -> true
                     }
                 } ?: true
-                if (hasPositionFlippedOrClosed) cancelTriggerOrder(order.id)
+                if (hasPositionFlippedOrClosed) {
+                    cancelTriggerOrder(order.id)
+                }
             }
         }
     }
@@ -906,7 +912,7 @@ internal class SubaccountSupervisor(
         return submitPlaceOrder(callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
-    internal fun cancelOrder(orderId: String, callback: TransactionCallback, isOrphanedTriggerOrder: Boolean = false): HumanReadableCancelOrderPayload {
+    internal fun cancelOrder(orderId: String, isOrphanedTriggerOrder: Boolean = false, callback: TransactionCallback): HumanReadableCancelOrderPayload {
         val payload = cancelOrderPayload(orderId)
         val subaccount = stateMachine.state?.subaccount(subaccountNumber)
         val existingOrder = subaccount?.orders?.firstOrNull { it.id == orderId } ?: throw ParsingException(
