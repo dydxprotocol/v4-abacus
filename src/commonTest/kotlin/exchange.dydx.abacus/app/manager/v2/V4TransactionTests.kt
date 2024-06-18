@@ -186,15 +186,15 @@ class V4TransactionTests : NetworkTests() {
         val statefulOrderId2 = "0ae98da9-4fdc-5f08-b880-2449464b6b45"
         val statefulOrderId3 = "734617f4-29ba-50fe-878d-391ad4e4fbd1"
 
-        subaccountSupervisor?.cancelOrder(shortTermOrderId, transactionCallback)
+        subaccountSupervisor?.cancelOrder(shortTermOrderId, callback = transactionCallback)
         assertTransactionQueueEmpty("Short term order should not be enqueued")
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
 
         // cancel multiple stateful orders
-        subaccountSupervisor?.cancelOrder(statefulOrderId1, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId1, callback = transactionCallback)
         assertTransactionQueueStarted()
-        subaccountSupervisor?.cancelOrder(statefulOrderId2, transactionCallback)
-        subaccountSupervisor?.cancelOrder(statefulOrderId3, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId2, callback = transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId3, callback = transactionCallback)
         assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
@@ -327,7 +327,7 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueEmpty()
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueStarted()
-        subaccountSupervisor?.cancelOrder(statefulOrderId1, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId1, callback = transactionCallback)
         assertEquals(1, subaccountSupervisor?.transactionQueue?.size)
         triggerOrdersInput(marketId = "BTC-USD", stopLossTriggerPrice = "30000")
         subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
@@ -442,7 +442,7 @@ class V4TransactionTests : NetworkTests() {
         setStateMachineForIsolatedMarginTests(stateManager)
         val transactionCallback: TransactionCallback = { _, _, _ -> }
 
-        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", transactionCallback)
+        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", callback = transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
     }
