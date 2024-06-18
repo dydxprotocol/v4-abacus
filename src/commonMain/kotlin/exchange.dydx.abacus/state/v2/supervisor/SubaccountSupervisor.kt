@@ -1492,7 +1492,7 @@ internal class SubaccountSupervisor(
                     OrderStatus.Open.name,
                     OrderStatus.Pending.name,
                     OrderStatus.Untriggered.name,
-                    OrderStatus.PartiallyFilled.name
+                    OrderStatus.PartiallyFilled.name,
                 ).contains(status)
             }
 
@@ -1513,7 +1513,7 @@ internal class SubaccountSupervisor(
             val amountToTransfer = helper.parser.asString(it.value)
 
             if (childSubaccountNumber == null || amountToTransfer == null) {
-                Logger.e {"Child Subaccount Number or Amount to Transfer is null"}
+                Logger.e { "Child Subaccount Number or Amount to Transfer is null" }
                 return@forEach
             }
 
