@@ -3490,7 +3490,6 @@ internal class AccountsChannelMock {
         }
     """.trimIndent()
 
-
     internal val v4_parent_subaccounts_subscribed_with_trigger_orders_and_open_positions = """
         {
             "type": "subscribed",
