@@ -53,7 +53,7 @@ internal class SkipProcessor(
 //        We diff based on map values in order to determine whether to return new state
 //        Until we diff on `internalState` changes we need to update old map state as well
         modified.safeSet("transfer.depositOptions.chains", chainOptions)
-        modified.safeSet("transfer.withdrawOptions.chains", chainOptions)
+        modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
             internalState.chainResources = chainResources(chainId = selectedChainId)
