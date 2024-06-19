@@ -175,8 +175,6 @@ internal class StateManagerAdaptorV2(
         ioImplementations.threading,
     )
 
-    private val geoPollingDuration = 10.0
-
     internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
         set(value) {
             if (field != value) {
@@ -480,10 +478,11 @@ internal class StateManagerAdaptorV2(
     private fun pollGeo() {
         ioImplementations.timer?.schedule(
             0.0,
-            geoPollingDuration) {
-                fetchGeo()
-                true
-            }
+            GEO_POLLING_DURATION_SECONDS,
+        ) {
+            fetchGeo()
+            true
+        }
     }
 
     private fun fetchGeo() {
@@ -719,5 +718,9 @@ internal class StateManagerAdaptorV2(
             )
         }
         triggerCompliance(ComplianceAction.CONNECT, null)
+    }
+
+    companion object {
+        private const val GEO_POLLING_DURATION_SECONDS = 10.0
     }
 }
