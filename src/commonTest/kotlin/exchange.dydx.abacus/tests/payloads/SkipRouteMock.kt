@@ -107,6 +107,183 @@ internal class SkipRouteMock {
         ]
     }
 }"""
+    internal val payloadCCTPDydxToNoble = """
+        {
+    "msgs": [
+        {
+            "multi_chain_msg": {
+                "chain_id": "dydx-mainnet-1",
+                "path": [
+                    "dydx-mainnet-1",
+                    "noble-1"
+                ],
+                "msg": "{\"source_port\":\"transfer\",\"source_channel\":\"channel-0\",\"token\":{\"denom\":\"ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5\",\"amount\":\"10996029\"},\"sender\":\"dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s\",\"receiver\":\"noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf\",\"timeout_height\":{},\"timeout_timestamp\":1718308711061386287}",
+                "msg_type_url": "/ibc.applications.transfer.v1.MsgTransfer"
+            }
+        }
+    ],
+    "txs": [
+        {
+            "cosmos_tx": {
+                "chain_id": "dydx-mainnet-1",
+                "path": [
+                    "dydx-mainnet-1",
+                    "noble-1"
+                ],
+                "msgs": [
+                    {
+                        "msg": "{\"source_port\":\"transfer\",\"source_channel\":\"channel-0\",\"token\":{\"denom\":\"ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5\",\"amount\":\"10996029\"},\"sender\":\"dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s\",\"receiver\":\"noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf\",\"timeout_height\":{},\"timeout_timestamp\":1718308711061386287}",
+                        "msg_type_url": "/ibc.applications.transfer.v1.MsgTransfer"
+                    }
+                ],
+                "signer_address": "dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s"
+            },
+            "operations_indices": [
+                0
+            ]
+        }
+    ],
+    "route": {
+        "source_asset_denom": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+        "source_asset_chain_id": "dydx-mainnet-1",
+        "dest_asset_denom": "uusdc",
+        "dest_asset_chain_id": "noble-1",
+        "amount_in": "10996029",
+        "amount_out": "10996029",
+        "operations": [
+            {
+                "transfer": {
+                    "port": "transfer",
+                    "channel": "channel-0",
+                    "from_chain_id": "dydx-mainnet-1",
+                    "to_chain_id": "noble-1",
+                    "pfm_enabled": false,
+                    "supports_memo": true,
+                    "denom_in": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                    "denom_out": "uusdc",
+                    "bridge_id": "IBC",
+                    "smart_relay": false,
+                    "chain_id": "dydx-mainnet-1",
+                    "dest_denom": "uusdc"
+                },
+                "tx_index": 0,
+                "amount_in": "10996029",
+                "amount_out": "10996029"
+            }
+        ],
+        "chain_ids": [
+            "dydx-mainnet-1",
+            "noble-1"
+        ],
+        "does_swap": false,
+        "estimated_amount_out": "10996029",
+        "swap_venues": [],
+        "txs_required": 1,
+        "usd_amount_in": "11.01",
+        "usd_amount_out": "11.01",
+        "estimated_fees": [],
+        "required_chain_addresses": [
+            "dydx-mainnet-1",
+            "noble-1"
+        ]
+    }
+}
+    """.trimIndent()
+
+    internal val payloadCCTPNobleToDydx = """
+        {
+            "msgs": [
+                {
+                    "multi_chain_msg": {
+                        "chain_id": "noble-1",
+                        "path": [
+                            "noble-1",
+                            "dydx-mainnet-1"
+                        ],
+                        "msg": "{\"source_port\":\"transfer\",\"source_channel\":\"channel-33\",\"token\":{\"denom\":\"uusdc\",\"amount\":\"5884\"},\"sender\":\"noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf\",\"receiver\":\"dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s\",\"timeout_height\":{},\"timeout_timestamp\":1718318348813666048}",
+                        "msg_type_url": "/ibc.applications.transfer.v1.MsgTransfer"
+                    }
+                }
+            ],
+            "txs": [
+                {
+                    "cosmos_tx": {
+                        "chain_id": "noble-1",
+                        "path": [
+                            "noble-1",
+                            "dydx-mainnet-1"
+                        ],
+                        "msgs": [
+                            {
+                                "msg": "{\"source_port\":\"transfer\",\"source_channel\":\"channel-33\",\"token\":{\"denom\":\"uusdc\",\"amount\":\"5884\"},\"sender\":\"noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf\",\"receiver\":\"dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s\",\"timeout_height\":{},\"timeout_timestamp\":1718318348813666048}",
+                                "msg_type_url": "/ibc.applications.transfer.v1.MsgTransfer"
+                            }
+                        ],
+                        "signer_address": "noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf"
+                    },
+                    "operations_indices": [
+                        0
+                    ]
+                }
+            ],
+            "route": {
+                "source_asset_denom": "uusdc",
+                "source_asset_chain_id": "noble-1",
+                "dest_asset_denom": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                "dest_asset_chain_id": "dydx-mainnet-1",
+                "amount_in": "5884",
+                "amount_out": "5884",
+                "operations": [
+                    {
+                        "transfer": {
+                            "port": "transfer",
+                            "channel": "channel-33",
+                            "from_chain_id": "noble-1",
+                            "to_chain_id": "dydx-mainnet-1",
+                            "pfm_enabled": true,
+                            "supports_memo": true,
+                            "denom_in": "uusdc",
+                            "denom_out": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                            "fee_amount": "0",
+                            "usd_fee_amount": "0.0000",
+                            "fee_asset": {
+                                "denom": "uusdc",
+                                "chain_id": "noble-1",
+                                "origin_denom": "uusdc",
+                                "origin_chain_id": "noble-1",
+                                "trace": "",
+                                "is_cw20": false,
+                                "is_evm": false,
+                                "is_svm": false
+                            },
+                            "bridge_id": "IBC",
+                            "smart_relay": false,
+                            "chain_id": "noble-1",
+                            "dest_denom": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5"
+                        },
+                        "tx_index": 0,
+                        "amount_in": "5884",
+                        "amount_out": "5884"
+                    }
+                ],
+                "chain_ids": [
+                    "noble-1",
+                    "dydx-mainnet-1"
+                ],
+                "does_swap": false,
+                "estimated_amount_out": "5884",
+                "swap_venues": [],
+                "txs_required": 1,
+                "usd_amount_in": "0.01",
+                "usd_amount_out": "0.01",
+                "estimated_fees": [],
+                "required_chain_addresses": [
+                    "noble-1",
+                    "dydx-mainnet-1"
+                ]
+            }
+        }
+    """.trimIndent()
     internal val payloadError = """
     {
   "code": 3,

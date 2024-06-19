@@ -141,3 +141,15 @@ fun IMap<String, String>.toUrlParams(): String =
     entries.joinToString("&") {
         it.key + "=" + it.value
     }
+
+fun Map<String, Any>.toCamelCaseKeys(): Map<String, Any> {
+    return this.mapKeys { it.key.toCamelCase() }.mapValues { (_, value) ->
+        when (value) {
+            is Map<*, *> -> (value as Map<String, Any>).toCamelCaseKeys()
+            is List<*> -> value.map {
+                if (it is Map<*, *>) (it as Map<String, Any>).toCamelCaseKeys() else it
+            }
+            else -> value
+        }
+    }
+}

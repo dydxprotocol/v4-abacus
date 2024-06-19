@@ -62,13 +62,11 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
             modified.safeSet("toAmountUSD", toAmountUSD)
         }
 
-        val payloadProcessor = SkipRoutePayloadProcessor(parser)
 //        TODO: Remove slippage.
 //        This is just hard coded in our params so we're keeping it to be at parity for now
 //        Fast follow squid -> skip migration project to removing max slippage
 //        because we already show the actual price impact.
         modified.safeSet("slippage", SLIPPAGE_PERCENT)
-        modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
 
         val errorCode = parser.value(payload, "code")
 //        if we have an error code, add the payload as a list of errors
@@ -76,6 +74,10 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
 //        TODO: replace errors with errorMessage once we finish migration
         if (errorCode != null) {
             modified.safeSet("errors", parser.asString(listOf(payload)))
+        } else {
+//          Only bother processing payload if there's no error
+            val payloadProcessor = SkipRoutePayloadProcessor(parser)
+            modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
         }
         return modified
     }
