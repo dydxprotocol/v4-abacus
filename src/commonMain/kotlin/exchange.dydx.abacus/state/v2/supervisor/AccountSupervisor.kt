@@ -208,6 +208,7 @@ internal open class AccountSupervisor(
 
     init {
         screenAccountAddress()
+        complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
     }
 
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
@@ -331,9 +332,6 @@ internal open class AccountSupervisor(
                     val isValidResponse = helper.success(httpCode) && response != null
                     if (isValidResponse) {
                         response?.let { retrievedSubaccounts(it) }
-                        complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
-                    } else {
-                        complianceScreen(DydxAddress(accountAddress), ComplianceAction.ONBOARD)
                     }
                     if (!isValidResponse && httpCode != 403) {
                         subaccountNumber = 0
