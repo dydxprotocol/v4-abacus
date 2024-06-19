@@ -12,7 +12,7 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
         "string" to mapOf(
             "route.usd_amount_out" to "toAmountUSD",
             "route.estimated_amount_out" to "toAmount",
-            "swap_price_impact_percent" to "aggregatePriceImpact",
+            "route.swap_price_impact_percent" to "aggregatePriceImpact",
 
 //            SQUID PARAMS THAT ARE NOW DEPRECATED:
 //            "route.estimate.gasCosts.0.amountUSD" to "gasFee",
@@ -21,6 +21,12 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
 //            "route.estimate.toAmountMin" to "toAmountMin",
 
         ),
+    )
+
+    private val transactionTypes = listOf(
+        "transfer",
+        "axelar_transfer",
+        "hyperlane_transfer",
     )
 
     private fun findFee(payload: Map<String, Any>, key: String): Double? {
@@ -32,6 +38,29 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
         return feeInUSD
     }
 
+    private fun calculateFeesFromSwaps(payload: Map<String, Any>): Double {
+        val operations = parser.asList(parser.value(payload, "route.operations")) ?: return 0.0
+        var total = 0.0
+        operations.forEach { operation ->
+            val fee = getFeeFromOperation(parser.asNativeMap(operation))
+            total += fee
+        }
+        return total
+    }
+
+    private fun getFeeFromOperation(operationPayload: Map<String, Any>?): Double {
+        if (operationPayload == null) return 0.0
+        var fee = 0.0
+        transactionTypes.forEach { transactionType ->
+            val transaction = parser.asNativeMap(operationPayload.get(transactionType))
+            if (transaction != null) {
+                val usdFeeAmount = parser.asDouble(transaction.get("usd_fee_amount")) ?: 0.0
+                fee += usdFeeAmount
+            }
+        }
+        return fee
+    }
+
     fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
@@ -39,19 +68,17 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
     ): Map<String, Any> {
         val modified = BaseProcessor(parser).transform(existing, payload, keyMap)
 
-        var bridgeFees = findFee(payload, "BRIDGE")
+        var bridgeFees = findFee(payload, "BRIDGE") ?: 0.0
 //        TODO: update web UI to show smart relay fees
 //        For now we're just bundling it with the bridge fees
-        val smartRelayFees = findFee(payload, "SMART_RELAY")
-        if (bridgeFees == null) {
-            bridgeFees = smartRelayFees
-        } else if (smartRelayFees != null) {
-            bridgeFees += smartRelayFees
-        }
+        val smartRelayFees = findFee(payload, "SMART_RELAY") ?: 0.0
+        bridgeFees += smartRelayFees
+        bridgeFees += calculateFeesFromSwaps(payload)
+
         val gasFees = findFee(payload, "GAS")
 
-        modified.safeSet("gasFees", gasFees)
-        modified.safeSet("bridgeFees", bridgeFees)
+        modified.safeSet("gasFee", gasFees)
+        modified.safeSet("bridgeFee", bridgeFees)
 
         val toAmount = parser.asLong(parser.value(payload, "route.estimated_amount_out"))
         if (toAmount != null && decimals != null) {
@@ -62,13 +89,11 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
             modified.safeSet("toAmountUSD", toAmountUSD)
         }
 
-        val payloadProcessor = SkipRoutePayloadProcessor(parser)
 //        TODO: Remove slippage.
 //        This is just hard coded in our params so we're keeping it to be at parity for now
 //        Fast follow squid -> skip migration project to removing max slippage
 //        because we already show the actual price impact.
         modified.safeSet("slippage", SLIPPAGE_PERCENT)
-        modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
 
         val errorCode = parser.value(payload, "code")
 //        if we have an error code, add the payload as a list of errors
@@ -76,6 +101,10 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
 //        TODO: replace errors with errorMessage once we finish migration
         if (errorCode != null) {
             modified.safeSet("errors", parser.asString(listOf(payload)))
+        } else {
+//          Only bother processing payload if there's no error
+            val payloadProcessor = SkipRoutePayloadProcessor(parser)
+            modified.safeSet("requestPayload", payloadProcessor.received(null, payload))
         }
         return modified
     }
