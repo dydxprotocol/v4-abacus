@@ -16,7 +16,7 @@ class AccountTransformer() {
     ): Map<String, Any>? {
         val modified = account?.mutable() ?: return null
         val childSubaccountNumber =
-            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+            MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
                 parser,
                 account,
                 subaccountNumber ?: 0,
@@ -48,13 +48,13 @@ class AccountTransformer() {
                 ),
             ) ?: mapOf()
 
-            val transferAmount = if (MarginModeCalculator.getShouldTransferCollateral(
+            val transferAmount = if (MarginCalculator.getShouldTransferCollateral(
                     parser,
                     subaccount = childSubaccount,
                     tradeInput = trade,
                 )
             ) {
-                MarginModeCalculator.calculateIsolatedMarginTransferAmount(
+                MarginCalculator.calculateIsolatedMarginTransferAmount(
                     parser,
                     trade,
                     market,
