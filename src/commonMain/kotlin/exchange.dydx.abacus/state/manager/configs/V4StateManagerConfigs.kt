@@ -91,18 +91,6 @@ class V4StateManagerConfigs(
         return "$squid$path"
     }
 
-    fun squidChains(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.chains"))
-        return "$squid$path"
-    }
-
-    fun squidToken(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.tokens"))
-        return "$squid$path"
-    }
-
     fun squidV2Assets(): String? {
         return "$squidV2Host/v2/sdk-info"
     }
@@ -111,7 +99,7 @@ class V4StateManagerConfigs(
         return "$squidV2Host/v2/route"
     }
 
-    fun nobleChainId(): String? {
+    fun nobleChainId(): String {
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
 
@@ -127,9 +115,7 @@ class V4StateManagerConfigs(
         return "$skipHost/v2/fungible/msgs_direct"
     }
 
-    fun nobleDenom(): String? {
-        return "uusdc"
-    }
+    val nobleDenom = "uusdc"
 
     private val skipHost: String
         get() {

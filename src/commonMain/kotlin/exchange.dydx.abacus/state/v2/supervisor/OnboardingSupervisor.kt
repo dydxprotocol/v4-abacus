@@ -299,7 +299,7 @@ internal class OnboardingSupervisor(
         val nobleAddress = accountAddress.toNobleAddress()
         val url = helper.configs.skipV2MsgsDirect()
         val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom()
+        val toToken = helper.configs.nobleDenom
         if (fromChain != null &&
             fromToken != null &&
             fromAmount != null && fromAmount > 0 &&
@@ -428,7 +428,7 @@ internal class OnboardingSupervisor(
         val nobleAddress = accountAddress.toNobleAddress()
         val url = helper.configs.squidV2Route()
         val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom()
+        val toToken = helper.configs.nobleDenom
         if (fromChain != null &&
             fromToken != null &&
             fromAmount != null && fromAmount > 0 &&
@@ -751,7 +751,7 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom()
+        val nobleToken = helper.configs.nobleDenom
         val toAddress = state?.input?.transfer?.address
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
         val fromAmount = if (usdcSize != null && usdcSize > gas) {
@@ -885,7 +885,7 @@ internal class OnboardingSupervisor(
         val url = helper.configs.squidV2Route()
         val fromAddress = accountAddress.toNobleAddress()
         val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
+        val fromToken = helper.configs.nobleDenom
         if (toChain != null &&
             toToken != null &&
             toAddress != null &&
@@ -946,7 +946,7 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val toChain = helper.configs.nobleChainId() ?: return
-        val toToken = helper.configs.nobleDenom() ?: return
+        val toToken = helper.configs.nobleDenom ?: return
         val toAddress = state?.input?.transfer?.address ?: return
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
@@ -1055,7 +1055,7 @@ internal class OnboardingSupervisor(
         val fromAddress = accountAddress.toNobleAddress() ?: return
 
         val fromChain = helper.configs.nobleChainId() ?: return
-        val fromToken = helper.configs.nobleDenom() ?: return
+        val fromToken = helper.configs.nobleDenom ?: return
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
@@ -1129,7 +1129,7 @@ internal class OnboardingSupervisor(
     private fun transferNobleBalance(accountAddress: String, amount: BigDecimal) {
         val url = helper.configs.squidRoute()
         val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
+        val fromToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -1382,7 +1382,7 @@ internal class OnboardingSupervisor(
     ) {
         val url = helper.configs.squidRoute()
         val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom()
+        val nobleToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -1490,7 +1490,7 @@ internal class OnboardingSupervisor(
 //      DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
         val url = helper.configs.skipV2MsgsDirect()
         val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom()
+        val nobleToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
