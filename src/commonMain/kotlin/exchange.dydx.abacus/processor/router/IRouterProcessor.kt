@@ -43,8 +43,14 @@ interface IRouterProcessor {
         transactionId: String?,
     ): Map<String, Any>?
 
+<<<<<<< HEAD
     fun getChainById(
         chainId: String
+=======
+    fun receivedTrack(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+>>>>>>> 5e48a619 (skip status 2: tracking idempotency)
     ): Map<String, Any>?
 
     fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>?

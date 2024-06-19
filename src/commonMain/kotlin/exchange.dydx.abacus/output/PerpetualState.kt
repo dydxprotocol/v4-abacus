@@ -33,6 +33,7 @@ data class PerpetualState(
     val input: Input?,
     val availableSubaccountNumbers: IList<Int>,
     val transferStatuses: IMap<String, TransferStatus>?,
+    val trackStatuses: IMap<String, Boolean>?,
     val restriction: UsageRestriction?,
     val launchIncentive: LaunchIncentive?,
     val compliance: Compliance?,
@@ -118,5 +119,9 @@ data class PerpetualState(
 
     fun transferStatus(hash: String): TransferStatus? {
         return transferStatuses?.get(hash)
+    }
+
+    fun trackStatus(hash: String): Boolean? {
+        return trackStatuses?.get(hash)
     }
 }

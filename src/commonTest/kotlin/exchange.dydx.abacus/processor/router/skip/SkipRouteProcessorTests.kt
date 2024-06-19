@@ -255,7 +255,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedCCTPDydxToNoble() {
         val payload = skipRouteMock.payloadCCTPDydxToNoble
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val jsonEncoder = JsonEncoder()
         val expectedMsg = mapOf(
             "sourcePort" to "transfer",

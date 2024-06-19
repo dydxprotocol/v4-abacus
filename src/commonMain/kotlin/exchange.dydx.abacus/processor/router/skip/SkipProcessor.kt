@@ -135,6 +135,14 @@ internal class SkipProcessor(
         return processor.received(existing, payload)
     }
 
+    override fun receivedTrack(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any>? {
+        val processor = SkipTrackProcessor(parser)
+        return processor.received(existing, payload)
+    }
+
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions

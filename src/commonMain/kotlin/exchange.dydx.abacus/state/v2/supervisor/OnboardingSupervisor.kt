@@ -32,6 +32,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.routerChains
 import exchange.dydx.abacus.state.model.routerTokens
+import exchange.dydx.abacus.state.model.routerTrack
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
@@ -613,7 +614,11 @@ internal class OnboardingSupervisor(
         isCctp: Boolean,
         requestId: String?,
     ) {
-        fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
+        if (stateMachine.useSkip) {
+            fetchTransferStatusSkip(hash, fromChainId)
+        } else {
+            fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
+        }
     }
 
     private fun simulateWithdrawal(
@@ -1154,6 +1159,48 @@ internal class OnboardingSupervisor(
                 } else {
                     Logger.e { "fetchTransferStatus error, code: $httpCode" }
                 }
+            }
+        }
+    }
+
+    private fun fetchTransferStatusSkip(
+        hash: String,
+        fromChainId: String?,
+    ) {
+        val oldState = stateMachine.state
+//        If transfer is not yet tracked, must track first before querying status
+        val isTracked = oldState?.trackStatuses?.get(hash) == true
+        if (!isTracked) {
+            trackTransferSkip(hash = hash, fromChainId = fromChainId)
+            return
+        }
+        val params: IMap<String, String> = iMapOf(
+            "tx_hash" to hash,
+            "chain_id" to fromChainId,
+        ).filterNotNull()
+        val url = helper.configs.skipV2Status()
+        helper.get(url, params) { _, response, httpCode, _ ->
+            if (response != null) {
+                update(stateMachine.squidStatus(response, hash), oldState)
+            } else {
+                Logger.e { "fetchTransferStatus error, code: $httpCode" }
+            }
+        }
+    }
+
+    private fun trackTransferSkip(
+        hash: String,
+        fromChainId: String?,
+    ) {
+        val body: IMap<String, String> = iMapOf(
+            "tx_hash" to hash,
+            "chain_id" to fromChainId,
+        ).filterNotNull()
+        val url = helper.configs.skipV2Track()
+        val oldState = stateMachine.state
+        helper.post(url, null, body.toJsonPrettyPrint()) { _, response, httpCode, _ ->
+            if (response != null) {
+                update(stateMachine.routerTrack(response), oldState)
             }
         }
     }
