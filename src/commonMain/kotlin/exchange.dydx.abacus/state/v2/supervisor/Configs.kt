@@ -55,7 +55,7 @@ data class MarketsConfigs(
             subscribeToCandles = true,
         )
         val forWeb = MarketsConfigs(
-            retrieveSparklines = false,
+            retrieveSparklines = true,
             retrieveCandles = false,
             retrieveHistoricalFundings = true,
             subscribeToMarkets = true,
