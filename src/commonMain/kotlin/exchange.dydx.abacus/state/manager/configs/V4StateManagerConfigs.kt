@@ -123,6 +123,14 @@ class V4StateManagerConfigs(
         return "$skipHost/v2/fungible/msgs_direct"
     }
 
+    fun skipV2Track(): String {
+        return "$skipHost/v2/tx/track"
+    }
+
+    fun skipV2Status(): String {
+        return "$skipHost/v2/tx/status"
+    }
+
     val nobleDenom = "uusdc"
 
     private val onlyTestnets: String

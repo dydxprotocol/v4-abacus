@@ -72,7 +72,16 @@ class TransferStatus(
                 existing.error != error ||
                 existing.squidTransactionStatus != squidTransactionStatus
             ) {
-                TransferStatus(status, gasStatus, axelarTransactionUrl, fromChainStatus, toChainStatus, routeStatuses, error, squidTransactionStatus)
+                TransferStatus(
+                    status = status,
+                    gasStatus = gasStatus,
+                    axelarTransactionUrl = axelarTransactionUrl,
+                    fromChainStatus = fromChainStatus,
+                    toChainStatus = toChainStatus,
+                    routeStatuses = routeStatuses,
+                    error = error,
+                    squidTransactionStatus = squidTransactionStatus,
+                )
             } else {
                 existing
             }
