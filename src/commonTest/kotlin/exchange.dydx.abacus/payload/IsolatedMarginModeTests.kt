@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.calculator.MarginModeCalculator
+import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
@@ -357,7 +357,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             "marketId" to "ARB-USD",
         )
 
-        val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(parser, account, 0, tradeInput)
+        val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(parser, account, 0, tradeInput)
         assertEquals(childSubaccountNumber, 256)
     }
 
@@ -365,7 +365,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     fun testGetShouldTransferCollateral() {
         assertTrue(
             "Should result in a transfer",
-            MarginModeCalculator.getShouldTransferCollateral(
+            MarginCalculator.getShouldTransferCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -388,7 +388,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If reduce only is true, should not transfer
         assertEquals(
             false,
-            MarginModeCalculator.getShouldTransferCollateral(
+            MarginCalculator.getShouldTransferCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -411,7 +411,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If postOrder is less than current, should not transfer
         assertEquals(
             false,
-            MarginModeCalculator.getShouldTransferCollateral(
+            MarginCalculator.getShouldTransferCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -436,7 +436,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     fun testGetTransferAmountFromTargetLeverage() {
         assertEquals(
             116.26514285714283,
-            MarginModeCalculator.getTransferAmountFromTargetLeverage(
+            MarginCalculator.getTransferAmountFromTargetLeverage(
                 price = 0.1465,
                 oraclePrice = 0.1211,
                 side = "BUY",
@@ -448,7 +448,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
 
         assertEquals(
             67.976,
-            MarginModeCalculator.getTransferAmountFromTargetLeverage(
+            MarginCalculator.getTransferAmountFromTargetLeverage(
                 price = 0.1465,
                 oraclePrice = 0.1211,
                 side = "SELL",

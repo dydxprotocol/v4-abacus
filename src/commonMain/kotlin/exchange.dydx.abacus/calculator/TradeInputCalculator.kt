@@ -148,7 +148,7 @@ internal class TradeInputCalculator(
         val modified = tradeInput?.mutable() ?: return null
         val marketId = parser.asString(tradeInput["marketId"])
         val existingMarginMode =
-            MarginModeCalculator.findExistingMarginMode(
+            MarginCalculator.findExistingMarginMode(
                 parser,
                 account,
                 marketId,
@@ -164,7 +164,7 @@ internal class TradeInputCalculator(
                 modified["targetLeverage"] = 1.0
             }
         } else {
-            val marketMarginMode = MarginModeCalculator.findMarketMarginMode(
+            val marketMarginMode = MarginCalculator.findMarketMarginMode(
                 parser,
                 parser.asMap(markets?.get(marketId)),
             )
@@ -1169,7 +1169,7 @@ internal class TradeInputCalculator(
         account: Map<String, Any>?,
         subaccount: Map<String, Any>?
     ): Map<String, Any>? {
-        val selectableMarginMode = MarginModeCalculator.selectableMarginModes(
+        val selectableMarginMode = MarginCalculator.selectableMarginModes(
             parser = parser,
             account = account,
             market = market,
@@ -1775,13 +1775,13 @@ internal class TradeInputCalculator(
         }
 
         // Calculate isolated margin transfer amount
-        if (MarginModeCalculator.getShouldTransferCollateral(
+        if (MarginCalculator.getShouldTransferCollateral(
                 parser,
                 subaccount,
                 trade,
             )
         ) {
-            val isolatedMarginTransferAmount = MarginModeCalculator.calculateIsolatedMarginTransferAmount(
+            val isolatedMarginTransferAmount = MarginCalculator.calculateIsolatedMarginTransferAmount(
                 parser,
                 trade,
                 market,

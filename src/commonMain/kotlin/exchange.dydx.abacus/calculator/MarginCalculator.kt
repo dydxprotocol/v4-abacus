@@ -10,7 +10,7 @@ import kollections.iListOf
 import kotlin.math.max
 import kotlin.math.min
 
-internal object MarginModeCalculator {
+internal object MarginCalculator {
     fun findExistingPosition(
         parser: ParserProtocol,
         account: Map<String, Any>?,
