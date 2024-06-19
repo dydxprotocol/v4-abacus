@@ -51,8 +51,8 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
     ): Map<String, Any> {
         val txType = getTxType(payload)
         val modified = transform(existing, payload, keyMap)
-        val data = modified.get("data")
-        if (data != null && txType == TxType.EVM) {
+        val data = modified["data"] ?: return modified
+        if (txType == TxType.EVM) {
 //            skip does not provide the 0x prefix. it's not required but is good for clarity
 //            and keeps our typing honest (we typecast this value to evmAddress in web)
             modified.safeSet("data", "0x$data")
