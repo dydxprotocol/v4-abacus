@@ -1250,10 +1250,12 @@ internal class OnboardingSupervisor(
 
     @Throws(Exception::class)
     fun subaccountTransferPayload(subaccountNumber: Int?): HumanReadableSubaccountTransferPayload {
-        val transfer = stateMachine.state?.input?.transfer ?: throw Exception("Transfer is null")
-        val size = transfer.size?.size ?: throw Exception("size is null")
-        val destinationAddress = transfer.address ?: throw Exception("destination address is null")
-        val accountAddress = helper.parser.asString(helper.parser.value(stateMachine.wallet, "walletAddress")) ?: throw Exception("account address is null")
+        val transfer = stateMachine.state?.input?.transfer ?: error("Transfer is null")
+        val size = transfer.size?.size ?: error("size is null")
+        val destinationAddress = transfer.address ?: error("destination address is null")
+        val accountAddress = helper.parser.asString(
+            helper.parser.value(stateMachine.wallet, "walletAddress"),
+        ) ?: error("account address is null")
 
         return HumanReadableSubaccountTransferPayload(
             senderAddress = accountAddress,
