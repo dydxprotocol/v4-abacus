@@ -631,7 +631,7 @@ internal class SubaccountSupervisor(
                 subaccountNumber = subaccountNumber,
                 amount = transferAmount,
                 destinationAddress = accountAddress,
-                destinationSubaccountNumber =  childSubaccountNumber,
+                destinationSubaccountNumber = childSubaccountNumber,
             )
         }
 
@@ -1368,7 +1368,7 @@ internal class SubaccountSupervisor(
             subaccountNumber = sourceSubaccountNumber,
             amount,
             destinationAddress = accountAddress,
-            destinationSubaccountNumber =  recipientSubaccountNumber,
+            destinationSubaccountNumber = recipientSubaccountNumber,
         )
     }
 
@@ -1530,8 +1530,8 @@ internal class SubaccountSupervisor(
                 senderAddress = accountAddress,
                 subaccountNumber = childSubaccountNumber,
                 amount = amountToTransfer,
-                destinationAddress =  accountAddress,
-                destinationSubaccountNumber =  subaccountNumber,
+                destinationAddress = accountAddress,
+                destinationSubaccountNumber = subaccountNumber,
             )
 
             val transferPayloadString = Json.encodeToString(transferPayload)
