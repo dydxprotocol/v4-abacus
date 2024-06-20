@@ -627,10 +627,11 @@ internal class SubaccountSupervisor(
             val transferAmount = isolatedMarginTransferAmount.abs().toString()
 
             return HumanReadableSubaccountTransferPayload(
-                subaccountNumber,
-                transferAmount,
-                accountAddress,
-                childSubaccountNumber,
+                senderAddress = accountAddress,
+                subaccountNumber = subaccountNumber,
+                amount = transferAmount,
+                destinationAddress = accountAddress,
+                destinationSubaccountNumber = childSubaccountNumber,
             )
         }
 
@@ -1335,10 +1336,11 @@ internal class SubaccountSupervisor(
         val destinationAddress = transfer.address ?: throw Exception("destination address is null")
 
         return HumanReadableSubaccountTransferPayload(
+            senderAddress = accountAddress,
             subaccountNumber,
-            size,
+            amount = size,
             destinationAddress,
-            0,
+            destinationSubaccountNumber = 0,
         )
     }
 
@@ -1362,10 +1364,11 @@ internal class SubaccountSupervisor(
         }
 
         return HumanReadableSubaccountTransferPayload(
-            sourceSubaccountNumber,
+            senderAddress = accountAddress,
+            subaccountNumber = sourceSubaccountNumber,
             amount,
-            accountAddress,
-            recipientSubaccountNumber,
+            destinationAddress = accountAddress,
+            destinationSubaccountNumber = recipientSubaccountNumber,
         )
     }
 
@@ -1524,10 +1527,11 @@ internal class SubaccountSupervisor(
             }
 
             val transferPayload = HumanReadableSubaccountTransferPayload(
-                childSubaccountNumber,
-                amountToTransfer,
-                accountAddress,
-                subaccountNumber,
+                senderAddress = accountAddress,
+                subaccountNumber = childSubaccountNumber,
+                amount = amountToTransfer,
+                destinationAddress = accountAddress,
+                destinationSubaccountNumber = subaccountNumber,
             )
 
             val transferPayloadString = Json.encodeToString(transferPayload)
