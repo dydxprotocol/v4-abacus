@@ -85,6 +85,7 @@ import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.GEO_POLLING_DURATION_SECONDS
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
@@ -718,9 +719,5 @@ internal class StateManagerAdaptorV2(
             )
         }
         triggerCompliance(ComplianceAction.CONNECT, null)
-    }
-
-    companion object {
-        private const val GEO_POLLING_DURATION_SECONDS = 10.0
     }
 }

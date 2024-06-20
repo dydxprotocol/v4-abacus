@@ -20,3 +20,6 @@ internal const val CONDITIONAL_ORDER_FLAGS = 32
 
 // Asset Constants
 internal const val NATIVE_TOKEN_DEFAULT_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+
+// Polling durations
+internal const val GEO_POLLING_DURATION_SECONDS = 10.0

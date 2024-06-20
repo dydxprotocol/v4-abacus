@@ -821,8 +821,7 @@ internal open class AccountSupervisor(
             if (callback != null) {
                 callback(true, null, null)
             }
-        }
-        if (callback != null) {
+        } else if (callback != null) {
             callback(false, V4TransactionErrors.error(null, "No account address"), null)
         }
     }
