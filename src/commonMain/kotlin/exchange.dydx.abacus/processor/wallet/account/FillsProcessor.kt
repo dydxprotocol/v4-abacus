@@ -7,9 +7,17 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 internal class FillsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = FillProcessor(parser = parser)
 
-    override fun received(existing: List<Any>?, payload: List<Any>): List<Any>? {
+    fun received(existing: List<Any>?, payload: List<Any>, subaccountNumber: Int): List<Any>? {
         val new = payload.mapNotNull { eachPayload ->
-            parser.asNativeMap(eachPayload)?.let { eachPayloadData -> itemProcessor.received(null, eachPayloadData) }
+            parser.asNativeMap(eachPayload)?.let { eachPayloadData ->
+                val modified = eachPayloadData.toMutableMap()
+
+                itemProcessor.received(
+                    null,
+                    modified,
+                    subaccountNumber,
+                )
+            }
         }
         existing?.let {
             return mergeWithIds(new, existing) { data -> parser.asNativeMap(data)?.let { parser.asString(it["id"]) } }

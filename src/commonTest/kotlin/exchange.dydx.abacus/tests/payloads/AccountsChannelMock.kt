@@ -1784,11 +1784,11 @@ internal class AccountsChannelMock {
                     "goodTilBlock":"5837"
                  }
               ],
-                "tradingReward": {
-                    "tradingReward": "0.02",
-                    "createdAtHeight": "2422",
-                    "createdAt": "2023-08-09T20:00:00.000Z"
-                }
+              "tradingReward": {
+                "tradingReward": "0.02",
+                "createdAtHeight": "2422",
+                "createdAt": "2023-08-09T20:00:00.000Z"
+              }
            }
         }
     """.trimIndent()
@@ -3380,6 +3380,338 @@ internal class AccountsChannelMock {
                  ]
               }
            ]
+        }
+    """.trimIndent()
+
+    internal val v4_parent_subaccounts_partially_filled_and_canceled_orders = """
+        {
+          "type": "channel_batch_data",
+          "connection_id": "4eb5c0e7-de17-4a5c-beaa-17b674293b69",
+          "message_id": 100,
+          "id":"dydx1v7xhjjgyyhcjtetrm6f2g0r5gcax9zs380yv6q/0",
+          "channel": "v4_parent_subaccounts",
+          "version": "3.0.0",
+          "contents": [
+            {
+              "fills": [
+                    {
+                      "id": "7ebd919a-33e0-56ba-bf43-f0768eed90ab",
+                      "fee": "0.01668",
+                      "side": "BUY",
+                      "size": "16",
+                      "type": "LIMIT",
+                      "price": "2.085",
+                      "eventId": "00e0249e0000000200000002",
+                      "orderId": "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7",
+                      "createdAt": "2024-06-17T16:29:01.795Z",
+                      "liquidity": "TAKER",
+                      "clobPairId": "26",
+                      "quoteAmount": "33.36",
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689438",
+                      "transactionHash": "AEFB668CC357F5A1DCCE3A3B34CB6ACC99406058CA296C91DE534BAED0511250",
+                      "ticker": "LDO-USD"
+                    },
+                    {
+                      "id": "aa394a06-478b-5c55-960e-f667a7871794",
+                      "fee": "0.017152",
+                      "side": "BUY",
+                      "size": "16",
+                      "type": "LIMIT",
+                      "price": "2.144",
+                      "eventId": "00e026ba0000000200000002",
+                      "orderId": "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c",
+                      "createdAt": "2024-06-17T16:40:57.007Z",
+                      "liquidity": "TAKER",
+                      "clobPairId": "26",
+                      "quoteAmount": "34.304",
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689438",
+                      "transactionHash": "E16EFED4E63D2D9BD4AAEC4F1C459EF04CB7320013DF5E4F5CCCFA98F8ABBCF6",
+                      "ticker": "LDO-USD"
+                    }
+              ],
+              "blockHeight": "14689438",
+              "orders": [
+                    {
+                      "id": "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7",
+                      "side": "BUY",
+                      "size": "30",
+                      "type": "LIMIT",
+                      "price": "2.085",
+                      "status": "OPEN",
+                      "clientId": "1736188335",
+                      "updatedAt": "2024-06-17T16:29:01.795Z",
+                      "clobPairId": "26",
+                      "orderFlags": "64",
+                      "reduceOnly": false,
+                      "timeInForce": "GTT",
+                      "totalFilled": "16",
+                      "goodTilBlock": null,
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "triggerPrice": null,
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689437",
+                      "updatedAtHeight": "14689438",
+                      "goodTilBlockTime": "2024-07-15T16:28:56.000Z",
+                      "postOnly": false,
+                      "ticker": "LDO-USD"
+                    },
+                    {
+                      "id": "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c",
+                      "side": "BUY",
+                      "size": "30",
+                      "type": "LIMIT",
+                      "price": "2.144",
+                      "status": "CANCELED",
+                      "clientId": "1138384266",
+                      "updatedAt": "2024-06-17T16:40:57.007Z",
+                      "clobPairId": "26",
+                      "orderFlags": "0",
+                      "reduceOnly": false,
+                      "timeInForce": "IOC",
+                      "totalFilled": "16",
+                      "goodTilBlock": "14689446",
+                      "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                      "triggerPrice": null,
+                      "clientMetadata": "0",
+                      "createdAtHeight": "14689437",
+                      "updatedAtHeight": "14689438",
+                      "goodTilBlockTime": null,
+                      "postOnly": false,
+                      "ticker": "LDO-USD"
+                    }
+              ]
+            }
+          ],
+          "subaccountNumber": 0
+        }
+    """.trimIndent()
+
+    internal val v4_parent_subaccounts_subscribed_with_trigger_orders_and_open_positions = """
+        {
+            "type": "subscribed",
+            "connection_id": "30017867-db65-4e45-a5c2-554b7b7604e1",
+            "message_id": 2,
+            "channel": "v4_parent_subaccounts",
+            "id": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
+            "contents": {
+                "subaccount": {
+                    "address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "parentSubaccountNumber": 0,
+                    "equity": "304.024595538",
+                    "freeCollateral": "199.8930868412",
+                    "childSubaccounts": [
+                        {
+                            "address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                            "subaccountNumber": 0,
+                            "equity": "277.216100822",
+                            "freeCollateral": "175.7565800968",
+                            "openPerpetualPositions": {
+                                "ETH-USD": {
+                                    "market": "ETH-USD",
+                                    "status": "OPEN",
+                                    "side": "LONG",
+                                    "size": "10",
+                                    "maxSize": "10",
+                                    "entryPrice": "2.078",
+                                    "exitPrice": null,
+                                    "realizedPnl": "0",
+                                    "unrealizedPnl": "-0.55451457",
+                                    "createdAt": "2024-06-18T14:52:26.909Z",
+                                    "createdAtHeight": "14754316",
+                                    "closedAt": null,
+                                    "sumOpen": "10",
+                                    "sumClose": "0",
+                                    "netFunding": "0",
+                                    "subaccountNumber": 0
+                                },
+                                "BTC-USD": {
+                                    "market": "BTC-USD",
+                                    "status": "OPEN",
+                                    "side": "LONG",
+                                    "size": "7.2",
+                                    "maxSize": "7.2",
+                                    "entryPrice": "149.94944444444444444444",
+                                    "exitPrice": null,
+                                    "realizedPnl": "0",
+                                    "unrealizedPnl": "-105.491763607999999999968",
+                                    "createdAt": "2024-06-12T00:45:53.637Z",
+                                    "createdAtHeight": "14292826",
+                                    "closedAt": null,
+                                    "sumOpen": "7.2",
+                                    "sumClose": "0",
+                                    "netFunding": "0",
+                                    "subaccountNumber": 0
+                                },
+                                "APE-USD": {
+                                    "market": "APE-USD",
+                                    "status": "OPEN",
+                                    "side": "LONG",
+                                    "size": "2",
+                                    "maxSize": "2",
+                                    "entryPrice": "13.385",
+                                    "exitPrice": null,
+                                    "realizedPnl": "0",
+                                    "unrealizedPnl": "-0.050120284",
+                                    "createdAt": "2024-06-18T14:58:11.667Z",
+                                    "createdAtHeight": "14754597",
+                                    "closedAt": null,
+                                    "sumOpen": "2",
+                                    "sumClose": "0",
+                                    "netFunding": "0",
+                                    "subaccountNumber": 128
+                                }
+                            }
+                        }
+                    ]
+                },
+                "orders": [
+                    {
+                        "id": "f581f56c-9f1b-54e0-97d6-5f934dd0eb67",
+                        "subaccountId": "1849cc9b-24fa-51f8-842e-db6d50a1004a",
+                        "clientId": "1567250430",
+                        "clobPairId": "2",
+                        "side": "SELL",
+                        "size": "2",
+                        "totalFilled": "0",
+                        "price": "11.776",
+                        "type": "TAKE_PROFIT",
+                        "status": "UNTRIGGERED",
+                        "timeInForce": "IOC",
+                        "reduceOnly": true,
+                        "orderFlags": "32",
+                        "goodTilBlockTime": "2024-09-16T14:58:32.000Z",
+                        "createdAtHeight": "14754610",
+                        "clientMetadata": "1",
+                        "triggerPrice": "14.72",
+                        "updatedAt": "2024-06-18T14:58:31.445Z",
+                        "updatedAtHeight": "14754610",
+                        "postOnly": false,
+                        "ticker": "APE-USD",
+                        "subaccountNumber": 0
+                    },
+                    {
+                        "id": "aeb40307-861a-52c1-9568-2a95468e8687",
+                        "subaccountId": "d7cff466-fd84-5dec-81ce-b89b47cfc342",
+                        "clientId": "1579898688",
+                        "clobPairId": "26",
+                        "side": "SELL",
+                        "size": "10",
+                        "totalFilled": "0",
+                        "price": "1.496",
+                        "type": "STOP_LIMIT",
+                        "status": "UNTRIGGERED",
+                        "timeInForce": "IOC",
+                        "reduceOnly": true,
+                        "orderFlags": "32",
+                        "goodTilBlockTime": "2024-09-16T14:52:56.000Z",
+                        "createdAtHeight": "14754340",
+                        "clientMetadata": "1",
+                        "triggerPrice": "1.871",
+                        "updatedAt": "2024-06-18T14:52:55.687Z",
+                        "updatedAtHeight": "14754340",
+                        "postOnly": false,
+                        "ticker": "ETH-USD",
+                        "subaccountNumber": 0
+                    },
+                    {
+                        "id": "832db39d-0397-5793-b8e6-5f87e6540bcc",
+                        "subaccountId": "d7cff466-fd84-5dec-81ce-b89b47cfc342",
+                        "clientId": "1440113412",
+                        "clobPairId": "5",
+                        "side": "SELL",
+                        "size": "7.2",
+                        "totalFilled": "0",
+                        "price": "122.27",
+                        "type": "TAKE_PROFIT",
+                        "status": "UNTRIGGERED",
+                        "timeInForce": "IOC",
+                        "reduceOnly": true,
+                        "orderFlags": "32",
+                        "goodTilBlockTime": "2024-09-16T14:52:45.000Z",
+                        "createdAtHeight": "14754332",
+                        "clientMetadata": "1",
+                        "triggerPrice": "152.84",
+                        "updatedAt": "2024-06-18T14:52:45.635Z",
+                        "updatedAtHeight": "14754332",
+                        "postOnly": false,
+                        "ticker": "BTC-USD",
+                        "subaccountNumber": 0
+                    }
+                ],
+                "blockHeight": "14754614"
+            }
+        }
+    """.trimIndent()
+
+    internal val v4_parent_subaccounts_batched_closed_and_flipped_positions = """
+        {
+          "type": "channel_batch_data",
+          "connection_id": "30017867-db65-4e45-a5c2-554b7b7604e1",
+          "message_id": 3,
+          "id": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm/0",
+          "channel": "v4_parent_subaccounts",
+          "version": "3.0.0",
+          "contents": [
+            {
+              "perpetualPositions": [
+                {
+                    "address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                    "subaccountNumber": 0,
+                    "positionId": "a5946d78-fe73-5c3b-ad2f-88c07b3bf5be",
+                    "market": "APE-USD",
+                    "side": "LONG",
+                    "status": "CLOSED",
+                    "size": "0",
+                    "maxSize": "2",
+                    "netFunding": "0",
+                    "entryPrice": "13.385",
+                    "exitPrice": null,
+                    "sumOpen": "2",
+                    "sumClose": "0",
+                    "realizedPnl": "0",
+                    "unrealizedPnl": "0"
+                },
+                {
+                  "address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                  "subaccountNumber": 0,
+                  "positionId": "2fdb618b-289c-51a9-83ce-cdfe4c622d62",
+                  "market": "ETH-USD",
+                  "side": "LONG",
+                  "status": "CLOSED",
+                  "size": "0",
+                  "maxSize": "10",
+                  "netFunding": "0",
+                  "entryPrice": "2.078",
+                  "exitPrice": null,
+                  "sumOpen": "10",
+                  "sumClose": "0",
+                  "realizedPnl": "0",
+                  "unrealizedPnl": "0"
+                },
+                {
+                  "address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
+                  "subaccountNumber": 0,
+                  "positionId": "82cd3212-2f93-5df2-bb41-90822d024766",
+                  "market": "ETH-USD",
+                  "side": "SHORT",
+                  "status": "OPEN",
+                  "size": "-2",
+                  "maxSize": "-2",
+                  "netFunding": "0",
+                  "entryPrice": "0",
+                  "exitPrice": null,
+                  "sumOpen": "0",
+                  "sumClose": "0",
+                  "realizedPnl": "0",
+                  "unrealizedPnl": "-4.129295848"
+                }
+              ]
+            }
+          ]
         }
     """.trimIndent()
 

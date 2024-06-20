@@ -6,9 +6,11 @@ import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.SharedRouterProcessor
+import exchange.dydx.abacus.processor.router.squid.SquidStatusProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -46,9 +48,12 @@ internal class SkipProcessor(
             modified = it.mutable()
         }
         val chainOptions = chainOptions()
-
         internalState.chains = chainOptions
         val selectedChainId = defaultChainId()
+//        We diff based on map values in order to determine whether to return new state
+//        Until we diff on `internalState` changes we need to update old map state as well
+        modified.safeSet("transfer.depositOptions.chains", chainOptions)
+        modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
         modified.safeSet("transfer.chain", selectedChainId)
         selectedChainId?.let {
             internalState.chainResources = chainResources(chainId = selectedChainId)
@@ -117,7 +122,6 @@ internal class SkipProcessor(
         return receivedRoute(existing, payload, requestId)
     }
 
-//    TODO: deduplicate this from squid
     override fun usdcAmount(data: Map<String, Any>): Double? {
         var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
         toAmountUSD = toAmountUSD?.replace(",", "")
@@ -131,30 +135,45 @@ internal class SkipProcessor(
         payload: Map<String, Any>,
         transactionId: String?,
     ): Map<String, Any>? {
-        throw NotImplementedError("receivedStatus is not implemented in SkipProcessor!")
+//        using squid status processor until we implement it
+//        this lets us track our tx so we can more easily tell if tx are succeeding or not in QA
+        val processor = SquidStatusProcessor(parser, transactionId)
+        return processor.received(existing, payload)
     }
 
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
         modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
+        modified.safeSet("transfer.depositOptions.tokens", tokenOptions)
+        modified.safeSet("transfer.withdrawalOptions.tokens", tokenOptions)
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
+    private fun getChainById(chainId: String): Map<String, Any>? {
+        return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId })
+    }
+
     override fun defaultChainId(): String? {
-        val selectedChain = parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == "1" })
+//        eth mainnet chainId is 1
+        val selectedChain = getChainById("1") ?: parser.asNativeMap(this.chains?.firstOrNull())
 
         return parser.asString(selectedChain?.get("chain_id"))
     }
 
-    override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
-        val tokensList = filteredTokens(selectedChainId)
+    override fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>? {
+        val tokensList = filteredTokens(chainId)
         tokensList?.find {
-            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress
+            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenDenom
         }?.let {
-            return parser.asString(parser.asNativeMap(it)?.get("symbol"))
+            return parser.asNativeMap(it)
         }
         return null
+    }
+
+    override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
+        val token = getTokenByDenomAndChainId(tokenAddress, selectedChainId) ?: return null
+        return parser.asString(token.get("symbol"))
     }
 
     override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
@@ -170,7 +189,31 @@ internal class SkipProcessor(
     override fun filteredTokens(chainId: String?): List<Any>? {
         val chainIdToUse = chainId ?: defaultChainId()
         val assetsMapForChainId = parser.asNativeMap(this.skipTokens?.get(chainIdToUse))
-        return parser.asNativeList(assetsMapForChainId?.get("assets"))
+        val assetsForChainId = parser.asNativeList(assetsMapForChainId?.get("assets"))
+//      coinbase exchange chainId is noble-1. we only allow usdc withdrawals from it
+        if (chainId === exchangeDestinationChainId) {
+            return assetsForChainId?.filter {
+                parser.asString(parser.asNativeMap(it)?.get("denom")) == "uusdc"
+            }
+        }
+
+        val filteredTokens = mutableListOf<Map<String, Any>>()
+//        we have to replace skip's {chain-name}-native naming bc it doesn't play well with
+//        any of our SDKs.
+//        however, their {chain-name}-native denom naming is required for their API
+//        so we need to store both values
+        assetsForChainId?.forEach {
+            val token = parser.asNativeMap(it)?.toMutableMap()
+            if (token != null) {
+                val denom = parser.asString(token["denom"])
+                if (denom?.endsWith("native") == true) {
+                    token["skipDenom"] = denom
+                    token["denom"] = NATIVE_TOKEN_DEFAULT_ADDRESS
+                }
+                filteredTokens.add(token.toMap())
+            }
+        }
+        return filteredTokens
     }
 
     override fun defaultTokenAddress(chainId: String?): String? {

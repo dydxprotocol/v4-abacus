@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.calculator.MarginModeCalculator
+import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
@@ -29,7 +29,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.historicalPnl)
     changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
-    val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
         parser,
         account,
         subaccountNumber ?: 0,

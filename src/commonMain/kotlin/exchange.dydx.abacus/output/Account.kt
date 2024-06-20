@@ -876,6 +876,8 @@ data class SubaccountFill(
     val id: String,
     val marketId: String,
     val orderId: String?,
+    val subaccountNumber: Int?,
+    val marginMode: MarginMode?,
     val side: OrderSide,
     val type: OrderType,
     val liquidity: FillLiquidity,
@@ -897,6 +899,8 @@ data class SubaccountFill(
                 val id = parser.asString(data["id"])
                 val marketId = parser.asString(data["marketId"])
                 val orderId = parser.asString(data["orderId"])
+                val subaccountNumber = parser.asInt(data["subaccountNumber"])
+                val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
                 val sideString = parser.asString(data["side"])
                 val side = if (sideString != null) OrderSide.invoke(sideString) else null
                 val liquidityString = parser.asString(data["liquidity"])
@@ -918,6 +922,8 @@ data class SubaccountFill(
                     if (existing?.id != id ||
                         existing.marketId != marketId ||
                         existing.orderId != orderId ||
+                        existing.subaccountNumber != subaccountNumber ||
+                        existing.marginMode != marginMode ||
                         existing.side !== side ||
                         existing.type !== type ||
                         existing.liquidity !== liquidity ||
@@ -930,6 +936,8 @@ data class SubaccountFill(
                             id,
                             marketId,
                             orderId,
+                            subaccountNumber,
+                            marginMode,
                             side,
                             type,
                             liquidity,

@@ -1,8 +1,10 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.safeSet
 
 internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
@@ -59,13 +61,24 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "SELL" to "Sell",
     )
 
-    override fun received(
+    internal fun received(
         existing: Map<String, Any>?,
-        payload: Map<String, Any>
+        payload: Map<String, Any>,
+        subaccountNumber: Int,
     ): Map<String, Any> {
         val fill = transform(existing, payload, fillKeyMap)
         if (fill["marketId"] == null) {
             fill.safeSet("marketId", parser.asString(payload["ticker"]))
+        }
+
+        val fillSubaccountNumber = parser.asInt(payload["subaccountNumber"])
+
+        if (fillSubaccountNumber == null) {
+            fill.safeSet("subaccountNumber", subaccountNumber)
+        }
+
+        parser.asInt(fill["subaccountNumber"])?.run {
+            fill.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
         }
 
         fill.safeSet(

@@ -43,7 +43,9 @@ import exchange.dydx.abacus.utils.isAddressValid
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
+import exchange.dydx.abacus.utils.toNeutronAddress
 import exchange.dydx.abacus.utils.toNobleAddress
+import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
 import kotlinx.serialization.encodeToString
@@ -210,48 +212,51 @@ internal class OnboardingSupervisor(
         }
     }
 
-    @Suppress("UnusedPrivateMember", "ForbiddenComment")
     private fun retrieveSkipDepositRouteNonCCTP(
         state: PerpetualState?,
         accountAddress: String,
         sourceAddress: String,
         subaccountNumber: Int?,
     ) {
-//      We have a lot of duplicate code for these deposit/withdrawal route calls
-//      It's easier to dedupe now that he url is the same and only the args differ
-//      TODO: Consider creating generateArgs fun to reduce code duplication
-        val fromChain = state?.input?.transfer?.chain
-        val fromToken = state?.input?.transfer?.token
-        val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
+        val fromChain = state?.input?.transfer?.chain ?: return
+        val fromTokenDenom = state.input.transfer.token ?: return
+        val fromTokenSkipDenom = stateMachine.routerProcessor.getTokenByDenomAndChainId(
+            tokenDenom = fromTokenDenom,
+            chainId = fromChain,
+        )?.get("skipDenom")
+//        Denoms for tokens on their native chains are returned from the skip API in an incompatible
+//        format for our frontend SDKs but are required by the skip API for other API calls.
+//        So we prefer the skimDenom and default to the regular denom for API calls.
+        val fromTokenDenomForAPIUse = fromTokenSkipDenom ?: fromTokenDenom
+        val fromAmount = helper.parser.asDecimal(state.input.transfer.size?.size)?.let {
             val decimals =
-                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
+                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromTokenDenom, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
                 null
             }
         }
-        val chainId = helper.environment.dydxChainId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
+        val osmosisAddress = accountAddress.toOsmosisAddress() ?: return
+        val nobleAddress = accountAddress.toNobleAddress() ?: return
+        val osmosisChainId = helper.configs.osmosisChainId() ?: return
+        val nobleChainId = helper.configs.nobleChainId()
+        val chainId = helper.environment.dydxChainId ?: return
+        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
+        val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        if (fromChain != null &&
-            fromToken != null &&
-            fromAmount != null && fromAmount > 0 &&
-            fromAmountString != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            url != null
-        ) {
+        if (fromAmount != null && fromAmount > 0) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
-                "source_asset_denom" to fromToken,
+                "source_asset_denom" to fromTokenDenomForAPIUse,
                 "source_asset_chain_id" to fromChain,
                 "dest_asset_denom" to nativeChainUSDCDenom,
                 "dest_asset_chain_id" to chainId,
                 "chain_ids_to_addresses" to mapOf(
-                    "fromChain" to sourceAddress,
-                    "toChain" to accountAddress,
+                    fromChain to sourceAddress,
+                    osmosisChainId to osmosisAddress,
+                    nobleChainId to nobleAddress,
+                    chainId to accountAddress,
                 ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             )
@@ -299,7 +304,7 @@ internal class OnboardingSupervisor(
         val nobleAddress = accountAddress.toNobleAddress()
         val url = helper.configs.skipV2MsgsDirect()
         val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom()
+        val toToken = helper.configs.nobleDenom
         if (fromChain != null &&
             fromToken != null &&
             fromAmount != null && fromAmount > 0 &&
@@ -428,7 +433,7 @@ internal class OnboardingSupervisor(
         val nobleAddress = accountAddress.toNobleAddress()
         val url = helper.configs.squidV2Route()
         val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom()
+        val toToken = helper.configs.nobleDenom
         if (fromChain != null &&
             fromToken != null &&
             fromAmount != null && fromAmount > 0 &&
@@ -751,7 +756,7 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom()
+        val nobleToken = helper.configs.nobleDenom
         val toAddress = state?.input?.transfer?.address
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
         val fromAmount = if (usdcSize != null && usdcSize > gas) {
@@ -885,7 +890,7 @@ internal class OnboardingSupervisor(
         val url = helper.configs.squidV2Route()
         val fromAddress = accountAddress.toNobleAddress()
         val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
+        val fromToken = helper.configs.nobleDenom
         if (toChain != null &&
             toToken != null &&
             toAddress != null &&
@@ -946,7 +951,7 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val toChain = helper.configs.nobleChainId() ?: return
-        val toToken = helper.configs.nobleDenom() ?: return
+        val toToken = helper.configs.nobleDenom ?: return
         val toAddress = state?.input?.transfer?.address ?: return
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
@@ -995,7 +1000,17 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val toChain = state?.input?.transfer?.chain ?: return
-        val toToken = state?.input?.transfer?.token ?: return
+        val toAddress = state?.input?.transfer?.address
+        val toTokenDenom = state.input.transfer.token ?: return
+        val toTokenSkipDenom = stateMachine.routerProcessor.getTokenByDenomAndChainId(
+            tokenDenom = toTokenDenom,
+            chainId = toChain,
+        )?.get("skipDenom")
+//        Denoms for tokens on their native chains are returned from the skip API in an incompatible
+//        format for our frontend SDKs but are required by the skip API for other API calls.
+//        So we prefer the skimDenom and default to the regular denom for API calls.
+        val toTokenDenomForAPIUse = toTokenSkipDenom ?: toTokenDenom
+
         val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
@@ -1003,6 +1018,9 @@ internal class OnboardingSupervisor(
             return
         }
         if (fromAmount <= 0) return
+        val osmosisChainId = helper.configs.osmosisChainId()
+        val nobleChainId = helper.configs.nobleChainId()
+        val neutronChainId = helper.configs.neutronChainId()
         val fromChain = helper.environment.dydxChainId ?: return
         val fromToken = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
@@ -1011,12 +1029,17 @@ internal class OnboardingSupervisor(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
             "source_asset_chain_id" to fromChain,
-            "dest_asset_denom" to toToken,
+            "dest_asset_denom" to toTokenDenomForAPIUse,
             "dest_asset_chain_id" to toChain,
             "chain_ids_to_addresses" to mapOf(
-                fromChain to sourceAddress,
-                toChain to accountAddress,
+                fromChain to accountAddress,
+                osmosisChainId to accountAddress.toOsmosisAddress(),
+                nobleChainId to accountAddress.toNobleAddress(),
+                neutronChainId to accountAddress.toNeutronAddress(),
+                toChain to toAddress,
             ),
+            "allow_multi_tx" to true,
+            "allow_unsafe" to true,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
         )
         val header = iMapOf(
@@ -1055,7 +1078,7 @@ internal class OnboardingSupervisor(
         val fromAddress = accountAddress.toNobleAddress() ?: return
 
         val fromChain = helper.configs.nobleChainId() ?: return
-        val fromToken = helper.configs.nobleDenom() ?: return
+        val fromToken = helper.configs.nobleDenom ?: return
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
@@ -1129,7 +1152,7 @@ internal class OnboardingSupervisor(
     private fun transferNobleBalance(accountAddress: String, amount: BigDecimal) {
         val url = helper.configs.squidRoute()
         val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
+        val fromToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -1382,7 +1405,7 @@ internal class OnboardingSupervisor(
     ) {
         val url = helper.configs.squidRoute()
         val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom()
+        val nobleToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -1490,7 +1513,7 @@ internal class OnboardingSupervisor(
 //      DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
         val url = helper.configs.skipV2MsgsDirect()
         val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom()
+        val nobleToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom

@@ -24,6 +24,29 @@ fun String.toNobleAddress(): String? {
     }
 }
 
+fun String.toOsmosisAddress(): String? {
+    try {
+        val (humanReadablePart, data) = Bech32.decode(this)
+        if (humanReadablePart != "dydx") {
+            return null
+        }
+        return Bech32.encode("osmo", data)
+    } catch (e: Exception) {
+        return null
+    }
+}
+fun String.toNeutronAddress(): String? {
+    try {
+        val (humanReadablePart, data) = Bech32.decode(this)
+        if (humanReadablePart != "dydx") {
+            return null
+        }
+        return Bech32.encode("neutron1", data)
+    } catch (e: Exception) {
+        return null
+    }
+}
+
 fun String.toDydxAddress(): String? {
     try {
         val (humanReadablePart, data) = Bech32.decode(this)
@@ -34,4 +57,10 @@ fun String.toDydxAddress(): String? {
     } catch (e: Exception) {
         return null
     }
+}
+
+fun String.toCamelCase(): String {
+    return this.split("_", "-")
+        .mapIndexed { index, s -> if (index == 0) s.lowercase() else s.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } }
+        .joinToString("")
 }

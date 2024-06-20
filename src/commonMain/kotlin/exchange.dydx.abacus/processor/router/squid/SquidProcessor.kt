@@ -184,6 +184,16 @@ internal class SquidProcessor(
         return parser.asString(selectedChain?.get("chainId"))
     }
 
+    override fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>? {
+        val tokensList = filteredTokens(chainId)
+        tokensList?.find {
+            parser.asString(parser.asNativeMap(it)?.get("address")) == tokenDenom
+        }?.let {
+            return parser.asNativeMap(it)
+        }
+        return null
+    }
+
     override fun selectedTokenSymbol(tokenAddress: String?, selectedChainId: String?): String? {
         this.tokens?.find {
             parser.asString(parser.asNativeMap(it)?.get("address")) == tokenAddress

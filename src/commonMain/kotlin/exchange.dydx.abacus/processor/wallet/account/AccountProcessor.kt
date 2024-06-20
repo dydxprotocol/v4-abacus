@@ -9,6 +9,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.IMutableList
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -417,9 +418,10 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         payload: List<Any>?,
         reset: Boolean,
     ): Map<String, Any> {
+        val subaccountNumber = parser.asInt(subaccount["subaccountNumber"]) ?: 0
         return receivedObject(subaccount, "fills", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
-                fillsProcessor.received(if (reset) null else parser.asNativeList(existing), it)
+                fillsProcessor.received(if (reset) null else parser.asNativeList(existing), it, subaccountNumber)
             }
         } ?: subaccount
     }
@@ -739,6 +741,11 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
         val modifiedSubaccounts = existing.mutable()
         val modifiedSubaccountIds = mutableListOf<Int>()
         for ((key, value) in existing) {
+            val keyInt = parser.asInt(key)
+            if (keyInt == null) {
+                Logger.e { "Invalid subaccount key: $key" }
+                continue
+            }
             val subaccount = parser.asNativeMap(value)
             if (subaccount != null) {
                 val (modifiedSubaccount, subaccountUpdated) = subaccountProcessor.updateHeight(

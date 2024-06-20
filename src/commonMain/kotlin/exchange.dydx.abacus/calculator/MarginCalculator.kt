@@ -1,11 +1,16 @@
 package exchange.dydx.abacus.calculator
 
+import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import kollections.iListOf
+import kotlin.math.max
+import kotlin.math.min
 
-internal object MarginModeCalculator {
+internal object MarginCalculator {
     fun findExistingPosition(
         parser: ParserProtocol,
         account: Map<String, Any>?,
@@ -159,7 +164,11 @@ internal object MarginModeCalculator {
         // Check if an existing childSubaccount is available to use for Isolated Margin Trade
         var availableSubaccountNumber = subaccountNumber
         utilizedSubaccountsMarketIdMap.forEach { (key, marketIds) ->
-            val subaccountNumberToCheck = key.toInt()
+            val subaccountNumberToCheck = parser.asInt(key)
+            if (subaccountNumberToCheck == null) {
+                Logger.e { "Invalid subaccount number: $key" }
+                return@forEach
+            }
             if (subaccountNumberToCheck != subaccountNumber) {
                 if (marketIds.contains(marketId) && marketIds.size <= 1) {
                     return subaccountNumberToCheck
@@ -186,5 +195,101 @@ internal object MarginModeCalculator {
 
         // User has reached the maximum number of childSubaccounts for their current parentSubaccount
         error("No available subaccount number")
+    }
+
+    private fun getIsIncreasingPositionSize(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return true
+        val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+        val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
+        val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+        return postOrderSize.abs() > currentSize.abs()
+    }
+
+    /**
+     * @description Determine if collateral should be transferred for an isolated margin trade
+     */
+    fun getShouldTransferCollateral(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        val isIncreasingPositionSize = getIsIncreasingPositionSize(parser, subaccount, tradeInput)
+        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
+        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
+
+        return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
+    }
+
+    internal fun getTransferAmountFromTargetLeverage(
+        price: Double,
+        oraclePrice: Double,
+        side: String,
+        size: Double,
+        targetLeverage: Double,
+    ): Double {
+        if (targetLeverage == 0.0) {
+            return 0.0
+        }
+
+        val naiveTransferAmount = (price * size) / targetLeverage
+
+        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
+        val priceDiff = if (side == "BUY") {
+            price - oraclePrice
+        } else {
+            oraclePrice - price
+        }
+
+        return max((oraclePrice * size) / targetLeverage + priceDiff * size, naiveTransferAmount)
+    }
+
+    /**
+     * @description Calculate the amount of collateral to transfer for an isolated margin trade.
+     * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
+     */
+    fun calculateIsolatedMarginTransferAmount(
+        parser: ParserProtocol,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): Double? {
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
+        val size = parser.asDouble(parser.value(trade, "size.size"))?.abs() ?: return null
+        val side = parser.asString(parser.value(trade, "side")) ?: return null
+        val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
+        val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
+        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
+        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
+
+        val maxLeverageForMarket = if (effectiveImf != 0.0) {
+            1.0 / effectiveImf
+        } else if (initialMarginFraction != 0.0) {
+            1.0 / initialMarginFraction
+        } else {
+            null
+        }
+
+        // Cap targetLeverage to 98% of max leverage
+        val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
+            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
+            min(targetLeverage, cappedLeverage)
+        } else {
+            null
+        }
+
+        return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
+            null
+        } else {
+            getTransferAmountFromTargetLeverage(
+                price,
+                oraclePrice,
+                side,
+                size,
+                targetLeverage = adjustedTargetLeverage,
+            )
+        }
     }
 }

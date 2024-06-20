@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.calculator.MarginModeCalculator
+import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
@@ -12,7 +12,7 @@ internal fun TradingStateMachine.receivedMarkets(
 ): StateChanges {
     marketsSummary = marketsProcessor.subscribed(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
-    val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
         parser,
         account,
         subaccountNumber,
@@ -42,7 +42,7 @@ internal fun TradingStateMachine.receivedMarketsChanges(
     val blankAssets = assets == null
     marketsSummary = marketsProcessor.channel_data(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, payload.keys)
-    val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
         parser,
         account,
         subaccountNumber,
@@ -90,7 +90,7 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
         }
     }
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, keys)
-    val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
         parser,
         account,
         subaccountNumber,
@@ -130,7 +130,7 @@ internal fun TradingStateMachine.receivedMarketsConfigurations(
     this.marketsSummary = marketsProcessor.receivedConfigurations(this.marketsSummary, payload)
     assets = assetsProcessor.receivedConfigurations(assets, payload, deploymentUri)
     this.marketsSummary = marketsCalculator.calculate(this.marketsSummary, assets, null)
-    val childSubaccountNumber = MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
         parser,
         account,
         subaccountNumber ?: 0,
