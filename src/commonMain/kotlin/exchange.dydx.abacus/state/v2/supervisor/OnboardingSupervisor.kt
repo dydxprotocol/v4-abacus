@@ -525,7 +525,7 @@ internal class OnboardingSupervisor(
                     helper.parser.asDouble(state.input.transfer.size?.usdcSize)
                         ?: Numeric.double.ZERO
                 if (usdcSize > Numeric.double.ZERO) {
-                    simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
+                    simulateWithdrawal(subaccountNumber) { gasFee ->
                         if (gasFee != null) {
                             retrieveWithdrawalRoute(
                                 state,
@@ -565,7 +565,7 @@ internal class OnboardingSupervisor(
                         helper.parser.asDouble(state.input.transfer.size?.usdcSize)
                             ?: Numeric.double.ZERO
                     if (usdcSize > Numeric.double.ZERO) {
-                        simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
+                        simulateWithdrawal(subaccountNumber) { gasFee ->
                             receiveTransferGas(gasFee)
                         }
                     } else {
@@ -602,7 +602,6 @@ internal class OnboardingSupervisor(
     }
 
     private fun simulateWithdrawal(
-        decimals: Int,
         subaccountNumber: Int?,
         callback: (BigDecimal?) -> Unit
     ) {
@@ -621,8 +620,13 @@ internal class OnboardingSupervisor(
 
             val result = helper.parser.decodeJsonObject(response)
             if (result != null) {
+                val usdcDecimals = helper.environment.tokens["usdc"]?.decimals ?: 6
+                val nativeDecimals = helper.environment.tokens["chain"]?.decimals ?: 18
+                val nativeDenom = helper.environment.tokens["chain"]?.denom
                 val amountMap =
                     helper.parser.asMap(helper.parser.asList(result["amount"])?.firstOrNull())
+                val denom = helper.parser.asString(amountMap?.get("denom"))
+                val decimals = if (denom === nativeDenom) nativeDecimals else usdcDecimals
                 val amount = helper.parser.asDecimal(amountMap?.get("amount"))
                 val usdcAmount = amount?.div(Numeric.decimal.TEN.pow(decimals))
                 callback(usdcAmount)
@@ -902,8 +906,6 @@ internal class OnboardingSupervisor(
             url != null &&
             fromAddress != null &&
             squidIntegratorId != null &&
-            fromChain != null &&
-            fromToken != null
         ) {
             val body: IMap<String, Any> = iMapOf(
                 "fromChain" to fromChain,
@@ -939,6 +941,8 @@ internal class OnboardingSupervisor(
                     Logger.e { "retrieveWithdrawalRouteV2 error, code: $code" }
                 }
             }
+        } else {
+            Logger.e {"retrieveWithdrawalRouteV2 error: missing required data for payload!"}
         }
     }
 
@@ -1331,7 +1335,7 @@ internal class OnboardingSupervisor(
             val usdcSize =
                 helper.parser.asDouble(state.input.transfer.size?.usdcSize) ?: Numeric.double.ZERO
             if (usdcSize > Numeric.double.ZERO) {
-                simulateWithdrawal(decimals, subaccountNumber) { gasFee ->
+                simulateWithdrawal(subaccountNumber) { gasFee ->
                     if (gasFee != null) {
 //                        return back and branch from top level method
                         cctpToNoble(
