@@ -1317,7 +1317,7 @@ internal class OnboardingSupervisor(
         val payload = subaccountTransferPayload(subaccountNumber)
         val string = Json.encodeToString(payload)
 
-        helper.transaction(TransactionType.PlaceOrder, string) { response ->
+        helper.transaction(TransactionType.SubaccountTransfer, string) { response ->
             val error = parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
