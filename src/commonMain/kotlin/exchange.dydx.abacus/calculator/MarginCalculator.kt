@@ -224,6 +224,31 @@ internal object MarginCalculator {
     }
 
     /**
+     * @description Determine if collateral should be transferred out for an isolated margin trade
+     */
+    fun getShouldTransferOutCollateral(
+        parser: ParserProtocol,
+        account: Map<String, Any>?,
+        subaccountNumber: Int,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        val subaccount = parser.asNativeMap(
+            parser.value(
+                account,
+                "subaccounts.$subaccountNumber",
+            ),
+        ) ?: mapOf()
+        val isDecreasingPositionSize = !getIsIncreasingPositionSize(parser, subaccount, tradeInput)
+        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
+        val hasOpenOrder = parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
+            findExistingOrder(parser, account, marketId, subaccountNumber) != null
+        } ?: false
+        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
+
+        return (isDecreasingPositionSize || isReduceOnly) && isIsolatedMarginOrder && !hasOpenOrder
+    }
+
+    /**
      * @description Helper to determine how much collateral needs to be transferred in for an isolated margin trade
      */
     private fun getPositionSizeDifference(

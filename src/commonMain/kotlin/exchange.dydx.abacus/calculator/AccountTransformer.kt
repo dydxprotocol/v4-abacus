@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -48,12 +49,20 @@ class AccountTransformer() {
                 ),
             ) ?: mapOf()
 
-            val transferAmount = if (MarginCalculator.getShouldTransferCollateral(
-                    parser,
-                    subaccount = childSubaccount,
-                    tradeInput = trade,
-                )
-            ) {
+            val shouldTransferIn = MarginCalculator.getShouldTransferCollateral(
+                parser,
+                subaccount = childSubaccount,
+                tradeInput = trade,
+            )
+
+            val shouldTransferOut = MarginCalculator.getShouldTransferOutCollateral(
+                parser,
+                account,
+                subaccountNumber,
+                tradeInput = trade
+            )
+
+            val transferAmount = if (shouldTransferIn || shouldTransferOut) {
                 MarginCalculator.calculateIsolatedMarginTransferAmount(
                     parser,
                     trade,
