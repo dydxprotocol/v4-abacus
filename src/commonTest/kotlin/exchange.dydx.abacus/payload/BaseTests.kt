@@ -1114,6 +1114,11 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
                 obj.equity,
                 "$trace.equity",
             )
+            verifyDoubleValues(
+                parser.asNativeMap(data["marginValue"]),
+                obj.marginValue,
+                "$trace.marginValue",
+            )
         } else {
             assertNull(obj)
         }

@@ -277,7 +277,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
 
     private fun sumEquity(
         parentSubaccount: Map<String, Any>,
-        childSubaccount: Map<String, Any>
+        childSubaccount: Map<String, Any>,
     ): Map<String, Any> {
         val modifiedParentSubaccount = parentSubaccount.toMutableMap()
         modifiedParentSubaccount.safeSet(
