@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -59,7 +58,7 @@ class AccountTransformer() {
                 parser,
                 account,
                 subaccountNumber,
-                tradeInput = trade
+                tradeInput = trade,
             )
 
             val transferAmount = if (shouldTransferIn || shouldTransferOut) {
