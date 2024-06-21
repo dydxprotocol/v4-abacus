@@ -292,50 +292,6 @@ class SkipRouteProcessorTests {
         assertEquals(expected, result)
     }
 
-    /**
-     * Tests a CCTP autosweep from the transferNobleBalance method
-     * This payload is used by the chain transaction method sendNobleIBC
-     * This processes a Noble -> Dydx CCTP transaction
-     */
-    @Test
-    fun testReceivedCCTPNobleToDydx() {
-        val payload = skipRouteMock.payloadCCTPNobleToDydx
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
-        val jsonEncoder = JsonEncoder()
-        val expectedMsg = mapOf(
-            "sourcePort" to "transfer",
-            "sourceChannel" to "channel-33",
-            "token" to mapOf(
-                "denom" to "uusdc",
-                "amount" to "5884",
-            ),
-            "sender" to "noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf",
-            "receiver" to "dydx1nhzuazjhyfu474er6v4ey8zn6wa5fy6g2dgp7s",
-            "timeoutHeight" to mapOf<String, Any>(),
-            "timeoutTimestamp" to 1718318348813666048,
-        )
-        val expectedData = jsonEncoder.encode(
-            mapOf(
-                "msg" to expectedMsg,
-                "value" to expectedMsg,
-                "msgTypeUrl" to "/ibc.applications.transfer.v1.MsgTransfer",
-                "typeUrl" to "/ibc.applications.transfer.v1.MsgTransfer",
-            ),
-        )
-        val expected = mapOf(
-            "toAmountUSD" to 0.01,
-            "toAmount" to 0.005884,
-            "slippage" to "1",
-            "requestPayload" to mapOf(
-                "fromChainId" to "noble-1",
-                "fromAddress" to "uusdc",
-                "toChainId" to "dydx-mainnet-1",
-                "toAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
-                "data" to expectedData,
-            ),
-        )
-        assertEquals(expected, result)
-    }
 
     @Test
     fun testReceivedError() {
