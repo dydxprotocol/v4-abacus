@@ -5,8 +5,6 @@ import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
-import exchange.dydx.abacus.processor.router.SharedRouterProcessor
-import exchange.dydx.abacus.processor.router.squid.SquidStatusProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
@@ -27,7 +25,6 @@ internal class SkipProcessor(
 
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
     override var exchangeDestinationChainId: String? = null
-    val sharedRouterProcessor = SharedRouterProcessor(parser)
 
     override fun receivedV2SdkInfo(
         existing: Map<String, Any>?,
@@ -135,9 +132,7 @@ internal class SkipProcessor(
         payload: Map<String, Any>,
         transactionId: String?,
     ): Map<String, Any>? {
-//        using squid status processor until we implement it
-//        this lets us track our tx so we can more easily tell if tx are succeeding or not in QA
-        val processor = SquidStatusProcessor(parser, transactionId)
+        val processor = SkipStatusProcessor(parser, transactionId)
         return processor.received(existing, payload)
     }
 
