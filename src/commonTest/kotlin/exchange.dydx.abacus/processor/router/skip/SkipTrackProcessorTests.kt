@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 class SkipTrackProcessorTests {
     val parser = Parser()
     internal val processor = SkipTrackProcessor(parser = parser)
-    val mock = SkipTrackMock()
+    val mock = SkipTrackMock
 
     /**
      * Tests that receiving an error payload from the track endpoint

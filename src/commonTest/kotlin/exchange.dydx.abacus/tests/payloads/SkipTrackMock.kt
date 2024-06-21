@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.tests.payloads
 
-class SkipTrackMock {
+object SkipTrackMock {
     val error = """{
   "code": 5,
   "message": "chain id not supported",
