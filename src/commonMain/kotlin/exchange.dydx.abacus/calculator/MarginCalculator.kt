@@ -204,7 +204,7 @@ internal object MarginCalculator {
         tradeInput: Map<String, Any>?,
     ): Boolean {
         return getPositionSizeDifference(parser, subaccount, tradeInput)?.let {
-            it.compareTo(Numeric.double.ZERO) > 0 // whether it's is positive
+            it.compareTo(Numeric.double.ZERO) > 0 // whether it's positive
         } ?: true
     }
 
