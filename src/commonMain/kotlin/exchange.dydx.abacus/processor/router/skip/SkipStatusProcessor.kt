@@ -51,31 +51,33 @@ internal class SkipStatusProcessor(
         return "ongoing"
     }
 
+    /**
+     *  CCTP transfer state:
+     *  CCTP_TRANSFER_UNKNOWN - Unknown error
+     *  CCTP_TRANSFER_SENT - The burn transaction on the source chain has executed
+     *  CCTP_TRANSFER_PENDING_CONFIRMATION - CCTP transfer is pending confirmation by the cctp attestation api
+     *  CCTP_TRANSFER_CONFIRMED - CCTP transfer has been confirmed by the cctp attestation api
+     *  CCTP_TRANSFER_RECEIVED - CCTP transfer has been received at the destination chain
+     *
+     *  Axelar transfer state:
+     *  AXELAR_TRANSFER_UNKNOWN - Unknown error
+     *  AXELAR_TRANSFER_PENDING_CONFIRMATION - Axelar transfer is pending confirmation
+     *  AXELAR_TRANSFER_PENDING_RECEIPT - Axelar transfer is pending receipt at destination
+     *  AXELAR_TRANSFER_SUCCESS - Axelar transfer succeeded and assets have been received
+     *  AXELAR_TRANSFER_FAILURE - Axelar transfer failed
+     *
+     *  IBC Transfer state:
+     *  TRANSFER_UNKNOWN - Transfer state is not known.
+     *  TRANSFER_PENDING - The send packet for the transfer has been committed and the transfer is pending.
+     *  TRANSFER_RECEIVED - The transfer packet has been received by the destination chain. It can still fail and revert if it is part of a multi-hop PFM transfer.
+     *  TRANSFER_SUCCESS - The transfer has been successfully completed and will not revert.
+     *  TRANSFER_FAILURE - The transfer has failed.
+     *
+     */
     private fun getStatusFromTransferState(state: String?, transferDirection: TransferDirection): String? {
-//        CCTP transfer state:
-//        CCTP_TRANSFER_UNKNOWN - Unknown error
-//        CCTP_TRANSFER_SENT - The burn transaction on the source chain has executed
-//        CCTP_TRANSFER_PENDING_CONFIRMATION - CCTP transfer is pending confirmation by the cctp attestation api
-//        CCTP_TRANSFER_CONFIRMED - CCTP transfer has been confirmed by the cctp attestation api
-//        CCTP_TRANSFER_RECEIVED - CCTP transfer has been received at the destination chain
-
-//        Axelar transfer state:
-//        AXELAR_TRANSFER_UNKNOWN - Unknown error
-//        AXELAR_TRANSFER_PENDING_CONFIRMATION - Axelar transfer is pending confirmation
-//        AXELAR_TRANSFER_PENDING_RECEIPT - Axelar transfer is pending receipt at destination
-//        AXELAR_TRANSFER_SUCCESS - Axelar transfer succeeded and assets have been received
-//        AXELAR_TRANSFER_FAILURE - Axelar transfer failed
-
-//        IBC Transfer state:
-//        TRANSFER_UNKNOWN - Transfer state is not known.
-//        TRANSFER_PENDING - The send packet for the transfer has been committed and the transfer is pending.
-//        TRANSFER_RECEIVED - The transfer packet has been received by the destination chain. It can still fail and revert if it is part of a multi-hop PFM transfer.
-//        TRANSFER_SUCCESS - The transfer has been successfully completed and will not revert.
-//        TRANSFER_FAILURE - The transfer has failed.
-
         if (state == null) return null
 //        If state is not unknown, it means the FROM tx succeeded
-        if (!state.contains("UNKNOWN") && transferDirection === TransferDirection.From) return "success"
+        if (!state.contains("UNKNOWN") && transferDirection == TransferDirection.From) return "success"
 //        Both TO and FROM tx are successful when transfer has succeeded
         return getSquidStatusFromState(state)
     }
