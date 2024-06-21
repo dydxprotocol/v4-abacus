@@ -303,7 +303,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         // input a trade that will flip position absolute net size +10
@@ -356,7 +356,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         }
                     }
                 }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
