@@ -455,6 +455,7 @@ internal open class AccountSupervisor(
             val balance = helper.parser.decodeJsonObject(response)
             if (balance != null) {
                 val amount = helper.parser.asDecimal(balance["amount"])
+//                minimum usdc required for successful tx (gas fee)
                 if (amount != null && amount > 5000) {
                     if (processingCctpWithdraw) {
                         return@getOnChain
