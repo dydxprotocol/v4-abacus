@@ -6,6 +6,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 import kotlin.math.max
 import kotlin.math.min
@@ -202,15 +203,13 @@ internal object MarginCalculator {
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
     ): Boolean {
-        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return true
-        val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
-        val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
-        val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
-        return postOrderSize.abs() > currentSize.abs()
+        return getPositionSizeDifference(parser, subaccount, tradeInput)?.let {
+            it.compareTo(Numeric.double.ZERO) == 1
+        } ?: true
     }
 
     /**
-     * @description Determine if collateral should be transferred for an isolated margin trade
+     * @description Determine if collateral should be transferred in for an isolated margin trade
      */
     fun getShouldTransferCollateral(
         parser: ParserProtocol,
@@ -222,6 +221,22 @@ internal object MarginCalculator {
         val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
 
         return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
+    }
+
+    /**
+     * @description Helper to determine how much collateral needs to be transferred in for an isolated margin trade
+     */
+    private fun getPositionSizeDifference(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Double? {
+        return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
+            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+            val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
+            val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+            return postOrderSize.abs() - currentSize.abs()
+        }
     }
 
     internal fun getTransferAmountFromTargetLeverage(
@@ -255,9 +270,9 @@ internal object MarginCalculator {
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
     ): Double? {
         val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
-        val size = parser.asDouble(parser.value(trade, "size.size"))?.abs() ?: return null
         val side = parser.asString(parser.value(trade, "side")) ?: return null
         val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
         val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
@@ -280,6 +295,9 @@ internal object MarginCalculator {
             null
         }
 
+        // Get the position size difference
+        val positionSizeDifference = getPositionSizeDifference(parser, subaccount, trade) ?: return null
+
         return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
             null
         } else {
@@ -287,7 +305,7 @@ internal object MarginCalculator {
                 price,
                 oraclePrice,
                 side,
-                size,
+                positionSizeDifference,
                 targetLeverage = adjustedTargetLeverage,
             )
         }
