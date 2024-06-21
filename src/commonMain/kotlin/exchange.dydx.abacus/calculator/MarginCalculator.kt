@@ -56,6 +56,21 @@ internal object MarginCalculator {
         return if (order != null) order.value as Map<String, Any> else null
     }
 
+    fun findExistingOrder(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        marketId: String?
+    ): Map<String, Any>? {
+        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
+        val order = orders?.entries?.firstOrNull {
+            val orderMarketId = parser.asString(parser.value(it.value, "marketId"))
+            val orderStatus = parser.asString(parser.value(it.value, "status"))
+            orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
+        }
+
+        return if (order != null) order.value as Map<String, Any> else null
+    }
+
     fun findExistingMarginMode(
         parser: ParserProtocol,
         account: Map<String, Any>?,
@@ -208,10 +223,19 @@ internal object MarginCalculator {
         } ?: true
     }
 
+    fun getShouldTransferCollateral(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        return getShouldTransferOutCollateral(parser, subaccount, tradeInput) ||
+            getShouldTransferInCollateral(parser, subaccount, tradeInput)
+    }
+
     /**
      * @description Determine if collateral should be transferred in for an isolated margin trade
      */
-    fun getShouldTransferCollateral(
+    fun getShouldTransferInCollateral(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
@@ -228,20 +252,13 @@ internal object MarginCalculator {
      */
     fun getShouldTransferOutCollateral(
         parser: ParserProtocol,
-        account: Map<String, Any>?,
-        subaccountNumber: Int,
+        subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
     ): Boolean {
-        val subaccount = parser.asNativeMap(
-            parser.value(
-                account,
-                "subaccounts.$subaccountNumber",
-            ),
-        ) ?: mapOf()
         val isDecreasingPositionSize = !getIsIncreasingPositionSize(parser, subaccount, tradeInput)
         val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
         val hasOpenOrder = parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
-            findExistingOrder(parser, account, marketId, subaccountNumber) != null
+            findExistingOrder(parser, subaccount, marketId) != null
         } ?: false
         val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
 

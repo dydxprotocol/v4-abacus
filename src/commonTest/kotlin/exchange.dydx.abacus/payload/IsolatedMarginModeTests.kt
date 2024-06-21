@@ -268,7 +268,8 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "freeCollateral": {
-                                        "current": 137.13
+                                        "current": 137.13,
+                                        "postOrder": 157.13
                                     },
                                     "openPositions": {
                                         "APE-USD": {
@@ -278,7 +279,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 25.20,
-                                                "postOrder": 25.20
+                                                "postOrder": 5.2
                                             }
                                         }
                                     }
@@ -299,6 +300,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             },
                             "targetLeverage": 1.0,
                             "summary": {
+                                "isolatedMarginTransferAmount": -20.0
                             }
                         }
                     }
