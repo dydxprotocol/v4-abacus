@@ -141,7 +141,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                         }
 
                         else -> {
-                            val configs =  parser.asNativeMap(market?.get("configs"))
+                            val configs = parser.asNativeMap(market?.get("configs"))
                             val valueTotal = size * oraclePrice
                             set(valueTotal, modified, "valueTotal", period)
                             val notional = valueTotal.abs()
@@ -155,7 +155,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
                             set(adjustedImf, modified, "adjustedImf", period)
                             set(adjustedMmf, modified, "adjustedMmf", period)
-                            set(adjustedImf * notional, modified, "initialRiskTotal", period,)
+                            set(adjustedImf * notional, modified, "initialRiskTotal", period)
                             set(maxLeverage, modified, "maxLeverage", period)
 
                             if (entryPrice != null) {
