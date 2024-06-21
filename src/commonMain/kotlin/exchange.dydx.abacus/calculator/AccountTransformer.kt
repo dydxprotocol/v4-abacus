@@ -58,6 +58,7 @@ class AccountTransformer() {
                     parser,
                     trade,
                     market,
+                    subaccount = childSubaccount,
                 ) ?: 0.0
             } else {
                 0.0

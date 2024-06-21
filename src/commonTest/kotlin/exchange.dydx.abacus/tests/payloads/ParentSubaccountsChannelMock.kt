@@ -976,6 +976,81 @@ internal class ParentSubaccountsChannelMock {
         }
     """.trimIndent()
 
+    internal val read_subscribe_with_isolated_position = """
+        {
+          "type": "subscribed",
+          "connection_id": "54dfe8a3-db43-4d07-b37f-66b37d00296c",
+          "message_id": 2,
+          "channel": "v4_parent_subaccounts",
+          "id": "dydx1jd8uuuwcfr2xg6ek0g3mes2kppzm54qd65npwe/0",
+          "contents": {
+            "subaccount": {
+              "address": "dydx1jd8uuuwcfr2xg6ek0g3mes2kppzm54qd65npwe",
+              "parentSubaccountNumber": 0,
+              "equity": "155.66683808",
+              "freeCollateral": "151.957356664",
+              "childSubaccounts": [
+                {
+                  "address": "dydx1jd8uuuwcfr2xg6ek0g3mes2kppzm54qd65npwe",
+                  "subaccountNumber": 0,
+                  "equity": "137.128721",
+                  "freeCollateral": "137.128721",
+                  "openPerpetualPositions": {},
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "137.128721",
+                      "symbol": "USDC",
+                      "side": "LONG",
+                      "assetId": "0",
+                      "subaccountNumber": 0
+                    }
+                  },
+                  "marginEnabled": true
+                },
+                {
+                  "address": "dydx1jd8uuuwcfr2xg6ek0g3mes2kppzm54qd65npwe",
+                  "subaccountNumber": 128,
+                  "equity": "18.53811708",
+                  "freeCollateral": "14.828635664",
+                  "openPerpetualPositions": {
+                    "APE-USD": {
+                      "market": "APE-USD",
+                      "status": "OPEN",
+                      "side": "LONG",
+                      "size": "20",
+                      "maxSize": "20",
+                      "entryPrice": "0.929",
+                      "exitPrice": null,
+                      "realizedPnl": "0",
+                      "unrealizedPnl": "-0.03259292",
+                      "createdAt": "2024-06-21T19:30:50.890Z",
+                      "createdAtHeight": "18641960",
+                      "closedAt": null,
+                      "sumOpen": "20",
+                      "sumClose": "0",
+                      "netFunding": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "assetPositions": {
+                    "USDC": {
+                      "size": "0.00929",
+                      "symbol": "USDC",
+                      "side": "SHORT",
+                      "assetId": "0",
+                      "subaccountNumber": 128
+                    }
+                  },
+                  "marginEnabled": true
+                }
+              ]
+            },
+            "orders": [],
+            "blockHeight": "18642087"
+          }
+        }
+    """.trimIndent()
+
     internal val real_channel_batch_data = """
         {
             "type": "channel_batch_data",
