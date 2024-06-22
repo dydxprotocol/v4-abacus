@@ -169,13 +169,19 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             }
 
                             val marginMode = parser.asString(parser.value(position, "marginMode"))
-                            if (marginMode == "ISOLATED") {
-                                val equity = parser.asDouble(value(subaccount, "equity", period))
-                                set(equity, modified, "marginValue", period)
-                            } else if (marginMode == "CROSS") {
-                                val maintenanceMarginFraction =
-                                    parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO
-                                set(maintenanceMarginFraction * notional, modified, "marginValue", period)
+                            when (marginMode) {
+                                "ISOLATED" -> {
+                                    val equity = parser.asDouble(value(subaccount, "equity", period))
+                                    set(equity, modified, "marginValue", period)
+                                }
+                                "CROSS" -> {
+                                    val maintenanceMarginFraction =
+                                        parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO
+                                    set(maintenanceMarginFraction * notional, modified, "marginValue", period)
+                                }
+                                else -> {
+                                    set(null, modified, "marginValue", period)
+                                }
                             }
                         }
                     }
