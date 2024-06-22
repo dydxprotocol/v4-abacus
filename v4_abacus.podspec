@@ -11,7 +11,7 @@ Pod::Spec.new do |spec|
                 
                 
                 
-    if false
+    if !Dir.exist?('build/cocoapods/framework/Abacus.framework') || Dir.empty?('build/cocoapods/framework/Abacus.framework')
         raise "
 
         Kotlin framework 'Abacus' doesn't exist yet, so a proper Xcode project can't be generated.

@@ -163,7 +163,6 @@ class SkipRouteProcessorTests {
         val expected = mapOf(
             "toAmountUSD" to 11.01,
             "toAmount" to 10.996029,
-            "bridgeFee" to 0.0,
             "slippage" to "1",
             "requestPayload" to mapOf(
                 "fromChainId" to "dydx-mainnet-1",
@@ -209,7 +208,6 @@ class SkipRouteProcessorTests {
         val expected = mapOf(
             "toAmountUSD" to 0.01,
             "toAmount" to 0.005884,
-            "bridgeFee" to 0.0,
             "slippage" to "1",
             "requestPayload" to mapOf(
                 "fromChainId" to "noble-1",

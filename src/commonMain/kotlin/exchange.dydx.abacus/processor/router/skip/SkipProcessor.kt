@@ -136,6 +136,14 @@ internal class SkipProcessor(
         return processor.received(existing, payload)
     }
 
+    override fun receivedTrack(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any>? {
+        val processor = SkipTrackProcessor(parser)
+        return processor.received(existing, payload)
+    }
+
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
@@ -145,7 +153,7 @@ internal class SkipProcessor(
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
-    private fun getChainById(chainId: String): Map<String, Any>? {
+    internal fun getChainById(chainId: String): Map<String, Any>? {
         return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId })
     }
 
