@@ -98,7 +98,8 @@ class TriggerOrderToastGeneratorTests {
                         "freeCollateral": {},
                         "marginUsage": {},
                         "quoteBalance": {},
-                        "equity": {}
+                        "equity": {},
+                        "marginValue": {}
                     }
                 ]
             }
