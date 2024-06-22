@@ -3,6 +3,7 @@ package exchange.dydx.abacus.payload.v4
 import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.BeforeTest
