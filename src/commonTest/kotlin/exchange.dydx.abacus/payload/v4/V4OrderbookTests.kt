@@ -194,13 +194,18 @@ class V4OrderbookTests : V3BaseTests() {
                                 "orderbook": {
                                     "asks": [
                                         {
-                                            "size": 1.907,
+                                            "size": 0.907,
                                             "price": 1800.0,
+                                            "depth": 0.907
+                                        },
+                                        {
+                                            "size": 1.0,
+                                            "price": 1810.0,
                                             "depth": 1.907
                                         },
                                         {
                                             "size": 1.0,
-                                            "price": 1900.0,
+                                            "price": 1910.0,
                                             "depth": 2.907
                                         }
                                     ],

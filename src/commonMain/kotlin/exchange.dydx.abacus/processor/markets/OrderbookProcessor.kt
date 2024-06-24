@@ -329,21 +329,26 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         val asks = parser.asNativeList(orderbook.get("asks"))?.map { ask ->
             val map = parser.asNativeMap(ask)!!
             val size = parser.asDouble(map["size"]) ?: 0.0
+            val price = parser.asDouble(map["price"]) ?: 0.0
             asksDepth += size
             val modified = map.mutable()
             modified["depth"] = asksDepth
+            modified["sizeCost"] = size * price
             modified
         }
         var bidsDepth = 0.0
         val bids = parser.asNativeList(orderbook.get("bids"))?.map { bid ->
             val map = parser.asNativeMap(bid)!!
             val size = parser.asDouble(map["size"]) ?: 0.0
+            val price = parser.asDouble(map["price"]) ?: 0.0
+
             bidsDepth += size
             val modified = map.mutable()
             modified["depth"] = bidsDepth
+            modified["sizeCost"] = size * price
             modified
         }
-        val firstAsk = parser.asDouble(
+        val firstAskPrice = parser.asDouble(
             parser.asNativeMap(
                 asks?.firstOrNull { item ->
                     val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
@@ -351,7 +356,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 },
             )?.get("price"),
         )
-        val firstBid = parser.asDouble(
+        val firstBidPrice = parser.asDouble(
             parser.asNativeMap(
                 bids?.firstOrNull { item ->
                     val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
@@ -360,18 +365,19 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             )?.get("price"),
         )
         val modified = orderbook.mutable()
-        if (firstAsk != null && firstBid != null) {
-            val firstAskPrice = firstAsk
-            val midPrice = (firstAskPrice + firstBid) / 2.0
-            val spread = firstAskPrice.minus(firstBid)
+        if (firstAskPrice != null && firstBidPrice != null) {
+            val midPrice = (firstAskPrice + firstBidPrice) / 2.0
+            val spread = firstAskPrice.minus(firstBidPrice)
             val spreadPercent = spread / midPrice
             modified.safeSet("midPrice", midPrice)
             modified.safeSet("spreadPercent", spreadPercent)
+            modified.safeSet("spread", spread)
             modified.safeSet("asks", asks)
             modified.safeSet("bids", bids)
         } else {
             modified.safeSet("midPrice", null)
             modified.safeSet("spreadPercent", null)
+            modified.safeSet("spread", null)
             modified.safeSet("asks", asks)
             modified.safeSet("bids", bids)
         }
@@ -495,6 +501,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 )
                 modified.safeSet("midPrice", orderbook["midPrice"])
                 modified.safeSet("spreadPercent", orderbook["spreadPercent"])
+                modified.safeSet("spread", orderbook["spread"])
                 modified
             } else {
                 orderbook.toMutableMap()
@@ -510,43 +517,55 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     }
 
     fun group(orderbook: List<Any>?, grouping: Double): List<Any>? {
-        return if (orderbook != null && orderbook.size > 0) {
+        return if (!orderbook.isNullOrEmpty()) {
+            // orderbook always ordered in increasing depth which is either increasing (asks) or decreasing (bids) price
+            // we want to round asks up and bids down so they don't have an overlapping group in the middle
             val firstPrice = parser.asDouble(parser.value(orderbook.firstOrNull(), "price"))!!
-            var floor = Rounder.round(firstPrice, grouping)
-            var ceiling = floor + grouping
-            var size = Numeric.double.ZERO
-            var depth = Numeric.double.ZERO
+            val lastPrice = parser.asDouble(parser.value(orderbook.lastOrNull(), "price"))!!
+            val shouldFloor = lastPrice <= firstPrice
             val result = mutableListOf<Map<String, Any>>()
+
+            // properties of the current group
+            var curFloored = Rounder.round(firstPrice, grouping);
+            var groupMin = if (curFloored != firstPrice) curFloored else (if (shouldFloor) curFloored else curFloored - grouping)
+            var groupMax = groupMin + grouping
+            var size = Numeric.double.ZERO
+            var sizeCost = Numeric.double.ZERO
+            var depth = Numeric.double.ZERO
 
             for (item in orderbook) {
                 val line = parser.asNativeMap(item)
                 val linePrice = parser.asDouble(line?.get("price"))
                 if (linePrice != null) {
                     val lineSize = parser.asDouble(line?.get("size")) ?: Numeric.double.ZERO
-                    if (linePrice >= floor) {
-                        if (linePrice < ceiling) {
-                            size += lineSize
-                            depth += lineSize
-                        } else {
-                            result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
-                            floor = Rounder.round(linePrice, grouping)
-                            ceiling = floor + grouping
+                    val lineSizeCost = lineSize * linePrice
 
-                            size = lineSize
-                            depth += lineSize
-                        }
+                    // if in this group
+                    // remember: if flooring then min inclusive max exclusive; if ceiling then min exclusive, max inclusive
+                    if ((linePrice > groupMin && linePrice < groupMax) || (linePrice == groupMin && shouldFloor) || (linePrice == groupMax && !shouldFloor)) {
+                        size += lineSize
+                        sizeCost += lineSizeCost
+                        depth += lineSize
                     } else {
-                        result.add(mapOf("price" to floor, "size" to size, "depth" to depth))
-                        floor = Rounder.round(linePrice, grouping)
-                        ceiling = floor + grouping
+                        result.add(
+                            mapOf(
+                                "price" to (if (shouldFloor) groupMin else groupMax),
+                                "size" to size,
+                                "sizeCost" to sizeCost,
+                                "depth" to depth,
+                            ),
+                        )
+                        curFloored = Rounder.round(linePrice, grouping);
+                        groupMin = if (curFloored != linePrice) curFloored else (if (shouldFloor) curFloored else curFloored - grouping)
+                        groupMax = groupMin + grouping
 
                         size = lineSize
+                        sizeCost = lineSizeCost
                         depth += lineSize
                     }
                 }
             }
-            val item = mapOf("price" to floor, "size" to size, "depth" to depth)
-            result.add(item)
+            result.add(mapOf("price" to (if (shouldFloor) groupMin else groupMax), "size" to size, "sizeCost" to sizeCost, "depth" to depth))
 
             return result
         } else {
