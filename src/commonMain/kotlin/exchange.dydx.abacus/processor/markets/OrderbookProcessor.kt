@@ -348,7 +348,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             modified["sizeCost"] = size * price
             modified
         }
-        val firstAsk = parser.asDouble(
+        val firstAskPrice = parser.asDouble(
             parser.asNativeMap(
                 asks?.firstOrNull { item ->
                     val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
@@ -356,7 +356,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 },
             )?.get("price"),
         )
-        val firstBid = parser.asDouble(
+        val firstBidPrice = parser.asDouble(
             parser.asNativeMap(
                 bids?.firstOrNull { item ->
                     val size = parser.asDouble(parser.asNativeMap(item)?.get("size"))
@@ -365,9 +365,9 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             )?.get("price"),
         )
         val modified = orderbook.mutable()
-        if (firstAsk != null && firstBid != null) {
-            val midPrice = (firstAsk + firstBid) / 2.0
-            val spread = firstAsk.minus(firstBid)
+        if (firstAskPrice != null && firstBidPrice != null) {
+            val midPrice = (firstAskPrice + firstBidPrice) / 2.0
+            val spread = firstAskPrice.minus(firstBidPrice)
             val spreadPercent = spread / midPrice
             modified.safeSet("midPrice", midPrice)
             modified.safeSet("spreadPercent", spreadPercent)
