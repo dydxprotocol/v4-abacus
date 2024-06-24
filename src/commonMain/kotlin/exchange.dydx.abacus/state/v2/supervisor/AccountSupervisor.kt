@@ -438,6 +438,9 @@ internal open class AccountSupervisor(
     }
 
     private fun retrieveNobleBalance() {
+        if (cosmosWalletConnected == true) {
+            return
+        }
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
         nobleBalancesTimer =
             timer.schedule(0.0, nobleBalancePollingDuration) {
