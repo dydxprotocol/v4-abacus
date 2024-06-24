@@ -85,6 +85,7 @@ import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.GEO_POLLING_DURATION_SECONDS
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.JsonEncoder
@@ -342,7 +343,7 @@ internal class StateManagerAdaptorV2(
         markets.readyToConnect = readyToConnect
         accounts.readyToConnect = readyToConnect
         if (readyToConnect) {
-            fetchGeo()
+            pollGeo()
         }
     }
 
@@ -473,6 +474,16 @@ internal class StateManagerAdaptorV2(
 
     private fun height(): BlockAndTime? {
         return null
+    }
+
+    private fun pollGeo() {
+        ioImplementations.timer?.schedule(
+            0.0,
+            GEO_POLLING_DURATION_SECONDS,
+        ) {
+            fetchGeo()
+            true
+        }
     }
 
     private fun fetchGeo() {
@@ -635,8 +646,8 @@ internal class StateManagerAdaptorV2(
         accounts.screen(address, callback)
     }
 
-    internal fun triggerCompliance(address: ComplianceAction, callback: TransactionCallback) {
-        accounts.triggerCompliance(address, callback)
+    internal fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback?) {
+        accounts.triggerCompliance(action, callback)
     }
 
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {
@@ -707,5 +718,6 @@ internal class StateManagerAdaptorV2(
                 ),
             )
         }
+        triggerCompliance(ComplianceAction.CONNECT, null)
     }
 }

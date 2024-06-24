@@ -354,7 +354,7 @@ internal fun AccountsSupervisor.screen(
 
 internal fun AccountsSupervisor.triggerCompliance(
     action: ComplianceAction,
-    callback: TransactionCallback
+    callback: TransactionCallback?
 ) {
     account?.triggerCompliance(action, callback)
 }

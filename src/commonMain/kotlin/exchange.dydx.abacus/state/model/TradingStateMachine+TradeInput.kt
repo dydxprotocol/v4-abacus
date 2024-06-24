@@ -89,7 +89,13 @@ internal fun TradingStateMachine.tradeInMarket(
             // If we changed market, we should also reset the price and size
             modified.safeSet("size", null)
             modified.safeSet("price", null)
-
+            modified
+        } else {
+            initiateTrade(
+                marketId,
+                subaccountNumber,
+            )
+        }.also {
             val existingPosition = MarginCalculator.findExistingPosition(
                 parser,
                 account,
@@ -103,27 +109,21 @@ internal fun TradingStateMachine.tradeInMarket(
                 subaccountNumber,
             )
             if (existingPosition != null) {
-                modified.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
+                it.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
                 val currentPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs()
                 val positionLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
-                modified.safeSet("targetLeverage", positionLeverage)
+                it.safeSet("targetLeverage", positionLeverage)
             } else if (existingOrder != null) {
                 val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.Cross.rawValue else MarginMode.Isolated.rawValue
-                modified.safeSet("marginMode", orderMarginMode)
-                modified.safeSet("targetLeverage", 1.0)
+                it.safeSet("marginMode", orderMarginMode)
+                it.safeSet("targetLeverage", 1.0)
             } else {
                 val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
-                modified.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
-                modified.safeSet("targetLeverage", 1.0)
+                it.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
+                it.safeSet("targetLeverage", 1.0)
             }
-
-            modified
-        } else {
-            initiateTrade(
-                marketId,
-                subaccountNumber,
-            )
         }
+
         input["trade"] = trade
         input["current"] = "trade"
         this.input = input
@@ -152,7 +152,7 @@ internal fun TradingStateMachine.tradeInMarket(
     }
 }
 
-internal fun TradingStateMachine.initiateTrade(
+private fun TradingStateMachine.initiateTrade(
     marketId: String?,
     subaccountNumber: Int,
 ): MutableMap<String, Any> {

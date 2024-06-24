@@ -18,7 +18,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedCCTPDeposit() {
         val payload = skipRouteMock.payload
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val expected = mapOf(
             "toAmountUSD" to 11.64,
             "toAmount" to 11.64,
@@ -45,7 +45,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedCCTPDydxToNobleWithdrawal() {
         val payload = skipRouteMock.payloadCCTPDydxToNoble
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val jsonEncoder = JsonEncoder()
         val expectedMsg = mapOf(
             "sourcePort" to "transfer",
@@ -89,7 +89,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedNonCCTPDydxToEthWithdrawal() {
         val payload = skipRouteMock.payloadDydxToEth
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 18.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 18.0)
         val jsonEncoder = JsonEncoder()
         val expectedMsg = mapOf(
             "sourcePort" to "transfer",
@@ -138,7 +138,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedCCTPDydxToNoble() {
         val payload = skipRouteMock.payloadCCTPDydxToNoble
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val jsonEncoder = JsonEncoder()
         val expectedMsg = mapOf(
             "sourcePort" to "transfer",
@@ -163,8 +163,8 @@ class SkipRouteProcessorTests {
         val expected = mapOf(
             "toAmountUSD" to 11.01,
             "toAmount" to 10.996029,
-            "slippage" to "1",
             "bridgeFee" to 0.0,
+            "slippage" to "1",
             "requestPayload" to mapOf(
                 "fromChainId" to "dydx-mainnet-1",
                 "fromAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
@@ -184,7 +184,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedCCTPNobleToDydx() {
         val payload = skipRouteMock.payloadCCTPNobleToDydx
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val jsonEncoder = JsonEncoder()
         val expectedMsg = mapOf(
             "sourcePort" to "transfer",
@@ -225,7 +225,7 @@ class SkipRouteProcessorTests {
     @Test
     fun testReceivedError() {
         val payload = skipRouteMock.payloadError
-        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToJson(payload), decimals = 6.0)
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val expected = mapOf(
             "bridgeFee" to 0.0,
             "slippage" to "1",
