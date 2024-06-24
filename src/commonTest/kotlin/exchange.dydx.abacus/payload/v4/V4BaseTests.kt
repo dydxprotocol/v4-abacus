@@ -208,9 +208,9 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
                 }
             }
             if (historicalData != null) {
-                assertNotNull(obj?.historical)
+                assertNotNull(obj?.filledHistory)
                 for ((period, rewardsData) in historicalData) {
-                    val rewardsListObjOrig = obj?.historical?.get(period)
+                    val rewardsListObjOrig = obj?.filledHistory?.get(period)
                     val rewardsListDataOrig = parser.asList(rewardsData)
 
                     assertTrue {

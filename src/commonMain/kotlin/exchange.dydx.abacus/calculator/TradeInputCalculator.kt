@@ -1785,6 +1785,7 @@ internal class TradeInputCalculator(
                 parser,
                 trade,
                 market,
+                subaccount,
             )
 
             summary.safeSet("isolatedMarginTransferAmount", isolatedMarginTransferAmount)
