@@ -193,7 +193,7 @@ class V4OrderbookTests : V3BaseTests() {
                             "ETH-USD": {
                                 "orderbook": {
                                     "asks": [
-                                         {
+                                        {
                                             "size": 0.907,
                                             "price": 1800.0,
                                             "depth": 0.907
