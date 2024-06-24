@@ -1788,7 +1788,8 @@ internal fun Instant.previousMonth(): Instant {
 data class TradingRewards(
     val total: Double?,
     val blockRewards: IList<BlockReward>?,
-    val historical: IMap<String, IList<HistoricalTradingReward>>?
+    val filledHistory: IMap<String, IList<HistoricalTradingReward>>?,
+    val rawHistory: IMap<String, IList<HistoricalTradingReward>>?
 ) {
     companion object {
         internal fun create(
@@ -1799,13 +1800,17 @@ data class TradingRewards(
             Logger.d { "creating TradingRewards\n" }
             data?.let {
                 val total = parser.asDouble(data["total"])
-                val historical = total?.let {
+                val filledHistory = total?.let {
                     createHistoricalTradingRewards(
                         it,
-                        existing?.historical,
+                        existing?.filledHistory,
                         parser.asMap(data["historical"]),
+                        fillZeros = true,
                         parser,
                     )
+                }
+                val rawHistory = total?.let {
+                    createHistoricalTradingRewards(it, existing?.rawHistory, parser.asMap(data["historical"]), fillZeros = false, parser)
                 }
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
@@ -1813,12 +1818,14 @@ data class TradingRewards(
 
                 return if (existing?.total != total ||
                     existing?.blockRewards != blockRewards ||
-                    existing?.historical != historical
+                    existing?.filledHistory != filledHistory ||
+                    existing?.rawHistory != rawHistory
                 ) {
                     TradingRewards(
                         total,
                         blockRewards,
-                        historical,
+                        filledHistory,
+                        rawHistory,
                     )
                 } else {
                     existing
@@ -1832,6 +1839,7 @@ data class TradingRewards(
             total: Double,
             existing: IMap<String, IList<HistoricalTradingReward>>?,
             data: Map<String, Any>?,
+            fillZeros: Boolean,
             parser: ParserProtocol,
         ): IMap<String, IList<HistoricalTradingReward>> {
             val objs = iMutableMapOf<String, IList<HistoricalTradingReward>>()
@@ -1840,7 +1848,7 @@ data class TradingRewards(
                 val periodObjs = existing?.get(period)
                 val periodData = parser.asList(data?.get(period))
                 val rewards =
-                    createHistoricalTradingRewardsPerPeriod(periodObjs, periodData, parser, period, total)
+                    createHistoricalTradingRewardsPerPeriod(periodObjs, periodData, parser, period, total, fillZeros)
                 objs.typedSafeSet(period, rewards)
             }
             return objs
@@ -1852,6 +1860,7 @@ data class TradingRewards(
             parser: ParserProtocol,
             period: String,
             total: Double,
+            fillZeros: Boolean
         ): IList<HistoricalTradingReward> {
             val result = iMutableListOf<HistoricalTradingReward>()
             if (data != null) {
@@ -1876,8 +1885,10 @@ data class TradingRewards(
 
                                 val synced =
                                     HistoricalTradingReward.create(null, parser, modified, period)
-                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
-                                result.add(synced)
+                                if (fillZeros) {
+                                    addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                }
+                                result.add(synced!!)
                                 dataIndex++
                                 lastStart = synced.startedAtInMilliseconds
                                 cumulativeAmount = cumulativeAmount - parser.asDouble(item["amount"])!!
@@ -1893,21 +1904,27 @@ data class TradingRewards(
                                 )
 
                                 val synced = HistoricalTradingReward.create(obj, parser, modified, period)
-                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
-                                result.add(synced)
+                                if (fillZeros) {
+                                    addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                }
+                                result.add(synced!!)
                                 objIndex++
                                 lastStart = synced.startedAtInMilliseconds
                                 cumulativeAmount = cumulativeAmount - obj.amount
                             }
 
                             else -> {
+                                // same thing
                                 val modified = item.mutable()
                                 modified.safeSet("cumulativeAmount", cumulativeAmount)
 
                                 val synced =
                                     HistoricalTradingReward.create(obj, parser, modified, period)
-                                addHistoricalTradingRewards(result, synced!!, period, lastStart)
-                                result.add(synced)
+
+                                if (fillZeros) {
+                                    addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                }
+                                result.add(synced!!)
                                 objIndex++
                                 dataIndex++
                                 lastStart = synced.startedAtInMilliseconds
@@ -1929,8 +1946,10 @@ data class TradingRewards(
                         )
 
                         val synced = HistoricalTradingReward.create(obj, parser, modified, period)
-                        addHistoricalTradingRewards(result, synced!!, period, lastStart)
-                        result.add(synced)
+                        if (fillZeros) {
+                            addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                        }
+                        result.add(synced!!)
                         objIndex++
                         lastStart = obj.startedAtInMilliseconds
                         cumulativeAmount = cumulativeAmount - obj.amount
@@ -1946,15 +1965,21 @@ data class TradingRewards(
                         modified.safeSet("cumulativeAmount", cumulativeAmount)
 
                         val synced = HistoricalTradingReward.create(null, parser, modified, period)
-                        addHistoricalTradingRewards(result, synced!!, period, lastStart)
-                        result.add(synced)
+                        if (fillZeros) {
+                            addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                        }
+                        result.add(synced!!)
                         dataIndex++
                         lastStart = synced.startedAtInMilliseconds
                         cumulativeAmount = cumulativeAmount - synced.amount
+                    } else {
+                        dataIndex++
                     }
                 }
             } else {
-                result.add(currentPeriodPlaceHolder(period, total))
+                if (fillZeros) {
+                    result.add(currentPeriodPlaceHolder(period, total))
+                }
             }
             return result
         }
@@ -2027,7 +2052,7 @@ data class TradingRewards(
                 Instant.fromEpochMilliseconds(lastStart.toLong())
             }
             while (obj.startedAtInMilliseconds < lastStartTime.toEpochMilliseconds().toDouble()) {
-                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount + obj.amount)
+                val previous = previousPlaceHolder(period, lastStartTime, obj.cumulativeAmount)
                 if (obj.startedAtInMilliseconds < previous.startedAtInMilliseconds) {
                     result.add(previous)
                     lastStartTime =
