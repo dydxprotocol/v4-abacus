@@ -191,9 +191,11 @@ open class V4TradeInputTests : V4BaseTests() {
                         }
                     },
                     "receiptLines": [
-                        "BUYING_POWER",
-                        "MARGIN_USAGE",
-                        "FEE"
+                        "LIQUIDATION_PRICE",
+                        "POSITION_MARGIN",
+                        "POSITION_LEVERAGE",
+                        "FEE",
+                        "REWARD"
                     ]
                 }
             }

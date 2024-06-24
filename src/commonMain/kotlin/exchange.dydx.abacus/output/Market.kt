@@ -600,7 +600,7 @@ data class MarketTrade(
                 val size = parser.asDouble(data["size"])
                 val price = parser.asDouble(data["price"])
                 val side =
-                    if (parser.asString(data["side"]) == "SELL") OrderSide.sell else OrderSide.buy
+                    if (parser.asString(data["side"]) == "SELL") OrderSide.Sell else OrderSide.Buy
                 val type = OrderType.invoke(parser.asString(data["type"]))
                 val createdAtMilliseconds =
                     parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()

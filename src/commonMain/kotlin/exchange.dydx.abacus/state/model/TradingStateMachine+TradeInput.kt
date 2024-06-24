@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.state.model
 
 import abs
-import exchange.dydx.abacus.calculator.MarginModeCalculator
+import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.output.input.MarginMode
@@ -89,46 +89,46 @@ internal fun TradingStateMachine.tradeInMarket(
             // If we changed market, we should also reset the price and size
             modified.safeSet("size", null)
             modified.safeSet("price", null)
-
-            val existingPosition = MarginModeCalculator.findExistingPosition(
-                parser,
-                account,
-                marketId,
-                subaccountNumber,
-            )
-            val existingOrder = MarginModeCalculator.findExistingOrder(
-                parser,
-                account,
-                marketId,
-                subaccountNumber,
-            )
-            if (existingPosition != null) {
-                modified.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
-                val currentPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs()
-                val positionLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
-                modified.safeSet("targetLeverage", positionLeverage)
-            } else if (existingOrder != null) {
-                val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.cross.rawValue else MarginMode.isolated.rawValue
-                modified.safeSet("marginMode", orderMarginMode)
-                modified.safeSet("targetLeverage", 1.0)
-            } else {
-                val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
-                modified.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
-                modified.safeSet("targetLeverage", 1.0)
-            }
-
             modified
         } else {
             initiateTrade(
                 marketId,
                 subaccountNumber,
             )
+        }.also {
+            val existingPosition = MarginCalculator.findExistingPosition(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+            val existingOrder = MarginCalculator.findExistingOrder(
+                parser,
+                account,
+                marketId,
+                subaccountNumber,
+            )
+            if (existingPosition != null) {
+                it.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
+                val currentPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs()
+                val positionLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
+                it.safeSet("targetLeverage", positionLeverage)
+            } else if (existingOrder != null) {
+                val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.Cross.rawValue else MarginMode.Isolated.rawValue
+                it.safeSet("marginMode", orderMarginMode)
+                it.safeSet("targetLeverage", 1.0)
+            } else {
+                val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
+                it.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
+                it.safeSet("targetLeverage", 1.0)
+            }
         }
+
         input["trade"] = trade
         input["current"] = "trade"
         this.input = input
         val childSubaccountNumber =
-            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+            MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
                 parser,
                 account,
                 subaccountNumber,
@@ -152,7 +152,7 @@ internal fun TradingStateMachine.tradeInMarket(
     }
 }
 
-internal fun TradingStateMachine.initiateTrade(
+private fun TradingStateMachine.initiateTrade(
     marketId: String?,
     subaccountNumber: Int,
 ): MutableMap<String, Any> {
@@ -161,8 +161,8 @@ internal fun TradingStateMachine.initiateTrade(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    val marginMode = MarginModeCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
-        ?: MarginModeCalculator.findMarketMarginMode(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
+    val marginMode = MarginCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
+        ?: MarginCalculator.findMarketMarginMode(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
 
     trade.safeSet("marginMode", marginMode)
 
@@ -221,7 +221,7 @@ fun TradingStateMachine.trade(
     if (typeText != null) {
         if (validTradeInput(trade, typeText)) {
             var childsubaccountNumber =
-                MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
                     parser,
                     account,
                     subaccountNumber,
@@ -295,7 +295,7 @@ fun TradingStateMachine.trade(
                 -> {
                     trade.safeSet(typeText, parser.asString(data))
                     childsubaccountNumber =
-                        MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+                        MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
                             parser,
                             account,
                             subaccountNumber,

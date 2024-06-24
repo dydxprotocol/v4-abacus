@@ -8,6 +8,7 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.UsageRestriction
+import exchange.dydx.abacus.processor.router.skip.SkipRoutePayloadProcessor
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -49,6 +50,7 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
@@ -206,6 +208,7 @@ internal open class AccountSupervisor(
 
     init {
         screenAccountAddress()
+        complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
     }
 
     internal fun subscribeToSubaccount(subaccountNumber: Int) {
@@ -329,9 +332,6 @@ internal open class AccountSupervisor(
                     val isValidResponse = helper.success(httpCode) && response != null
                     if (isValidResponse) {
                         response?.let { retrievedSubaccounts(it) }
-                        complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
-                    } else {
-                        complianceScreen(DydxAddress(accountAddress), ComplianceAction.ONBOARD)
                     }
                     if (!isValidResponse && httpCode != 403) {
                         subaccountNumber = 0
@@ -455,10 +455,12 @@ internal open class AccountSupervisor(
             val balance = helper.parser.decodeJsonObject(response)
             if (balance != null) {
                 val amount = helper.parser.asDecimal(balance["amount"])
+//                minimum usdc required for successful tx (gas fee)
                 if (amount != null && amount > 5000) {
                     if (processingCctpWithdraw) {
                         return@getOnChain
                     }
+//                    if pending withdrawal, perform CCTP Withdrawal
                     pendingCctpWithdraw?.let { walletState ->
                         processingCctpWithdraw = true
                         val callback = walletState.callback
@@ -477,6 +479,7 @@ internal open class AccountSupervisor(
                             processingCctpWithdraw = false
                         }
                     }
+//                        else, transfer noble balance back to dydx
                         ?: run { transferNobleBalance(amount) }
                 } else if (balance["error"] != null) {
                     Logger.e { "Error checking noble balance: $response" }
@@ -582,10 +585,22 @@ internal open class AccountSupervisor(
         }
     }
 
+//    DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
+//    rename to transferNobleToDydx or something more descriptive.
+//    This function is a unidirection transfer function that sweeps funds
+//    from a noble account into a user's given subaccount
     private fun transferNobleBalance(amount: BigDecimal) {
+        if (stateMachine.useSkip) {
+            transferNobleBalanceSkip(amount = amount)
+        } else {
+            transferNobleBalanceSquid(amount = amount)
+        }
+    }
+
+    private fun transferNobleBalanceSquid(amount: BigDecimal) {
         val url = helper.configs.squidRoute()
         val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom()
+        val fromToken = helper.configs.nobleDenom
         val nobleAddress = accountAddress.toNobleAddress()
         val chainId = helper.environment.dydxChainId
         val squidIntegratorId = helper.environment.squidIntegratorId
@@ -635,6 +650,56 @@ internal open class AccountSupervisor(
                 } else {
                     Logger.e { "transferNobleBalance error, code: $code" }
                 }
+            }
+        }
+    }
+
+    private fun transferNobleBalanceSkip(amount: BigDecimal) {
+        val url = helper.configs.skipV2MsgsDirect()
+        val fromChain = helper.configs.nobleChainId()
+        val fromToken = helper.configs.nobleDenom
+        val nobleAddress = accountAddress.toNobleAddress() ?: return
+        val chainId = helper.environment.dydxChainId ?: return
+        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom ?: return
+        val body: Map<String, Any> = mapOf(
+            "amount_in" to amount.toPlainString(),
+//              from noble denom and chain
+            "source_asset_denom" to fromToken,
+            "source_asset_chain_id" to fromChain,
+//              to dydx denom and chain
+            "dest_asset_denom" to dydxTokenDemon,
+            "dest_asset_chain_id" to chainId,
+            "chain_ids_to_addresses" to mapOf(
+                fromChain to nobleAddress,
+                chainId to accountAddress,
+            ),
+            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+        )
+        val header =
+            iMapOf(
+                "Content-Type" to "application/json",
+            )
+        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
+            if (response == null) {
+                val json = helper.parser.decodeJsonObject(response)
+                if (json != null) {
+                    val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
+                    val processedPayload = skipRoutePayloadProcessor.received(existing = mapOf(), payload = json)
+                    val ibcPayload =
+                        helper.parser.asString(
+                            processedPayload.get("data"),
+                        )
+                    if (ibcPayload != null) {
+                        helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
+                            val error = helper.parseTransactionResponse(it)
+                            if (error != null) {
+                                Logger.e { "transferNobleBalanceSkip error: $error" }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Logger.e { "transferNobleBalanceSkip error, code: $code" }
             }
         }
     }
@@ -751,12 +816,15 @@ internal open class AccountSupervisor(
         }
     }
 
-    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
+    internal open fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback?) {
         if (compliance.status != ComplianceStatus.UNKNOWN) {
             updateCompliance(DydxAddress(accountAddress), compliance.status, action)
-            callback(true, null, null)
+            if (callback != null) {
+                callback(true, null, null)
+            }
+        } else if (callback != null) {
+            callback(false, V4TransactionErrors.error(null, "No account address"), null)
         }
-        callback(false, V4TransactionErrors.error(null, "No account address"), null)
     }
 
     private fun complianceScreenUrl(address: String): String? {
@@ -1122,7 +1190,7 @@ internal fun AccountSupervisor.faucet(amount: Double, callback: TransactionCallb
 }
 
 internal fun AccountSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {
-    subaccount?.cancelOrder(orderId, callback)
+    subaccount?.cancelOrder(orderId = orderId, callback = callback)
 }
 
 internal fun AccountSupervisor.orderCanceled(orderId: String) {

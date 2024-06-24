@@ -8,7 +8,7 @@ class AccountTransformer() {
     private val subaccountTransformer = SubaccountTransformer()
     internal fun applyTradeToAccount(
         account: Map<String, Any>?,
-        subaccountNumber: Int?,
+        subaccountNumber: Int,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
         parser: ParserProtocol,
@@ -16,20 +16,20 @@ class AccountTransformer() {
     ): Map<String, Any>? {
         val modified = account?.mutable() ?: return null
         val childSubaccountNumber =
-            MarginModeCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+            MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
                 parser,
                 account,
                 subaccountNumber ?: 0,
                 trade,
             )
+        val subaccount = parser.asNativeMap(
+            parser.value(
+                account,
+                "subaccounts.$subaccountNumber",
+            ),
+        ) ?: mapOf()
         if (subaccountNumber == childSubaccountNumber) {
             // CROSS
-            val subaccount = parser.asNativeMap(
-                parser.value(
-                    account,
-                    "subaccounts.$subaccountNumber",
-                ),
-            ) ?: mapOf()
             val modifiedSubaccount =
                 subaccountTransformer.applyTradeToSubaccount(
                     subaccount,
@@ -41,17 +41,28 @@ class AccountTransformer() {
             modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
             return modified
         } else {
-            val transferAmount = calculateIsolatedMarginTransferAmount(
-                parser,
-                trade,
-            ) ?: 0.0
-
-            val subaccount = parser.asNativeMap(
+            val childSubaccount = parser.asNativeMap(
                 parser.value(
                     account,
-                    "subaccounts.$subaccountNumber",
+                    "subaccounts.$childSubaccountNumber",
                 ),
             ) ?: mapOf()
+
+            val transferAmount = if (MarginCalculator.getShouldTransferCollateral(
+                    parser,
+                    subaccount = childSubaccount,
+                    tradeInput = trade,
+                )
+            ) {
+                MarginCalculator.calculateIsolatedMarginTransferAmount(
+                    parser,
+                    trade,
+                    market,
+                    subaccount = childSubaccount,
+                ) ?: 0.0
+            } else {
+                0.0
+            }
 
             val modifiedSubaccount =
                 subaccountTransformer.applyTransferToSubaccount(
@@ -61,13 +72,6 @@ class AccountTransformer() {
                     period,
                 )
             modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
-
-            val childSubaccount = parser.asNativeMap(
-                parser.value(
-                    account,
-                    "subaccounts.$childSubaccountNumber",
-                ),
-            ) ?: mapOf()
 
             val modifiedChildSubaccount =
                 subaccountTransformer.applyTradeToSubaccount(
@@ -80,21 +84,6 @@ class AccountTransformer() {
                 )
             modified.safeSet("subaccounts.$childSubaccountNumber", modifiedChildSubaccount)
             return modified
-        }
-    }
-
-    fun calculateIsolatedMarginTransferAmount(
-        parser: ParserProtocol,
-        trade: Map<String, Any>,
-    ): Double? {
-        val marketOrderUsdcSize = parser.asDouble(parser.value(trade, "marketOrder.usdcSize"))
-        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
-
-        return if (targetLeverage == 0.0) {
-            null
-        } else {
-            val usdcSize = marketOrderUsdcSize ?: parser.asDouble(parser.value(trade, "size.usdcSize")) ?: return null
-            usdcSize / targetLeverage
         }
     }
 }

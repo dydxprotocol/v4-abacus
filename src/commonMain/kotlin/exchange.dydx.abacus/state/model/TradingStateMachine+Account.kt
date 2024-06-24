@@ -61,7 +61,7 @@ internal fun TradingStateMachine.findOrder(
         it.id == orderId
     } ?: return null
     return when (order.status) {
-        OrderStatus.open, OrderStatus.pending, OrderStatus.untriggered -> order
+        OrderStatus.Open, OrderStatus.Pending, OrderStatus.Untriggered -> order
         else -> null
     }
 }
@@ -88,7 +88,7 @@ internal fun TradingStateMachine.findOrderInData(
         it.id == orderId
     } ?: return null
     return when (order.status) {
-        OrderStatus.open, OrderStatus.pending, OrderStatus.untriggered -> order
+        OrderStatus.Open, OrderStatus.Pending, OrderStatus.Untriggered -> order
         else -> null
     }
 }

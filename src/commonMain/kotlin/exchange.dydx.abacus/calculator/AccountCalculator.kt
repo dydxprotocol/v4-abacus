@@ -2,6 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
@@ -22,7 +23,12 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
             val subaccounts = parser.asMap(account["subaccounts"]) ?: return account
             var modified = account.mutable()
             for ((subaccountNumber, subaccount) in subaccounts) {
-                val parentSubaccountNumber = subaccountNumber.toInt() % NUM_PARENT_SUBACCOUNTS
+                val subaccountNumberInt = parser.asInt(subaccountNumber)
+                if (subaccountNumberInt == null) {
+                    Logger.e { "Invalid subaccount number: $subaccountNumber" }
+                    continue
+                }
+                val parentSubaccountNumber = subaccountNumberInt % NUM_PARENT_SUBACCOUNTS
                 if (parentSubaccountNumber in subaccountNumbers) {
                     val key = "subaccounts.$subaccountNumber"
                     modified.safeSet(
@@ -171,6 +177,7 @@ class AccountCalculator(val parser: ParserProtocol, private val useParentSubacco
             }
 
             val orderStatus = parser.asString(parser.value(order, "status"))
+
             if (!listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)) {
                 continue
             }

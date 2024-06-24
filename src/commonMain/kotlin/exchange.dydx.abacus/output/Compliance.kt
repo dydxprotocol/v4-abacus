@@ -17,7 +17,6 @@ enum class ComplianceStatus {
 @JsExport
 @Serializable
 enum class ComplianceAction {
-    ONBOARD,
     CONNECT,
     VALID_SURVEY,
     INVALID_SURVEY;

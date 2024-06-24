@@ -121,7 +121,7 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
             modified.safeSet("subaccountNumber", this)
 
             // the v4_parent_subaccount message has subaccountNumber available but v4_orders does not
-            modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.isolated.rawValue else MarginMode.cross.rawValue)
+            modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
         }
 
         ParsingHelper.asset(parser.asString(modified["id"]))?.let {

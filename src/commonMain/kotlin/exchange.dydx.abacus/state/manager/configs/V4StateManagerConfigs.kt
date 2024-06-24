@@ -91,18 +91,6 @@ class V4StateManagerConfigs(
         return "$squid$path"
     }
 
-    fun squidChains(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.chains"))
-        return "$squid$path"
-    }
-
-    fun squidToken(): String? {
-        val squid = environment.endpoints.squid ?: return null
-        val path = parser.asString(parser.value(configs, "paths.0xsquid.tokens"))
-        return "$squid$path"
-    }
-
     fun squidV2Assets(): String? {
         return "$squidV2Host/v2/sdk-info"
     }
@@ -111,25 +99,36 @@ class V4StateManagerConfigs(
         return "$squidV2Host/v2/route"
     }
 
-    fun nobleChainId(): String? {
+    fun nobleChainId(): String {
         return if (environment.isMainNet) "noble-1" else "grand-1"
     }
 
+    fun osmosisChainId(): String {
+        return if (environment.isMainNet) "osmosis-1" else "osmo-test-5"
+    }
+
+    fun neutronChainId(): String {
+        return if (environment.isMainNet) "neutron-1" else "pion-1"
+    }
+
     fun skipV1Chains(): String {
-        return "$skipHost/v1/info/chains?include_evm=true"
+        return "$skipHost/v2/info/chains?include_evm=true$onlyTestnets"
     }
 
     fun skipV1Assets(): String {
-        return "$skipHost/v1/fungible/assets?include_evm_assets=true"
+        return "$skipHost/v2/fungible/assets?include_evm_assets=true$onlyTestnets"
     }
 
     fun skipV2MsgsDirect(): String {
         return "$skipHost/v2/fungible/msgs_direct"
     }
 
-    fun nobleDenom(): String? {
-        return "uusdc"
-    }
+    val nobleDenom = "uusdc"
+
+    private val onlyTestnets: String
+        get() {
+            return if (environment.isMainNet) "" else "&only_testnets=true"
+        }
 
     private val skipHost: String
         get() {

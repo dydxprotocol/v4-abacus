@@ -14,8 +14,7 @@ import kotlinx.serialization.Serializable
 enum class TriggerOrderAction(val rawValue: String) {
     REPLACE("REPLACE"),
     CANCEL("CANCEL"),
-    CREATE("CREATE"),
-    ;
+    CREATE("CREATE");
 }
 
 class AnalyticsUtils {
@@ -34,8 +33,8 @@ class AnalyticsUtils {
         val placeOrderPayloads = payload.placeOrderPayloads
         val cancelOrderPayloads = payload.cancelOrderPayloads
 
-        val stopLossOrderTypes = listOf(OrderType.stopMarket, OrderType.stopLimit)
-        val takeProfitOrderTypes = listOf(OrderType.takeProfitMarket, OrderType.takeProfitLimit)
+        val stopLossOrderTypes = listOf(OrderType.StopMarket, OrderType.StopLimit)
+        val takeProfitOrderTypes = listOf(OrderType.TakeProfitMarket, OrderType.TakeProfitLimit)
 
         var stopLossOrderCancelClientId: Int? = null
         var stopLossOrderPlaceClientId: Int? = null
@@ -179,9 +178,10 @@ class AnalyticsUtils {
         payload: HumanReadableCancelOrderPayload,
         existingOrder: SubaccountOrder?,
         fromSlTpDialog: Boolean? = false,
+        isOrphanedTriggerOrder: Boolean = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatCancelOrderPayload(payload, fromSlTpDialog),
+            formatCancelOrderPayload(payload, fromSlTpDialog, isOrphanedTriggerOrder),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
     }
@@ -194,9 +194,11 @@ class AnalyticsUtils {
     private fun formatCancelOrderPayload(
         payload: HumanReadableCancelOrderPayload,
         fromSlTpDialog: Boolean? = false,
+        isOrphanedTriggerOrder: Boolean = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "fromSlTpDialog" to fromSlTpDialog,
+            "isAutomaticallyCanceledByFrontend" to isOrphanedTriggerOrder,
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,

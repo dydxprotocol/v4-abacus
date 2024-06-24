@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
+import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -186,15 +187,15 @@ class V4TransactionTests : NetworkTests() {
         val statefulOrderId2 = "0ae98da9-4fdc-5f08-b880-2449464b6b45"
         val statefulOrderId3 = "734617f4-29ba-50fe-878d-391ad4e4fbd1"
 
-        subaccountSupervisor?.cancelOrder(shortTermOrderId, transactionCallback)
+        subaccountSupervisor?.cancelOrder(shortTermOrderId, callback = transactionCallback)
         assertTransactionQueueEmpty("Short term order should not be enqueued")
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
 
         // cancel multiple stateful orders
-        subaccountSupervisor?.cancelOrder(statefulOrderId1, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId1, callback = transactionCallback)
         assertTransactionQueueStarted()
-        subaccountSupervisor?.cancelOrder(statefulOrderId2, transactionCallback)
-        subaccountSupervisor?.cancelOrder(statefulOrderId3, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId2, callback = transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId3, callback = transactionCallback)
         assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
 
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
@@ -204,6 +205,29 @@ class V4TransactionTests : NetworkTests() {
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
         assertEquals(4, transactionCalledCount)
         assertTransactionQueueEmpty()
+    }
+
+    @Test
+    fun testCancelTriggerOrdersWithClosedOrFlippedPositions() {
+        setStateMachineConnected(stateManager)
+        val canceldOrderPayloads = testChain!!.canceldOrderPayloads
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_parent_subaccounts_subscribed_with_trigger_orders_and_open_positions)
+        assertEquals(0, canceldOrderPayloads.size)
+
+        val triggerOrderWithClosedPositionIsolated = "f581f56c-9f1b-54e0-97d6-5f934dd0eb67"
+        val triggerOrderWithFlippedPositionCross = "aeb40307-861a-52c1-9568-2a95468e8687"
+        val orderIdsToBeCanceled = setOf(triggerOrderWithClosedPositionIsolated, triggerOrderWithFlippedPositionCross)
+
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_parent_subaccounts_batched_closed_and_flipped_positions)
+        // 3 total orders, while only 2 should be canceled
+        repeat(3) {
+            testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        }
+        assertEquals(2, canceldOrderPayloads.size)
+        val canceledOrderIds = canceldOrderPayloads.map {
+            parser.asNativeMap(Json.parseToJsonElement(it))?.get("orderId")?.toString()?.trim('"')
+        }.toSet()
+        assertEquals(orderIdsToBeCanceled, canceledOrderIds)
     }
 
     @Test
@@ -327,7 +351,7 @@ class V4TransactionTests : NetworkTests() {
         assertTransactionQueueEmpty()
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueStarted()
-        subaccountSupervisor?.cancelOrder(statefulOrderId1, transactionCallback)
+        subaccountSupervisor?.cancelOrder(statefulOrderId1, callback = transactionCallback)
         assertEquals(1, subaccountSupervisor?.transactionQueue?.size)
         triggerOrdersInput(marketId = "BTC-USD", stopLossTriggerPrice = "30000")
         subaccountSupervisor?.commitTriggerOrders(0, transactionCallback)
@@ -442,7 +466,7 @@ class V4TransactionTests : NetworkTests() {
         setStateMachineForIsolatedMarginTests(stateManager)
         val transactionCallback: TransactionCallback = { _, _, _ -> }
 
-        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", transactionCallback)
+        val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", callback = transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
     }
