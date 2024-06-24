@@ -658,6 +658,7 @@ data class MarketTrade(
 @Serializable
 data class OrderbookLine(
     val size: Double,
+    val sizeCost: Double,
     val price: Double,
     val offset: Int = 0,
     val depth: Double?,
@@ -674,17 +675,19 @@ data class OrderbookLine(
             data?.let {
                 val size = parser.asDouble(data["size"])
                 val price = parser.asDouble(data["price"])
+                val sizeCost = parser.asDouble(data["sizeCost"]);
                 val offset = parser.asInt(data["offset"]) ?: 0
                 val depth = parser.asDouble(data["depth"])
-                if (size != null && price != null && size != 0.0) {
-                    val depthCost = (previousDepthCost ?: 0.0) + size * price
+                if (size != null && price != null && sizeCost != null && size != 0.0) {
+                    val depthCost = (previousDepthCost ?: 0.0) + sizeCost
                     return if (existing?.size != size ||
+                        existing.sizeCost != sizeCost ||
                         existing.price != price ||
                         existing.offset != offset ||
                         existing.depth != depth ||
                         existing.depthCost != depthCost
                     ) {
-                        OrderbookLine(size, price, offset ?: 0, depth, depthCost)
+                        OrderbookLine(size, sizeCost, price, offset ?: 0, depth, depthCost)
                     } else {
                         existing
                     }
@@ -726,6 +729,7 @@ data class MarketOrderbookGrouping(val multiplier: OrderbookGrouping, val tickSi
 data class MarketOrderbook(
     val midPrice: Double?,
     val spreadPercent: Double?,
+    val spread: Double?,
     val grouping: MarketOrderbookGrouping?,
     val asks: IList<OrderbookLine>?,
     val bids: IList<OrderbookLine>?,
@@ -739,6 +743,7 @@ data class MarketOrderbook(
             Logger.d { "creating Market Orderbook\n" }
             data?.let {
                 val midPrice = parser.asDouble(data["midPrice"])
+                val spread = parser.asDouble(data["spread"])
                 val spreadPercent = parser.asDouble(data["spreadPercent"])
                 val grouping =
                     MarketOrderbookGrouping.create(parser, parser.asMap(data["grouping"]))
@@ -748,11 +753,12 @@ data class MarketOrderbook(
 
                 return if (existing?.midPrice != midPrice ||
                     existing?.spreadPercent != spreadPercent ||
+                    existing?.spread != spread ||
                     existing?.grouping !== grouping ||
                     existing?.asks != asks ||
                     existing?.bids != bids
                 ) {
-                    return MarketOrderbook(midPrice, spreadPercent, grouping, asks, bids)
+                    return MarketOrderbook(midPrice, spreadPercent, spread, grouping, asks, bids)
                 } else {
                     existing
                 }
