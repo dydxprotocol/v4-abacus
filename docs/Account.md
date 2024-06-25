@@ -3,8 +3,29 @@
 account in PerpetualState is an object, containing a map of String to Subaccount
 
 data class Account(  
-&emsp;var subaccounts: Map<String, Subaccount>?  
+&emsp;var subaccounts: Map<String, Subaccount>?,  
+&emsp;var tradingRewards: TradingRewards?  
 )
+
+# TradingRewards
+
+Metadata about trading rewards this account has earned. 
+
+data class TradingRewards(  
+&emsp;val total: Double?,  
+&emsp;val filledHistory: Map<String, IList<HistoricalTradingReward>>?,  
+&emsp;val rawHistory: Map<String, IList<HistoricalTradingReward>>?  
+)
+
+## filledHistory
+
+Map with keys "WEEKLY", "DAILY", and "MONTHLY" where each value is a list of objects representing the rewards received in every period starting in the current period and going backward. 
+
+Periods with no rewards will be present in the list with a value of 0. 
+
+## rawHistory
+
+Same as filledHistory except all empty (0) rewards periods will be removed from the lists. 
 
 # Subaccount
 
