@@ -145,7 +145,7 @@ internal class SkipProcessor(
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
-    private fun getChainById(chainId: String): Map<String, Any>? {
+    override fun getChainById(chainId: String): Map<String, Any>? {
         return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId })
     }
 

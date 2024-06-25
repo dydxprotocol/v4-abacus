@@ -42,6 +42,7 @@ import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.IList
+import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
@@ -619,5 +620,10 @@ class AsyncAbacusStateManagerV2(
 
     override fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
         adaptor?.screen(address, callback)
+    }
+
+    override fun getChainById(chainId: String): IMap<String, Any>? {
+        val parser = Parser()
+        return parser.asMap(adaptor?.stateMachine?.routerProcessor?.getChainById(chainId = chainId))
     }
 }
