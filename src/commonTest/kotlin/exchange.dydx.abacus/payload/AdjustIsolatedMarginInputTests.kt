@@ -135,6 +135,22 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
             }
             """.trimIndent(),
         )
+
+        test(
+            {
+                perp.adjustIsolatedMargin("-92.49", AdjustIsolatedMarginInputField.Amount, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Amount": "92.49"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
     }
 
     private fun testMarginRemoval() {
