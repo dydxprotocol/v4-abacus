@@ -133,7 +133,7 @@ data class HumanReadableTransferPayload(
 
 @JsExport
 @Serializable
-data class HumanReadableChainPayload(
+data class TransferChainInfo(
     val chainName: String,
     val chainId: String,
     val logoUri: String,
