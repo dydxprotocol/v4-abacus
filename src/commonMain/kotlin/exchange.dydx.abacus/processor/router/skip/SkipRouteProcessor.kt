@@ -4,6 +4,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.toJsonArray
 import kotlin.math.pow
 
 @Suppress("ForbiddenComment")
@@ -100,7 +101,7 @@ internal class SkipRouteProcessor(internal val parser: ParserProtocol) {
 //        this allows to match the current errors format.
 //        TODO: replace errors with errorMessage once we finish migration
         if (errorCode != null) {
-            modified.safeSet("errors", parser.asString(listOf(payload)))
+            modified.safeSet("error", parser.asString(parser.asList(payload)?.toJsonArray()))
         } else {
 //          Only bother processing payload if there's no error
             val payloadProcessor = SkipRoutePayloadProcessor(parser)
