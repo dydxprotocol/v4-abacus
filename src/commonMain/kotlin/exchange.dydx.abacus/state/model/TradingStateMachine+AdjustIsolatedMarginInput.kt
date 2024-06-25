@@ -14,6 +14,7 @@ import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
+import kotlin.math.absoluteValue
 
 @JsExport
 @Serializable
@@ -88,7 +89,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     } else {
                         equity
                     }
-                    val amountValue = parser.asDouble(data)
+                    val amountValue = parser.asDouble(data)?.absoluteValue
 
                     if (amountValue == null) {
                         adjustIsolatedMargin.safeSet("Amount", null)
