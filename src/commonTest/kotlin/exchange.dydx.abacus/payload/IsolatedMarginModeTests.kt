@@ -147,6 +147,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     @Test
     fun testMarginModeWithExistingPosition() {
         testMarginAmountForSubaccountTransferWithExistingIsolatedPosition()
+        testMarginAmountForSubaccountTransferWithExistingIsolatedPositionAndOpenOrders()
     }
 
     // MarginMode should automatically to match the current market based on a variety of factors
@@ -224,7 +225,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             {
                 perp.socket(
                     testWsUrl,
-                    mock.parentSubaccountsChannel.read_subscribe_with_isolated_position,
+                    mock.parentSubaccountsChannel.real_subscribe_with_isolated_position,
                     0,
                     null,
                 )
@@ -362,6 +363,217 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                 "price": 1.0,
                                 "size": 10.0,
                                 "isolatedMarginTransferAmount": -10.0
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        // input a trade that will flip position absolute net size +10
+        perp.trade("50", TradeInputField.size, 0)
+        test(
+            {
+                perp.trade("2", TradeInputField.targetLeverage, 0)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "freeCollateral": {
+                                        "current": 137.13,
+                                        "postOrder": 128.22
+                                    },
+                                    "openPositions": {
+                                        "APE-USD": {
+                                            "size": {
+                                                "current": 20,
+                                                "postOrder": -30
+                                            },
+                                            "equity": {
+                                                "current": 25.20,
+                                                "postOrder": 34.1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "side": "SELL",
+                            "size": {
+                                "size": 50.0
+                            },
+                            "price": {
+                                "limitPrice": 1.0
+                            },
+                            "targetLeverage": 2.0,
+                            "summary": {
+                                "isolatedMarginTransferAmount": 10.0
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testMarginAmountForSubaccountTransferWithExistingIsolatedPositionAndOpenOrders() {
+        test(
+            {
+                perp.socket(
+                    testWsUrl,
+                    mock.parentSubaccountsChannel.real_subscribe_with_isolated_position_and_open_orders,
+                    0,
+                    null,
+                )
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "orders": {
+                                        "bbc7cfe6-8837-5c46-94c4-36a4319231ac": {
+                                            "side": "BUY",
+                                            "type": "LIMIT",
+                                            "status": "OPEN",
+                                            "reduceOnly": false,
+                                            "marketId": "APE-USD" 
+                                        }
+                                    },
+                                    "equity": {
+                                        "current": 162.33
+                                    },
+                                    "freeCollateral": {
+                                        "current": 137.13
+                                    },
+                                    "quoteBalance": {
+                                        "current": 137.13
+                                    },
+                                    "openPositions": {
+                                        "APE-USD": {
+                                            "size": {
+                                                "current": 20
+                                            },
+                                            "equity": {
+                                                "current": 25.20
+                                            },
+                                            "freeCollateral": {
+                                                "current": 20.16
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        // close 10 of existing position
+        perp.initiateClosePosition("APE-USD", 0)
+        perp.closePosition("APE-USD", ClosePositionInputField.market, 0)
+        test(
+            {
+                perp.closePosition("10", ClosePositionInputField.size, 0)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "freeCollateral": {
+                                        "current": 137.13
+                                    },
+                                    "openPositions": {
+                                        "APE-USD": {
+                                            "size": {
+                                                "current": 20,
+                                                "postOrder": 10
+                                            },
+                                            "equity": {
+                                                "current": 25.20,
+                                                "postOrder": 25.20
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "input": {
+                        "current": "closePosition",
+                        "closePosition": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "targetLeverage": 1.0,
+                            "size": {
+                                "size": 10.0
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
+
+        // trade that will reduce existing position by 10 via trade
+        perp.tradeInMarket("APE-USD", 0)
+        perp.trade("SELL", TradeInputField.side, 0)
+        perp.trade("1", TradeInputField.limitPrice, 0)
+        perp.trade("10", TradeInputField.size, 0)
+        test(
+            {
+                perp.trade("1", TradeInputField.targetLeverage, 0)
+            },
+            """
+                {
+                    "wallet": {
+                        "account": {
+                            "groupedSubaccounts": {
+                                "0": {
+                                    "freeCollateral": {
+                                        "current": 137.13
+                                    },
+                                    "openPositions": {
+                                        "APE-USD": {
+                                            "size": {
+                                                "current": 20,
+                                                "postOrder": 10
+                                            },
+                                            "equity": {
+                                                "current": 25.20,
+                                                "postOrder": 25.20
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "APE-USD",
+                            "marginMode": "ISOLATED",
+                            "side": "SELL",
+                            "size": {
+                                "size": 10.0
+                            },
+                            "targetLeverage": 1.0,
+                            "summary": {
+                                "price": 1.0,
+                                "size": 10.0
                             }
                         }
                     }
