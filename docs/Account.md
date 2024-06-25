@@ -3,8 +3,8 @@
 account in PerpetualState is an object, containing a map of String to Subaccount
 
 data class Account(  
-&emsp;var subaccounts: Map<String, Subaccount>?,
-&emsp;var tradingRewards: TradingRewards?
+&emsp;var subaccounts: Map<String, Subaccount>?,  
+&emsp;var tradingRewards: TradingRewards?  
 )
 
 # TradingRewards
@@ -12,9 +12,9 @@ data class Account(
 Metadata about trading rewards this account has earned. 
 
 data class TradingRewards(
-&emsp;val total: Double?,
-&emsp;val filledHistory: Map<String, IList<HistoricalTradingReward>>?,
-&emsp;val rawHistory: Map<String, IList<HistoricalTradingReward>>?
+&emsp;val total: Double?,  
+&emsp;val filledHistory: Map<String, IList<HistoricalTradingReward>>?,  
+&emsp;val rawHistory: Map<String, IList<HistoricalTradingReward>>?  
 )
 
 ## filledHistory
