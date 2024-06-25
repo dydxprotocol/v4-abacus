@@ -1775,6 +1775,7 @@ internal class TradeInputCalculator(
         }
 
         // Calculate isolated margin transfer amount
+        // TODO(@aforaleka): move this out of summary and into place order so trade is up to date
         if (MarginCalculator.getShouldTransferCollateral(
                 parser,
                 subaccount,
