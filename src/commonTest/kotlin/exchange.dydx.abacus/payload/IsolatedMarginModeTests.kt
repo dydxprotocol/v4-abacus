@@ -797,7 +797,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     fun testGetShouldTransferCollateral() {
         assertTrue(
             "Should result in a transfer",
-            MarginCalculator.getShouldTransferCollateral(
+            MarginCalculator.getShouldTransferInCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -817,10 +817,10 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             ),
         )
 
-        // If reduce only is true, should not transfer
+        // If reduce only is true, should not transfer in
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferCollateral(
+            MarginCalculator.getShouldTransferInCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -840,10 +840,33 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             ),
         )
 
-        // If postOrder is less than current, should not transfer
+        // If reduce only is true + no open orders, should transfer out
+        assertEquals(
+            true,
+            MarginCalculator.getShouldTransferOutCollateral(
+                parser,
+                subaccount = mapOf(
+                    "openPositions" to mapOf(
+                        "ARB-USD" to mapOf(
+                            "size" to mapOf(
+                                "current" to 0.0,
+                                "postOrder" to 16.0,
+                            ),
+                        ),
+                    ),
+                ),
+                tradeInput = mapOf(
+                    "marketId" to "ARB-USD",
+                    "marginMode" to "ISOLATED",
+                    "reduceOnly" to true,
+                ),
+            ),
+        )
+
+        // If postOrder is less than current, should not transfer in
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferCollateral(
+            MarginCalculator.getShouldTransferInCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -854,6 +877,35 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             ),
                         ),
                     ),
+                ),
+                tradeInput = mapOf(
+                    "marketId" to "ARB-USD",
+                    "marginMode" to "ISOLATED",
+                    "reduceOnly" to false,
+                ),
+            ),
+        )
+
+        // If reducing position but has open orders, should not transfer out
+        assertEquals(
+            false,
+            MarginCalculator.getShouldTransferOutCollateral(
+                parser,
+                subaccount = mapOf(
+                    "openPositions" to mapOf(
+                        "ARB-USD" to mapOf(
+                            "size" to mapOf(
+                                "current" to 22.0,
+                                "postOrder" to 16.0,
+                            ),
+                        ),
+                    ),
+                    "orders" to mapOf(
+                        "order-id" to mapOf(
+                            "marketId" to "ARB-USD",
+                            "status" to "OPEN"
+                        )
+                    )
                 ),
                 tradeInput = mapOf(
                     "marketId" to "ARB-USD",
