@@ -29,11 +29,11 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
         if (subaccount != null) {
             val modified = subaccount.mutable()
             val positions = calculatePositionsValues(
-                parser.asNativeMap(subaccount["openPositions"]),
-                markets,
-                subaccount,
-                price,
-                periods,
+                positions = parser.asNativeMap(subaccount["openPositions"]),
+                markets = markets,
+                subaccount = subaccount,
+                price = price,
+                periods = periods,
             )
             positions?.let {
                 modified.safeSet("openPositions", it)
@@ -62,11 +62,11 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 parser.asNativeMap(position)?.let { position ->
                     parser.asNativeMap(markets?.get(key))?.let { market ->
                         modified[key] = calculatePositionValues(
-                            position,
-                            market,
-                            subaccount,
-                            parser.asDouble(price?.get(key)),
-                            periods,
+                            position = position,
+                            market = market,
+                            subaccount = subaccount,
+                            price = parser.asDouble(price?.get(key)),
+                            periods = periods,
                         )
                     }
                 }
@@ -123,34 +123,8 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     if (period == CalculationPeriod.current) {
                         marketOraclePrice
                     } else {
-                        (
-                            price
-                                ?: marketOraclePrice
-                            )
+                        price ?: marketOraclePrice
                     }
-                if (oraclePrice != null) {
-                    when (status) {
-                        "CLOSED", "LIQUIDATED" -> {
-                            set(null, modified, "unrealizedPnl", period)
-                            set(null, modified, "unrealizedPnlPercent", period)
-                        }
-
-                        else -> {
-                            if (entryPrice != null) {
-                                val entryValue = size * entryPrice
-                                val currentValue = size * oraclePrice
-                                val unrealizedPnl = currentValue - entryValue
-                                val unrealizedPnlPercent =
-                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() else null
-                                set(unrealizedPnl, modified, "unrealizedPnl", period)
-                                set(unrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
-                            }
-                        }
-                    }
-                } else {
-                    set(null, modified, "unrealizedPnl", period)
-                    set(null, modified, "unrealizedPnlPercent", period)
-                }
 
                 if (oraclePrice != null) {
                     when (status) {
@@ -161,31 +135,54 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             set(null, modified, "adjustedMmf", period)
                             set(null, modified, "initialRiskTotal", period)
                             set(null, modified, "maxLeverage", period)
+                            set(null, modified, "unrealizedPnl", period)
+                            set(null, modified, "unrealizedPnlPercent", period)
+                            set(null, modified, "marginValue", period)
                         }
 
                         else -> {
+                            val configs = parser.asNativeMap(market?.get("configs"))
                             val valueTotal = size * oraclePrice
                             set(valueTotal, modified, "valueTotal", period)
                             val notional = valueTotal.abs()
                             set(notional, modified, "notionalTotal", period)
-                            val adjustedImf = calculatedAdjustedImf(
-                                parser.asNativeMap(market?.get("configs")),
-                            )
+                            val adjustedImf = calculatedAdjustedImf(configs)
                             val adjustedMmf = calculatedAdjustedMmf(
-                                parser.asNativeMap(market?.get("configs")),
+                                configs,
                                 notional,
                             )
                             val maxLeverage =
                                 if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
                             set(adjustedImf, modified, "adjustedImf", period)
                             set(adjustedMmf, modified, "adjustedMmf", period)
-                            set(
-                                adjustedImf * notional,
-                                modified,
-                                "initialRiskTotal",
-                                period,
-                            )
+                            set(adjustedImf * notional, modified, "initialRiskTotal", period)
                             set(maxLeverage, modified, "maxLeverage", period)
+
+                            if (entryPrice != null) {
+                                val entryValue = size * entryPrice
+                                val currentValue = size * oraclePrice
+                                val unrealizedPnl = currentValue - entryValue
+                                val unrealizedPnlPercent =
+                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() else null
+                                set(unrealizedPnl, modified, "unrealizedPnl", period)
+                                set(unrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
+                            }
+
+                            val marginMode = parser.asString(parser.value(position, "marginMode"))
+                            when (marginMode) {
+                                "ISOLATED" -> {
+                                    val equity = parser.asDouble(value(subaccount, "equity", period))
+                                    set(equity, modified, "marginValue", period)
+                                }
+                                "CROSS" -> {
+                                    val maintenanceMarginFraction =
+                                        parser.asDouble(configs?.get("maintenanceMarginFraction")) ?: Numeric.double.ZERO
+                                    set(maintenanceMarginFraction * notional, modified, "marginValue", period)
+                                }
+                                else -> {
+                                    set(null, modified, "marginValue", period)
+                                }
+                            }
                         }
                     }
                 } else {
@@ -195,6 +192,9 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     set(null, modified, "adjustedMmf", period)
                     set(null, modified, "initialRiskTotal", period)
                     set(null, modified, "maxLeverage", period)
+                    set(null, modified, "unrealizedPnl", period)
+                    set(null, modified, "unrealizedPnlPercent", period)
+                    set(null, modified, "marginValue", period)
                 }
             } else {
                 set(null, modified, "realizedPnlPercent", period)
@@ -206,6 +206,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 set(null, modified, "adjustedMmf", period)
                 set(null, modified, "initialRiskTotal", period)
                 set(null, modified, "maxLeverage", period)
+                set(null, modified, "marginValue", period)
             }
         }
         return modified
@@ -322,22 +323,22 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 val equity = parser.asDouble(value(subaccount, "equity", period))
                 for ((key, position) in positions) {
                     val leverage = calculatePositionLeverage(
-                        equity,
-                        parser.asDouble(value(position, "valueTotal", period)),
+                        equity = equity,
+                        notionalValue = parser.asDouble(value(position, "valueTotal", period)),
                     )
                     set(leverage, position, "leverage", period)
                     val liquidationPrice = calculatePositionLiquidationPrice(
-                        equity ?: Numeric.double.ZERO,
-                        key,
-                        positions,
-                        markets,
-                        period,
+                        equity = equity ?: Numeric.double.ZERO,
+                        market = key,
+                        positions = positions,
+                        markets = markets,
+                        period = period,
                     )
                     set(liquidationPrice, position, "liquidationPrice", period)
                     val buyingPower = calculatePositionBuyingPower(
-                        equity,
-                        initialRiskTotal,
-                        parser.asDouble(value(position, "adjustedImf", period)),
+                        equity = equity,
+                        initialRiskTotal = initialRiskTotal,
+                        imf = parser.asDouble(value(position, "adjustedImf", period)),
                     )
                     set(buyingPower, position, "buyingPower", period)
                 }

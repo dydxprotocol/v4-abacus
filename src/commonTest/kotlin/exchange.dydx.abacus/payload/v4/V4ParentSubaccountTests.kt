@@ -86,6 +86,9 @@ class V4ParentSubaccountTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 289.4
+                                            },
+                                            "marginValue": {
+                                                "current": 285.689378002
                                             }
                                         }
                                     },
