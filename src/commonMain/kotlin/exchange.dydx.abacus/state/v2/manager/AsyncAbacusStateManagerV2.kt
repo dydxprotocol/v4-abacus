@@ -23,6 +23,7 @@ import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableChainPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -42,7 +43,6 @@ import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.IList
-import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IOImplementations
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Parser
@@ -622,8 +622,21 @@ class AsyncAbacusStateManagerV2(
         adaptor?.screen(address, callback)
     }
 
-    override fun getChainById(chainId: String): IMap<String, Any>? {
-        val parser = Parser()
-        return parser.asMap(adaptor?.stateMachine?.routerProcessor?.getChainById(chainId = chainId))
+    override fun getChainById(chainId: String): HumanReadableChainPayload? {
+        val chainMap = adaptor?.stateMachine?.routerProcessor?.getChainById(chainId = chainId)
+        val chainName = chainMap?.get("chain_name")
+        val logoUri = chainMap?.get("logo_uri")
+        val chainType = chainMap?.get("chain_type")
+        val isTestnet = chainMap?.get("is_testnet")
+        if (chainName is String && logoUri is String && chainType is String && isTestnet is Boolean) {
+            return HumanReadableChainPayload(
+                chainName = chainName,
+                chainId = chainType,
+                logoUri = logoUri,
+                chainType = chainType,
+                isTestnet = isTestnet,
+            )
+        }
+        return null
     }
 }

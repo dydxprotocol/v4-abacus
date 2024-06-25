@@ -130,3 +130,13 @@ data class HumanReadableTransferPayload(
     val amount: String,
     val recipient: String,
 )
+
+@JsExport
+@Serializable
+data class HumanReadableChainPayload(
+    val chainName: String,
+    val chainId: String,
+    val logoUri: String,
+    val chainType: String,
+    val isTestnet: Boolean,
+)
