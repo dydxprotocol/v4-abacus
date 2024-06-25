@@ -708,7 +708,12 @@ internal class StateManagerAdaptorV2(
             state?.transferStatuses,
             state?.restriction,
             state?.launchIncentive,
-            Compliance(geo, state?.compliance?.status ?: ComplianceStatus.COMPLIANT, state?.compliance?.updatedAt, state?.compliance?.expiresAt),
+            Compliance(
+                geo,
+                state?.compliance?.status ?: ComplianceStatus.COMPLIANT,
+                state?.compliance?.updatedAt,
+                state?.compliance?.expiresAt,
+            ),
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(

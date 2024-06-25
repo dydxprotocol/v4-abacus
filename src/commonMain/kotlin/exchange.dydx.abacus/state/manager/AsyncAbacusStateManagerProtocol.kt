@@ -91,6 +91,9 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Trigger update for compliance
     fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback)
+
+    // Get chain data from id. Necessary to know chain name based on chain id
+    fun getChainById(chainId: String): TransferChainInfo?
 }
 
 @JsExport

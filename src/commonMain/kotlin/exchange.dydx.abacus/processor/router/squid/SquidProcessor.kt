@@ -170,6 +170,10 @@ internal class SquidProcessor(
         return processor.received(existing, payload)
     }
 
+    override fun getChainById(chainId: String): Map<String, Any>? {
+        return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chainId")) == chainId })
+    }
+
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
