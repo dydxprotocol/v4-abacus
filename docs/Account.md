@@ -11,7 +11,7 @@ data class Account(
 
 Metadata about trading rewards this account has earned. 
 
-data class TradingRewards(
+data class TradingRewards(  
 &emsp;val total: Double?,  
 &emsp;val filledHistory: Map<String, IList<HistoricalTradingReward>>?,  
 &emsp;val rawHistory: Map<String, IList<HistoricalTradingReward>>?  
