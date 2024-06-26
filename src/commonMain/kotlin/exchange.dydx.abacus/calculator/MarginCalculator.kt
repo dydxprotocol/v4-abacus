@@ -56,6 +56,21 @@ internal object MarginCalculator {
         return if (order != null) order.value as Map<String, Any> else null
     }
 
+    fun findExistingOrder(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        marketId: String?
+    ): Map<String, Any>? {
+        val orders = parser.asNativeMap(parser.value(subaccount, "orders"))
+        val order = orders?.entries?.firstOrNull {
+            val orderMarketId = parser.asString(parser.value(it.value, "marketId"))
+            val orderStatus = parser.asString(parser.value(it.value, "status"))
+            orderMarketId == marketId && listOf("OPEN", "PENDING", "UNTRIGGERED", "PARTIALLY_FILLED").contains(orderStatus)
+        }
+
+        return if (order != null) order.value as Map<String, Any> else null
+    }
+
     fun findExistingMarginMode(
         parser: ParserProtocol,
         account: Map<String, Any>?,
@@ -198,6 +213,28 @@ internal object MarginCalculator {
         error("No available subaccount number")
     }
 
+    /**
+     * @description Calculate and validate the amount of collateral to transfer for an isolated margin trade.
+     */
+    fun getIsolatedMarginTransferAmount(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): Double? {
+        val shouldTransferOut = getShouldTransferOutCollateral(parser, subaccount, trade)
+        val shouldTransferIn = getShouldTransferInCollateral(parser, subaccount, trade)
+
+        if (!shouldTransferIn && !shouldTransferOut) return null
+
+        val transferAmount = calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount) ?: return null
+
+        // Validate that if transferring in, transfer amount should be positive and vice versa
+        val isCorrectSign = (shouldTransferIn && transferAmount > 0) || (shouldTransferOut && transferAmount < 0)
+
+        return if (isCorrectSign) transferAmount else null
+    }
+
     private fun getIsIncreasingPositionSize(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
@@ -211,7 +248,7 @@ internal object MarginCalculator {
     /**
      * @description Determine if collateral should be transferred in for an isolated margin trade
      */
-    fun getShouldTransferCollateral(
+    fun getShouldTransferInCollateral(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
@@ -221,6 +258,24 @@ internal object MarginCalculator {
         val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
 
         return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
+    }
+
+    /**
+     * @description Determine if collateral should be transferred out for an isolated margin trade
+     */
+    fun getShouldTransferOutCollateral(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        val isDecreasingPositionSize = !getIsIncreasingPositionSize(parser, subaccount, tradeInput)
+        val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
+        val hasOpenOrder = parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
+            findExistingOrder(parser, subaccount, marketId) != null
+        } ?: false
+        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
+
+        return (isDecreasingPositionSize || isReduceOnly) && isIsolatedMarginOrder && !hasOpenOrder
     }
 
     /**
@@ -266,7 +321,7 @@ internal object MarginCalculator {
      * @description Calculate the amount of collateral to transfer for an isolated margin trade.
      * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
      */
-    fun calculateIsolatedMarginTransferAmount(
+    internal fun calculateIsolatedMarginTransferAmount(
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,

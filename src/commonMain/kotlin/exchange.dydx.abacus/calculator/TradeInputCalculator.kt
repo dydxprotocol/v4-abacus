@@ -1775,23 +1775,15 @@ internal class TradeInputCalculator(
         }
 
         // Calculate isolated margin transfer amount
-        if (MarginCalculator.getShouldTransferCollateral(
-                parser,
-                subaccount,
-                trade,
-            )
-        ) {
-            val isolatedMarginTransferAmount = MarginCalculator.calculateIsolatedMarginTransferAmount(
-                parser,
-                trade,
-                market,
-                subaccount,
-            )
+        // TODO(@aforaleka): move this out of summary and into place order so trade is up to date
+        val isolatedMarginTransferAmount = MarginCalculator.getIsolatedMarginTransferAmount(
+            parser,
+            subaccount,
+            trade,
+            market,
+        )
 
-            summary.safeSet("isolatedMarginTransferAmount", isolatedMarginTransferAmount)
-        } else {
-            summary.safeSet("isolatedMarginTransferAmount", null)
-        }
+        summary.safeSet("isolatedMarginTransferAmount", isolatedMarginTransferAmount)
 
         return summary
     }
