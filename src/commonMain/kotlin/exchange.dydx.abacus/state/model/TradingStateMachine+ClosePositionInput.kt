@@ -2,7 +2,6 @@ package exchange.dydx.abacus.state.model
 
 import abs
 import exchange.dydx.abacus.calculator.MarginCalculator
-import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
@@ -77,8 +76,6 @@ fun TradingStateMachine.closePosition(
 
                 trade["timeInForce"] = "IOC"
                 trade["reduceOnly"] = true
-
-                trade["marginMode"] = if (position["equity"] != null) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue
 
                 val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
                 trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0

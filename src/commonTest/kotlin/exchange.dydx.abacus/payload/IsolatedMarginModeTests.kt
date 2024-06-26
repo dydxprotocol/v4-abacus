@@ -146,8 +146,8 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
 
     @Test
     fun testMarginModeWithExistingPosition() {
-        testMarginAmountForSubaccountTransferWithExistingIsolatedPosition()
-        testMarginAmountForSubaccountTransferWithExistingIsolatedPositionAndOpenOrders()
+        testMarginAmountForSubaccountTransferWithExistingPosition()
+        testMarginAmountForSubaccountTransferWithExistingPositionAndOpenOrders()
     }
 
     // MarginMode should automatically to match the current market based on a variety of factors
@@ -220,7 +220,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         )
     }
 
-    private fun testMarginAmountForSubaccountTransferWithExistingIsolatedPosition() {
+    private fun testMarginAmountForSubaccountTransferWithExistingPosition() {
         test(
             {
                 perp.socket(
@@ -236,13 +236,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "account": {
                             "groupedSubaccounts": {
                                 "0": {
-                                    "equity": {
-                                        "current": 162.33
-                                    },
                                     "freeCollateral": {
-                                        "current": 137.13
-                                    },
-                                    "quoteBalance": {
                                         "current": 137.13
                                     },
                                     "openPositions": {
@@ -252,9 +246,6 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 25.20
-                                            },
-                                            "freeCollateral": {
-                                                "current": 20.16
                                             }
                                         }
                                     }
@@ -305,7 +296,8 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
                             "targetLeverage": 1.0,
-                            "size": {
+                            "summary": {
+                                "price": 1.0,
                                 "size": 10.0
                             }
                         }
@@ -354,10 +346,6 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "trade": {
                             "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
-                            "side": "SELL",
-                            "size": {
-                                "size": 10.0
-                            },
                             "targetLeverage": 1.0,
                             "summary": {
                                 "price": 1.0,
@@ -407,15 +395,10 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "trade": {
                             "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
-                            "side": "SELL",
-                            "size": {
-                                "size": 50.0
-                            },
-                            "price": {
-                                "limitPrice": 1.0
-                            },
                             "targetLeverage": 2.0,
                             "summary": {
+                                "price": 1.0,
+                                "size": 50.0,
                                 "isolatedMarginTransferAmount": 10.0
                             }
                         }
@@ -425,7 +408,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         )
     }
 
-    private fun testMarginAmountForSubaccountTransferWithExistingIsolatedPositionAndOpenOrders() {
+    private fun testMarginAmountForSubaccountTransferWithExistingPositionAndOpenOrders() {
         test(
             {
                 perp.socket(
@@ -450,13 +433,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             "marketId": "APE-USD" 
                                         }
                                     },
-                                    "equity": {
-                                        "current": 162.33
-                                    },
                                     "freeCollateral": {
-                                        "current": 137.13
-                                    },
-                                    "quoteBalance": {
                                         "current": 137.13
                                     },
                                     "openPositions": {
@@ -466,9 +443,6 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 25.20
-                                            },
-                                            "freeCollateral": {
-                                                "current": 20.16
                                             }
                                         }
                                     }
@@ -566,10 +540,6 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "trade": {
                             "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
-                            "side": "SELL",
-                            "size": {
-                                "size": 10.0
-                            },
                             "targetLeverage": 1.0,
                             "summary": {
                                 "price": 1.0,
@@ -618,15 +588,10 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "trade": {
                             "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
-                            "side": "SELL",
-                            "size": {
-                                "size": 50.0
-                            },
-                            "price": {
-                                "limitPrice": 1.0
-                            },
                             "targetLeverage": 2.0,
                             "summary": {
+                                "price": 1.0,
+                                "size": 50.0,
                                 "isolatedMarginTransferAmount": 10.0
                             }
                         }
