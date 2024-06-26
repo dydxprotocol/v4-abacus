@@ -7,6 +7,7 @@ import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
 import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.toJsonObject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.BeforeTest
@@ -345,6 +346,43 @@ class SkipProcessorTests {
                 ),
             ),
         )
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun testGetChainById() {
+        skipProcessor.chains = parser.asNativeList(parser.asNativeMap(templateToMap(skipChainsMock.payload))?.get("chains"))
+        val result = skipProcessor.getChainById("kaiyo-1")
+        val expected = mapOf(
+            "chain_name" to "kujira",
+            "chain_id" to "kaiyo-1",
+            "pfm_enabled" to false,
+            "cosmos_module_support" to mapOf(
+                "authz" to true,
+                "feegrant" to true,
+            ),
+            "supports_memo" to true,
+            "logo_uri" to "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/kaiyo/chain.png",
+            "bech32_prefix" to "kujira",
+            "fee_assets" to listOf(
+                mapOf(
+                    "denom" to "ibc/47BD209179859CDE4A2806763D7189B6E6FE13A17880FE2B42DE1E6C1E329E23",
+                    "gas_price" to null,
+                ),
+                mapOf(
+                    "denom" to "ibc/EFF323CC632EC4F747C61BCE238A758EFDB7699C3226565F7C20DA06509D59A5",
+                    "gas_price" to null,
+                ),
+            ),
+            "chain_type" to "cosmos",
+            "ibc_capabilities" to mapOf(
+                "cosmos_pfm" to false,
+                "cosmos_ibc_hooks" to false,
+                "cosmos_memo" to true,
+                "cosmos_autopilot" to false,
+            ),
+            "is_testnet" to false,
+        ).toJsonObject()
         assertEquals(expected, result)
     }
 }

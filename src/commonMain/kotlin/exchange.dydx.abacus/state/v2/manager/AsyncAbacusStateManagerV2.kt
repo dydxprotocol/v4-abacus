@@ -30,6 +30,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.state.manager.SingletonAsyncAbacusStateManagerProtocol
+import exchange.dydx.abacus.state.manager.TransferChainInfo
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.configs.V4StateManagerConfigs
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
@@ -619,5 +620,24 @@ class AsyncAbacusStateManagerV2(
 
     override fun screen(address: String, callback: (restriction: Restriction) -> Unit) {
         adaptor?.screen(address, callback)
+    }
+
+    override fun getChainById(chainId: String): TransferChainInfo? {
+        val parser = Parser()
+        val chainMap = adaptor?.stateMachine?.routerProcessor?.getChainById(chainId = chainId)
+        val chainName = parser.asString(chainMap?.get("chain_name"))
+        val logoUri = parser.asString(chainMap?.get("logo_uri"))
+        val chainType = parser.asString(chainMap?.get("chain_type"))
+        val isTestnet = parser.asBool(chainMap?.get("is_testnet"))
+        if (chainName is String && logoUri is String && chainType is String && isTestnet is Boolean) {
+            return TransferChainInfo(
+                chainName = chainName,
+                chainId = chainType,
+                logoUri = logoUri,
+                chainType = chainType,
+                isTestnet = isTestnet,
+            )
+        }
+        return null
     }
 }
