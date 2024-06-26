@@ -33,6 +33,7 @@ data class EnvironmentEndpoints(
     val validators: IList<String>?,
     val faucet: String?,
     val squid: String?,
+    val skip: String?,
     val nobleValidator: String?,
     val geo: String?,
 ) {
@@ -49,9 +50,18 @@ data class EnvironmentEndpoints(
             }?.toIList() ?: return null
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
+            val skip = parser.asString(data["skip"])
             val nobleValidator = parser.asString(data["nobleValidator"])
             val geo = parser.asString(data["geo"])
-            return EnvironmentEndpoints(indexers, validators, faucet, squid, nobleValidator, geo)
+            return EnvironmentEndpoints(
+                indexers = indexers,
+                validators = validators,
+                faucet = faucet,
+                squid = squid,
+                skip = skip,
+                nobleValidator = nobleValidator,
+                geo = geo,
+            )
         }
     }
 }
