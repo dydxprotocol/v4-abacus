@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
 import abs
+import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PositionSide
@@ -619,9 +620,16 @@ internal class SubaccountSupervisor(
     }
 
     internal fun getTransferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): HumanReadableSubaccountTransferPayload? {
-        val trade = stateMachine.state?.input?.trade
-        val isolatedMarginTransferAmount = trade?.summary?.isolatedMarginTransferAmount
+        val trade = stateMachine.state?.input?.trade ?: return null
         val childSubaccountNumber = orderPayload.subaccountNumber
+        val childSubaccount = stateMachine.state?.subaccount(childSubaccountNumber) ?: return null
+        val market = stateMachine.state?.market(orderPayload.marketId) ?: return null
+
+        val isolatedMarginTransferAmount = MarginCalculator.getIsolatedMarginTransferInAmountForTradeTyped(
+            trade,
+            subaccount = childSubaccount,
+            market,
+        )
 
         if (isolatedMarginTransferAmount != null && isolatedMarginTransferAmount > 0.0) {
             val transferAmount = isolatedMarginTransferAmount.abs().toString()

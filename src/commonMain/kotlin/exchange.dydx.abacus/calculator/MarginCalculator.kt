@@ -1,12 +1,15 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.output.PerpetualMarket
+import exchange.dydx.abacus.output.Subaccount
+import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 import kotlin.math.max
 import kotlin.math.min
@@ -237,18 +240,29 @@ internal object MarginCalculator {
         return if (isCorrectSign) transferAmount else null
     }
 
-    private fun getIsIncreasingPositionSize(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        return getPositionSizeDifference(parser, subaccount, tradeInput)?.let { it > 0 } ?: true
+    /**
+     * @description Calculate the amount of collateral to transfer into child subaccount for an isolated margin trade.
+     */
+    fun getIsolatedMarginTransferInAmountForTradeTyped(
+        trade: TradeInput,
+        subaccount: Subaccount,
+        market: PerpetualMarket
+    ): Double? {
+        return if (getShouldTransferInCollateralTyped(trade, subaccount)) {
+            calculateIsolatedMarginTransferAmountTyped(
+                trade,
+                market,
+                subaccount,
+            )
+        } else {
+            null
+        }
     }
 
     /**
      * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
      */
-    fun getShouldTransferInCollateral(
+    internal fun getShouldTransferInCollateral(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
@@ -261,9 +275,22 @@ internal object MarginCalculator {
     }
 
     /**
-     * @description Determine if collateral should be transferred out from child subaccount for an isolated margin trade
+     * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
      */
-    fun getShouldTransferOutCollateral(
+    private fun getShouldTransferInCollateralTyped(
+        trade: TradeInput,
+        subaccount: Subaccount,
+    ): Boolean {
+        val isIsolatedMarginOrder = trade.marginMode == MarginMode.Isolated
+        val isIncreasingPositionSize = getIsIncreasingPositionSize(subaccount, trade)
+        val isReduceOnly = trade.reduceOnly
+        return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
+    }
+
+    /**
+     * @description Determine if collateral should be transferred out of child subaccount for an isolated margin trade
+     */
+    internal fun getShouldTransferOutCollateral(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
@@ -291,9 +318,21 @@ internal object MarginCalculator {
         } ?: false
     }
 
-    /**
-     * @description Helper to determine how much collateral needs to be transferred in for an isolated margin trade
-     */
+    private fun getIsIncreasingPositionSize(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        return getPositionSizeDifference(parser, subaccount, tradeInput)?.let { it > 0 } ?: true
+    }
+
+    private fun getIsIncreasingPositionSize(
+        subaccount: Subaccount,
+        trade: TradeInput,
+    ): Boolean {
+        return getPositionSizeDifference(subaccount, trade)?.let { it > 0 } ?: true
+    }
+
     private fun getPositionSizeDifference(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
@@ -328,6 +367,109 @@ internal object MarginCalculator {
         return currentPositionSize + tradeSize
     }
 
+    /**
+     * @description Since position is already typed, we can calculate difference with position size diff directly
+     */
+    private fun getPositionSizeDifferenceTyped(
+        subaccount: Subaccount,
+        trade: TradeInput,
+    ): Double? {
+        return subaccount.openPositions?.find { it.id == trade.marketId }?.let {
+            (it.size.postOrder ?: 0.0).abs() - (it.size.current ?: 0.0).abs()
+        } ?: return null
+    }
+
+    /**
+     * @description Calculate the amount of collateral to transfer for an isolated margin trade.
+     * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
+     */
+    private fun calculateIsolatedMarginTransferAmount(
+        parser: ParserProtocol,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+    ): Double? {
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
+        val side = parser.asString(parser.value(trade, "side")) ?: return null
+        val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
+        val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
+        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
+        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
+        val positionSizeDifference = getPositionSizeDifference(parser, subaccount, trade) ?: return null
+
+        return calculateIsolatedMarginTransferAmountFromValues(
+            targetLeverage,
+            side,
+            oraclePrice,
+            price,
+            initialMarginFraction,
+            effectiveImf,
+            positionSizeDifference,
+        )
+    }
+
+    private fun calculateIsolatedMarginTransferAmountTyped(
+        trade: TradeInput,
+        market: PerpetualMarket,
+        subaccount: Subaccount,
+    ): Double? {
+        val targetLeverage = trade.targetLeverage
+        val side = trade.side?.rawValue ?: return null
+        val oraclePrice = market.oraclePrice ?: return null
+        val price = trade.summary?.price ?: return null
+        val initialMarginFraction = market.configs?.initialMarginFraction ?: 0.0
+        val effectiveImf = market.configs?.effectiveInitialMarginFraction ?: 0.0
+        val positionSizeDifference = getPositionSizeDifferenceTyped(subaccount, trade) ?: return null
+
+        return calculateIsolatedMarginTransferAmountFromValues(
+            targetLeverage,
+            side,
+            oraclePrice,
+            price,
+            initialMarginFraction,
+            effectiveImf,
+            positionSizeDifference,
+        )
+    }
+
+    private fun calculateIsolatedMarginTransferAmountFromValues(
+        targetLeverage: Double,
+        side: String,
+        oraclePrice: Double,
+        price: Double,
+        initialMarginFraction: Double,
+        effectiveImf: Double,
+        positionSizeDifference: Double,
+    ): Double? {
+        val maxLeverageForMarket = if (effectiveImf != 0.0) {
+            1.0 / effectiveImf
+        } else if (initialMarginFraction != 0.0) {
+            1.0 / initialMarginFraction
+        } else {
+            null
+        }
+
+        // Cap targetLeverage to 98% of max leverage
+        val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
+            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
+            min(targetLeverage, cappedLeverage)
+        } else {
+            null
+        }
+
+        return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
+            null
+        } else {
+            getTransferAmountFromTargetLeverage(
+                price,
+                oraclePrice,
+                side,
+                positionSizeDifference,
+                targetLeverage = adjustedTargetLeverage,
+            )
+        }
+    }
+
     internal fun getTransferAmountFromTargetLeverage(
         price: Double,
         oraclePrice: Double,
@@ -349,54 +491,5 @@ internal object MarginCalculator {
         }
 
         return max((oraclePrice * size) / targetLeverage + priceDiff * size, naiveTransferAmount)
-    }
-
-    /**
-     * @description Calculate the amount of collateral to transfer for an isolated margin trade.
-     * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
-     */
-    internal fun calculateIsolatedMarginTransferAmount(
-        parser: ParserProtocol,
-        trade: Map<String, Any>,
-        market: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-    ): Double? {
-        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
-        val side = parser.asString(parser.value(trade, "side")) ?: return null
-        val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
-        val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
-        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
-        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
-
-        val maxLeverageForMarket = if (effectiveImf != 0.0) {
-            1.0 / effectiveImf
-        } else if (initialMarginFraction != 0.0) {
-            1.0 / initialMarginFraction
-        } else {
-            null
-        }
-
-        // Cap targetLeverage to 98% of max leverage
-        val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
-            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
-            min(targetLeverage, cappedLeverage)
-        } else {
-            null
-        }
-
-        // Get the position size difference
-        val positionSizeDifference = getPositionSizeDifference(parser, subaccount, trade) ?: return null
-
-        return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
-            null
-        } else {
-            getTransferAmountFromTargetLeverage(
-                price,
-                oraclePrice,
-                side,
-                positionSizeDifference,
-                targetLeverage = adjustedTargetLeverage,
-            )
-        }
     }
 }
