@@ -213,6 +213,28 @@ internal object MarginCalculator {
         error("No available subaccount number")
     }
 
+    /**
+     * @description Calculate and validate the amount of collateral to transfer for an isolated margin trade.
+     */
+    fun getIsolatedMarginTransferAmount(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
+        market: Map<String, Any>?,
+    ): Double? {
+        val shouldTransferOut = getShouldTransferOutCollateral(parser, subaccount, trade)
+        val shouldTransferIn = getShouldTransferInCollateral(parser, subaccount, trade)
+
+        if (!shouldTransferIn && !shouldTransferOut) return null
+
+        val transferAmount = calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount) ?: return null
+
+        // Validate that if transferring in, transfer amount should be positive and vice versa
+        val isCorrectSign = (shouldTransferIn && transferAmount > 0) || (shouldTransferOut && transferAmount < 0)
+
+        return if (isCorrectSign) transferAmount else null
+    }
+
     private fun getIsIncreasingPositionSize(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
@@ -221,15 +243,6 @@ internal object MarginCalculator {
         return getPositionSizeDifference(parser, subaccount, tradeInput)?.let {
             it.compareTo(Numeric.double.ZERO) > 0 // whether it's positive
         } ?: true
-    }
-
-    fun getShouldTransferCollateral(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Boolean {
-        return getShouldTransferOutCollateral(parser, subaccount, tradeInput) ||
-            getShouldTransferInCollateral(parser, subaccount, tradeInput)
     }
 
     /**
@@ -308,7 +321,7 @@ internal object MarginCalculator {
      * @description Calculate the amount of collateral to transfer for an isolated margin trade.
      * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
      */
-    fun calculateIsolatedMarginTransferAmount(
+    internal fun calculateIsolatedMarginTransferAmount(
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,

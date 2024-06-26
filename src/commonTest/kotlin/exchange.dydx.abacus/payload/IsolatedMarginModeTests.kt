@@ -903,9 +903,9 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                     "orders" to mapOf(
                         "order-id" to mapOf(
                             "marketId" to "ARB-USD",
-                            "status" to "OPEN"
-                        )
-                    )
+                            "status" to "OPEN",
+                        ),
+                    ),
                 ),
                 tradeInput = mapOf(
                     "marketId" to "ARB-USD",
