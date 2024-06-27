@@ -5,7 +5,6 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.closePosition
-import exchange.dydx.abacus.state.model.initiateClosePosition
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.BeforeTest
@@ -257,12 +256,11 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             """.trimIndent(),
         )
 
-        // close 10 of existing position
-        perp.initiateClosePosition("APE-USD", 0)
+        // close all existing position should transfer out + subaccount more free collateral
         perp.closePosition("APE-USD", ClosePositionInputField.market, 0)
         test(
             {
-                perp.closePosition("10", ClosePositionInputField.size, 0)
+                perp.closePosition("1", ClosePositionInputField.percent, 0)
             },
             """
                 {
@@ -278,7 +276,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                         "APE-USD": {
                                             "size": {
                                                 "current": 20,
-                                                "postOrder": 10
+                                                "postOrder": 0
                                             },
                                             "equity": {
                                                 "current": 25.20,
@@ -298,7 +296,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "targetLeverage": 1.0,
                             "summary": {
                                 "price": 1.0,
-                                "size": 10.0
+                                "size": 20.0
                             }
                         }
                     }
@@ -322,8 +320,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "freeCollateral": {
-                                        "current": 137.13,
-                                        "postOrder": 147.13
+                                        "current": 137.13
                                     },
                                     "openPositions": {
                                         "APE-USD": {
@@ -333,7 +330,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 25.20,
-                                                "postOrder": 15.20
+                                                "postOrder": 25.20
                                             }
                                         }
                                     }
@@ -349,8 +346,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "targetLeverage": 1.0,
                             "summary": {
                                 "price": 1.0,
-                                "size": 10.0,
-                                "isolatedMarginTransferAmount": -10.0
+                                "size": 10.0
                             }
                         }
                     }
@@ -454,12 +450,11 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             """.trimIndent(),
         )
 
-        // close 10 of existing position
-        perp.initiateClosePosition("APE-USD", 0)
+        // close all existing position
         perp.closePosition("APE-USD", ClosePositionInputField.market, 0)
         test(
             {
-                perp.closePosition("10", ClosePositionInputField.size, 0)
+                perp.closePosition("1", ClosePositionInputField.percent, 0)
             },
             """
                 {
@@ -474,7 +469,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                         "APE-USD": {
                                             "size": {
                                                 "current": 20,
-                                                "postOrder": 10
+                                                "postOrder": 0
                                             },
                                             "equity": {
                                                 "current": 25.20,
@@ -493,7 +488,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "marginMode": "ISOLATED",
                             "targetLeverage": 1.0,
                             "size": {
-                                "size": 10.0
+                                "size": 20.0
                             }
                         }
                     }
@@ -805,7 +800,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             ),
         )
 
-        // If reduce only is true + no open orders, should transfer out
+        // If full close + no open orders, should transfer out
         assertEquals(
             true,
             MarginCalculator.getShouldTransferOutCollateral(
@@ -814,8 +809,8 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                     "openPositions" to mapOf(
                         "ARB-USD" to mapOf(
                             "size" to mapOf(
-                                "current" to 0.0,
-                                "postOrder" to 16.0,
+                                "current" to 16.0,
+                                "postOrder" to 0.0,
                             ),
                         ),
                     ),
@@ -851,7 +846,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             ),
         )
 
-        // If reducing position but has open orders, should not transfer out
+        // If reducing position to full close but has open orders, should not transfer out
         assertEquals(
             false,
             MarginCalculator.getShouldTransferOutCollateral(
@@ -861,7 +856,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         "ARB-USD" to mapOf(
                             "size" to mapOf(
                                 "current" to 22.0,
-                                "postOrder" to 16.0,
+                                "postOrder" to 0.0,
                             ),
                         ),
                     ),
