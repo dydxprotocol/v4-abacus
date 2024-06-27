@@ -6,7 +6,6 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 import kotlin.math.max
 import kotlin.math.min
@@ -242,9 +241,7 @@ internal object MarginCalculator {
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
     ): Boolean {
-        return getPositionSizeDifference(parser, subaccount, tradeInput)?.let {
-            it.compareTo(Numeric.double.ZERO) > 0 // whether it's positive
-        } ?: true
+        return getPositionSizeDifference(parser, subaccount, tradeInput)?.let { it > 0 } ?: true
     }
 
     /**
@@ -270,14 +267,27 @@ internal object MarginCalculator {
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
     ): Boolean {
-        val isDecreasingPositionSize = !getIsIncreasingPositionSize(parser, subaccount, tradeInput)
+        val isPositionFullyClosed = getIsPositionFullyClosed(parser, subaccount, tradeInput)
         val isIsolatedMarginOrder = parser.asString(tradeInput?.get("marginMode")) == "ISOLATED"
         val hasOpenOrder = parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
             findExistingOrder(parser, subaccount, marketId) != null
         } ?: false
-        val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
 
-        return (isDecreasingPositionSize || isReduceOnly) && isIsolatedMarginOrder && !hasOpenOrder
+        return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder
+    }
+
+    private fun getIsPositionFullyClosed(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Boolean {
+        return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
+            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+            // TODO(@aforaleka) update this to use trade delta in follow-up
+            val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+            val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
+            return postOrderSize == 0.0 || (isReduceOnly && postOrderSize <= 0.0)
+        } ?: false
     }
 
     /**
