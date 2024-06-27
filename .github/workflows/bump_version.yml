@@ -83,9 +83,10 @@ jobs:
           # increment the version number
           NEW_VERSION=$(echo $REPO_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
           
-          #if NEW_VERSION is not empty, replace the version in build.gradle.kts
+          #if NEW_VERSION is not empty, replace the version in build.gradle.kts and podspec
           if [ -n "$NEW_VERSION" ]; then
             sed -i '' "s/version = \"$VERSION\"/version = \"$NEW_VERSION\"/" build.gradle.kts
+            sed -i '' "s/spec.version *= *'[0-9.]*'/spec.version = '$NEW_VERSION'/" v4_abacus.podspec
             echo "Version bumped to $NEW_VERSION"
           fi
           echo "bump_version_ret=0" >> $GITHUB_OUTPUT
@@ -106,8 +107,10 @@ jobs:
             git config --global user.email ${{ steps.import-gpg.outputs.name }}
             git config --global user.name ${{ steps.import-gpg.outputs.email }}
   
-            git commit -S -m "Bump version" build.gradle.kts
-            git push
+            git add build.gradle.kts
+            git add v4_abacus.podspec
+            git commit -S -m "Bump version"
+            git push 
           fi
         env:
           #  GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
