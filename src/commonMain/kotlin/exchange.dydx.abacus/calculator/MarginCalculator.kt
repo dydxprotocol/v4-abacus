@@ -245,7 +245,7 @@ internal object MarginCalculator {
     }
 
     /**
-     * @description Determine if collateral should be transferred in for an isolated margin trade
+     * @description Determine if collateral should be transferred into child subaccount for an isolated margin trade
      */
     fun getShouldTransferInCollateral(
         parser: ParserProtocol,
@@ -260,7 +260,7 @@ internal object MarginCalculator {
     }
 
     /**
-     * @description Determine if collateral should be transferred out for an isolated margin trade
+     * @description Determine if collateral should be transferred out from child subaccount for an isolated margin trade
      */
     fun getShouldTransferOutCollateral(
         parser: ParserProtocol,
