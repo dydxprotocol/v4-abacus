@@ -224,7 +224,7 @@ internal class SubaccountTransformer {
                 market,
                 transfer,
             )
-            return applyDeltaToSubaccount(subaccount, delta, parser, period)
+            return applyDeltaToSubaccount(subaccount, delta, parser, period, hasTransfer = transfer != null)
         }
         return subaccount
     }
@@ -350,7 +350,8 @@ internal class SubaccountTransformer {
         subaccount: Map<String, Any>,
         delta: Map<String, Any>?,
         parser: ParserProtocol,
-        period: String
+        period: String,
+        hasTransfer: Boolean = false,
     ): Map<String, Any> {
         val modified = subaccount.mutable()
 
@@ -363,6 +364,7 @@ internal class SubaccountTransformer {
                 delta,
                 parser.asDouble(parser.value(marketPosition, "size.current")) ?: Numeric.double.ZERO,
                 parser,
+                hasTransfer,
             )
         } else {
             null
@@ -394,10 +396,11 @@ internal class SubaccountTransformer {
     private fun transformDelta(
         delta: Map<String, Any>,
         positionSize: Double,
-        parser: ParserProtocol
+        parser: ParserProtocol,
+        hasTransfer: Boolean = false,
     ): Map<String, Any> {
         val marketId = parser.asString(delta["marketId"])
-        if (parser.asBool(delta["reduceOnly"]) == true && marketId != null) {
+        if (parser.asBool(delta["reduceOnly"]) == true && marketId != null && !hasTransfer) {
             val size = parser.asDouble(delta["size"]) ?: Numeric.double.ZERO
             val price = parser.asDouble(delta["price"]) ?: Numeric.double.ZERO
             val modifiedSize =

@@ -48,21 +48,12 @@ class AccountTransformer() {
                 ),
             ) ?: mapOf()
 
-            val transferAmount = if (MarginCalculator.getShouldTransferCollateral(
-                    parser,
-                    subaccount = childSubaccount,
-                    tradeInput = trade,
-                )
-            ) {
-                MarginCalculator.calculateIsolatedMarginTransferAmount(
-                    parser,
-                    trade,
-                    market,
-                    subaccount = childSubaccount,
-                ) ?: 0.0
-            } else {
-                0.0
-            }
+            val transferAmount = MarginCalculator.getIsolatedMarginTransferAmount(
+                parser,
+                subaccount = childSubaccount,
+                trade = trade,
+                market,
+            ) ?: 0.0
 
             val modifiedSubaccount =
                 subaccountTransformer.applyTransferToSubaccount(
