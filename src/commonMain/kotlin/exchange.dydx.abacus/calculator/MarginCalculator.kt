@@ -6,6 +6,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 import kotlin.math.max
 import kotlin.math.min
@@ -283,8 +284,8 @@ internal object MarginCalculator {
     ): Boolean {
         return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
             val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
-            // TODO(@aforaleka) update this to use trade delta in follow-up
-            val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+            val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
+            val postOrderSize = tradeInput?.let { getPositionPostOrderSizeFromTrade(parser, tradeInput, currentSize) } ?: 0.0
             val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
             return postOrderSize == 0.0 || (isReduceOnly && postOrderSize <= 0.0)
         } ?: false
@@ -301,9 +302,35 @@ internal object MarginCalculator {
         return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
             val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
             val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
-            val postOrderSize = parser.asDouble(parser.value(position, "size.postOrder")) ?: 0.0
+            val postOrderSize = tradeInput?.let { getPositionPostOrderSizeFromTrade(parser, tradeInput, currentSize) } ?: 0.0
             return postOrderSize.abs() - currentSize.abs()
         }
+    }
+
+    /**
+     * @description Helper to determine post-order position size from current trade input instead of position.size.postOrder
+     * We need this estimate before the trade delta is applied to the position, as position post-order size may not be updated yet.
+     */
+    private fun getPositionPostOrderSizeFromTrade(
+        parser: ParserProtocol,
+        trade: Map<String, Any>,
+        currentPositionSize: Double,
+    ): Double {
+        val marketId = parser.asString(trade["marketId"])
+        val side = parser.asString(trade["side"])
+        val tradeSize = if (marketId != null && side != null) {
+            parser.asNativeMap(trade["summary"])?.let { summary ->
+                if (parser.asBool(summary["filled"]) == true) {
+                    val multiplier = if (side == "BUY") Numeric.double.NEGATIVE else Numeric.double.POSITIVE
+                    (parser.asDouble(summary["size"]) ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
+                } else {
+                    null
+                }
+            } ?: 0.0
+        } else {
+            0.0
+        }
+        return currentPositionSize + tradeSize
     }
 
     internal fun getTransferAmountFromTargetLeverage(
