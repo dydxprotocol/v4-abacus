@@ -145,7 +145,9 @@ internal class SkipProcessor(
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 
-    private fun getChainById(chainId: String): Map<String, Any>? {
+//    Update this when we move chains to state
+//    https://linear.app/dydx/issue/OTE-470/migrate-chains-and-tokens-to-abacus-state
+    override fun getChainById(chainId: String): Map<String, Any>? {
         return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chain_id")) == chainId })
     }
 

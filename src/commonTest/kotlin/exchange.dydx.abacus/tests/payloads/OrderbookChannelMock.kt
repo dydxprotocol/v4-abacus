@@ -323,6 +323,38 @@ internal class OrderbookChannelMock {
           }
         }
     """.trimIndent()
+
+    internal val subscribed_ape = """
+        {
+          "type": "subscribed",
+          "connection_id": "e3b086f3-c360-40e2-bb74-c36ff8a69d2e",
+          "message_id": 5,
+          "channel": "v4_orderbook",
+          "id": "APE-USD",
+          "contents": {
+            "bids": [
+              {
+                "price": "2",
+                "size": "50"
+              },
+              {
+                "price": "1",
+                "size": "2710"
+              }
+            ],
+            "asks": [
+              {
+                "price": "1",
+                "size": "70"
+              },
+              {
+                "price": "2",
+                "size": "29100"
+              }
+            ]
+          }
+        }
+    """.trimIndent()
     internal val channel_batch_data = """
         {
           "type": "channel_batch_data",

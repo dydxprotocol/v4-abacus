@@ -132,7 +132,7 @@ class V4StateManagerConfigs(
 
     private val skipHost: String
         get() {
-            return "https://api.skip.money"
+            return environment.endpoints.skip ?: "https://api.skip.money"
         }
 
     private val squidV2Host: String

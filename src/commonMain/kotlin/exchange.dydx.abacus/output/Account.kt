@@ -256,7 +256,8 @@ data class SubaccountPosition(
     val marginUsage: TradeStatesWithDoubleValues,
     val quoteBalance: TradeStatesWithDoubleValues, // available for isolated market position
     val equity: TradeStatesWithDoubleValues, // available for isolated market position
-    val marginMode: MarginMode?
+    val marginMode: MarginMode?,
+    val marginValue: TradeStatesWithDoubleValues,
 ) {
     companion object {
         internal fun create(
@@ -386,6 +387,11 @@ data class SubaccountPosition(
                         parser.asMap(data["equity"]),
                     )
                     val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
+                    val marginValue = TradeStatesWithDoubleValues.create(
+                        null,
+                        parser,
+                        parser.asMap(data["marginValue"]),
+                    )
 
                     return if (existing?.id != id ||
                         existing.assetId != assetId ||
@@ -414,7 +420,8 @@ data class SubaccountPosition(
                         existing.marginUsage !== marginUsage ||
                         existing.quoteBalance !== quoteBalance ||
                         existing.equity !== equity ||
-                        existing.marginMode != marginMode
+                        existing.marginMode != marginMode ||
+                        existing.marginValue !== marginValue
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
@@ -447,6 +454,7 @@ data class SubaccountPosition(
                             quoteBalance,
                             equity,
                             marginMode,
+                            marginValue,
                         )
                     } else {
                         existing

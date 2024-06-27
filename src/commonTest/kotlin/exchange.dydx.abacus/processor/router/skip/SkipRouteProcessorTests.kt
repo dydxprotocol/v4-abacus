@@ -3,6 +3,7 @@ package exchange.dydx.abacus.processor.router.skip
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
+import exchange.dydx.abacus.utils.toJsonArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -226,10 +227,25 @@ class SkipRouteProcessorTests {
     fun testReceivedError() {
         val payload = skipRouteMock.payloadError
         val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
+        val errorJsonArray = listOf(
+            mapOf(
+                "code" to 3,
+                "message" to "difference in usd value of route input and output is too large. input usd value: 100000.00 output usd value: 98811.81",
+                "details" to listOf(
+                    mapOf(
+                        "@type" to "type.googleapis.com/google.rpc.ErrorInfo",
+                        "reason" to "BAD_PRICE_ERROR",
+                        "domain" to "skip.money",
+                        "metadata" to mapOf<Any, Any>(),
+                    ),
+                ),
+            ),
+        ).toJsonArray()
+
         val expected = mapOf(
             "bridgeFee" to 0.0,
             "slippage" to "1",
-            "errors" to "[{code=3, message=\"difference in usd value of route input and output is too large. input usd value: 100000.00 output usd value: 98811.81\", details=[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"BAD_PRICE_ERROR\",\"domain\":\"skip.money\",\"metadata\":{}}]}]",
+            "errors" to errorJsonArray.toString(),
         )
         assertEquals(expected, result)
     }

@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.state.model
 
+import abs
+import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
@@ -42,6 +44,19 @@ fun TradingStateMachine.closePosition(
             subaccountNumber,
         )
 
+    val childSubaccountNumber =
+        MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+            parser,
+            account,
+            subaccountNumber,
+            trade,
+        )
+    val subaccountNumberChanges = if (subaccountNumber == childSubaccountNumber) {
+        iListOf(subaccountNumber)
+    } else {
+        iListOf(subaccountNumber, childSubaccountNumber)
+    }
+
     var sizeChanged = false
     when (typeText) {
         ClosePositionInputField.market.rawValue -> {
@@ -54,16 +69,21 @@ fun TradingStateMachine.closePosition(
                     }
                 }
                 trade["type"] = "MARKET"
-                trade["reduceOnly"] = true
 
                 val positionSize =
                     parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
                 trade["side"] = if (positionSize > Numeric.double.ZERO) "SELL" else "BUY"
 
+                trade["timeInForce"] = "IOC"
+                trade["reduceOnly"] = true
+
+                val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
+                trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
+
                 changes = StateChanges(
                     iListOf(Changes.subaccount, Changes.input),
                     null,
-                    iListOf(subaccountNumber),
+                    subaccountNumberChanges,
                 )
             } else {
                 error = cannotModify(typeText)
@@ -75,7 +95,7 @@ fun TradingStateMachine.closePosition(
             changes = StateChanges(
                 iListOf(Changes.subaccount, Changes.input),
                 null,
-                iListOf(subaccountNumber),
+                subaccountNumberChanges,
             )
         }
         else -> {}
