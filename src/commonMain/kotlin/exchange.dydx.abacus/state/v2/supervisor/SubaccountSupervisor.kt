@@ -72,6 +72,7 @@ import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
+import exchange.dydx.abacus.utils.toJsonElement
 import exchange.dydx.abacus.utils.values
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -594,7 +595,8 @@ internal class SubaccountSupervisor(
                 if (marketIds.contains(marketId) && marketIds.size <= 1) {
                     return subaccountNumberToCheck
                 } else if (marketIds.isEmpty()) {
-                    if (availableSubaccountNumber == subaccountNumber) {
+                    val equity = subaccounts.get("subaccountNumberToCheck")?.equity?.current ?: 0.0
+                    if (availableSubaccountNumber == subaccountNumber && equity == 0.0) {
                         availableSubaccountNumber = subaccountNumberToCheck
                     }
                 }
