@@ -58,7 +58,6 @@ jobs:
           TMP_DIR=$(mktemp -d)
           
           curl https://raw.githubusercontent.com/dydxprotocol/v4-abacus/main/build.gradle.kts > $TMP_DIR/build.gradle.kts
-          curl https://raw.githubusercontent.com/dydxprotocol/v4-abacus/main/v4_abacus.podspec > $TMP_DIR/v4_abacus.podspec
  
           # search for the first line that starts with "version" in build.gradle.kts
           # get the value in the quotes
