@@ -148,7 +148,7 @@ internal object MarginCalculator {
     ): Int {
         val marginMode = parser.asString(tradeInput?.get("marginMode")) ?: error("Invalid margin mode")
         if (marginMode != "ISOLATED") {
-            error("Invalid margin mode")
+            return subaccountNumber
         }
         val marketId = parser.asString(tradeInput?.get("marketId")) ?: error("market id is required to trade")
         val subaccounts = parser.asNativeMap(account?.get("subaccounts")) ?: error("failed to find user subaccounts")
