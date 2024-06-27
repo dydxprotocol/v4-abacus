@@ -189,7 +189,9 @@ internal object MarginCalculator {
                 if (marketIds.contains(marketId) && marketIds.size <= 1) {
                     return subaccountNumberToCheck
                 } else if (marketIds.isEmpty()) {
-                    if (availableSubaccountNumber == subaccountNumber) {
+                    // Check if subaccount equity is 0 so that funds are moved to a clean account if reclaimUnutilizedChildSubaccountFunds has not been called yet
+                    val equity = parser.asDouble(parser.value(subaccounts, "$subaccountNumberToCheck.equity.current")) ?: 0.0
+                    if (availableSubaccountNumber == subaccountNumber && equity == 0.0) {
                         availableSubaccountNumber = subaccountNumberToCheck
                     }
                 }
