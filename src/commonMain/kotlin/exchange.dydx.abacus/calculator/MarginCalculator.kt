@@ -218,6 +218,17 @@ internal object MarginCalculator {
         error("No available subaccount number")
     }
 
+    fun getChildSubaccountNumberForIsolatedMarginClosePosition(
+        parser: ParserProtocol,
+        account: Map<String, Any>?,
+        subaccountNumber: Int,
+        tradeInput: Map<String, Any>?
+    ): Int {
+        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return subaccountNumber
+        val position = findExistingPosition(parser, account, marketId, subaccountNumber)
+        return parser.asInt(position?.get("subaccountNumber")) ?: subaccountNumber
+    }
+
     /**
      * @description Calculate and validate the amount of collateral to transfer for an isolated margin trade.
      */

@@ -502,7 +502,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         perp.trade("10", TradeInputField.size, 0)
         test(
             {
-                perp.closePosition("10", ClosePositionInputField.size, 0)
+                perp.trade("1", TradeInputField.targetLeverage, 0)
             },
             """
                 {
@@ -511,8 +511,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "groupedSubaccounts": {
                                 "0": {
                                     "freeCollateral": {
-                                        "current": 137.13,
-                                        "postOrder": 157.12
+                                        "current": 137.13
                                     },
                                     "openPositions": {
                                         "APE-USD": {
@@ -522,7 +521,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 25.20,
-                                                "postOrder": 5.20
+                                                "postOrder": 25.20
                                             }
                                         }
                                     }
@@ -531,8 +530,8 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         }
                     },
                     "input": {
-                        "current": "closePosition",
-                        "closePosition": {
+                        "current": "trade",
+                        "trade": {
                             "marketId": "APE-USD",
                             "marginMode": "ISOLATED",
                             "targetLeverage": 1.0,
@@ -566,7 +565,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                         "APE-USD": {
                                             "size": {
                                                 "current": 20,
-                                                "postOrder": 10
+                                                "postOrder": -30
                                             },
                                             "equity": {
                                                 "current": 25.20,
