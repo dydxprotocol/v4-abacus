@@ -316,20 +316,15 @@ internal object MarginCalculator {
         trade: Map<String, Any>,
         currentPositionSize: Double,
     ): Double {
-        val marketId = parser.asString(trade["marketId"])
-        val side = parser.asString(trade["side"])
-        val tradeSize = if (marketId != null && side != null) {
-            parser.asNativeMap(trade["summary"])?.let { summary ->
-                if (parser.asBool(summary["filled"]) == true) {
-                    val multiplier = if (side == "BUY") Numeric.double.NEGATIVE else Numeric.double.POSITIVE
-                    (parser.asDouble(summary["size"]) ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
-                } else {
-                    null
-                }
-            } ?: 0.0
-        } else {
-            0.0
-        }
+        val tradeSize = parser.asNativeMap(trade["summary"])?.takeIf {
+            parser.asString(trade["marketId"]) != null &&
+                parser.asString(trade["side"]) != null &&
+                parser.asBool(it["filled"]) == true
+        }?.let { summary ->
+            val multiplier = if (parser.asString(trade["side"]) == "BUY") Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+            (parser.asDouble(summary["size"]) ?: Numeric.double.ZERO) * multiplier
+        } ?: 0.0
+
         return currentPositionSize + tradeSize
     }
 
