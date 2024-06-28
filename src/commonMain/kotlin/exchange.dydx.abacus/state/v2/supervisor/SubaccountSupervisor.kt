@@ -1518,7 +1518,7 @@ internal class SubaccountSupervisor(
             // before the isolated market order can be placed
             val isPlacingOrderForSubaccount = placeOrderRecords.any {
                 it.destinationSubaccountNumber == subaccount.value.subaccountNumber &&
-                        it.lastOrderStatus == null // i.e. not indexed, we let `hasIndexedOpenOrder` be source of truth once order is indexed
+                    it.lastOrderStatus == null // i.e. not indexed, we let `hasIndexedOpenOrder` be source of truth once order is indexed
             }
 
             // Only return a quoteBalance if the subaccount has no open positions or orders

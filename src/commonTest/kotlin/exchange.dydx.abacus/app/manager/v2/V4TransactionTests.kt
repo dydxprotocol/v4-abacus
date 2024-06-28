@@ -18,7 +18,6 @@ import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -495,13 +494,13 @@ class V4TransactionTests : NetworkTests() {
         // there should already be one attempt to reclaim funds because the subscribed message
         // contains one child subaccount meeting the conditions to have funds sent back
         assertEquals(1, transferPayloads.size)
-        assertTransferDirection( transferPayloads.last(),256, 0)
+        assertTransferDirection(transferPayloads.last(), 256, 0)
         // assume that it was cleared so we can test that function again
 //        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
 
         // triggering the reclaim functions should trigger another attempt to transfer
         subaccountSupervisor?.reclaimUnutilizedFundsFromChildSubaccounts()
-        assertTransferDirection( transferPayloads.last(),256, 0)
+        assertTransferDirection(transferPayloads.last(), 256, 0)
 
         // in case it is triggered again before the first transfer tx was finished
         // it should not trigger another transfer
@@ -514,7 +513,7 @@ class V4TransactionTests : NetworkTests() {
         // place isolated order which should trigger a transfer into subaccount first
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertEquals(3, transferPayloads.size)
-        assertTransferDirection( transferPayloads.last(),0, 384)
+        assertTransferDirection(transferPayloads.last(), 0, 384)
         assertEquals(placeOrderPayloads.size, 0)
         // this time it should not add another transfer attempt since there's a pending order to the
         // child subaccount which has not been indexed
