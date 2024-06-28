@@ -15,7 +15,6 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.protocols.AnalyticsEvent
-import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -304,10 +303,6 @@ internal class SubaccountSupervisor(
             channel,
             subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
-
-        if (parent) {
-            pollReclaimUnutilizedFunds()
-        }
     }
 
     private fun subaccountChannelParams(
@@ -711,6 +706,7 @@ internal class SubaccountSupervisor(
                         submitTimeMs,
                         fromSlTpDialog = isTriggerOrder,
                         lastOrderStatus = null,
+                        destinationSubaccountNumber = transferPayload?.destinationSubaccountNumber,
                     ),
                 )
             }
@@ -1487,8 +1483,11 @@ internal class SubaccountSupervisor(
         if (changes.changes.contains(Changes.subaccount)) {
             parseOrdersToMatchPlaceOrdersAndCancelOrders()
             cancelTriggerOrdersWithClosedOrFlippedPositions()
+            reclaimUnutilizedFundsFromChildSubaccounts()
         }
     }
+
+    private var reclaimingChildSubaccountNumbers = mutableSetOf<Int>()
 
     /**
      * @description Loop through all subaccounts to find childSubaccounts that have funds but no open positions or orders. Initiate a transfer to parentSubaccount.
@@ -1504,8 +1503,7 @@ internal class SubaccountSupervisor(
 
             val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
             val openPositions = subaccount.value.openPositions
-
-            val openOrders = subaccount.value.orders?.filter { order ->
+            val hasIndexedOpenOrder = subaccount.value.orders?.any { order ->
                 val status = helper.parser.asString(order.status)
                 iListOf(
                     OrderStatus.Open.name,
@@ -1513,10 +1511,17 @@ internal class SubaccountSupervisor(
                     OrderStatus.Untriggered.name,
                     OrderStatus.PartiallyFilled.name,
                 ).contains(status)
+            } ?: false
+
+            // placeOrderRecords hold orders that have been placed and have not been canceled/filled
+            // this is to check the case where we're still waiting for subaccount transfer to complete
+            // before the isolated market order can be placed
+            val isPlacingOrderForSubaccount = placeOrderRecords.any {
+                it.destinationSubaccountNumber == subaccount.value.subaccountNumber
             }
 
             // Only return a quoteBalance if the subaccount has no open positions or orders
-            if (openPositions.isNullOrEmpty() && openOrders.isNullOrEmpty() && quoteBalance > 0.0) {
+            if (openPositions.isNullOrEmpty() && !hasIndexedOpenOrder && !isPlacingOrderForSubaccount && quoteBalance > 0.0) {
                 quoteBalance
             } else {
                 0.0
@@ -1525,7 +1530,7 @@ internal class SubaccountSupervisor(
             it.value > 0.0
         }
 
-        val transferPayloadStrings = iMutableListOf<String>()
+        val transferPayloads = iMutableListOf<HumanReadableSubaccountTransferPayload>()
 
         subaccountQuoteBalanceMap.forEach {
             val childSubaccountNumber = helper.parser.asInt(it.key)
@@ -1544,45 +1549,27 @@ internal class SubaccountSupervisor(
                 destinationSubaccountNumber = subaccountNumber,
             )
 
-            val transferPayloadString = Json.encodeToString(transferPayload)
-            transferPayloadStrings.add(transferPayloadString)
+            if (childSubaccountNumber !in reclaimingChildSubaccountNumbers) {
+                reclaimingChildSubaccountNumbers.add(childSubaccountNumber)
+                transferPayloads.add(transferPayload)
+            }
         }
 
-        recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+        recursivelyReclaimChildSubaccountFunds(transferPayloads)
     }
 
-    private fun recursivelyReclaimChildSubaccountFunds(transferPayloadStrings: MutableList<String>) {
-        if (transferPayloadStrings.isNotEmpty()) {
-            val transferPayloadString = transferPayloadStrings.removeAt(0)
+    private fun recursivelyReclaimChildSubaccountFunds(transferPayloads: MutableList<HumanReadableSubaccountTransferPayload>) {
+        if (transferPayloads.isNotEmpty()) {
+            val transferPayload = transferPayloads.removeAt(0)
+            val transferPayloadString = Json.encodeToString(transferPayload)
             helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
+                reclaimingChildSubaccountNumbers.remove(transferPayload.subaccountNumber)
                 val error = parseTransactionResponse(response)
                 if (error != null) {
                     emitError(error)
                 } else {
-                    recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
+                    recursivelyReclaimChildSubaccountFunds(transferPayloads)
                 }
-            }
-        }
-    }
-
-    private var reclaimUnutilizedFundsTimer: LocalTimerProtocol? = null
-        set(value) {
-            if (field !== value) {
-                field?.cancel()
-                field = value
-            }
-        }
-
-    private fun pollReclaimUnutilizedFunds() {
-        reclaimUnutilizedFundsTimer = null
-        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-            this.reclaimUnutilizedFundsTimer = helper.ioImplementations.timer?.schedule(
-                (10.seconds).inWholeSeconds.toDouble(),
-                null,
-            ) {
-                reclaimUnutilizedFundsFromChildSubaccounts()
-                pollReclaimUnutilizedFunds()
-                false
             }
         }
     }
