@@ -625,7 +625,7 @@ internal class SubaccountSupervisor(
         val childSubaccount = stateMachine.state?.subaccount(childSubaccountNumber) ?: return null
         val market = stateMachine.state?.market(orderPayload.marketId) ?: return null
 
-        val isolatedMarginTransferAmount = MarginCalculator.getIsolatedMarginTransferInAmountForTradeTyped(
+        val isolatedMarginTransferAmount = MarginCalculator.getIsolatedMarginTransferInAmountForTrade(
             trade,
             subaccount = childSubaccount,
             market,
