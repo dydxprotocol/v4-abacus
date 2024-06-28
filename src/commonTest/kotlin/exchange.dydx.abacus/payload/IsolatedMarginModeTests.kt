@@ -394,8 +394,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "targetLeverage": 2.0,
                             "summary": {
                                 "price": 1.0,
-                                "size": 50.0,
-                                "isolatedMarginTransferAmount": 10.0
+                                "size": 50.0
                             }
                         }
                     }
@@ -586,8 +585,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "targetLeverage": 2.0,
                             "summary": {
                                 "price": 1.0,
-                                "size": 50.0,
-                                "isolatedMarginTransferAmount": 10.0
+                                "size": 50.0
                             }
                         }
                     }
@@ -720,9 +718,6 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                             "targetLeverage": 2.0,
                             "options": {
                                 "needsMarginMode": true
-                            },
-                            "summary": {
-                                "isolatedMarginTransferAmount": 13.697401030000002
                             }
                         }
                     }
