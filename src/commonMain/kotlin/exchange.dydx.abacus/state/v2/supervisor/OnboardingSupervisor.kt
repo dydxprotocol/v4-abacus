@@ -237,10 +237,9 @@ internal class OnboardingSupervisor(
                 null
             }
         }
-        val osmosisAddress = accountAddress.toOsmosisAddress() ?: return
-        val nobleAddress = accountAddress.toNobleAddress() ?: return
-        val osmosisChainId = helper.configs.osmosisChainId() ?: return
+        val osmosisChainId = helper.configs.osmosisChainId()
         val nobleChainId = helper.configs.nobleChainId()
+        val neutronChainId = helper.configs.neutronChainId()
         val chainId = helper.environment.dydxChainId ?: return
         val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
@@ -254,8 +253,9 @@ internal class OnboardingSupervisor(
                 "dest_asset_chain_id" to chainId,
                 "chain_ids_to_addresses" to mapOf(
                     fromChain to sourceAddress,
-                    osmosisChainId to osmosisAddress,
-                    nobleChainId to nobleAddress,
+                    osmosisChainId to accountAddress.toOsmosisAddress(),
+                    nobleChainId to accountAddress.toNobleAddress(),
+                    neutronChainId to accountAddress.toNeutronAddress(),
                     chainId to accountAddress,
                 ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
@@ -279,7 +279,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-    @Suppress("UnusedPrivateMember", "ForbiddenComment")
     private fun retrieveSkipDepositRouteCCTP(
         state: PerpetualState?,
         accountAddress: String,
@@ -287,62 +286,51 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
 //      We have a lot of duplicate code for these deposit/withdrawal route calls
-//      It's easier to dedupe now that he url is the same and only the args differ
-//      TODO: Consider creating generateArgs fun to reduce code duplication
-        val fromChain = state?.input?.transfer?.chain
-        val fromToken = state?.input?.transfer?.token
-        val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
+//      It's easier to dedupe now that the url is the same and only the args differ
+//      We can consider deduping this at a later point.
+        val fromChain = state?.input?.transfer?.chain ?: return
+        val fromToken = state.input.transfer.token ?: return
+        val fromAmount = helper.parser.asDecimal(state.input.transfer.size?.size)?.let {
             val decimals = helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
             if (decimals != null) {
                 (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
             } else {
                 null
             }
-        }
-        val chainId = helper.environment.dydxChainId
-        val fromAmountString = helper.parser.asString(fromAmount)
-        val nobleAddress = accountAddress.toNobleAddress()
+        } ?: return
+        if (fromAmount <= 0) return
+        val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
-        val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom
-        if (fromChain != null &&
-            fromToken != null &&
-            fromAmount != null && fromAmount > 0 &&
-            fromAmountString != null &&
-            nobleAddress != null &&
-            chainId != null &&
-            toChain != null &&
-            toToken != null
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "amount_in" to fromAmountString,
-                "source_asset_denom" to fromToken,
-                "source_asset_chain_id" to fromChain,
-                "dest_asset_denom" to toToken,
-                "dest_asset_chain_id" to toChain,
-                "chain_ids_to_addresses" to mapOf(
-                    fromChain to sourceAddress,
-                    toChain to nobleAddress,
-                ),
-                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-                "bridges" to listOf(
-                    "CCTP",
-                ),
-            )
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "Content-Type" to "application/json",
-            )
-            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
-                if (response != null) {
-                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
-                    val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
-                    }
-                } else {
-                    Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
+        val toChain = helper.environment.dydxChainId ?: return
+        val toToken = helper.environment.tokens["usdc"]?.denom ?: return
+        val body: Map<String, Any> = mapOf(
+            "amount_in" to fromAmountString,
+            "source_asset_denom" to fromToken,
+            "source_asset_chain_id" to fromChain,
+            "dest_asset_denom" to toToken,
+            "dest_asset_chain_id" to toChain,
+            "chain_ids_to_addresses" to mapOf(
+                fromChain to sourceAddress,
+                toChain to accountAddress,
+            ),
+            "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
+            "bridges" to listOf(
+                "CCTP",
+            ),
+        )
+        val oldState = stateMachine.state
+        val header = iMapOf(
+            "Content-Type" to "application/json",
+        )
+        helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
+            if (response != null) {
+                val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
+                val oldFromAmount = oldState?.input?.transfer?.size?.size
+                if (currentFromAmount == oldFromAmount) {
+                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
                 }
+            } else {
+                Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
             }
         }
     }
