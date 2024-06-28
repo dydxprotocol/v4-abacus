@@ -316,6 +316,7 @@ internal class OnboardingSupervisor(
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "bridges" to listOf(
                 "CCTP",
+                "IBC",
             ),
         )
         val oldState = stateMachine.state
