@@ -1774,17 +1774,6 @@ internal class TradeInputCalculator(
             else -> {}
         }
 
-        // Calculate isolated margin transfer amount
-        // TODO(@aforaleka): move this out of summary and into place order so trade is up to date
-        val isolatedMarginTransferAmount = MarginCalculator.getIsolatedMarginTransferAmount(
-            parser,
-            subaccount,
-            trade,
-            market,
-        )
-
-        summary.safeSet("isolatedMarginTransferAmount", isolatedMarginTransferAmount)
-
         return summary
     }
 
