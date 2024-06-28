@@ -470,4 +470,35 @@ class V4TransactionTests : NetworkTests() {
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
     }
+
+    @Test
+    fun testReclaimUnutilizedFundsFromChildSubaccount() {
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(false)
+
+        var transactionData: Any? = null
+        val transactionCallback: TransactionCallback = { _, _, data ->
+            transactionData = data
+        }
+
+        val transferPayloads = testChain!!.transferPayloads
+
+        val orderPayload = subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertNotNull(orderPayload, "Transfer payload should not be null")
+        val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
+        assertEquals(transactionData, orderPayload)
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        assertEquals(transactionData, transferPayload)
+
+        // 1. place an isolated trade order
+        // 2. this should trigger a transfer -> place order
+        // 3. test that there is NO attempt to transfer out
+
+
+        // 1. there is an open limit order in child subaccount
+        // 2. test that there is NO attempt to transfer out
+
+        // 1. there are two back-to-back updates to subaccount (close position order filled?)
+        // 2. test there there is ONE attempt to transfer out
+    }
 }

@@ -318,6 +318,7 @@ class TestChain : DYDXChainTransactionsProtocol {
     var transactionCallback: ((response: String?) -> Unit)? = null
 
     var canceldOrderPayloads = mutableListOf<String>()
+    var transferPayloads = mutableListOf<String>()
 
     var requests = mutableListOf<QueryType>()
 
