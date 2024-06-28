@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountConfigs
 import exchange.dydx.abacus.state.v2.supervisor.SubaccountSupervisor
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -420,12 +421,12 @@ class V4TransactionTests : NetworkTests() {
 
         val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
         assertNotNull(orderPayload, "Order payload should not be null")
-        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+        assertEquals(384, orderPayload.subaccountNumber, "Should be 384 since 0, 128 and 256 are unavailable")
 
         val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
         assertNotNull(transferPayload, "Transfer payload should not be null")
         assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
-        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+        assertEquals(384, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
 
     @Test
@@ -435,12 +436,12 @@ class V4TransactionTests : NetworkTests() {
 
         val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
         assertNotNull(orderPayload, "Order payload should not be null")
-        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+        assertEquals(384, orderPayload.subaccountNumber, "Should be 384 since 0, 128 and 256 are unavailable")
 
         val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
         assertNotNull(transferPayload, "Transfer payload should not be null")
         assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
-        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+        assertEquals(384, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
 
     @Test
@@ -471,34 +472,54 @@ class V4TransactionTests : NetworkTests() {
         assertEquals(128, cancelPayload.subaccountNumber)
     }
 
+    private fun assertTransferDirection(
+        transferPayloadString: String,
+        senderSubaccountNumber: Int,
+        destinationSubaccountNumber: Int
+    ) {
+        val transferPayload = parser.decodeJsonObject(transferPayloadString)
+        assertEquals(senderSubaccountNumber, parser.asInt(transferPayload?.get("subaccountNumber")))
+        assertEquals(destinationSubaccountNumber, parser.asInt(transferPayload?.get("destinationSubaccountNumber")))
+    }
+
     @Test
     fun testReclaimUnutilizedFundsFromChildSubaccount() {
         setStateMachineForIsolatedMarginTests(stateManager)
         prepareIsolatedMarginTrade(false)
 
-        var transactionData: Any? = null
-        val transactionCallback: TransactionCallback = { _, _, data ->
-            transactionData = data
-        }
+        val transactionCallback: TransactionCallback = { _, _, data -> }
 
         val transferPayloads = testChain!!.transferPayloads
+        val placeOrderPayloads = testChain!!.placeOrderPayloads
 
-        val orderPayload = subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
-        assertNotNull(orderPayload, "Transfer payload should not be null")
-        val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
-        assertEquals(transactionData, orderPayload)
+        // there should already be one attempt to reclaim funds because the subscribed message
+        // contains one child subaccount meeting the conditions to have funds sent back
+        assertEquals(1, transferPayloads.size)
+        assertTransferDirection( transferPayloads.last(),256, 0)
+        // assume that it was cleared so we can test that function again
+//        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+
+        // triggering the reclaim functions should trigger another attempt to transfer
+        subaccountSupervisor?.reclaimUnutilizedFundsFromChildSubaccounts()
+        assertTransferDirection( transferPayloads.last(),256, 0)
+
+        // in case it is triggered again before the first transfer tx was finished
+        // it should not trigger another transfer
+        subaccountSupervisor?.reclaimUnutilizedFundsFromChildSubaccounts()
+        assertEquals(2, transferPayloads.size)
+
+        // clearing -- reset so transfers can be attempted again
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
-        assertEquals(transactionData, transferPayload)
 
-        // 1. place an isolated trade order
-        // 2. this should trigger a transfer -> place order
-        // 3. test that there is NO attempt to transfer out
-
-
-        // 1. there is an open limit order in child subaccount
-        // 2. test that there is NO attempt to transfer out
-
-        // 1. there are two back-to-back updates to subaccount (close position order filled?)
-        // 2. test there there is ONE attempt to transfer out
+        // place isolated order which should trigger a transfer into subaccount first
+        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertEquals(3, transferPayloads.size)
+        assertTransferDirection( transferPayloads.last(),0, 384)
+        assertEquals(placeOrderPayloads.size, 0)
+        // this time it should not add another transfer attempt since there's a pending order to the
+        // child subaccount which has not been indexed
+        testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.channel_batch_data_empty_childsubaccount)
+        assertEquals(3, transferPayloads.size)
+        // todo: make sure reclaim is actually called after the ws message is received
     }
 }

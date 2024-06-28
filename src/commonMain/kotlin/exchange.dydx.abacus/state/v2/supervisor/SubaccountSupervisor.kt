@@ -1492,7 +1492,7 @@ internal class SubaccountSupervisor(
     /**
      * @description Loop through all subaccounts to find childSubaccounts that have funds but no open positions or orders. Initiate a transfer to parentSubaccount.
      */
-    private fun reclaimUnutilizedFundsFromChildSubaccounts() {
+    internal fun reclaimUnutilizedFundsFromChildSubaccounts() {
         val subaccounts = stateMachine.state?.account?.subaccounts ?: return
 
         val subaccountQuoteBalanceMap = subaccounts.mapValues { subaccount ->
@@ -1517,7 +1517,8 @@ internal class SubaccountSupervisor(
             // this is to check the case where we're still waiting for subaccount transfer to complete
             // before the isolated market order can be placed
             val isPlacingOrderForSubaccount = placeOrderRecords.any {
-                it.destinationSubaccountNumber == subaccount.value.subaccountNumber
+                it.destinationSubaccountNumber == subaccount.value.subaccountNumber &&
+                        it.lastOrderStatus == null // i.e. not indexed, we let `hasIndexedOpenOrder` be source of truth once order is indexed
             }
 
             // Only return a quoteBalance if the subaccount has no open positions or orders
