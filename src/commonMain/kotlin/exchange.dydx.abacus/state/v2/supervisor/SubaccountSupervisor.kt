@@ -1556,22 +1556,22 @@ internal class SubaccountSupervisor(
             }
         }
 
-        recursivelyReclaimChildSubaccountFunds(transferPayloads)
-    }
-
-    private fun recursivelyReclaimChildSubaccountFunds(transferPayloads: MutableList<HumanReadableSubaccountTransferPayload>) {
-        if (transferPayloads.isNotEmpty()) {
-            val transferPayload = transferPayloads.removeAt(0)
+        transferPayloads.forEach { transferPayload ->
             val transferPayloadString = Json.encodeToString(transferPayload)
-            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
-                reclaimingChildSubaccountNumbers.remove(transferPayload.subaccountNumber)
+            val transactionCallback = { response: String? ->
+                this.reclaimingChildSubaccountNumbers.remove(transferPayload.subaccountNumber)
                 val error = parseTransactionResponse(response)
                 if (error != null) {
                     emitError(error)
-                } else {
-                    recursivelyReclaimChildSubaccountFunds(transferPayloads)
                 }
             }
+            submitTransaction(
+                TransactionType.SubaccountTransfer,
+                transferPayloadString,
+                null,
+                transactionCallback,
+                useTransactionQueue = true,
+            )
         }
     }
 
