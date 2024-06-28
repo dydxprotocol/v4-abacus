@@ -265,7 +265,7 @@ internal object MarginCalculator {
         subaccount: Subaccount,
     ): Boolean {
         val isIsolatedMarginOrder = trade.marginMode == MarginMode.Isolated
-        val isIncreasingPositionSize = getIsIncreasingPositionSizeTyped(subaccount, trade)
+        val isIncreasingPositionSize = getIsIncreasingPositionSize(subaccount, trade)
         val isReduceOnly = trade.reduceOnly
         return isIncreasingPositionSize && isIsolatedMarginOrder && !isReduceOnly
     }
@@ -323,11 +323,11 @@ internal object MarginCalculator {
         return getPositionSizeDifference(parser, subaccount, tradeInput)?.let { it > 0 } ?: true
     }
 
-    private fun getIsIncreasingPositionSizeTyped(
+    private fun getIsIncreasingPositionSize(
         subaccount: Subaccount,
         trade: TradeInput,
     ): Boolean {
-        return getPositionSizeDifferenceTyped(subaccount, trade)?.let { it > 0 } ?: true
+        return getPositionSizeDifference(subaccount, trade)?.let { it > 0 } ?: true
     }
 
     private fun getPositionSizeDifference(
