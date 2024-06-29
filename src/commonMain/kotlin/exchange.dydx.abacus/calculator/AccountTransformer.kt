@@ -57,12 +57,19 @@ class AccountTransformer() {
             ) ?: 0.0
 
             val shouldTransferOut = MarginCalculator.getShouldTransferOutCollateral(
-                parser, subaccount = childSubaccount, trade
+                parser,
+                subaccount = childSubaccount,
+                trade,
             )
 
-                val transferToReceiveByParent = if (shouldTransferOut) MarginCalculator.getSubaccountFreeCollateralToTransferOut(
-                    parser, subaccount = childSubaccount
-                ) else null
+            val transferToReceiveByParent = if (shouldTransferOut) {
+                MarginCalculator.getSubaccountFreeCollateralToTransferOut(
+                    parser,
+                    subaccount = childSubaccount,
+                )
+            } else {
+                null
+            }
 
             Logger.e { "$transferToReceiveByParent" }
 
