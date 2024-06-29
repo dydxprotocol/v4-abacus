@@ -50,7 +50,6 @@ import exchange.dydx.abacus.state.v2.supervisor.ConnectionDelegate
 import exchange.dydx.abacus.state.v2.supervisor.ConnectionsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.MarketsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.NetworkHelper
-import exchange.dydx.abacus.state.v2.supervisor.OnboardingConfigs
 import exchange.dydx.abacus.state.v2.supervisor.OnboardingSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.SystemSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.accountAddress
@@ -113,7 +112,6 @@ internal class StateManagerAdaptorV2(
         Formatter(uiImplementations.formatter),
         127,
         appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
-        useSkip = appConfigs.onboardingConfigs.routerVendor == OnboardingConfigs.RouterVendor.Skip,
     )
 
     internal val jsonEncoder = JsonEncoder()
