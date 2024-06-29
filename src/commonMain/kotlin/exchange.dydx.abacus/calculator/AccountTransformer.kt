@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -55,10 +56,20 @@ class AccountTransformer() {
                 market,
             ) ?: 0.0
 
+            val shouldTransferOut = MarginCalculator.getShouldTransferOutCollateral(
+                parser, subaccount = childSubaccount, trade
+            )
+
+                val transferToReceiveByParent = if (shouldTransferOut) MarginCalculator.getSubaccountFreeCollateralToTransferOut(
+                    parser, subaccount = childSubaccount
+                ) else null
+
+            Logger.e { "$transferToReceiveByParent" }
+
             val modifiedSubaccount =
                 subaccountTransformer.applyTransferToSubaccount(
                     subaccount,
-                    transferAmount * -1.0,
+                    ((if (transferAmount > 0.0) transferAmount else transferToReceiveByParent) ?: 0.0) * -1.0,
                     parser,
                     period,
                 )

@@ -242,7 +242,13 @@ internal object MarginCalculator {
 
         if (!shouldTransferIn && !shouldTransferOut) return null
 
-        val transferAmount = calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount) ?: return null
+        val transferAmount = (
+            if (shouldTransferOut) {
+                getPositionMarginToTransferOutForTrade(parser, subaccount, trade)
+            } else {
+                calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount)
+            }
+            ) ?: return null
 
         // Validate that if transferring in, transfer amount should be positive and vice versa
         val isCorrectSign = (shouldTransferIn && transferAmount > 0) || (shouldTransferOut && transferAmount < 0)
@@ -324,7 +330,8 @@ internal object MarginCalculator {
             val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
             val postOrderSize = tradeInput?.let { getPositionPostOrderSizeFromTrade(parser, tradeInput, currentSize) } ?: 0.0
             val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
-            return postOrderSize == 0.0 || (isReduceOnly && postOrderSize <= 0.0)
+            val hasFlippedSide = currentSize * postOrderSize < 0
+            return postOrderSize == 0.0 || (isReduceOnly && hasFlippedSide)
         } ?: false
     }
 
@@ -341,6 +348,29 @@ internal object MarginCalculator {
         trade: TradeInput,
     ): Boolean {
         return getPositionSizeDifference(subaccount, trade)?.let { it > 0 } ?: true
+    }
+
+    private fun getPositionMarginToTransferOutForTrade(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Double? {
+        return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
+            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
+            val currentMarginValue = parser.asDouble(parser.value(position, "marginValue.current")) ?: 0.0
+            val fee = parser.asDouble(parser.value(tradeInput, "summary.fee")) ?: 0.0
+            val equityToTransfer = currentMarginValue - fee
+
+            return equityToTransfer * Numeric.double.NEGATIVE
+        }
+    }
+
+    internal fun getSubaccountFreeCollateralToTransferOut(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+    ): Double? {
+        val currentFreeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: 0.0
+        return currentFreeCollateral * Numeric.double.NEGATIVE
     }
 
     private fun getPositionSizeDifference(
@@ -397,7 +427,7 @@ internal object MarginCalculator {
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
+        subaccount: Map<String, Any>?
     ): Double? {
         val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
         val side = parser.asString(parser.value(trade, "side")) ?: return null
