@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.payload.v3
+package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.tests.extensions.loadHistoricalPnlsFirst
 import exchange.dydx.abacus.tests.extensions.loadHistoricalPnlsSecond
@@ -6,7 +6,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V3HistoricalPNLTests : V3BaseTests() {
+class V4HistoricalPNLTests : V4BaseTests() {
     @Test
     fun testHistoricalPNLs() {
         setup()

@@ -49,12 +49,6 @@ open class V4TradeInputTests : V4BaseTests() {
         }, null)
     }
 
-    internal fun loadOrderbook(): StateResponse {
-        return test({
-            perp.loadOrderbook(mock)
-        }, null)
-    }
-
     private fun testOnce() {
         testMarketTradeInputOnce()
         testLimitTradeInputOnce()

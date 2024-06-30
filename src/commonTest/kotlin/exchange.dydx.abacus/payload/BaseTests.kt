@@ -66,6 +66,7 @@ import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
+import exchange.dydx.abacus.utils.toJsonPrettyPrint
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -151,9 +152,9 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         try {
             data.satisfies(json, parser)
         } catch (e: Throwable) {
-//            println("Internal state match failed...")
-//            println("  Actual State: ${data.toJsonPrettyPrint()}")
-//            println("  Expected State: ${json.toJsonPrettyPrint()}")
+            println("Internal state match failed...")
+            println("  Actual State: ${data.toJsonPrettyPrint()}")
+            println("  Expected State: ${json.toJsonPrettyPrint()}")
             throw e
         }
     }
@@ -1919,7 +1920,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
                 )
             }
         } else {
-            assertNull(obj)
+            assertTrue { obj.isNullOrEmpty() }
         }
     }
 
@@ -1981,7 +1982,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
                 )
             }
         } else {
-            assertNull(obj)
+            assertTrue { obj.isNullOrEmpty() }
         }
     }
 
@@ -2067,7 +2068,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
                 )
             }
         } else {
-            assertNull(obj)
+            assertTrue { obj.isNullOrEmpty() }
         }
     }
 

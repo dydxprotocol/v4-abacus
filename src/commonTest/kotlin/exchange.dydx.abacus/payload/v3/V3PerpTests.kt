@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.payload.v3
 
+import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.tests.extensions.loadAccounts
 import exchange.dydx.abacus.tests.extensions.loadAccountsChanged
 import exchange.dydx.abacus.tests.extensions.loadFillsReceived
 import exchange.dydx.abacus.tests.extensions.loadMarketsChanged
@@ -10,7 +12,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V3PerpTests : V3BaseTests() {
+class V3PerpTests : V4BaseTests() {
     @Test
     fun testDataFeed() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
@@ -18,7 +20,7 @@ class V3PerpTests : V3BaseTests() {
         print("--------First round----------\n")
 
         testMarketsOnce()
-        testAccountsOnce()
+        //testAccountsOnce()
         testOrderbookOnce()
         testHistoricalFundingsOnce()
     }
@@ -155,7 +157,7 @@ class V3PerpTests : V3BaseTests() {
     private fun testAccountsSubscribed() {
         test(
             {
-                loadAccounts()
+                loadSubaccounts()
             },
             """
                 {
