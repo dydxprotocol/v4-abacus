@@ -2,7 +2,6 @@ package exchange.dydx.abacus.payload.v3
 
 import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
-import exchange.dydx.abacus.tests.extensions.loadAccounts
 import exchange.dydx.abacus.tests.extensions.loadAccountsChanged
 import exchange.dydx.abacus.tests.extensions.loadFillsReceived
 import exchange.dydx.abacus.tests.extensions.loadMarketsChanged
@@ -20,7 +19,7 @@ class V3PerpTests : V4BaseTests() {
         print("--------First round----------\n")
 
         testMarketsOnce()
-        //testAccountsOnce()
+        // testAccountsOnce()
         testOrderbookOnce()
         testHistoricalFundingsOnce()
     }
