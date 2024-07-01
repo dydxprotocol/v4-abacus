@@ -22,6 +22,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -64,14 +65,14 @@ internal class OnboardingSupervisor(
 
         if (readyToConnect) {
             if (configs.retrieveSquidRoutes) {
-                retrieveSquidRoutes()
+                retrieveAssetsFromRouter()
                 retrieveDepositExchanges()
             }
         }
     }
 
-    private fun retrieveSquidRoutes() {
-        if (stateMachine.useSkip) {
+    private fun retrieveAssetsFromRouter() {
+        if (StatsigConfig.useSkip) {
             retrieveSkipTransferChains()
             retrieveSkipTransferTokens()
         } else {
@@ -167,7 +168,7 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val isCctp = state?.input?.transfer?.isCctp ?: false
-        if (stateMachine.useSkip) {
+        if (StatsigConfig.useSkip) {
             if (isCctp) {
                 retrieveSkipDepositRouteCCTP(
                     state = state,
@@ -663,7 +664,7 @@ internal class OnboardingSupervisor(
         val isCctp =
             CctpConfig.cctpChainIds?.any { it.isCctpEnabled(state?.input?.transfer) } ?: false
         val isExchange = state?.input?.transfer?.exchange != null
-        if (stateMachine.useSkip) {
+        if (StatsigConfig.useSkip) {
             if (isCctp) {
                 retrieveSkipWithdrawalRouteCCTP(
                     state,
@@ -1367,7 +1368,7 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
         callback: TransactionCallback
     ) {
-        if (stateMachine.useSkip) {
+        if (StatsigConfig.useSkip) {
             cctpToNobleSkip(
                 state,
                 decimals,

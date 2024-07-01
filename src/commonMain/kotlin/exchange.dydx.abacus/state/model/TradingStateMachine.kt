@@ -50,6 +50,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
@@ -85,7 +86,6 @@ open class TradingStateMachine(
     private val formatter: Formatter?,
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
-    val useSkip: Boolean,
 ) {
     internal val internalState: InternalState = InternalState()
 
@@ -98,7 +98,13 @@ open class TradingStateMachine(
     }
     internal val walletProcessor = WalletProcessor(parser)
     internal val configsProcessor = ConfigsProcessor(parser)
-    internal val routerProcessor = constructRouterProcessor()
+    private val skipProcessor = SkipProcessor(parser = parser, internalState = internalState.transfer)
+    private val squidProcessor = SquidProcessor(parser = parser, internalState = internalState.transfer)
+    internal val routerProcessor: IRouterProcessor
+        get() {
+            if (StatsigConfig.useSkip) return skipProcessor
+            return squidProcessor
+        }
     internal val rewardsProcessor = RewardsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
@@ -261,11 +267,6 @@ open class TradingStateMachine(
             return StateResponse(state, null, errors)
         }
         return socket(url, json, subaccountNumber, height)
-    }
-
-    private fun constructRouterProcessor(): IRouterProcessor {
-        if (useSkip) return SkipProcessor(parser = parser, internalState = internalState.transfer)
-        return SquidProcessor(parser = parser, internalState = internalState.transfer)
     }
 
     @Throws(Exception::class)
@@ -684,7 +685,7 @@ open class TradingStateMachine(
         val input = this.input?.mutable()
         val trade = parser.asNativeMap(input?.get(tag))
         val inputType = parser.asString(parser.value(trade, "size.input"))
-        val calculator = TradeInputCalculator(parser, calculation, featureFlags)
+        val calculator = TradeInputCalculator(parser, calculation)
         val params = mutableMapOf<String, Any>()
         params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("account", account)
