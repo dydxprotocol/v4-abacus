@@ -483,42 +483,40 @@ class V4TransactionTests : NetworkTests() {
 
     @Test
     fun testReclaimUnutilizedFundsFromChildSubaccount() {
-        setStateMachineForIsolatedMarginTests(stateManager)
-        prepareIsolatedMarginTrade(false)
-
-        val transactionCallback: TransactionCallback = { _, _, data -> }
-
         val transferPayloads = testChain!!.transferPayloads
         val placeOrderPayloads = testChain!!.placeOrderPayloads
+        assertEquals(0, transferPayloads.size)
 
-        // there should already be one attempt to reclaim funds because the subscribed message
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(false)
+        val transactionCallback: TransactionCallback = { _, _, data -> }
+        val simulateSubaccountUpdate = { testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)}
+
+        // there should be one attempt to reclaim funds because the subscribed message
         // contains one child subaccount meeting the conditions to have funds sent back
         assertEquals(1, transferPayloads.size)
         assertTransferDirection(transferPayloads.last(), 256, 0)
-        // assume that it was cleared so we can test that function again
-//        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
 
-        // triggering the reclaim functions should trigger another attempt to transfer
-        subaccountSupervisor?.reclaimUnutilizedFundsFromChildSubaccounts()
-        assertTransferDirection(transferPayloads.last(), 256, 0)
-
-        // in case it is triggered again before the first transfer tx was finished
-        // it should not trigger another transfer
-        subaccountSupervisor?.reclaimUnutilizedFundsFromChildSubaccounts()
-        assertEquals(2, transferPayloads.size)
-
-        // clearing -- reset so transfers can be attempted again
+        // if previous transfer has not finished, subsequent subaccount updates should not start another transfer attempt
+        simulateSubaccountUpdate()
+        assertEquals(1, transferPayloads.size)
+        // assume transaction completed so we can test that function again
         testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+
+        // this should now trigger another transfer attempt
+        simulateSubaccountUpdate()
+        assertEquals(2, transferPayloads.size)
+        assertTransferDirection(transferPayloads.last(), 256, 0)
 
         // place isolated order which should trigger a transfer into subaccount first
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertEquals(3, transferPayloads.size)
         assertTransferDirection(transferPayloads.last(), 0, 384)
         assertEquals(placeOrderPayloads.size, 0)
-        // this time it should not add another transfer attempt since there's a pending order to the
-        // child subaccount which has not been indexed
+
+        // when subaccount update with an empty child subbacount 384
+        // no additional transfer outs should happen since place order has not completed
         testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.channel_batch_data_empty_childsubaccount)
         assertEquals(3, transferPayloads.size)
-        // todo: make sure reclaim is actually called after the ws message is received
     }
 }
