@@ -41,7 +41,7 @@ fun String.toNeutronAddress(): String? {
         if (humanReadablePart != "dydx") {
             return null
         }
-        return Bech32.encode("neutron1", data)
+        return Bech32.encode("neutron", data)
     } catch (e: Exception) {
         return null
     }
