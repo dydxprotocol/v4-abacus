@@ -29,7 +29,7 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
     override fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
-        return PerpTradingStateMachine(mock.v4Environment, null, null, 127, useParentSubaccount, useSkip = false)
+        return PerpTradingStateMachine(mock.v4Environment, null, null, 127, useParentSubaccount)
     }
 
     internal open fun loadMarkets(): StateResponse {
