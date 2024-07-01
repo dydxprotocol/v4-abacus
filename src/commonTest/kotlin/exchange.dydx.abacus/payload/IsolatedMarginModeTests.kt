@@ -270,7 +270,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                 "0": {
                                     "freeCollateral": {
                                         "current": 137.13,
-                                        "postOrder": 157.12
+                                        "postOrder": 157.29
                                     },
                                     "openPositions": {
                                         "APE-USD": {
@@ -280,7 +280,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                             },
                                             "equity": {
                                                 "current": 25.20,
-                                                "postOrder": 5.20
+                                                "postOrder": 0.0
                                             }
                                         }
                                     }
@@ -808,7 +808,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If full close + no open orders, should transfer out
         assertEquals(
             true,
-            MarginCalculator.getShouldTransferOutCollateral(
+            MarginCalculator.getShouldTransferOutRemainingCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -864,7 +864,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If reducing position to full close but has open orders, should not transfer out
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferOutCollateral(
+            MarginCalculator.getShouldTransferOutRemainingCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(

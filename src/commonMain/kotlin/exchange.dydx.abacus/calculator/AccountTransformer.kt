@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
@@ -49,49 +48,27 @@ class AccountTransformer() {
                 ),
             ) ?: mapOf()
 
-            val transferAmount = MarginCalculator.getIsolatedMarginTransferAmount(
-                parser,
-                subaccount = childSubaccount,
-                trade = trade,
-                market,
-            ) ?: 0.0
+            var transferAmountAppliedToParent = 0.0
+            var transferAmountAppliedToChild = 0.0
 
-            val shouldTransferOut = MarginCalculator.getShouldTransferOutCollateral(
-                parser,
-                subaccount = childSubaccount,
-                trade,
-            )
+            val shouldTransferCollateralToChild = MarginCalculator.getShouldTransferInCollateral(parser, subaccount = childSubaccount, trade)
+            val shouldTransferOutRemainingCollateralFromChild = MarginCalculator.getShouldTransferOutRemainingCollateral(parser, subaccount = childSubaccount, trade)
 
-            val transferToReceiveByParent = if (shouldTransferOut) {
-                MarginCalculator.getSubaccountFreeCollateralToTransferOut(
-                    parser,
-                    subaccount = childSubaccount,
-                )
-            } else {
-                null
+            if (shouldTransferCollateralToChild) {
+                val transferAmount = MarginCalculator.getIsolatedMarginTransferInAmountForTrade(parser, subaccount = childSubaccount, trade, market) ?: 0.0
+                transferAmountAppliedToParent = transferAmount * -1
+                transferAmountAppliedToChild = transferAmount
+            } else if (shouldTransferOutRemainingCollateralFromChild) {
+                val currentFreeCollateralInChild = parser.asDouble(parser.value(childSubaccount, "freeCollateral.current")) ?: 0.0
+                transferAmountAppliedToParent = currentFreeCollateralInChild
             }
 
-            Logger.e { "$transferToReceiveByParent" }
+            val modifiedParentSubaccount = subaccountTransformer.applyTransferToSubaccount(subaccount, transfer = transferAmountAppliedToParent, parser, period)
+            modified.safeSet("subaccounts.$subaccountNumber", modifiedParentSubaccount)
 
-            val modifiedSubaccount =
-                subaccountTransformer.applyTransferToSubaccount(
-                    subaccount,
-                    ((if (transferAmount > 0.0) transferAmount else transferToReceiveByParent) ?: 0.0) * -1.0,
-                    parser,
-                    period,
-                )
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
-
-            val modifiedChildSubaccount =
-                subaccountTransformer.applyTradeToSubaccount(
-                    childSubaccount,
-                    trade,
-                    market,
-                    parser,
-                    period,
-                    transferAmount,
-                )
+            val modifiedChildSubaccount = subaccountTransformer.applyTradeToSubaccount(childSubaccount, trade, market, parser, period, transferAmountAppliedToChild)
             modified.safeSet("subaccounts.$childSubaccountNumber", modifiedChildSubaccount)
+
             return modified
         }
     }

@@ -231,29 +231,17 @@ internal object MarginCalculator {
     /**
      * @description Calculate and validate the amount of collateral to transfer for an isolated margin trade.
      */
-    fun getIsolatedMarginTransferAmount(
+    fun getIsolatedMarginTransferInAmountForTrade(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
     ): Double? {
-        val shouldTransferOut = getShouldTransferOutCollateral(parser, subaccount, trade)
-        val shouldTransferIn = getShouldTransferInCollateral(parser, subaccount, trade)
-
-        if (!shouldTransferIn && !shouldTransferOut) return null
-
-        val transferAmount = (
-            if (shouldTransferOut) {
-                getPositionMarginToTransferOutForTrade(parser, subaccount, trade)
-            } else {
-                calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount)
-            }
-            ) ?: return null
-
-        // Validate that if transferring in, transfer amount should be positive and vice versa
-        val isCorrectSign = (shouldTransferIn && transferAmount > 0) || (shouldTransferOut && transferAmount < 0)
-
-        return if (isCorrectSign) transferAmount else null
+        return if (getShouldTransferInCollateral(parser, subaccount, trade)) {
+            calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount)?.takeIf { it > 0.0 }
+        } else {
+            null
+        }
     }
 
     /**
@@ -265,11 +253,7 @@ internal object MarginCalculator {
         market: PerpetualMarket
     ): Double? {
         return if (getShouldTransferInCollateral(trade, subaccount)) {
-            calculateIsolatedMarginTransferAmount(
-                trade,
-                market,
-                subaccount,
-            )
+            calculateIsolatedMarginTransferAmount(trade, market, subaccount)?.takeIf { it > 0.0 }
         } else {
             null
         }
@@ -306,7 +290,7 @@ internal object MarginCalculator {
     /**
      * @description Determine if collateral should be transferred out of child subaccount for an isolated margin trade
      */
-    internal fun getShouldTransferOutCollateral(
+    internal fun getShouldTransferOutRemainingCollateral(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
@@ -348,29 +332,6 @@ internal object MarginCalculator {
         trade: TradeInput,
     ): Boolean {
         return getPositionSizeDifference(subaccount, trade)?.let { it > 0 } ?: true
-    }
-
-    private fun getPositionMarginToTransferOutForTrade(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        tradeInput: Map<String, Any>?,
-    ): Double? {
-        return parser.asString(tradeInput?.get("marketId"))?.let { marketId ->
-            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
-            val currentMarginValue = parser.asDouble(parser.value(position, "marginValue.current")) ?: 0.0
-            val fee = parser.asDouble(parser.value(tradeInput, "summary.fee")) ?: 0.0
-            val equityToTransfer = currentMarginValue - fee
-
-            return equityToTransfer * Numeric.double.NEGATIVE
-        }
-    }
-
-    internal fun getSubaccountFreeCollateralToTransferOut(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-    ): Double? {
-        val currentFreeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: 0.0
-        return currentFreeCollateral * Numeric.double.NEGATIVE
     }
 
     private fun getPositionSizeDifference(
