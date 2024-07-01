@@ -543,6 +543,11 @@ class V4Environment(
 }
 
 @JsExport
+data object StatsigConfig {
+    var useSkip: Boolean = false
+}
+
+@JsExport
 class AppSettings(
     val ios: AppSetting?,
     val android: AppSetting?,

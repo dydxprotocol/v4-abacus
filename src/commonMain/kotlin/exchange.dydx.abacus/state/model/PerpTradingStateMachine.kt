@@ -10,9 +10,8 @@ class PerpTradingStateMachine(
     formatter: Formatter?,
     maxSubaccountNumber: Int,
     useParentSubaccount: Boolean,
-    useSkip: Boolean
 ) :
-    TradingStateMachine(environment, localizer, formatter, maxSubaccountNumber, useParentSubaccount, useSkip = useSkip) {
+    TradingStateMachine(environment, localizer, formatter, maxSubaccountNumber, useParentSubaccount) {
     /*
     Placeholder for now. Eventually, the code specifically for Perpetual will be in this class
      */
