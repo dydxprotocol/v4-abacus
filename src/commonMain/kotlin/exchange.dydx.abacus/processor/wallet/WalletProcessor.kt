@@ -2,7 +2,6 @@ package exchange.dydx.abacus.processor.wallet
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
-import exchange.dydx.abacus.processor.wallet.account.deprecated.V3AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
@@ -10,10 +9,11 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private var v3accountProcessor = V3AccountProcessor(parser = parser)
-    private var v4accountProcessor = V4AccountProcessor(parser = parser)
-    private var userProcessor = UserProcessor(parser = parser)
+internal class WalletProcessor(
+    parser: ParserProtocol,
+) : BaseProcessor(parser) {
+    private val v4accountProcessor = V4AccountProcessor(parser = parser)
+    private val userProcessor = UserProcessor(parser = parser)
 
     internal fun subscribed(
         existing: Map<String, Any>?,
@@ -26,11 +26,7 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             parser.asNativeMap(content),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let {
-                if (it["account"] != null) {
-                    v3accountProcessor.subscribed(parser.asNativeMap(existing), it, height)
-                } else {
-                    v4accountProcessor.subscribed(parser.asNativeMap(existing), it, height)
-                }
+                v4accountProcessor.subscribed(parser.asNativeMap(existing), it, height)
             }
         }
     }
@@ -48,16 +44,12 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             parser.asNativeMap(content),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let { payload ->
-                if (payload["accounts"] != null) {
-                    v3accountProcessor.channel_data(parser.asNativeMap(existing), payload, height)
-                } else {
-                    v4accountProcessor.channel_data(
-                        parser.asNativeMap(existing),
-                        payload,
-                        info,
-                        height,
-                    )
-                }
+                v4accountProcessor.channel_data(
+                    parser.asNativeMap(existing),
+                    payload,
+                    info,
+                    height,
+                )
             }
         }
     }
@@ -284,7 +276,6 @@ internal class WalletProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
 
     override fun accountAddressChanged() {
         super.accountAddressChanged()
-        v3accountProcessor.accountAddress = accountAddress
         v4accountProcessor.accountAddress = accountAddress
     }
 

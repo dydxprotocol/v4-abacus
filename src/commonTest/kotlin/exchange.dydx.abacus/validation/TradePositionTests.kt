@@ -77,7 +77,7 @@ class TradePositionTests : ValidationsTests() {
                                 "resources": {
                                     "title": {
                                         "stringKey":"ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION"
-                                    }, 
+                                    },
                                     "text":{
                                     }
                                 }
@@ -169,7 +169,7 @@ class TradePositionTests : ValidationsTests() {
 
         test(
             {
-                perp.trade("100", TradeInputField.size, 0)
+                perp.trade("10", TradeInputField.size, 0)
             },
             """
                 {

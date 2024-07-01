@@ -14,13 +14,13 @@ import kotlin.test.assertEquals
 
 class IsolatedMarginModeTests : V4BaseTests(true) {
 
-    internal override fun loadMarkets(): StateResponse {
+    override fun loadMarkets(): StateResponse {
         return test({
             perp.socket(testWsUrl, mock.marketsChannel.subscribed_2, 0, null)
         }, null)
     }
 
-    internal fun loadOrderbook(): StateResponse {
+    override fun loadOrderbook(): StateResponse {
         return test({
             perp.socket(testWsUrl, mock.orderbookChannel.subscribed_ape, 0, null)
         }, null)

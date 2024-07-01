@@ -1,13 +1,13 @@
 package exchange.dydx.abacus.validation
 
-import exchange.dydx.abacus.payload.v3.V3BaseTests
+import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class TransferRequiredInputTests : V3BaseTests() {
+class TransferRequiredInputTests : V4BaseTests() {
     @Test
     fun testDataFeed() {
         setup()

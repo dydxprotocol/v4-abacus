@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
@@ -28,12 +27,6 @@ class V4NoAccountTradeInputTests : V4BaseTests() {
         loadMarkets()
         loadMarketsConfigurations()
         loadOrderbook()
-    }
-
-    internal fun loadOrderbook(): StateResponse {
-        return test({
-            perp.loadOrderbook(mock)
-        }, null)
     }
 
     private fun testOnce() {

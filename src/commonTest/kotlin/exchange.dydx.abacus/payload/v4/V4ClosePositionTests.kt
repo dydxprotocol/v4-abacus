@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.payload.v3
+package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.closePosition
@@ -6,7 +6,7 @@ import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
 
-class V3ClosePositionTests : V3BaseTests() {
+class V4ClosePositionTests : V4BaseTests() {
     @Test
     fun testDataFeed() {
         setup()
@@ -23,8 +23,9 @@ class V3ClosePositionTests : V3BaseTests() {
         loadMarkets()
         loadMarketsConfigurations()
         // do not load account
+
         loadOrderbook()
-        loadAccounts()
+        loadSubaccounts()
     }
 
     private fun testClosePositionInput() {
@@ -63,15 +64,15 @@ class V3ClosePositionTests : V3BaseTests() {
                         "size": {
                             "percent": 0.25,
                             "input": "size.percent",
-                            "size": 2.3392E+1,
-                            "usdcSize": 38684.3479
+                            "size": 2.692,
+                            "usdcSize": 4453.3756
                         },
                         "reduceOnly": true,
                         "summary": {
-                            "price": 1653.74,
-                            "size": 23.392,
-                            "usdcSize": 38684.3479,
-                            "total": 38684.3479
+                            "price": 1654.3,
+                            "size": 2.692,
+                            "usdcSize": 4453.3756,
+                             "total": 4453.3756
                         }
                     }
                 },
@@ -80,14 +81,14 @@ class V3ClosePositionTests : V3BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": -62697.28,
-                                    "postOrder": -21684.24
+                                    "current": 99872.368956,
+                                    "postOrder": 104592.23425040001
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
                                         "size": {
-                                            "current": 93.57,
-                                            "postOrder": 70.178
+                                            "current": 10.771577,
+                                            "postOrder": 8.079577
                                         }
                                     }
                                 }
@@ -101,7 +102,7 @@ class V3ClosePositionTests : V3BaseTests() {
 
         test(
             {
-                perp.closePosition("15", ClosePositionInputField.size, 0)
+                perp.closePosition("9", ClosePositionInputField.size, 0)
             },
             """
             {
@@ -113,15 +114,15 @@ class V3ClosePositionTests : V3BaseTests() {
                         "size": {
                             "percent": null,
                             "input": "size.size",
-                            "size": 15,
-                            "usdcSize": 24812.3719
+                            "size": "9",
+                            "usdcSize": 14888.699999999999
                         },
                         "reduceOnly": true,
                         "summary": {
-                            "price": 1654.16,
-                            "size": 15.0,
-                            "usdcSize": 24812.37,
-                            "total": 24812.37
+                            "price": 1654.3,
+                            "size": 9.0,
+                            "usdcSize": 14888.699999999999,
+                            "total": 14888.699999999999
                         }
                     }
                 },
@@ -130,14 +131,14 @@ class V3ClosePositionTests : V3BaseTests() {
                         "subaccounts": {
                             "0": {
                                 "quoteBalance": {
-                                    "current": -62697.28,
-                                    "postOrder": -36397.88
+                                    "current": 99872.368956,
+                                    "postOrder": 115652.007756
                                 },
                                 "openPositions": {
                                     "ETH-USD": {
                                         "size": {
-                                            "current": 93.57,
-                                            "postOrder": 78.57
+                                            "current": 10.771577,
+                                            "postOrder": 1.7715770000000006
                                         }
                                     }
                                 }

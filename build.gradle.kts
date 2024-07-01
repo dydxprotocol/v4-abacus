@@ -39,6 +39,7 @@ allprojects {
                         "ktlint_standard_no-semi" to "disabled",
                         "ktlint_standard_backing-property-naming" to "disabled",
                         "ktlint_standard_filename" to "disabled",
+                        "ktlint_standard_function-naming" to "disabled",
                     )
                 )
 
