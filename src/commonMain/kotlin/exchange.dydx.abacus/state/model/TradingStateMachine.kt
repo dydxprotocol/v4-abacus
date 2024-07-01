@@ -684,7 +684,7 @@ open class TradingStateMachine(
         val input = this.input?.mutable()
         val trade = parser.asNativeMap(input?.get(tag))
         val inputType = parser.asString(parser.value(trade, "size.input"))
-        val calculator = TradeInputCalculator(parser, calculation, featureFlags)
+        val calculator = TradeInputCalculator(parser, calculation)
         val params = mutableMapOf<String, Any>()
         params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
         params.safeSet("account", account)
