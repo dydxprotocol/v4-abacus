@@ -229,22 +229,6 @@ internal object MarginCalculator {
     }
 
     /**
-     * @description Calculate and validate the amount of collateral to transfer for an isolated margin trade.
-     */
-    fun getIsolatedMarginTransferInAmountForTrade(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        trade: Map<String, Any>,
-        market: Map<String, Any>?,
-    ): Double? {
-        return if (getShouldTransferInCollateral(parser, subaccount, trade)) {
-            calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount)?.takeIf { it > 0.0 }
-        } else {
-            null
-        }
-    }
-
-    /**
      * @description Calculate the amount of collateral to transfer into child subaccount for an isolated margin trade.
      */
     fun getIsolatedMarginTransferInAmountForTrade(
@@ -302,6 +286,19 @@ internal object MarginCalculator {
         } ?: false
 
         return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder
+    }
+
+    internal fun getEstimateRemainingCollateralAfterClosePosition(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Double? {
+        val quoteBalance = parser.asDouble(parser.value(subaccount, "quoteBalance.current")) ?: return null
+        val tradeSummary = parser.asNativeMap(parser.value(tradeInput, "summary")) ?: return null
+        val price = parser.asDouble(tradeSummary["price"]) ?: return null
+        val size = parser.asDouble(tradeSummary["size"]) ?: return null
+        val naiveAmount = price * size
+        return quoteBalance + naiveAmount
     }
 
     private fun getIsPositionFullyClosed(
@@ -384,7 +381,7 @@ internal object MarginCalculator {
      * @description Calculate the amount of collateral to transfer for an isolated margin trade.
      * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
      */
-    private fun calculateIsolatedMarginTransferAmount(
+    internal fun calculateIsolatedMarginTransferAmount(
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
