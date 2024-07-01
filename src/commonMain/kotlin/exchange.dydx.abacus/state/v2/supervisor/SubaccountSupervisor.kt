@@ -250,8 +250,9 @@ internal class SubaccountSupervisor(
     }
 
     internal fun retrieveHistoricalPnls(previousUrl: String? = null) {
-        val url = helper.configs.privateApiUrl("historical-pnl") ?: return
-        val params = subaccountParams()
+        val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-historical-pnl" else "historical-pnl") ?: return
+        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
+
         val historicalPnl = helper.parser.asNativeList(
             helper.parser.value(
                 stateMachine.data,
