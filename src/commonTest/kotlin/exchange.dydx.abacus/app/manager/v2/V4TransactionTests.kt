@@ -490,7 +490,7 @@ class V4TransactionTests : NetworkTests() {
         setStateMachineForIsolatedMarginTests(stateManager)
         prepareIsolatedMarginTrade(false)
         val transactionCallback: TransactionCallback = { _, _, data -> }
-        val simulateSubaccountUpdate = { testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed)}
+        val simulateSubaccountUpdate = { testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed) }
 
         // there should be one attempt to reclaim funds because the subscribed message
         // contains one child subaccount meeting the conditions to have funds sent back
