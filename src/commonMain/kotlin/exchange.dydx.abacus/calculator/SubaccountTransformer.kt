@@ -220,6 +220,7 @@ internal class SubaccountTransformer {
         isTransferOut: Boolean? = false,
     ): Map<String, Any>? {
         if (subaccount != null) {
+            // when isTransferOut is true, usdcSize is overwritten to 0
             val delta = deltaFromTrade(
                 parser,
                 trade,

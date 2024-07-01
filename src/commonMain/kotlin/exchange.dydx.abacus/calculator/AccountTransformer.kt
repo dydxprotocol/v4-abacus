@@ -71,6 +71,7 @@ class AccountTransformer() {
             )
             modified.safeSet("subaccounts.$subaccountNumber", modifiedParentSubaccount)
 
+            // when transfer out is true, post order position margin should be null
             val modifiedChildSubaccount = subaccountTransformer.applyTradeToSubaccount(
                 childSubaccount,
                 trade,

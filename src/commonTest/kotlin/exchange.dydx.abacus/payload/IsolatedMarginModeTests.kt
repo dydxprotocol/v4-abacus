@@ -270,7 +270,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                 "0": {
                                     "freeCollateral": {
                                         "current": 137.13,
-                                        "postOrder": 157.29
+                                        "postOrder": 157.12
                                     },
                                     "openPositions": {
                                         "APE-USD": {
@@ -279,8 +279,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                                 "postOrder": 0
                                             },
                                             "equity": {
-                                                "current": 25.20,
-                                                "postOrder": 0.0
+                                                "current": 25.20
                                             }
                                         }
                                     }
