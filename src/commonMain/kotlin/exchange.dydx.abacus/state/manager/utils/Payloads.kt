@@ -22,6 +22,7 @@ data class PlaceOrderRecord(
     val timestampInMilliseconds: Double,
     val fromSlTpDialog: Boolean,
     var lastOrderStatus: OrderStatus?,
+    val destinationSubaccountNumber: Int?,
 )
 
 data class CancelOrderRecord(
