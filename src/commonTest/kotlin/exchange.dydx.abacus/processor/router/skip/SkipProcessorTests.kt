@@ -353,7 +353,6 @@ class SkipProcessorTests {
                         "toAddress" to "uusdc",
                     ),
                 ),
-                "size" to mapOf("usdcSize" to 11.64),
             ),
         )
         assertEquals(expected, result)
