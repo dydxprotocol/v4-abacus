@@ -420,12 +420,12 @@ class V4TransactionTests : NetworkTests() {
 
         val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
         assertNotNull(orderPayload, "Order payload should not be null")
-        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+        assertEquals(384, orderPayload.subaccountNumber, "Should be 384 since 0, 128 and 256 are unavailable")
 
         val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
         assertNotNull(transferPayload, "Transfer payload should not be null")
         assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
-        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+        assertEquals(384, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
 
     @Test
@@ -435,12 +435,12 @@ class V4TransactionTests : NetworkTests() {
 
         val orderPayload = subaccountSupervisor?.placeOrderPayload(0)
         assertNotNull(orderPayload, "Order payload should not be null")
-        assertEquals(256, orderPayload.subaccountNumber, "Should be 256 since 0 and 128 are unavailable")
+        assertEquals(384, orderPayload.subaccountNumber, "Should be 384 since 0, 128 and 256 are unavailable")
 
         val transferPayload = subaccountSupervisor?.getTransferPayloadForIsolatedMarginTrade(orderPayload)
         assertNotNull(transferPayload, "Transfer payload should not be null")
         assertEquals(0, transferPayload.subaccountNumber, "The parent subaccount 0 should be the origin")
-        assertEquals(256, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
+        assertEquals(384, transferPayload.destinationSubaccountNumber, "Should have 2 transactions")
     }
 
     @Test
@@ -469,5 +469,54 @@ class V4TransactionTests : NetworkTests() {
         val cancelPayload = subaccountSupervisor?.cancelOrder("24b68694-d6ae-5df4-baf5-55b0716296e9", callback = transactionCallback)
         assertNotNull(cancelPayload, "Cancel payload should not be null")
         assertEquals(128, cancelPayload.subaccountNumber)
+    }
+
+    private fun assertTransferDirection(
+        transferPayloadString: String,
+        senderSubaccountNumber: Int,
+        destinationSubaccountNumber: Int
+    ) {
+        val transferPayload = parser.decodeJsonObject(transferPayloadString)
+        assertEquals(senderSubaccountNumber, parser.asInt(transferPayload?.get("subaccountNumber")))
+        assertEquals(destinationSubaccountNumber, parser.asInt(transferPayload?.get("destinationSubaccountNumber")))
+    }
+
+    @Test
+    fun testReclaimUnutilizedFundsFromChildSubaccount() {
+        val transferPayloads = testChain!!.transferPayloads
+        val placeOrderPayloads = testChain!!.placeOrderPayloads
+        assertEquals(0, transferPayloads.size)
+
+        setStateMachineForIsolatedMarginTests(stateManager)
+        prepareIsolatedMarginTrade(false)
+        val transactionCallback: TransactionCallback = { _, _, data -> }
+        val simulateSubaccountUpdate = { testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.subscribed) }
+
+        // there should be one attempt to reclaim funds because the subscribed message
+        // contains one child subaccount meeting the conditions to have funds sent back
+        assertEquals(1, transferPayloads.size)
+        assertTransferDirection(transferPayloads.last(), 256, 0)
+
+        // if previous transfer has not finished, subsequent subaccount updates should not start another transfer attempt
+        simulateSubaccountUpdate()
+        assertEquals(1, transferPayloads.size)
+        // assume transaction completed so we can test that function again
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+
+        // this should now trigger another transfer attempt
+        simulateSubaccountUpdate()
+        assertEquals(2, transferPayloads.size)
+        assertTransferDirection(transferPayloads.last(), 256, 0)
+
+        // place isolated order which should trigger a transfer into subaccount first
+        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertEquals(3, transferPayloads.size)
+        assertTransferDirection(transferPayloads.last(), 0, 384)
+        assertEquals(placeOrderPayloads.size, 0)
+
+        // when subaccount update with an empty child subbacount 384
+        // no additional transfer outs should happen since place order has not completed
+        testWebSocket?.simulateReceived(mock.v4ParentSubaccountsMock.channel_batch_data_empty_childsubaccount)
+        assertEquals(3, transferPayloads.size)
     }
 }

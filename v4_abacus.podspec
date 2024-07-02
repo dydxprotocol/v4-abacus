@@ -1,6 +1,7 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'v4_abacus'
-    spec.version = '1.8.15'
+
+    spec.version = '1.8.20'
     spec.homepage                 = 'https://github.com/dydxprotocol/v4-abacus'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
@@ -11,7 +12,7 @@ Pod::Spec.new do |spec|
                 
                 
                 
-    if !Dir.exist?('build/cocoapods/framework/Abacus.framework') || Dir.empty?('build/cocoapods/framework/Abacus.framework')
+    if false
         raise "
 
         Kotlin framework 'Abacus' doesn't exist yet, so a proper Xcode project can't be generated.

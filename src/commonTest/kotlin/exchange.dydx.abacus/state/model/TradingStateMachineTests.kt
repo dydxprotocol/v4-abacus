@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.router.squid.SquidProcessor
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -14,8 +15,8 @@ class TradingStateMachineTests {
             formatter = null,
             maxSubaccountNumber = 1,
             useParentSubaccount = false,
-            useSkip = true,
         )
+        StatsigConfig.useSkip = true
         assertTrue(tradingStateMachine.routerProcessor is SkipProcessor)
     }
 
@@ -27,8 +28,8 @@ class TradingStateMachineTests {
             formatter = null,
             maxSubaccountNumber = 1,
             useParentSubaccount = false,
-            useSkip = false,
         )
+        StatsigConfig.useSkip = false
         assertTrue(tradingStateMachine.routerProcessor is SquidProcessor)
     }
 }

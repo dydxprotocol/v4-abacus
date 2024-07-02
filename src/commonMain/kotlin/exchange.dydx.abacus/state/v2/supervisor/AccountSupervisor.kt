@@ -27,6 +27,7 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.manager.utils.Address
@@ -600,7 +601,7 @@ internal open class AccountSupervisor(
 //    This function is a unidirection transfer function that sweeps funds
 //    from a noble account into a user's given subaccount
     private fun transferNobleBalance(amount: BigDecimal) {
-        if (stateMachine.useSkip) {
+        if (StatsigConfig.useSkip) {
             transferNobleBalanceSkip(amount = amount)
         } else {
             transferNobleBalanceSquid(amount = amount)
