@@ -28,6 +28,7 @@ class SkipProcessorTests {
     internal val skipRouteMock = SkipRouteMock()
     internal val selectedChainId = "osmosis-1"
     internal val selectedTokenAddress = "selectedTokenDenom"
+    internal val selectedTokenSkipDenom = "selected-token-denom-native"
     internal val selectedTokenSymbol = "selectedTokenSymbol"
     internal val selectedTokenDecimals = "15"
     internal val selectedChainAssets = listOf(
@@ -35,6 +36,7 @@ class SkipProcessorTests {
             "denom" to selectedTokenAddress,
             "symbol" to selectedTokenSymbol,
             "decimals" to selectedTokenDecimals,
+            "skipDenom" to selectedTokenSkipDenom,
             "name" to "some-name",
             "logo_uri" to "some-logo-uri",
         ),
@@ -126,6 +128,13 @@ class SkipProcessorTests {
 
     @Test
     fun testSelectedTokenDecimals() {
+        val result = skipProcessor.selectedTokenDecimals(tokenAddress = selectedTokenSkipDenom, selectedChainId = selectedChainId)
+        val expected = selectedTokenDecimals
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun testSelectedTokenDecimalsUsingSkipDenom() {
         val result = skipProcessor.selectedTokenDecimals(tokenAddress = selectedTokenAddress, selectedChainId = selectedChainId)
         val expected = selectedTokenDecimals
         assertEquals(expected, result)
@@ -344,6 +353,7 @@ class SkipProcessorTests {
                         "toAddress" to "uusdc",
                     ),
                 ),
+                "size" to mapOf("usdcSize" to 11.64),
             ),
         )
         assertEquals(expected, result)

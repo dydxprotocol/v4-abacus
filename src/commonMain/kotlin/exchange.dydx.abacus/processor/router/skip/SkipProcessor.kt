@@ -172,7 +172,7 @@ internal class SkipProcessor(
     override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
         val tokensList = filteredTokens(selectedChainId)
         tokensList?.find {
-            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress
+            (parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress || parser.asString(parser.asNativeMap(it)?.get("skipDenom")) == tokenAddress)
         }?.let {
             return parser.asString(parser.asNativeMap(it)?.get("decimals"))
         }
