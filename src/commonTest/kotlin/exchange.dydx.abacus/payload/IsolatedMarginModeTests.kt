@@ -279,8 +279,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                                                 "postOrder": 0
                                             },
                                             "equity": {
-                                                "current": 25.20,
-                                                "postOrder": 5.20
+                                                "current": 25.20
                                             }
                                         }
                                     }
@@ -808,7 +807,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If full close + no open orders, should transfer out
         assertEquals(
             true,
-            MarginCalculator.getShouldTransferOutCollateral(
+            MarginCalculator.getShouldTransferOutRemainingCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -864,7 +863,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If reducing position to full close but has open orders, should not transfer out
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferOutCollateral(
+            MarginCalculator.getShouldTransferOutRemainingCollateral(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
