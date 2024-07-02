@@ -155,6 +155,9 @@ internal class SubaccountSupervisor(
             }
         }
 
+    private val cancelingOrphanedTriggerOrders = mutableSetOf<String>()
+    private val reclaimingChildSubaccountNumbers = mutableSetOf<Int>()
+
     private val notificationsProvider = NotificationsProvider(
         stateMachine,
         helper.uiImplementations,
@@ -397,14 +400,12 @@ internal class SubaccountSupervisor(
         }
     }
 
-    private var cancelingOrphanedTriggerOrders = mutableSetOf<String>()
-
     private fun cancelTriggerOrder(orderId: String) {
-        cancelingOrphanedTriggerOrders.add(orderId)
+        this.cancelingOrphanedTriggerOrders.add(orderId)
         cancelOrder(
             orderId = orderId,
             isOrphanedTriggerOrder = true,
-            callback = { _, _, _ -> cancelingOrphanedTriggerOrders.remove(orderId) },
+            callback = { _, _, _ -> this.cancelingOrphanedTriggerOrders.remove(orderId) },
         )
     }
 
@@ -419,7 +420,7 @@ internal class SubaccountSupervisor(
         } ?: return
 
         cancelableTriggerOrders.forEach { order ->
-            if (order.id !in cancelingOrphanedTriggerOrders) {
+            if (order.id !in this.cancelingOrphanedTriggerOrders) {
                 val marketPosition = subaccount.openPositions?.find { position -> position.id == order.marketId }
                 val hasPositionFlippedOrClosed = marketPosition?.let { position ->
                     when (position.side.current) {
@@ -1487,12 +1488,10 @@ internal class SubaccountSupervisor(
         }
     }
 
-    private var reclaimingChildSubaccountNumbers = mutableSetOf<Int>()
-
     /**
      * @description Loop through all subaccounts to find childSubaccounts that have funds but no open positions or orders. Initiate a transfer to parentSubaccount.
      */
-    internal fun reclaimUnutilizedFundsFromChildSubaccounts() {
+    private fun reclaimUnutilizedFundsFromChildSubaccounts() {
         val subaccounts = stateMachine.state?.account?.subaccounts ?: return
 
         val subaccountQuoteBalanceMap = subaccounts.mapValues { subaccount ->
@@ -1550,8 +1549,8 @@ internal class SubaccountSupervisor(
                 destinationSubaccountNumber = subaccountNumber,
             )
 
-            if (childSubaccountNumber !in reclaimingChildSubaccountNumbers) {
-                reclaimingChildSubaccountNumbers.add(childSubaccountNumber)
+            if (childSubaccountNumber !in this.reclaimingChildSubaccountNumbers) {
+                this.reclaimingChildSubaccountNumbers.add(childSubaccountNumber)
                 transferPayloads.add(transferPayload)
             }
         }
