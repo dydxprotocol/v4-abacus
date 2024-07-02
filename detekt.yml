@@ -35,3 +35,8 @@ style:
     active: false
   MaxLineLength:
     active: false
+
+empty-blocks:
+  EmptyDefaultConstructor:
+    active: false
+
