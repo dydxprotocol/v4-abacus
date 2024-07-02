@@ -45,7 +45,7 @@ fun TradingStateMachine.closePosition(
         )
 
     val childSubaccountNumber =
-        MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+        MarginCalculator.getChildSubaccountNumberForIsolatedMarginClosePosition(
             parser,
             account,
             subaccountNumber,

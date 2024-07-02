@@ -48,6 +48,7 @@ internal class SubaccountTransformer {
         trade: Map<String, Any>,
         market: Map<String, Any>?,
         transfer: Double? = null,
+        shouldTransferOut: Boolean? = false,
     ): Map<String, Any>? {
         val marketId = parser.asString(trade["marketId"])
         val side = parser.asString(trade["side"])
@@ -82,7 +83,7 @@ internal class SubaccountTransformer {
                             "marketId" to marketId,
                             "size" to size,
                             "price" to price,
-                            "usdcSize" to usdcSize,
+                            "usdcSize" to if (shouldTransferOut == true) 0.0 else usdcSize,
                             "fee" to fee,
                             "feeRate" to feeRate,
                             "reduceOnly" to (parser.asBool(trade["reduceOnly"]) ?: false),
@@ -215,14 +216,17 @@ internal class SubaccountTransformer {
         market: Map<String, Any>?,
         parser: ParserProtocol,
         period: String,
-        transfer: Double? = null
+        transfer: Double? = null,
+        isTransferOut: Boolean? = false,
     ): Map<String, Any>? {
         if (subaccount != null) {
+            // when isTransferOut is true, usdcSize is overwritten to 0
             val delta = deltaFromTrade(
                 parser,
                 trade,
                 market,
                 transfer,
+                isTransferOut,
             )
             return applyDeltaToSubaccount(subaccount, delta, parser, period, hasTransfer = transfer != null)
         }

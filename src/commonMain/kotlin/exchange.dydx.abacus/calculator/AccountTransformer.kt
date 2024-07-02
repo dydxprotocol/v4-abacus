@@ -48,32 +48,41 @@ class AccountTransformer() {
                 ),
             ) ?: mapOf()
 
-            val transferAmount = MarginCalculator.getIsolatedMarginTransferAmount(
+            var transferAmountAppliedToParent = 0.0
+            var transferAmountAppliedToChild = 0.0
+
+            val shouldTransferCollateralToChild = MarginCalculator.getShouldTransferInCollateral(parser, subaccount = childSubaccount, trade)
+            val shouldTransferOutRemainingCollateralFromChild = MarginCalculator.getShouldTransferOutRemainingCollateral(parser, subaccount = childSubaccount, trade)
+
+            if (shouldTransferCollateralToChild) {
+                val transferAmount = MarginCalculator.calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount = childSubaccount) ?: 0.0
+                transferAmountAppliedToParent = transferAmount * -1
+                transferAmountAppliedToChild = transferAmount
+            } else if (shouldTransferOutRemainingCollateralFromChild) {
+                val remainingCollateral = MarginCalculator.getEstimateRemainingCollateralAfterClosePosition(parser, subaccount = childSubaccount, trade) ?: 0.0
+                transferAmountAppliedToParent = remainingCollateral
+            }
+
+            val modifiedParentSubaccount = subaccountTransformer.applyTransferToSubaccount(
+                subaccount,
+                transfer = transferAmountAppliedToParent,
                 parser,
-                subaccount = childSubaccount,
-                trade = trade,
+                period,
+            )
+            modified.safeSet("subaccounts.$subaccountNumber", modifiedParentSubaccount)
+
+            // when transfer out is true, post order position margin should be null
+            val modifiedChildSubaccount = subaccountTransformer.applyTradeToSubaccount(
+                childSubaccount,
+                trade,
                 market,
-            ) ?: 0.0
-
-            val modifiedSubaccount =
-                subaccountTransformer.applyTransferToSubaccount(
-                    subaccount,
-                    transferAmount * -1.0,
-                    parser,
-                    period,
-                )
-            modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
-
-            val modifiedChildSubaccount =
-                subaccountTransformer.applyTradeToSubaccount(
-                    childSubaccount,
-                    trade,
-                    market,
-                    parser,
-                    period,
-                    transferAmount,
-                )
+                parser,
+                period,
+                transferAmountAppliedToChild,
+                isTransferOut = shouldTransferOutRemainingCollateralFromChild,
+            )
             modified.safeSet("subaccounts.$childSubaccountNumber", modifiedChildSubaccount)
+
             return modified
         }
     }

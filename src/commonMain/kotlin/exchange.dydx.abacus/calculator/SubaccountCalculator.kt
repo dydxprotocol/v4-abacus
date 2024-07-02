@@ -329,7 +329,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     set(leverage, position, "leverage", period)
                     val liquidationPrice = calculatePositionLiquidationPrice(
                         equity = equity ?: Numeric.double.ZERO,
-                        market = key,
+                        marketId = key,
                         positions = positions,
                         markets = markets,
                         period = period,
@@ -359,54 +359,42 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
     private fun calculatePositionLiquidationPrice(
         equity: Double,
-        market: String,
+        marketId: String,
         positions: Map<String, MutableMap<String, Any>>?,
         markets: Map<String, Any>?,
         period: CalculationPeriod,
     ): Double? {
         val otherPositionsRisk =
-            calculationOtherPositionsRisk(positions, markets, except = market, period)
+            calculationOtherPositionsRisk(positions, markets, except = marketId, period)
 
-        var liquidationPrice: Double? = null
-        positions?.get(market)?.let { position ->
-            parser.asNativeMap(markets?.get(market))?.let { market ->
-                parser.asNativeMap(market["configs"])?.let { configs ->
-                    parser.asDouble(value(position, "adjustedMmf", period))
-                        ?.let { maintenanceMarginFraction ->
-                            parser.asDouble(oraclePrice(market))?.let { oraclePrice ->
-                                parser.asDouble(value(position, "size", period))?.let { size ->
-                                    /*
-                                      const liquidationPrice =
-                                        side === POSITION_SIDES.LONG
-                                          ? otherPositionsRisk
-                                              .plus(sizeBN.times(oraclePrice))
-                                              .minus(accountEquity)
-                                              .div(sizeBN.minus(sizeBN.times(maintenanceMarginFraction)))
-                                          : otherPositionsRisk
-                                              .plus(sizeBN.times(oraclePrice))
-                                              .minus(accountEquity)
-                                              .div(sizeBN.times(maintenanceMarginFraction).plus(sizeBN));
-                                     */
-                                    val denominator =
-                                        if (size > Numeric.double.ZERO) (size - size * maintenanceMarginFraction) else (size + size * maintenanceMarginFraction)
-                                    liquidationPrice = if (denominator != Numeric.double.ZERO) {
-                                        (otherPositionsRisk + size * oraclePrice - equity) / denominator
-                                    } else {
-                                        null
-                                    }
-                                    if (liquidationPrice != null && liquidationPrice!! < Numeric.double.ZERO) {
-                                        liquidationPrice = null
-                                    }
-                                }
-                            }
-                        }
-                }
-            }
+        val position = positions?.get(marketId) ?: return null
+        val market = parser.asNativeMap(markets?.get(marketId)) ?: return null
+        val maintenanceMarginFraction = parser.asDouble(value(position, "adjustedMmf", period)) ?: return null
+        val oraclePrice = parser.asDouble(oraclePrice(market)) ?: return null
+        val size = parser.asDouble(value(position, "size", period)) ?: return null
+
+        /*
+          const liquidationPrice =
+            side === POSITION_SIDES.LONG
+              ? otherPositionsRisk
+                  .plus(sizeBN.times(oraclePrice))
+                  .minus(accountEquity)
+                  .div(sizeBN.minus(sizeBN.times(maintenanceMarginFraction)))
+              : otherPositionsRisk
+                  .plus(sizeBN.times(oraclePrice))
+                  .minus(accountEquity)
+                  .div(sizeBN.times(maintenanceMarginFraction).plus(sizeBN));
+         */
+        val denominator =
+            if (size > Numeric.double.ZERO) (size - size * maintenanceMarginFraction) else (size + size * maintenanceMarginFraction)
+
+        val liquidationPrice = if (denominator != Numeric.double.ZERO) {
+            (otherPositionsRisk + size * oraclePrice - equity) / denominator
+        } else {
+            null
         }
-        if (liquidationPrice != null && liquidationPrice!! < Numeric.double.ZERO) {
-            liquidationPrice = null
-        }
-        return liquidationPrice
+
+        return liquidationPrice?.takeUnless { it < Numeric.double.ZERO }
     }
 
     private fun calculationOtherPositionsRisk(
