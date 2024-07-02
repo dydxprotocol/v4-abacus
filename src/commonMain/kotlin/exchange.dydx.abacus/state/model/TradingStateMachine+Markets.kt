@@ -12,12 +12,13 @@ internal fun TradingStateMachine.receivedMarkets(
 ): StateChanges {
     marketsSummary = marketsProcessor.subscribed(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
-    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser,
         account,
         subaccountNumber,
         parser.asMap(input?.get("trade")),
     )
+
     return StateChanges(
         iListOf(
             Changes.assets,
@@ -27,11 +28,7 @@ internal fun TradingStateMachine.receivedMarkets(
             Changes.historicalPnl,
         ),
         null,
-        if (subaccountNumber != childSubaccountNumber) {
-            iListOf(subaccountNumber, childSubaccountNumber)
-        } else {
-            iListOf(subaccountNumber)
-        },
+        subaccountNumbers,
     )
 }
 
@@ -42,12 +39,13 @@ internal fun TradingStateMachine.receivedMarketsChanges(
     val blankAssets = assets == null
     marketsSummary = marketsProcessor.channel_data(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, payload.keys)
-    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser,
         account,
         subaccountNumber,
         parser.asMap(input?.get("trade")),
     )
+
     return StateChanges(
         if (blankAssets) {
             iListOf(
@@ -66,11 +64,7 @@ internal fun TradingStateMachine.receivedMarketsChanges(
             )
         },
         payload.keys.toIList(),
-        if (subaccountNumber != childSubaccountNumber) {
-            iListOf(subaccountNumber, childSubaccountNumber)
-        } else {
-            iListOf(subaccountNumber)
-        },
+        subaccountNumbers,
     )
 }
 
@@ -90,12 +84,13 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
         }
     }
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, keys)
-    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser,
         account,
         subaccountNumber,
         parser.asMap(input?.get("trade")),
     )
+
     return StateChanges(
         if (blankAssets) {
             iListOf(
@@ -114,11 +109,7 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
             )
         },
         keys.toIList(),
-        if (subaccountNumber != childSubaccountNumber) {
-            iListOf(subaccountNumber, childSubaccountNumber)
-        } else {
-            iListOf(subaccountNumber)
-        },
+        subaccountNumbers,
     )
 }
 
@@ -130,21 +121,18 @@ internal fun TradingStateMachine.receivedMarketsConfigurations(
     this.marketsSummary = marketsProcessor.receivedConfigurations(this.marketsSummary, payload)
     assets = assetsProcessor.receivedConfigurations(assets, payload, deploymentUri)
     this.marketsSummary = marketsCalculator.calculate(this.marketsSummary, assets, null)
-    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser,
         account,
         subaccountNumber ?: 0,
         parser.asMap(input?.get("trade")),
     )
+
     return if (subaccountNumber != null) {
         StateChanges(
             iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
             null,
-            if (subaccountNumber != childSubaccountNumber) {
-                iListOf(subaccountNumber, childSubaccountNumber)
-            } else {
-                iListOf(subaccountNumber)
-            },
+            subaccountNumbers,
         )
     } else {
         StateChanges(
