@@ -103,7 +103,10 @@ internal class SkipProcessor(
         if (requestId != null) {
             modified.safeSet("transfer.route.requestPayload.requestId", requestId)
         }
-        modified.safeSet("transfer.size.usdcSize", parser.value(modified, "transfer.route.toAmountUSD"))
+        if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
+            val value = usdcAmount(modified)
+            modified.safeSet("transfer.size.usdcSize", value)
+        }
         return modified
     }
 
