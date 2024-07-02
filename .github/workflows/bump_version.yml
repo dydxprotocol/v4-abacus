@@ -87,6 +87,7 @@ jobs:
           if [ -n "$NEW_VERSION" ]; then
             sed -i '' "s/version = \"$VERSION\"/version = \"$NEW_VERSION\"/" build.gradle.kts
             sed -i '' "s/spec.version *= *'[0-9.]*'/spec.version = '$NEW_VERSION'/" v4_abacus.podspec
+            sed -i '' "s/if \!Dir.exist?('build\/cocoapods\/framework\/Abacus.framework') || Dir.empty?('build\/cocoapods\/framework\/Abacus.framework')/if false/" v4_abacus.podspec
             echo "Version bumped to $NEW_VERSION"
           fi
           echo "bump_version_ret=0" >> $GITHUB_OUTPUT
