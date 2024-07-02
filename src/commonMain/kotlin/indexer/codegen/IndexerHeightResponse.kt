@@ -21,6 +21,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerHeightResponse(
 
-    val height: kotlin.String,
-    val time: IndexerIsoString
+    val height: kotlin.String? = null,
+    val time: IndexerIsoString? = null
 )

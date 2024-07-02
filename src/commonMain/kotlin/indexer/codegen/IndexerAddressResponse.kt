@@ -21,6 +21,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerAddressResponse(
 
-    val subaccounts: kotlin.Array<IndexerSubaccountResponseObject>,
-    val totalTradingRewards: kotlin.String
+    val subaccounts: kotlin.Array<IndexerSubaccountResponseObject>? = null,
+    val totalTradingRewards: kotlin.String? = null
 )

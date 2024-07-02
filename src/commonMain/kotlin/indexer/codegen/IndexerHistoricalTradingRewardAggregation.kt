@@ -25,10 +25,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerHistoricalTradingRewardAggregation(
 
-    val tradingReward: kotlin.String,
-    val startedAt: IndexerIsoString,
-    val startedAtHeight: kotlin.String,
+    val tradingReward: kotlin.String? = null,
+    val startedAt: IndexerIsoString? = null,
+    val startedAtHeight: kotlin.String? = null,
     val endedAt: IndexerIsoString? = null,
     val endedAtHeight: kotlin.String? = null,
-    val period: IndexerTradingRewardAggregationPeriod
+    val period: IndexerTradingRewardAggregationPeriod? = null
 )

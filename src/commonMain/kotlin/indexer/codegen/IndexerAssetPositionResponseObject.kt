@@ -24,9 +24,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerAssetPositionResponseObject(
 
-    val symbol: kotlin.String,
-    val side: IndexerPositionSide,
-    val size: kotlin.String,
-    val assetId: kotlin.String,
-    val subaccountNumber: kotlin.Double
+    val symbol: kotlin.String? = null,
+    val side: IndexerPositionSide? = null,
+    val size: kotlin.String? = null,
+    val assetId: kotlin.String? = null,
+    val subaccountNumber: kotlin.Double? = null
 )

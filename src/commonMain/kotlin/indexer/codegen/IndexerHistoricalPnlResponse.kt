@@ -26,5 +26,5 @@ data class IndexerHistoricalPnlResponse(
     val pageSize: kotlin.Double? = null,
     val totalResults: kotlin.Double? = null,
     val offset: kotlin.Double? = null,
-    val historicalPnl: kotlin.Array<IndexerPnlTicksResponseObject>
+    val historicalPnl: kotlin.Array<IndexerPnlTicksResponseObject>? = null
 )

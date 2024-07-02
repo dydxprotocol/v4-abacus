@@ -16,8 +16,7 @@ trap cleanup EXIT
 
 curl -o $TMP_DIR/swagger.json https://raw.githubusercontent.com/dydxprotocol/v4-chain/ce926099af057e38d7d79453d01c5ebe0cdc3634/indexer/services/comlink/public/swagger.json
 
-# Cloning into the temporary directory and navigating there
-# git clone git@github.com:dydxprotocol/v4-chain.git "$TMP_DIR/v4-chain"
+${CURRENT_DIR}/json_remove_attr.sh -f $TMP_DIR/swagger.json -a required
 
 cd "$TMP_DIR"
 

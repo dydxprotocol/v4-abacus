@@ -26,11 +26,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerTradeResponseObject(
 
-    val id: kotlin.String,
-    val side: IndexerOrderSide,
-    val size: kotlin.String,
-    val price: kotlin.String,
-    val type: IndexerTradeType,
-    val createdAt: IndexerIsoString,
-    val createdAtHeight: kotlin.String
+    val id: kotlin.String? = null,
+    val side: IndexerOrderSide? = null,
+    val size: kotlin.String? = null,
+    val price: kotlin.String? = null,
+    val type: IndexerTradeType? = null,
+    val createdAt: IndexerIsoString? = null,
+    val createdAtHeight: kotlin.String? = null
 )

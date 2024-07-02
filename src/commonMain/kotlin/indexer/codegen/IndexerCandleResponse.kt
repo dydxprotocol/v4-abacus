@@ -20,5 +20,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerCandleResponse(
 
-    val candles: kotlin.Array<IndexerCandleResponseObject>
+    val candles: kotlin.Array<IndexerCandleResponseObject>? = null
 )

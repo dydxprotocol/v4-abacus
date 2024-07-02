@@ -26,5 +26,5 @@ data class IndexerTransferResponse(
     val pageSize: kotlin.Double? = null,
     val totalResults: kotlin.Double? = null,
     val offset: kotlin.Double? = null,
-    val transfers: kotlin.Array<IndexerTransferResponseObject>
+    val transfers: kotlin.Array<IndexerTransferResponseObject>? = null
 )

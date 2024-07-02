@@ -35,20 +35,20 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerPerpetualPositionResponseObject(
 
-    val market: kotlin.String,
-    val status: IndexerPerpetualPositionStatus,
-    val side: IndexerPositionSide,
-    val size: kotlin.String,
-    val maxSize: kotlin.String,
-    val entryPrice: kotlin.String,
-    val realizedPnl: kotlin.String,
-    val createdAt: IndexerIsoString,
-    val createdAtHeight: kotlin.String,
-    val sumOpen: kotlin.String,
-    val sumClose: kotlin.String,
-    val netFunding: kotlin.String,
-    val unrealizedPnl: kotlin.String,
+    val market: kotlin.String? = null,
+    val status: IndexerPerpetualPositionStatus? = null,
+    val side: IndexerPositionSide? = null,
+    val size: kotlin.String? = null,
+    val maxSize: kotlin.String? = null,
+    val entryPrice: kotlin.String? = null,
+    val realizedPnl: kotlin.String? = null,
+    val createdAt: IndexerIsoString? = null,
+    val createdAtHeight: kotlin.String? = null,
+    val sumOpen: kotlin.String? = null,
+    val sumClose: kotlin.String? = null,
+    val netFunding: kotlin.String? = null,
+    val unrealizedPnl: kotlin.String? = null,
     val closedAt: IndexerIsoString? = null,
     val exitPrice: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double
+    val subaccountNumber: kotlin.Double? = null
 )

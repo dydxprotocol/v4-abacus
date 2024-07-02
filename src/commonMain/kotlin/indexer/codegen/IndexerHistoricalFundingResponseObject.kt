@@ -24,9 +24,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerHistoricalFundingResponseObject(
 
-    val ticker: kotlin.String,
-    val rate: kotlin.String,
-    val price: kotlin.String,
-    val effectiveAt: IndexerIsoString,
-    val effectiveAtHeight: kotlin.String
+    val ticker: kotlin.String? = null,
+    val rate: kotlin.String? = null,
+    val price: kotlin.String? = null,
+    val effectiveAt: IndexerIsoString? = null,
+    val effectiveAtHeight: kotlin.String? = null
 )

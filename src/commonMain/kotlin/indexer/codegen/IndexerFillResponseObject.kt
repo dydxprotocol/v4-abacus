@@ -33,18 +33,18 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerFillResponseObject(
 
-    val id: kotlin.String,
-    val side: IndexerOrderSide,
-    val liquidity: IndexerLiquidity,
-    val type: IndexerFillType,
-    val market: kotlin.String,
-    val marketType: IndexerMarketType,
-    val price: kotlin.String,
-    val size: kotlin.String,
-    val fee: kotlin.String,
-    val createdAt: IndexerIsoString,
-    val createdAtHeight: kotlin.String,
+    val id: kotlin.String? = null,
+    val side: IndexerOrderSide? = null,
+    val liquidity: IndexerLiquidity? = null,
+    val type: IndexerFillType? = null,
+    val market: kotlin.String? = null,
+    val marketType: IndexerMarketType? = null,
+    val price: kotlin.String? = null,
+    val size: kotlin.String? = null,
+    val fee: kotlin.String? = null,
+    val createdAt: IndexerIsoString? = null,
+    val createdAtHeight: kotlin.String? = null,
     val orderId: kotlin.String? = null,
     val clientMetadata: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double
+    val subaccountNumber: kotlin.Double? = null
 )

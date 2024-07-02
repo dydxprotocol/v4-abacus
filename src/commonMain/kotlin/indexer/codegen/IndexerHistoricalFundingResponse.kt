@@ -20,5 +20,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerHistoricalFundingResponse(
 
-    val historicalFunding: kotlin.Array<IndexerHistoricalFundingResponseObject>
+    val historicalFunding: kotlin.Array<IndexerHistoricalFundingResponseObject>? = null
 )

@@ -27,12 +27,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerPnlTicksResponseObject(
 
-    val id: kotlin.String,
-    val subaccountId: kotlin.String,
-    val equity: kotlin.String,
-    val totalPnl: kotlin.String,
-    val netTransfers: kotlin.String,
-    val createdAt: kotlin.String,
-    val blockHeight: kotlin.String,
-    val blockTime: IndexerIsoString
+    val id: kotlin.String? = null,
+    val subaccountId: kotlin.String? = null,
+    val equity: kotlin.String? = null,
+    val totalPnl: kotlin.String? = null,
+    val netTransfers: kotlin.String? = null,
+    val createdAt: kotlin.String? = null,
+    val blockHeight: kotlin.String? = null,
+    val blockTime: IndexerIsoString? = null
 )

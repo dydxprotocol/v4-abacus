@@ -31,16 +31,16 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerCandleResponseObject(
 
-    val startedAt: IndexerIsoString,
-    val ticker: kotlin.String,
-    val resolution: IndexerCandleResolution,
-    val low: kotlin.String,
-    val high: kotlin.String,
-    val `open`: kotlin.String,
-    val close: kotlin.String,
-    val baseTokenVolume: kotlin.String,
-    val usdVolume: kotlin.String,
-    val trades: kotlin.Double,
-    val startingOpenInterest: kotlin.String,
-    val id: kotlin.String
+    val startedAt: IndexerIsoString? = null,
+    val ticker: kotlin.String? = null,
+    val resolution: IndexerCandleResolution? = null,
+    val low: kotlin.String? = null,
+    val high: kotlin.String? = null,
+    val `open`: kotlin.String? = null,
+    val close: kotlin.String? = null,
+    val baseTokenVolume: kotlin.String? = null,
+    val usdVolume: kotlin.String? = null,
+    val trades: kotlin.Double? = null,
+    val startingOpenInterest: kotlin.String? = null,
+    val id: kotlin.String? = null
 )

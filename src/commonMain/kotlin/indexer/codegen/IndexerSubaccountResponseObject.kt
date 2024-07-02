@@ -28,13 +28,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerSubaccountResponseObject(
 
-    val address: kotlin.String,
-    val subaccountNumber: kotlin.Double,
-    val equity: kotlin.String,
-    val freeCollateral: kotlin.String,
-    val openPerpetualPositions: IndexerPerpetualPositionsMap,
-    val assetPositions: IndexerAssetPositionsMap,
-    val marginEnabled: kotlin.Boolean,
-    val updatedAtHeight: kotlin.String,
-    val latestProcessedBlockHeight: kotlin.String
+    val address: kotlin.String? = null,
+    val subaccountNumber: kotlin.Double? = null,
+    val equity: kotlin.String? = null,
+    val freeCollateral: kotlin.String? = null,
+    val openPerpetualPositions: IndexerPerpetualPositionsMap? = null,
+    val assetPositions: IndexerAssetPositionsMap? = null,
+    val marginEnabled: kotlin.Boolean? = null,
+    val updatedAtHeight: kotlin.String? = null,
+    val latestProcessedBlockHeight: kotlin.String? = null
 )

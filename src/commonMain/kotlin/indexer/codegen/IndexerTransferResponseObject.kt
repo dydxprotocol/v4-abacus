@@ -28,13 +28,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerTransferResponseObject(
 
-    val id: kotlin.String,
-    val sender: IndexerTransferResponseObjectSender,
-    val recipient: IndexerTransferResponseObjectSender,
-    val size: kotlin.String,
-    val createdAt: kotlin.String,
-    val createdAtHeight: kotlin.String,
-    val symbol: kotlin.String,
-    val type: IndexerTransferType,
-    val transactionHash: kotlin.String
+    val id: kotlin.String? = null,
+    val sender: IndexerTransferResponseObjectSender? = null,
+    val recipient: IndexerTransferResponseObjectSender? = null,
+    val size: kotlin.String? = null,
+    val createdAt: kotlin.String? = null,
+    val createdAtHeight: kotlin.String? = null,
+    val symbol: kotlin.String? = null,
+    val type: IndexerTransferType? = null,
+    val transactionHash: kotlin.String? = null
 )

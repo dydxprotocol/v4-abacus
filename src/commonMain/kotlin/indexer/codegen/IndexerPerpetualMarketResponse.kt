@@ -20,5 +20,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerPerpetualMarketResponse(
 
-    val markets: kotlin.collections.Map<kotlin.String, IndexerPerpetualMarketResponseObject>
+    val markets: kotlin.collections.Map<kotlin.String, IndexerPerpetualMarketResponseObject>? = null
 )

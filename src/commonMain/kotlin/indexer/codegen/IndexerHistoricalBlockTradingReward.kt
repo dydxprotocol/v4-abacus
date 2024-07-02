@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerHistoricalBlockTradingReward(
 
-    val tradingReward: kotlin.String,
-    val createdAt: IndexerIsoString,
-    val createdAtHeight: kotlin.String
+    val tradingReward: kotlin.String? = null,
+    val createdAt: IndexerIsoString? = null,
+    val createdAtHeight: kotlin.String? = null
 )

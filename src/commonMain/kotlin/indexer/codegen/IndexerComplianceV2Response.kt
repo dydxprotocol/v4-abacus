@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerComplianceV2Response(
 
-    val status: IndexerComplianceStatus,
+    val status: IndexerComplianceStatus? = null,
     val reason: IndexerComplianceReason? = null,
     val updatedAt: kotlin.String? = null
 )

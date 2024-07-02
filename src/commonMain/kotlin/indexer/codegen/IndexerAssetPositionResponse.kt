@@ -20,5 +20,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerAssetPositionResponse(
 
-    val positions: kotlin.Array<IndexerAssetPositionResponseObject>
+    val positions: kotlin.Array<IndexerAssetPositionResponseObject>? = null
 )

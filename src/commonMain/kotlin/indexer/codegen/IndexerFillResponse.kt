@@ -26,5 +26,5 @@ data class IndexerFillResponse(
     val pageSize: kotlin.Double? = null,
     val totalResults: kotlin.Double? = null,
     val offset: kotlin.Double? = null,
-    val fills: kotlin.Array<IndexerFillResponseObject>
+    val fills: kotlin.Array<IndexerFillResponseObject>? = null
 )

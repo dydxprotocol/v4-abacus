@@ -20,5 +20,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerPerpetualPositionResponse(
 
-    val positions: kotlin.Array<IndexerPerpetualPositionResponseObject>
+    val positions: kotlin.Array<IndexerPerpetualPositionResponseObject>? = null
 )

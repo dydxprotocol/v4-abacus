@@ -22,5 +22,5 @@ import kotlinx.serialization.Serializable
 data class IndexerTransferResponseObjectSender(
 
     val subaccountNumber: kotlin.Double? = null,
-    val address: kotlin.String
+    val address: kotlin.String? = null
 )

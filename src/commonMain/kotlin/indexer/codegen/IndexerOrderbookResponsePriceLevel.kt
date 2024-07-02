@@ -21,6 +21,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerOrderbookResponsePriceLevel(
 
-    val price: kotlin.String,
-    val size: kotlin.String
+    val price: kotlin.String? = null,
+    val size: kotlin.String? = null
 )

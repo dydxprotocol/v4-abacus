@@ -21,6 +21,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerOrderbookResponseObject(
 
-    val bids: kotlin.Array<IndexerOrderbookResponsePriceLevel>,
-    val asks: kotlin.Array<IndexerOrderbookResponsePriceLevel>
+    val bids: kotlin.Array<IndexerOrderbookResponsePriceLevel>? = null,
+    val asks: kotlin.Array<IndexerOrderbookResponsePriceLevel>? = null
 )
