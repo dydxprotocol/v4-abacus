@@ -119,6 +119,13 @@ internal open class AccountSupervisor(
         }
 
     var cosmosWalletConnected: Boolean? = false
+        internal set(value) {
+            field = value
+            if (value == true) {
+                nobleBalancesTimer?.cancel()
+                nobleBalancesTimer = null
+            }
+        }
 
     private var sourceAddressRestriction: Restriction? = null
         set(value) {
@@ -440,6 +447,7 @@ internal open class AccountSupervisor(
 
     private fun retrieveNobleBalance() {
         if (cosmosWalletConnected == true) {
+            nobleBalancesTimer = null
             return
         }
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
