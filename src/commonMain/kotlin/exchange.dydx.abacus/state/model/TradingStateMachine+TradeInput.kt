@@ -327,7 +327,7 @@ fun TradingStateMachine.trade(
                     changes = StateChanges(
                         iListOf(Changes.subaccount, Changes.input),
                         null,
-                        subaccountNumbers
+                        subaccountNumbers,
                     )
                 }
 
