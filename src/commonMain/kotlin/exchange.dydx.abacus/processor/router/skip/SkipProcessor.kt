@@ -91,8 +91,8 @@ internal class SkipProcessor(
         existing?.let {
             modified = it.mutable()
         }
-        val tokenAddress = parser.asString(parser.value(modified, "transfer.token"))
-        val selectedChainId = parser.asString(parser.value(modified, "transfer.chain"))
+        val tokenAddress = parser.asString(parser.value(payload, "route.dest_asset_denom"))
+        val selectedChainId = parser.asString(parser.value(payload, "route.dest_asset_chain_id"))
         val decimals = parser.asDouble(selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId))
         val processor = SkipRouteProcessor(parser)
 
@@ -103,11 +103,7 @@ internal class SkipProcessor(
         if (requestId != null) {
             modified.safeSet("transfer.route.requestPayload.requestId", requestId)
         }
-        if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
-            val value = usdcAmount(modified)
-            modified.safeSet("transfer.size.usdcSize", value)
-        }
-
+        modified.safeSet("transfer.size.usdcSize", parser.value(modified, "transfer.route.toAmountUSD"))
         return modified
     }
 
