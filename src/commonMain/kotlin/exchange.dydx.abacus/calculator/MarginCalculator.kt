@@ -295,10 +295,8 @@ internal object MarginCalculator {
     ): Double? {
         val quoteBalance = parser.asDouble(parser.value(subaccount, "quoteBalance.current")) ?: return null
         val tradeSummary = parser.asNativeMap(parser.value(tradeInput, "summary")) ?: return null
-        val price = parser.asDouble(tradeSummary["price"]) ?: return null
-        val size = parser.asDouble(tradeSummary["size"]) ?: return null
-        val naiveAmount = price * size
-        return quoteBalance + naiveAmount
+        val total = parser.asDouble(tradeSummary["total"]) ?: return null
+        return quoteBalance + total
     }
 
     private fun getIsPositionFullyClosed(
