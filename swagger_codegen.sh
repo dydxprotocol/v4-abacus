@@ -14,7 +14,7 @@ cleanup() {
 # Trap to clean up in case of script exit or interruption
 trap cleanup EXIT
 
-curl -o $TMP_DIR/swagger.json https://raw.githubusercontent.com/dydxprotocol/v4-chain/ce926099af057e38d7d79453d01c5ebe0cdc3634/indexer/services/comlink/public/swagger.json
+curl -o $TMP_DIR/swagger.json https://raw.githubusercontent.com/dydxprotocol/v4-chain/main/indexer/services/comlink/public/swagger.json
 
 ${CURRENT_DIR}/json_remove_attr.sh -f $TMP_DIR/swagger.json -a required
 
