@@ -34,7 +34,7 @@ internal class ConnectionStats(
     internal var lastIndexerCallTime: Instant? = null
     private var lastValidatorCallTime: Instant? = null
 
-    @Suppress("PropertyName")
+    @Suppress("PropertyName", "VariableNaming", "MagicNumber")
     private val MAX_NUM_BLOCK_DELAY = 25
 
     internal var indexerState = NetworkState()
