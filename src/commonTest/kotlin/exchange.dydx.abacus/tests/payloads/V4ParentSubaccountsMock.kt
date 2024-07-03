@@ -18,8 +18,8 @@ internal class V4ParentSubaccountsMock {
                 "subaccount": {
                     "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
                     "parentSubaccountNumber": 0,
-                    "equity": "200",
-                    "freeCollateral": "200",
+                    "equity": "225",
+                    "freeCollateral": "225",
                     "childSubaccounts": [
                         {
                             "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
@@ -52,6 +52,24 @@ internal class V4ParentSubaccountsMock {
                                     "side": "LONG",
                                     "assetId": "0",
                                     "subaccountNumber": 128
+                                }
+                            },
+                            "marginEnabled": true,
+                            "updatedAtHeight": "17689"
+                        },
+                        {
+                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                            "subaccountNumber": 256,
+                            "equity": "25",
+                            "freeCollateral": "25",
+                            "openPerpetualPositions": {},
+                            "assetPositions": {
+                                "USDC": {
+                                    "size": "25",
+                                    "symbol": "USDC",
+                                    "side": "LONG",
+                                    "assetId": "0",
+                                    "subaccountNumber": 256
                                 }
                             },
                             "marginEnabled": true,
@@ -108,6 +126,37 @@ internal class V4ParentSubaccountsMock {
                     }
                 ]
             }
+        }
+    """.trimIndent()
+
+    internal val channel_batch_data_empty_childsubaccount = """
+        {
+            "type": "channel_batch_data",
+            "connection_id": "57008204-8924-489c-89dc-c14397c1503e",
+            "message_id": 59,
+            "id": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5/0",
+            "channel": "v4_parent_subaccounts",
+            "version": "3.0.0",
+            "contents": [
+                {
+                    "assetPositions": [
+                        {
+                            "address": "dydx155va0m7wz5n8zcqscn9afswwt04n4usj46wvp5",
+                            "subaccountNumber": 384,
+                            "positionId": "a196314e-236e-54bb-9d4f-4792f5b57644",
+                            "assetId": "0",
+                            "symbol": "USDC",
+                            "side": "LONG",
+                            "size": "19.6"
+                        }
+                    ],
+                    "blockHeight": "15494678"
+                },
+                {
+                    "blockHeight": "15494678"
+                }
+            ],
+            "subaccountNumber": 384
         }
     """.trimIndent()
 

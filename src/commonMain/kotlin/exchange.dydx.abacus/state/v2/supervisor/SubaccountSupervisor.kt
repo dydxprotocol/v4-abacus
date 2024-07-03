@@ -15,7 +15,6 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.protocols.AnalyticsEvent
-import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -156,6 +155,9 @@ internal class SubaccountSupervisor(
             }
         }
 
+    private val cancelingOrphanedTriggerOrders = mutableSetOf<String>()
+    private val reclaimingChildSubaccountNumbers = mutableSetOf<Int>()
+
     private val notificationsProvider = NotificationsProvider(
         stateMachine,
         helper.uiImplementations,
@@ -250,8 +252,9 @@ internal class SubaccountSupervisor(
     }
 
     internal fun retrieveHistoricalPnls(previousUrl: String? = null) {
-        val url = helper.configs.privateApiUrl("historical-pnl") ?: return
-        val params = subaccountParams()
+        val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-historical-pnl" else "historical-pnl") ?: return
+        val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
+
         val historicalPnl = helper.parser.asNativeList(
             helper.parser.value(
                 stateMachine.data,
@@ -303,10 +306,6 @@ internal class SubaccountSupervisor(
             channel,
             subaccountChannelParams(accountAddress, subaccountNumber, subscribe),
         )
-
-        if (parent) {
-            pollReclaimUnutilizedFunds()
-        }
     }
 
     private fun subaccountChannelParams(
@@ -401,14 +400,12 @@ internal class SubaccountSupervisor(
         }
     }
 
-    private var cancelingOrphanedTriggerOrders = mutableSetOf<String>()
-
     private fun cancelTriggerOrder(orderId: String) {
-        cancelingOrphanedTriggerOrders.add(orderId)
+        this.cancelingOrphanedTriggerOrders.add(orderId)
         cancelOrder(
             orderId = orderId,
             isOrphanedTriggerOrder = true,
-            callback = { _, _, _ -> cancelingOrphanedTriggerOrders.remove(orderId) },
+            callback = { _, _, _ -> this.cancelingOrphanedTriggerOrders.remove(orderId) },
         )
     }
 
@@ -423,7 +420,7 @@ internal class SubaccountSupervisor(
         } ?: return
 
         cancelableTriggerOrders.forEach { order ->
-            if (order.id !in cancelingOrphanedTriggerOrders) {
+            if (order.id !in this.cancelingOrphanedTriggerOrders) {
                 val marketPosition = subaccount.openPositions?.find { position -> position.id == order.marketId }
                 val hasPositionFlippedOrClosed = marketPosition?.let { position ->
                     when (position.side.current) {
@@ -710,6 +707,7 @@ internal class SubaccountSupervisor(
                         submitTimeMs,
                         fromSlTpDialog = isTriggerOrder,
                         lastOrderStatus = null,
+                        destinationSubaccountNumber = transferPayload?.destinationSubaccountNumber,
                     ),
                 )
             }
@@ -1486,6 +1484,7 @@ internal class SubaccountSupervisor(
         if (changes.changes.contains(Changes.subaccount)) {
             parseOrdersToMatchPlaceOrdersAndCancelOrders()
             cancelTriggerOrdersWithClosedOrFlippedPositions()
+            reclaimUnutilizedFundsFromChildSubaccounts()
         }
     }
 
@@ -1503,8 +1502,7 @@ internal class SubaccountSupervisor(
 
             val quoteBalance = subaccount.value.quoteBalance?.current ?: 0.0
             val openPositions = subaccount.value.openPositions
-
-            val openOrders = subaccount.value.orders?.filter { order ->
+            val hasIndexedOpenOrder = subaccount.value.orders?.any { order ->
                 val status = helper.parser.asString(order.status)
                 iListOf(
                     OrderStatus.Open.name,
@@ -1512,10 +1510,18 @@ internal class SubaccountSupervisor(
                     OrderStatus.Untriggered.name,
                     OrderStatus.PartiallyFilled.name,
                 ).contains(status)
+            } ?: false
+
+            // placeOrderRecords hold orders that have been placed and have not been canceled/filled
+            // this is to check the case where we're still waiting for subaccount transfer to complete
+            // before the isolated market order can be placed
+            val isPlacingOrderForSubaccount = placeOrderRecords.any {
+                it.destinationSubaccountNumber == subaccount.value.subaccountNumber &&
+                    it.lastOrderStatus == null // i.e. not indexed, we let `hasIndexedOpenOrder` be source of truth once order is indexed
             }
 
             // Only return a quoteBalance if the subaccount has no open positions or orders
-            if (openPositions.isNullOrEmpty() && openOrders.isNullOrEmpty() && quoteBalance > 0.0) {
+            if (openPositions.isNullOrEmpty() && !hasIndexedOpenOrder && !isPlacingOrderForSubaccount && quoteBalance > 0.0) {
                 quoteBalance
             } else {
                 0.0
@@ -1524,7 +1530,7 @@ internal class SubaccountSupervisor(
             it.value > 0.0
         }
 
-        val transferPayloadStrings = iMutableListOf<String>()
+        val transferPayloads = iMutableListOf<HumanReadableSubaccountTransferPayload>()
 
         subaccountQuoteBalanceMap.forEach {
             val childSubaccountNumber = helper.parser.asInt(it.key)
@@ -1543,46 +1549,28 @@ internal class SubaccountSupervisor(
                 destinationSubaccountNumber = subaccountNumber,
             )
 
-            val transferPayloadString = Json.encodeToString(transferPayload)
-            transferPayloadStrings.add(transferPayloadString)
+            if (childSubaccountNumber !in this.reclaimingChildSubaccountNumbers) {
+                this.reclaimingChildSubaccountNumbers.add(childSubaccountNumber)
+                transferPayloads.add(transferPayload)
+            }
         }
 
-        recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
-    }
-
-    private fun recursivelyReclaimChildSubaccountFunds(transferPayloadStrings: MutableList<String>) {
-        if (transferPayloadStrings.isNotEmpty()) {
-            val transferPayloadString = transferPayloadStrings.removeAt(0)
-            helper.transaction(TransactionType.SubaccountTransfer, transferPayloadString) { response ->
+        transferPayloads.forEach { transferPayload ->
+            val transferPayloadString = Json.encodeToString(transferPayload)
+            val transactionCallback = { response: String? ->
+                this.reclaimingChildSubaccountNumbers.remove(transferPayload.subaccountNumber)
                 val error = parseTransactionResponse(response)
                 if (error != null) {
                     emitError(error)
-                } else {
-                    recursivelyReclaimChildSubaccountFunds(transferPayloadStrings)
                 }
             }
-        }
-    }
-
-    private var reclaimUnutilizedFundsTimer: LocalTimerProtocol? = null
-        set(value) {
-            if (field !== value) {
-                field?.cancel()
-                field = value
-            }
-        }
-
-    private fun pollReclaimUnutilizedFunds() {
-        reclaimUnutilizedFundsTimer = null
-        helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-            this.reclaimUnutilizedFundsTimer = helper.ioImplementations.timer?.schedule(
-                (10.seconds).inWholeSeconds.toDouble(),
+            submitTransaction(
+                TransactionType.SubaccountTransfer,
+                transferPayloadString,
                 null,
-            ) {
-                reclaimUnutilizedFundsFromChildSubaccounts()
-                pollReclaimUnutilizedFunds()
-                false
-            }
+                transactionCallback,
+                useTransactionQueue = true,
+            )
         }
     }
 
