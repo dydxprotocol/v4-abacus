@@ -2,8 +2,12 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalStatePerpetualMarket
+import exchange.dydx.abacus.state.internalstate.InternalStatePerpetualMarkets
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPerpetualMarketStatus
+import indexer.codegen.IndexerPerpetualMarketType
 
 @Suppress("UNCHECKED_CAST")
 internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklines: Boolean = false) :
@@ -23,6 +27,70 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         val markets = marketsProcessor.subscribed(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
+
+    internal fun testSubscribed(content: Map<String, Any>): InternalStatePerpetualMarkets {
+        val payload = parser.asNativeMap(content["markets"])
+        return if (payload != null) {
+            val markets = mutableMapOf<String, InternalStatePerpetualMarket>()
+            for ((market, data) in payload) {
+                val marketPayload = parser.asNativeMap(data)
+                if (marketPayload != null) {
+                    val clobPairId = parser.asInt(marketPayload["clobPairId"]) ?: error("clobPairId is null")
+                    val ticker = parser.asString(marketPayload["ticker"]) ?: error("ticker is null")
+                    val status = IndexerPerpetualMarketStatus.valueOf(parser.asString(marketPayload["status"]) ?: error("status is null"))
+                    val oraclePrice = parser.asDouble(marketPayload["oraclePrice"]) ?: error("oraclePrice is null")
+                    val priceChange24H = parser.asDouble(marketPayload["priceChange24H"]) ?: error("priceChange24H is null")
+                    val volume24H = parser.asDouble(marketPayload["volume24H"]) ?: error("volume24H is null")
+                    val trades24H = parser.asInt(marketPayload["trades24H"]) ?: error("trades24H is null")
+                    val nextFundingRate = parser.asDouble(marketPayload["nextFundingRate"]) ?: error("nextFundingRate is null")
+                    val initialMarginFraction = parser.asDouble(marketPayload["initialMarginFraction"]) ?: error("initialMarginFraction is null")
+                    val maintenanceMarginFraction = parser.asDouble(marketPayload["maintenanceMarginFraction"]) ?: error("maintenanceMarginFraction is null")
+                    val openInterest = parser.asDouble(marketPayload["openInterest"]) ?: error("openInterest is null")
+                    val atomicResolution = parser.asInt(marketPayload["atomicResolution"]) ?: error("atomicResolution is null")
+                    val quantumConversionExponent = parser.asInt(marketPayload["quantumConversionExponent"]) ?: error("quantumConversionExponent is null")
+                    val tickSize = parser.asDouble(marketPayload["tickSize"]) ?: error("tickSize is null")
+                    val stepSize = parser.asDouble(marketPayload["stepSize"]) ?: error("stepSize is null")
+                    val stepBaseQuantums = parser.asInt(marketPayload["stepBaseQuantums"]) ?: error("stepBaseQuantums is null")
+                    val subticksPerTick = parser.asInt(marketPayload["subticksPerTick"]) ?: error("subticksPerTick is null")
+                    val marketType = IndexerPerpetualMarketType.valueOf(parser.asString(marketPayload["marketType"]) ?: error("marketType is null"))
+                    val openInterestLowerCap = parser.asDouble(marketPayload["openInterestLowerCap"]) ?: error("openInterestLowerCap is null")
+                    val openInterestUpperCap = parser.asDouble(marketPayload["openInterestUpperCap"]) ?: error("openInterestUpperCap is null")
+                    val baseOpenInterest = parser.asDouble(marketPayload["baseOpenInterest"]) ?: error("baseOpenInterest is null")
+
+                    val receivedMarket = InternalStatePerpetualMarket(
+                        clobPairId = clobPairId,
+                        ticker = ticker,
+                        status = status,
+                        oraclePrice = oraclePrice,
+                        priceChange24H = priceChange24H,
+                        volume24H = volume24H,
+                        trades24H = trades24H,
+                        nextFundingRate = nextFundingRate,
+                        initialMarginFraction = initialMarginFraction,
+                        maintenanceMarginFraction = maintenanceMarginFraction,
+                        openInterest = openInterest,
+                        atomicResolution = atomicResolution,
+                        quantumConversionExponent = quantumConversionExponent,
+                        tickSize = tickSize,
+                        stepSize = stepSize,
+                        stepBaseQuantums = stepBaseQuantums,
+                        subticksPerTick = subticksPerTick,
+                        marketType = marketType,
+                        openInterestLowerCap = openInterestLowerCap,
+                        openInterestUpperCap = openInterestUpperCap,
+                        baseOpenInterest = baseOpenInterest,
+                    )
+                    markets[market] = receivedMarket
+                }
+            }
+            InternalStatePerpetualMarkets(
+                markets = markets
+            )
+        } else {
+            InternalStatePerpetualMarkets()
+        }
+    }
+
 
     @Suppress("FunctionName")
     internal fun channel_data(

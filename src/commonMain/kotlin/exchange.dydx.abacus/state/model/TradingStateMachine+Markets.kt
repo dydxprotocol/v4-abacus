@@ -10,6 +10,10 @@ internal fun TradingStateMachine.receivedMarkets(
     payload: Map<String, Any>,
     subaccountNumber: Int,
 ): StateChanges {
+    internalState = internalState.copy(
+        transfer = internalState.transfer,
+        perpetualMarkets = marketsProcessor.testSubscribed(payload)
+    )
     marketsSummary = marketsProcessor.subscribed(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
