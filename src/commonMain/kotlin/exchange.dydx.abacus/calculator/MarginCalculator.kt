@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.Subaccount
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
@@ -147,13 +148,13 @@ internal object MarginCalculator {
         account: Map<String, Any>?,
         subaccountNumber: Int,
         tradeInput: Map<String, Any>?
-    ): Int {
-        val marginMode = parser.asString(tradeInput?.get("marginMode"))
+    ): Int? {
+        val marginMode = parser.asString(tradeInput?.get("marginMode")) ?: return null
         if (marginMode != "ISOLATED") {
             return subaccountNumber
         }
-        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return subaccountNumber
-        val subaccounts = parser.asNativeMap(account?.get("subaccounts")) ?: return subaccountNumber
+        val marketId = parser.asString(tradeInput?.get("marketId")) ?: return null
+        val subaccounts = parser.asNativeMap(account?.get("subaccounts")) ?: return null
 
         val utilizedSubaccountsMarketIdMap = subaccounts.mapValues {
             val openPositions = parser.asNativeMap(parser.value(it.value, "openPositions"))
@@ -215,6 +216,20 @@ internal object MarginCalculator {
 
         // User has reached the maximum number of childSubaccounts for their current parentSubaccount
         error("No available subaccount number")
+    }
+
+    fun getChangedSubaccountNumbers(
+        parser: ParserProtocol,
+        account: Map<String, Any>?,
+        subaccountNumber: Int,
+        tradeInput: Map<String, Any>?
+    ): IList<Int> {
+        val childSubaccountNumber = getChildSubaccountNumberForIsolatedMarginTrade(parser, account, subaccountNumber, tradeInput)
+        if (childSubaccountNumber != null && subaccountNumber != childSubaccountNumber) {
+            return iListOf(subaccountNumber, childSubaccountNumber)
+        }
+
+        return iListOf(subaccountNumber)
     }
 
     fun getChildSubaccountNumberForIsolatedMarginClosePosition(

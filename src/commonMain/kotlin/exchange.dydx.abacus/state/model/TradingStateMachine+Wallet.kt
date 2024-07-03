@@ -29,20 +29,17 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.historicalPnl)
     changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
-    val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser,
         account,
         subaccountNumber ?: 0,
         parser.asMap(input?.get("trade")),
     )
+
     return StateChanges(
         changes,
         null,
-        if (subaccountNumber != childSubaccountNumber) {
-            iListOf(subaccountNumber, childSubaccountNumber)
-        } else {
-            iListOf(subaccountNumber)
-        },
+        subaccountNumbers,
     )
 }
 
