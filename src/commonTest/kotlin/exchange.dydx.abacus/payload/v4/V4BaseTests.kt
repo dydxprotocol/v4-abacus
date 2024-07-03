@@ -16,6 +16,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
+import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -46,6 +47,12 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
     internal open fun loadSubaccounts(): StateResponse {
         return test({
             perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+        }, null)
+    }
+
+    open fun loadOrderbook(): StateResponse {
+        return test({
+            perp.loadOrderbook(mock)
         }, null)
     }
 
