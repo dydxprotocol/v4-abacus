@@ -109,7 +109,6 @@ class AbacusMockData {
         null,
         EnvironmentFeatureFlags(
             withdrawalSafetyEnabled = true,
-            isSlTpEnabled = true,
             isSlTpLimitOrdersEnabled = true,
         ),
     )

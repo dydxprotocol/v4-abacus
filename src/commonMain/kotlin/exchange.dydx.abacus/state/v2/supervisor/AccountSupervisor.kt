@@ -119,7 +119,13 @@ internal open class AccountSupervisor(
         }
 
     var cosmosWalletConnected: Boolean? = false
-
+        internal set(value) {
+            field = value
+            if (value == true) {
+                nobleBalancesTimer?.cancel()
+                nobleBalancesTimer = null
+            }
+        }
     private var sourceAddressRestriction: Restriction? = null
         set(value) {
             if (field != value) {
@@ -440,6 +446,7 @@ internal open class AccountSupervisor(
 
     private fun retrieveNobleBalance() {
         if (cosmosWalletConnected == true) {
+            nobleBalancesTimer = null
             return
         }
         val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
@@ -708,7 +715,7 @@ internal open class AccountSupervisor(
         }
     }
 
-    private fun handleComplianceResponse(response: String?, httpCode: Int): ComplianceStatus {
+    private fun handleComplianceResponse(response: String?, httpCode: Int, address: Address?): ComplianceStatus {
         var complianceStatus = ComplianceStatus.UNKNOWN
         var updatedAt: String? = null
         var expiresAt: String? = null
@@ -728,12 +735,15 @@ internal open class AccountSupervisor(
                     }
             }
         }
-        compliance =
-            compliance.copy(
-                status = complianceStatus,
-                updatedAt = updatedAt,
-                expiresAt = expiresAt,
-            )
+        // If we are screening an EVM address we only update when the compliance status is blocked
+        if (address is DydxAddress || complianceStatus == ComplianceStatus.BLOCKED) {
+            compliance =
+                compliance.copy(
+                    status = complianceStatus,
+                    updatedAt = updatedAt,
+                    expiresAt = expiresAt,
+                )
+        }
         return complianceStatus
     }
 
@@ -791,7 +801,7 @@ internal open class AccountSupervisor(
                         header,
                         body.toJsonPrettyPrint(),
                         callback = { _, response, httpCode, _ ->
-                            handleComplianceResponse(response, httpCode)
+                            handleComplianceResponse(response, httpCode, address)
                         },
                     )
                 } else {
@@ -811,7 +821,7 @@ internal open class AccountSupervisor(
                 null,
                 null,
                 callback = { _, response, httpCode, _ ->
-                    val complianceStatus = handleComplianceResponse(response, httpCode)
+                    val complianceStatus = handleComplianceResponse(response, httpCode, address)
                     if (address is DydxAddress && action != null) {
                         updateCompliance(address, complianceStatus, action)
                     }

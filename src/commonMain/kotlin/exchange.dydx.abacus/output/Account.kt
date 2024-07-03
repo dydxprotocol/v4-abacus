@@ -1238,7 +1238,7 @@ data class SubaccountFundingPayment(
 
 /*
 ethereumeAddress is passed in from client. All other fields
-are filled when socket v4_accounts channel is subscribed
+are filled when socket v4_subaccounts channel is subscribed
 */
 @JsExport
 @Serializable

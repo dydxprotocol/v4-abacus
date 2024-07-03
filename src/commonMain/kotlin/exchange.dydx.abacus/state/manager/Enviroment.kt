@@ -122,7 +122,6 @@ data class EnvironmentLinks(
 @JsExport
 data class EnvironmentFeatureFlags(
     val withdrawalSafetyEnabled: Boolean,
-    val isSlTpEnabled: Boolean,
     val isSlTpLimitOrdersEnabled: Boolean,
 ) {
     companion object {
@@ -131,12 +130,10 @@ data class EnvironmentFeatureFlags(
             parser: ParserProtocol,
         ): EnvironmentFeatureFlags {
             val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
-            val isSlTpEnabled = parser.asBool(data?.get("isSlTpEnabled")) ?: false
             val isSlTpLimitOrdersEnabled = parser.asBool(data?.get("isSlTpLimitOrdersEnabled")) ?: false
 
             return EnvironmentFeatureFlags(
                 withdrawalSafetyEnabled,
-                isSlTpEnabled,
                 isSlTpLimitOrdersEnabled,
             )
         }

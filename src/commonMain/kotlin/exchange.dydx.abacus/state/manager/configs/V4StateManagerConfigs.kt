@@ -34,6 +34,7 @@ class V4StateManagerConfigs(
                          "account":"/v4/addresses",
                          "fills":"/v4/fills",
                          "historical-pnl":"/v4/historical-pnl",
+                         "parent-historical-pnl":"/v4/historical-pnl/parentSubaccountNumber",
                          "transfers":"/v4/transfers",
                          "historicalTradingRewardAggregations":"/v4/historicalTradingRewardAggregations",
                          "parent-fills":"/v4/fills/parentSubaccountNumber",
