@@ -35,6 +35,8 @@ style:
     active: false
   MaxLineLength:
     active: false
+  UnusedParameter:
+    active: false
 
 empty-blocks:
   EmptyDefaultConstructor:
