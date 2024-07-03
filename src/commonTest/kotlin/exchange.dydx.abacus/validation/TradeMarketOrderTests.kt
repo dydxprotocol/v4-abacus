@@ -45,8 +45,7 @@ class TradeMarketOrderTests : ValidationsTests() {
                         "trade": {
                             "type": "MARKET",
                             "side": "BUY",
-                            "marketId": "ETH-USD",
-                            "timeInForce": "GTT"
+                            "marketId": "ETH-USD"
                         },
                         "errors": [
                             {
@@ -79,9 +78,7 @@ class TradeMarketOrderTests : ValidationsTests() {
                                 "price": 1024.26,
                                 "size": 1.0,
                                 "usdcSize": 1024.26,
-                                "fee": 0.51213,
-                                "feeRate": 0.0005,
-                                "total": -1024.77213,
+                                "total": -1024.26,
                                 "slippage": 0.05989,
                                 "indexSlippage": 0.06,
                                 "filled": true
@@ -129,9 +126,7 @@ class TradeMarketOrderTests : ValidationsTests() {
                                 "price": 1382.026,
                                 "size": 10.0,
                                 "usdcSize": 13820.26,
-                                "fee": 6.91013,
-                                "feeRate": 0.0005,
-                                "total": -13827.17013,
+                                "total": -13820.26,
                                 "slippage": 0.79982,
                                 "indexSlippage": 0.8,
                                 "filled": true

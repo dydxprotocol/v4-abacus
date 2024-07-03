@@ -1,17 +1,15 @@
 package exchange.dydx.abacus.payload
 
-import exchange.dydx.abacus.payload.v3.V3BaseTests
+import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import kotlin.test.Test
 
-class TradeInputOptionsTests : V3BaseTests() {
+class TradeInputOptionsTests : V4BaseTests() {
     @Test
     fun testDataFeed() {
         setup()
-
-        loadOrderbook()
 
         testTradeInputOnce()
     }

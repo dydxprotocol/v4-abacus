@@ -68,9 +68,7 @@ class TradeBracketsTests : ValidationsTests() {
                                 "price": 1000.1,
                                 "size": 0.1,
                                 "usdcSize": 100.01,
-                                "fee": 0.050005,
-                                "feeRate": 0.0005,
-                                "total": -100.060005,
+                                "total": -100.01,
                                 "slippage": 0.0,
                                 "indexSlippage": 0.0001,
                                 "filled": true
@@ -198,9 +196,7 @@ class TradeBracketsTests : ValidationsTests() {
                             "price": 999.9,
                             "size": 0.1,
                             "usdcSize": 99.99,
-                            "fee": 0.049995,
-                            "feeRate": 0.0005,
-                            "total": 99.940005,
+                            "total": 99.99,
                             "slippage": 0.0,
                             "indexSlippage": 1.0E-4,
                             "filled": true

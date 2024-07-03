@@ -130,7 +130,7 @@ internal class ValidationsMock {
           "type": "subscribed",
           "connection_id": "c49e6d6b-d489-4140-bbaf-dc11b2fab13a",
           "message_id": 1,
-          "channel": "v3_accounts",
+          "channel": "v4_subaccounts",
           "id": "dace1648-c854-5aed-9879-88899bf647a3",
           "contents": {
             "orders": [
