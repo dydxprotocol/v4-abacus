@@ -91,8 +91,8 @@ internal class SkipProcessor(
         existing?.let {
             modified = it.mutable()
         }
-        val tokenAddress = parser.asString(parser.value(modified, "transfer.token"))
-        val selectedChainId = parser.asString(parser.value(modified, "transfer.chain"))
+        val tokenAddress = parser.asString(parser.value(payload, "route.dest_asset_denom"))
+        val selectedChainId = parser.asString(parser.value(payload, "route.dest_asset_chain_id"))
         val decimals = parser.asDouble(selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId))
         val processor = SkipRouteProcessor(parser)
 
@@ -107,7 +107,6 @@ internal class SkipProcessor(
             val value = usdcAmount(modified)
             modified.safeSet("transfer.size.usdcSize", value)
         }
-
         return modified
     }
 
@@ -176,7 +175,7 @@ internal class SkipProcessor(
     override fun selectedTokenDecimals(tokenAddress: String?, selectedChainId: String?): String? {
         val tokensList = filteredTokens(selectedChainId)
         tokensList?.find {
-            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress
+            (parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenAddress || parser.asString(parser.asNativeMap(it)?.get("skipDenom")) == tokenAddress)
         }?.let {
             return parser.asString(parser.asNativeMap(it)?.get("decimals"))
         }
