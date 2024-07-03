@@ -289,7 +289,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
                 payload,
             )
             modified.safeSet("positions", positions)
-            val openPositions = positions?.filterValues { it ->
+            val openPositions = positions?.filterValues {
                 val data = parser.asNativeMap(it)
                 parser.asString(data?.get("status")) == "OPEN"
             }
