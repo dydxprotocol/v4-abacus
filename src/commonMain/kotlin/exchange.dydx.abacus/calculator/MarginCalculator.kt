@@ -229,28 +229,6 @@ internal object MarginCalculator {
     }
 
     /**
-     * @description Calculate and validate the amount of collateral to transfer for an isolated margin trade.
-     */
-    fun getIsolatedMarginTransferAmount(
-        parser: ParserProtocol,
-        subaccount: Map<String, Any>?,
-        trade: Map<String, Any>,
-        market: Map<String, Any>?,
-    ): Double? {
-        val shouldTransferOut = getShouldTransferOutCollateral(parser, subaccount, trade)
-        val shouldTransferIn = getShouldTransferInCollateral(parser, subaccount, trade)
-
-        if (!shouldTransferIn && !shouldTransferOut) return null
-
-        val transferAmount = calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount) ?: return null
-
-        // Validate that if transferring in, transfer amount should be positive and vice versa
-        val isCorrectSign = (shouldTransferIn && transferAmount > 0) || (shouldTransferOut && transferAmount < 0)
-
-        return if (isCorrectSign) transferAmount else null
-    }
-
-    /**
      * @description Calculate the amount of collateral to transfer into child subaccount for an isolated margin trade.
      */
     fun getIsolatedMarginTransferInAmountForTrade(
@@ -259,11 +237,7 @@ internal object MarginCalculator {
         market: PerpetualMarket
     ): Double? {
         return if (getShouldTransferInCollateral(trade, subaccount)) {
-            calculateIsolatedMarginTransferAmount(
-                trade,
-                market,
-                subaccount,
-            )
+            calculateIsolatedMarginTransferAmount(trade, market, subaccount)?.takeIf { it > 0.0 }
         } else {
             null
         }
@@ -300,7 +274,7 @@ internal object MarginCalculator {
     /**
      * @description Determine if collateral should be transferred out of child subaccount for an isolated margin trade
      */
-    internal fun getShouldTransferOutCollateral(
+    internal fun getShouldTransferOutRemainingCollateral(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         tradeInput: Map<String, Any>?,
@@ -314,6 +288,17 @@ internal object MarginCalculator {
         return isPositionFullyClosed && isIsolatedMarginOrder && !hasOpenOrder
     }
 
+    internal fun getEstimateRemainingCollateralAfterClosePosition(
+        parser: ParserProtocol,
+        subaccount: Map<String, Any>?,
+        tradeInput: Map<String, Any>?,
+    ): Double? {
+        val quoteBalance = parser.asDouble(parser.value(subaccount, "quoteBalance.current")) ?: return null
+        val tradeSummary = parser.asNativeMap(parser.value(tradeInput, "summary")) ?: return null
+        val total = parser.asDouble(tradeSummary["total"]) ?: return null
+        return quoteBalance + total
+    }
+
     private fun getIsPositionFullyClosed(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
@@ -324,7 +309,8 @@ internal object MarginCalculator {
             val currentSize = parser.asDouble(parser.value(position, "size.current")) ?: 0.0
             val postOrderSize = tradeInput?.let { getPositionPostOrderSizeFromTrade(parser, tradeInput, currentSize) } ?: 0.0
             val isReduceOnly = parser.asBool(tradeInput?.get("reduceOnly")) ?: false
-            return postOrderSize == 0.0 || (isReduceOnly && postOrderSize <= 0.0)
+            val hasFlippedSide = currentSize * postOrderSize < 0
+            return postOrderSize == 0.0 || (isReduceOnly && hasFlippedSide)
         } ?: false
     }
 
@@ -393,11 +379,11 @@ internal object MarginCalculator {
      * @description Calculate the amount of collateral to transfer for an isolated margin trade.
      * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
      */
-    private fun calculateIsolatedMarginTransferAmount(
+    internal fun calculateIsolatedMarginTransferAmount(
         parser: ParserProtocol,
         trade: Map<String, Any>,
         market: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
+        subaccount: Map<String, Any>?
     ): Double? {
         val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
         val side = parser.asString(parser.value(trade, "side")) ?: return null
