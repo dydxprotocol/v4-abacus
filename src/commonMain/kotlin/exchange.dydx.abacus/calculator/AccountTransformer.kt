@@ -40,7 +40,7 @@ class AccountTransformer() {
                 )
             modified.safeSet("subaccounts.$subaccountNumber", modifiedSubaccount)
             return modified
-        } else {
+        } else if (childSubaccountNumber != null) {
             val childSubaccount = parser.asNativeMap(
                 parser.value(
                     account,
@@ -85,5 +85,7 @@ class AccountTransformer() {
 
             return modified
         }
+
+        return modified
     }
 }
