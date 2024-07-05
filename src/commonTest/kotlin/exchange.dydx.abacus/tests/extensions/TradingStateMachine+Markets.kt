@@ -115,19 +115,6 @@ fun TradingStateMachine.loadv4FillsReceived(mock: AbacusMockData, endpoint: Stri
     return rest(AbUrl.fromString(endpoint), mock.fillsChannel.v4_rest, 0, null)
 }
 
-fun TradingStateMachine.loadFillsReceived(mock: AbacusMockData): StateResponse {
-    return rest(
-        AbUrl(
-            host = "api.stage.dydx.exchange",
-            path = "/v3/fills",
-            scheme = "https://",
-        ),
-        mock.accountsChannel.fillsReceived,
-        0,
-        null,
-    )
-}
-
 fun TradingStateMachine.loadSimpleAccounts(mock: AbacusMockData): StateResponse {
     return socket(mock.socketUrl, mock.accountsChannel.simpleSubscribed, 0, null)
 }

@@ -1,18 +1,41 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.mergeWithIds
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import indexer.codegen.IndexerFillResponseObject
 
-internal class FillsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val itemProcessor = FillProcessor(parser = parser)
+internal class FillsProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+) : BaseProcessor(parser) {
+    private val itemProcessor = FillProcessor(parser = parser, localizer = localizer)
 
-    fun received(existing: List<Any>?, payload: List<Any>, subaccountNumber: Int): List<Any>? {
+    fun process(
+        existing: List<SubaccountFill>?,
+        payload: List<IndexerFillResponseObject>,
+        subaccountNumber: Int
+    ): List<SubaccountFill>? {
+        val new = payload.mapNotNull { eachPayload ->
+            itemProcessor.process(
+                payload = eachPayload,
+                subaccountNumber = subaccountNumber,
+            )
+        }
+        existing?.let {
+            return mergeWithIds(new, existing) { item -> item.id }
+        }
+        return new
+    }
+
+    fun receivedDeprecated(existing: List<Any>?, payload: List<Any>, subaccountNumber: Int): List<Any>? {
         val new = payload.mapNotNull { eachPayload ->
             parser.asNativeMap(eachPayload)?.let { eachPayloadData ->
                 val modified = eachPayloadData.toMutableMap()
 
-                itemProcessor.received(
+                itemProcessor.receivedDeprecated(
                     null,
                     modified,
                     subaccountNumber,

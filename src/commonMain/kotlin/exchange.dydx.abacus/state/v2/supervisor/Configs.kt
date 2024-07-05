@@ -190,6 +190,7 @@ data class AppConfigsV2(
     var loadRemote: Boolean = true,
     var enableLogger: Boolean = false,
     var triggerOrderToast: Boolean = false,
+    var staticTyping: Boolean = false,
 ) {
     companion object {
         val forApp = AppConfigsV2(
