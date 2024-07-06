@@ -17,7 +17,7 @@ internal class FillsProcessor(
         existing: List<SubaccountFill>?,
         payload: List<IndexerFillResponseObject>,
         subaccountNumber: Int
-    ): List<SubaccountFill>? {
+    ): List<SubaccountFill> {
         val new = payload.mapNotNull { eachPayload ->
             itemProcessor.process(
                 payload = eachPayload,

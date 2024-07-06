@@ -287,7 +287,10 @@ internal open class SubaccountProcessor(
             payload = payload ?: emptyList(),
             subaccountNumber = subaccount.subaccountNumber,
         )
-        return if (subaccount.fills != newFills) subaccount.copy(fills = newFills) else subaccount
+        if (subaccount.fills != newFills) {
+            subaccount.fills = newFills
+        }
+        return subaccount
     }
 
     private fun receivedFillsDeprecated(
