@@ -37,6 +37,8 @@ style:
     active: false
   UnusedParameter:
     active: false
+  ForbiddenComment:
+    active: false
 
 empty-blocks:
   EmptyDefaultConstructor:
