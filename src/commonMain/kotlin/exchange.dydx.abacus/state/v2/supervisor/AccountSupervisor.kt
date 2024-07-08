@@ -650,12 +650,12 @@ internal open class AccountSupervisor(
                         helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
                             val error = helper.parseTransactionResponse(it)
                             if (error != null) {
-                                Logger.e { "sweepNobleBalanceToDydx error: $error" }
+                                Logger.e { "sweepNobleBalanceToDydxSquid error: $error" }
                             }
                         }
                     }
                 } else {
-                    Logger.e { "sweepNobleBalanceToDydx error, code: $code" }
+                    Logger.e { "sweepNobleBalanceToDydxSquid error, code: $code" }
                 }
             }
         }
