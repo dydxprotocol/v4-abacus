@@ -10,8 +10,8 @@ import indexer.codegen.IndexerFillResponseObject
 internal class FillsProcessor(
     parser: ParserProtocol,
     localizer: LocalizerProtocol?,
+    private val fillProcessor: FillProcessorProtocol = FillProcessor(parser = parser, localizer = localizer),
 ) : BaseProcessor(parser) {
-    private val itemProcessor = FillProcessor(parser = parser, localizer = localizer)
 
     fun process(
         existing: List<SubaccountFill>?,
@@ -19,7 +19,7 @@ internal class FillsProcessor(
         subaccountNumber: Int
     ): List<SubaccountFill> {
         val new = payload.mapNotNull { eachPayload ->
-            itemProcessor.process(
+            fillProcessor.process(
                 payload = eachPayload,
                 subaccountNumber = subaccountNumber,
             )
@@ -35,6 +35,7 @@ internal class FillsProcessor(
             parser.asNativeMap(eachPayload)?.let { eachPayloadData ->
                 val modified = eachPayloadData.toMutableMap()
 
+                val itemProcessor = fillProcessor as FillProcessor
                 itemProcessor.receivedDeprecated(
                     null,
                     modified,

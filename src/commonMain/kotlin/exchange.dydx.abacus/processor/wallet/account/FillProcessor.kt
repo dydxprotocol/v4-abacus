@@ -15,10 +15,17 @@ import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 
+internal interface FillProcessorProtocol {
+    fun process(
+        payload: IndexerFillResponseObject,
+        subaccountNumber: Int,
+    ): SubaccountFill?
+}
+
 internal class FillProcessor(
     parser: ParserProtocol,
     private val localizer: LocalizerProtocol?,
-) : BaseProcessor(parser) {
+) : BaseProcessor(parser), FillProcessorProtocol {
     private val fillKeyMap = mapOf(
         "string" to mapOf(
             "id" to "id",
@@ -72,7 +79,7 @@ internal class FillProcessor(
         "SELL" to "Sell",
     )
 
-    internal fun process(
+    override fun process(
         payload: IndexerFillResponseObject,
         subaccountNumber: Int,
     ): SubaccountFill? {

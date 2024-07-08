@@ -1,12 +1,12 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.localizer.MockLocalizer
 import exchange.dydx.abacus.output.FillLiquidity
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountFillResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerFillType
@@ -21,7 +21,7 @@ class FillProcessorTests {
 
     private val fillProcessor = FillProcessor(
         parser = Parser(),
-        localizer = MockLocalizer(),
+        localizer = LocalizerProtocolMock(),
     )
 
     private val createdAt = Instant.parse("2021-01-01T00:00:00Z")
