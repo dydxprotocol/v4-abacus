@@ -1304,6 +1304,7 @@ open class TradingStateMachine(
             }
         }
         return PerpetualState(
+            internalState = internalState,
             assets,
             marketsSummary,
             orderbooks,

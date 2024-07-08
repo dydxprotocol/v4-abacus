@@ -2,10 +2,13 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.internalstate.InternalStatePerpetualMarket
 import exchange.dydx.abacus.state.internalstate.InternalStatePerpetualMarkets
+import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.typedSafeSet
 import indexer.codegen.IndexerPerpetualMarketStatus
 import indexer.codegen.IndexerPerpetualMarketType
 
@@ -89,6 +92,82 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         } else {
             InternalStatePerpetualMarkets()
         }
+    }
+
+    private fun processMarketUpdate(internalStatePerpetualMarket: InternalStatePerpetualMarket, marketUpdate: Map<String, Any>, type: String): InternalStatePerpetualMarket {
+        when (type) {
+            "trading" -> {
+                val baseOpenInterest = parser.asDouble(marketUpdate["baseOpenInterest"])
+                val nextFundingRate = parser.asDouble(marketUpdate["nextFundingRate"])
+                val openInterest = parser.asDouble(marketUpdate["openInterest"])
+                val trades24H = parser.asInt(marketUpdate["trades24H"])
+                val volume24H = parser.asDouble(marketUpdate["volume24H"])
+
+                return internalStatePerpetualMarket.copy(
+                    baseOpenInterest = baseOpenInterest ?: internalStatePerpetualMarket.baseOpenInterest,
+                    nextFundingRate = nextFundingRate ?: internalStatePerpetualMarket.nextFundingRate,
+                    openInterest = openInterest ?: internalStatePerpetualMarket.openInterest,
+                    trades24H = trades24H ?: internalStatePerpetualMarket.trades24H,
+                    volume24H = volume24H ?: internalStatePerpetualMarket.volume24H
+                )
+            }
+            "oraclePrices" -> {
+                val oraclePrice = parser.asDouble(marketUpdate["oraclePrice"])
+
+                return internalStatePerpetualMarket.copy(
+                    oraclePrice = oraclePrice ?: internalStatePerpetualMarket.oraclePrice
+                )
+            }
+            else -> {
+                error("Unsupported PerpetualMarket update type")
+            }
+        }
+    }
+
+    internal fun channelBatchData(internalStatePerpetualMarkets: InternalStatePerpetualMarkets, contents: List<Map<String, Map<String, Map<String, Any>>>>): InternalStatePerpetualMarkets? {
+        for (item in contents) {
+            for ((updateType, update) in item) {
+                when (updateType) {
+                    "trading" -> {
+                        for ((market, marketUpdate) in update) {
+                            var perpetualMarket = internalStatePerpetualMarkets.markets[market]
+                            if (perpetualMarket != null) {
+                                perpetualMarket = processMarketUpdate(
+                                    internalStatePerpetualMarket = perpetualMarket,
+                                    marketUpdate = marketUpdate,
+                                    type = "trading"
+                                )
+
+                                val markets = internalStatePerpetualMarkets.markets.mutable()
+                                markets.typedSafeSet(market, perpetualMarket)
+                                internalStatePerpetualMarkets.markets = markets
+                            }
+                        }
+                    }
+                    "oraclePrices" -> {
+                        for ((market, marketUpdate) in update) {
+                            var perpetualMarket = internalStatePerpetualMarkets.markets[market]
+                            if (perpetualMarket != null) {
+                                perpetualMarket = processMarketUpdate(
+                                    internalStatePerpetualMarket = perpetualMarket,
+                                    marketUpdate = marketUpdate,
+                                    type = "oraclePrices"
+                                )
+
+                                val markets = internalStatePerpetualMarkets.markets.mutable()
+                                markets.typedSafeSet(market, perpetualMarket)
+                                internalStatePerpetualMarkets.markets = markets
+                            }
+                        }
+                    }
+                    else -> {
+                        error("Unsupported update type")
+                    }
+                }
+            }
+        }
+
+        return null
     }
 
 

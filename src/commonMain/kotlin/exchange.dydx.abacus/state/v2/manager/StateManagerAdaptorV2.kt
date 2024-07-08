@@ -655,6 +655,7 @@ internal class StateManagerAdaptorV2(
     private fun didSetRestriction(restriction: UsageRestriction?) {
         val state = stateMachine.state
         stateMachine.state = PerpetualState(
+            state?.internalState,
             state?.assets,
             state?.marketsSummary,
             state?.orderbooks,
@@ -688,6 +689,7 @@ internal class StateManagerAdaptorV2(
     private fun didSetGeo(geo: String?) {
         val state = stateMachine.state
         stateMachine.state = PerpetualState(
+            state?.internalState,
             state?.assets,
             state?.marketsSummary,
             state?.orderbooks,

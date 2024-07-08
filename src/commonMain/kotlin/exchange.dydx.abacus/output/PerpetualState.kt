@@ -2,6 +2,7 @@ package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
@@ -17,6 +18,7 @@ data class PerpetualState(
     /*
      * We are handling this explicitly for js
      */
+    val internalState: InternalState?,
     val assets: IMap<String, Asset>?,
     val marketsSummary: PerpetualMarketSummary?,
     val orderbooks: IMap<String, MarketOrderbook>?,

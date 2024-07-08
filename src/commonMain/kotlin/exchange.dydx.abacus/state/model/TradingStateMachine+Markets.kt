@@ -77,6 +77,17 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
     subaccountNumber: Int,
 ): StateChanges {
     val blankAssets = assets == null
+    val perpetualMarkets = marketsProcessor.channelBatchData(
+        internalStatePerpetualMarkets = internalState.perpetualMarkets,
+        contents = payload as List<Map<String, Map<String, Map<String, Any>>>>
+    )
+
+    if (perpetualMarkets != null) {
+        internalState = internalState.copy(
+            perpetualMarkets = perpetualMarkets
+        )
+    }
+
     marketsSummary = marketsProcessor.channel_batch_data(marketsSummary, payload)
     val keys = mutableSetOf<String>()
     for (partialPayload in payload) {

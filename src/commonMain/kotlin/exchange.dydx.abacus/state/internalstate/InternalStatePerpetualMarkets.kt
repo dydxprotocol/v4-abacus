@@ -1,13 +1,22 @@
 package exchange.dydx.abacus.state.internalstate
 
+import exchange.dydx.abacus.utils.iMapOf
 import indexer.codegen.IndexerPerpetualMarketStatus
 import indexer.codegen.IndexerPerpetualMarketType
+import kollections.JsExport
+import kotlinx.serialization.Serializable
 
-internal data class InternalStatePerpetualMarkets (
-    val markets: Map<String, InternalStatePerpetualMarket>? = null,
+@Suppress("UNCHECKED_CAST")
+@JsExport
+@Serializable
+data class InternalStatePerpetualMarkets (
+    var markets: Map<String, InternalStatePerpetualMarket> = iMapOf(),
 )
 
-internal data class InternalStatePerpetualMarket (
+@Suppress("UNCHECKED_CAST")
+@JsExport
+@Serializable
+data class InternalStatePerpetualMarket (
     val clobPairId: Int, // "6",
     val ticker: String, // "ADA-USD",
     val status: IndexerPerpetualMarketStatus,//  "ACTIVE",

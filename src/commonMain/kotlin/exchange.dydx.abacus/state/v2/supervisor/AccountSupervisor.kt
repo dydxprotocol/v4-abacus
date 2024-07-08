@@ -1017,6 +1017,7 @@ internal open class AccountSupervisor(
         val state = stateMachine.state
         stateMachine.state =
             PerpetualState(
+                state?.internalState,
                 state?.assets,
                 state?.marketsSummary,
                 state?.orderbooks,
@@ -1051,6 +1052,7 @@ internal open class AccountSupervisor(
         val state = stateMachine.state
         stateMachine.state =
             PerpetualState(
+                state?.internalState,
                 state?.assets,
                 state?.marketsSummary,
                 state?.orderbooks,
