@@ -1080,7 +1080,7 @@ internal class OnboardingSupervisor(
                 toChain to toAddress,
             ),
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-//            "smart_relay" to true,
+            "smart_relay" to true,
             "allow_unsafe" to true,
         )
         val oldState = stateMachine.state
