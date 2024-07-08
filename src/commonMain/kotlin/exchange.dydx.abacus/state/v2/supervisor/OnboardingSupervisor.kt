@@ -1067,8 +1067,8 @@ internal class OnboardingSupervisor(
         val url = helper.configs.skipV2MsgsDirect()
         val fromAddress = accountAddress.toNobleAddress() ?: return
 
-        val fromChain = helper.configs.nobleChainId() ?: return
-        val fromToken = helper.configs.nobleDenom ?: return
+        val fromChain = helper.configs.nobleChainId()
+        val fromToken = helper.configs.nobleDenom
         val body: Map<String, Any> = mapOf(
             "amount_in" to fromAmountString,
             "source_asset_denom" to fromToken,
@@ -1080,7 +1080,7 @@ internal class OnboardingSupervisor(
                 toChain to toAddress,
             ),
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-            "smart_relay" to true,
+//            "smart_relay" to true,
             "allow_unsafe" to true,
         )
         val oldState = stateMachine.state
