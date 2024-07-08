@@ -1521,8 +1521,6 @@ internal class OnboardingSupervisor(
         val fromAmountString = helper.parser.asString(fromAmount)
 
         if (
-            nobleChain != null &&
-            nobleToken != null &&
             nobleAddress != null &&
             chainId != null &&
             nativeChainUSDCDenom != null &&
