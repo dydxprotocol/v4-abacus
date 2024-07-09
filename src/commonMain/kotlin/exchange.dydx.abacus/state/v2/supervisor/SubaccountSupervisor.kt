@@ -732,7 +732,7 @@ internal class SubaccountSupervisor(
                 it.clientId == clientId
             }
             this.pendingIsolatedOrderRecords.remove(isolatedOrderRecord)
-            
+
             helper.send(
                 error,
                 callback,
@@ -757,8 +757,8 @@ internal class SubaccountSupervisor(
                         IsolatedPlaceOrderRecord(
                             subaccountNumber,
                             clientId,
-                            destinationSubaccountNumber = it
-                        )
+                            destinationSubaccountNumber = it,
+                        ),
                     )
                 }
             }
@@ -1553,8 +1553,6 @@ internal class SubaccountSupervisor(
                     it.lastOrderStatus == null // i.e. not indexed, we let `hasIndexedOpenOrder` be source of truth once order is indexed
             }
             val isPlacingIsolatedOrderInChildSubaccount = isTransferringToChildSubaccount || isPlacingOrderForSubaccount
-
-            val subaccountNumTemp = subaccount.value.subaccountNumber
 
             // Only return a quoteBalance if the subaccount has no open positions or orders
             if (openPositions.isNullOrEmpty() && !hasIndexedOpenOrder && !isPlacingIsolatedOrderInChildSubaccount && quoteBalance > 0.0) {
