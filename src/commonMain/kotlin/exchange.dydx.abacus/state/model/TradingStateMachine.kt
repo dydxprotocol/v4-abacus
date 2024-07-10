@@ -38,6 +38,7 @@ import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.responses.AssetJson
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -92,7 +93,10 @@ open class TradingStateMachine(
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
     internal val assetsProcessor = run {
-        val processor = AssetsProcessor(parser)
+        val processor = AssetsProcessor(
+            parser = parser,
+            localizer = localizer,
+        )
         processor.environment = environment
         processor
     }
@@ -567,9 +571,14 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
-        val json = parser.decodeJsonObject(payload)
-        return if (json != null) {
-            receivedMarketsConfigurations(json, subaccountNumber, deploymentUri)
+        // Typecast decoded JSON to Map<String, AssetJson>
+        val parsedAssetPayload = parser.decodeJsonObject(payload) as Map<String, AssetJson>?
+        return if (parsedAssetPayload != null) {
+            receivedMarketsConfigurations(
+                payload = parsedAssetPayload,
+                subaccountNumber = subaccountNumber,
+                deploymentUri = deploymentUri,
+            )
         } else {
             StateChanges.noChange
         }
@@ -1117,17 +1126,21 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.assets)) {
-            this.assets?.let {
-                assets = assets ?: mutableMapOf<String, Asset>()
-                for ((key, data) in it) {
-                    parser.asNativeMap(data)?.let {
-                        Asset.create(assets?.get(key), parser, it, localizer)?.let {
-                            assets!![key] = it
+            if (staticTyping) {
+                assets = internalState.assets
+            } else {
+                this.assets?.let {
+                    assets = assets ?: mutableMapOf<String, Asset>()
+                    for ((key, data) in it) {
+                        parser.asNativeMap(data)?.let {
+                            Asset.create(assets?.get(key), parser, it, localizer)?.let {
+                                assets!![key] = it
+                            }
                         }
                     }
+                } ?: run {
+                    assets = null
                 }
-            } ?: run {
-                assets = null
             }
         }
         if (changes.changes.contains(Changes.configs)) {

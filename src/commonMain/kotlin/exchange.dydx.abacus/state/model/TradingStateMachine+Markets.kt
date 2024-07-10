@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.MarginCalculator
+import exchange.dydx.abacus.responses.AssetJson
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import kollections.iListOf
@@ -114,31 +115,49 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
 }
 
 internal fun TradingStateMachine.receivedMarketsConfigurations(
-    payload: Map<String, Any>,
+    payload: Map<String, AssetJson>,
     subaccountNumber: Int?,
     deploymentUri: String,
 ): StateChanges {
-    this.marketsSummary = marketsProcessor.receivedConfigurations(this.marketsSummary, payload)
-    assets = assetsProcessor.receivedConfigurations(assets, payload, deploymentUri)
-    this.marketsSummary = marketsCalculator.calculate(this.marketsSummary, assets, null)
+    this.marketsSummary = marketsProcessor.receivedConfigurations(
+        existing = this.marketsSummary,
+        payload = payload,
+    )
+    if (staticTyping) {
+        internalState.assets = assetsProcessor.processConfigurations(
+            existing = internalState.assets,
+            payload = payload,
+            deploymentUri = deploymentUri,
+        )
+    }
+    assets = assetsProcessor.receivedConfigurations(
+        existing = assets,
+        payload = payload,
+        deploymentUri = deploymentUri,
+    )
+    this.marketsSummary = marketsCalculator.calculate(
+        marketsSummary = this.marketsSummary,
+        assets = assets,
+        keys = null,
+    )
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
-        parser,
-        account,
-        subaccountNumber ?: 0,
-        parser.asMap(input?.get("trade")),
+        parser = parser,
+        account = account,
+        subaccountNumber = subaccountNumber ?: 0,
+        tradeInput = parser.asMap(input?.get("trade")),
     )
 
     return if (subaccountNumber != null) {
         StateChanges(
-            iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
-            null,
-            subaccountNumbers,
+            changes = iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
+            markets = null,
+            subaccountNumbers = subaccountNumbers,
         )
     } else {
         StateChanges(
-            iListOf(Changes.markets, Changes.assets),
-            null,
-            null,
+            changes = iListOf(Changes.markets, Changes.assets),
+            markets = null,
+            subaccountNumbers = null,
         )
     }
 }
