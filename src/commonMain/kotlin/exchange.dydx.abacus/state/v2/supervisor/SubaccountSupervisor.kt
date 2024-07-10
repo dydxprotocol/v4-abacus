@@ -1541,10 +1541,9 @@ internal class SubaccountSupervisor(
                 ).contains(status)
             } ?: false
 
-            // pendingIsolatedOrderRecords hold isolated orders that have been placed (i.e. transferring funds) and not confirmed
+            // pendingIsolatedOrderRecords hold isolated orders that have been placed (i.e. transferring funds to child subaccount -> confirmed)
             // placeOrderRecords hold orders that have been placed and not indexed
-            // checking these guard against the case where we try to transfer out of child subaccount when
-            // there is a pending isolated order (trnasfer + order placement) to that subaccount
+            // checking both records to guard against transferring funds out of child subaccount when there's a pending isolated order in that subaccount
             val isTransferringToChildSubaccount = this.pendingIsolatedOrderRecords.any {
                 it.destinationSubaccountNumber == subaccount.value.subaccountNumber
             }
