@@ -15,6 +15,14 @@ import kotlinx.serialization.Serializable
 
 /**
  *
+ * Values: OPEN,FILLED,CANCELED,BESTEFFORTCANCELED,UNTRIGGERED,BESTEFFORTOPENED
  */
 @Serializable
-class IndexerAPIOrderStatus()
+enum class IndexerAPIOrderStatus(val value: kotlin.String) {
+    OPEN("OPEN"), // :/
+    FILLED("FILLED"), // :/
+    CANCELED("CANCELED"), // :/
+    BESTEFFORTCANCELED("BEST_EFFORT_CANCELED"), // :/
+    UNTRIGGERED("UNTRIGGERED"), // :/
+    BESTEFFORTOPENED("BEST_EFFORT_OPENED"); // :/
+}
