@@ -491,7 +491,7 @@ internal open class AccountSupervisor(
                         }
                     }
 //                        else, transfer noble balance back to dydx
-                        ?: run { transferNobleBalance(amount) }
+                        ?: run { sweepNobleBalanceToDydx(amount) }
                 } else if (balance["error"] != null) {
                     Logger.e { "Error checking noble balance: $response" }
                 }
@@ -596,19 +596,15 @@ internal open class AccountSupervisor(
         }
     }
 
-//    DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
-//    rename to transferNobleToDydx or something more descriptive.
-//    This function is a unidirection transfer function that sweeps funds
-//    from a noble account into a user's given subaccount
-    private fun transferNobleBalance(amount: BigDecimal) {
+    private fun sweepNobleBalanceToDydx(amount: BigDecimal) {
         if (StatsigConfig.useSkip) {
-            transferNobleBalanceSkip(amount = amount)
+            sweepNobleBalanceToDydxSkip(amount = amount)
         } else {
-            transferNobleBalanceSquid(amount = amount)
+            sweepNobleBalanceToDydxSquid(amount = amount)
         }
     }
 
-    private fun transferNobleBalanceSquid(amount: BigDecimal) {
+    private fun sweepNobleBalanceToDydxSquid(amount: BigDecimal) {
         val url = helper.configs.squidRoute()
         val fromChain = helper.configs.nobleChainId()
         val fromToken = helper.configs.nobleDenom
@@ -654,18 +650,18 @@ internal open class AccountSupervisor(
                         helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
                             val error = helper.parseTransactionResponse(it)
                             if (error != null) {
-                                Logger.e { "transferNobleBalance error: $error" }
+                                Logger.e { "sweepNobleBalanceToDydxSquid error: $error" }
                             }
                         }
                     }
                 } else {
-                    Logger.e { "transferNobleBalance error, code: $code" }
+                    Logger.e { "sweepNobleBalanceToDydxSquid error, code: $code" }
                 }
             }
         }
     }
 
-    private fun transferNobleBalanceSkip(amount: BigDecimal) {
+    private fun sweepNobleBalanceToDydxSkip(amount: BigDecimal) {
         val url = helper.configs.skipV2MsgsDirect()
         val fromChain = helper.configs.nobleChainId()
         val fromToken = helper.configs.nobleDenom
@@ -691,7 +687,7 @@ internal open class AccountSupervisor(
                 "Content-Type" to "application/json",
             )
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
-            if (response == null) {
+            if (response != null) {
                 val json = helper.parser.decodeJsonObject(response)
                 if (json != null) {
                     val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
@@ -704,13 +700,13 @@ internal open class AccountSupervisor(
                         helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
                             val error = helper.parseTransactionResponse(it)
                             if (error != null) {
-                                Logger.e { "transferNobleBalanceSkip error: $error" }
+                                Logger.e { "sweepNobleBalanceToDydxSkip error: $error" }
                             }
                         }
                     }
                 }
             } else {
-                Logger.e { "transferNobleBalanceSkip error, code: $code" }
+                Logger.e { "sweepNobleBalanceToDydxSkip error, code: $code" }
             }
         }
     }
@@ -802,6 +798,11 @@ internal open class AccountSupervisor(
                         body.toJsonPrettyPrint(),
                         callback = { _, response, httpCode, _ ->
                             handleComplianceResponse(response, httpCode, address)
+                            // retrieve the subaccounts if it does not exist yet. It is possible that the initial
+                            // subaccount retrieval failed due to 403 before updating the compliance status.
+                            if (helper.success(httpCode) && response != null && subaccounts.isEmpty()) {
+                                retrieveSubaccounts()
+                            }
                         },
                     )
                 } else {
