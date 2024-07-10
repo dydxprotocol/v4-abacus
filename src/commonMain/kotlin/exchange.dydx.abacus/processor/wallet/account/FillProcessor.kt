@@ -1,13 +1,31 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.FillLiquidity
+import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.SubaccountFillResources
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerFillResponseObject
 
-internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal interface FillProcessorProtocol {
+    fun process(
+        payload: IndexerFillResponseObject,
+        subaccountNumber: Int,
+    ): SubaccountFill?
+}
+
+internal class FillProcessor(
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?,
+) : BaseProcessor(parser), FillProcessorProtocol {
     private val fillKeyMap = mapOf(
         "string" to mapOf(
             "id" to "id",
@@ -61,7 +79,59 @@ internal class FillProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         "SELL" to "Sell",
     )
 
-    internal fun received(
+    override fun process(
+        payload: IndexerFillResponseObject,
+        subaccountNumber: Int,
+    ): SubaccountFill? {
+        fun doProcess(): SubaccountFill? {
+            val fillSubaccountNumber = parser.asInt(payload.subaccountNumber) ?: subaccountNumber
+
+            val id = payload.id ?: return null
+            val marketId = payload.market ?: return null
+            val side = payload.side?.name?.let { OrderSide.invoke(rawValue = it) } ?: return null
+            val liquidity =
+                payload.liquidity?.name?.let { FillLiquidity.invoke(rawValue = it) } ?: return null
+
+            val typeString = OrderTypeProcessor.orderType(
+                type = payload.type?.name,
+                clientMetadata = parser.asInt(payload.clientMetadata),
+            )
+            val type = typeString?.let { OrderType.invoke(rawValue = it) } ?: return null
+
+            return SubaccountFill(
+                id = id,
+                marketId = marketId,
+                orderId = payload.orderId,
+                subaccountNumber = fillSubaccountNumber,
+                marginMode = if (fillSubaccountNumber >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated else MarginMode.Cross,
+                side = side,
+                type = type,
+                liquidity = liquidity,
+                price = parser.asDouble(payload.price) ?: return null,
+                size = parser.asDouble(payload.size) ?: return null,
+                fee = parser.asDouble(payload.fee) ?: return null,
+                createdAtMilliseconds = parser.asDatetime(payload.createdAt)?.toEpochMilliseconds()
+                    ?.toDouble() ?: return null,
+                resources = SubaccountFillResources(
+                    sideString = sideMap[payload.side.name]?.let { localizer?.localize(it) },
+                    liquidityString = liquidityMap[payload.liquidity.name]?.let { localizer?.localize(it) },
+                    typeString = typeMap[typeString]?.let { localizer?.localize(it) },
+                    sideStringKey = sideMap[payload.side.name],
+                    liquidityStringKey = liquidityMap[payload.liquidity.name],
+                    typeStringKey = typeMap[typeString],
+                    iconLocal = sideIconMap[payload.side.name],
+                ),
+            )
+        }
+
+        return doProcess().also { fill ->
+            if (fill == null) {
+                Logger.e { "Failed to parse fill: $payload" }
+            }
+        }
+    }
+
+    internal fun receivedDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         subaccountNumber: Int,

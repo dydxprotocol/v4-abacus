@@ -7,6 +7,6 @@ class LocalizerProtocolMock : LocalizerProtocol {
 
     override fun localize(path: String, paramsAsJson: String?): String {
         localizeCallCount++
-        return path + paramsAsJson
+        return path + (paramsAsJson ?: "")
     }
 }

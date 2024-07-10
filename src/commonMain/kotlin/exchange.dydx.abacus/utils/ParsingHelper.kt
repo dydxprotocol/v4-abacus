@@ -73,6 +73,66 @@ internal class ParsingHelper {
             }
         }
 
+        internal fun <T> merge(
+            existing: List<T>? = emptyList(),
+            new: List<T>? = emptyList(),
+            comparison: (T, T) -> ComparisonOrder?,
+            syncItems: Boolean = false,
+        ): List<T> {
+            val result = mutableListOf<T>()
+            val size1 = existing?.size ?: 0
+            val size2 = new?.size ?: 0
+            var cursor1 = 0
+            var cursor2 = 0
+
+            while (cursor1 < size1 && cursor2 < size2) {
+                val existingEntry = existing?.get(cursor1)
+                val newEntry = new?.get(cursor2)
+                when (comparison(existingEntry!!, newEntry!!)) {
+                    ComparisonOrder.same -> {
+                        result.add(newEntry)
+                        cursor1 += 1
+                        cursor2 += 1
+                    }
+
+                    ComparisonOrder.ascending -> {
+                        if (!syncItems) {
+                            result.add(existingEntry)
+                        }
+                        cursor1 += 1
+                    }
+
+                    ComparisonOrder.descending -> {
+                        result.add(newEntry)
+                        cursor2 += 1
+                    }
+
+                    null -> {
+                        // Do not include this item
+                        cursor2 += 1
+                    }
+                }
+            }
+
+            if (cursor1 >= size1) {
+                // list1 finished
+                for (i in cursor2 until size2) {
+                    new?.get(i)?.let {
+                        result.add(it)
+                    }
+                }
+            }
+            if (cursor2 >= size2 && !syncItems) {
+                for (i in cursor1 until size1) {
+                    existing?.get(i)?.let {
+                        result.add(it)
+                    }
+                }
+            }
+
+            return result
+        }
+
         internal fun <T : Any> merge(
             parser: ParserProtocol,
             existing: List<T>?,

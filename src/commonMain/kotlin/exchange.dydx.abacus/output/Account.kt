@@ -896,7 +896,7 @@ data class SubaccountFill(
     val resources: SubaccountFillResources,
 ) {
     companion object {
-        internal fun create(
+        private fun create(
             existing: SubaccountFill?,
             parser: ParserProtocol,
             data: Map<*, *>?,
@@ -966,27 +966,52 @@ data class SubaccountFill(
             return null
         }
 
-        fun create(
+        internal fun create(
             existing: IList<SubaccountFill>?,
             parser: ParserProtocol,
             data: List<Map<String, Any>>?,
             localizer: LocalizerProtocol?,
         ): IList<SubaccountFill>? {
-            return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
-                val time1 = (obj as SubaccountFill).createdAtMilliseconds
-                val time2 =
-                    parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()
-                        ?.toDouble()
-                val id1 = obj.id
-                val id2 = parser.asString(itemData["id"])
-                if (id1 == id2) {
-                    ParsingHelper.compare(time1, time2 ?: 0.0, true)
-                } else {
-                    ParsingHelper.compare(id1, id2, true)
-                }
-            }, { _, obj, itemData ->
-                obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData), localizer)
-            }, true)?.toIList()
+            return ParsingHelper.merge(
+                parser = parser,
+                existing = existing,
+                data = data,
+                comparison = { obj, itemData ->
+                    val time1 = (obj as SubaccountFill).createdAtMilliseconds
+                    val time2 =
+                        parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()
+                            ?.toDouble()
+                    val id1 = obj.id
+                    val id2 = parser.asString(itemData["id"])
+                    if (id1 == id2) {
+                        ParsingHelper.compare(time1, time2 ?: 0.0, true)
+                    } else {
+                        ParsingHelper.compare(id1, id2, true)
+                    }
+                },
+                createObject = { _, obj, itemData ->
+                    obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData), localizer)
+                },
+                syncItems = true,
+            )?.toIList()
+        }
+
+        internal fun merge(
+            existing: IList<SubaccountFill>?,
+            new: IList<SubaccountFill>?,
+        ): IList<SubaccountFill> {
+            return ParsingHelper.merge(
+                existing = existing,
+                new = new,
+                comparison = { obj, newItem ->
+                    if (obj.id == newItem.id) {
+                        ParsingHelper.compare(obj.createdAtMilliseconds, newItem.createdAtMilliseconds, true)
+                    } else {
+                        ParsingHelper.compare(obj.id, newItem.id, true)
+                    }
+                },
+                syncItems = true,
+            ).toIList()
         }
     }
 }

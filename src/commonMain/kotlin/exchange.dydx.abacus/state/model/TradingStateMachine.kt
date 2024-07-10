@@ -79,13 +79,13 @@ import kotlin.time.Duration.Companion.days
 
 @Suppress("UNCHECKED_CAST")
 @JsExport
-// @Serializable
 open class TradingStateMachine(
     private val environment: V4Environment?,
     private val localizer: LocalizerProtocol?,
     private val formatter: Formatter?,
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
+    val staticTyping: Boolean = false,
 ) {
     internal val internalState: InternalState = InternalState()
 
@@ -96,7 +96,7 @@ open class TradingStateMachine(
         processor.environment = environment
         processor
     }
-    internal val walletProcessor = WalletProcessor(parser)
+    internal val walletProcessor = WalletProcessor(parser, localizer)
     internal val configsProcessor = ConfigsProcessor(parser)
     private val skipProcessor = SkipProcessor(parser = parser, internalState = internalState.transfer)
     private val squidProcessor = SquidProcessor(parser = parser, internalState = internalState.transfer)
@@ -491,7 +491,7 @@ open class TradingStateMachine(
                 changes = sparklines(payload)
             }
 
-            "/v3/fills", "/v4/fills" -> {
+            "/v4/fills" -> {
                 val subaccountNumber =
                     parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                         ?: 0
@@ -1232,12 +1232,20 @@ open class TradingStateMachine(
             if (changes.changes.contains(Changes.fills)) {
                 val modifiedFills = fills?.toIMutableMap() ?: mutableMapOf()
                 var subaccountFills = fills?.get(subaccountText)
-                subaccountFills = SubaccountFill.create(
-                    subaccountFills,
-                    parser,
-                    subaccountFills(subaccountNumber) as? IList<Map<String, Any>>,
-                    localizer,
-                )
+                if (staticTyping) {
+                    val newFills = internalState.wallet.account.subaccounts?.get(subaccountNumber)?.fills?.toIList()
+                    subaccountFills = SubaccountFill.merge(
+                        existing = subaccountFills,
+                        new = newFills,
+                    )
+                } else {
+                    subaccountFills = SubaccountFill.create(
+                        subaccountFills,
+                        parser,
+                        subaccountFills(subaccountNumber) as? IList<Map<String, Any>>,
+                        localizer,
+                    )
+                }
                 modifiedFills.typedSafeSet(subaccountText, subaccountFills)
                 fills = modifiedFills
             }

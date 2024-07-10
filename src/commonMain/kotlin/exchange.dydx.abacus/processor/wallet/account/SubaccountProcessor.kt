@@ -2,19 +2,28 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.toJson
+import indexer.codegen.IndexerFillResponse
+import indexer.codegen.IndexerFillResponseObject
+import kotlinx.serialization.json.Json
 
 @Suppress("UNCHECKED_CAST")
-internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal open class SubaccountProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+) : BaseProcessor(parser) {
     internal val assetPositionsProcessor = AssetPositionsProcessor(parser)
     internal val ordersProcessor = OrdersProcessor(parser)
     private val perpetualPositionsProcessor = PerpetualPositionsProcessor(parser)
-    private val fillsProcessor = FillsProcessor(parser)
+    private val fillsProcessor = FillsProcessor(parser, localizer)
     private val transfersProcessor = TransfersProcessor(parser)
     private val fundingPaymentsProcessor = FundingPaymentsProcessor(parser)
     private val historicalPNLsProcessor = HistoricalPNLsProcessor(parser)
@@ -49,24 +58,54 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         ),
     )
 
-    internal fun subscribed(
+    internal fun processSubscribed(
+        existing: InternalSubaccountState,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): InternalSubaccountState {
+        return processSocket(existing, content, true, height)
+    }
+
+    internal fun subscribedDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        return socket(existing, content, true, height)
+        return socketDeprecated(existing, content, true, height)
+    }
+
+    internal fun processChannelData(
+        existing: InternalSubaccountState,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): InternalSubaccountState {
+        return processSocket(existing, content, false, height)
     }
 
     @Suppress("FunctionName")
-    internal fun channel_data(
+    internal fun channel_dataDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        return socket(existing, content, false, height)
+        return socketDeprecated(existing, content, false, height)
     }
 
-    internal open fun socket(
+    internal open fun processSocket(
+        existing: InternalSubaccountState,
+        content: Map<String, Any>,
+        subscribed: Boolean,
+        height: BlockAndTime?,
+    ): InternalSubaccountState {
+        val fillResponse = Json.decodeFromString<IndexerFillResponse?>(content.toJson())
+        if (fillResponse == null) {
+            Logger.e { "Unable to parse IndexerFillResponse: $content" }
+        }
+
+        return processFills(existing, fillResponse?.fills?.toList(), false)
+    }
+
+    internal open fun socketDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         subscribed: Boolean,
@@ -92,7 +131,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
 
         val fillsPayload = parser.asNativeList(content["fills"])
         if (fillsPayload != null) {
-            subaccount = receivedFills(subaccount, fillsPayload, false)
+            subaccount = receivedFillsDeprecated(subaccount, fillsPayload, false)
         }
 
         val transfersPayload = content["transfers"]
@@ -238,7 +277,23 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         return Pair(existing, false)
     }
 
-    private fun receivedFills(
+    private fun processFills(
+        subaccount: InternalSubaccountState,
+        payload: List<IndexerFillResponseObject>?,
+        reset: Boolean,
+    ): InternalSubaccountState {
+        val newFills = fillsProcessor.process(
+            existing = if (reset) null else subaccount.fills,
+            payload = payload ?: emptyList(),
+            subaccountNumber = subaccount.subaccountNumber,
+        )
+        if (subaccount.fills != newFills) {
+            subaccount.fills = newFills
+        }
+        return subaccount
+    }
+
+    private fun receivedFillsDeprecated(
         subaccount: Map<String, Any>,
         payload: List<Any>?,
         reset: Boolean,
@@ -246,7 +301,7 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         val subaccountNumber = parser.asInt(subaccount["subaccountNumber"]) ?: 0
         return receivedObject(subaccount, "fills", payload) { existing, payload ->
             parser.asNativeList(payload)?.let {
-                fillsProcessor.received(if (reset) null else parser.asNativeList(existing), it, subaccountNumber)
+                fillsProcessor.receivedDeprecated(if (reset) null else parser.asNativeList(existing), it, subaccountNumber)
             }
         } ?: subaccount
     }
@@ -335,12 +390,19 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
         }
     }
 
-    internal fun receivedFills(
+    internal fun processFills(
+        existing: InternalSubaccountState,
+        payload: List<IndexerFillResponseObject>?,
+    ): InternalSubaccountState {
+        return processFills(existing, payload, true)
+    }
+
+    internal fun receivedFillsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
-        return receivedFills(modified, parser.asNativeList(payload?.get("fills")), true)
+        return receivedFillsDeprecated(modified, parser.asNativeList(payload?.get("fills")), true)
     }
 
     internal fun receivedTransfers(
@@ -477,7 +539,10 @@ internal open class SubaccountProcessor(parser: ParserProtocol) : BaseProcessor(
     }
 }
 
-internal class V4SubaccountProcessor(parser: ParserProtocol) : SubaccountProcessor(parser) {
+internal class V4SubaccountProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+) : SubaccountProcessor(parser, localizer) {
     override fun received(
         existing: Map<String, Any>,
         height: BlockAndTime?,
@@ -499,8 +564,11 @@ internal class V4SubaccountProcessor(parser: ParserProtocol) : SubaccountProcess
     }
 }
 
-internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProcessor(parser) {
-    private val subaccountProcessor = V4SubaccountProcessor(parser)
+internal class V4SubaccountsProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+) : SubaccountProcessor(parser, localizer) {
+    private val subaccountProcessor = V4SubaccountProcessor(parser, localizer)
     internal fun receivedSubaccounts(
         existing: Map<String, Any>?,
         payload: List<Any>?,
@@ -530,13 +598,13 @@ internal class V4SubaccountsProcessor(parser: ParserProtocol) : SubaccountProces
             ?: parser.asNativeMap(content["subaccounts"])
     }
 
-    override fun socket(
+    override fun socketDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         subscribed: Boolean,
         height: BlockAndTime?,
     ): Map<String, Any> {
-        val modified = super.socket(existing, content, subscribed, height).mutable()
+        val modified = super.socketDeprecated(existing, content, subscribed, height).mutable()
 
         val assetPositionsPayload =
             parser.asNativeList(content["assetPositions"]) as? List<Map<String, Any>>

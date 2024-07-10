@@ -6,6 +6,8 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.toJson
+import indexer.codegen.IndexerFillResponse
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
@@ -17,7 +19,11 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     payload: Map<String, Any>,
     height: BlockAndTime?,
 ): StateChanges {
-    this.wallet = walletProcessor.subscribed(wallet, payload, height)
+    this.wallet = walletProcessor.subscribedDeprecated(wallet, payload, height)
+    if (staticTyping) {
+        walletProcessor.processSubscribed(internalState.wallet, payload, height)
+    }
+
     val changes = iMutableListOf<Changes>()
     if (payload["account"] != null || payload["subaccount"] != null) {
         changes.add(Changes.subaccount)
@@ -48,9 +54,12 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     info: SocketInfo,
     height: BlockAndTime?,
 ): StateChanges {
-    this.wallet = walletProcessor.channel_data(wallet, payload, info, height)
-    val changes = iMutableListOf<Changes>()
+    this.wallet = walletProcessor.channel_dataDeprecated(wallet, payload, info, height)
+    if (staticTyping) {
+        walletProcessor.processChannelData(internalState.wallet, payload, info, height)
+    }
 
+    val changes = iMutableListOf<Changes>()
     val idElements = info.id?.split("/")
     val subaccountNumber =
         if (idElements?.size == 2) parser.asInt(idElements.lastOrNull()) ?: 0 else 0
@@ -162,9 +171,14 @@ internal fun TradingStateMachine.receivedFills(
     payload: Map<String, Any>,
     subaccountNumber: Int,
 ): StateChanges {
-    val size = parser.asList(payload["fills"])?.size ?: 0
+    val fills = parser.asList(payload["fills"])
+    val size = fills?.size ?: 0
     return if (size > 0) {
-        wallet = walletProcessor.receivedFills(wallet, payload, subaccountNumber)
+        wallet = walletProcessor.receivedFillsDeprecated(wallet, payload, subaccountNumber)
+        if (staticTyping) {
+            val payload = Json.decodeFromString<IndexerFillResponse?>(payload.toJson())
+            walletProcessor.processFills(internalState.wallet, payload?.fills?.toList(), subaccountNumber)
+        }
         StateChanges(iListOf(Changes.fills), null, iListOf(subaccountNumber))
     } else {
         StateChanges(iListOf<Changes>())

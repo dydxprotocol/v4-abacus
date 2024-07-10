@@ -3,19 +3,37 @@ package exchange.dydx.abacus.processor.wallet
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.wallet.account.V4AccountProcessor
 import exchange.dydx.abacus.processor.wallet.user.UserProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerFillResponseObject
 
 internal class WalletProcessor(
     parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser) {
-    private val v4accountProcessor = V4AccountProcessor(parser = parser)
+    private val v4accountProcessor = V4AccountProcessor(parser = parser, localizer = localizer)
     private val userProcessor = UserProcessor(parser = parser)
 
-    internal fun subscribed(
+    internal fun processSubscribed(
+        existing: InternalWalletState,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): InternalWalletState {
+        val account = v4accountProcessor.processSubscribed(
+            existing = existing.account,
+            content = content,
+            height = height,
+        )
+        existing.account = account
+        return existing
+    }
+
+    internal fun subscribedDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         height: BlockAndTime?,
@@ -26,13 +44,29 @@ internal class WalletProcessor(
             parser.asNativeMap(content),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let {
-                v4accountProcessor.subscribed(parser.asNativeMap(existing), it, height)
+                v4accountProcessor.subscribedDeprecated(parser.asNativeMap(existing), it, height)
             }
         }
     }
 
+    internal fun processChannelData(
+        existing: InternalWalletState,
+        content: Map<String, Any>,
+        info: SocketInfo,
+        height: BlockAndTime?,
+    ): InternalWalletState {
+        val account = v4accountProcessor.processChannelData(
+            existing = existing.account,
+            content = content,
+            info = info,
+            height = height,
+        )
+        existing.account = account
+        return existing
+    }
+
     @Suppress("FunctionName")
-    internal fun channel_data(
+    internal fun channel_dataDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         info: SocketInfo,
@@ -204,13 +238,29 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedFills(
+    internal fun processFills(
+        existing: InternalWalletState,
+        payload: List<IndexerFillResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalWalletState {
+        val newAccount = v4accountProcessor.processFills(
+            existing = existing.account,
+            payload = payload,
+            subaccountNumber = subaccountNumber,
+        )
+        if (newAccount != existing.account) {
+            existing.account = newAccount
+        }
+        return existing
+    }
+
+    internal fun receivedFillsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedFills(
+            v4accountProcessor.receivedFillsDeprecated(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber,

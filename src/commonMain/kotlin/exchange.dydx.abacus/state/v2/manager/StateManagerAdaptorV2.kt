@@ -106,12 +106,13 @@ internal class StateManagerAdaptorV2(
     var dataNotification: DataNotificationProtocol?,
     private val presentationProtocol: PresentationProtocol?,
 ) : ConnectionDelegate {
-    var stateMachine: TradingStateMachine = PerpTradingStateMachine(
-        environment,
-        uiImplementations.localizer,
-        Formatter(uiImplementations.formatter),
-        127,
-        appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
+    val stateMachine: TradingStateMachine = PerpTradingStateMachine(
+        environment = environment,
+        localizer = uiImplementations.localizer,
+        formatter = Formatter(uiImplementations.formatter),
+        maxSubaccountNumber = 127,
+        useParentSubaccount = appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
+        staticTyping = appConfigs.staticTyping,
     )
 
     internal val jsonEncoder = JsonEncoder()
