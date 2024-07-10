@@ -36,6 +36,7 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.IsolatedPlaceOrderRecord
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.manager.PlaceOrderRecord
 import exchange.dydx.abacus.state.manager.TransactionParams
@@ -125,6 +126,8 @@ internal class SubaccountSupervisor(
                 didSetCancelOrderRecords()
             }
         }
+
+    private val pendingIsolatedOrderRecords: IMutableList<IsolatedPlaceOrderRecord> = iMutableListOf()
 
     private var lastOrderClientId: Int? = null
         set(value) {
@@ -724,6 +727,12 @@ internal class SubaccountSupervisor(
                 }
                 this.placeOrderRecords.remove(placeOrderRecord)
             }
+            // stop tracking pending isolated order from records since it's been confirmed
+            val isolatedOrderRecord = this.pendingIsolatedOrderRecords.firstOrNull {
+                it.clientId == clientId
+            }
+            this.pendingIsolatedOrderRecords.remove(isolatedOrderRecord)
+
             helper.send(
                 error,
                 callback,
@@ -740,6 +749,21 @@ internal class SubaccountSupervisor(
             )
         }
 
+        val onSubmitIsolatedTransferTransaction = {
+            // track the pending isolated order, which is watched by reclaimUnutilizedFundsFromChildSubaccounts
+            transferPayload?.destinationSubaccountNumber?.let {
+                helper.ioImplementations.threading?.async(ThreadingType.abacus) {
+                    this.pendingIsolatedOrderRecords.add(
+                        IsolatedPlaceOrderRecord(
+                            subaccountNumber,
+                            clientId,
+                            destinationSubaccountNumber = it,
+                        ),
+                    )
+                }
+            }
+        }
+
         // If the transfer is successful, place the order
         val isolatedMarginTransactionCallback = { response: String? ->
             val error = parseTransactionResponse(response)
@@ -752,6 +776,11 @@ internal class SubaccountSupervisor(
                     useTransactionQueue,
                 )
             } else {
+                // remove pending isolated order since it will not be placed
+                val isolatedOrderRecord = this.pendingIsolatedOrderRecords.firstOrNull {
+                    it.clientId == clientId
+                }
+                this.pendingIsolatedOrderRecords.remove(isolatedOrderRecord)
                 // callback with order payload instead of transfer payload since
                 // client shows it as a place order error and needs order client id
                 helper.send(error, callback, payload)
@@ -765,7 +794,7 @@ internal class SubaccountSupervisor(
             submitTransaction(
                 TransactionType.SubaccountTransfer,
                 transferPayloadString,
-                null,
+                onSubmitIsolatedTransferTransaction,
                 isolatedMarginTransactionCallback,
                 useTransactionQueue = true,
             )
@@ -1512,16 +1541,20 @@ internal class SubaccountSupervisor(
                 ).contains(status)
             } ?: false
 
-            // placeOrderRecords hold orders that have been placed and have not been canceled/filled
-            // this is to check the case where we're still waiting for subaccount transfer to complete
-            // before the isolated market order can be placed
-            val isPlacingOrderForSubaccount = placeOrderRecords.any {
+            // pendingIsolatedOrderRecords hold isolated orders that have been placed (i.e. transferring funds to child subaccount -> confirmed)
+            // placeOrderRecords hold orders that have been placed and not indexed
+            // checking both records to guard against transferring funds out of child subaccount when there's a pending isolated order in that subaccount
+            val isTransferringToChildSubaccount = this.pendingIsolatedOrderRecords.any {
+                it.destinationSubaccountNumber == subaccount.value.subaccountNumber
+            }
+            val isPlacingOrderForSubaccount = this.placeOrderRecords.any {
                 it.destinationSubaccountNumber == subaccount.value.subaccountNumber &&
                     it.lastOrderStatus == null // i.e. not indexed, we let `hasIndexedOpenOrder` be source of truth once order is indexed
             }
+            val isPlacingIsolatedOrderInChildSubaccount = isTransferringToChildSubaccount || isPlacingOrderForSubaccount
 
             // Only return a quoteBalance if the subaccount has no open positions or orders
-            if (openPositions.isNullOrEmpty() && !hasIndexedOpenOrder && !isPlacingOrderForSubaccount && quoteBalance > 0.0) {
+            if (openPositions.isNullOrEmpty() && !hasIndexedOpenOrder && !isPlacingIsolatedOrderInChildSubaccount && quoteBalance > 0.0) {
                 quoteBalance
             } else {
                 0.0
