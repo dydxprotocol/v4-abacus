@@ -1,14 +1,19 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerOrderResponseObject
 
 /*
 
@@ -68,8 +73,19 @@ import exchange.dydx.abacus.utils.safeSet
 
  */
 
+internal interface OrderProcessorProtocol {
+    fun process(
+        payload: IndexerOrderResponseObject,
+        subaccountNumber: Int,
+        height: BlockAndTime?,
+    ): SubaccountOrder?
+}
+
 @Suppress("UNCHECKED_CAST")
-internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class OrderProcessor(
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?,
+) : BaseProcessor(parser), OrderProcessorProtocol {
     private val typeStringKeys = mapOf(
         "MARKET" to "APP.TRADE.MARKET_ORDER_SHORT",
         "STOP_MARKET" to "APP.TRADE.STOP_MARKET",
@@ -151,6 +167,15 @@ internal class OrderProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "createdAtHeight" to "createdAtHeight",
         ),
     )
+
+    override fun process(
+        payload: IndexerOrderResponseObject,
+        subaccountNumber: Int,
+        height: BlockAndTime?
+    ): SubaccountOrder? {
+        //TODO("Not yet implemented")
+        return null
+    }
 
     private fun shouldUpdate(existing: Map<String, Any>?, payload: Map<String, Any>): Boolean {
         // First, use updatedAt timestamp, available in v3

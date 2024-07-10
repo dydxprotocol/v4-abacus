@@ -1,10 +1,11 @@
 package exchange.dydx.abacus.state.internalstate
 
 import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.SubaccountOrder
 
 internal data class InternalState(
     val transfer: InternalTransferInputState = InternalTransferInputState(),
-    val wallet: InternalWalletState = InternalWalletState(),
+    var wallet: InternalWalletState = InternalWalletState(),
 )
 
 internal data class InternalWalletState(
@@ -18,5 +19,6 @@ internal data class InternalAccountState(
 
 internal data class InternalSubaccountState(
     var fills: List<SubaccountFill>? = null,
+    var orders: List<SubaccountOrder>? = null,
     var subaccountNumber: Int,
 )

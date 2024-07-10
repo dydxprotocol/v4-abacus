@@ -1,14 +1,44 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.base.mergeWithIds
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
+import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerOrderResponseObject
 
-internal class OrdersProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private var itemProcessor = OrderProcessor(parser = parser)
+internal class OrdersProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+    private val orderProcessor: OrderProcessorProtocol = OrderProcessor(parser = parser, localizer = localizer),
+) : BaseProcessor(parser) {
+
+    private val itemProcessor = orderProcessor as OrderProcessor
+
+    fun process(
+        existing: List<SubaccountOrder>?,
+        payload: List<IndexerOrderResponseObject>,
+        height: BlockAndTime?,
+        subaccountNumber: Int
+    ): List<SubaccountOrder> {
+        val new = payload.mapNotNull { eachPayload ->
+            orderProcessor.process(
+                payload = eachPayload,
+                subaccountNumber = subaccountNumber,
+                height = height,
+            )
+        }
+//        existing?.let {
+//            return mergeWithIds(new, existing) { item -> item.id }
+//        }
+        return new
+    }
 
     internal fun received(
         existing: Map<String, Any>?,

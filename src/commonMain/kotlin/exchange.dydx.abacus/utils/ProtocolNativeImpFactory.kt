@@ -14,7 +14,6 @@ import exchange.dydx.abacus.protocols.TimerProtocol
 import exchange.dydx.abacus.protocols.TrackingProtocol
 import exchange.dydx.abacus.protocols.V3PrivateSignerProtocol
 import exchange.dydx.abacus.protocols.WebSocketProtocol
-import exchange.dydx.abacus.state.app.signer.V3ApiKey
 import kollections.JsExport
 
 @JsExport
@@ -31,7 +30,6 @@ open class ProtocolNativeImpFactory(
     var dataNotification: DataNotificationProtocol? = null,
     var fileSystem: FileSystemProtocol? = null,
     var v3Signer: V3PrivateSignerProtocol? = null,
-    var apiKey: V3ApiKey? = null,
     var presentation: PresentationProtocol? = null,
     var logging: LoggingProtocol? = null,
 )

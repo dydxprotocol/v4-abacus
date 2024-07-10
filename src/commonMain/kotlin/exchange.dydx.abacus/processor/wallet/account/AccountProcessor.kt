@@ -289,9 +289,7 @@ internal class V4AccountProcessor(
     ): InternalAccountState {
         val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
         val newSubaccount = subaccountsProcessor.processFills(subaccount, payload)
-        if (newSubaccount != subaccount) {
-            existing.subaccounts[subaccountNumber] = newSubaccount
-        }
+        existing.subaccounts[subaccountNumber] = newSubaccount
         return existing
     }
 

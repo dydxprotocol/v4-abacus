@@ -177,7 +177,7 @@ internal fun TradingStateMachine.receivedFills(
         wallet = walletProcessor.receivedFillsDeprecated(wallet, payload, subaccountNumber)
         if (staticTyping) {
             val payload = Json.decodeFromString<IndexerFillResponse?>(payload.toJson())
-            walletProcessor.processFills(internalState.wallet, payload?.fills?.toList(), subaccountNumber)
+            internalState.wallet = walletProcessor.processFills(internalState.wallet, payload?.fills?.toList(), subaccountNumber)
         }
         StateChanges(iListOf(Changes.fills), null, iListOf(subaccountNumber))
     } else {

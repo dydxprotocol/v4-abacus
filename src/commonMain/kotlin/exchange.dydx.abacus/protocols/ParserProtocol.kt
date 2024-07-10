@@ -2,7 +2,9 @@ package exchange.dydx.abacus.protocols
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Logger
 import kotlinx.datetime.Instant
+import kotlinx.serialization.json.Json
 
 interface ParserProtocol {
     // parse a field to string
@@ -43,4 +45,25 @@ interface ParserProtocol {
 
     fun decodeJsonObject(text: String?): IMap<String, Any>?
     fun decodeJsonArray(text: String?): IList<Any>?
+}
+
+inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
+    val payload = asNativeList(list) ?: return null
+    return payload.mapNotNull { item ->
+        if (item is T) {
+            item
+        } else {
+            val itemString: String? = asString(item)
+            if (itemString != null) {
+                try {
+                    Json.decodeFromString<T>(itemString)
+                } catch (e: Exception) {
+                    Logger.e { "Failed to parse item: $item" }
+                    null
+                }
+            } else {
+                null
+            }
+        }
+    }
 }
