@@ -798,6 +798,11 @@ internal open class AccountSupervisor(
                         body.toJsonPrettyPrint(),
                         callback = { _, response, httpCode, _ ->
                             handleComplianceResponse(response, httpCode, address)
+                            // retrieve the subaccounts if it does not exist yet. It is possible that the initial
+                            // subaccount retrieval failed due to 403 before updating the compliance status.
+                            if (helper.success(httpCode) && response != null && subaccounts.isEmpty()) {
+                                retrieveSubaccounts()
+                            }
                         },
                     )
                 } else {
