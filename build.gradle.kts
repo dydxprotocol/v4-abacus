@@ -52,7 +52,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.8.30"
+version = "1.8.33"
 
 repositories {
     google()
