@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.protocols
 
 import exchange.dydx.abacus.output.Asset
-import exchange.dydx.abacus.output.CandleOption
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketHistoricalFunding
@@ -110,6 +109,7 @@ interface RestProtocol {
 }
 
 typealias RestCallback = (response: String?, httpCode: Int, headersAsJsonString: String?) -> Unit
+
 @JsExport
 data class RestOptions(
     val cache: String? = null
