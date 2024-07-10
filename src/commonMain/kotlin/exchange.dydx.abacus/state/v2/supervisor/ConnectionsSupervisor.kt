@@ -336,7 +336,7 @@ internal class ConnectionsSupervisor(
             connectionStats.indexerState.previousRequestTime =
                 connectionStats.indexerState.requestTime
             connectionStats.indexerState.requestTime = Clock.System.now()
-            helper.get(url, null, null, null) { _, response, httpCode, _ ->
+            helper.get(url, null, null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val json = helper.parser.decodeJsonObject(response)
                     if (json != null) {

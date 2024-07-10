@@ -160,7 +160,7 @@ internal open class MarketSupervisor(
         historicalFundingTimer = null
         val oldState = stateMachine.state
         val url = helper.configs.publicApiUrl("historical-funding") ?: return
-        helper.get("$url/$marketId", null, null, null, callback = { _, response, httpCode, _ ->
+        helper.get("$url/$marketId", null, null, callback = { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.historicalFundings(response), oldState)
             }

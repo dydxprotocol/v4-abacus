@@ -147,7 +147,6 @@ internal class SystemSupervisor(
                     "protocol" to "dydx-v4",
                 ),
                 requestBody,
-                null,
             ) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state
