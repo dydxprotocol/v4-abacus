@@ -84,7 +84,7 @@ internal class OnboardingSupervisor(
     private fun retrieveSkipTransferChains() {
         val oldState = stateMachine.state
         val chainsUrl = helper.configs.skipV1Chains()
-        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
+        helper.get(chainsUrl, null, null, null) { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.routerChains(response), oldState)
             }
@@ -96,7 +96,7 @@ internal class OnboardingSupervisor(
         val tokensUrl = helper.configs.skipV1Assets()
 //            add API key injection for all skip methods
 //            val header = iMapOf("authorization" to skipAPIKey)
-        helper.get(tokensUrl, null, null) { _, response, httpCode, _ ->
+        helper.get(tokensUrl, null, null, null) { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.routerTokens(response), oldState)
             }
@@ -109,7 +109,7 @@ internal class OnboardingSupervisor(
         val squidIntegratorId = helper.environment.squidIntegratorId
         if (url != null && squidIntegratorId != null) {
             val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
+            helper.get(url, null, header, null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     update(stateMachine.squidV2SdkInfo(response), oldState)
                 }

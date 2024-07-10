@@ -6,6 +6,7 @@ import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.QueryType
+import exchange.dydx.abacus.protocols.RestOptions
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -110,7 +111,7 @@ class NetworkHelper(
                 )
                 val fullUrl = fullUrl(url, params)
                 if (fullUrl != previousUrl) {
-                    getWithFullUrl(fullUrl, null, callback)
+                    getWithFullUrl(fullUrl, null, null, callback)
                 }
             } else if (earliestItemTime != null) {
                 /*
@@ -124,7 +125,7 @@ class NetworkHelper(
 
                     val fullUrl = fullUrl(url, params)
                     if (fullUrl != previousUrl) {
-                        getWithFullUrl(fullUrl, null, callback)
+                        getWithFullUrl(fullUrl, null, null, callback)
                     }
                 }
             }
@@ -134,7 +135,7 @@ class NetworkHelper(
              */
             val fullUrl = fullUrl(url, additionalParams)
             if (fullUrl != previousUrl) {
-                getWithFullUrl(fullUrl, null, callback)
+                getWithFullUrl(fullUrl, null, null, callback)
             }
         }
     }
@@ -168,11 +169,12 @@ class NetworkHelper(
         url: String,
         params: Map<String, String>? = null,
         headers: Map<String, String>? = null,
+        options: RestOptions? = null,
         callback: RestCallbackWithUrl,
     ) {
         val fullUrl = fullUrl(url, params)
 
-        getWithFullUrl(fullUrl, headers, callback)
+        getWithFullUrl(fullUrl, headers, options, callback)
     }
 
     private fun fullUrl(
@@ -190,10 +192,11 @@ class NetworkHelper(
     private fun getWithFullUrl(
         fullUrl: String,
         headers: Map<String, String>?,
+        options: RestOptions?,
         callback: RestCallbackWithUrl,
     ) {
         ioImplementations.threading?.async(ThreadingType.network) {
-            ioImplementations.rest?.get(fullUrl, headers?.toIMap()) { response, httpCode, headersAsJsonString ->
+            ioImplementations.rest?.get(fullUrl, headers?.toIMap(), options) { response, httpCode, headersAsJsonString ->
                 val time = if (configs.isIndexer(fullUrl) && success(httpCode)) {
                     Clock.System.now()
                 } else {
@@ -219,7 +222,7 @@ class NetworkHelper(
                                     restRetryTimers[fullUrl]?.cancel()
                                     restRetryTimers.remove(fullUrl)
 
-                                    getWithFullUrl(fullUrl, headers, callback)
+                                    getWithFullUrl(fullUrl, headers, options, callback)
                                 }
                                 restRetryTimers[fullUrl] = localTimer
                             }
@@ -273,10 +276,11 @@ class NetworkHelper(
         url: String,
         headers: IMap<String, String>?,
         body: String?,
+        options: RestOptions? = null,
         callback: RestCallbackWithUrl,
     ) {
         ioImplementations.threading?.async(ThreadingType.main) {
-            ioImplementations.rest?.post(url, headers, body) { response, httpCode, headersAsJsonString ->
+            ioImplementations.rest?.post(url, headers, body, options) { response, httpCode, headersAsJsonString ->
                 ioImplementations.threading?.async(ThreadingType.abacus) {
                     val headers = parser.decodeJsonObject(headersAsJsonString)
                     callback(url, response, httpCode, headers)

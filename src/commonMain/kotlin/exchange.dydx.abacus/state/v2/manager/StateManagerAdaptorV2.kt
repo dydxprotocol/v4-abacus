@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.UsageRestriction
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
 import exchange.dydx.abacus.protocols.PresentationProtocol
+import exchange.dydx.abacus.protocols.RestOptions
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -491,6 +492,7 @@ internal class StateManagerAdaptorV2(
                 url,
                 null,
                 null,
+                RestOptions(cache = "no-store"),
                 callback = { _, response, httpCode, _ ->
                     geo = if (networkHelper.success(httpCode) && response != null) {
                         val payload = networkHelper.parser.decodeJsonObject(response)?.toIMap()

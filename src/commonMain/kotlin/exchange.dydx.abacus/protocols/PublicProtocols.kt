@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.protocols
 
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.CandleOption
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketHistoricalFunding
@@ -80,6 +81,7 @@ interface RestProtocol {
     fun get(
         url: String,
         headers: IMap<String, String>?,
+        options: RestOptions?,
         callback: RestCallback,
     )
 
@@ -87,6 +89,7 @@ interface RestProtocol {
         url: String,
         headers: IMap<String, String>?,
         body: String?,
+        options: RestOptions?,
         callback: RestCallback,
     )
 
@@ -94,17 +97,23 @@ interface RestProtocol {
         url: String,
         headers: IMap<String, String>?,
         body: String?,
+        options: RestOptions?,
         callback: RestCallback,
     )
 
     fun delete(
         url: String,
         headers: IMap<String, String>?,
+        options: RestOptions?,
         callback: RestCallback,
     )
 }
 
 typealias RestCallback = (response: String?, httpCode: Int, headersAsJsonString: String?) -> Unit
+@JsExport
+data class RestOptions(
+    val cache: String? = null
+)
 
 @JsExport
 interface WebSocketProtocol {

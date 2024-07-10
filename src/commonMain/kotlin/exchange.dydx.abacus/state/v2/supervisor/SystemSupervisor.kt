@@ -77,7 +77,7 @@ internal class SystemSupervisor(
     private fun retrieveServerTime() {
         val url = helper.configs.publicApiUrl("time")
         if (url != null) {
-            helper.get(url, null, null) { _, response, httpCode, _ ->
+            helper.get(url, null, null, null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val json = helper.parser.decodeJsonObject(response)
                     val time = helper.parser.asDatetime(json?.get("time"))
@@ -93,7 +93,7 @@ internal class SystemSupervisor(
         val oldState = stateMachine.state
         val url = helper.configs.configsUrl("markets")
         if (url != null) {
-            helper.get(url, null, null) { _, response, httpCode, _ ->
+            helper.get(url, null, null, null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     update(
                         // TODO, subaccountNumber required to refresh
@@ -147,6 +147,7 @@ internal class SystemSupervisor(
                     "protocol" to "dydx-v4",
                 ),
                 requestBody,
+                null,
             ) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state

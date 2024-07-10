@@ -300,6 +300,7 @@ class AsyncAbacusStateManagerV2(
                 ioImplementations.rest?.get(
                     configFileUrl,
                     null,
+                    null,
                     callback = { response, httpCode, headers ->
                         ioImplementations.threading?.async(ThreadingType.abacus) {
                             if (success(httpCode) && response != null) {

@@ -148,7 +148,7 @@ internal class MarketsSupervisor(
     private fun getSparklines() {
         val url = helper.configs.publicApiUrl("sparklines")
         if (url != null) {
-            helper.get(url, sparklinesParams(), null) { _, response, httpCode, _ ->
+            helper.get(url, sparklinesParams(), null, null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     parseSparklinesResponse(response)
                 }

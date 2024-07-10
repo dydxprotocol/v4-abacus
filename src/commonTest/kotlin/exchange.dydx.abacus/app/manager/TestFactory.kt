@@ -9,6 +9,7 @@ import exchange.dydx.abacus.protocols.FileSystemProtocol
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.RestCallback
+import exchange.dydx.abacus.protocols.RestOptions
 import exchange.dydx.abacus.protocols.RestProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingProtocol
@@ -202,6 +203,7 @@ class TestRest() : RestProtocol {
     override fun get(
         url: String,
         headers: IMap<String, String>?,
+        options: RestOptions?,
         callback: RestCallback,
     ) {
         if (url.contains("env.json")) {
@@ -229,6 +231,7 @@ class TestRest() : RestProtocol {
         url: String,
         headers: IMap<String, String>?,
         body: String?,
+        options: RestOptions?,
         callback: RestCallback,
     ) {
         requests.add(url)
@@ -251,6 +254,7 @@ class TestRest() : RestProtocol {
         url: String,
         headers: IMap<String, String>?,
         body: String?,
+        options: RestOptions?,
         callback: RestCallback,
     ) {
         requests.add(url)
@@ -259,6 +263,7 @@ class TestRest() : RestProtocol {
     override fun delete(
         url: String,
         headers: IMap<String, String>?,
+        options: RestOptions?,
         callback: RestCallback,
     ) {
         requests.add(url)
