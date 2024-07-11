@@ -95,6 +95,8 @@ internal class SystemSupervisor(
         if (url != null) {
             helper.get(url, null, null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
+                    val json = helper.parser.decodeJsonObject(response)
+
                     update(
                         // TODO, subaccountNumber required to refresh
                         stateMachine.configurations(response, null, helper.deploymentUri),

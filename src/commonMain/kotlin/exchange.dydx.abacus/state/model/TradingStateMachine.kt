@@ -63,6 +63,7 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
+import exchange.dydx.abacus.utils.toJson
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
 import kollections.JsExport
@@ -72,6 +73,7 @@ import kollections.iMutableMapOf
 import kollections.toIList
 import kollections.toIMutableMap
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
@@ -511,7 +513,11 @@ open class TradingStateMachine(
 
             "/configs/markets.json" -> {
                 if (deploymentUri != null) {
-                    changes = configurations(payload, subaccountNumber, deploymentUri)
+                    changes = configurations(
+                        payload = payload,
+                        subaccountNumber = subaccountNumber,
+                        deploymentUri = deploymentUri,
+                    )
                 }
             }
 
@@ -571,9 +577,24 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
-        // Typecast decoded JSON to Map<String, AssetJson>
-        val parsedAssetPayload = parser.decodeJsonObject(payload) as Map<String, AssetJson>?
-        return if (parsedAssetPayload != null) {
+        return if (payload != null) {
+            val json =
+                try {
+                    Json.parseToJsonElement(payload).jsonObject.toMap()
+                } catch (e: SerializationException) {
+                    null
+                }
+
+            val parsedAssetPayload = if (json != null) {
+                Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
+            } else {
+                null
+            }
+
+            if (parsedAssetPayload == null) {
+                return StateChanges.noChange
+            }
+
             receivedMarketsConfigurations(
                 payload = parsedAssetPayload,
                 subaccountNumber = subaccountNumber,
@@ -1127,7 +1148,7 @@ open class TradingStateMachine(
         }
         if (changes.changes.contains(Changes.assets)) {
             if (staticTyping) {
-                assets = internalState.assets
+                assets = internalState.assets.toIMutableMap()
             } else {
                 this.assets?.let {
                     assets = assets ?: mutableMapOf<String, Asset>()
