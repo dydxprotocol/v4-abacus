@@ -34,7 +34,6 @@ data class EnvironmentEndpoints(
     val faucet: String?,
     val squid: String?,
     val skip: String?,
-    val ethRpc: String?,
     val nobleValidator: String?,
     val geo: String?,
 ) {
@@ -52,7 +51,6 @@ data class EnvironmentEndpoints(
             val faucet = parser.asString(data["faucet"])
             val squid = parser.asString(data["0xsquid"])
             val skip = parser.asString(data["skip"])
-            val ethRpc = parser.asString(data["ethRpc"])
             val nobleValidator = parser.asString(data["nobleValidator"])
             val geo = parser.asString(data["geo"])
             return EnvironmentEndpoints(
@@ -61,7 +59,6 @@ data class EnvironmentEndpoints(
                 faucet = faucet,
                 squid = squid,
                 skip = skip,
-                ethRpc = ethRpc,
                 nobleValidator = nobleValidator,
                 geo = geo,
             )
