@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.mergeWithIds
@@ -10,8 +9,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
-import indexer.codegen.IndexerFillResponseObject
-import indexer.codegen.IndexerOrderResponseObject
+import indexer.models.IndexerCompositeOrderObject
 
 internal class OrdersProcessor(
     parser: ParserProtocol,
@@ -23,20 +21,22 @@ internal class OrdersProcessor(
 
     fun process(
         existing: List<SubaccountOrder>?,
-        payload: List<IndexerOrderResponseObject>,
+        payload: List<IndexerCompositeOrderObject>,
         height: BlockAndTime?,
         subaccountNumber: Int
     ): List<SubaccountOrder> {
         val new = payload.mapNotNull { eachPayload ->
+            val orderId = eachPayload.id ?: eachPayload.clientId
             orderProcessor.process(
+                existing = existing?.find { it.id == orderId },
                 payload = eachPayload,
                 subaccountNumber = subaccountNumber,
                 height = height,
             )
         }
-//        existing?.let {
-//            return mergeWithIds(new, existing) { item -> item.id }
-//        }
+        existing?.let {
+            return mergeWithIds(new, existing) { item -> item.id }
+        }
         return new
     }
 
@@ -81,7 +81,7 @@ internal class OrdersProcessor(
         for ((key, item) in existing) {
             val order = parser.asNativeMap(item)
             if (order != null) {
-                val (modifiedOrder, orderUpdated) = itemProcessor.updateHeight(order, height)
+                val (modifiedOrder, orderUpdated) = itemProcessor.updateHeightDeprecated(order, height)
                 if (orderUpdated) {
                     modified[key] = modifiedOrder
                     updated = orderUpdated

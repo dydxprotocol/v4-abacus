@@ -11,11 +11,8 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.toJson
-import indexer.codegen.IndexerFillResponse
 import indexer.codegen.IndexerFillResponseObject
-import indexer.codegen.IndexerOrderResponseObject
-import kotlinx.serialization.json.Json
+import indexer.models.IndexerCompositeOrderObject
 import kotlinx.serialization.json.JsonNull.content
 
 @Suppress("UNCHECKED_CAST")
@@ -105,7 +102,7 @@ internal open class SubaccountProcessor(
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
         state = processFills(state, fills, false)
 
-        val orders = parser.asTypedList<IndexerOrderResponseObject>(content["orders"])
+        val orders = parser.asTypedList<IndexerCompositeOrderObject>(content["orders"])
         state = processOrders(state, orders, height)
 
         return state
@@ -243,10 +240,9 @@ internal open class SubaccountProcessor(
         }
     }
 
-
     private fun processOrders(
         subaccount: InternalSubaccountState,
-        payload: List<IndexerOrderResponseObject>?,
+        payload: List<IndexerCompositeOrderObject>?,
         height: BlockAndTime?,
     ): InternalSubaccountState {
         val newOrders = ordersProcessor.process(

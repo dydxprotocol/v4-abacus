@@ -8,6 +8,8 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -1294,6 +1296,8 @@ data class Subaccount(
             parser: ParserProtocol,
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
+            staticTyping: Boolean,
+            internalState: InternalSubaccountState?,
         ): Subaccount? {
             Logger.d { "creating Account\n" }
 
@@ -1391,7 +1395,11 @@ data class Subaccount(
                     parser.asList(data["pendingPositions"]),
                 )
                 val orders =
-                    orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
+                    if (staticTyping) {
+                        internalState?.orders?.toIList()
+                    } else {
+                        orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
+                    }
 
                 /*
                 val transfers = AccountTransfers.fromArray(
@@ -2158,6 +2166,8 @@ data class Account(
             data: Map<String, Any>,
             tokensInfo: Map<String, TokenInfo>,
             localizer: LocalizerProtocol?,
+            staticTyping: Boolean,
+            internalState: InternalAccountState,
         ): Account {
             Logger.d { "creating Account\n" }
 
@@ -2220,11 +2230,14 @@ data class Account(
                 for ((key, value) in subaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
 
+                    val subaccountNumber = parser.asInt(key) ?: 0
                     Subaccount.create(
-                        existing?.subaccounts?.get(key),
-                        parser,
-                        subaccountData,
-                        localizer,
+                        existing = existing?.subaccounts?.get(key),
+                        parser = parser,
+                        data = subaccountData,
+                        localizer = localizer,
+                        staticTyping = staticTyping,
+                        internalState = internalState?.subaccounts?.get(subaccountNumber),
                     )
                         ?.let { subaccount ->
                             subaccounts[key] = subaccount
@@ -2240,11 +2253,14 @@ data class Account(
                 for ((key, value) in groupedSubaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
 
+                    val subaccountNumber = parser.asInt(key) ?: 0
                     Subaccount.create(
-                        existing?.subaccounts?.get(key),
-                        parser,
-                        subaccountData,
-                        localizer,
+                        existing = existing?.subaccounts?.get(key),
+                        parser = parser,
+                        data = subaccountData,
+                        localizer = localizer,
+                        staticTyping = staticTyping,
+                        internalState = internalState?.subaccounts?.get(subaccountNumber),
                     )
                         ?.let { subaccount ->
                             groupedSubaccounts[key] = subaccount

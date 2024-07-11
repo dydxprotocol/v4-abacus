@@ -15,6 +15,7 @@ internal data class InternalWalletState(
 
 internal data class InternalAccountState(
     var subaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
+    var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
 )
 
 internal data class InternalSubaccountState(

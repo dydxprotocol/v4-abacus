@@ -51,7 +51,7 @@ class FillProcessorTests {
         )
 
         assertEquals(
-            SubaccountFill(
+            expected = SubaccountFill(
                 id = "1",
                 side = OrderSide.Buy,
                 liquidity = FillLiquidity.maker,
@@ -74,7 +74,7 @@ class FillProcessorTests {
                     iconLocal = "Buy",
                 ),
             ),
-            fill,
+            actual = fill,
         )
     }
 }

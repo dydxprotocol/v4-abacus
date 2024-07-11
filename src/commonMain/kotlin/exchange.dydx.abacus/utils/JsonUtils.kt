@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.utils
 
-import exchange.dydx.abacus.protocols.ParserProtocol
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray

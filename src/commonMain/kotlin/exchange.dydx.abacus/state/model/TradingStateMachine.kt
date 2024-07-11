@@ -8,6 +8,7 @@ import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
+import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
 import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
@@ -110,6 +111,8 @@ open class TradingStateMachine(
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
+    internal val accountCalculatorV2 = AccountCalculatorV2(parser, useParentSubaccount)
+
     internal val inputValidator = InputValidator(localizer, formatter, parser)
 
     internal var data: Map<String, Any>? = null
@@ -864,14 +867,20 @@ open class TradingStateMachine(
             this.marketsSummary?.let { marketsSummary ->
                 parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
                     val modifiedAccount = accountCalculator.calculate(
-                        account,
-                        subaccountNumbers,
-                        null,
-                        markets,
-                        priceOverwrite(markets),
-                        periods,
+                        account = account,
+                        subaccountNumbers = subaccountNumbers,
+                        configs = null,
+                        markets = markets,
+                        price = priceOverwrite(markets),
+                        periods = periods,
                     )
                     this.account = modifiedAccount
+                }
+                if (staticTyping) {
+                    internalState.wallet.account = accountCalculatorV2.calculate(
+                        account = internalState.wallet.account,
+                        subaccountNumbers = subaccountNumbers,
+                    )
                 }
             }
         }
@@ -1149,15 +1158,25 @@ open class TradingStateMachine(
         if (accountData != null) {
             if (changes.changes.contains(Changes.subaccount)) {
                 account = if (account == null) {
-                    Account.create(null, parser, accountData, tokensInfo, localizer)
+                    Account.create(
+                        existing = null,
+                        parser = parser,
+                        data = accountData,
+                        tokensInfo = tokensInfo,
+                        localizer = localizer,
+                        staticTyping = staticTyping,
+                        internalState = internalState.wallet.account,
+                    )
                 } else {
                     val subaccounts = account.subaccounts?.toIMutableMap() ?: mutableMapOf()
                     for (subaccountNumber in subaccountNumbers) {
                         val subaccount = Subaccount.create(
-                            account.subaccounts?.get("$subaccountNumber"),
-                            parser,
-                            subaccount(subaccountNumber),
-                            localizer,
+                            existing = account.subaccounts?.get("$subaccountNumber"),
+                            parser = parser,
+                            data = subaccount(subaccountNumber),
+                            localizer = localizer,
+                            staticTyping = staticTyping,
+                            internalState = internalState.wallet.account.subaccounts[subaccountNumber],
                         )
                         subaccounts.typedSafeSet("$subaccountNumber", subaccount)
                     }
@@ -1165,10 +1184,12 @@ open class TradingStateMachine(
                     for (subaccountNumber in subaccountNumbers) {
                         if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
                             val subaccount = Subaccount.create(
-                                account.groupedSubaccounts?.get("$subaccountNumber"),
-                                parser,
-                                groupedSubaccount(subaccountNumber),
-                                localizer,
+                                existing = account.groupedSubaccounts?.get("$subaccountNumber"),
+                                parser = parser,
+                                data = groupedSubaccount(subaccountNumber),
+                                localizer = localizer,
+                                staticTyping = staticTyping,
+                                internalState = internalState.wallet.account.groupedSubaccounts[subaccountNumber],
                             )
                             groupedSubaccounts.typedSafeSet("$subaccountNumber", subaccount)
                         }
@@ -1190,7 +1211,15 @@ open class TradingStateMachine(
                     Changes.tradingRewards,
                 )
             ) {
-                account = Account.create(account, parser, accountData, tokensInfo, localizer)
+                account = Account.create(
+                    existing = account,
+                    parser = parser,
+                    data = accountData,
+                    tokensInfo = tokensInfo,
+                    localizer = localizer,
+                    staticTyping = staticTyping,
+                    internalState = internalState.wallet.account,
+                )
             }
         } else {
             account = null
@@ -1233,7 +1262,7 @@ open class TradingStateMachine(
                 val modifiedFills = fills?.toIMutableMap() ?: mutableMapOf()
                 var subaccountFills = fills?.get(subaccountText)
                 if (staticTyping) {
-                    val newFills = internalState.wallet.account.subaccounts?.get(subaccountNumber)?.fills?.toIList()
+                    val newFills = internalState.wallet.account.subaccounts[subaccountNumber]?.fills?.toIList()
                     subaccountFills = SubaccountFill.merge(
                         existing = subaccountFills,
                         new = newFills,
@@ -1404,7 +1433,7 @@ open class TradingStateMachine(
         }
     }
 
-    fun clearTradeInput(input: Map<String, Any>): Map<String, Any> {
+    private fun clearTradeInput(input: Map<String, Any>): Map<String, Any> {
         val trade = parser.asNativeMap(input["trade"])?.toMutableMap()
         trade?.safeSet("size", null)
         trade?.safeSet("price", null)
@@ -1413,7 +1442,7 @@ open class TradingStateMachine(
         return modifiedInput
     }
 
-    fun clearTransferInput(input: Map<String, Any>): Map<String, Any> {
+    private fun clearTransferInput(input: Map<String, Any>): Map<String, Any> {
         val trade = parser.asNativeMap(input["trade"])?.toMutableMap()
         trade?.safeSet("size", null)
         trade?.safeSet("price", null)

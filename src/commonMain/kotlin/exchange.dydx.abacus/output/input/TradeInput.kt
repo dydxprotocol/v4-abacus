@@ -655,7 +655,7 @@ enum class OrderSide(val rawValue: String) {
     Sell("SELL");
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             OrderSide.values().firstOrNull { it.rawValue == rawValue }
     }
 }
@@ -673,7 +673,7 @@ enum class OrderStatus(val rawValue: String) {
     PartiallyCanceled("PARTIALLY_CANCELED"); // indexer returns order as CANCELED but order is partially filled
 
     companion object {
-        operator fun invoke(rawValue: String): OrderStatus? {
+        operator fun invoke(rawValue: String?): OrderStatus? {
             return if (rawValue == "BEST_EFFORT_OPENED") {
                 Pending
             } else {
@@ -681,6 +681,11 @@ enum class OrderStatus(val rawValue: String) {
             }
         }
     }
+
+    val isFinalized: Boolean
+        // once an order is filled, canceled, or canceled with partial fill
+        // there is no need to update status again
+        get() = listOf(Filled, Canceled, PartiallyCanceled).contains(this)
 }
 
 @JsExport
@@ -690,7 +695,7 @@ enum class OrderTimeInForce(val rawValue: String) {
     IOC("IOC");
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             OrderTimeInForce.values().firstOrNull { it.rawValue == rawValue }
     }
 }
