@@ -577,31 +577,31 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
-        return if (payload != null) {
-            val json =
-                try {
-                    Json.parseToJsonElement(payload).jsonObject.toMap()
-                } catch (e: SerializationException) {
-                    null
-                }
+        if (staticTyping) {
+            return if (payload != null) {
+                val parsedAssetPayload =
+                    try {
+                        val json = Json.parseToJsonElement(payload).jsonObject.toMap()
+                        Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
+                    } catch (e: SerializationException) {
+                        null
+                    } ?: return StateChanges.noChange
 
-            val parsedAssetPayload = if (json != null) {
-                Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
+                processMarketsConfigurations(
+                    payload = parsedAssetPayload,
+                    subaccountNumber = subaccountNumber,
+                    deploymentUri = deploymentUri,
+                )
             } else {
-                null
+                StateChanges.noChange
             }
-
-            if (parsedAssetPayload == null) {
-                return StateChanges.noChange
-            }
-
-            receivedMarketsConfigurations(
-                payload = parsedAssetPayload,
-                subaccountNumber = subaccountNumber,
-                deploymentUri = deploymentUri,
-            )
         } else {
-            StateChanges.noChange
+            val json = parser.decodeJsonObject(payload)
+            return if (json != null) {
+                receivedMarketsConfigurationsDeprecated(json, subaccountNumber, deploymentUri)
+            } else {
+                StateChanges.noChange
+            }
         }
     }
 

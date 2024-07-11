@@ -114,7 +114,7 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
     )
 }
 
-internal fun TradingStateMachine.receivedMarketsConfigurations(
+internal fun TradingStateMachine.processMarketsConfigurations(
     payload: Map<String, AssetJson>,
     subaccountNumber: Int?,
     deploymentUri: String,
@@ -123,13 +123,49 @@ internal fun TradingStateMachine.receivedMarketsConfigurations(
         existing = this.marketsSummary,
         payload = payload,
     )
-    if (staticTyping) {
-        internalState.assets = assetsProcessor.processConfigurations(
-            existing = internalState.assets,
-            payload = payload,
-            deploymentUri = deploymentUri,
+
+    internalState.assets = assetsProcessor.processConfigurations(
+        existing = internalState.assets,
+        payload = payload,
+        deploymentUri = deploymentUri,
+    )
+
+    this.marketsSummary = marketsCalculator.calculate(
+        marketsSummary = this.marketsSummary,
+        assets = assets,
+        keys = null,
+    )
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+        parser = parser,
+        account = account,
+        subaccountNumber = subaccountNumber ?: 0,
+        tradeInput = parser.asMap(input?.get("trade")),
+    )
+
+    return if (subaccountNumber != null) {
+        StateChanges(
+            changes = iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
+            markets = null,
+            subaccountNumbers = subaccountNumbers,
+        )
+    } else {
+        StateChanges(
+            changes = iListOf(Changes.markets, Changes.assets),
+            markets = null,
+            subaccountNumbers = null,
         )
     }
+}
+
+internal fun TradingStateMachine.receivedMarketsConfigurationsDeprecated(
+    payload: Map<String, Any>,
+    subaccountNumber: Int?,
+    deploymentUri: String,
+): StateChanges {
+    this.marketsSummary = marketsProcessor.receivedConfigurations(
+        existing = this.marketsSummary,
+        payload = payload,
+    )
     assets = assetsProcessor.receivedConfigurations(
         existing = assets,
         payload = payload,
