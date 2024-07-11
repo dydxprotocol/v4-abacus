@@ -376,7 +376,6 @@ internal class SubaccountSupervisor(
                         }
                         placeOrderRecord.lastOrderStatus = order.status
                     }
-                    break
                 }
 
                 val cancelOrderRecord = cancelOrderRecords.firstOrNull {
@@ -397,7 +396,6 @@ internal class SubaccountSupervisor(
                         )?.toIMap(),
                     )
                     cancelOrderRecords.remove(cancelOrderRecord)
-                    break
                 }
             }
         }
