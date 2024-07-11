@@ -28,6 +28,7 @@ enum class TradeInputField(val rawValue: String) {
     size("size.size"),
     usdcSize("size.usdcSize"),
     leverage("size.leverage"),
+    lastInput("size.input"),
 
     limitPrice("price.limitPrice"),
     triggerPrice("price.triggerPrice"),
@@ -243,6 +244,15 @@ fun TradingStateMachine.trade(
                             "$data is not a valid string",
                         )
                     }
+                }
+
+                TradeInputField.lastInput.rawValue -> {
+                    trade.safeSet(typeText, parser.asString(data))
+                    changes = StateChanges(
+                        iListOf(Changes.input),
+                        null,
+                        subaccountNumbers,
+                    )
                 }
 
                 TradeInputField.size.rawValue,
