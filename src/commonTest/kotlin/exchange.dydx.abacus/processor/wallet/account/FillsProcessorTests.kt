@@ -1,16 +1,10 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.FillLiquidity
 import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountFillResources
-import exchange.dydx.abacus.output.input.MarginMode
-import exchange.dydx.abacus.output.input.OrderSide
-import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.tests.mock.processor.wallet.account.FillProcessorMock
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerFillResponseObject
-import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -77,29 +71,6 @@ class FillsProcessorTests {
     }
 
     private fun createSubaccountFill(id: String): SubaccountFill {
-        val createdAt = Instant.parse("2021-01-01T00:00:00Z")
-        return SubaccountFill(
-            id = id,
-            side = OrderSide.Buy,
-            liquidity = FillLiquidity.maker,
-            type = OrderType.Limit,
-            price = 1.0,
-            size = 2.0,
-            fee = 3.0,
-            orderId = "2222",
-            subaccountNumber = 0,
-            marketId = "WETH-DAI",
-            marginMode = MarginMode.Cross,
-            createdAtMilliseconds = createdAt.toEpochMilliseconds().toDouble(),
-            resources = SubaccountFillResources(
-                sideString = "APP.GENERAL.BUY",
-                liquidityString = "APP.TRADE.MAKER",
-                typeString = "APP.TRADE.LIMIT_ORDER_SHORT",
-                sideStringKey = "APP.GENERAL.BUY",
-                liquidityStringKey = "APP.TRADE.MAKER",
-                typeStringKey = "APP.TRADE.LIMIT_ORDER_SHORT",
-                iconLocal = "Buy",
-            ),
-        )
+        return FillProcessorTests.fillMock.copy(id = id)
     }
 }

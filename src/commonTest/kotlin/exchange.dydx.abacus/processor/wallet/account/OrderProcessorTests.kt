@@ -19,78 +19,79 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class OrderProcessorTests {
+    companion object {
+        private val updatedAt = Instant.parse("2021-01-01T00:00:00Z")
+
+        val payloadMock = IndexerCompositeOrderObject(
+            id = "1",
+            subaccountId = "0",
+            size = "3.0",
+            price = "3.0",
+            reduceOnly = true,
+            side = IndexerOrderSide.BUY,
+            status = IndexerAPIOrderStatus.OPEN,
+            type = IndexerOrderType.LIMIT,
+            ticker = "WETH-DAI",
+            updatedAt = updatedAt.toString(),
+            clientId = "1",
+            subaccountNumber = 0.0,
+        )
+
+        val orderMock = SubaccountOrder(
+            subaccountNumber = 0,
+            id = "1",
+            clientId = 1,
+            type = OrderType.Limit,
+            side = OrderSide.Buy,
+            status = OrderStatus.Open,
+            timeInForce = null,
+            marketId = "WETH-DAI",
+            clobPairId = null,
+            orderFlags = null,
+            price = 3.0,
+            triggerPrice = null,
+            trailingPercent = null,
+            size = 3.0,
+            remainingSize = 3.0,
+            totalFilled = 0.0,
+            goodTilBlock = null,
+            goodTilBlockTime = null,
+            createdAtHeight = null,
+            createdAtMilliseconds = null,
+            unfillableAtMilliseconds = null,
+            expiresAtMilliseconds = null,
+            updatedAtMilliseconds = updatedAt.toEpochMilliseconds().toDouble(),
+            postOnly = false,
+            reduceOnly = true,
+            cancelReason = null,
+            resources = SubaccountOrderResources(
+                sideString = "APP.GENERAL.BUY",
+                statusString = "APP.TRADE.OPEN_STATUS",
+                typeString = "APP.TRADE.LIMIT_ORDER_SHORT",
+                timeInForceString = null,
+                sideStringKey = "APP.GENERAL.BUY",
+                statusStringKey = "APP.TRADE.OPEN_STATUS",
+                typeStringKey = "APP.TRADE.LIMIT_ORDER_SHORT",
+                timeInForceStringKey = null,
+            ),
+            marginMode = MarginMode.Cross,
+        )
+    }
     private val orderProcessor = OrderProcessor(
         parser = Parser(),
         localizer = LocalizerProtocolMock(),
-    )
-
-    private val updatedAt = Instant.parse("2021-01-01T00:00:00Z")
-
-    private val orderPayload = IndexerCompositeOrderObject(
-        id = "1",
-        subaccountId = "0",
-        size = "3.0",
-        price = "3.0",
-        reduceOnly = true,
-        side = IndexerOrderSide.BUY,
-        status = IndexerAPIOrderStatus.OPEN,
-        type = IndexerOrderType.LIMIT,
-        ticker = "WETH-DAI",
-        updatedAt = updatedAt.toString(),
-        clientId = "1",
-        subaccountNumber = 0.0,
-    )
-
-    private val expectedOrder = SubaccountOrder(
-        subaccountNumber = 0,
-        id = "1",
-        clientId = 1,
-        type = OrderType.Limit,
-        side = OrderSide.Buy,
-        status = OrderStatus.Open,
-        timeInForce = null,
-        marketId = "WETH-DAI",
-        clobPairId = null,
-        orderFlags = null,
-        price = 3.0,
-        triggerPrice = null,
-        trailingPercent = null,
-        size = 3.0,
-        remainingSize = 3.0,
-        totalFilled = 0.0,
-        goodTilBlock = null,
-        goodTilBlockTime = null,
-        createdAtHeight = null,
-        createdAtMilliseconds = null,
-        unfillableAtMilliseconds = null,
-        expiresAtMilliseconds = null,
-        updatedAtMilliseconds = updatedAt.toEpochMilliseconds().toDouble(),
-        postOnly = false,
-        reduceOnly = true,
-        cancelReason = null,
-        resources = SubaccountOrderResources(
-            sideString = "APP.GENERAL.BUY",
-            statusString = "APP.TRADE.OPEN_STATUS",
-            typeString = "APP.TRADE.LIMIT_ORDER_SHORT",
-            timeInForceString = null,
-            sideStringKey = "APP.GENERAL.BUY",
-            statusStringKey = "APP.TRADE.OPEN_STATUS",
-            typeStringKey = "APP.TRADE.LIMIT_ORDER_SHORT",
-            timeInForceStringKey = null,
-        ),
-        marginMode = MarginMode.Cross,
     )
 
     @Test
     fun testProcess() {
         val order = orderProcessor.process(
             existing = null,
-            payload = orderPayload,
+            payload = payloadMock,
             subaccountNumber = 0,
             height = null,
         )
         assertEquals(
-            expected = expectedOrder,
+            expected = orderMock,
             actual = order,
         )
     }
@@ -99,16 +100,16 @@ class OrderProcessorTests {
     fun testProcess_partialOrder() {
         val order = orderProcessor.process(
             existing = null,
-            payload = orderPayload.copy(totalFilled = "2.0"),
+            payload = payloadMock.copy(totalFilled = "2.0"),
             subaccountNumber = 0,
             height = null,
         )
         assertEquals(
-            expected = expectedOrder.copy(
+            expected = orderMock.copy(
                 totalFilled = 2.0,
                 remainingSize = 1.0,
                 status = OrderStatus.PartiallyFilled,
-                resources = expectedOrder.resources.copy(
+                resources = orderMock.resources.copy(
                     statusString = "APP.TRADE.PARTIALLY_FILLED",
                     statusStringKey = "APP.TRADE.PARTIALLY_FILLED",
                 ),
@@ -119,7 +120,7 @@ class OrderProcessorTests {
 
     @Test
     fun testUpdateHeight_cancelOrder() {
-        val existing = expectedOrder.copy(
+        val existing = orderMock.copy(
             goodTilBlock = 1,
             status = OrderStatus.Pending,
         )
@@ -131,11 +132,11 @@ class OrderProcessorTests {
             ),
         )
         assertEquals(
-            expected = expectedOrder.copy(
+            expected = orderMock.copy(
                 goodTilBlock = 1,
                 status = OrderStatus.Canceled,
                 updatedAtMilliseconds = Instant.parse("2021-01-01T00:00:00Z").toEpochMilliseconds().toDouble(),
-                resources = expectedOrder.resources.copy(
+                resources = orderMock.resources.copy(
                     statusString = "APP.TRADE.CANCELED",
                     statusStringKey = "APP.TRADE.CANCELED",
                 ),
@@ -148,7 +149,7 @@ class OrderProcessorTests {
 
     @Test
     fun testUpdateHeight_skipped() {
-        val existing = expectedOrder
+        val existing = orderMock
         val (updatedOrder, updated) = orderProcessor.updateHeight(
             existing = existing,
             height = BlockAndTime(
@@ -157,7 +158,7 @@ class OrderProcessorTests {
             ),
         )
         assertEquals(
-            expected = expectedOrder.copy(
+            expected = orderMock.copy(
                 updatedAtMilliseconds = Instant.parse("2021-01-01T00:00:00Z").toEpochMilliseconds().toDouble(),
             ),
             actual = updatedOrder,

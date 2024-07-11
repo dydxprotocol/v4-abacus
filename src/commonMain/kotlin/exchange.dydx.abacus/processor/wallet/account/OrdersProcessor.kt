@@ -17,7 +17,7 @@ internal class OrdersProcessor(
     private val orderProcessor: OrderProcessorProtocol = OrderProcessor(parser = parser, localizer = localizer),
 ) : BaseProcessor(parser) {
 
-    private val itemProcessor = orderProcessor as OrderProcessor
+    private val itemProcessor: OrderProcessor? = orderProcessor as? OrderProcessor
 
     fun process(
         existing: List<SubaccountOrder>?,
@@ -60,7 +60,7 @@ internal class OrdersProcessor(
 
                     if (orderId != null) {
                         val existing = parser.asNativeMap(orders[orderId])
-                        val order = itemProcessor.received(existing, modified, height)
+                        val order = itemProcessor?.received(existing, modified, height)
                         orders.typedSafeSet(orderId, order)
                     }
                 }
@@ -80,7 +80,7 @@ internal class OrdersProcessor(
         val modified = existing.mutable()
         for ((key, item) in existing) {
             val order = parser.asNativeMap(item)
-            if (order != null) {
+            if (order != null && itemProcessor != null) {
                 val (modifiedOrder, orderUpdated) = itemProcessor.updateHeightDeprecated(order, height)
                 if (orderUpdated) {
                     modified[key] = modifiedOrder
@@ -99,7 +99,7 @@ internal class OrdersProcessor(
         val order = parser.asNativeMap(existing.get(orderId))
         return if (order != null) {
             val modified = existing.mutable()
-            itemProcessor.canceled(order)
+            itemProcessor?.canceled(order)
             modified.typedSafeSet(orderId, order)
             Pair(modified, true)
         } else {
