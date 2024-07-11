@@ -132,7 +132,7 @@ internal fun TradingStateMachine.processMarketsConfigurations(
 
     this.marketsSummary = marketsCalculator.calculate(
         marketsSummary = this.marketsSummary,
-        assets = assets,
+        assets = internalState.assets,
         keys = null,
     )
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(

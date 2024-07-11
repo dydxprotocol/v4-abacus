@@ -578,21 +578,18 @@ open class TradingStateMachine(
         deploymentUri: String
     ): StateChanges {
         if (staticTyping) {
-            return if (payload != null) {
-                val parsedAssetPayload =
-                    try {
-                        val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-                        Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
-                    } catch (e: SerializationException) {
-                        null
-                    } ?: return StateChanges.noChange
+            return try {
+                val json = Json.parseToJsonElement(payload).jsonObject.toMap()
+                val parsedAssetPayload = Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
+                    ?: error("Error parsing Asset payload")
 
                 processMarketsConfigurations(
                     payload = parsedAssetPayload,
                     subaccountNumber = subaccountNumber,
                     deploymentUri = deploymentUri,
                 )
-            } else {
+            } catch (e: SerializationException) {
+                Logger.e { "Error parsing asset payload: $e" }
                 StateChanges.noChange
             }
         } else {
