@@ -22,6 +22,8 @@ import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.RpcConfigs
+import exchange.dydx.abacus.state.manager.RpcInfo
 import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
@@ -49,6 +51,7 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -75,6 +78,7 @@ internal class OnboardingSupervisor(
         if (StatsigConfig.useSkip) {
             retrieveSkipTransferChains()
             retrieveSkipTransferTokens()
+            retrieveChainRpcEndpoints()
         } else {
             retrieveTransferAssets()
         }
@@ -133,6 +137,17 @@ internal class OnboardingSupervisor(
                     }
                 }
                 CctpConfig.cctpChainIds = chainIds
+            }
+        }
+    }
+
+    private fun retrieveChainRpcEndpoints() {
+        val url = "${helper.deploymentUri}/configs/rpc.json"
+        helper.get(url) { _, response, _, _ ->
+            if (response != null) {
+                Json.decodeFromString<Map<String, RpcInfo>>(response).let {
+                    RpcConfigs.chainIdToRpcMap = it
+                }
             }
         }
     }
