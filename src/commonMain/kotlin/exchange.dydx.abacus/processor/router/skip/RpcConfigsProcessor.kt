@@ -5,7 +5,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 internal class RpcConfigsProcessor {
-     fun received(
+    fun received(
         payload: String
     ): ChainRpcMap {
         try {

@@ -92,8 +92,6 @@ internal class OnboardingSupervisor(
         retrieveCctpChainIds()
     }
 
-
-
     private suspend fun retrieveSkipTransferChains() = coroutineScope {
         val chainsUrl = helper.configs.skipV1Chains()
         val chainsRequestDeferred = async { helper.getAsync(chainsUrl, null, null).response }
