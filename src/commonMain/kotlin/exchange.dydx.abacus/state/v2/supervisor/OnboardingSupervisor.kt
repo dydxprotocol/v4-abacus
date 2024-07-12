@@ -100,17 +100,8 @@ internal class OnboardingSupervisor(
         // kick off rpc fetch in parallel with chains fetch
         val retrieveRpcEndpointsDeferred = async { retrieveChainRpcEndpoints() }
 
-        val oldState = stateMachine.state
         val chainsUrl = helper.configs.skipV1Chains()
-        val chainsRequestDeferred = async {
-            suspendCancellableCoroutine<String?> { continuation ->
-                helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
-                    if (helper.success(httpCode) && response != null) {
-                        continuation.resume(response)
-                    }
-                }
-            }
-        }
+        val chainsRequestDeferred = async { helper.getAsync(chainsUrl, null, null).response }
 
         // await rpc endpoint to finish to ensure we have the rpc endpoints before we
         // update the chain resources
@@ -118,11 +109,11 @@ internal class OnboardingSupervisor(
         val chainsResponse = chainsRequestDeferred.await()
 
         if (chainsResponse != null) {
-            update(stateMachine.routerChains(chainsResponse), oldState)
+            update(stateMachine.routerChains(chainsResponse), stateMachine.state)
         }
     }
 
-    private suspend fun retrieveChainRpcEndpoints() = suspendCancellableCoroutine<Unit> { continuation ->
+    private suspend fun retrieveChainRpcEndpoints() = suspendCancellableCoroutine { continuation ->
         val url = "${helper.deploymentUri}/configs/rpc.json"
         helper.get(url) { _, response, _, _ ->
             if (response != null) {
