@@ -56,6 +56,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -129,8 +130,12 @@ internal class OnboardingSupervisor(
                     Json.decodeFromString<Map<String, RpcInfo>>(response).let {
                         RpcConfigs.chainIdToRpcMap = it
                     }
-                } catch (e: Exception) {
-                    Logger.e { "retrieveChainRpcEndpoints error: $e" }
+                } catch (e: IllegalArgumentException) {
+                    Logger.e { "retrieveChainRpcEndpoints IllegalArgumentException error: $e" }
+                    throw e  // Rethrow if necessary
+                } catch (e: SerializationException) {
+                    Logger.e { "retrieveChainRpcEndpoints SerializationException error: $e" }
+                    throw e  // Rethrow if necessary
                 }
             }
             continuation.resume(Unit)
