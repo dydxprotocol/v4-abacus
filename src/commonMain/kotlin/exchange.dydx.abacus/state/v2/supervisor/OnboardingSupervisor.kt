@@ -125,10 +125,8 @@ internal class OnboardingSupervisor(
                     }
                 } catch (e: IllegalArgumentException) {
                     Logger.e { "retrieveChainRpcEndpoints IllegalArgumentException error: $e" }
-                    throw e  // Rethrow if necessary
                 } catch (e: SerializationException) {
                     Logger.e { "retrieveChainRpcEndpoints SerializationException error: $e" }
-                    throw e  // Rethrow if necessary
                 }
             }
             continuation.resume(Unit)
