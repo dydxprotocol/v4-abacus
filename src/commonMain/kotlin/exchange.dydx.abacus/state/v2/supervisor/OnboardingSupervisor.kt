@@ -51,11 +51,18 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 internal class OnboardingSupervisor(
     stateMachine: TradingStateMachine,
@@ -76,22 +83,57 @@ internal class OnboardingSupervisor(
 
     private fun retrieveAssetsFromRouter() {
         if (StatsigConfig.useSkip) {
-            retrieveSkipTransferChains()
+            MainScope().launch {
+                retrieveSkipTransferChains()
+            }
             retrieveSkipTransferTokens()
-            retrieveChainRpcEndpoints()
         } else {
             retrieveTransferAssets()
         }
         retrieveCctpChainIds()
     }
 
-    private fun retrieveSkipTransferChains() {
+
+
+    private suspend fun retrieveSkipTransferChains() = coroutineScope {
+        // kick off rpc fetch in parallel with chains fetch
+        val retrieveRpcEndpointsDeferred = async { retrieveChainRpcEndpoints() }
+
         val oldState = stateMachine.state
         val chainsUrl = helper.configs.skipV1Chains()
-        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
-            if (helper.success(httpCode) && response != null) {
-                update(stateMachine.routerChains(response), oldState)
+        val chainsRequestDeferred = async {
+            suspendCancellableCoroutine<String?> { continuation ->
+                helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
+                    if (helper.success(httpCode) && response != null) {
+                        continuation.resume(response)
+                    }
+                }
             }
+        }
+
+        // await rpc endpoint to finish to ensure we have the rpc endpoints before we
+        // update the chain resources
+        retrieveRpcEndpointsDeferred.await()
+        val chainsResponse = chainsRequestDeferred.await()
+
+        if (chainsResponse != null) {
+            update(stateMachine.routerChains(chainsResponse), oldState)
+        }
+    }
+
+    private suspend fun retrieveChainRpcEndpoints() = suspendCancellableCoroutine<Unit> { continuation ->
+        val url = "${helper.deploymentUri}/configs/rpc.json"
+        helper.get(url) { _, response, _, _ ->
+            if (response != null) {
+                try {
+                    Json.decodeFromString<Map<String, RpcInfo>>(response).let {
+                        RpcConfigs.chainIdToRpcMap = it
+                    }
+                } catch (e: Exception) {
+                    Logger.e { "retrieveChainRpcEndpoints error: $e" }
+                }
+            }
+            continuation.resume(Unit)
         }
     }
 
@@ -137,17 +179,6 @@ internal class OnboardingSupervisor(
                     }
                 }
                 CctpConfig.cctpChainIds = chainIds
-            }
-        }
-    }
-
-    private fun retrieveChainRpcEndpoints() {
-        val url = "${helper.deploymentUri}/configs/rpc.json"
-        helper.get(url) { _, response, _, _ ->
-            if (response != null) {
-                Json.decodeFromString<Map<String, RpcInfo>>(response).let {
-                    RpcConfigs.chainIdToRpcMap = it
-                }
             }
         }
     }
