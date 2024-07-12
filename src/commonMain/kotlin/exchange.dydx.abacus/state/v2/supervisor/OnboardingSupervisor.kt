@@ -58,13 +58,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
-import kotlin.coroutines.resume
 
 internal class OnboardingSupervisor(
     stateMachine: TradingStateMachine,
@@ -102,10 +100,8 @@ internal class OnboardingSupervisor(
         val chainsRequestDeferred = async { helper.getAsync(chainsUrl, null, null).response }
 
         // web does not need rpc endpoints to be available since web uses wagmi sdk for this
-        if (SystemUtils.platform === Platform.android || SystemUtils.platform === Platform.ios) {
-            // kick off rpc fetch in parallel with chains fetch for efficiency
-            // wait for it to complete before submitting chains fetch response to state machine
-            // since processor needs rpc endpoints to be available
+        if (SystemUtils.platform == Platform.android || SystemUtils.platform == Platform.ios) {
+            // Fetch RPC endpoints in parallel with chains fetch for efficiency
             async { retrieveChainRpcEndpoints() }.await()
         }
 
@@ -114,21 +110,19 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private suspend fun retrieveChainRpcEndpoints() = suspendCancellableCoroutine { continuation ->
+    private suspend fun retrieveChainRpcEndpoints() {
         val url = "${helper.deploymentUri}/configs/rpc.json"
-        helper.get(url) { _, response, _, _ ->
-            if (response != null) {
-                try {
-                    Json.decodeFromString<Map<String, RpcInfo>>(response).let {
-                        RpcConfigs.chainIdToRpcMap = it
-                    }
-                } catch (e: IllegalArgumentException) {
-                    Logger.e { "retrieveChainRpcEndpoints IllegalArgumentException error: $e" }
-                } catch (e: SerializationException) {
-                    Logger.e { "retrieveChainRpcEndpoints SerializationException error: $e" }
+        helper.getAsync(url).response?.let { response ->
+            try {
+                Json.decodeFromString<Map<String, RpcInfo>>(response).let {
+                    // set the global rpc endpoints map
+                    RpcConfigs.chainIdToRpcMap = it
                 }
+            } catch (e: IllegalArgumentException) {
+                Logger.e { "retrieveChainRpcEndpoints IllegalArgumentException error: $e" }
+            } catch (e: SerializationException) {
+                Logger.e { "retrieveChainRpcEndpoints SerializationException error: $e" }
             }
-            continuation.resume(Unit)
         }
     }
 
