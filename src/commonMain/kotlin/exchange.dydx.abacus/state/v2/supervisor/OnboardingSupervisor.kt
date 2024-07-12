@@ -22,9 +22,11 @@ import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.Platform
 import exchange.dydx.abacus.state.manager.RpcConfigs
 import exchange.dydx.abacus.state.manager.RpcInfo
 import exchange.dydx.abacus.state.manager.StatsigConfig
+import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -97,18 +99,18 @@ internal class OnboardingSupervisor(
 
 
     private suspend fun retrieveSkipTransferChains() = coroutineScope {
-        // kick off rpc fetch in parallel with chains fetch
-        val retrieveRpcEndpointsDeferred = async { retrieveChainRpcEndpoints() }
-
         val chainsUrl = helper.configs.skipV1Chains()
         val chainsRequestDeferred = async { helper.getAsync(chainsUrl, null, null).response }
 
-        // await rpc endpoint to finish to ensure we have the rpc endpoints before we
-        // update the chain resources
-        retrieveRpcEndpointsDeferred.await()
-        val chainsResponse = chainsRequestDeferred.await()
+        // web does not need rpc endpoints to be available since web uses wagmi sdk for this
+        if (SystemUtils.platform === Platform.android || SystemUtils.platform === Platform.ios) {
+            // kick off rpc fetch in parallel with chains fetch for efficiency
+            // wait for it to complete before submitting chains fetch response to state machine
+            // since processor needs rpc endpoints to be available
+            async { retrieveChainRpcEndpoints() }.await()
+        }
 
-        if (chainsResponse != null) {
+        chainsRequestDeferred.await()?.let { chainsResponse ->
             update(stateMachine.routerChains(chainsResponse), stateMachine.state)
         }
     }
