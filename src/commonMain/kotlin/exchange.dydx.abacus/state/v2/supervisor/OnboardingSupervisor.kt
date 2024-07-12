@@ -53,19 +53,18 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 internal class OnboardingSupervisor(
     stateMachine: TradingStateMachine,
@@ -86,7 +85,7 @@ internal class OnboardingSupervisor(
 
     private fun retrieveAssetsFromRouter() {
         if (StatsigConfig.useSkip) {
-            MainScope().launch {
+            CoroutineScope(Dispatchers.Unconfined).launch {
                 retrieveSkipTransferChains()
             }
             retrieveSkipTransferTokens()
