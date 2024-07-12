@@ -11,7 +11,7 @@ internal class SkipChainResourceProcessor(private val parser: ParserProtocol) {
     ): TransferInputChainResource {
         return TransferInputChainResource(
             chainName = parser.asString(payload["chain_name"]),
-            rpc = parser.asString(payload["chain_id"])?.let { RpcConfigs.chainIdToRpcMap[it]?.rpcUrl },
+            rpc = parser.asString(payload["chain_id"])?.let { RpcConfigs.chainRpcMap[it]?.rpcUrl },
             networkName = parser.asString(payload["networkName"]),
             chainId = parser.asInt(payload["chain_id"]),
             iconUrl = parser.asString(payload["logo_uri"]),

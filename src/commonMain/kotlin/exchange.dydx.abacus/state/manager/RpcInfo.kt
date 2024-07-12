@@ -9,7 +9,7 @@ data class RpcInfo(
     val name: String,
 )
 
-
+typealias ChainRpcMap = Map<String, RpcInfo>
 object RpcConfigs {
-    var chainIdToRpcMap: Map<String, RpcInfo> = mapOf()
+    var chainRpcMap: ChainRpcMap = emptyMap()
 }

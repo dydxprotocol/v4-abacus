@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import RpcConfigsProcessor
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
@@ -24,7 +25,6 @@ import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.Platform
 import exchange.dydx.abacus.state.manager.RpcConfigs
-import exchange.dydx.abacus.state.manager.RpcInfo
 import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
@@ -58,7 +58,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -102,7 +101,7 @@ internal class OnboardingSupervisor(
         // web does not need rpc endpoints to be available since web uses wagmi sdk for this
         if (SystemUtils.platform == Platform.android || SystemUtils.platform == Platform.ios) {
             // Fetch RPC endpoints in parallel with chains fetch for efficiency
-            async { retrieveChainRpcEndpoints() }.await()
+            async { updateChainRpcEndpoints() }.await()
         }
 
         chainsRequestDeferred.await()?.let { chainsResponse ->
@@ -110,18 +109,11 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private suspend fun retrieveChainRpcEndpoints() {
+    private suspend fun updateChainRpcEndpoints() {
         val url = "${helper.deploymentUri}/configs/rpc.json"
         helper.getAsync(url).response?.let { response ->
-            try {
-                Json.decodeFromString<Map<String, RpcInfo>>(response).let {
-                    // set the global rpc endpoints map
-                    RpcConfigs.chainIdToRpcMap = it
-                }
-            } catch (e: IllegalArgumentException) {
-                Logger.e { "retrieveChainRpcEndpoints IllegalArgumentException error: $e" }
-            } catch (e: SerializationException) {
-                Logger.e { "retrieveChainRpcEndpoints SerializationException error: $e" }
+            RpcConfigsProcessor().received(response).let { rpcMap ->
+                RpcConfigs.chainRpcMap = rpcMap
             }
         }
     }
