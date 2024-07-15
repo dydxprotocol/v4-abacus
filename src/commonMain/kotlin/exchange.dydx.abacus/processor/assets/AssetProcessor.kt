@@ -5,9 +5,9 @@ import exchange.dydx.abacus.output.AssetResources
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.responses.AssetJson
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.models.configs.AssetJson
 
 internal interface AssetProcessorProtocol {
     fun process(

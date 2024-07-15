@@ -9,7 +9,10 @@ internal class RpcConfigsProcessor {
         payload: String
     ): ChainRpcMap {
         try {
-            return payload.let { Json.decodeFromString<ChainRpcMap>(it) }
+            return payload.let {
+                val json = Json { ignoreUnknownKeys = true }
+                json.decodeFromString<ChainRpcMap>(it)
+            }
         } catch (e: IllegalArgumentException) {
             Logger.e { "retrieveChainRpcEndpoints IllegalArgumentException error: $e" }
         } catch (e: SerializationException) {
