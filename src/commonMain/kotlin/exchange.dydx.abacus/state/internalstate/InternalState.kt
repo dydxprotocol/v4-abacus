@@ -1,9 +1,11 @@
 package exchange.dydx.abacus.state.internalstate
 
+import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountOrder
 
 internal data class InternalState(
+    var assets: MutableMap<String, Asset> = mutableMapOf(),
     val transfer: InternalTransferInputState = InternalTransferInputState(),
     val wallet: InternalWalletState = InternalWalletState(),
 )

@@ -1,15 +1,42 @@
 package exchange.dydx.abacus.processor.assets
 
+import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.MarketId
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.responses.AssetJson
 import exchange.dydx.abacus.utils.mutable
 
-internal class AssetsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val assetProcessor = AssetProcessor(parser)
+internal class AssetsProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?
+) : BaseProcessor(parser) {
+    private val assetProcessor = AssetProcessor(parser = parser, localizer = localizer)
 
     override fun environmentChanged() {
         assetProcessor.environment = environment
+    }
+
+    internal fun processConfigurations(
+        existing: MutableMap<String, Asset>,
+        payload: Map<String, AssetJson>,
+        deploymentUri: String
+    ): MutableMap<String, Asset> {
+        for ((key, data) in payload) {
+            val assetId = MarketId.assetid(key)
+            if (assetId != null) {
+                val asset = assetProcessor.process(
+                    assetId = assetId,
+                    payload = data,
+                    deploymentUri = deploymentUri,
+                )
+
+                existing[assetId] = asset
+            }
+        }
+
+        return existing
     }
 
     internal fun receivedConfigurations(
