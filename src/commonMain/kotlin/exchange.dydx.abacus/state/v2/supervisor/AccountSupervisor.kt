@@ -475,9 +475,13 @@ internal open class AccountSupervisor(
                     pendingCctpWithdraw?.let { walletState ->
                         processingCctpWithdraw = true
                         val callback = walletState.callback
+//                        if walletState has a singleMessagePayload, it's a single message tx
+//                        otherwise walletState represents a multi message tx (like smart relay) and we should use the relevant transaction
+                        val transactionType = if (walletState.multiMessagePayload == null) TransactionType.CctpWithdraw else TransactionType.CctpMultiMsgWithdraw
+                        val payload = if (walletState.multiMessagePayload == null) walletState.singleMessagePayload else walletState.multiMessagePayload
                         helper.transaction(
-                            TransactionType.CctpWithdraw,
-                            walletState.payload,
+                            transactionType,
+                            payload,
                         ) { hash ->
                             val error = helper.parseTransactionResponse(hash)
                             if (error != null) {

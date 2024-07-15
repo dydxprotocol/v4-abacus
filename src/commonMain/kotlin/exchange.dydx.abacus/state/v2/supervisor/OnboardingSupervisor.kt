@@ -1487,13 +1487,14 @@ internal class OnboardingSupervisor(
                             } else {
                                 pendingCctpWithdraw = CctpWithdrawState(
 //                                    we use skip state with squid route
-                                    state?.input?.transfer?.requestPayload?.data,
-                                    callback,
+                                    singleMessagePayload = state?.input?.transfer?.requestPayload?.data,
+                                    callback = callback,
+                                    multiMessagePayload = null,
                                 )
                             }
                         }
                     } else {
-                        Logger.e { "cctpToNoble error, code: $code" }
+                        Logger.e { "cctpToNobleSquid error, code: $code" }
                         val error = ParsingError(
                             ParsingErrorType.MissingContent,
                             "Missing squid response",
@@ -1501,7 +1502,7 @@ internal class OnboardingSupervisor(
                         helper.send(error, callback)
                     }
                 } else {
-                    Logger.e { "cctpToNoble error, code: $code" }
+                    Logger.e { "cctpToNobleSquid error, code: $code" }
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
                         "Missing squid response",
@@ -1518,7 +1519,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-    @Suppress("ForbiddenComment")
     private fun cctpToNobleSkip(
         state: PerpetualState?,
         decimals: Int,
@@ -1592,8 +1592,9 @@ internal class OnboardingSupervisor(
                                 helper.send(error, callback)
                             } else {
                                 pendingCctpWithdraw = CctpWithdrawState(
-                                    state?.input?.transfer?.requestPayload?.data,
-                                    callback,
+                                    singleMessagePayload = null,
+                                    multiMessagePayload = state?.input?.transfer?.requestPayload?.allMessagesArray,
+                                    callback = callback,
                                 )
                             }
                         }

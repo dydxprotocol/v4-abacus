@@ -45,6 +45,38 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
         throw Error("SkipRoutePayloadProcessor: txType is not evm or cosmos")
     }
 
+    private fun jsonEncodePayload(payload: Any): String {
+        val jsonEncoder = JsonEncoder()
+        return jsonEncoder.encode(payload)
+    }
+
+    private fun formatMessage(message: String?, msgTypeUrl: String?): Map<String, Any?> {
+        val msgMap = parser.decodeJsonObject(message)
+//            tendermint client rejects msgs that aren't camelcased
+        val camelCasedMsgMap = msgMap?.toCamelCaseKeys()
+        val fullMessage = mapOf(
+            "msg" to camelCasedMsgMap,
+//                Squid returns the msg payload under the "value" key for noble transfers
+            "value" to camelCasedMsgMap,
+            "msgTypeUrl" to msgTypeUrl,
+//                Squid sometimes returns typeUrl or msgTypeUrl depending on the route version
+            "typeUrl" to msgTypeUrl,
+        )
+        return fullMessage
+    }
+
+    private fun formatAllMessages(payload: Map<String, Any>?): List<Map<String, Any?>> {
+        val allRawMessages = parser.asList(parser.value(payload, "txs.0.cosmos_tx.msgs"))
+        val allFormattedMessages = mutableListOf<Map<String, Any?>>()
+        allRawMessages?.forEach {
+            val msgObject = parser.asMap(it)
+            val msg = parser.asString(msgObject?.get("msg"))
+            val msgTypeUrl = parser.asString(msgObject?.get("msg_type_url"))
+            allFormattedMessages.add(formatMessage(msg, msgTypeUrl))
+        }
+        return allFormattedMessages
+    }
+
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
@@ -58,21 +90,13 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
             modified.safeSet("data", "0x$data")
         }
         if (txType == TxType.COSMOS) {
-            val jsonEncoder = JsonEncoder()
             val msg = parser.asString(parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg"))
-            val msgMap = parser.decodeJsonObject(msg)
-//            tendermint client rejects msgs that aren't camelcased
-            val camelCasedMsgMap = msgMap?.toCamelCaseKeys()
-            val msgTypeUrl = parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg_type_url")
-            val fullMessage = mapOf(
-                "msg" to camelCasedMsgMap,
-//                Squid returns the msg payload under the "value" key for noble transfers
-                "value" to camelCasedMsgMap,
-                "msgTypeUrl" to msgTypeUrl,
-//                Squid sometimes returns typeUrl or msgTypeUrl depending on the route version
-                "typeUrl" to msgTypeUrl,
-            )
-            modified.safeSet("data", jsonEncoder.encode(fullMessage))
+            val msgTypeUrl = parser.asString(parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg_type_url"))
+            val formattedMessage = formatMessage(msg, msgTypeUrl)
+            val allFormattedMessages = formatAllMessages(payload)
+//            save all messages in array
+            modified.safeSet("data", jsonEncodePayload(formattedMessage))
+            modified.safeSet("allMessagesArray", jsonEncodePayload(allFormattedMessages))
         }
         return modified
     }

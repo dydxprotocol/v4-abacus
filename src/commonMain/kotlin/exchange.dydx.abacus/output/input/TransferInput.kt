@@ -264,6 +264,7 @@ data class TransferInputRequestPayload(
     val routeType: String?,
     val targetAddress: String?,
     val data: String?,
+    val allMessagesArray: String?,
     val value: String?,
     val gasLimit: String?,
     val gasPrice: String?,
@@ -288,6 +289,8 @@ data class TransferInputRequestPayload(
                 val routeType = parser.asString(data["routeType"])
                 val targetAddress = parser.asString(data["targetAddress"])
                 val dataValue = parser.asString(data["data"])
+//                parse input to make sure it's strings
+                val allMessagesArray = parser.asString(data["allMessagesArray"])
                 val value = parser.asString(data["value"])
                 val gasLimit = parser.asString(data["gasLimit"])
                 val gasPrice = parser.asString(data["gasPrice"])
@@ -304,6 +307,7 @@ data class TransferInputRequestPayload(
                     existing?.routeType != routeType ||
                     existing?.targetAddress != targetAddress ||
                     existing?.data != dataValue ||
+                    existing?.allMessagesArray != allMessagesArray ||
                     existing?.value != value ||
                     existing?.gasLimit != gasLimit ||
                     existing?.gasPrice != gasPrice ||
@@ -320,6 +324,7 @@ data class TransferInputRequestPayload(
                         routeType,
                         targetAddress,
                         dataValue,
+                        allMessagesArray,
                         value,
                         gasLimit,
                         gasPrice,
