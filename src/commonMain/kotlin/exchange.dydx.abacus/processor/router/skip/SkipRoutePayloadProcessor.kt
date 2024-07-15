@@ -96,7 +96,7 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
             val allFormattedMessages = formatAllMessages(payload)
 //            save all messages in array
             modified.safeSet("data", jsonEncodePayload(formattedMessage))
-            modified.safeSet("allMessagesArray", jsonEncodePayload(allFormattedMessages))
+            modified.safeSet("allMessages", jsonEncodePayload(allFormattedMessages))
         }
         return modified
     }

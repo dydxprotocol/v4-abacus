@@ -1593,7 +1593,7 @@ internal class OnboardingSupervisor(
                             } else {
                                 pendingCctpWithdraw = CctpWithdrawState(
                                     singleMessagePayload = null,
-                                    multiMessagePayload = state?.input?.transfer?.requestPayload?.allMessagesArray,
+                                    multiMessagePayload = state?.input?.transfer?.requestPayload?.allMessages,
                                     callback = callback,
                                 )
                             }

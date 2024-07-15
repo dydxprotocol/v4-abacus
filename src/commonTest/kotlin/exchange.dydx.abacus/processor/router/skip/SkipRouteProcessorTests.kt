@@ -78,7 +78,7 @@ class SkipRouteProcessorTests {
                 "toChainId" to "noble-1",
                 "toAddress" to "uusdc",
                 "data" to jsonEncoder.encode(expectedDataRaw),
-                "allMessagesArray" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
             ),
         )
         assertEquals(expected, result)
@@ -125,7 +125,7 @@ class SkipRouteProcessorTests {
                 "toChainId" to "1",
                 "toAddress" to "ethereum-native",
                 "data" to jsonEncoder.encode(expectedDataRaw),
-                "allMessagesArray" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
             ),
         )
 
@@ -196,7 +196,7 @@ class SkipRouteProcessorTests {
                 "toChainId" to "1",
                 "toAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                 "data" to expectedData,
-                "allMessagesArray" to expectedMessagesArray,
+                "allMessages" to expectedMessagesArray,
             ),
         )
         assertEquals(expected, result)
@@ -241,7 +241,7 @@ class SkipRouteProcessorTests {
                 "toChainId" to "dydx-mainnet-1",
                 "toAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
                 "data" to jsonEncoder.encode(expectedDataRaw),
-                "allMessagesArray" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
             ),
         )
         assertEquals(expected, result)
