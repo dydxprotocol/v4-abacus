@@ -1107,6 +1107,10 @@ internal class OnboardingSupervisor(
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "smart_relay" to true,
             "allow_unsafe" to true,
+            "bridges" to listOf(
+                "CCTP",
+                "IBC",
+            ),
         )
         val oldState = stateMachine.state
         val header = iMapOf(
