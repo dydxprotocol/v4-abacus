@@ -1,8 +1,11 @@
 package exchange.dydx.abacus.processor.router.skip
+import RpcConfigsProcessor
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.state.manager.RpcConfigs
+import exchange.dydx.abacus.tests.payloads.RPCMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
@@ -206,6 +209,10 @@ class SkipProcessorTests {
 
     @Test
     fun testReceivedChains() {
+        assertEquals(RpcConfigs.chainRpcMap.size, 0)
+        RpcConfigs.chainRpcMap = RpcConfigsProcessor().received(RPCMock.json)
+        assertEquals(RpcConfigs.chainRpcMap.size, 275)
+
         val payload = templateToMap(
             skipChainsMock.payload,
         )
@@ -225,6 +232,7 @@ class SkipProcessorTests {
             "1" to TransferInputChainResource(
                 chainName = "Ethereum",
                 chainId = 1,
+                rpc = "https://cloudflare-eth.com",
                 iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
             ),
         )

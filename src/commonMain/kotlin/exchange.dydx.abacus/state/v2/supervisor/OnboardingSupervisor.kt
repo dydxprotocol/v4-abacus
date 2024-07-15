@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import RpcConfigsProcessor
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
@@ -22,7 +23,10 @@ import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.Platform
+import exchange.dydx.abacus.state.manager.RpcConfigs
 import exchange.dydx.abacus.state.manager.StatsigConfig
+import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -49,6 +53,11 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -73,7 +82,9 @@ internal class OnboardingSupervisor(
 
     private fun retrieveAssetsFromRouter() {
         if (StatsigConfig.useSkip) {
-            retrieveSkipTransferChains()
+            CoroutineScope(Dispatchers.Unconfined).launch {
+                retrieveSkipTransferChains()
+            }
             retrieveSkipTransferTokens()
         } else {
             retrieveTransferAssets()
@@ -81,12 +92,26 @@ internal class OnboardingSupervisor(
         retrieveCctpChainIds()
     }
 
-    private fun retrieveSkipTransferChains() {
-        val oldState = stateMachine.state
+    private suspend fun retrieveSkipTransferChains() = coroutineScope {
         val chainsUrl = helper.configs.skipV1Chains()
-        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
-            if (helper.success(httpCode) && response != null) {
-                update(stateMachine.routerChains(response), oldState)
+        val chainsRequestDeferred = async { helper.getAsync(chainsUrl, null, null).response }
+
+        // web does not need rpc endpoints to be available since web uses wagmi sdk for this
+        if (SystemUtils.platform == Platform.android || SystemUtils.platform == Platform.ios) {
+            // Fetch RPC endpoints in parallel with chains fetch for efficiency
+            async { updateChainRpcEndpoints() }.await()
+        }
+
+        chainsRequestDeferred.await()?.let { chainsResponse ->
+            update(stateMachine.routerChains(chainsResponse), stateMachine.state)
+        }
+    }
+
+    private suspend fun updateChainRpcEndpoints() {
+        val url = "${helper.deploymentUri}/configs/rpc.json"
+        helper.getAsync(url).response?.let { response ->
+            RpcConfigsProcessor().received(response).let { rpcMap ->
+                RpcConfigs.chainRpcMap = rpcMap
             }
         }
     }
