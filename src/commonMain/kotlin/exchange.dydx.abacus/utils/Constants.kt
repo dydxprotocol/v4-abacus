@@ -23,3 +23,6 @@ internal const val NATIVE_TOKEN_DEFAULT_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeee
 
 // Polling durations
 internal const val GEO_POLLING_DURATION_SECONDS = 10.0
+
+// Autosweep Constants
+internal const val MIN_USDC_AMOUNT_FOR_AUTO_SWEEP = 20000
