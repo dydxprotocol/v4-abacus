@@ -5,7 +5,7 @@ import exchange.dydx.abacus.output.SubaccountOrder
 
 internal data class InternalState(
     val transfer: InternalTransferInputState = InternalTransferInputState(),
-    var wallet: InternalWalletState = InternalWalletState(),
+    val wallet: InternalWalletState = InternalWalletState(),
 )
 
 internal data class InternalWalletState(

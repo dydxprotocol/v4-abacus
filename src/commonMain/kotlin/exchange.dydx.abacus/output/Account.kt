@@ -2237,7 +2237,7 @@ data class Account(
                         data = subaccountData,
                         localizer = localizer,
                         staticTyping = staticTyping,
-                        internalState = internalState?.subaccounts?.get(subaccountNumber),
+                        internalState = internalState.subaccounts[subaccountNumber],
                     )
                         ?.let { subaccount ->
                             subaccounts[key] = subaccount
@@ -2260,7 +2260,7 @@ data class Account(
                         data = subaccountData,
                         localizer = localizer,
                         staticTyping = staticTyping,
-                        internalState = internalState?.subaccounts?.get(subaccountNumber),
+                        internalState = internalState.subaccounts[subaccountNumber],
                     )
                         ?.let { subaccount ->
                             groupedSubaccounts[key] = subaccount
