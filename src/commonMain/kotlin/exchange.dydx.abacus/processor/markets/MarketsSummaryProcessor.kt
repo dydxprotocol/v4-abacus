@@ -20,7 +20,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.subscribed(parser.asNativeMap(existing?.get("markets")), content)
+        val markets = marketsProcessor.processSubscribed(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
@@ -29,7 +29,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.channel_data(parser.asNativeMap(existing?.get("markets")), content)
+        val markets = marketsProcessor.processChannelData(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
@@ -39,7 +39,7 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         content: List<Any>
     ): Map<String, Any>? {
         val markets =
-            marketsProcessor.channel_batch_data(parser.asNativeMap(existing?.get("markets")), content)
+            marketsProcessor.processChannelBatchData(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
