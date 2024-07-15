@@ -505,6 +505,8 @@ class V4Environment(
             )
         }
 
+        private const val DEFAULT_CHAIN_DECIMALS = 18
+        private const val DEFAULT_NON_CHAIN_DECIMALS = 6
         private fun parseTokens(
             item: Map<String, Any>?,
             parser: ParserProtocol,
@@ -518,7 +520,7 @@ class V4Environment(
                         val name = parser.asString(token["name"]) ?: continue
                         val denom = parser.asString(token["denom"]) ?: continue
                         val decimals =
-                            parser.asInt(token["decimals"]) ?: (if (key == "chain") 18 else 6)
+                            parser.asInt(token["decimals"]) ?: (if (key == "chain") DEFAULT_CHAIN_DECIMALS else DEFAULT_NON_CHAIN_DECIMALS)
                         val gasDenom = parser.asString(token["gasDenom"])
                         val imageUrl = parser.asString(token["image"])?.let {
                             "$deploymentUri$it"
