@@ -31,11 +31,14 @@ import kollections.toIMap
 import kollections.toISet
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.times
 
 typealias RestCallbackWithUrl = (url: String, response: String?, httpCode: Int, headers: Map<String, Any>?) -> Unit
+data class RestResult(val response: String?, val error: String?)
 
 class NetworkHelper(
     internal val deploymentUri: String,
@@ -173,6 +176,22 @@ class NetworkHelper(
         val fullUrl = fullUrl(url, params)
 
         getWithFullUrl(fullUrl, headers, callback)
+    }
+
+    suspend fun getAsync(
+        url: String,
+        params: Map<String, String>? = null,
+        headers: Map<String, String>? = null,
+    ): RestResult {
+        return suspendCoroutine { continuation ->
+            get(url, params, headers) { _, response, httpCode, _ ->
+                if (success(httpCode)) {
+                    continuation.resume(RestResult(response, null))
+                } else {
+                    continuation.resume(RestResult(null, response ?: "Unknown error"))
+                }
+            }
+        }
     }
 
     private fun fullUrl(
