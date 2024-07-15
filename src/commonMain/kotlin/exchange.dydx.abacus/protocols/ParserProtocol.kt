@@ -4,6 +4,7 @@ import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import kotlinx.datetime.Instant
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 interface ParserProtocol {
@@ -57,7 +58,10 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
             if (itemString != null) {
                 try {
                     Json.decodeFromString<T>(itemString)
-                } catch (e: Exception) {
+                } catch (e: SerializationException) {
+                    Logger.e { "Failed to parse item: $item" }
+                    null
+                } catch (e: IllegalArgumentException) {
                     Logger.e { "Failed to parse item: $item" }
                     null
                 }
