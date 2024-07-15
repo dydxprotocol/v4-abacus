@@ -48,7 +48,7 @@ data class SubaccountHistoricalPNL(
     val createdAtMilliseconds: Double,
 ) {
     companion object {
-        internal fun create(
+        private fun create(
             existing: SubaccountHistoricalPNL?,
             parser: ParserProtocol,
             data: Map<*, *>?,
@@ -87,29 +87,38 @@ data class SubaccountHistoricalPNL(
             data: List<Map<String, Any>>?,
             startTime: Instant,
         ): IList<SubaccountHistoricalPNL>? {
-            return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
-                val time2 = parser.asDatetime(itemData["createdAt"])
-                if (time2 != null && time2 >= startTime) {
-                    val time1 = (obj as SubaccountHistoricalPNL).createdAtMilliseconds
-                    val time2MS = time2.toEpochMilliseconds().toDouble()
-                    ParsingHelper.compare(time1, time2MS ?: 0.0, true)
-                } else {
-                    null
+            return ParsingHelper.merge(
+                parser = parser,
+                existing = existing,
+                data = data,
+                comparison = { obj, itemData ->
+                    val time2 = parser.asDatetime(itemData["createdAt"])
+                    if (time2 != null && time2 >= startTime) {
+                        val time1 = (obj as SubaccountHistoricalPNL).createdAtMilliseconds
+                        val time2MS = time2.toEpochMilliseconds().toDouble()
+                        ParsingHelper.compare(time1, time2MS ?: 0.0, true)
+                    } else {
+                        null
+                    }
+                },
+                createObject = { _, obj, itemData ->
+                    obj ?: SubaccountHistoricalPNL.create(
+                        null,
+                        parser,
+                        parser.asMap(itemData),
+                    )
+                },
+                syncItems = true,
+                includesObjectBlock = { item ->
+                    val ms = (item as SubaccountHistoricalPNL).createdAtMilliseconds.toDouble()
+                    val createdAt = Instant.fromEpochMilliseconds(ms.toLong())
+                    createdAt >= startTime
+                },
+                includesDataBlock = { itemData ->
+                    val createdAt = parser.asDatetime(itemData["createdAt"])
+                    createdAt != null && createdAt >= startTime
                 }
-            }, { _, obj, itemData ->
-                obj ?: SubaccountHistoricalPNL.create(
-                    null,
-                    parser,
-                    parser.asMap(itemData),
-                )
-            }, true, { item ->
-                val ms = (item as SubaccountHistoricalPNL).createdAtMilliseconds.toDouble()
-                val createdAt = Instant.fromEpochMilliseconds(ms.toLong())
-                createdAt >= startTime
-            }, { itemData ->
-                val createdAt = parser.asDatetime(itemData["createdAt"])
-                createdAt != null && createdAt >= startTime
-            })?.toIList()
+            )?.toIList()
         }
     }
 }

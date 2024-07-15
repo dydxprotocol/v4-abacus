@@ -540,15 +540,17 @@ internal open class AccountSupervisor(
         val maxDuration = Clock.System.now() - tradingRewardsStartDate + 2.days
 
         helper.retrieveTimed(
-            url,
-            historicalTradingRewardsInPeriod,
-            "startedAt",
-            1.days,
-            maxDuration,
-            "startingBeforeOrAt",
-            null,
-            params,
-            previousUrl,
+            url = url,
+            items = historicalTradingRewardsInPeriod,
+            timeField = { item ->
+                helper.parser.asDatetime(helper.parser.asMap(item)?.get("startedAt"))
+            },
+            sampleDuration = 1.days,
+            maxDuration = maxDuration,
+            beforeParam = "startingBeforeOrAt",
+            afterParam = null,
+            additionalParams = params,
+            previousUrl = previousUrl,
         ) { url, response, httpCode, _ ->
             if (helper.success(httpCode) && !response.isNullOrEmpty()) {
                 val historicalTradingRewards = helper.parser.decodeJsonObject(response)?.toIMap()

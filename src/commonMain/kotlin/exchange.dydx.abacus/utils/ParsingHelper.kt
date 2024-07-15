@@ -219,6 +219,91 @@ internal class ParsingHelper {
             }
         }
 
+
+        internal fun <T : Any> mergeTyped(
+            parser: ParserProtocol,
+            existing: List<T>?,
+            incoming: List<T>?,
+            comparison: (T, T) -> ComparisonOrder?,
+            createObject: (parser: ParserProtocol, existing: T?, newItem: T) -> Any?,
+            syncItems: Boolean = false,
+            includesObjectBlock: IncludesObjectBlock? = null,
+            includesDataBlock: ((T) -> Boolean)? = null,
+        ): List<T>? {
+            if (incoming != null) {
+                val result = mutableListOf<T>()
+
+                val size1 = existing?.size ?: 0
+                val size2 = incoming.size
+                var cursor1 = 0
+                var cursor2 = 0
+
+                if (existing != null) {
+                    while (cursor1 < size1 && cursor2 < size2) {
+                        val existingEntry = existing[cursor1]
+                        val itemData = incoming[cursor2]
+                        if (itemData != null) {
+                            when (comparison(existingEntry, itemData)) {
+                                ComparisonOrder.same -> {
+                                    val entry = createObject(parser, existingEntry, itemData) as T
+                                    result.add(entry)
+                                    cursor1 += 1
+                                    cursor2 += 1
+                                }
+
+                                ComparisonOrder.ascending -> {
+                                    if (!syncItems) {
+                                        result.add(existingEntry)
+                                    }
+                                    cursor1 += 1
+                                }
+
+                                ComparisonOrder.descending -> {
+                                    (createObject(parser, null, itemData) as? T)?.let {
+                                        result.add(it)
+                                    }
+                                    cursor2 += 1
+                                }
+
+                                null -> {
+                                    // Do not include this item
+                                    cursor2 += 1
+                                }
+                            }
+                        } else {
+                            cursor2 += 1
+                        }
+                    }
+                }
+
+                if (cursor1 >= size1) {
+                    // list1 finished
+                    for (i in cursor2 until size2) {
+                        incoming[i].let { itemData ->
+                            if (includesDataBlock == null || includesDataBlock.invoke(itemData)) {
+                                (createObject(parser, null, itemData) as? T)?.let {
+                                    result.add(it)
+                                }
+                            }
+                        }
+                    }
+                }
+                if (cursor2 >= size2 && !syncItems) {
+                    for (i in cursor1 until size1) {
+                        existing?.get(i)?.let {
+                            if (includesObjectBlock == null || includesObjectBlock.invoke(it)) {
+                                result.add(it)
+                            }
+                        }
+                    }
+                }
+
+                return result
+            } else {
+                return null
+            }
+        }
+
         internal fun compare(value1: Double, value2: Double, ascending: Boolean): ComparisonOrder {
             return if (value1 == value2) {
                 ComparisonOrder.same
