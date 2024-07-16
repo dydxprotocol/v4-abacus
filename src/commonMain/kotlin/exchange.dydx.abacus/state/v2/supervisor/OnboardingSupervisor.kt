@@ -110,7 +110,7 @@ internal class OnboardingSupervisor(
     private suspend fun updateChainRpcEndpoints() {
         val url = "${helper.deploymentUri}/configs/rpc.json"
         helper.getAsync(url).response?.let { response ->
-            RpcConfigsProcessor().received(response).let { rpcMap ->
+            RpcConfigsProcessor(helper.parser, configs.alchemyApiKey).received(response).let { rpcMap ->
                 RpcConfigs.chainRpcMap = rpcMap
             }
         }
@@ -1053,7 +1053,7 @@ internal class OnboardingSupervisor(
                 neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
             ),
-            "allow_multi_tx" to true,
+            "allow_multi_tx" to false,
             "allow_unsafe" to true,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
         )
