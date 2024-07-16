@@ -109,7 +109,7 @@ internal class FillProcessor(
                 liquidity = liquidity,
                 price = parser.asDouble(payload.price) ?: return null,
                 size = parser.asDouble(payload.size) ?: return null,
-                fee = parser.asDouble(payload.fee) ?: return null,
+                fee = parser.asDouble(payload.fee),
                 createdAtMilliseconds = parser.asDatetime(payload.createdAt)?.toEpochMilliseconds()
                     ?.toDouble() ?: return null,
                 resources = SubaccountFillResources(

@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.toJson
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlin.reflect.typeOf
 
 interface ParserProtocol {
     // parse a field to string
@@ -61,10 +62,12 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
                     val json = Json { ignoreUnknownKeys = true }
                     json.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
-                    Logger.e { "Failed to parse item: $item" }
+                    val typeClassifier = typeOf<T>().classifier
+                    Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}" }
                     null
                 } catch (e: IllegalArgumentException) {
-                    Logger.e { "Failed to parse item: $item" }
+                    val typeClassifier = typeOf<T>().classifier
+                    Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}" }
                     null
                 }
             } else {
@@ -88,10 +91,12 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
             val json = Json { ignoreUnknownKeys = true }
             json.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
-            Logger.e { "Failed to parse item: $item" }
+            val typeClassifier = typeOf<T>().classifier
+            Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}\"" }
             null
         } catch (e: IllegalArgumentException) {
-            Logger.e { "Failed to parse item: $item" }
+            val typeClassifier = typeOf<T>().classifier
+            Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}\"" }
             null
         }
     } else {
