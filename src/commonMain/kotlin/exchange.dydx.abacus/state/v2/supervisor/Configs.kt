@@ -170,7 +170,7 @@ data class OnboardingConfigs(
     }
 
     var squidVersion: SquidVersion = SquidVersion.V2
-    var alchemyApiKey: String = ""
+    var alchemyApiKey: String? = null
 
     companion object {
         val forApp = OnboardingConfigs(
