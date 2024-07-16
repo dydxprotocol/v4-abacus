@@ -1155,6 +1155,9 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.assets)) {
             if (staticTyping) {
                 assets = internalState.assets.toIMutableMap()
+                if (assets.isEmpty()) {
+                    assets = null
+                }
             } else {
                 this.assets?.let {
                     assets = assets ?: mutableMapOf<String, Asset>()
