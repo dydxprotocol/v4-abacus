@@ -13,7 +13,7 @@ internal fun TradingStateMachine.historicalPnl(payload: String, subaccountNumber
             walletProcessor.processHistoricalPnls(
                 existing = internalState.wallet,
                 payload = response.historicalPnl?.toList(),
-                subaccountNumber = subaccountNumber
+                subaccountNumber = subaccountNumber,
             )
             return StateChanges(iListOf(Changes.historicalPnl), null, iListOf(subaccountNumber))
         } else {

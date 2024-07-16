@@ -117,7 +117,7 @@ data class SubaccountHistoricalPNL(
                 includesDataBlock = { itemData ->
                     val createdAt = parser.asDatetime(itemData["createdAt"])
                     createdAt != null && createdAt >= startTime
-                }
+                },
             )?.toIList()
         }
     }

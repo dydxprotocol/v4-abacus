@@ -13,7 +13,6 @@ internal interface HistoricalPNLProcessorProtocol {
     ): SubaccountHistoricalPNL?
 }
 
-@Suppress("UNCHECKED_CAST")
 internal class HistoricalPNLProcessor(
     parser: ParserProtocol
 ) : BaseProcessor(parser), HistoricalPNLProcessorProtocol {

@@ -219,7 +219,6 @@ internal class ParsingHelper {
             }
         }
 
-
         internal fun <T : Any> mergeTyped(
             parser: ParserProtocol,
             existing: List<T>?,

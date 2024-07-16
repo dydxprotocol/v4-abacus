@@ -273,9 +273,9 @@ internal class SubaccountSupervisor(
                 url = url,
                 items = historicalPNLs,
                 timeField = { item ->
-                   item?.createdAtMilliseconds?.toLong()?.let {
-                       Instant.fromEpochMilliseconds(it)
-                   }
+                    item?.createdAtMilliseconds?.toLong()?.let {
+                        Instant.fromEpochMilliseconds(it)
+                    }
                 },
                 sampleDuration = 1.days,
                 maxDuration = 90.days,
