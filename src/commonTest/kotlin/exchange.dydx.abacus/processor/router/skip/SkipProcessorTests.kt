@@ -5,7 +5,7 @@ import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.RpcConfigs
-import exchange.dydx.abacus.tests.payloads.RPCMock
+import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
@@ -209,9 +209,10 @@ class SkipProcessorTests {
 
     @Test
     fun testReceivedChains() {
-        assertEquals(RpcConfigs.chainRpcMap.size, 0)
-        RpcConfigs.chainRpcMap = RpcConfigsProcessor().received(RPCMock.json)
-        assertEquals(RpcConfigs.chainRpcMap.size, 275)
+        val testApiKey = "testApiKey"
+        assertEquals(0, RpcConfigs.chainRpcMap.size)
+        RpcConfigs.chainRpcMap = RpcConfigsProcessor(parser, testApiKey).received(RpcMock.json)
+        assertEquals(276, RpcConfigs.chainRpcMap.size)
 
         val payload = templateToMap(
             skipChainsMock.payload,
@@ -232,7 +233,7 @@ class SkipProcessorTests {
             "1" to TransferInputChainResource(
                 chainName = "Ethereum",
                 chainId = 1,
-                rpc = "https://cloudflare-eth.com",
+                rpc = "https://eth-mainnet.g.alchemy.com/v2/$testApiKey",
                 iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
             ),
         )
