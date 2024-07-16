@@ -51,6 +51,7 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.MIN_USDC_AMOUNT_FOR_AUTO_SWEEP
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
@@ -467,7 +468,7 @@ internal open class AccountSupervisor(
             if (balance != null) {
                 val amount = helper.parser.asDecimal(balance["amount"])
 //                minimum usdc required for successful tx (gas fee)
-                if (amount != null && amount > 5000) {
+                if (amount != null && amount > MIN_USDC_AMOUNT_FOR_AUTO_SWEEP) {
                     if (processingCctpWithdraw) {
                         return@getOnChain
                     }
@@ -475,9 +476,13 @@ internal open class AccountSupervisor(
                     pendingCctpWithdraw?.let { walletState ->
                         processingCctpWithdraw = true
                         val callback = walletState.callback
+//                        if walletState has a singleMessagePayload, it's a single message tx
+//                        otherwise walletState represents a multi message tx (like smart relay) and we should use the relevant transaction
+                        val transactionType = if (walletState.multiMessagePayload == null) TransactionType.CctpWithdraw else TransactionType.CctpMultiMsgWithdraw
+                        val payload = if (walletState.multiMessagePayload == null) walletState.singleMessagePayload else walletState.multiMessagePayload
                         helper.transaction(
-                            TransactionType.CctpWithdraw,
-                            walletState.payload,
+                            transactionType,
+                            payload,
                         ) { hash ->
                             val error = helper.parseTransactionResponse(hash)
                             if (error != null) {
