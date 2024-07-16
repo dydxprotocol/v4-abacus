@@ -5,8 +5,8 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.responses.AssetJson
 import exchange.dydx.abacus.utils.mutable
+import indexer.models.configs.AssetJson
 
 internal class AssetsProcessor(
     parser: ParserProtocol,

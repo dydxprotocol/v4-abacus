@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.MarginCalculator
-import exchange.dydx.abacus.responses.AssetJson
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import indexer.models.configs.AssetJson
 import kollections.iListOf
 import kollections.toIList
 
