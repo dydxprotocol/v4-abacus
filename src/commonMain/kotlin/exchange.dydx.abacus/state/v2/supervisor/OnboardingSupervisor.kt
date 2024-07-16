@@ -1053,7 +1053,7 @@ internal class OnboardingSupervisor(
                 neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
             ),
-            "allow_multi_tx" to true,
+            "allow_multi_tx" to false,
             "allow_unsafe" to true,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
         )
