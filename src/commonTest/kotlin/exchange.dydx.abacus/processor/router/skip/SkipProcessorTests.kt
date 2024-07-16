@@ -235,7 +235,7 @@ class SkipProcessorTests {
                 chainId = 1,
                 rpc = "https://eth-mainnet.g.alchemy.com/v2/$testApiKey",
                 iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
-            )
+            ),
         )
         val expectedModified = mapOf(
             "transfer" to mapOf(

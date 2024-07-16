@@ -20,11 +20,13 @@ internal class RpcConfigsProcessor(
                     if (alchemyApiKey != null && alchemyRpcUrl != null) {
                         return@let RpcInfo(
                             rpcUrl = "$alchemyRpcUrl/$alchemyApiKey",
-                            name = name,)
+                            name = name,
+                        )
                     } else if (fallbackRpcUrl != null) {
                         return@let RpcInfo(
                             rpcUrl = fallbackRpcUrl,
-                            name = name,)
+                            name = name,
+                        )
                     } else {
                         return@let null
                     }
