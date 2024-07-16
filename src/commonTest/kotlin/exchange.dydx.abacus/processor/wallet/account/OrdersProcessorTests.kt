@@ -1,45 +1,45 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.SubaccountOrder
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
-import exchange.dydx.abacus.tests.mock.processor.wallet.account.FillProcessorMock
+import exchange.dydx.abacus.tests.mock.processor.wallet.account.OrderProcessorMock
 import exchange.dydx.abacus.utils.Parser
-import indexer.codegen.IndexerFillResponseObject
+import indexer.models.IndexerCompositeOrderObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class FillsProcessorTests {
-    private val fillProcessor = FillProcessorMock()
-    private val fillsProcessor = FillsProcessor(
+class OrdersProcessorTests {
+    private val orderProcessor = OrderProcessorMock()
+    private val ordersProcessor = OrdersProcessor(
         parser = Parser(),
         localizer = LocalizerProtocolMock(),
-        fillProcessor = fillProcessor,
+        orderProcessor = orderProcessor,
     )
 
     @Test
     fun testProcess_emptyPayload() {
-        val output = fillsProcessor.process(
+        val output = ordersProcessor.process(
             existing = null,
             payload = emptyList(),
             subaccountNumber = 0,
+            height = null,
         )
         assertEquals(0, output.size)
     }
 
     @Test
     fun testProcess_nonEmptyPayload() {
-        fillProcessor.processAction = { input, _ ->
-            createSubaccountFill(input.id!!)
+        orderProcessor.processAction = { _, _, _, _ ->
+            createSubaccountOrder("1")
         }
 
-        val output = fillsProcessor.process(
+        val output = ordersProcessor.process(
             existing = null,
             payload = listOf(
-                IndexerFillResponseObject(
-                    id = "1",
-                ),
+                IndexerCompositeOrderObject(id = "1"),
             ),
             subaccountNumber = 0,
+            height = null,
         )
         assertEquals(1, output.size)
         assertEquals(output[0].id, "1")
@@ -47,30 +47,31 @@ class FillsProcessorTests {
 
     @Test
     fun testProcess_withMerge() {
-        fillProcessor.processAction = { input, _ ->
-            createSubaccountFill(input.id!!)
+        orderProcessor.processAction = { _, input, _, _ ->
+            createSubaccountOrder(input.id!!)
         }
 
-        val output = fillsProcessor.process(
+        val output = ordersProcessor.process(
             existing = listOf(
-                createSubaccountFill("1"),
+                createSubaccountOrder("1"),
             ),
             payload = listOf(
-                IndexerFillResponseObject(
+                IndexerCompositeOrderObject(
                     id = "1",
                 ),
-                IndexerFillResponseObject(
+                IndexerCompositeOrderObject(
                     id = "2",
                 ),
             ),
             subaccountNumber = 0,
+            height = null,
         )
         assertEquals(2, output.size)
         assertEquals(output[0].id, "1")
         assertEquals(output[1].id, "2")
     }
 
-    private fun createSubaccountFill(id: String): SubaccountFill {
-        return FillProcessorTests.fillMock.copy(id = id)
+    private fun createSubaccountOrder(id: String): SubaccountOrder {
+        return OrderProcessorTests.orderMock.copy(id = id)
     }
 }

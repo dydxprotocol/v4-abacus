@@ -4,16 +4,16 @@ import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.toJson
-import indexer.codegen.IndexerFillResponse
 import indexer.codegen.IndexerFillResponseObject
-import kotlinx.serialization.json.Json
+import indexer.models.IndexerCompositeOrderObject
+import kotlinx.serialization.json.JsonNull.content
 
 @Suppress("UNCHECKED_CAST")
 internal open class SubaccountProcessor(
@@ -21,7 +21,7 @@ internal open class SubaccountProcessor(
     localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser) {
     internal val assetPositionsProcessor = AssetPositionsProcessor(parser)
-    internal val ordersProcessor = OrdersProcessor(parser)
+    internal val ordersProcessor = OrdersProcessor(parser, localizer)
     private val perpetualPositionsProcessor = PerpetualPositionsProcessor(parser)
     private val fillsProcessor = FillsProcessor(parser, localizer)
     private val transfersProcessor = TransfersProcessor(parser)
@@ -97,12 +97,15 @@ internal open class SubaccountProcessor(
         subscribed: Boolean,
         height: BlockAndTime?,
     ): InternalSubaccountState {
-        val fillResponse = Json.decodeFromString<IndexerFillResponse?>(content.toJson())
-        if (fillResponse == null) {
-            Logger.e { "Unable to parse IndexerFillResponse: $content" }
-        }
+        var state = existing
 
-        return processFills(existing, fillResponse?.fills?.toList(), false)
+        val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
+        state = processFills(state, fills, false)
+
+        val orders = parser.asTypedList<IndexerCompositeOrderObject>(content["orders"])
+        state = processOrders(state, orders, height)
+
+        return state
     }
 
     internal open fun socketDeprecated(
@@ -235,6 +238,23 @@ internal open class SubaccountProcessor(
         } else {
             null
         }
+    }
+
+    private fun processOrders(
+        subaccount: InternalSubaccountState,
+        payload: List<IndexerCompositeOrderObject>?,
+        height: BlockAndTime?,
+    ): InternalSubaccountState {
+        val newOrders = ordersProcessor.process(
+            existing = subaccount.orders,
+            payload = payload ?: emptyList(),
+            subaccountNumber = subaccount.subaccountNumber,
+            height = height,
+        )
+        if (subaccount.orders != newOrders) {
+            subaccount.orders = newOrders
+        }
+        return subaccount
     }
 
     private fun receivedOrders(
