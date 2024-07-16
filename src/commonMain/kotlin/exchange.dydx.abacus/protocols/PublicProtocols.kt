@@ -156,6 +156,7 @@ enum class TransactionType(val rawValue: String) {
     SendNobleIBC("sendNobleIBC"),
     WithdrawToNobleIBC("withdrawToNobleIBC"),
     CctpWithdraw("cctpWithdraw"),
+    CctpMultiMsgWithdraw("cctpMultiMsgWithdraw"),
     SignCompliancePayload("signCompliancePayload"),
     SetSelectedGasDenom("setSelectedGasDenom");
 
