@@ -37,7 +37,7 @@ class V4TransactionErrors {
                 ParsingError(
                     ParsingErrorType.BackendError,
                     "Subaccount update error: $matchedUpdateResult",
-                    "ERRORS.QUERY_ERROR_SUBACCOUNTS_$matchedUpdateResult",
+                    "ERRORS.QUERY_ERROR_SUBACCOUNTS_${matchedUpdateResult.uppercase()}",
                 )
             }
         }
