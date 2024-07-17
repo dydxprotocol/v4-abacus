@@ -44,7 +44,6 @@ class V4TransactionErrors {
     }
 }
 
-
 // Copied from protocol subaccounts update (https://github.com/dydxprotocol/v4-chain/blob/b2dfda2a4b0ea587691c41ba436b46d0d9987a25/protocol/x/subaccounts/types/update.go#L58)
 enum class SubaccountUpdateFailedResult(val rawValue: String) {
     NewlyUndercollateralized("NewlyUndercollateralized"),
