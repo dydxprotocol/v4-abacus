@@ -37,15 +37,10 @@ import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
-import exchange.dydx.abacus.utils.AXELAR_BRIDGE_ID
 import exchange.dydx.abacus.utils.AnalyticsUtils
-import exchange.dydx.abacus.utils.CCTP_BRIDGE_ID
-import exchange.dydx.abacus.utils.IBC_BRIDGE_ID
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.NEUTRON_SWAP_VENUE
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.OSMOSIS_SWAP_VENUE
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
