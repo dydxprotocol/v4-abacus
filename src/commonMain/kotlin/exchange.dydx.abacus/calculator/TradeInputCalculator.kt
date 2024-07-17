@@ -3,6 +3,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.MAJOR_MARKETS
 import exchange.dydx.abacus.calculator.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
@@ -35,11 +36,12 @@ enum class TradeCalculation(val rawValue: String) {
 }
 
 internal object SlippageConstants {
+    val MAJOR_MARKETS = listOf("ETH-USD", "BTC-USD", "SOL-USD")
     const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
-    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
-    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -1568,10 +1570,7 @@ internal class TradeInputCalculator(
                             null
                         }
                     val adjustedslippagePercentage = if (slippagePercentage != null) {
-                        val majorMarket = when (parser.asString(trade["marketId"])) {
-                            "BTC-USD", "ETH-USD" -> true
-                            else -> false
-                        }
+                        val majorMarket = MAJOR_MARKETS.contains(parser.asString(trade["marketId"]))
                         if (majorMarket) {
                             if (type == "STOP_MARKET") {
                                 slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET

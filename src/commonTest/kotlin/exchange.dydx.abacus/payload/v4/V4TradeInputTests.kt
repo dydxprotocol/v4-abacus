@@ -805,7 +805,7 @@ open class V4TradeInputTests : V4BaseTests() {
                 "input": {
                     "trade": {
                         "summary": {
-                            "payloadPrice": 900.0
+                            "payloadPrice": 1000.0
                         }
                     }
                 }
@@ -839,7 +839,7 @@ open class V4TradeInputTests : V4BaseTests() {
                 "input": {
                     "trade": {
                         "summary": {
-                            "payloadPrice": 1800.0
+                            "payloadPrice": 1900.0
                         }
                     }
                 }
