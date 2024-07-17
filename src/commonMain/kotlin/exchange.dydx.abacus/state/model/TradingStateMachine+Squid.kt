@@ -74,7 +74,7 @@ internal fun TradingStateMachine.squidRouteV2(
     }
 }
 
-internal fun TradingStateMachine.squidStatus(
+internal fun TradingStateMachine.routerStatus(
     payload: String,
     transactionId: String?
 ): StateChanges {

@@ -31,11 +31,11 @@ import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerStatus
 import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.routerTrack
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
-import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -614,7 +614,7 @@ internal class OnboardingSupervisor(
         isCctp: Boolean,
         requestId: String?,
     ) {
-        if (stateMachine.useSkip) {
+        if (StatsigConfig.useSkip) {
             fetchTransferStatusSkip(hash, fromChainId)
         } else {
             fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
@@ -1155,7 +1155,7 @@ internal class OnboardingSupervisor(
             )
             helper.get(url, params, header) { _, response, httpCode, _ ->
                 if (response != null) {
-                    update(stateMachine.squidStatus(response, hash), oldState)
+                    update(stateMachine.routerStatus(response, hash), oldState)
                 } else {
                     Logger.e { "fetchTransferStatus error, code: $httpCode" }
                 }
@@ -1181,7 +1181,7 @@ internal class OnboardingSupervisor(
         val url = helper.configs.skipV2Status()
         helper.get(url, params) { _, response, httpCode, _ ->
             if (response != null) {
-                update(stateMachine.squidStatus(response, hash), oldState)
+                update(stateMachine.routerStatus(response, hash), oldState)
             } else {
                 Logger.e { "fetchTransferStatus error, code: $httpCode" }
             }

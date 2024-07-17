@@ -116,12 +116,4 @@ data class PerpetualState(
     fun subaccountFundingPayments(subaccountNumber: Int): IList<SubaccountFundingPayment>? {
         return fundingPayments?.get("$subaccountNumber")
     }
-
-    fun transferStatus(hash: String): TransferStatus? {
-        return transferStatuses?.get(hash)
-    }
-
-    fun trackStatus(hash: String): Boolean? {
-        return trackStatuses?.get(hash)
-    }
 }
