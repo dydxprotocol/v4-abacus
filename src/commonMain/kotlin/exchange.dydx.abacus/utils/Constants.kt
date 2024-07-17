@@ -26,3 +26,13 @@ internal const val GEO_POLLING_DURATION_SECONDS = 10.0
 
 // Autosweep Constants
 internal const val MIN_USDC_AMOUNT_FOR_AUTO_SWEEP = 20000
+
+internal val OSMOSIS_SWAP_VENUE = mapOf(
+    "name" to "osmosis-poolmanager",
+    "chain_id" to "osmosis-1",
+)
+
+internal val NEUTRON_SWAP_VENUE = mapOf(
+    "name" to "neutron-astroport",
+    "chain_id" to "neutron-1",
+)

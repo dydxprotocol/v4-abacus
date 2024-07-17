@@ -40,7 +40,9 @@ import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.NEUTRON_SWAP_VENUE
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.OSMOSIS_SWAP_VENUE
 import exchange.dydx.abacus.utils.SLIPPAGE_PERCENT
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.iMapOf
@@ -283,6 +285,10 @@ internal class OnboardingSupervisor(
                     nobleChainId to accountAddress.toNobleAddress(),
                     neutronChainId to accountAddress.toNeutronAddress(),
                     chainId to accountAddress,
+                ),
+                "swap_venues" to listOf(
+                    OSMOSIS_SWAP_VENUE,
+                    NEUTRON_SWAP_VENUE,
                 ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             )
@@ -1052,6 +1058,10 @@ internal class OnboardingSupervisor(
                 nobleChainId to accountAddress.toNobleAddress(),
                 neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
+            ),
+            "swap_venues" to listOf(
+                OSMOSIS_SWAP_VENUE,
+                NEUTRON_SWAP_VENUE,
             ),
             "allow_multi_tx" to false,
             "allow_unsafe" to true,
