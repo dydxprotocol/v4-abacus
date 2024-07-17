@@ -86,7 +86,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
         size: Double?,
     ): MutableMap<String, Any> {
         val modified = triggerPrices.mutable()
-    val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
+        val entryPrice = parser.asDouble(parser.value(position, "entryPrice.current"))
         val inputType = parser.asString(parser.value(modified, "input"))
         val positionSide = parser.asString(parser.value(position, "resources.indicator.current"))
         val positionSize = parser.asDouble(parser.value(position, "size.current"))?.abs() ?: return modified
