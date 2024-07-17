@@ -80,8 +80,6 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
         return allFormattedMessages
     }
 
-
-
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
