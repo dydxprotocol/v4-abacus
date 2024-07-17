@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.MAJOR_MARKETS
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
@@ -283,10 +284,7 @@ internal class TriggerOrdersInputCalculator(val parser: ParserProtocol) {
             OrderType.TakeProfitMarket, OrderType.StopMarket -> {
                 val triggerPrice =
                     parser.asDouble(parser.value(triggerOrder, "price.triggerPrice"))
-                val majorMarket = when (parser.asString(triggerOrder["marketId"])) {
-                    "BTC-USD", "ETH-USD" -> true
-                    else -> false
-                }
+                val majorMarket = MAJOR_MARKETS.contains(parser.asString(triggerOrder["marketId"]))
                 val slippagePercentage = if (majorMarket) {
                     if (type == OrderType.StopMarket) {
                         STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET

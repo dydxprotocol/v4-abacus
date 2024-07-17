@@ -202,7 +202,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "input": "stopLossOrder.price.triggerPrice"
                             },
                             "summary": {
-                                "price": "800.0"
+                                "price": "900.0"
                             }
                         }
                     }
@@ -334,7 +334,7 @@ class TriggerOrderInputTests : V4BaseTests() {
                                 "input": "takeProfitOrder.price.triggerPrice"
                             },
                             "summary": {
-                                "price": "800.0"
+                                "price": "900.0"
                             }
                         }
                     }
