@@ -37,7 +37,10 @@ import exchange.dydx.abacus.state.model.squidRouteV2
 import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
+import exchange.dydx.abacus.utils.AXELAR_BRIDGE_ID
 import exchange.dydx.abacus.utils.AnalyticsUtils
+import exchange.dydx.abacus.utils.CCTP_BRIDGE_ID
+import exchange.dydx.abacus.utils.IBC_BRIDGE_ID
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NEUTRON_SWAP_VENUE
@@ -64,6 +67,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+
+private val OSMOSIS_SWAP_VENUE = mapOf(
+    "name" to "osmosis-poolmanager",
+    "chain_id" to "osmosis-1",
+)
+
+private val NEUTRON_SWAP_VENUE = mapOf(
+    "name" to "neutron-astroport",
+    "chain_id" to "neutron-1",
+)
+
+
+private const val IBC_BRIDGE_ID = "IBC"
+private const val CCTP_BRIDGE_ID = "CCTP"
+private const val AXELAR_BRIDGE_ID = "AXELAR"
 
 internal class OnboardingSupervisor(
     stateMachine: TradingStateMachine,
@@ -290,6 +308,10 @@ internal class OnboardingSupervisor(
                     OSMOSIS_SWAP_VENUE,
                     NEUTRON_SWAP_VENUE,
                 ),
+                "bridges" to listOf(
+                    IBC_BRIDGE_ID,
+                    AXELAR_BRIDGE_ID,
+                ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             )
 
@@ -347,8 +369,8 @@ internal class OnboardingSupervisor(
             ),
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "bridges" to listOf(
-                "CCTP",
-                "IBC",
+                CCTP_BRIDGE_ID,
+                IBC_BRIDGE_ID,
             ),
         )
         val oldState = stateMachine.state
@@ -1063,6 +1085,10 @@ internal class OnboardingSupervisor(
                 OSMOSIS_SWAP_VENUE,
                 NEUTRON_SWAP_VENUE,
             ),
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+            ),
             "allow_multi_tx" to false,
             "allow_unsafe" to true,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
@@ -1118,8 +1144,8 @@ internal class OnboardingSupervisor(
             "smart_relay" to true,
             "allow_unsafe" to true,
             "bridges" to listOf(
-                "CCTP",
-                "IBC",
+                CCTP_BRIDGE_ID,
+                IBC_BRIDGE_ID,
             ),
         )
         val oldState = stateMachine.state
