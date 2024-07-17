@@ -78,7 +78,6 @@ private val NEUTRON_SWAP_VENUE = mapOf(
     "chain_id" to "neutron-1",
 )
 
-
 private const val IBC_BRIDGE_ID = "IBC"
 private const val CCTP_BRIDGE_ID = "CCTP"
 private const val AXELAR_BRIDGE_ID = "AXELAR"
