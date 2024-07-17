@@ -59,7 +59,10 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
             val itemString: String? = asString(item)
             if (itemString != null) {
                 try {
-                    val json = Json { ignoreUnknownKeys = true }
+                    val json = Json {
+                        ignoreUnknownKeys = true;
+                        coerceInputValues = true
+                    }
                     json.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
                     val typeClassifier = typeOf<T>().classifier
@@ -88,7 +91,10 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
     }
     return if (itemString != null) {
         try {
-            val json = Json { ignoreUnknownKeys = true }
+            val json = Json {
+                ignoreUnknownKeys = true;
+                coerceInputValues = true
+            }
             json.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
             val typeClassifier = typeOf<T>().classifier
