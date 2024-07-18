@@ -7,7 +7,6 @@ import exchange.dydx.abacus.utils.toJson
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import kotlin.reflect.typeOf
 
 interface ParserProtocol {
     // parse a field to string
@@ -65,11 +64,11 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
                     }
                     json.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
-                    val typeClassifier = typeOf<T>().classifier
-                    Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}" }
+                    val className = (T::class).simpleName
+                    Logger.e { "Failed to parse item: $item as $className: ${e.message}" }
                     null
                 } catch (e: IllegalArgumentException) {
-                    val typeClassifier = typeOf<T>().classifier
+                    val className = (T::class).simpleName
                     Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}" }
                     null
                 }
@@ -97,12 +96,12 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
             }
             json.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
-            val typeClassifier = typeOf<T>().classifier
-            Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}\"" }
+            val className = (T::class).simpleName
+            Logger.e { "Failed to parse item: $item as $className: ${e.message}\"" }
             null
         } catch (e: IllegalArgumentException) {
-            val typeClassifier = typeOf<T>().classifier
-            Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}\"" }
+            val className = (T::class).simpleName
+            Logger.e { "Failed to parse item: $item as $className: ${e.message}\"" }
             null
         }
     } else {
