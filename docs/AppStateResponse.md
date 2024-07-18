@@ -28,7 +28,7 @@ Note, state is immutable. When data changes, a new object is created. So you can
 
 This applies to all child objects too.
 
-For example, state has a wallet object. A market update may changes the marketsSummary object, but not the wallet object. In this case, you can check the pointer and update markets UI only, but not portfolio.
+For example, state has a wallet object. A market update may changes the marketsSummary object, but not the wallet object. In this case, you can check the pointer and update markets UI only, but not the portfolio.
 
 # changes
 
