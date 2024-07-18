@@ -28,5 +28,5 @@ data class IndexerAssetPositionResponseObject(
     val side: IndexerPositionSide? = null,
     val size: kotlin.String? = null,
     val assetId: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )

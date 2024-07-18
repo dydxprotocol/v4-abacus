@@ -67,6 +67,7 @@ import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
+import kollections.toIMap
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -79,13 +80,20 @@ import kotlin.time.Duration.Companion.days
 internal typealias LoadingFunction = () -> StateResponse
 internal typealias VerificationFunction = (response: StateResponse) -> Unit
 
-open class BaseTests(private val maxSubaccountNumber: Int, internal val useParentSubaccount: Boolean) {
+open class BaseTests(
+    private val maxSubaccountNumber: Int,
+    private val useParentSubaccount: Boolean,
+    private val staticTyping: Boolean = true, // turn on static typing for testing
+) {
     open val doAsserts = true
     internal val deploymentUri = "https://api.examples.com"
     internal val doesntMatchText = "doesn't match"
     internal val parser = Parser()
     internal val mock = AbacusMockData()
-    internal var perp = createState(useParentSubaccount)
+    internal var perp = createState(
+        useParentSubaccount = useParentSubaccount,
+        staticTyping = staticTyping,
+    )
 
     companion object {
         fun testIOImplementations(): IOImplementations {
@@ -115,7 +123,10 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         }
     }
 
-    internal open fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
+    internal open fun createState(
+        useParentSubaccount: Boolean,
+        staticTyping: Boolean
+    ): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
             environment = mock.v4Environment,
@@ -123,6 +134,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
             formatter = null,
             maxSubaccountNumber = maxSubaccountNumber,
             useParentSubaccount = useParentSubaccount,
+            staticTyping = staticTyping,
         )
     }
 
@@ -204,11 +216,18 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         verifyConfigs(perp.configs, state?.configs, "configs")
         verifyWalletState(perp.wallet, state?.wallet, "wallet")
         verifyAccountState(perp.account, state?.account, "account")
-        verifySubaccountFillsState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.fills,
-            "fills",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.wallet.account.subaccounts) {
+                assertEquals(value.fills ?: emptyList(), state?.fills?.get("$key") ?: emptyList())
+            }
+        } else {
+            verifySubaccountFillsState(
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.fills,
+                "fills",
+            )
+        }
+
         verifySubaccountTransfersState(
             parser.asNativeMap(perp.account?.get("subaccounts")),
             state?.transfers,
@@ -225,7 +244,11 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
             ServerTime.now() - perp.historicalPnlDays.days,
             "historicalPnl",
         )
-        verifyAssetsState(perp.assets, state?.assets, "assets")
+        if (staticTyping) {
+            assertEquals(perp.internalState.assets.toIMap(), state?.assets ?: emptyMap())
+        } else {
+            verifyAssetsState(perp.assets, state?.assets, "assets")
+        }
         verifyMarketsState(
             perp.marketsSummary,
             perp.assets,

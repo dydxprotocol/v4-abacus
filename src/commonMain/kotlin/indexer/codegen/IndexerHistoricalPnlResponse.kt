@@ -23,8 +23,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IndexerHistoricalPnlResponse(
 
-    val pageSize: kotlin.Double? = null,
-    val totalResults: kotlin.Double? = null,
-    val offset: kotlin.Double? = null,
+    val pageSize: kotlin.Int? = null,
+    val totalResults: kotlin.Int? = null,
+    val offset: kotlin.Int? = null,
     val historicalPnl: kotlin.Array<IndexerPnlTicksResponseObject>? = null
 )

@@ -50,5 +50,5 @@ data class IndexerPerpetualPositionResponseObject(
     val unrealizedPnl: kotlin.String? = null,
     val closedAt: IndexerIsoString? = null,
     val exitPrice: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )

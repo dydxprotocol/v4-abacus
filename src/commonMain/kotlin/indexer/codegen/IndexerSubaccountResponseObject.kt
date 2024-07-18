@@ -29,7 +29,7 @@ import kotlinx.serialization.Serializable
 data class IndexerSubaccountResponseObject(
 
     val address: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null,
+    val subaccountNumber: kotlin.Int? = null,
     val equity: kotlin.String? = null,
     val freeCollateral: kotlin.String? = null,
     val openPerpetualPositions: IndexerPerpetualPositionsMap? = null,

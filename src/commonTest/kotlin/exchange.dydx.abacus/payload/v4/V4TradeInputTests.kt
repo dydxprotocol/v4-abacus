@@ -4,7 +4,6 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
-import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadv4Accounts
 import kotlin.test.Test
 
