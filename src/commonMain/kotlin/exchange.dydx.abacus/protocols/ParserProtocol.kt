@@ -69,7 +69,7 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
                     null
                 } catch (e: IllegalArgumentException) {
                     val className = (T::class).simpleName
-                    Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}" }
+                    Logger.e { "Failed to parse item: $item as $className: ${e.message}" }
                     null
                 }
             } else {
