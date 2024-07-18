@@ -26,7 +26,7 @@ internal class HistoricalFundingsProcessor(parser: ParserProtocol) : BaseProcess
                     history.add(item)
                 }
             }
-            return merge(
+            return mergeDeprecated(
                 parser,
                 existing,
                 history.reversed().toList(),

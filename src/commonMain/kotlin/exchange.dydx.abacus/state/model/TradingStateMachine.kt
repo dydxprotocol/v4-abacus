@@ -1268,10 +1268,6 @@ open class TradingStateMachine(
                 val start = now - historicalPnlDays.days
                 val modifiedHistoricalPnl = historicalPnl?.toIMutableMap() ?: mutableMapOf()
                 var subaccountHistoricalPnl = historicalPnl?.get(subaccountText)
-                val subaccountHistoricalPnlData =
-                    (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
-                        ?: mutableListOf()
-
                 if (subaccountHistoricalPnl?.size == 1) {
                     // Check if the PNL was generated from equity
                     val first = subaccountHistoricalPnl.firstOrNull()
@@ -1279,12 +1275,24 @@ open class TradingStateMachine(
                         subaccountHistoricalPnl = null
                     }
                 }
-                subaccountHistoricalPnl = SubaccountHistoricalPNL.create(
-                    subaccountHistoricalPnl,
-                    parser,
-                    subaccountHistoricalPnlData,
-                    start,
-                )
+
+                if (staticTyping) {
+                    subaccountHistoricalPnl =
+                        internalState.wallet.account.subaccounts[subaccountNumber]?.historicalPNLs?.toIList()?.filter {
+                            it.createdAtMilliseconds >= start.toEpochMilliseconds()
+                        }
+                } else {
+                    val subaccountHistoricalPnlData =
+                        (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
+                            ?: mutableListOf()
+
+                    subaccountHistoricalPnl = SubaccountHistoricalPNL.create(
+                        existing = subaccountHistoricalPnl,
+                        parser = parser,
+                        data = subaccountHistoricalPnlData,
+                        startTime = start,
+                    )
+                }
                 modifiedHistoricalPnl.typedSafeSet(subaccountText, subaccountHistoricalPnl)
                 historicalPnl = modifiedHistoricalPnl
             }

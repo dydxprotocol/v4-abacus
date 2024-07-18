@@ -13,7 +13,7 @@ internal class CandlesProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         existing: List<Any>?,
         payload: List<Any>
     ): List<Any>? {
-        return merge(
+        return mergeDeprecated(
             parser,
             existing,
             parser.asNativeList(payload)?.reversed()?.toList(),
@@ -61,7 +61,7 @@ internal class CandlesProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
                     candles.add(candle)
                 }
             }
-            val mergedResolution = merge(
+            val mergedResolution = mergeDeprecated(
                 parser,
                 existingResolution,
                 candles,
