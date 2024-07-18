@@ -90,7 +90,6 @@ class AnalyticsUtils {
      * Format Place Order Payload and add additional details for `TradePlaceOrder` Analytic Events
      * @param payload HumanReadablePlaceOrderPayload
      * @param midMarketPrice Double?
-     * @param sizeInput String?
      * @param fromSlTpDialog Boolean?
      * @param isClosePosition Boolean?
      */
