@@ -1571,8 +1571,9 @@ internal class SubaccountSupervisor(
         val subaccounts = stateMachine.state?.account?.subaccounts ?: return
 
         val subaccountQuoteBalanceMap = subaccounts.mapValues { subaccount ->
-            // If the subaccount is the parentSubaccount, skip
-            if (subaccount.value.subaccountNumber == subaccountNumber) {
+            val currentSubaccountNumber = subaccount.value.subaccountNumber
+            // If the current subaccount is the parent, or if it's is not a child of parent subaccount 0 (reserved for FE), skip
+            if (currentSubaccountNumber == subaccountNumber || currentSubaccountNumber < NUM_PARENT_SUBACCOUNTS || currentSubaccountNumber % NUM_PARENT_SUBACCOUNTS != 0) {
                 return@mapValues 0.0
             }
 
