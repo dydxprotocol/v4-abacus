@@ -17,7 +17,7 @@ internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseP
                 history.add(itemProcessor.received(null, it))
             }
         }
-        return merge(
+        return mergeDeprecated(
             parser,
             existing,
             history,

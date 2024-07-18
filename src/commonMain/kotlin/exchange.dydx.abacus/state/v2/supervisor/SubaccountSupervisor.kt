@@ -80,6 +80,7 @@ import kollections.iMutableMapOf
 import kollections.toIList
 import kollections.toIMap
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -258,40 +259,81 @@ internal class SubaccountSupervisor(
         val url = helper.configs.privateApiUrl(if (configs.useParentSubaccount) "parent-historical-pnl" else "historical-pnl") ?: return
         val params = if (configs.useParentSubaccount) parentSubaccountParams() else subaccountParams()
 
-        val historicalPnl = helper.parser.asNativeList(
-            helper.parser.value(
-                stateMachine.data,
-                "wallet.account.subaccounts.$subaccountNumber.historicalPnl",
-            ),
-        )?.mutable()
+        if (stateMachine.staticTyping) {
+            val historicalPNLs = stateMachine.internalState.wallet.account.subaccounts[subaccountNumber]?.historicalPNLs
+            // TODO: remove last if calculated
+//              if (historicalPNLs != null) {
+//                val last = historicalPNLs.lastOrNull()
+//                if (last != null && last.calculated) {
+//                    historicalPNLs.removeLast()
+//                }
+//            }
 
-        if (historicalPnl != null) {
-            val last = helper.parser.asMap(historicalPnl.lastOrNull())
-            if (helper.parser.asBool(last?.get("calculated")) == true) {
-                historicalPnl.removeLast()
+            helper.retrieveTimed(
+                url = url,
+                items = historicalPNLs,
+                timeField = { item ->
+                    item?.createdAtMilliseconds?.toLong()?.let {
+                        Instant.fromEpochMilliseconds(it)
+                    }
+                },
+                sampleDuration = 1.days,
+                maxDuration = 90.days,
+                beforeParam = "createdBeforeOrAt",
+                afterParam = "createdOnOrAfter",
+                additionalParams = params,
+                previousUrl = previousUrl,
+            ) { url, response, httpCode, _ ->
+                val oldState = stateMachine.state
+                if (helper.success(httpCode) && !response.isNullOrEmpty()) {
+                    val changes = stateMachine.historicalPnl(
+                        payload = response,
+                        subaccountNumber = subaccountNumber,
+                    )
+                    update(changes, oldState)
+                    if (changes.changes.contains(Changes.historicalPnl)) {
+                        retrieveHistoricalPnls(url)
+                    }
+                }
             }
-        }
+        } else {
+            val historicalPnl = helper.parser.asNativeList(
+                helper.parser.value(
+                    stateMachine.data,
+                    "wallet.account.subaccounts.$subaccountNumber.historicalPnl",
+                ),
+            )?.mutable()
 
-        helper.retrieveTimed(
-            url,
-            historicalPnl,
-            "createdAt",
-            1.days,
-            90.days,
-            "createdBeforeOrAt",
-            "createdOnOrAfter",
-            params,
-            previousUrl,
-        ) { url, response, httpCode, _ ->
-            val oldState = stateMachine.state
-            if (helper.success(httpCode) && !response.isNullOrEmpty()) {
-                val changes = stateMachine.historicalPnl(
-                    payload = response,
-                    subaccountNumber = subaccountNumber,
-                )
-                update(changes, oldState)
-                if (changes.changes.contains(Changes.historicalPnl)) {
-                    retrieveHistoricalPnls(url)
+            if (historicalPnl != null) {
+                val last = helper.parser.asMap(historicalPnl.lastOrNull())
+                if (helper.parser.asBool(last?.get("calculated")) == true) {
+                    historicalPnl.removeLast()
+                }
+            }
+
+            helper.retrieveTimed(
+                url = url,
+                items = historicalPnl,
+                timeField = { item ->
+                    helper.parser.asDatetime(helper.parser.asMap(item)?.get("createdAt"))
+                },
+                sampleDuration = 1.days,
+                maxDuration = 90.days,
+                beforeParam = "createdBeforeOrAt",
+                afterParam = "createdOnOrAfter",
+                additionalParams = params,
+                previousUrl = previousUrl,
+            ) { url, response, httpCode, _ ->
+                val oldState = stateMachine.state
+                if (helper.success(httpCode) && !response.isNullOrEmpty()) {
+                    val changes = stateMachine.historicalPnl(
+                        payload = response,
+                        subaccountNumber = subaccountNumber,
+                    )
+                    update(changes, oldState)
+                    if (changes.changes.contains(Changes.historicalPnl)) {
+                        retrieveHistoricalPnls(url)
+                    }
                 }
             }
         }
@@ -1400,7 +1442,7 @@ internal class SubaccountSupervisor(
         return HumanReadableSubaccountTransferPayload(
             senderAddress = accountAddress,
             subaccountNumber = sourceSubaccountNumber,
-            amount,
+            amount = amount,
             destinationAddress = accountAddress,
             destinationSubaccountNumber = recipientSubaccountNumber,
         )
