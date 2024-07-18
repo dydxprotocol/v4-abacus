@@ -213,7 +213,7 @@ data class AppConfigsV2(
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketsConfigs.forApp,
-            accountConfigs = AccountConfigs.forApp,
+            accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = false,
             enableLogger = true,
