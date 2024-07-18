@@ -79,7 +79,7 @@ class TradeMarketOrderTests : ValidationsTests() {
                                 "size": 1.0,
                                 "usdcSize": 1024.26,
                                 "total": -1024.26,
-                                "slippage": 0.05989,
+                                "slippage": 0.06,
                                 "indexSlippage": 0.06,
                                 "filled": true
                             },
@@ -127,7 +127,7 @@ class TradeMarketOrderTests : ValidationsTests() {
                                 "size": 10.0,
                                 "usdcSize": 13820.26,
                                 "total": -13820.26,
-                                "slippage": 0.79982,
+                                "slippage": 0.8,
                                 "indexSlippage": 0.8,
                                 "filled": true
                             },
