@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.processor
+package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol

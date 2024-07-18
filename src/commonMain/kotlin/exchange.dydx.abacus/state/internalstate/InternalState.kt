@@ -14,7 +14,16 @@ internal data class InternalState(
 
 internal data class InternalWalletState(
     var account: InternalAccountState = InternalAccountState(),
+    var user: InternalUserState? = null,
     var walletAddress: String? = null,
+)
+
+internal data class InternalUserState(
+    var feeTierId: String? = null,
+    var makerFeeRate: Double? = null,
+    var takerFeeRate: Double? = null,
+    var makerVolume30D: Double? = null,
+    var takerVolume30D: Double? = null,
 )
 
 internal data class InternalAccountState(

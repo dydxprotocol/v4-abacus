@@ -13,6 +13,8 @@ import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainUserFeeTierResponse
+import indexer.models.chain.OnChainUserStatsResponse
 
 internal class WalletProcessor(
     parser: ParserProtocol,
@@ -199,22 +201,20 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedUser(
-        existing: Map<String, Any>?,
-        payload: Map<String, Any>?,
-    ): Map<String, Any>? {
-        return receivedObject(
-            existing,
-            "user",
-            parser.asNativeMap(payload?.get("user")),
-        ) { existing, payload ->
-            parser.asNativeMap(payload)?.let {
-                userProcessor.received(parser.asNativeMap(existing), it)
-            }
+    internal fun processOnChainUserFeeTier(
+        existing: InternalWalletState,
+        payload: OnChainUserFeeTierResponse?,
+    ): InternalWalletState {
+        val user = userProcessor.processOnChainUserFeeTier(
+            existing = existing.user,
+            payload = payload?.tier,
+        )
+        if (user != existing.user) {
+            existing.user = user
         }
+        return existing
     }
-
-    internal fun receivedOnChainUserFeeTier(
+    internal fun receivedOnChainUserFeeTierDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
@@ -224,18 +224,32 @@ internal class WalletProcessor(
             parser.asNativeMap(payload?.get("tier")),
         ) { existing, payload ->
             parser.asNativeMap(payload)?.let {
-                userProcessor.receivedOnChainUserFeeTier(parser.asNativeMap(existing), it)
+                userProcessor.receivedOnChainUserFeeTierDeprecated(parser.asNativeMap(existing), it)
             }
         }
     }
 
-    internal fun receivedOnChainUserStats(
+    internal fun processOnChainUserStats(
+        existing: InternalWalletState,
+        payload: OnChainUserStatsResponse?,
+    ): InternalWalletState {
+        val user = userProcessor.processOnChainUserStats(
+            existing = existing.user,
+            payload = payload,
+        )
+        if (user != existing.user) {
+            existing.user = user
+        }
+        return existing
+    }
+
+    internal fun receivedOnChainUserStatsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "user", payload) { existing, payload ->
             parser.asNativeMap(payload)?.let {
-                userProcessor.receivedOnChainUserStats(parser.asNativeMap(existing), it)
+                userProcessor.receivedOnChainUserStatsDeprecated(parser.asNativeMap(existing), it)
             }
         }
     }
