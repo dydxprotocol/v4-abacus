@@ -1,7 +1,9 @@
 package exchange.dydx.abacus.payload.v4
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.historicalTradingRewards
@@ -1105,13 +1107,32 @@ class V4AccountTests : V4BaseTests() {
 
     @Test
     fun testAccountBalances() {
-        test(
-            {
-                val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+        if (perp.staticTyping) {
+            val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
+            perp.update(changes)
+            assertEquals(perp.internalState.wallet.account.balances?.size, 2)
+            assertEquals(
+                perp.internalState.wallet.account.balances?.get("ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5"),
+                InternalAccountBalanceState(
+                    "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                    110.0.toBigDecimal(),
+                ),
+            )
+            assertEquals(
+                perp.internalState.wallet.account.balances?.get("dv4tnt"),
+                InternalAccountBalanceState(
+                    "dv4tnt",
+                    1220.0.toBigDecimal(),
+                ),
+            )
+        } else {
+            test(
+                {
+                    val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1128,10 +1149,11 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test

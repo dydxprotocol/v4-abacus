@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.MarginCalculator
+import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.changes.Changes
@@ -8,6 +9,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
 import indexer.codegen.IndexerFillResponse
+import indexer.models.chain.OnChainAccountBalanceObject
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
@@ -230,8 +232,19 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
     return try {
         val json = Json.parseToJsonElement(payload)
         val account = json.jsonArray.toList()
-        this.wallet = walletProcessor.receivedAccountBalances(wallet, account)
-        return StateChanges(iListOf(Changes.accountBalances), null)
+        if (staticTyping) {
+            val response = parser.asTypedList<OnChainAccountBalanceObject>(account)
+            val oldValue = internalState.wallet.account.balances
+            walletProcessor.processAccountBalances(internalState.wallet, response)
+            if (oldValue != internalState.wallet.account.balances) {
+                return StateChanges(iListOf(Changes.accountBalances), null)
+            } else {
+                return StateChanges(iListOf())
+            }
+        } else {
+            this.wallet = walletProcessor.receivedAccountBalances(wallet, account)
+            return StateChanges(iListOf(Changes.accountBalances), null)
+        }
     } catch (exception: SerializationException) { // JSON Deserialization exception
         Logger.e {
             "Failed to deserialize onChainAccountBalances: $payload \n" +

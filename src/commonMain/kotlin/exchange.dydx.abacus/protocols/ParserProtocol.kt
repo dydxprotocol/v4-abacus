@@ -50,6 +50,11 @@ interface ParserProtocol {
     fun decodeJsonArray(text: String?): IList<Any>?
 }
 
+val jsonCoder = Json {
+    ignoreUnknownKeys = true;
+    coerceInputValues = true
+}
+
 inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
     val payload = asNativeList(list) ?: return null
     return payload.mapNotNull { item ->
@@ -59,11 +64,7 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
             val itemString: String? = asString(item)
             if (itemString != null) {
                 try {
-                    val json = Json {
-                        ignoreUnknownKeys = true;
-                        coerceInputValues = true
-                    }
-                    json.decodeFromString<T>(itemString)
+                    jsonCoder.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
                     val typeClassifier = typeOf<T>().classifier
                     Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}" }
@@ -91,11 +92,7 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
     }
     return if (itemString != null) {
         try {
-            val json = Json {
-                ignoreUnknownKeys = true;
-                coerceInputValues = true
-            }
-            json.decodeFromString<T>(itemString)
+            jsonCoder.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
             val typeClassifier = typeOf<T>().classifier
             Logger.e { "Failed to parse item: $item as $typeClassifier: ${e.message}\"" }
