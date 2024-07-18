@@ -329,7 +329,7 @@ internal class OrderProcessor(
                 listOf(
                     IndexerAPIOrderStatus.FILLED,
                     IndexerAPIOrderStatus.CANCELED,
-                    IndexerAPIOrderStatus.BESTEFFORTCANCELED,
+                    IndexerAPIOrderStatus.BEST_EFFORT_CANCELED,
                 ).contains(payload.status)
             }
 

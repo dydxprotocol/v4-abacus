@@ -28,8 +28,15 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
-    override fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
-        return PerpTradingStateMachine(mock.v4Environment, null, null, 127, useParentSubaccount)
+    override fun createState(useParentSubaccount: Boolean, staticTyping: Boolean): PerpTradingStateMachine {
+        return PerpTradingStateMachine(
+            environment = mock.v4Environment,
+            localizer = null,
+            formatter = null,
+            maxSubaccountNumber = 127,
+            useParentSubaccount = useParentSubaccount,
+            staticTyping = staticTyping,
+        )
     }
 
     internal open fun loadMarkets(): StateResponse {

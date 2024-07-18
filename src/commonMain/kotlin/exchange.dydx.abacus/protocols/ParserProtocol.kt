@@ -64,10 +64,12 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
                     }
                     json.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
-                    Logger.e { "Failed to parse item: $item" }
+                    val className = (T::class).simpleName
+                    Logger.e { "Failed to parse item: $item as $className: ${e.message}" }
                     null
                 } catch (e: IllegalArgumentException) {
-                    Logger.e { "Failed to parse item: $item" }
+                    val className = (T::class).simpleName
+                    Logger.e { "Failed to parse item: $item as $className: ${e.message}" }
                     null
                 }
             } else {
@@ -94,10 +96,12 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
             }
             json.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
-            Logger.e { "Failed to parse item: $item" }
+            val className = (T::class).simpleName
+            Logger.e { "Failed to parse item: $item as $className: ${e.message}\"" }
             null
         } catch (e: IllegalArgumentException) {
-            Logger.e { "Failed to parse item: $item" }
+            val className = (T::class).simpleName
+            Logger.e { "Failed to parse item: $item as $className: ${e.message}\"" }
             null
         }
     } else {

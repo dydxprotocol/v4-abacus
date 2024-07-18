@@ -120,17 +120,19 @@ internal open class MarketSupervisor(
         )
 
         return helper.retrieveTimed(
-            "$url/$marketId",
-            marketCandles,
-            "startedAt",
-            resolutionDuration,
-            maxDuration,
-            "toISO",
-            "fromISO",
-            mapOf(
+            url = "$url/$marketId",
+            items = marketCandles,
+            timeField = { item ->
+                helper.parser.asDatetime(helper.parser.asMap(item)?.get("startedAt"))
+            },
+            sampleDuration = resolutionDuration,
+            maxDuration = maxDuration,
+            beforeParam = "toISO",
+            afterParam = "fromISO",
+            additionalParams = mapOf(
                 "resolution" to candleResolution,
             ),
-            null,
+            previousUrl = null,
         ) { _, response, httpCode, _ ->
             val oldState = stateMachine.state
             if (helper.success(httpCode) && response != null) {

@@ -18,13 +18,15 @@ import kotlinx.serialization.Serializable
  * @param pageSize
  * @param totalResults
  * @param offset
- * @param transfers
+ * @param transfersSubset
+ * @param totalNetTransfers
  */
 @Serializable
-data class IndexerTransferResponse(
+data class IndexerTransferBetweenResponse(
 
     val pageSize: kotlin.Int? = null,
     val totalResults: kotlin.Int? = null,
     val offset: kotlin.Int? = null,
-    val transfers: kotlin.Array<IndexerTransferResponseObject>? = null
+    val transfersSubset: kotlin.Array<IndexerTransferResponseObject>? = null,
+    val totalNetTransfers: kotlin.String? = null
 )
