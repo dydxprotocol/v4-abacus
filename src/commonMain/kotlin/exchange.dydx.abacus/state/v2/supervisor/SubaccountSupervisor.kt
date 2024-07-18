@@ -1068,6 +1068,7 @@ internal class SubaccountSupervisor(
             if (trade.options?.needsTriggerPrice == true) trade.price?.triggerPrice else null
 
         val size = summary.size ?: throw Exception("size is null")
+        val sizeInput = trade.size?.input
         val reduceOnly = if (trade.options?.needsReduceOnly == true) trade.reduceOnly else null
         val postOnly = if (trade.options?.needsPostOnly == true) trade.postOnly else null
 
@@ -1119,6 +1120,7 @@ internal class SubaccountSupervisor(
             price,
             triggerPrice,
             size,
+            sizeInput,
             reduceOnly,
             postOnly,
             timeInForce,
@@ -1135,6 +1137,8 @@ internal class SubaccountSupervisor(
         val type = triggerOrder.type?.rawValue ?: error("type is null")
         val side = triggerOrder.side?.rawValue ?: error("side is null")
         val size = triggerOrder.summary?.size ?: error("size is null")
+        // TP/SL orders always have a null sizeInput. Users can only input by asset size.
+        val sizeInput = null
 
         val price = triggerOrder.summary.price ?: error("summary.price is null")
         val triggerPrice = triggerOrder.price?.triggerPrice ?: error("triggerPrice is null")
@@ -1177,6 +1181,7 @@ internal class SubaccountSupervisor(
             price,
             triggerPrice,
             size,
+            sizeInput,
             reduceOnly,
             postOnly,
             timeInForce,
@@ -1261,6 +1266,7 @@ internal class SubaccountSupervisor(
         val side = closePosition.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
         val size = summary.size ?: throw Exception("size is null")
+        val sizeInput = null
         val timeInForce = "IOC"
         val execution = "DEFAULT"
         val reduceOnly = true
@@ -1279,6 +1285,7 @@ internal class SubaccountSupervisor(
             price,
             null,
             size,
+            sizeInput,
             reduceOnly,
             postOnly,
             timeInForce,
