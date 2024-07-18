@@ -49,12 +49,12 @@ interface ParserProtocol {
     fun decodeJsonArray(text: String?): IList<Any>?
 }
 
-val jsonCoder = Json {
+private val jsonCoder = Json {
     ignoreUnknownKeys = true;
     coerceInputValues = true
 }
 
-inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
+internal inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
     val payload = asNativeList(list) ?: return null
     return payload.mapNotNull { item ->
         if (item is T) {
@@ -80,7 +80,7 @@ inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {
     }
 }
 
-inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
+internal inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
     if (item is T) {
         return item
     }
@@ -106,7 +106,7 @@ inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
     }
 }
 
-inline fun <reified T> ParserProtocol.asTypedStringMap(payload: Map<String, Any>?): Map<String, T>? {
+internal inline fun <reified T> ParserProtocol.asTypedStringMap(payload: Map<String, Any>?): Map<String, T>? {
     if (payload == null) {
         return null
     }
