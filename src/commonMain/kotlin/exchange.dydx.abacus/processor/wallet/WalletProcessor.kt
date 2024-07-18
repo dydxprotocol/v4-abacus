@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 
 internal class WalletProcessor(
@@ -239,7 +240,23 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedHistoricalPnls(
+    internal fun processHistoricalPnls(
+        existing: InternalWalletState,
+        payload: List<IndexerPnlTicksResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalWalletState {
+        val newAccount = v4accountProcessor.processHistoricalPnls(
+            existing = existing.account,
+            payload = payload,
+            subaccountNumber = subaccountNumber,
+        )
+        if (newAccount != existing.account) {
+            existing.account = newAccount
+        }
+        return existing
+    }
+
+    internal fun receivedHistoricalPnlsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         subaccountNumber: Int,

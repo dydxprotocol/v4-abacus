@@ -12,8 +12,8 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.IndexerCompositeOrderObject
-import kotlinx.serialization.json.JsonNull.content
 
 @Suppress("UNCHECKED_CAST")
 internal open class SubaccountProcessor(
@@ -395,7 +395,21 @@ internal open class SubaccountProcessor(
         }
     }
 
-    internal fun receivedHistoricalPnls(
+    internal fun processsHistoricalPNLs(
+        existing: InternalSubaccountState,
+        payload: List<IndexerPnlTicksResponseObject>?,
+    ): InternalSubaccountState {
+        val newHistoricalPNLs = historicalPNLsProcessor.process(
+            existing = existing.historicalPNLs,
+            payload = payload ?: emptyList(),
+        )
+        if (existing.historicalPNLs != newHistoricalPNLs) {
+            existing.historicalPNLs = newHistoricalPNLs
+        }
+        return existing
+    }
+
+    internal fun receivedHistoricalPnlsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
