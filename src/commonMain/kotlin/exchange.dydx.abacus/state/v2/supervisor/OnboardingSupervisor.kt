@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import RpcConfigsProcessor
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
@@ -22,7 +23,10 @@ import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
+import exchange.dydx.abacus.state.manager.Platform
+import exchange.dydx.abacus.state.manager.RpcConfigs
 import exchange.dydx.abacus.state.manager.StatsigConfig
+import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
@@ -49,10 +53,29 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+
+private val OSMOSIS_SWAP_VENUE = mapOf(
+    "name" to "osmosis-poolmanager",
+    "chain_id" to "osmosis-1",
+)
+
+private val NEUTRON_SWAP_VENUE = mapOf(
+    "name" to "neutron-astroport",
+    "chain_id" to "neutron-1",
+)
+
+private const val IBC_BRIDGE_ID = "IBC"
+private const val CCTP_BRIDGE_ID = "CCTP"
+private const val AXELAR_BRIDGE_ID = "AXELAR"
 
 internal class OnboardingSupervisor(
     stateMachine: TradingStateMachine,
@@ -73,7 +96,9 @@ internal class OnboardingSupervisor(
 
     private fun retrieveAssetsFromRouter() {
         if (StatsigConfig.useSkip) {
-            retrieveSkipTransferChains()
+            CoroutineScope(Dispatchers.Unconfined).launch {
+                retrieveSkipTransferChains()
+            }
             retrieveSkipTransferTokens()
         } else {
             retrieveTransferAssets()
@@ -81,12 +106,26 @@ internal class OnboardingSupervisor(
         retrieveCctpChainIds()
     }
 
-    private fun retrieveSkipTransferChains() {
-        val oldState = stateMachine.state
+    private suspend fun retrieveSkipTransferChains() = coroutineScope {
         val chainsUrl = helper.configs.skipV1Chains()
-        helper.get(chainsUrl, null, null) { _, response, httpCode, _ ->
-            if (helper.success(httpCode) && response != null) {
-                update(stateMachine.routerChains(response), oldState)
+        val chainsRequestDeferred = async { helper.getAsync(chainsUrl, null, null).response }
+
+        // web does not need rpc endpoints to be available since web uses wagmi sdk for this
+        if (SystemUtils.platform == Platform.android || SystemUtils.platform == Platform.ios) {
+            // Fetch RPC endpoints in parallel with chains fetch for efficiency
+            async { updateChainRpcEndpoints() }.await()
+        }
+
+        chainsRequestDeferred.await()?.let { chainsResponse ->
+            update(stateMachine.routerChains(chainsResponse), stateMachine.state)
+        }
+    }
+
+    private suspend fun updateChainRpcEndpoints() {
+        val url = "${helper.deploymentUri}/configs/rpc.json"
+        helper.getAsync(url).response?.let { response ->
+            RpcConfigsProcessor(helper.parser, configs.alchemyApiKey).received(response).let { rpcMap ->
+                RpcConfigs.chainRpcMap = rpcMap
             }
         }
     }
@@ -259,6 +298,14 @@ internal class OnboardingSupervisor(
                     neutronChainId to accountAddress.toNeutronAddress(),
                     chainId to accountAddress,
                 ),
+                "swap_venues" to listOf(
+                    OSMOSIS_SWAP_VENUE,
+                    NEUTRON_SWAP_VENUE,
+                ),
+                "bridges" to listOf(
+                    IBC_BRIDGE_ID,
+                    AXELAR_BRIDGE_ID,
+                ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             )
 
@@ -316,8 +363,8 @@ internal class OnboardingSupervisor(
             ),
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "bridges" to listOf(
-                "CCTP",
-                "IBC",
+                CCTP_BRIDGE_ID,
+                IBC_BRIDGE_ID,
             ),
         )
         val oldState = stateMachine.state
@@ -1028,7 +1075,15 @@ internal class OnboardingSupervisor(
                 neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
             ),
-            "allow_multi_tx" to true,
+            "swap_venues" to listOf(
+                OSMOSIS_SWAP_VENUE,
+                NEUTRON_SWAP_VENUE,
+            ),
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+            ),
+            "allow_multi_tx" to false,
             "allow_unsafe" to true,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
         )
@@ -1082,6 +1137,10 @@ internal class OnboardingSupervisor(
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "smart_relay" to true,
             "allow_unsafe" to true,
+            "bridges" to listOf(
+                CCTP_BRIDGE_ID,
+                IBC_BRIDGE_ID,
+            ),
         )
         val oldState = stateMachine.state
         val header = iMapOf(
@@ -1462,13 +1521,14 @@ internal class OnboardingSupervisor(
                             } else {
                                 pendingCctpWithdraw = CctpWithdrawState(
 //                                    we use skip state with squid route
-                                    state?.input?.transfer?.requestPayload?.data,
-                                    callback,
+                                    singleMessagePayload = state?.input?.transfer?.requestPayload?.data,
+                                    callback = callback,
+                                    multiMessagePayload = null,
                                 )
                             }
                         }
                     } else {
-                        Logger.e { "cctpToNoble error, code: $code" }
+                        Logger.e { "cctpToNobleSquid error, code: $code" }
                         val error = ParsingError(
                             ParsingErrorType.MissingContent,
                             "Missing squid response",
@@ -1476,7 +1536,7 @@ internal class OnboardingSupervisor(
                         helper.send(error, callback)
                     }
                 } else {
-                    Logger.e { "cctpToNoble error, code: $code" }
+                    Logger.e { "cctpToNobleSquid error, code: $code" }
                     val error = ParsingError(
                         ParsingErrorType.MissingContent,
                         "Missing squid response",
@@ -1493,7 +1553,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-    @Suppress("ForbiddenComment")
     private fun cctpToNobleSkip(
         state: PerpetualState?,
         decimals: Int,
@@ -1567,8 +1626,9 @@ internal class OnboardingSupervisor(
                                 helper.send(error, callback)
                             } else {
                                 pendingCctpWithdraw = CctpWithdrawState(
-                                    state?.input?.transfer?.requestPayload?.data,
-                                    callback,
+                                    singleMessagePayload = null,
+                                    multiMessagePayload = state?.input?.transfer?.requestPayload?.allMessages,
+                                    callback = callback,
                                 )
                             }
                         }

@@ -8,6 +8,8 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -896,7 +898,7 @@ data class SubaccountFill(
     val resources: SubaccountFillResources,
 ) {
     companion object {
-        internal fun create(
+        private fun create(
             existing: SubaccountFill?,
             parser: ParserProtocol,
             data: Map<*, *>?,
@@ -966,27 +968,52 @@ data class SubaccountFill(
             return null
         }
 
-        fun create(
+        internal fun create(
             existing: IList<SubaccountFill>?,
             parser: ParserProtocol,
             data: List<Map<String, Any>>?,
             localizer: LocalizerProtocol?,
         ): IList<SubaccountFill>? {
-            return ParsingHelper.merge(parser, existing, data, { obj, itemData ->
-                val time1 = (obj as SubaccountFill).createdAtMilliseconds
-                val time2 =
-                    parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()
-                        ?.toDouble()
-                val id1 = obj.id
-                val id2 = parser.asString(itemData["id"])
-                if (id1 == id2) {
-                    ParsingHelper.compare(time1, time2 ?: 0.0, true)
-                } else {
-                    ParsingHelper.compare(id1, id2, true)
-                }
-            }, { _, obj, itemData ->
-                obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData), localizer)
-            }, true)?.toIList()
+            return ParsingHelper.merge(
+                parser = parser,
+                existing = existing,
+                data = data,
+                comparison = { obj, itemData ->
+                    val time1 = (obj as SubaccountFill).createdAtMilliseconds
+                    val time2 =
+                        parser.asDatetime(itemData["createdAt"])?.toEpochMilliseconds()
+                            ?.toDouble()
+                    val id1 = obj.id
+                    val id2 = parser.asString(itemData["id"])
+                    if (id1 == id2) {
+                        ParsingHelper.compare(time1, time2 ?: 0.0, true)
+                    } else {
+                        ParsingHelper.compare(id1, id2, true)
+                    }
+                },
+                createObject = { _, obj, itemData ->
+                    obj ?: SubaccountFill.create(null, parser, parser.asMap(itemData), localizer)
+                },
+                syncItems = true,
+            )?.toIList()
+        }
+
+        internal fun merge(
+            existing: IList<SubaccountFill>?,
+            new: IList<SubaccountFill>?,
+        ): IList<SubaccountFill> {
+            return ParsingHelper.merge(
+                existing = existing,
+                new = new,
+                comparison = { obj, newItem ->
+                    if (obj.id == newItem.id) {
+                        ParsingHelper.compare(obj.createdAtMilliseconds, newItem.createdAtMilliseconds, true)
+                    } else {
+                        ParsingHelper.compare(obj.id, newItem.id, true)
+                    }
+                },
+                syncItems = true,
+            ).toIList()
         }
     }
 }
@@ -1269,6 +1296,8 @@ data class Subaccount(
             parser: ParserProtocol,
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
+            staticTyping: Boolean,
+            internalState: InternalSubaccountState?,
         ): Subaccount? {
             Logger.d { "creating Account\n" }
 
@@ -1366,7 +1395,11 @@ data class Subaccount(
                     parser.asList(data["pendingPositions"]),
                 )
                 val orders =
-                    orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
+                    if (staticTyping) {
+                        internalState?.orders?.toIList()
+                    } else {
+                        orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
+                    }
 
                 /*
                 val transfers = AccountTransfers.fromArray(
@@ -2133,6 +2166,8 @@ data class Account(
             data: Map<String, Any>,
             tokensInfo: Map<String, TokenInfo>,
             localizer: LocalizerProtocol?,
+            staticTyping: Boolean,
+            internalState: InternalAccountState,
         ): Account {
             Logger.d { "creating Account\n" }
 
@@ -2195,11 +2230,14 @@ data class Account(
                 for ((key, value) in subaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
 
+                    val subaccountNumber = parser.asInt(key) ?: 0
                     Subaccount.create(
-                        existing?.subaccounts?.get(key),
-                        parser,
-                        subaccountData,
-                        localizer,
+                        existing = existing?.subaccounts?.get(key),
+                        parser = parser,
+                        data = subaccountData,
+                        localizer = localizer,
+                        staticTyping = staticTyping,
+                        internalState = internalState.subaccounts[subaccountNumber],
                     )
                         ?.let { subaccount ->
                             subaccounts[key] = subaccount
@@ -2215,11 +2253,14 @@ data class Account(
                 for ((key, value) in groupedSubaccountsData) {
                     val subaccountData = parser.asMap(value) ?: iMapOf()
 
+                    val subaccountNumber = parser.asInt(key) ?: 0
                     Subaccount.create(
-                        existing?.subaccounts?.get(key),
-                        parser,
-                        subaccountData,
-                        localizer,
+                        existing = existing?.subaccounts?.get(key),
+                        parser = parser,
+                        data = subaccountData,
+                        localizer = localizer,
+                        staticTyping = staticTyping,
+                        internalState = internalState.subaccounts[subaccountNumber],
                     )
                         ?.let { subaccount ->
                             groupedSubaccounts[key] = subaccount

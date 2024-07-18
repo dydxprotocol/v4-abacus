@@ -1,11 +1,16 @@
 package exchange.dydx.abacus.processor.router.skip
+import RpcConfigsProcessor
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.state.manager.RpcConfigs
+import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.toJsonObject
 import kotlinx.serialization.json.Json
@@ -206,6 +211,11 @@ class SkipProcessorTests {
 
     @Test
     fun testReceivedChains() {
+        val testApiKey = "testApiKey"
+        assertEquals(0, RpcConfigs.chainRpcMap.size)
+        RpcConfigs.chainRpcMap = RpcConfigsProcessor(parser, testApiKey).received(RpcMock.json)
+        assertEquals(276, RpcConfigs.chainRpcMap.size)
+
         val payload = templateToMap(
             skipChainsMock.payload,
         )
@@ -225,6 +235,7 @@ class SkipProcessorTests {
             "1" to TransferInputChainResource(
                 chainName = "Ethereum",
                 chainId = 1,
+                rpc = "https://eth-mainnet.g.alchemy.com/v2/$testApiKey",
                 iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
             ),
         )
@@ -351,6 +362,8 @@ class SkipProcessorTests {
                         "fromAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                         "toChainId" to "noble-1",
                         "toAddress" to "uusdc",
+                        "gasPrice" to DEFAULT_GAS_PRICE,
+                        "gasLimit" to DEFAULT_GAS_LIMIT,
                     ),
                 ),
             ),

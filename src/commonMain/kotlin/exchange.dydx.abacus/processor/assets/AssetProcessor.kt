@@ -1,12 +1,27 @@
 package exchange.dydx.abacus.processor.assets
 
+import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.AssetResources
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.models.configs.AssetJson
+
+internal interface AssetProcessorProtocol {
+    fun process(
+        assetId: String,
+        payload: AssetJson,
+        deploymentUri: String,
+    ): Asset
+}
 
 @Suppress("UNCHECKED_CAST")
-internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class AssetProcessor(
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?
+) : BaseProcessor(parser), AssetProcessorProtocol {
     private val assetConfigurationsResourcesKeyMap = mapOf(
         "string" to mapOf(
             "websiteLink" to "websiteLink",
@@ -23,6 +38,34 @@ internal class AssetProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
             "tags" to "tags",
         ),
     )
+
+    override fun process(
+        assetId: String,
+        payload: AssetJson,
+        deploymentUri: String,
+    ): Asset {
+        val imageUrl = "$deploymentUri/currencies/${assetId.lowercase()}.png"
+        val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
+        val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
+        val primaryDescription = localizer?.localize(primaryDescriptionKey)
+        val secondaryDescription = localizer?.localize(secondaryDescriptionKey)
+
+        return Asset(
+            id = assetId,
+            name = payload.name,
+            tags = payload.tags,
+            resources = AssetResources(
+                websiteLink = payload.websiteLink,
+                whitepaperLink = payload.whitepaperLink,
+                coinMarketCapsLink = payload.coinMarketCapsLink,
+                imageUrl = imageUrl,
+                primaryDescriptionKey = primaryDescriptionKey,
+                secondaryDescriptionKey = secondaryDescriptionKey,
+                primaryDescription = primaryDescription,
+                secondaryDescription = secondaryDescription,
+            ),
+        )
+    }
 
     override fun received(
         existing: Map<String, Any>?,

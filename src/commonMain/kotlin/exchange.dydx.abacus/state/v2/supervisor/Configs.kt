@@ -170,6 +170,7 @@ data class OnboardingConfigs(
     }
 
     var squidVersion: SquidVersion = SquidVersion.V2
+    var alchemyApiKey: String? = null
 
     companion object {
         val forApp = OnboardingConfigs(
@@ -190,6 +191,7 @@ data class AppConfigsV2(
     var loadRemote: Boolean = true,
     var enableLogger: Boolean = false,
     var triggerOrderToast: Boolean = false,
+    var staticTyping: Boolean = false,
 ) {
     companion object {
         val forApp = AppConfigsV2(
@@ -211,7 +213,7 @@ data class AppConfigsV2(
         val forAppDebug = AppConfigsV2(
             systemConfigs = SystemConfigs.forApp,
             marketConfigs = MarketsConfigs.forApp,
-            accountConfigs = AccountConfigs.forApp,
+            accountConfigs = AccountConfigs.forAppWithIsolatedMargins,
             onboardingConfigs = OnboardingConfigs.forApp,
             loadRemote = false,
             enableLogger = true,

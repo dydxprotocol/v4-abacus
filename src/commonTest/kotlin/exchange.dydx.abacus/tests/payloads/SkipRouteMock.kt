@@ -515,6 +515,106 @@ internal class SkipRouteMock {
         }
     """.trimIndent()
 
+    internal val payloadNobleToUSDCEthWithdrawal = """
+        {
+            "msgs": [],
+            "txs": [
+                {
+                    "cosmos_tx": {
+                        "chain_id": "noble-1",
+                        "path": [
+                            "noble-1",
+                            "1"
+                        ],
+                        "msgs": [
+                            {
+                                "msg": "{\"from\":\"noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf\",\"amount\":\"59995433\",\"destination_domain\":0,\"mint_recipient\":\"AAAAAAAAAAAAAAAAD3gzd3v8nvcti3aulU04Sd1x+Ck=\",\"burn_token\":\"uusdc\",\"destination_caller\":\"AAAAAAAAAAAAAAAA/AWtdMb+LnBG4JHWrU9mDSoVl2I=\"}",
+                                "msg_type_url": "/circle.cctp.v1.MsgDepositForBurnWithCaller"
+                            },
+                            {
+                                "msg": "{\"from_address\":\"noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf\",\"to_address\":\"noble1dyw0geqa2cy0ppdjcxfpzusjpwmq85r5a35hqe\",\"amount\":[{\"denom\":\"uusdc\",\"amount\":\"40000000\"}]}",
+                                "msg_type_url": "/cosmos.bank.v1beta1.MsgSend"
+                            }
+                        ],
+                        "signer_address": "noble1nhzuazjhyfu474er6v4ey8zn6wa5fy6gthndxf"
+                    },
+                    "operations_indices": [
+                        0
+                    ]
+                }
+            ],
+            "route": {
+                "source_asset_denom": "uusdc",
+                "source_asset_chain_id": "noble-1",
+                "dest_asset_denom": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "dest_asset_chain_id": "1",
+                "amount_in": "99995433",
+                "amount_out": "59995433",
+                "operations": [
+                    {
+                        "cctp_transfer": {
+                            "from_chain_id": "noble-1",
+                            "to_chain_id": "1",
+                            "burn_token": "uusdc",
+                            "denom_in": "uusdc",
+                            "denom_out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                            "bridge_id": "CCTP",
+                            "smart_relay": true
+                        },
+                        "tx_index": 0,
+                        "amount_in": "99995433",
+                        "amount_out": "59995433"
+                    }
+                ],
+                "chain_ids": [
+                    "noble-1",
+                    "1"
+                ],
+                "does_swap": false,
+                "estimated_amount_out": "59995433",
+                "swap_venues": [],
+                "txs_required": 1,
+                "usd_amount_in": "99.99",
+                "usd_amount_out": "59.99",
+                "warning": {
+                    "type": "BAD_PRICE_WARNING",
+                    "message": "Difference in USD value of route input and output is large. Input USD value: 99.99 Output USD value: 59.99"
+                },
+                "estimated_fees": [
+                    {
+                        "fee_type": "SMART_RELAY",
+                        "bridge_id": "CCTP",
+                        "amount": "40000000",
+                        "usd_amount": "40.00",
+                        "origin_asset": {
+                            "denom": "uusdc",
+                            "chain_id": "noble-1",
+                            "origin_denom": "uusdc",
+                            "origin_chain_id": "noble-1",
+                            "trace": "",
+                            "is_cw20": false,
+                            "is_evm": false,
+                            "is_svm": false,
+                            "symbol": "USDC",
+                            "name": "USDC",
+                            "logo_uri": "https://raw.githubusercontent.com/cosmos/chain-registry/master/noble/images/USDCoin.png",
+                            "decimals": 6,
+                            "description": "USD Coin",
+                            "coingecko_id": "usd-coin",
+                            "recommended_symbol": "USDC"
+                        },
+                        "chain_id": "noble-1",
+                        "tx_index": 0
+                    }
+                ],
+                "required_chain_addresses": [
+                    "noble-1",
+                    "1"
+                ]
+            }
+        }
+    """.trimIndent()
+
     internal val payloadError = """
     {
   "code": 3,

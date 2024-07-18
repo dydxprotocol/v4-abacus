@@ -77,7 +77,7 @@ Abacus is published to an npm library (https://www.npmjs.com/package/@dydxprotoc
 
 Shared code should have unit tests written in Kotlin residing in the src/CommonTest directory. Run the tests with the following command
 
-> ./gradlew test
+> ./gradlew jvmtest
 
 # Integration Tests
 

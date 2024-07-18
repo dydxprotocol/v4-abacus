@@ -4,12 +4,16 @@ import exchange.dydx.abacus.output.AccountBalance
 import exchange.dydx.abacus.output.StakingRewards
 import exchange.dydx.abacus.output.UnbondingDelegation
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerFillResponseObject
 import kollections.iMutableListOf
 
 /*
@@ -182,12 +186,15 @@ import kollections.iMutableListOf
  */
 
 @Suppress("UNCHECKED_CAST")
-internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val subaccountsProcessor = V4SubaccountsProcessor(parser)
+internal class V4AccountProcessor(
+    parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+) : BaseProcessor(parser) {
+    private val subaccountsProcessor = V4SubaccountsProcessor(parser, localizer)
     private val balancesProcessor = AccountBalancesProcessor(parser)
     private val delegationsProcessor = AccountDelegationsProcessor(parser)
     private val tradingRewardsProcessor = AccountTradingRewardsProcessor(parser)
-    private var launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
+    private val launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
 
     internal fun receivedAccountBalances(
         existing: Map<String, Any>?,
@@ -275,14 +282,25 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
-    internal fun receivedFills(
+    internal fun processFills(
+        existing: InternalAccountState,
+        payload: List<IndexerFillResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalAccountState {
+        val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+        val newSubaccount = subaccountsProcessor.processFills(subaccount, payload)
+        existing.subaccounts[subaccountNumber] = newSubaccount
+        return existing
+    }
+
+    internal fun receivedFillsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
         subaccountNumber: Int,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedFills(subaccount, payload)
+        val modifiedsubaccount = subaccountsProcessor.receivedFillsDeprecated(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
@@ -347,7 +365,39 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
-    internal fun subscribed(
+    internal fun processSubscribed(
+        existing: InternalAccountState,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): InternalAccountState {
+        var account: InternalAccountState? = null
+
+        val subaccountNumber = parser.asInt(parser.value(content, "subaccount.subaccountNumber"))
+        if (subaccountNumber != null) {
+            val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+            val modifiedsubaccount = subaccountsProcessor.processSubscribed(subaccount, content, height)
+            existing.subaccounts[subaccountNumber] = modifiedsubaccount
+        } else {
+            val parentSubaccountNumber =
+                parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
+            if (parentSubaccountNumber != null) {
+                account = processSubscribedParentSubaccount(existing, content, height)
+            }
+        }
+
+        // TODO: Updating the account with the trading rewards
+
+//        /* block trading rewards are only sent in subaccounts.0 channel */
+//        val tradingRewardsPayload =
+//            parser.value(content, "tradingReward")
+//        if (tradingRewardsPayload != null) {
+//            modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+//        }
+
+        return account ?: existing
+    }
+
+    internal fun subscribedDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>,
         height: BlockAndTime?,
@@ -357,13 +407,13 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         if (subaccountNumber != null) {
             val subaccount =
                 parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-            val modifiedsubaccount = subaccountsProcessor.subscribed(subaccount, content, height)
+            val modifiedsubaccount = subaccountsProcessor.subscribedDeprecated(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         } else {
             val parentSubaccountNumber =
                 parser.asInt(parser.value(content, "subaccount.parentSubaccountNumber"))
             if (parentSubaccountNumber != null) {
-                modified = subscribedParentSubaccount(modified, content, height).mutable()
+                modified = subscribedParentSubaccountDeprecated(modified, content, height).mutable()
             }
         }
 
@@ -376,11 +426,9 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return modified
     }
 
-    private fun subscribedParentSubaccount(
-        existing: Map<String, Any>,
+    private fun getContentBySubaccountNumber(
         content: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Map<String, Any> {
+    ): Map<Int, Map<String, Any>> {
         /*
         We will go through all segments in the content, regroup them based on subaccountNumber,
         and send to subaccountProcessor's existing code
@@ -415,6 +463,35 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
                 }
             }
         }
+        return contentBySubaccountNumber
+    }
+
+    private fun processSubscribedParentSubaccount(
+        existing: InternalAccountState,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): InternalAccountState {
+        val contentBySubaccountNumber = getContentBySubaccountNumber(content)
+
+        /*
+        Now we have a map of subaccountNumber to content, we can send it to subaccountProcessor
+         */
+        for ((subaccountNumber, subaccountContent) in contentBySubaccountNumber) {
+            val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+            val modifiedsubaccount =
+                subaccountsProcessor.processSubscribed(subaccount, subaccountContent, height)
+            existing.subaccounts[subaccountNumber] = modifiedsubaccount
+        }
+        return existing
+    }
+
+    private fun subscribedParentSubaccountDeprecated(
+        existing: Map<String, Any>,
+        content: Map<String, Any>,
+        height: BlockAndTime?,
+    ): Map<String, Any> {
+        val contentBySubaccountNumber = getContentBySubaccountNumber(content)
+
         /*
         Now we have a map of subaccountNumber to content, we can send it to subaccountProcessor
          */
@@ -423,10 +500,44 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val subaccount =
                 parser.asNativeMap(parser.value(modified, "subaccounts.$subaccountNumber"))
             val modifiedsubaccount =
-                subaccountsProcessor.subscribed(subaccount, subaccountContent, height)
+                subaccountsProcessor.subscribedDeprecated(subaccount, subaccountContent, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         }
         return modified
+    }
+
+    internal fun processChannelData(
+        existing: InternalAccountState,
+        content: Map<String, Any>,
+        info: SocketInfo,
+        height: BlockAndTime?,
+    ): InternalAccountState {
+        val subaccountNumber = info.childSubaccountNumber ?: parser.asInt(
+            parser.value(
+                content,
+                "subaccounts.subaccountNumber",
+            ),
+        )
+            ?: subaccountNumberFromInfo(info)
+
+        if (subaccountNumber != null) {
+            val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(
+                subaccountNumber = subaccountNumber,
+            )
+            val modifiedsubaccount =
+                subaccountsProcessor.processChannelData(subaccount, content, height)
+            existing.subaccounts[subaccountNumber] = modifiedsubaccount
+
+            // TODO: Updating the account with the trading rewards
+
+//            /* block trading rewards are only sent in subaccounts.0 channel */
+//            val tradingRewardsPayload = content["tradingReward"]
+//            if (tradingRewardsPayload != null) {
+//                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+//            }
+//            return modified
+        }
+        return existing
     }
 
     @Suppress("FunctionName")
@@ -443,7 +554,7 @@ internal class V4AccountProcessor(parser: ParserProtocol) : BaseProcessor(parser
             var modified = existing?.toMutableMap() ?: mutableMapOf()
             val subaccount =
                 parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-            val modifiedsubaccount = subaccountsProcessor.channel_data(subaccount, content, height)
+            val modifiedsubaccount = subaccountsProcessor.channel_dataDeprecated(subaccount, content, height)
             modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
 
             /* block trading rewards are only sent in subaccounts.0 channel */

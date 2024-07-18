@@ -2,6 +2,8 @@ package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toCamelCaseKeys
@@ -9,6 +11,7 @@ import exchange.dydx.abacus.utils.toCamelCaseKeys
 // We may later want to split this into one processor per network
 // For now we're not since it's just two, but at 3 we will
 internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+
     private val keyMap = mapOf(
         "string" to mapOf(
             // Transaction request payload
@@ -45,34 +48,60 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
         throw Error("SkipRoutePayloadProcessor: txType is not evm or cosmos")
     }
 
+    private fun jsonEncodePayload(payload: Any): String {
+        val jsonEncoder = JsonEncoder()
+        return jsonEncoder.encode(payload)
+    }
+
+    private fun formatMessage(message: String?, msgTypeUrl: String?): Map<String, Any?> {
+        val msgMap = parser.decodeJsonObject(message)
+//            tendermint client rejects msgs that aren't camelcased
+        val camelCasedMsgMap = msgMap?.toCamelCaseKeys()
+        val fullMessage = mapOf(
+            "msg" to camelCasedMsgMap,
+//                Squid returns the msg payload under the "value" key for noble transfers
+            "value" to camelCasedMsgMap,
+            "msgTypeUrl" to msgTypeUrl,
+//                Squid sometimes returns typeUrl or msgTypeUrl depending on the route version
+            "typeUrl" to msgTypeUrl,
+        )
+        return fullMessage
+    }
+
+    private fun formatAllMessages(payload: Map<String, Any>?): List<Map<String, Any?>> {
+        val allRawMessages = parser.asList(parser.value(payload, "txs.0.cosmos_tx.msgs"))
+        val allFormattedMessages = mutableListOf<Map<String, Any?>>()
+        allRawMessages?.forEach {
+            val msgObject = parser.asMap(it)
+            val msg = parser.asString(msgObject?.get("msg"))
+            val msgTypeUrl = parser.asString(msgObject?.get("msg_type_url"))
+            allFormattedMessages.add(formatMessage(msg, msgTypeUrl))
+        }
+        return allFormattedMessages
+    }
+
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
         val txType = getTxType(payload)
         val modified = transform(existing, payload, keyMap)
+        // squid used to provide these, but now we need to hardcode them
+        // for the API to work (even though they seem to have default values?): https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
+        modified.safeSet("gasPrice", DEFAULT_GAS_PRICE)
+        modified.safeSet("gasLimit", DEFAULT_GAS_LIMIT)
         val data = modified["data"]
         if (data != null && txType == TxType.EVM) {
-//            skip does not provide the 0x prefix. it's not required but is good for clarity
-//            and keeps our typing honest (we typecast this value to evmAddress in web)
             modified.safeSet("data", "0x$data")
         }
         if (txType == TxType.COSMOS) {
-            val jsonEncoder = JsonEncoder()
             val msg = parser.asString(parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg"))
-            val msgMap = parser.decodeJsonObject(msg)
-//            tendermint client rejects msgs that aren't camelcased
-            val camelCasedMsgMap = msgMap?.toCamelCaseKeys()
-            val msgTypeUrl = parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg_type_url")
-            val fullMessage = mapOf(
-                "msg" to camelCasedMsgMap,
-//                Squid returns the msg payload under the "value" key for noble transfers
-                "value" to camelCasedMsgMap,
-                "msgTypeUrl" to msgTypeUrl,
-//                Squid sometimes returns typeUrl or msgTypeUrl depending on the route version
-                "typeUrl" to msgTypeUrl,
-            )
-            modified.safeSet("data", jsonEncoder.encode(fullMessage))
+            val msgTypeUrl = parser.asString(parser.value(payload, "txs.0.cosmos_tx.msgs.0.msg_type_url"))
+            val formattedMessage = formatMessage(msg, msgTypeUrl)
+            val allFormattedMessages = formatAllMessages(payload)
+//            save all messages in array
+            modified.safeSet("data", jsonEncodePayload(formattedMessage))
+            modified.safeSet("allMessages", jsonEncodePayload(allFormattedMessages))
         }
         return modified
     }

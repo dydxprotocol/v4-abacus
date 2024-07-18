@@ -32,6 +32,12 @@ data class CancelOrderRecord(
     val fromSlTpDialog: Boolean,
 )
 
+data class IsolatedPlaceOrderRecord(
+    val subaccountNumber: Int,
+    val clientId: Int,
+    val destinationSubaccountNumber: Int,
+)
+
 @JsExport
 @Serializable
 data class PlaceOrderMarketInfo(

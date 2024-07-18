@@ -17,7 +17,7 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
             marketProcessor.groupingMultiplier = value
         }
 
-    internal fun subscribed(
+    internal fun processSubscribed(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
@@ -29,16 +29,14 @@ internal class MarketsProcessor(parser: ParserProtocol, calculateSparklines: Boo
         }
     }
 
-    @Suppress("FunctionName")
-    internal fun channel_data(
+    internal fun processChannelData(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any> {
         return receivedChanges(existing, content)
     }
 
-    @Suppress("FunctionName")
-    internal fun channel_batch_data(
+    internal fun processChannelBatchData(
         existing: Map<String, Any>?,
         content: List<Any>
     ): Map<String, Any> {
