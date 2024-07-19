@@ -156,7 +156,10 @@ internal object MarginCalculator {
         val marketId = parser.asString(tradeInput?.get("marketId")) ?: return null
         val subaccounts = parser.asNativeMap(account?.get("subaccounts")) ?: return null
 
-        val utilizedSubaccountsMarketIdMap = subaccounts.mapValues {
+        // FE only supports subaccounts that are related to the "main" account (i.e. subaccount 0) and its children
+        // If there are other utilized subaccounts (e.g. subaccount 1 or 129), ignore them as candidates
+        val relevantSubaccounts = subaccounts.filterKeys { key -> parser.asInt(key)?.let { it % NUM_PARENT_SUBACCOUNTS == 0 } ?: false }
+        val utilizedSubaccountsMarketIdMap = relevantSubaccounts.mapValues {
             val openPositions = parser.asNativeMap(parser.value(it.value, "openPositions"))
             val openOrders = parser.asNativeMap(parser.value(it.value, "orders"))?.filter {
                 val order = parser.asMap(it.value)
