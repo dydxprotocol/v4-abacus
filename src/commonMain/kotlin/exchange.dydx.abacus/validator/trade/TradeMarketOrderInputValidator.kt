@@ -105,12 +105,15 @@ internal class TradeMarketOrderInputValidator(
         // missing orderbook slippage (mid price) is most likely due to a one sided liquidity situation
         // and should be caught by liquidity validation
         val orderbookSlippage = parser.asDouble(summary["slippage"]) ?: return null
-        val indexSlippage = parser.asDouble(summary["indexSlippage"])
         val orderbookSlippageValue = orderbookSlippage.abs()
-        val minSlippageValue = min(orderbookSlippageValue, indexSlippage ?: orderbookSlippageValue)
+        val indexSlippage = parser.asDouble(summary["indexSlippage"])
 
-        val isOrderbookSlippageRelevant = indexSlippage == null || orderbookSlippageValue < indexSlippage
-        val slippageType = if (isOrderbookSlippageRelevant) "ORDERBOOK" else "INDEX_PRICE"
+        var slippageType = "ORDERBOOK"
+        var minSlippageValue = orderbookSlippageValue
+        if (indexSlippage != null && indexSlippage < orderbookSlippageValue) {
+            slippageType = "INDEX_PRICE"
+            minSlippageValue = indexSlippage
+        }
 
         return when {
             minSlippageValue >= MARKET_ORDER_ERROR_SLIPPAGE -> createTradeBoxWarningOrError(

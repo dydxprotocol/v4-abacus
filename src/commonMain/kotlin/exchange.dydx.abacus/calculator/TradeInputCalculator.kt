@@ -1543,13 +1543,8 @@ internal class TradeInputCalculator(
 
                     val triggerPrice = parser.asDouble(parser.value(trade, "price.triggerPrice"))
                     val marketOrderPrice = marketOrderPrice(marketOrder)
-                    val priceSlippage = if (midMarketPrice != null && marketOrderPrice != null) (marketOrderPrice - midMarketPrice) else null
-                    val slippagePercentage =
-                        if (priceSlippage != null && midMarketPrice != null) {
-                            abs(priceSlippage / midMarketPrice)
-                        } else {
-                            null
-                        }
+                    val slippagePercentage = if (midMarketPrice != null && marketOrderPrice != null && midMarketPrice > Numeric.double.ZERO)
+                        abs((marketOrderPrice - midMarketPrice) / midMarketPrice) else null
 
                     val adjustedslippagePercentage = if (slippagePercentage != null) {
                         val majorMarket = MAJOR_MARKETS.contains(parser.asString(trade["marketId"]))
