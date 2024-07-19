@@ -156,7 +156,8 @@ class V4TransactionTests : NetworkTests() {
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertTransactionQueueStarted()
         tradeInput(false, "0.02")
-        subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        val placeOrderPayload = subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
+        assertEquals("size.size", placeOrderPayload?.sizeInput)
         subaccountSupervisor?.commitPlaceOrder(0, transactionCallback)
         assertEquals(2, transactionQueue?.size)
 

@@ -59,6 +59,7 @@ data class HumanReadablePlaceOrderPayload(
     val price: Double,
     val triggerPrice: Double?,
     val size: Double,
+    val sizeInput: String?,
     val reduceOnly: Boolean?,
     val postOnly: Boolean?,
     val timeInForce: String?,

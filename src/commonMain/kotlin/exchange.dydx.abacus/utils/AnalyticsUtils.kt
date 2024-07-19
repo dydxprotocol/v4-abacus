@@ -133,6 +133,7 @@ class AnalyticsUtils {
             "reduceOnly" to payload.reduceOnly,
             "side" to payload.side,
             "size" to payload.size,
+            "sizeInput" to payload.sizeInput,
             "subaccountNumber" to payload.subaccountNumber,
             "timeInForce" to payload.timeInForce,
             "triggerPrice" to payload.triggerPrice,
