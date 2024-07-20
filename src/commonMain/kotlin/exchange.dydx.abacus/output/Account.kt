@@ -2335,15 +2335,15 @@ data class Account(
             tokensInfo: Map<String, TokenInfo>,
             internalState: InternalAccountState?
         ): IList<StakingDelegation>? {
-            return internalState?.stakingDelegations?.mapIndexedNotNull { index, value ->
-                val tokenInfo = findTokenInfo(tokensInfo, it.balance.denom)
+            return internalState?.stakingDelegations?.mapIndexedNotNull { index, item ->
+                val tokenInfo = findTokenInfo(tokensInfo, item.balance.denom)
                 if (tokenInfo != null) {
                     StakingDelegation.create(
                         existing = existing?.stakingDelegations?.getOrNull(index),
                         parser = parser,
                         data = emptyMap(),
                         decimals = tokenInfo.decimals,
-                        internalState = value,
+                        internalState = item,
                     )
                 } else {
                     null
