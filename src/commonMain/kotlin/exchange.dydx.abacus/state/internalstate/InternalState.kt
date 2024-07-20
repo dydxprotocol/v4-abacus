@@ -10,6 +10,7 @@ internal data class InternalState(
     var assets: MutableMap<String, Asset> = mutableMapOf(),
     val transfer: InternalTransferInputState = InternalTransferInputState(),
     val wallet: InternalWalletState = InternalWalletState(),
+    var rewardsParams: InternalRewardsParamsState? = null,
 )
 
 internal data class InternalWalletState(
@@ -51,4 +52,13 @@ internal data class InternalStakingDelegationState(
     val validatorAddress: String? = null,
     val shares: BigDecimal? = null,
     val balance: InternalAccountBalanceState,
+)
+
+internal data class InternalRewardsParamsState(
+    val denom: String? = null,
+    val denomExponent: Double? = null,
+    val marketId: Double? = null,
+    val feeMultiplierPpm: Double? = null,
+    val tokenPrice: Double? = null,
+    val tokenExpoonent: Double? = null,
 )

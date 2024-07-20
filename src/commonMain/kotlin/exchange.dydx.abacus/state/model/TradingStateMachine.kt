@@ -30,13 +30,13 @@ import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
+import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
-import exchange.dydx.abacus.processor.wallet.account.RewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.asTypedStringMap
@@ -111,7 +111,7 @@ open class TradingStateMachine(
             if (StatsigConfig.useSkip) return skipProcessor
             return squidProcessor
         }
-    internal val rewardsProcessor = RewardsProcessor(parser)
+    internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
