@@ -435,10 +435,12 @@ internal open class AccountSupervisor(
             val oldState = stateMachine.state
             update(stateMachine.onChainDelegations(response), oldState)
         }
+
         helper.getOnChain(QueryType.GetCurrentUnstaking, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainUnbonding(response), oldState)
         }
+
         helper.getOnChain(QueryType.GetStakingRewards, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainStakingRewards(response), oldState)

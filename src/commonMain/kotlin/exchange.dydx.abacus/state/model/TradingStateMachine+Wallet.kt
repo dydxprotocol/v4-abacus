@@ -10,6 +10,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
 import indexer.codegen.IndexerFillResponse
 import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 import kollections.iListOf
@@ -271,15 +272,26 @@ internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateC
 }
 
 internal fun TradingStateMachine.onChainDelegations(payload: String): StateChanges {
-    val response = parser.decodeJsonObject(payload)
-    return try {
-        val delegations = response?.get("delegationResponses")?.let {
-            parser.asList(it)
-        } ?: iListOf()
-        this.wallet = walletProcessor.receivedDelegations(wallet, delegations)
-        return StateChanges(iListOf(Changes.accountBalances), null)
-    } catch (e: Exception) {
-        StateChanges(iListOf())
+    if (staticTyping) {
+        val response = parser.asTypedObject<OnChainDelegationResponse>(payload)
+        val oldValue = internalState.wallet.account.stakingBalances
+        walletProcessor.processStakingDelegations(internalState.wallet, response)
+        return if (oldValue != internalState.wallet.account.stakingBalances) {
+            StateChanges(iListOf(Changes.accountBalances), null)
+        } else {
+            StateChanges(iListOf())
+        }
+    } else {
+        val response = parser.decodeJsonObject(payload)
+        return try {
+            val delegations = response?.get("delegationResponses")?.let {
+                parser.asList(it)
+            } ?: iListOf()
+            this.wallet = walletProcessor.receivedDelegationsDeprecated(wallet, delegations)
+            return StateChanges(iListOf(Changes.accountBalances), null)
+        } catch (e: Exception) {
+            StateChanges(iListOf())
+        }
     }
 }
 

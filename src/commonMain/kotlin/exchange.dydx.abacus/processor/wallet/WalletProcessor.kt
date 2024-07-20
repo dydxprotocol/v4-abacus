@@ -13,6 +13,7 @@ import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 
@@ -151,12 +152,26 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedDelegations(
+    internal fun processStakingDelegations(
+        existing: InternalWalletState,
+        payload: OnChainDelegationResponse?
+    ): InternalWalletState {
+        val newAccount = v4accountProcessor.processStakingDelegations(
+            existing = existing.account,
+            payload = payload,
+        )
+        if (newAccount != existing.account) {
+            existing.account = newAccount
+        }
+        return existing
+    }
+
+    internal fun receivedDelegationsDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedDelegations(
+            v4accountProcessor.receivedDelegationsDeprecated(
                 parser.asNativeMap(existing),
                 payload as? List<Any>,
             )

@@ -3,6 +3,7 @@ package exchange.dydx.abacus.payload.v4
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
@@ -21,6 +22,7 @@ import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class V4AccountTests : V4BaseTests() {
     @Test
@@ -1171,13 +1173,25 @@ class V4AccountTests : V4BaseTests() {
 
     @Test
     fun testAccountStakingBalances() {
-        test(
-            {
-                val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+        if (perp.staticTyping) {
+            val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+            assertEquals(perp.internalState.wallet.account.stakingBalances?.size, 1)
+            assertEquals(
+                perp.internalState.wallet.account.stakingBalances?.get("dv4tnt"),
+                InternalAccountBalanceState(
+                    "dv4tnt",
+                    2001000.0.toBigDecimal(),
+                ),
+            )
+            assertTrue { changes.changes.contains(Changes.accountBalances) }
+        } else {
+            test(
+                {
+                    val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1190,10 +1204,11 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
