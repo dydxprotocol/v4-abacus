@@ -13,6 +13,7 @@ import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
+import exchange.dydx.abacus.output.LaunchIncentiveSeasons
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
@@ -1376,10 +1377,18 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.launchIncentive)) {
-            this.launchIncentive?.let {
-                launchIncentive = LaunchIncentive.create(launchIncentive, parser, it)
-            } ?: run {
-                launchIncentive = null
+            if (staticTyping) {
+                launchIncentive = LaunchIncentive(
+                    seasons = LaunchIncentiveSeasons(
+                        seasons = internalState.launchIncentive.seasons?.toIList() ?: iListOf(),
+                    ),
+                )
+            } else {
+                this.launchIncentive?.let {
+                    launchIncentive = LaunchIncentive.create(launchIncentive, parser, it)
+                } ?: run {
+                    launchIncentive = null
+                }
             }
         }
         return PerpetualState(

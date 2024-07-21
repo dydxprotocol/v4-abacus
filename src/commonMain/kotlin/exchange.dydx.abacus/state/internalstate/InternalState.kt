@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.SubaccountOrder
@@ -11,6 +12,7 @@ internal data class InternalState(
     val transfer: InternalTransferInputState = InternalTransferInputState(),
     val wallet: InternalWalletState = InternalWalletState(),
     var rewardsParams: InternalRewardsParamsState? = null,
+    val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
 )
 
 internal data class InternalWalletState(
@@ -61,4 +63,8 @@ internal data class InternalRewardsParamsState(
     val feeMultiplierPpm: Double? = null,
     val tokenPrice: Double? = null,
     val tokenExpoonent: Double? = null,
+)
+
+internal data class InternalLaunchIncentiveState(
+    var seasons: List<LaunchIncentiveSeason>? = null,
 )
