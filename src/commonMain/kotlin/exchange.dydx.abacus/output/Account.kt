@@ -2268,7 +2268,7 @@ data class Account(
                 if (points != null && points.isNotEmpty()) {
                     LaunchIncentivePoints(points = points.toIMap())
                 } else {
-                    existing?.launchIncentivePoints
+                    null
                 }
             } else {
                 (parser.asMap(data["launchIncentivePoints"]))?.let {
