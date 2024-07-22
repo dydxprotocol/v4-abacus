@@ -17,6 +17,8 @@ internal class LaunchIncentiveSeasonsProcessor(
 ) : BaseProcessor(parser), LaunchIncentiveSeasonsProcessorProtocol {
     private val itemProcessor = LaunchIncentiveSeasonProcessor(parser = parser)
 
+    private val millisecondsInSecond = 1000.0
+
     override fun process(
         existing: List<LaunchIncentiveSeason>?,
         payload: ConfigsLaunchIncentiveResponse?
@@ -24,7 +26,7 @@ internal class LaunchIncentiveSeasonsProcessor(
         val newValues = payload?.data?.tradingSeasons?.mapNotNull {
             LaunchIncentiveSeason(
                 label = it.label ?: return@mapNotNull null,
-                startTimeInMilliseconds = it.startTimestamp?.let { it * 1000.0 } ?: return@mapNotNull null,
+                startTimeInMilliseconds = it.startTimestamp?.let { it * millisecondsInSecond } ?: return@mapNotNull null,
             )
         }
         return if (existing != newValues) {
