@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.model
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import indexer.models.configs.ConfigsLaunchIncentivePoints
 import indexer.models.configs.ConfigsLaunchIncentiveResponse
 import kollections.iListOf
 
@@ -31,12 +32,27 @@ internal fun TradingStateMachine.launchIncentiveSeasons(payload: String): StateC
 }
 
 internal fun TradingStateMachine.launchIncentivePoints(season: String, payload: String): StateChanges? {
-    val json = parser.decodeJsonObject(payload)
-    val wallet = this.wallet
-    return if (wallet != null && json != null) {
-        this.wallet = walletProcessor.receivedLaunchIncentivePoint(wallet, season, json)
-        StateChanges(iListOf(Changes.accountBalances))
+    if (staticTyping) {
+        val points = parser.asTypedObject<ConfigsLaunchIncentivePoints>(payload)
+        val oldValue = internalState.wallet.account.launchIncentivePoints[season]?.copy()
+        walletProcessor.processLaunchIncentiveSeasons(
+            existing = internalState.wallet,
+            season = season,
+            payload = points,
+        )
+        return if (internalState.wallet.account.launchIncentivePoints[season] != oldValue) {
+            StateChanges(iListOf(Changes.accountBalances))
+        } else {
+            StateChanges.noChange
+        }
     } else {
-        StateChanges.noChange
+        val json = parser.decodeJsonObject(payload)
+        val wallet = this.wallet
+        return if (wallet != null && json != null) {
+            this.wallet = walletProcessor.receivedLaunchIncentivePointDeprecated(wallet, season, json)
+            StateChanges(iListOf(Changes.accountBalances))
+        } else {
+            StateChanges.noChange
+        }
     }
 }

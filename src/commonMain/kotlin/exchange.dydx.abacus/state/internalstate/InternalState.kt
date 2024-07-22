@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountHistoricalPNL
@@ -30,10 +31,21 @@ internal data class InternalUserState(
 )
 
 internal data class InternalAccountState(
+    // token denom -> balance
     var balances: Map<String, InternalAccountBalanceState>? = null,
+
+    // token denom -> staking balance
     var stakingBalances: Map<String, InternalAccountBalanceState>? = null,
+
     var stakingDelegations: List<InternalStakingDelegationState>? = null,
+
+    // season id -> points
+    var launchIncentivePoints: MutableMap<String, LaunchIncentivePoint> = mutableMapOf(),
+
+    // subaccount number -> subaccount state
     var subaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
+
+    // subaccount number -> subaccount state
     var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
 )
 

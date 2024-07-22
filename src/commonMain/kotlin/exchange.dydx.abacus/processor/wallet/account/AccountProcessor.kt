@@ -17,6 +17,7 @@ import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.configs.ConfigsLaunchIncentivePoints
 import kollections.iMutableListOf
 
 /*
@@ -697,7 +698,21 @@ internal class V4AccountProcessor(
         subaccountsProcessor.accountAddress = accountAddress
     }
 
-    internal fun receivedLaunchIncentivePoint(
+    fun processLaunchIncentivePoints(
+        existing: InternalAccountState,
+        season: String,
+        payload: ConfigsLaunchIncentivePoints?,
+    ): InternalAccountState {
+        val points = launchIncentivePointsProcessor.process(
+            season = season,
+            existing = existing.launchIncentivePoints,
+            payload = payload,
+        )
+        existing.launchIncentivePoints = points
+        return existing
+    }
+
+    internal fun receivedLaunchIncentivePointDeprecated(
         existing: Map<String, Any>,
         season: String,
         payload: Any,

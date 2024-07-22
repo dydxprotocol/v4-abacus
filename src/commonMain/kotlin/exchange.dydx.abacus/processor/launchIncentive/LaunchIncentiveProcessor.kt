@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.processor.launchIncentive
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
-import exchange.dydx.abacus.processor.wallet.account.LaunchIncentivePointsProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalLaunchIncentiveState
 import exchange.dydx.abacus.utils.mutable
@@ -11,7 +10,7 @@ internal class LaunchIncentiveProcessor(
     parser: ParserProtocol,
     private val seasonsProcessor: LaunchIncentiveSeasonsProcessorProtocol = LaunchIncentiveSeasonsProcessor(parser = parser)
 ) : BaseProcessor(parser) {
-    private val pointsProcessor = LaunchIncentivePointsProcessor(parser = parser)
+    // private val pointsProcessor = LaunchIncentivePointsProcessor(parser = parser)
 
     internal fun processSeasons(
         existing: InternalLaunchIncentiveState,
