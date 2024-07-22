@@ -12,6 +12,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.models.chain.OnChainAccountBalanceObject
 
 internal class WalletProcessor(
     parser: ParserProtocol,
@@ -122,12 +123,26 @@ internal class WalletProcessor(
         return Triple(existing, false, null)
     }
 
+    internal fun processAccountBalances(
+        existing: InternalWalletState,
+        payload: List<OnChainAccountBalanceObject>?,
+    ): InternalWalletState {
+        val newAccount = v4accountProcessor.processAccountBalances(
+            existing = existing.account,
+            payload = payload,
+        )
+        if (newAccount != existing.account) {
+            existing.account = newAccount
+        }
+        return existing
+    }
+
     internal fun receivedAccountBalances(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedAccountBalances(
+            v4accountProcessor.receivedAccountBalancesDeprecated(
                 parser.asNativeMap(existing),
                 payload as? List<Any>,
             )

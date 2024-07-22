@@ -8,6 +8,7 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.TokenInfo
@@ -1615,11 +1616,12 @@ data class AccountBalance(
             parser: ParserProtocol,
             data: Map<String, Any>,
             decimals: Int,
+            internalState: InternalAccountBalanceState?
         ): AccountBalance? {
             Logger.d { "creating Account Balance\n" }
 
-            val denom = parser.asString(data["denom"])
-            val amount = parser.asDecimal(data["amount"])
+            val denom = internalState?.denom ?: parser.asString(data["denom"])
+            val amount = internalState?.amount ?: parser.asDecimal(data["amount"])
             if (denom != null && amount != null) {
                 val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
                 val decimalAmountString = parser.asString(decimalAmount)!!
@@ -2182,20 +2184,35 @@ data class Account(
 
             val balances: IMutableMap<String, AccountBalance> =
                 iMutableMapOf()
-            val balancesData = parser.asMap(data["balances"])
-            if (balancesData != null) {
-                for ((key, value) in balancesData) {
-                    val balanceData = parser.asMap(value) ?: iMapOf()
-                    // key is the denom
-                    val tokenInfo = findTokenInfo(tokensInfo, key)
-                    if (tokenInfo != null) {
-                        AccountBalance.create(
-                            existing?.balances?.get(key),
-                            parser,
-                            balanceData,
-                            tokenInfo.decimals,
-                        )?.let { balance ->
-                            balances[key] = balance
+            if (staticTyping) {
+                internalState.balances?.forEach { (key, value) ->
+                    AccountBalance.create(
+                        existing = existing?.balances?.get(key),
+                        parser = parser,
+                        data = emptyMap(),
+                        decimals = findTokenInfo(tokensInfo, key)?.decimals ?: 0,
+                        internalState = value,
+                    )?.let { balance ->
+                        balances[key] = balance
+                    }
+                }
+            } else {
+                val balancesData = parser.asMap(data["balances"])
+                if (balancesData != null) {
+                    for ((key, value) in balancesData) {
+                        val balanceData = parser.asMap(value) ?: iMapOf()
+                        // key is the denom
+                        val tokenInfo = findTokenInfo(tokensInfo, key)
+                        if (tokenInfo != null) {
+                            AccountBalance.create(
+                                existing = existing?.balances?.get(key),
+                                parser = parser,
+                                data = balanceData,
+                                decimals = tokenInfo.decimals,
+                                internalState = internalState.balances?.get(key),
+                            )?.let { balance ->
+                                balances[key] = balance
+                            }
                         }
                     }
                 }
@@ -2203,10 +2220,11 @@ data class Account(
 
             val stakingBalances: IMutableMap<String, AccountBalance> =
                 processStakingBalance(
-                    existing,
-                    parser,
-                    data,
-                    tokensInfo,
+                    existing = existing,
+                    parser = parser,
+                    data = data,
+                    tokensInfo = tokensInfo,
+                    internalState = internalState,
                 )
 
             val stakingDelegations: IMutableList<StakingDelegation> =
@@ -2325,6 +2343,7 @@ data class Account(
             parser: ParserProtocol,
             data: Map<String, Any>,
             tokensInfo: Map<String, TokenInfo>,
+            internalState: InternalAccountState,
         ): IMutableMap<String, AccountBalance> {
             val stakingBalances: IMutableMap<String, AccountBalance> =
                 iMutableMapOf()
@@ -2337,10 +2356,11 @@ data class Account(
                     if (tokenInfo != null) {
                         val balanceData = parser.asMap(value) ?: iMapOf()
                         AccountBalance.create(
-                            existing?.stakingBalances?.get(key),
-                            parser,
-                            balanceData,
-                            tokenInfo.decimals,
+                            existing = existing?.stakingBalances?.get(key),
+                            parser = parser,
+                            data = balanceData,
+                            decimals = tokenInfo.decimals,
+                            internalState = null,
                         )?.let { balance ->
                             stakingBalances[key] = balance
                         }
