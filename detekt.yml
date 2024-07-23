@@ -39,6 +39,8 @@ style:
     active: false
   ForbiddenComment:
     active: false
+  MagicNumber:
+    active: false
 
 empty-blocks:
   EmptyDefaultConstructor:
