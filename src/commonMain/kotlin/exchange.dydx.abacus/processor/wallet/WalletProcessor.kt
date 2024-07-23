@@ -214,6 +214,7 @@ internal class WalletProcessor(
         }
         return existing
     }
+
     internal fun receivedOnChainUserFeeTierDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
