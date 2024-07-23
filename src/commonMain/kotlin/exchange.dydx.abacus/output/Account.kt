@@ -10,6 +10,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalStakingDelegationState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.TokenInfo
@@ -278,6 +279,7 @@ data class SubaccountPosition(
             existing: SubaccountPosition?,
             parser: ParserProtocol,
             data: Map<String, Any>?,
+            openPositions: Map<String, InternalPerpetualPosition>?,
         ): SubaccountPosition? {
             Logger.d { "creating Account Position\n" }
             data?.let {
@@ -1396,11 +1398,22 @@ data class Subaccount(
                         parser.asMap(data["buyingPower"]),
                     )
 
-                val openPositions = openPositions(
-                    existing?.openPositions,
-                    parser,
-                    parser.asMap(data["openPositions"]),
-                )
+                val openPositions = if (staticTyping) {
+                    openPositions(
+                        existing = existing?.openPositions,
+                        parser = parser,
+                        openPositions = internalState?.openPositions,
+                    )
+                } else {
+                    openPositionsDeprecated(
+
+                        existing = existing?.openPositions,
+                        parser = parser,
+                        data = parser.asMap(data["openPositions"]),
+                        openPositions = internalState?.openPositions,
+                    )
+                }
+
                 val pendingPositions = pendingPositions(
                     existing?.pendingPositions,
                     parser,
@@ -1478,22 +1491,54 @@ data class Subaccount(
         private fun openPositions(
             existing: IList<SubaccountPosition>?,
             parser: ParserProtocol,
-            data: Map<*, *>?,
+            openPositions: Map<String, InternalPerpetualPosition>?,
         ): IList<SubaccountPosition>? {
-            return ParsingHelper.transform(parser, existing, data, {
-                (it as SubaccountPosition).id
-            }, { _, _ ->
-                // not worth the optimization
-                true
-            }, { obj1, obj2 ->
-                val time1 = (obj1 as SubaccountPosition).createdAtMilliseconds
-                val time2 = (obj2 as SubaccountPosition).createdAtMilliseconds
-                ParsingHelper.compare(time1 ?: 0.0, time2 ?: 0.0, false)
-            }, { _, obj, itemData ->
-                parser.asMap(itemData)?.let {
-                    SubaccountPosition.create(obj as? SubaccountPosition, parser, it)
+            var newEntries: MutableList<SubaccountPosition> = mutableListOf()
+            for ((key, value) in openPositions?.entries ?: emptySet()) {
+                val position = SubaccountPosition.create(
+                    null,
+                    parser,
+                    value.toMap(),
+                    openPositions = null,
+                )
+                if (position != null) {
+                    newEntries.add(position)
                 }
-            })?.toIList()
+            }
+        }
+
+        private fun openPositionsDeprecated(
+            existing: IList<SubaccountPosition>?,
+            parser: ParserProtocol,
+            data: Map<*, *>?,
+            openPositions: Map<String, InternalPerpetualPosition>?,
+        ): IList<SubaccountPosition>? {
+            return ParsingHelper.transform(
+                parser = parser,
+                existing = existing,
+                data = data,
+                key = {
+                    (it as SubaccountPosition).id
+                },
+                changed = { _, _ ->
+                    // not worth the optimization
+                    true
+                },
+                comparison = { obj1, obj2 ->
+                    val time1 = (obj1 as SubaccountPosition).createdAtMilliseconds
+                    val time2 = (obj2 as SubaccountPosition).createdAtMilliseconds
+                    ParsingHelper.compare(time1 ?: 0.0, time2 ?: 0.0, false)
+                },
+                createObject = { _, obj, itemData ->
+                    parser.asMap(itemData)?.let {
+                        SubaccountPosition.create(
+                            existing = obj as? SubaccountPosition,
+                            parser = parser,
+                            data = it,
+                            openPositions = null,
+                        )
+                    }
+                })?.toIList()
         }
 
         private fun pendingPositions(

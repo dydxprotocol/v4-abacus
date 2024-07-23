@@ -5,6 +5,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.asTypedList
+import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
@@ -13,6 +14,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.codegen.IndexerSubaccountResponseObject
 import indexer.models.IndexerCompositeOrderObject
 
 @Suppress("UNCHECKED_CAST")
@@ -99,11 +101,26 @@ internal open class SubaccountProcessor(
     ): InternalSubaccountState {
         var state = existing
 
+        val subaccount = parser.asTypedObject<IndexerSubaccountResponseObject>(content["subaccount"])
+        state = process(
+            existing = state,
+            payload = subaccount,
+            firstTime = true
+        )
+
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
-        state = processFills(state, fills, false)
+        state = processFills(
+            subaccount = state,
+            payload = fills,
+            reset = false
+        )
 
         val orders = parser.asTypedList<IndexerCompositeOrderObject>(content["orders"])
-        state = processOrders(state, orders, height)
+        state = processOrders(
+            subaccount = state,
+            payload = orders,
+            height = height
+        )
 
         return state
     }
@@ -117,7 +134,7 @@ internal open class SubaccountProcessor(
         var subaccount = existing ?: mutableMapOf()
         val accountPayload = subaccountPayload(content)
         if (accountPayload != null) {
-            subaccount = received(subaccount, accountPayload, subscribed)
+            subaccount = receivedDeprecated(subaccount, accountPayload, subscribed)
         }
 
         val ordersPayload = parser.asNativeList(content["orders"]) as? List<Map<String, Any>>
@@ -163,7 +180,37 @@ internal open class SubaccountProcessor(
             ?: parser.asNativeMap(parser.asNativeList(content["accounts"])?.firstOrNull())
     }
 
-    internal fun received(
+    internal fun process(
+        existing: InternalSubaccountState,
+        payload: IndexerSubaccountResponseObject?,
+        firstTime: Boolean,
+    ): InternalSubaccountState {
+        if (payload == null) {
+            return existing
+        }
+
+        val modified = existing
+        val subaccountNumber = parser.asInt(payload.subaccountNumber) ?: 0
+        modified.subaccountNumber = subaccountNumber
+        modified.address = payload.address
+        modified.equity = payload.equity
+        modified.freeCollateral = payload.freeCollateral
+        modified.marginEnabled = payload.marginEnabled
+        modified.updatedAtHeight = payload.updatedAtHeight
+        modified.latestProcessedBlockHeight = payload.latestProcessedBlockHeight
+
+        if (firstTime) {
+            modified.positions = perpetualPositionsProcessor.process(
+                existing = existing.positions,
+                payload = payload.openPerpetualPositions,
+            )
+            modified.orders = null
+        }
+
+        return modified
+    }
+
+    internal fun receivedDeprecated(
         subaccount: Map<String, Any>?,
         payload: Map<String, Any>,
         firstTime: Boolean,
@@ -616,7 +663,7 @@ internal class V4SubaccountsProcessor(
                     if (subaccountNumber != null) {
                         val key = "$subaccountNumber"
                         val existing = parser.asNativeMap(existing?.get(key))
-                        val subaccount = subaccountProcessor.received(existing, data, true)
+                        val subaccount = subaccountProcessor.receivedDeprecated(existing, data, true)
                         modified.safeSet(key, subaccount)
                     }
                 }

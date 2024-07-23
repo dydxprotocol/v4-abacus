@@ -2,12 +2,38 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.modify
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPerpetualPositionResponseObject
 
-internal class PerpetualPositionsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
-    private val itemProcessor = PerpetualPositionProcessor(parser = parser)
+internal class PerpetualPositionsProcessor(
+    parser: ParserProtocol,
+    private val itemProcessor: PerpetualPositionProcessor = PerpetualPositionProcessor(parser = parser)
+) : BaseProcessor(parser) {
+
+    fun process(
+        existing: Map<String, InternalPerpetualPosition>? = null,
+        payload: Map<String, IndexerPerpetualPositionResponseObject>?,
+    ): Map<String, InternalPerpetualPosition>? {
+        return if (payload != null) {
+            val result = mutableMapOf<String, InternalPerpetualPosition>()
+            for ((key, value) in payload.entries) {
+                val existingPosition = existing?.get(key)
+                val newPosition = itemProcessor.process(existingPosition, value)
+                if (newPosition != null) {
+                    result[key] = newPosition
+                } else {
+                    result.remove(key)
+                }
+            }
+            return if (result != existing)
+                result else existing
+        } else {
+            existing
+        }
+    }
 
     internal fun received(
         payload: Map<String, Any>?,

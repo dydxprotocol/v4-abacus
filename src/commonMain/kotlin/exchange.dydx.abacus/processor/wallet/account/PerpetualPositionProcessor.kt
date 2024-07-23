@@ -4,10 +4,12 @@ import abs
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerPerpetualPositionResponseObject
 
 /*
     "ETH-USD": {
@@ -70,8 +72,9 @@ import exchange.dydx.abacus.utils.safeSet
     }
  */
 
-@Suppress("UNCHECKED_CAST")
-internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class PerpetualPositionProcessor(
+    parser: ParserProtocol
+) : BaseProcessor(parser) {
     private val sideStringKeys = mapOf(
         "LONG" to "APP.GENERAL.LONG_POSITION_SHORT",
         "SHORT" to "APP.GENERAL.SHORT_POSITION_SHORT",
@@ -105,6 +108,32 @@ internal class PerpetualPositionProcessor(parser: ParserProtocol) : BaseProcesso
             "realizedPnl" to "realizedPnl",
         ),
     )
+
+    fun process(
+        existing:  InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition? {
+        return if (payload != null) InternalPerpetualPosition(
+            market = payload.market,
+            status = payload.status,
+            side = payload.side,
+            size = parser.asDouble(payload.size),
+            maxSize = parser.asDouble(payload.maxSize),
+            entryPrice = parser.asDouble(payload.entryPrice),
+            realizedPnl = parser.asDouble(payload.realizedPnl),
+            createdAt = parser.asDatetime(payload.createdAt),
+            createdAtHeight = parser.asDouble(payload.createdAtHeight),
+            sumOpen = parser.asDouble(payload.sumOpen),
+            sumClose = parser.asDouble(payload.sumClose),
+            netFunding = parser.asDouble(payload.netFunding),
+            unrealizedPnl = parser.asDouble(payload.unrealizedPnl),
+            closedAt = parser.asDatetime(payload.closedAt),
+            exitPrice = parser.asDouble(payload.exitPrice),
+            subaccountNumber = payload.subaccountNumber,
+        ) else {
+            existing
+        }
+    }
 
     override fun received(
         existing: Map<String, Any>?,
