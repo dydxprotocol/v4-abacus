@@ -73,16 +73,27 @@ internal class TradeMarketOrderInputValidator(
          */
         val filled = parser.asBool(parser.value(trade, "marketOrder.filled"))
 
-        return if (filled != false) {
-            null
-        } else {
-            createTradeBoxWarningOrError(
+        if (filled == false) {
+            return createTradeBoxWarningOrError(
                 errorLevel = if (restricted) "WARNING" else "ERROR",
                 errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
                 fields = listOf("size.size"),
                 actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
             )
         }
+
+        val summary = parser.asNativeMap(trade["summary"]) ?: return null
+        // if there's liquidity for market order to be filled but is missing orderbook slippage (mid price)
+        // it is a one sided liquidity situation and should place limit order instead
+        parser.asDouble(summary["slippage"])
+            ?: return createTradeBoxWarningOrError(
+                errorLevel = if (restricted) "WARNING" else "ERROR",
+                errorCode = "MARKET_ORDER_ONE_SIDED_LIQUIDITY",
+                fields = listOf("size.size"),
+                actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+            )
+
+        return null
     }
 
     private fun orderbookOrIndexSlippage(
@@ -98,7 +109,7 @@ internal class TradeMarketOrderInputValidator(
          */
         val summary = parser.asNativeMap(trade["summary"]) ?: return null
 
-        // missing orderbook slippage (mid price) is most likely due to a one sided liquidity situation
+        // missing orderbook slippage is due to a one sided liquidity situation
         // and should be caught by liquidity validation
         val orderbookSlippage = parser.asDouble(summary["slippage"]) ?: return null
         val orderbookSlippageValue = orderbookSlippage.abs()
