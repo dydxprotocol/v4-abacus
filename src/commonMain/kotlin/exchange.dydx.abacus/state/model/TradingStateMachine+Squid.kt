@@ -74,7 +74,7 @@ internal fun TradingStateMachine.squidRouteV2(
     }
 }
 
-internal fun TradingStateMachine.squidStatus(
+internal fun TradingStateMachine.routerStatus(
     payload: String,
     transactionId: String?
 ): StateChanges {
@@ -86,4 +86,17 @@ internal fun TradingStateMachine.squidStatus(
     }
     transferStatuses = routerProcessor.receivedStatus(transferStatuses, json, transactionId)
     return StateChanges(iListOf(Changes.transferStatuses))
+}
+
+internal fun TradingStateMachine.routerTrack(
+    payload: String,
+): StateChanges? {
+    val json = try {
+        Json.parseToJsonElement(payload).jsonObject.toMap()
+    } catch (exception: SerializationException) {
+        Logger.e { "Failed to deserialize skipTrack: $payload \nException: $exception" }
+        return StateChanges(iEmptyList())
+    }
+    trackStatuses = routerProcessor.receivedTrack(trackStatuses, json)
+    return StateChanges(iListOf(Changes.trackStatuses))
 }
