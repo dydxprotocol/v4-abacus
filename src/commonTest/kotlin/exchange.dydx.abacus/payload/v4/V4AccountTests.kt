@@ -1065,11 +1065,17 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testUserFeeTier() {
-        test(
-            {
-                perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
+            assertEquals(perp.internalState.wallet.user?.feeTierId, "1")
+            assertEquals(perp.internalState.wallet.user?.makerFeeRate, 0.0)
+            assertEquals(perp.internalState.wallet.user?.takerFeeRate, 0.0)
+        } else {
+            test(
+                {
+                    perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
+                },
+                """
                 {
                     "wallet": {
                         "user": {
@@ -1079,18 +1085,24 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testUserStats() {
-        test(
-            {
-                perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
+            assertEquals(perp.internalState.wallet.user?.makerVolume30D, 1.0)
+            assertEquals(perp.internalState.wallet.user?.takerVolume30D, 1.0)
+        } else {
+            test(
+                {
+                    perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
+                },
+                """
                 {
                     "wallet": {
                         "user": {
@@ -1099,10 +1111,11 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test

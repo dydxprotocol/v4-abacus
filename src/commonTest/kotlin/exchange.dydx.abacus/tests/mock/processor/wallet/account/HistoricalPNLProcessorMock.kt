@@ -4,7 +4,7 @@ import exchange.dydx.abacus.output.SubaccountHistoricalPNL
 import exchange.dydx.abacus.processor.wallet.account.HistoricalPNLProcessorProtocol
 import indexer.codegen.IndexerPnlTicksResponseObject
 
-class HistoricalPNLProcessorMock : HistoricalPNLProcessorProtocol {
+internal class HistoricalPNLProcessorMock : HistoricalPNLProcessorProtocol {
     var processCount = 0
     var processAction: ((existing: SubaccountHistoricalPNL?, payload: IndexerPnlTicksResponseObject) -> SubaccountHistoricalPNL)? = null
 

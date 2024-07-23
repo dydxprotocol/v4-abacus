@@ -8,18 +8,14 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
-import kotlin.math.min
 
 internal class TradeMarketOrderInputValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
-    @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_ERROR_SLIPPAGE = 0.1
-
-    @Suppress("LocalVariableName", "PropertyName")
-    private val MARKET_ORDER_WARNING_SLIPPAGE = 0.05
+    private val marketOrderErrorSlippage = 0.1
+    private val marketOrderWarningSlippage = 0.05
 
     override fun validateTrade(
         subaccount: Map<String, Any>?,
@@ -116,13 +112,13 @@ internal class TradeMarketOrderInputValidator(
         }
 
         return when {
-            minSlippageValue >= MARKET_ORDER_ERROR_SLIPPAGE -> createTradeBoxWarningOrError(
+            minSlippageValue >= marketOrderErrorSlippage -> createTradeBoxWarningOrError(
                 errorLevel = if (restricted) "WARNING" else "ERROR",
                 errorCode = "MARKET_ORDER_ERROR_${slippageType}_SLIPPAGE",
                 actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
                 slippagePercentValue = minSlippageValue,
             )
-            minSlippageValue >= MARKET_ORDER_WARNING_SLIPPAGE -> createTradeBoxWarningOrError(
+            minSlippageValue >= marketOrderWarningSlippage -> createTradeBoxWarningOrError(
                 errorLevel = "WARNING",
                 errorCode = "MARKET_ORDER_WARNING_${slippageType}_SLIPPAGE",
                 actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",

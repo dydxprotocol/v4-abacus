@@ -10,6 +10,8 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
 import indexer.codegen.IndexerFillResponse
 import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainUserFeeTierResponse
+import indexer.models.chain.OnChainUserStatsResponse
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
@@ -122,41 +124,49 @@ internal fun TradingStateMachine.receivedBatchSubaccountsChanges(
     return StateChanges(changes, null, subaccountNumbers)
 }
 
-internal fun TradingStateMachine.user(payload: String): StateChanges {
-    val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        receivedUser(json)
-    } else {
-        StateChanges.noChange
-    }
-}
-
-internal fun TradingStateMachine.receivedUser(payload: Map<String, Any>): StateChanges {
-    this.wallet = walletProcessor.receivedUser(wallet, payload)
-    return StateChanges(iListOf(Changes.wallet), null)
-}
-
 internal fun TradingStateMachine.onChainUserFeeTier(payload: String): StateChanges {
     val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        receivedOnChainUserFeeTier(json)
+    if (staticTyping) {
+        val payload = parser.asTypedObject<OnChainUserFeeTierResponse>(json)
+        val oldValue = internalState.wallet.user?.copy()
+        walletProcessor.processOnChainUserFeeTier(internalState.wallet, payload)
+        return if (oldValue != internalState.wallet.user) {
+            StateChanges(iListOf(Changes.wallet), null)
+        } else {
+            StateChanges(iListOf())
+        }
     } else {
-        StateChanges.noChange
+        return if (json != null) {
+            receivedOnChainUserFeeTier(json)
+        } else {
+            StateChanges.noChange
+        }
     }
 }
 
 private fun TradingStateMachine.receivedOnChainUserFeeTier(payload: Map<String, Any>): StateChanges {
-    this.wallet = walletProcessor.receivedOnChainUserFeeTier(wallet, payload)
+    this.wallet = walletProcessor.receivedOnChainUserFeeTierDeprecated(wallet, payload)
     return StateChanges(iListOf(Changes.wallet), null)
 }
 
 internal fun TradingStateMachine.onChainUserStats(payload: String): StateChanges {
     val json = parser.decodeJsonObject(payload)
-    return if (json != null) {
-        this.wallet = walletProcessor.receivedOnChainUserStats(wallet, json)
-        StateChanges(iListOf(Changes.wallet), null)
+    if (staticTyping) {
+        val payload = parser.asTypedObject<OnChainUserStatsResponse>(json)
+        val oldValue = internalState.wallet.user?.copy()
+        walletProcessor.processOnChainUserStats(internalState.wallet, payload)
+        return if (oldValue != internalState.wallet.user) {
+            StateChanges(iListOf(Changes.wallet), null)
+        } else {
+            StateChanges(iListOf())
+        }
     } else {
-        StateChanges.noChange
+        return if (json != null) {
+            this.wallet = walletProcessor.receivedOnChainUserStatsDeprecated(wallet, json)
+            StateChanges(iListOf(Changes.wallet), null)
+        } else {
+            StateChanges.noChange
+        }
     }
 }
 

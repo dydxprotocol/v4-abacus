@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
@@ -29,7 +30,7 @@ data class User(
         internal fun create(
             existing: User?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
         ): User? {
             Logger.d { "creating Account User\n" }
             data?.let {
@@ -175,9 +176,38 @@ data class Wallet(
 ) {
     companion object {
         internal fun create(
+            internalState: InternalWalletState,
+        ): Wallet? {
+            Logger.d { "creating Wallet\n" }
+
+            val interalUserState = internalState.user ?: return null
+
+            val walletAddress = internalState.walletAddress
+            val user = User(
+                isRegistered = false,
+                email = null,
+                username = null,
+                feeTierId = interalUserState.feeTierId,
+                makerFeeRate = interalUserState.makerFeeRate ?: 0.0,
+                takerFeeRate = interalUserState.takerFeeRate ?: 0.0,
+                makerVolume30D = interalUserState.makerVolume30D ?: 0.0,
+                takerVolume30D = interalUserState.takerVolume30D ?: 0.0,
+                fees30D = 0.0,
+                isEmailVerified = false,
+                country = null,
+                favorited = null,
+                walletId = null,
+            )
+            return Wallet(
+                walletAddress = walletAddress,
+                user = user,
+            )
+        }
+
+        internal fun createDeprecated(
             existing: Wallet?,
             parser: ParserProtocol,
-            data: Map<*, *>?
+            data: Map<*, *>?,
         ): Wallet? {
             Logger.d { "creating Wallet\n" }
 
@@ -185,7 +215,11 @@ data class Wallet(
                 val walletAddress = parser.asString(data["walletAddress"])
 
                 val user = (parser.asMap(data["user"]))?.let {
-                    User.create(existing?.user, parser, it)
+                    User.create(
+                        existing = existing?.user,
+                        parser = parser,
+                        data = it,
+                    )
                 }
                 val wallet = Wallet(
                     walletAddress,
