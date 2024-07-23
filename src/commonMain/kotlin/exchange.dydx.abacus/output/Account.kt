@@ -1356,6 +1356,10 @@ data class Subaccount(
         ): Subaccount? {
             Logger.d { "creating Account\n" }
 
+            if (staticTyping && internalState == null) {
+                Logger.d { "Internal state is null" }
+                return null
+            }
             data?.let {
                 val ethereumeAddress = parser.asString(data["ethereumeAddress"])
                 val positionId = parser.asString(data["positionId"])

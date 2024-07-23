@@ -123,7 +123,8 @@ internal open class SubaccountProcessor(
             height = height,
         )
 
-        val positions = parser.asTypedList<IndexerPerpetualPositionResponseObject>(content["perpetualPositions"])
+        val perpetualPositions = content["perpetualPositions"] ?: content["openPerpetualPositions"]
+        val positions = parser.asTypedList<IndexerPerpetualPositionResponseObject>(perpetualPositions)
         state = processPerpetualPositions(
             existing = state,
             payload = positions,
@@ -187,7 +188,7 @@ internal open class SubaccountProcessor(
             ?: parser.asNativeMap(parser.asNativeList(content["accounts"])?.firstOrNull())
     }
 
-    internal fun process(
+    fun process(
         existing: InternalSubaccountState,
         payload: IndexerSubaccountResponseObject?,
         firstTime: Boolean,
@@ -671,6 +672,37 @@ internal class V4SubaccountsProcessor(
     localizer: LocalizerProtocol?,
 ) : SubaccountProcessor(parser, localizer) {
     private val subaccountProcessor = V4SubaccountProcessor(parser, localizer)
+
+    fun processSubaccounts(
+        internalState: MutableMap<Int, InternalSubaccountState>,
+        payload: List<Any>?,
+    ): MutableMap<Int, InternalSubaccountState> {
+        return if (payload != null) {
+            internalState.clear()
+            for (item in payload) {
+                val data = parser.asNativeMap(item)
+                if (data != null) {
+                    val subaccountNumber = parser.asInt(data["subaccountNumber"])
+                    if (subaccountNumber != null) {
+                        val existing =
+                            internalState[subaccountNumber] ?: InternalSubaccountState(
+                                subaccountNumber = subaccountNumber,
+                            )
+                        val subaccount = process(
+                            existing = existing,
+                            payload = parser.asTypedObject(data),
+                            firstTime = true,
+                        )
+                        internalState[subaccountNumber] = subaccount
+                    }
+                }
+            }
+            internalState
+        } else {
+            internalState
+        }
+    }
+
     internal fun receivedSubaccounts(
         existing: Map<String, Any>?,
         payload: List<Any>?,

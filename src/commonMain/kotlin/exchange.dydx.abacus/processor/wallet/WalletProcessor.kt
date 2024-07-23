@@ -94,6 +94,18 @@ internal class WalletProcessor(
         }
     }
 
+    fun processAccount(
+        internalState: InternalWalletState,
+        payload: Map<String, Any>?,
+    ): InternalWalletState {
+        val account = v4accountProcessor.processAccount(
+            internalState = internalState.account,
+            content = payload,
+        )
+        internalState.account = account
+        return internalState
+    }
+
     internal fun receivedAccount(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,

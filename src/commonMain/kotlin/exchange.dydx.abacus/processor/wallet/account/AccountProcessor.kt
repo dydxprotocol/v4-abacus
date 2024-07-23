@@ -19,6 +19,7 @@ import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
 import kollections.iMutableListOf
+import kotlinx.serialization.json.JsonNull.content
 
 /*
 "account": {
@@ -235,6 +236,7 @@ internal class V4AccountProcessor(
         }
         return existing
     }
+
     internal fun receivedDelegationsDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
@@ -370,6 +372,21 @@ internal class V4AccountProcessor(
                 payload,
             )
         modified.safeSet("tradingRewards.historical.$period", modifiedHistoricalTradingRewards)
+        return modified
+    }
+
+    fun processAccount(
+        internalState: InternalAccountState,
+        content: Map<String, Any>?,
+    ): InternalAccountState {
+        var modified = internalState
+        val subaccounts = parser.asNativeList(parser.value(content, "subaccounts"))
+        subaccountsProcessor.processSubaccounts(
+            internalState = internalState.subaccounts,
+            payload = subaccounts,
+        )
+
+        // TODO: Updating the account with the trading rewards
         return modified
     }
 

@@ -32,6 +32,12 @@ internal fun TradingStateMachine.account(payload: String): StateChanges {
 internal fun TradingStateMachine.receivedAccount(
     payload: Map<String, Any>
 ): StateChanges {
+    if (staticTyping) {
+        walletProcessor.processAccount(
+            internalState = internalState.wallet,
+            payload = payload,
+        )
+    }
     this.wallet = walletProcessor.receivedAccount(wallet, payload)
     return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
