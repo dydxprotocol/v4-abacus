@@ -13,6 +13,7 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerSubaccountResponseObject
 import indexer.models.IndexerCompositeOrderObject
@@ -122,6 +123,12 @@ internal open class SubaccountProcessor(
             height = height,
         )
 
+        val positions = parser.asTypedList<IndexerPerpetualPositionResponseObject>(content["perpetualPositions"])
+        state = processPerpetualPositions(
+            existing = state,
+            payload = positions,
+        )
+
         return state
     }
 
@@ -146,7 +153,7 @@ internal open class SubaccountProcessor(
             parser.asNativeList(content["positions"])
                 ?: parser.asNativeList(content["perpetualPositions"])
         if (perpetualPositionsPayload != null) {
-            subaccount = receivedPerpetualPositions(subaccount, perpetualPositionsPayload)
+            subaccount = receivedPerpetualPositionsDeprecated(subaccount, perpetualPositionsPayload)
         }
 
         val fillsPayload = parser.asNativeList(content["fills"])
@@ -400,13 +407,27 @@ internal open class SubaccountProcessor(
         } ?: subaccount
     }
 
-    private fun receivedPerpetualPositions(
+    private fun processPerpetualPositions(
+        existing: InternalSubaccountState,
+        payload: List<IndexerPerpetualPositionResponseObject>?,
+    ): InternalSubaccountState {
+        val newPositions = perpetualPositionsProcessor.processChanges(
+            existing = existing.positions,
+            payload = payload,
+        )
+        if (existing.positions != newPositions) {
+            existing.positions = newPositions
+        }
+        return existing
+    }
+
+    private fun receivedPerpetualPositionsDeprecated(
         subaccount: Map<String, Any>,
         payload: List<Any>?,
     ): Map<String, Any> {
         return if (payload != null) {
             val modified = subaccount.mutable()
-            val positions = perpetualPositionsProcessor.receivedChanges(
+            val positions = perpetualPositionsProcessor.receivedChangesDeprecated(
                 parser.asNativeMap(subaccount["positions"]),
                 payload,
             )

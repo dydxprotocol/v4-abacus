@@ -83,4 +83,25 @@ class PerpetualPositionProcessorTests {
         )
         assertEquals(positionMock, position)
     }
+
+    @Test
+    fun testProcessChanges() {
+        val position = positionProcessor.processChanges(
+            existing = null,
+            payload = payloadMock,
+        )
+        assertEquals(positionMock, position)
+
+        val existing = positionProcessor.process(
+            existing = positionMock,
+            payload = null,
+        )
+        assertEquals(positionMock, existing)
+
+        val position2 = positionProcessor.processChanges(
+            existing = positionMock.copy(size = 111.0),
+            payload = payloadMock,
+        )
+        assertEquals(positionMock, position2)
+    }
 }

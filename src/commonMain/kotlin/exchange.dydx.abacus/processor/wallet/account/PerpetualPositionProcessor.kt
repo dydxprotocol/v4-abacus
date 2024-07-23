@@ -80,6 +80,11 @@ internal interface PerpetualPositionProcessorProtocol {
         existing: InternalPerpetualPosition?,
         payload: IndexerPerpetualPositionResponseObject?,
     ): InternalPerpetualPosition?
+
+    fun processChanges(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition?
 }
 
 internal class PerpetualPositionProcessor(
@@ -171,6 +176,19 @@ internal class PerpetualPositionProcessor(
         }
     }
 
+    override fun processChanges(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition? {
+        // Keep the position even if it is closed in the internal state.
+        // Filter at output
+        return if (payload != null) {
+            process(existing, payload)
+        } else {
+            existing
+        }
+    }
+
     override fun received(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
@@ -224,7 +242,7 @@ internal class PerpetualPositionProcessor(
         return "NONE"
     }
 
-    internal fun receivedChanges(
+    internal fun receivedChangesDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?
     ): Map<String, Any>? {

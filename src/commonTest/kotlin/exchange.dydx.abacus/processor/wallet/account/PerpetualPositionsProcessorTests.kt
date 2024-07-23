@@ -32,10 +32,35 @@ class PerpetualPositionsProcessorTests {
         val output = processor.process(
             existing = null,
             payload = mapOf(
-                "11" to PerpetualPositionProcessorTests.payloadMock,
+                "ETH-USD" to PerpetualPositionProcessorTests.payloadMock,
             ),
         )
         assertTrue { output?.size == 1 }
-        assertTrue { output?.get("11") == PerpetualPositionProcessorTests.positionMock }
+        assertTrue { output?.get("ETH-USD") == PerpetualPositionProcessorTests.positionMock }
+    }
+
+    @Test
+    fun testProcessChanges_emptyPayload() {
+        val output = processor.processChanges(
+            existing = null,
+            payload = emptyList(),
+        )
+        assertTrue { output.isNullOrEmpty() }
+    }
+
+    @Test
+    fun testProcessChanges_nonEmptyPayload() {
+        itemProcessor.processChangesAction = { _, _ ->
+            PerpetualPositionProcessorTests.positionMock
+        }
+
+        val output = processor.processChanges(
+            existing = mapOf(
+                "ETH-USD" to PerpetualPositionProcessorTests.positionMock.copy(size = 111.0),
+            ),
+            payload = listOf(PerpetualPositionProcessorTests.payloadMock),
+        )
+        assertTrue { output?.size == 1 }
+        assertTrue { output?.get("ETH-USD") == PerpetualPositionProcessorTests.positionMock }
     }
 }

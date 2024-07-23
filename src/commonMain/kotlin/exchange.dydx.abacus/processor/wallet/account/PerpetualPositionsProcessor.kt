@@ -41,6 +41,32 @@ internal class PerpetualPositionsProcessor(
         }
     }
 
+    fun processChanges(
+        existing: Map<String, InternalPerpetualPosition>?,
+        payload: List<IndexerPerpetualPositionResponseObject>?,
+    ): Map<String, InternalPerpetualPosition>? {
+        return if (payload != null) {
+            val result = existing?.toMutableMap() ?: mutableMapOf()
+            for (item in payload) {
+                if (item.market != null) {
+                    val newPosition = itemProcessor.processChanges(result[item.market], item)
+                    if (newPosition != null) {
+                        result[item.market] = newPosition
+                    } else {
+                        result.remove(item.market)
+                    }
+                }
+            }
+            return if (result != existing) {
+                result
+            } else {
+                existing
+            }
+        } else {
+            existing
+        }
+    }
+
     internal fun received(
         payload: Map<String, Any>?,
         subaccountNumber: Int?,
@@ -65,7 +91,7 @@ internal class PerpetualPositionsProcessor(
         return null
     }
 
-    internal fun receivedChanges(
+    internal fun receivedChangesDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
@@ -76,7 +102,7 @@ internal class PerpetualPositionsProcessor(
                     parser.asString(item["market"])?.let {
                         val itemProcessor = itemProcessor as? PerpetualPositionProcessor
                         val modified =
-                            itemProcessor?.receivedChanges(parser.asNativeMap(existing?.get(it)), item)
+                            itemProcessor?.receivedChangesDeprecated(parser.asNativeMap(existing?.get(it)), item)
                         output.safeSet(it, modified)
                     }
                 }
