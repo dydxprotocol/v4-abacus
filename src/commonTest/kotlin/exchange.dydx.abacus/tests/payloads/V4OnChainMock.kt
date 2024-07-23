@@ -191,8 +191,8 @@ internal class V4OnChainMock {
             }
           ],
           "pagination": {
-            "nextKey": {},
-            "total": { "low": 2, "high": 0, "unsigned": true }
+            "nextKey": "",
+            "total": ""
           }
         }
     """.trimIndent()

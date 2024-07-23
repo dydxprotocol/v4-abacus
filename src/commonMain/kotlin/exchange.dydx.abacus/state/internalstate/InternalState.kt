@@ -28,6 +28,8 @@ internal data class InternalUserState(
 
 internal data class InternalAccountState(
     var balances: Map<String, InternalAccountBalanceState>? = null,
+    var stakingBalances: Map<String, InternalAccountBalanceState>? = null,
+    var stakingDelegations: List<InternalStakingDelegationState>? = null,
     var subaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
     var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
 )
@@ -42,4 +44,11 @@ internal data class InternalSubaccountState(
 internal data class InternalAccountBalanceState(
     val denom: String,
     val amount: BigDecimal,
+)
+
+internal data class InternalStakingDelegationState(
+    val delegatorAddress: String? = null,
+    val validatorAddress: String? = null,
+    val shares: BigDecimal? = null,
+    val balance: InternalAccountBalanceState,
 )

@@ -16,6 +16,7 @@ import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainDelegationResponse
 import kollections.iMutableListOf
 
 /*
@@ -219,15 +220,29 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedDelegations(
+    internal fun processStakingDelegations(
+        existing: InternalAccountState,
+        payload: OnChainDelegationResponse?,
+    ): InternalAccountState {
+        val stakingBalances = delegationsProcessor.process(existing.stakingBalances, payload)
+        if (stakingBalances != existing.stakingBalances) {
+            existing.stakingBalances = stakingBalances
+        }
+        val delegations = delegationsProcessor.processDelegations(existing.stakingDelegations, payload)
+        if (delegations != existing.stakingDelegations) {
+            existing.stakingDelegations = delegations
+        }
+        return existing
+    }
+    internal fun receivedDelegationsDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val delegations = parser.asNativeMap(parser.value(existing, "stakingBalances"))
-        val modifiedStakingBalance = delegationsProcessor.received(delegations, payload)
+        val modifiedStakingBalance = delegationsProcessor.receivedDeprecated(delegations, payload)
         modified.safeSet("stakingBalances", modifiedStakingBalance)
-        val modifiedDelegations = delegationsProcessor.receivedDelegations(delegations, payload)
+        val modifiedDelegations = delegationsProcessor.receivedDelegationsDeprecated(delegations, payload)
         modified.safeSet("stakingDelegations", modifiedDelegations)
         return modified
     }

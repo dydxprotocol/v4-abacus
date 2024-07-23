@@ -10,6 +10,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalStakingDelegationState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.utils.IList
@@ -1649,11 +1650,12 @@ data class StakingDelegation(
             parser: ParserProtocol,
             data: Map<String, Any>,
             decimals: Int,
+            internalState: InternalStakingDelegationState?
         ): StakingDelegation? {
             Logger.d { "creating Staking Delegation\n" }
 
-            val validator = parser.asString(data["validator"])
-            val amount = parser.asDecimal(data["amount"])
+            val validator = internalState?.validatorAddress ?: parser.asString(data["validator"])
+            val amount = internalState?.balance?.amount ?: parser.asDecimal(data["amount"])
             if (validator != null && amount != null) {
                 val decimalAmount = amount * Numeric.decimal.TEN.pow(-1 * decimals)
                 val decimalAmountString = parser.asString(decimalAmount)!!
@@ -2218,22 +2220,37 @@ data class Account(
                 }
             }
 
-            val stakingBalances: IMutableMap<String, AccountBalance> =
+            val stakingBalances = if (staticTyping) {
                 processStakingBalance(
+                    existing = existing,
+                    parser = parser,
+                    tokensInfo = tokensInfo,
+                    stakingBalances = internalState.stakingBalances,
+                )
+            } else {
+                processStakingBalanceDeprecated(
                     existing = existing,
                     parser = parser,
                     data = data,
                     tokensInfo = tokensInfo,
-                    internalState = internalState,
                 )
+            }
 
-            val stakingDelegations: IMutableList<StakingDelegation> =
+            val stakingDelegations = if (staticTyping) {
                 processStakingDelegations(
-                    existing,
-                    parser,
-                    data,
-                    tokensInfo,
+                    existing = existing,
+                    parser = parser,
+                    tokensInfo = tokensInfo,
+                    stakingDelegations = internalState.stakingDelegations,
                 )
+            } else {
+                processStakingDelegationsDeprecated(
+                    existing = existing,
+                    parser = parser,
+                    data = data,
+                    tokensInfo = tokensInfo,
+                )
+            }
 
             val unbondingDelegations = data["unbondingDelegation"] as IList<UnbondingDelegation>?
             val stakingRewards = data["stakingRewards"] as StakingRewards?
@@ -2296,15 +2313,15 @@ data class Account(
             }
 
             return Account(
-                balances,
-                stakingBalances,
-                stakingDelegations,
-                unbondingDelegations,
-                stakingRewards,
-                subaccounts,
-                groupedSubaccounts,
-                tradingRewards,
-                launchIncentivePoints,
+                balances = balances,
+                stakingBalances = stakingBalances,
+                stakingDelegations = stakingDelegations,
+                unbondingDelegation = unbondingDelegations,
+                stakingRewards = stakingRewards,
+                subaccounts = subaccounts,
+                groupedSubaccounts = groupedSubaccounts,
+                tradingRewards = tradingRewards,
+                launchIncentivePoints = launchIncentivePoints,
             )
         }
 
@@ -2313,6 +2330,28 @@ data class Account(
         }
 
         private fun processStakingDelegations(
+            existing: Account?,
+            parser: ParserProtocol,
+            tokensInfo: Map<String, TokenInfo>,
+            stakingDelegations: List<InternalStakingDelegationState>?
+        ): IList<StakingDelegation>? {
+            return stakingDelegations?.mapIndexedNotNull { index, item ->
+                val tokenInfo = findTokenInfo(tokensInfo, item.balance.denom)
+                if (tokenInfo != null) {
+                    StakingDelegation.create(
+                        existing = existing?.stakingDelegations?.getOrNull(index),
+                        parser = parser,
+                        data = emptyMap(),
+                        decimals = tokenInfo.decimals,
+                        internalState = item,
+                    )
+                } else {
+                    null
+                }
+            }?.toIList()
+        }
+
+        private fun processStakingDelegationsDeprecated(
             existing: Account?,
             parser: ParserProtocol,
             data: Map<String, Any>,
@@ -2330,6 +2369,7 @@ data class Account(
                         parser,
                         stakingDelegationData,
                         tokenInfo.decimals,
+                        null,
                     )?.let { stakingDelegation ->
                         stakingDelegations.add(stakingDelegation)
                     }
@@ -2341,9 +2381,33 @@ data class Account(
         private fun processStakingBalance(
             existing: Account?,
             parser: ParserProtocol,
+            tokensInfo: Map<String, TokenInfo>,
+            stakingBalances: Map<String, InternalAccountBalanceState>?,
+        ): IMap<String, AccountBalance> {
+            val newStakingBalances: IMutableMap<String, AccountBalance> =
+                iMutableMapOf()
+            for ((key, value) in stakingBalances ?: emptyMap()) {
+                val tokenInfo = findTokenInfo(tokensInfo, key)
+                if (tokenInfo != null) {
+                    AccountBalance.create(
+                        existing = existing?.stakingBalances?.get(key),
+                        parser = parser,
+                        data = emptyMap(),
+                        decimals = tokenInfo.decimals,
+                        internalState = value,
+                    )?.let { balance ->
+                        newStakingBalances[key] = balance
+                    }
+                }
+            }
+            return newStakingBalances
+        }
+
+        private fun processStakingBalanceDeprecated(
+            existing: Account?,
+            parser: ParserProtocol,
             data: Map<String, Any>,
             tokensInfo: Map<String, TokenInfo>,
-            internalState: InternalAccountState,
         ): IMutableMap<String, AccountBalance> {
             val stakingBalances: IMutableMap<String, AccountBalance> =
                 iMutableMapOf()
