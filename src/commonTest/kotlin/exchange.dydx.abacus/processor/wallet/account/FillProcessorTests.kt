@@ -36,7 +36,7 @@ class FillProcessorTests {
             createdAtHeight = "111",
             orderId = "2222",
             clientMetadata = "0",
-            subaccountNumber = 0.0,
+            subaccountNumber = 0,
         )
 
         val fillMock = SubaccountFill(

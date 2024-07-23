@@ -2,6 +2,8 @@ package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.toCamelCaseKeys
@@ -9,6 +11,7 @@ import exchange.dydx.abacus.utils.toCamelCaseKeys
 // We may later want to split this into one processor per network
 // For now we're not since it's just two, but at 3 we will
 internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+
     private val keyMap = mapOf(
         "string" to mapOf(
             // Transaction request payload
@@ -83,10 +86,12 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
     ): Map<String, Any> {
         val txType = getTxType(payload)
         val modified = transform(existing, payload, keyMap)
+        // squid used to provide these, but now we need to hardcode them
+        // for the API to work (even though they seem to have default values?): https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
+        modified.safeSet("gasPrice", DEFAULT_GAS_PRICE)
+        modified.safeSet("gasLimit", DEFAULT_GAS_LIMIT)
         val data = modified["data"]
         if (data != null && txType == TxType.EVM) {
-//            skip does not provide the 0x prefix. it's not required but is good for clarity
-//            and keeps our typing honest (we typecast this value to evmAddress in web)
             modified.safeSet("data", "0x$data")
         }
         if (txType == TxType.COSMOS) {

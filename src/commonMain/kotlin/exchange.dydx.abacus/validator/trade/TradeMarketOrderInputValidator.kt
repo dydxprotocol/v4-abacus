@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
+import kotlin.math.min
 
 internal class TradeMarketOrderInputValidator(
     localizer: LocalizerProtocol?,
@@ -56,7 +57,7 @@ internal class TradeMarketOrderInputValidator(
             if (error != null) {
                 errors.add(error)
             }
-            error = orderbookSlippage(trade, restricted)
+            error = orderbookOrIndexSlippage(trade, restricted)
             if (error != null) {
                 errors.add(error)
             }
@@ -79,61 +80,80 @@ internal class TradeMarketOrderInputValidator(
         return if (filled != false) {
             null
         } else {
-            error(
-                if (restricted) "WARNING" else "ERROR",
-                "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
-                listOf("size.size"),
-                "APP.TRADE.MODIFY_SIZE_FIELD",
-                "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
-                "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+            createTradeBoxWarningOrError(
+                errorLevel = if (restricted) "WARNING" else "ERROR",
+                errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+                fields = listOf("size.size"),
+                actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
             )
         }
     }
 
-    private fun orderbookSlippage(
+    private fun orderbookOrIndexSlippage(
         trade: Map<String, Any>,
         restricted: Boolean
     ): Map<String, Any>? {
         /*
         MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE
         MARKET_ORDER_ERROR_ORDERBOOK_SLIPPAGE
+
+        MARKET_ORDER_WARNING_INDEX_PRICE_SLIPPAGE
+        MARKET_ORDER_ERROR_INDEX_PRICE_SLIPPAGE
          */
-        parser.asNativeMap(trade["summary"])?.let { summary ->
-            parser.asDouble(summary["slippage"])?.let { slippage ->
-                val slippageValue = slippage.abs()
-                if (slippageValue >= MARKET_ORDER_ERROR_SLIPPAGE) {
-                    return error(
-                        if (restricted) "WARNING" else "ERROR",
-                        "MARKET_ORDER_ERROR_ORDERBOOK_SLIPPAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_ERROR_ORDERBOOK_SLIPPAGE",
-                        "ERRORS.TRADE_BOX.MARKET_ORDER_ERROR_ORDERBOOK_SLIPPAGE",
-                        mapOf(
-                            "SLIPPAGE" to mapOf(
-                                "value" to slippageValue,
-                                "format" to "percent",
-                            ),
-                        ),
-                    )
-                } else if (slippageValue >= MARKET_ORDER_WARNING_SLIPPAGE) {
-                    return error(
-                        "WARNING",
-                        "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
-                        listOf("size.size"),
-                        null,
-                        "WARNINGS.TRADE_BOX_TITLE.MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
-                        "WARNINGS.TRADE_BOX.MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE",
-                        mapOf(
-                            "SLIPPAGE" to mapOf(
-                                "value" to slippageValue,
-                                "format" to "percent",
-                            ),
-                        ),
-                    )
-                }
-            }
+        val summary = parser.asNativeMap(trade["summary"]) ?: return null
+
+        // missing orderbook slippage (mid price) is most likely due to a one sided liquidity situation
+        // and should be caught by liquidity validation
+        val orderbookSlippage = parser.asDouble(summary["slippage"]) ?: return null
+        val orderbookSlippageValue = orderbookSlippage.abs()
+        val indexSlippage = parser.asDouble(summary["indexSlippage"])
+
+        var slippageType = "ORDERBOOK"
+        var minSlippageValue = orderbookSlippageValue
+        if (indexSlippage != null && indexSlippage < orderbookSlippageValue) {
+            slippageType = "INDEX_PRICE"
+            minSlippageValue = indexSlippage
         }
-        return null
+
+        return when {
+            minSlippageValue >= MARKET_ORDER_ERROR_SLIPPAGE -> createTradeBoxWarningOrError(
+                errorLevel = if (restricted) "WARNING" else "ERROR",
+                errorCode = "MARKET_ORDER_ERROR_${slippageType}_SLIPPAGE",
+                actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
+                slippagePercentValue = minSlippageValue,
+            )
+            minSlippageValue >= MARKET_ORDER_WARNING_SLIPPAGE -> createTradeBoxWarningOrError(
+                errorLevel = "WARNING",
+                errorCode = "MARKET_ORDER_WARNING_${slippageType}_SLIPPAGE",
+                actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
+                slippagePercentValue = minSlippageValue,
+            )
+            else -> null
+        }
+    }
+
+    private fun createTradeBoxWarningOrError(
+        errorLevel: String,
+        errorCode: String,
+        fields: List<String>? = null,
+        actionStringKey: String? = null,
+        slippagePercentValue: Double? = null
+    ): Map<String, Any> {
+        return error(
+            type = errorLevel,
+            errorCode,
+            fields,
+            actionStringKey,
+            "ERRORS.TRADE_BOX_TITLE.$errorCode",
+            "ERRORS.TRADE_BOX.$errorCode",
+            slippagePercentValue?.let {
+                mapOf(
+                    "SLIPPAGE" to mapOf(
+                        "value" to it,
+                        "format" to "percent",
+                    ),
+                )
+            },
+        )
     }
 }

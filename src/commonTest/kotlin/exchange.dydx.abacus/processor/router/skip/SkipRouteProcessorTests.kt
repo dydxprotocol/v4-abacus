@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.toJsonArray
@@ -33,6 +35,8 @@ class SkipRouteProcessorTests {
                 "fromAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                 "toChainId" to "noble-1",
                 "toAddress" to "uusdc",
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)
@@ -79,6 +83,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "uusdc",
                 "data" to jsonEncoder.encode(expectedDataRaw),
                 "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)
@@ -126,6 +132,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "ethereum-native",
                 "data" to jsonEncoder.encode(expectedDataRaw),
                 "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
 
@@ -197,6 +205,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                 "data" to expectedData,
                 "allMessages" to expectedMessagesArray,
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)
@@ -242,6 +252,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
                 "data" to jsonEncoder.encode(expectedDataRaw),
                 "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)

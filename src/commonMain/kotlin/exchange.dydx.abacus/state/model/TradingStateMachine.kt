@@ -39,7 +39,7 @@ import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.responses.AssetJson
+import exchange.dydx.abacus.protocols.asTypedStringMap
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -64,9 +64,9 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.toJson
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
+import indexer.models.configs.AssetJson
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -74,7 +74,6 @@ import kollections.iMutableMapOf
 import kollections.toIList
 import kollections.toIMutableMap
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
@@ -590,23 +589,20 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
+        val json = parser.decodeJsonObject(payload)
         if (staticTyping) {
-            return try {
-                val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-                val parsedAssetPayload = Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
-                    ?: error("Error parsing Asset payload")
-
-                processMarketsConfigurations(
-                    payload = parsedAssetPayload,
-                    subaccountNumber = subaccountNumber,
-                    deploymentUri = deploymentUri,
-                )
-            } catch (e: SerializationException) {
-                Logger.e { "Error parsing asset payload: $e" }
-                StateChanges.noChange
+            val parsedAssetPayload = parser.asTypedStringMap<AssetJson>(json)
+            if (parsedAssetPayload == null) {
+                Logger.e { "Error parsing asset payload" }
+                return StateChanges.noChange
             }
+
+            return processMarketsConfigurations(
+                payload = parsedAssetPayload,
+                subaccountNumber = subaccountNumber,
+                deploymentUri = deploymentUri,
+            )
         } else {
-            val json = parser.decodeJsonObject(payload)
             return if (json != null) {
                 receivedMarketsConfigurationsDeprecated(json, subaccountNumber, deploymentUri)
             } else {
@@ -1167,6 +1163,9 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.assets)) {
             if (staticTyping) {
                 assets = internalState.assets.toIMutableMap()
+                if (assets.isEmpty()) {
+                    assets = null
+                }
             } else {
                 this.assets?.let {
                     assets = assets ?: mutableMapOf<String, Asset>()
@@ -1281,10 +1280,6 @@ open class TradingStateMachine(
                 val start = now - historicalPnlDays.days
                 val modifiedHistoricalPnl = historicalPnl?.toIMutableMap() ?: mutableMapOf()
                 var subaccountHistoricalPnl = historicalPnl?.get(subaccountText)
-                val subaccountHistoricalPnlData =
-                    (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
-                        ?: mutableListOf()
-
                 if (subaccountHistoricalPnl?.size == 1) {
                     // Check if the PNL was generated from equity
                     val first = subaccountHistoricalPnl.firstOrNull()
@@ -1292,12 +1287,24 @@ open class TradingStateMachine(
                         subaccountHistoricalPnl = null
                     }
                 }
-                subaccountHistoricalPnl = SubaccountHistoricalPNL.create(
-                    subaccountHistoricalPnl,
-                    parser,
-                    subaccountHistoricalPnlData,
-                    start,
-                )
+
+                if (staticTyping) {
+                    subaccountHistoricalPnl =
+                        internalState.wallet.account.subaccounts[subaccountNumber]?.historicalPNLs?.toIList()?.filter {
+                            it.createdAtMilliseconds >= start.toEpochMilliseconds()
+                        }
+                } else {
+                    val subaccountHistoricalPnlData =
+                        (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
+                            ?: mutableListOf()
+
+                    subaccountHistoricalPnl = SubaccountHistoricalPNL.create(
+                        existing = subaccountHistoricalPnl,
+                        parser = parser,
+                        data = subaccountHistoricalPnlData,
+                        startTime = start,
+                    )
+                }
                 modifiedHistoricalPnl.typedSafeSet(subaccountText, subaccountHistoricalPnl)
                 historicalPnl = modifiedHistoricalPnl
             }

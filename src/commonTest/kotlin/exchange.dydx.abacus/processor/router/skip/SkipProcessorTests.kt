@@ -9,6 +9,8 @@ import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.toJsonObject
 import kotlinx.serialization.json.Json
@@ -360,6 +362,8 @@ class SkipProcessorTests {
                         "fromAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                         "toChainId" to "noble-1",
                         "toAddress" to "uusdc",
+                        "gasPrice" to DEFAULT_GAS_PRICE,
+                        "gasLimit" to DEFAULT_GAS_LIMIT,
                     ),
                 ),
             ),

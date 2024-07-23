@@ -14,6 +14,8 @@ import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.models.chain.OnChainAccountBalanceObject
 import kollections.iMutableListOf
 
 /*
@@ -185,7 +187,6 @@ import kollections.iMutableListOf
       },
  */
 
-@Suppress("UNCHECKED_CAST")
 internal class V4AccountProcessor(
     parser: ParserProtocol,
     localizer: LocalizerProtocol?,
@@ -196,13 +197,24 @@ internal class V4AccountProcessor(
     private val tradingRewardsProcessor = AccountTradingRewardsProcessor(parser)
     private val launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
 
-    internal fun receivedAccountBalances(
+    internal fun processAccountBalances(
+        existing: InternalAccountState,
+        payload: List<OnChainAccountBalanceObject>?,
+    ): InternalAccountState {
+        val balances = balancesProcessor.process(existing.balances, payload)
+        if (balances != existing.balances) {
+            existing.balances = balances
+        }
+        return existing
+    }
+
+    internal fun receivedAccountBalancesDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val balances = parser.asNativeMap(parser.value(existing, "balances"))
-        val modifiedBalances = balancesProcessor.receivedBalances(balances, payload)
+        val modifiedBalances = balancesProcessor.receivedBalancesDeprecated(balances, payload)
         modified.safeSet("balances", modifiedBalances)
         return modified
     }
@@ -270,6 +282,17 @@ internal class V4AccountProcessor(
         return modified
     }
 
+    internal fun processHistoricalPnls(
+        existing: InternalAccountState,
+        payload: List<IndexerPnlTicksResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalAccountState {
+        val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+        val newSubaccount = subaccountsProcessor.processsHistoricalPNLs(subaccount, payload)
+        existing.subaccounts[subaccountNumber] = newSubaccount
+        return existing
+    }
+
     internal fun receivedHistoricalPnls(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
@@ -277,7 +300,7 @@ internal class V4AccountProcessor(
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedHistoricalPnls(subaccount, payload)
+        val modifiedsubaccount = subaccountsProcessor.receivedHistoricalPnlsDeprecated(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }

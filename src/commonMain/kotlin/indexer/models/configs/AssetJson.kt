@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.responses
+package indexer.models.configs
 
 import exchange.dydx.abacus.utils.IList
 import kotlinx.serialization.Serializable
@@ -9,8 +9,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AssetJson(
     val name: String,
-    val websiteLink: String?,
-    val whitepaperLink: String?,
-    val coinMarketCapsLink: String?,
-    val tags: IList<String>,
+    val websiteLink: String? = null,
+    val whitepaperLink: String? = null,
+    val coinMarketCapsLink: String? = null,
+    val tags: IList<String>? = null,
 )
