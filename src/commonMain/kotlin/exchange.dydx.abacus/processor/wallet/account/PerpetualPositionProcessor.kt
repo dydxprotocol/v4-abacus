@@ -1,8 +1,11 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import abs
+import exchange.dydx.abacus.output.SubaccountPositionResources
+import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -73,7 +76,8 @@ import indexer.codegen.IndexerPerpetualPositionResponseObject
  */
 
 internal class PerpetualPositionProcessor(
-    parser: ParserProtocol
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?,
 ) : BaseProcessor(parser) {
     private val sideStringKeys = mapOf(
         "LONG" to "APP.GENERAL.LONG_POSITION_SHORT",
@@ -110,27 +114,52 @@ internal class PerpetualPositionProcessor(
     )
 
     fun process(
-        existing:  InternalPerpetualPosition?,
+        existing: InternalPerpetualPosition?,
         payload: IndexerPerpetualPositionResponseObject?,
     ): InternalPerpetualPosition? {
-        return if (payload != null) InternalPerpetualPosition(
-            market = payload.market,
-            status = payload.status,
-            side = payload.side,
-            size = parser.asDouble(payload.size),
-            maxSize = parser.asDouble(payload.maxSize),
-            entryPrice = parser.asDouble(payload.entryPrice),
-            realizedPnl = parser.asDouble(payload.realizedPnl),
-            createdAt = parser.asDatetime(payload.createdAt),
-            createdAtHeight = parser.asDouble(payload.createdAtHeight),
-            sumOpen = parser.asDouble(payload.sumOpen),
-            sumClose = parser.asDouble(payload.sumClose),
-            netFunding = parser.asDouble(payload.netFunding),
-            unrealizedPnl = parser.asDouble(payload.unrealizedPnl),
-            closedAt = parser.asDatetime(payload.closedAt),
-            exitPrice = parser.asDouble(payload.exitPrice),
-            subaccountNumber = payload.subaccountNumber,
-        ) else {
+        return if (payload != null) {
+            val sideStringKey = sideStringKeys[payload.side?.value]
+            val sideString = if (sideStringKey != null) {
+                localizer?.localize(sideStringKey)
+            } else {
+                sideStringKey
+            }
+            InternalPerpetualPosition(
+                market = payload.market,
+                status = payload.status,
+                side = payload.side,
+                size = parser.asDouble(payload.size),
+                maxSize = parser.asDouble(payload.maxSize),
+                entryPrice = parser.asDouble(payload.entryPrice),
+                realizedPnl = parser.asDouble(payload.realizedPnl),
+                createdAt = parser.asDatetime(payload.createdAt),
+                createdAtHeight = parser.asDouble(payload.createdAtHeight),
+                sumOpen = parser.asDouble(payload.sumOpen),
+                sumClose = parser.asDouble(payload.sumClose),
+                netFunding = parser.asDouble(payload.netFunding),
+                unrealizedPnl = parser.asDouble(payload.unrealizedPnl),
+                closedAt = parser.asDatetime(payload.closedAt),
+                exitPrice = parser.asDouble(payload.exitPrice),
+                subaccountNumber = payload.subaccountNumber,
+                resources = SubaccountPositionResources(
+                    sideString = TradeStatesWithStringValues(
+                        current = sideString,
+                        postOrder = null,
+                        postAllOrders = null,
+                    ),
+                    sideStringKey = TradeStatesWithStringValues(
+                        current = sideStringKey,
+                        postOrder = null,
+                        postAllOrders = null,
+                    ),
+                    indicator = TradeStatesWithStringValues(
+                        current = indicators[payload.side?.value],
+                        postOrder = null,
+                        postAllOrders = null,
+                    ),
+                ),
+            )
+        } else {
             existing
         }
     }

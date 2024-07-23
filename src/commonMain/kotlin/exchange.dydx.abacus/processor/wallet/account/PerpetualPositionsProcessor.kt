@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.modify
@@ -10,7 +11,8 @@ import indexer.codegen.IndexerPerpetualPositionResponseObject
 
 internal class PerpetualPositionsProcessor(
     parser: ParserProtocol,
-    private val itemProcessor: PerpetualPositionProcessor = PerpetualPositionProcessor(parser = parser)
+    localizer: LocalizerProtocol?,
+    private val itemProcessor: PerpetualPositionProcessor = PerpetualPositionProcessor(parser = parser, localizer = localizer),
 ) : BaseProcessor(parser) {
 
     fun process(
@@ -28,8 +30,11 @@ internal class PerpetualPositionsProcessor(
                     result.remove(key)
                 }
             }
-            return if (result != existing)
-                result else existing
+            return if (result != existing) {
+                result
+            } else {
+                existing
+            }
         } else {
             existing
         }

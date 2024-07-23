@@ -7,9 +7,9 @@ import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import indexer.codegen.IndexerIsoString
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPositionSide
 import kotlinx.datetime.Instant
@@ -81,7 +81,7 @@ internal data class InternalPerpetualPosition(
     val size: Double? = null,
     val maxSize: Double? = null,
     val entryPrice: Double? = null,
-    val realizedPnl:Double? = null,
+    val realizedPnl: Double? = null,
     val createdAt: Instant? = null,
     val createdAtHeight: Double? = null,
     val sumOpen: Double? = null,
@@ -91,14 +91,19 @@ internal data class InternalPerpetualPosition(
     val closedAt: Instant? = null,
     val exitPrice: Double? = null,
     val subaccountNumber: Int? = null,
+    val resources: SubaccountPositionResources? = null,
 ) {
     val marginMode: MarginMode?
         get() {
             return if (subaccountNumber != null) {
-                if (subaccountNumber >= NUM_PARENT_SUBACCOUNTS) MarginMode.Cross else
+                if (subaccountNumber >= NUM_PARENT_SUBACCOUNTS) {
+                    MarginMode.Cross
+                } else {
                     MarginMode.Isolated
-            } else
+                }
+            } else {
                 null
+            }
         }
 }
 

@@ -24,7 +24,7 @@ internal open class SubaccountProcessor(
 ) : BaseProcessor(parser) {
     internal val assetPositionsProcessor = AssetPositionsProcessor(parser)
     internal val ordersProcessor = OrdersProcessor(parser, localizer)
-    private val perpetualPositionsProcessor = PerpetualPositionsProcessor(parser)
+    private val perpetualPositionsProcessor = PerpetualPositionsProcessor(parser, localizer)
     private val fillsProcessor = FillsProcessor(parser, localizer)
     private val transfersProcessor = TransfersProcessor(parser)
     private val fundingPaymentsProcessor = FundingPaymentsProcessor(parser)
@@ -105,21 +105,21 @@ internal open class SubaccountProcessor(
         state = process(
             existing = state,
             payload = subaccount,
-            firstTime = true
+            firstTime = true,
         )
 
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
         state = processFills(
             subaccount = state,
             payload = fills,
-            reset = false
+            reset = false,
         )
 
         val orders = parser.asTypedList<IndexerCompositeOrderObject>(content["orders"])
         state = processOrders(
             subaccount = state,
             payload = orders,
-            height = height
+            height = height,
         )
 
         return state
