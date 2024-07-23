@@ -31,20 +31,6 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         }
     }
 
-    internal fun receivedFeeTiers(
-        existing: Map<String, Any>?,
-        payload: List<Any>
-    ): Map<String, Any>? {
-        return receivedObject(existing, "feeTiers", payload) { existing, payload ->
-            val list = parser.asNativeList(payload)
-            if (list != null) {
-                feeTiersProcessor.received(list)
-            } else {
-                null
-            }
-        }
-    }
-
     internal fun receivedOnChainFeeTiers(
         existing: Map<String, Any>?,
         payload: List<Any>

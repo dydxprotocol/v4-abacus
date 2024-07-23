@@ -5,7 +5,7 @@ import exchange.dydx.abacus.processor.wallet.account.OrderProcessorProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import indexer.models.IndexerCompositeOrderObject
 
-class OrderProcessorMock : OrderProcessorProtocol {
+internal class OrderProcessorMock : OrderProcessorProtocol {
     var processCallCount = 0
     var processAction: ((existing: SubaccountOrder?, payload: IndexerCompositeOrderObject, subaccountNumber: Int, height: BlockAndTime?) -> SubaccountOrder?)? = null
     var updateHeightCallCount = 0

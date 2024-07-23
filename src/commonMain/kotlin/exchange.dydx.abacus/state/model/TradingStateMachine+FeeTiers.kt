@@ -14,7 +14,7 @@ internal fun TradingStateMachine.onChainFeeTiers(payload: String): StateChanges 
     }
 }
 
-internal fun TradingStateMachine.receivedOnChainFeeTiers(payload: List<Any>): StateChanges {
+private fun TradingStateMachine.receivedOnChainFeeTiers(payload: List<Any>): StateChanges {
     configs = configsProcessor.receivedOnChainFeeTiers(configs, payload)
     return StateChanges(iListOf(Changes.configs))
 }

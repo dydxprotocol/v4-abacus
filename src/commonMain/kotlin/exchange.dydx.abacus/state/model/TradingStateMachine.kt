@@ -28,7 +28,6 @@ import exchange.dydx.abacus.output.TransferStatus
 import exchange.dydx.abacus.output.Wallet
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.output.input.ReceiptLine
-import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
@@ -37,6 +36,7 @@ import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
+import exchange.dydx.abacus.processor.wallet.account.RewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.asTypedStringMap
@@ -495,10 +495,6 @@ open class TradingStateMachine(
                     parser.asInt(url.params?.firstOrNull { param -> param.key == "subaccountNumber" }?.value)
                         ?: 0
                 changes = historicalPnl(payload, subaccountNumber)
-            }
-
-            "/v3/users" -> {
-                changes = user(payload)
             }
 
             "/v3/candles" -> {
@@ -1189,10 +1185,18 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.wallet)) {
-            this.wallet?.let {
-                wallet = Wallet.create(wallet, parser, it)
-            } ?: run {
-                wallet = null
+            if (staticTyping) {
+                wallet = Wallet.create(internalState.wallet)
+            } else {
+                this.wallet?.let {
+                    wallet = Wallet.createDeprecated(
+                        existing = wallet,
+                        parser = parser,
+                        data = it,
+                    )
+                } ?: run {
+                    wallet = null
+                }
             }
         }
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
