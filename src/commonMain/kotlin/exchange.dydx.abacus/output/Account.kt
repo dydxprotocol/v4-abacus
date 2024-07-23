@@ -2226,7 +2226,7 @@ data class Account(
                     existing = existing,
                     parser = parser,
                     tokensInfo = tokensInfo,
-                    internalState = internalState,
+                    stakingBalances = internalState.stakingBalances,
                 )
             } else {
                 processStakingBalanceDeprecated(
@@ -2242,7 +2242,7 @@ data class Account(
                     existing = existing,
                     parser = parser,
                     tokensInfo = tokensInfo,
-                    internalState = internalState,
+                    stakingDelegations = internalState.stakingDelegations,
                 )
             } else {
                 processStakingDelegationsDeprecated(
@@ -2343,9 +2343,9 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             tokensInfo: Map<String, TokenInfo>,
-            internalState: InternalAccountState?
+            stakingDelegations: List<InternalStakingDelegationState>?
         ): IList<StakingDelegation>? {
-            return internalState?.stakingDelegations?.mapIndexedNotNull { index, item ->
+            return stakingDelegations?.mapIndexedNotNull { index, item ->
                 val tokenInfo = findTokenInfo(tokensInfo, item.balance.denom)
                 if (tokenInfo != null) {
                     StakingDelegation.create(
@@ -2392,11 +2392,11 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             tokensInfo: Map<String, TokenInfo>,
-            internalState: InternalAccountState?,
+            stakingBalances: Map<String, InternalAccountBalanceState>?,
         ): IMap<String, AccountBalance> {
-            val stakingBalances: IMutableMap<String, AccountBalance> =
+            val newStakingBalances: IMutableMap<String, AccountBalance> =
                 iMutableMapOf()
-            for ((key, value) in internalState?.stakingBalances ?: emptyMap()) {
+            for ((key, value) in stakingBalances ?: emptyMap()) {
                 val tokenInfo = findTokenInfo(tokensInfo, key)
                 if (tokenInfo != null) {
                     AccountBalance.create(
@@ -2406,11 +2406,11 @@ data class Account(
                         decimals = tokenInfo.decimals,
                         internalState = value,
                     )?.let { balance ->
-                        stakingBalances[key] = balance
+                        newStakingBalances[key] = balance
                     }
                 }
             }
-            return stakingBalances
+            return newStakingBalances
         }
 
         private fun processStakingBalanceDeprecated(

@@ -6,6 +6,8 @@ import kollections.iListOf
 import kollections.toIList
 import kotlinx.serialization.Serializable
 
+// these enums are camelcased for js exporting purposes. suppress enum naming rule
+@Suppress("EnumNaming")
 @JsExport
 @Serializable
 enum class Changes(val rawValue: String) {
@@ -29,6 +31,7 @@ enum class Changes(val rawValue: String) {
     transfers("transfers"),
     fundingPayments("fundingPayments"),
     transferStatuses("transferStatuses"),
+    trackStatuses("trackStatuses"),
     input("input"),
     restriction("restriction"),
     compliance("compliance"),
