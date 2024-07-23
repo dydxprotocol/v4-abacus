@@ -1041,6 +1041,7 @@ internal open class AccountSupervisor(
                 state?.input,
                 state?.availableSubaccountNumbers ?: iListOf(),
                 state?.transferStatuses,
+                state?.trackStatuses,
                 restriction,
                 state?.launchIncentive,
                 state?.compliance,
@@ -1075,6 +1076,7 @@ internal open class AccountSupervisor(
                 state?.input,
                 state?.availableSubaccountNumbers ?: iListOf(),
                 state?.transferStatuses,
+                state?.trackStatuses,
                 state?.restriction,
                 state?.launchIncentive,
                 Compliance(

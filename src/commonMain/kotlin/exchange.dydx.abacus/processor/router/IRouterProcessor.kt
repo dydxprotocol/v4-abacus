@@ -47,6 +47,11 @@ interface IRouterProcessor {
         chainId: String
     ): Map<String, Any>?
 
+    fun receivedTrack(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any>?
+
     fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>?
     fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?)
     fun defaultChainId(): String?
