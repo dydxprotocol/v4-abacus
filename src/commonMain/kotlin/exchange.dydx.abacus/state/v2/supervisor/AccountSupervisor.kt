@@ -581,11 +581,11 @@ internal open class AccountSupervisor(
         val url = helper.configs.launchIncentiveUrl("points")
         if (url != null) {
             helper.get(
-                "$url/$accountAddress",
-                iMapOf(
+                url = "$url/$accountAddress",
+                params = iMapOf(
                     "n" to season,
                 ),
-                null,
+                headers = null,
             ) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state

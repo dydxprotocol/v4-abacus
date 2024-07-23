@@ -2,6 +2,8 @@ package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.LaunchIncentivePoint
+import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.SubaccountFill
 import exchange.dydx.abacus.output.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.SubaccountOrder
@@ -10,6 +12,8 @@ internal data class InternalState(
     var assets: MutableMap<String, Asset> = mutableMapOf(),
     val transfer: InternalTransferInputState = InternalTransferInputState(),
     val wallet: InternalWalletState = InternalWalletState(),
+    var rewardsParams: InternalRewardsParamsState? = null,
+    val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
 )
 
 internal data class InternalWalletState(
@@ -27,10 +31,21 @@ internal data class InternalUserState(
 )
 
 internal data class InternalAccountState(
+    // token denom -> balance
     var balances: Map<String, InternalAccountBalanceState>? = null,
+
+    // token denom -> staking balance
     var stakingBalances: Map<String, InternalAccountBalanceState>? = null,
+
     var stakingDelegations: List<InternalStakingDelegationState>? = null,
+
+    // season id -> points
+    var launchIncentivePoints: MutableMap<String, LaunchIncentivePoint> = mutableMapOf(),
+
+    // subaccount number -> subaccount state
     var subaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
+
+    // subaccount number -> subaccount state
     var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
 )
 
@@ -51,4 +66,17 @@ internal data class InternalStakingDelegationState(
     val validatorAddress: String? = null,
     val shares: BigDecimal? = null,
     val balance: InternalAccountBalanceState,
+)
+
+internal data class InternalRewardsParamsState(
+    val denom: String? = null,
+    val denomExponent: Double? = null,
+    val marketId: Double? = null,
+    val feeMultiplierPpm: Double? = null,
+    val tokenPrice: Double? = null,
+    val tokenExpoonent: Double? = null,
+)
+
+internal data class InternalLaunchIncentiveState(
+    var seasons: List<LaunchIncentiveSeason>? = null,
 )

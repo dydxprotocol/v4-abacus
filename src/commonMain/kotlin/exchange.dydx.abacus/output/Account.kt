@@ -29,6 +29,7 @@ import kollections.iMapOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
@@ -2262,8 +2263,17 @@ data class Account(
                 null
             }
 
-            val launchIncentivePoints = (parser.asMap(data["launchIncentivePoints"]))?.let {
-                LaunchIncentivePoints.create(existing?.launchIncentivePoints, parser, it)
+            val launchIncentivePoints = if (staticTyping) {
+                val points = internalState.launchIncentivePoints
+                if (points != null && points.isNotEmpty()) {
+                    LaunchIncentivePoints(points = points.toIMap())
+                } else {
+                    null
+                }
+            } else {
+                (parser.asMap(data["launchIncentivePoints"]))?.let {
+                    LaunchIncentivePoints.create(existing?.launchIncentivePoints, parser, it)
+                }
             }
 
             val subaccounts: IMutableMap<String, Subaccount> =

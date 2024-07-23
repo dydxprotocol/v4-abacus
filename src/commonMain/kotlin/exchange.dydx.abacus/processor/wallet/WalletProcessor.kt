@@ -16,6 +16,7 @@ import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
+import indexer.models.configs.ConfigsLaunchIncentivePoints
 
 internal class WalletProcessor(
     parser: ParserProtocol,
@@ -390,13 +391,27 @@ internal class WalletProcessor(
         v4accountProcessor.accountAddress = accountAddress
     }
 
-    internal fun receivedLaunchIncentivePoint(
+    fun processLaunchIncentiveSeasons(
+        existing: InternalWalletState,
+        season: String,
+        payload: ConfigsLaunchIncentivePoints?,
+    ): InternalWalletState {
+        val account = v4accountProcessor.processLaunchIncentivePoints(
+            existing = existing.account,
+            season = season,
+            payload = payload,
+        )
+        existing.account = account
+        return existing
+    }
+
+    internal fun receivedLaunchIncentivePointDeprecated(
         existing: Map<String, Any>,
         season: String,
         payload: Any,
     ): Map<String, Any> {
         val account = parser.asNativeMap(existing["account"]) ?: mapOf()
-        val modifiedAccount = v4accountProcessor.receivedLaunchIncentivePoint(
+        val modifiedAccount = v4accountProcessor.receivedLaunchIncentivePointDeprecated(
             account,
             season,
             payload,
