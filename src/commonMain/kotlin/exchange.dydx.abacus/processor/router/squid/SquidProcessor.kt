@@ -174,6 +174,13 @@ internal class SquidProcessor(
         return parser.asNativeMap(this.chains?.find { parser.asString(parser.asNativeMap(it)?.get("chainId")) == chainId })
     }
 
+    override fun receivedTrack(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    ): Map<String, Any>? {
+        throw NotImplementedError("Squid Processor does not implement receivedTrack. Incorrect processor constructed")
+    }
+
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions

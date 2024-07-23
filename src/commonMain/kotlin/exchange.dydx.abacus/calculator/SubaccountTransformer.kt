@@ -238,7 +238,7 @@ internal class SubaccountTransformer {
             "id" to marketId,
             "status" to "OPEN",
             "id" to marketId,
-            "assetId" to ParsingHelper.asset(marketId)!!,
+            "assetId" to ParsingHelper.assetId(marketId)!!,
             "side" to {
                 "current" to "NONE"
             },

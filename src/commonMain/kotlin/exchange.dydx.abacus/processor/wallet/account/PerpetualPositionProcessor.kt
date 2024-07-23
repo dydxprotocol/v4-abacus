@@ -182,7 +182,7 @@ internal class PerpetualPositionProcessor(
             modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
         }
 
-        ParsingHelper.asset(parser.asString(modified["id"]))?.let {
+        ParsingHelper.assetId(parser.asString(modified["id"]))?.let {
             modified["assetId"] = it
         }
 

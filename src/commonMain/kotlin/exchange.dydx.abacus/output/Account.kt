@@ -279,22 +279,22 @@ data class SubaccountPosition(
             existing: SubaccountPosition?,
             parser: ParserProtocol,
             data: Map<String, Any>?,
-            assetId: String?,
+            id: String?, // e.g., "ETH-USD"
             internalState: InternalPerpetualPosition?,
         ): SubaccountPosition? {
             Logger.d { "creating Account Position\n" }
             data?.let {
-                val id = assetId ?: parser.asString(data["id"])
-                val assetId = assetId ?: parser.asString(data["assetId"])
+                val id = id ?: parser.asString(data["id"])
+                val assetId = ParsingHelper.assetId(id)
                 val resources = internalState?.resources ?: parser.asMap(data["resources"])?.let {
                     SubaccountPositionResources.create(existing?.resources, parser, it)
                 }
                 if (id != null && assetId != null && resources !== null) {
-                    val childSubaccountNumber = internalState?.subaccountNumber ?:
-                        parser.asInt(data["childSubaccountNumber"])
+                    val childSubaccountNumber = internalState?.subaccountNumber
+                        ?: parser.asInt(data["childSubaccountNumber"])
 
-                    val marginMode = internalState?.marginMode ?:
-                        parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
+                    val marginMode = internalState?.marginMode
+                        ?: parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
 
                     val entryPrice = if (internalState?.entryPrice != null) {
                         TradeStatesWithDoubleValues(
@@ -310,12 +310,12 @@ data class SubaccountPosition(
                         )
                     }
 
-                    val exitPrice = internalState?.exitPrice ?:
-                        parser.asDouble(data["exitPrice"])
-                    val createdAtMilliseconds = internalState?.createdAt?.toEpochMilliseconds()?.toDouble() ?:
-                        parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
-                    val closedAtMilliseconds = internalState?.closedAt?.toEpochMilliseconds()?.toDouble() ?:
-                        parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble()
+                    val exitPrice = internalState?.exitPrice
+                        ?: parser.asDouble(data["exitPrice"])
+                    val createdAtMilliseconds = internalState?.createdAt?.toEpochMilliseconds()?.toDouble()
+                        ?: parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
+                    val closedAtMilliseconds = internalState?.closedAt?.toEpochMilliseconds()?.toDouble()
+                        ?: parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble()
                     val netFunding = internalState?.netFunding ?: parser.asDouble(data["netFunding"])
 
                     val realizedPnl = if (internalState?.realizedPnl != null) {
@@ -1540,7 +1540,7 @@ data class Subaccount(
                     existing = null,
                     parser = parser,
                     data = data?.get(key) as? Map<String, Any>,
-                    assetId = key,
+                    id = key,
                     internalState = value,
                 )
                 if (position != null) {
@@ -1582,7 +1582,7 @@ data class Subaccount(
                             existing = obj as? SubaccountPosition,
                             parser = parser,
                             data = it,
-                            assetId = null,
+                            id = null,
                             internalState = null,
                         )
                     }
@@ -2320,7 +2320,7 @@ data class Account(
                     existing = existing,
                     parser = parser,
                     tokensInfo = tokensInfo,
-                    internalState = internalState,
+                    stakingBalances = internalState.stakingBalances,
                 )
             } else {
                 processStakingBalanceDeprecated(
@@ -2336,7 +2336,7 @@ data class Account(
                     existing = existing,
                     parser = parser,
                     tokensInfo = tokensInfo,
-                    internalState = internalState,
+                    stakingDelegations = internalState.stakingDelegations,
                 )
             } else {
                 processStakingDelegationsDeprecated(
@@ -2437,9 +2437,9 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             tokensInfo: Map<String, TokenInfo>,
-            internalState: InternalAccountState?
+            stakingDelegations: List<InternalStakingDelegationState>?
         ): IList<StakingDelegation>? {
-            return internalState?.stakingDelegations?.mapIndexedNotNull { index, item ->
+            return stakingDelegations?.mapIndexedNotNull { index, item ->
                 val tokenInfo = findTokenInfo(tokensInfo, item.balance.denom)
                 if (tokenInfo != null) {
                     StakingDelegation.create(
@@ -2486,11 +2486,11 @@ data class Account(
             existing: Account?,
             parser: ParserProtocol,
             tokensInfo: Map<String, TokenInfo>,
-            internalState: InternalAccountState?,
+            stakingBalances: Map<String, InternalAccountBalanceState>?,
         ): IMap<String, AccountBalance> {
-            val stakingBalances: IMutableMap<String, AccountBalance> =
+            val newStakingBalances: IMutableMap<String, AccountBalance> =
                 iMutableMapOf()
-            for ((key, value) in internalState?.stakingBalances ?: emptyMap()) {
+            for ((key, value) in stakingBalances ?: emptyMap()) {
                 val tokenInfo = findTokenInfo(tokensInfo, key)
                 if (tokenInfo != null) {
                     AccountBalance.create(
@@ -2500,11 +2500,11 @@ data class Account(
                         decimals = tokenInfo.decimals,
                         internalState = value,
                     )?.let { balance ->
-                        stakingBalances[key] = balance
+                        newStakingBalances[key] = balance
                     }
                 }
             }
-            return stakingBalances
+            return newStakingBalances
         }
 
         private fun processStakingBalanceDeprecated(

@@ -226,6 +226,16 @@ open class TradingStateMachine(
             this.data = if (modified.size != 0) modified else null
         }
 
+    internal var trackStatuses: Map<String, Any>?
+        get() {
+            return parser.asNativeMap(data?.get("trackStatuses"))
+        }
+        set(value) {
+            val modified = data?.mutable() ?: mutableMapOf()
+            modified.safeSet("trackStatuses", value)
+            this.data = if (modified.size != 0) modified else null
+        }
+
     internal var rewardsParams: Map<String, Any>?
         get() {
             return parser.asNativeMap(data?.get("rewardsParams"))
@@ -676,6 +686,7 @@ open class TradingStateMachine(
                 Changes.trades,
                 Changes.configs,
                 Changes.transferStatuses,
+                Changes.trackStatuses,
                 Changes.orderbook,
                 Changes.launchIncentive,
                 -> true
@@ -1056,6 +1067,7 @@ open class TradingStateMachine(
         var configs = state?.configs
         var input = state?.input
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
+        var trackStatuses = state?.trackStatuses?.toIMutableMap()
         val restriction = state?.restriction
         var launchIncentive = state?.launchIncentive
         val geo = state?.compliance
@@ -1376,6 +1388,19 @@ open class TradingStateMachine(
                 }
             }
         }
+        if (changes.changes.contains(Changes.trackStatuses)) {
+            this.trackStatuses?.let {
+                trackStatuses = trackStatuses ?: mutableMapOf<String, Boolean>()
+                for ((key, data) in it) {
+                    val isTracked = parser.asBool(data)
+                    if (isTracked != null) {
+                        trackStatuses!![key] = isTracked
+                    } else {
+                        trackStatuses!!.remove(key)
+                    }
+                }
+            }
+        }
         if (changes.changes.contains(Changes.launchIncentive)) {
             if (staticTyping) {
                 launchIncentive = LaunchIncentive(
@@ -1408,6 +1433,7 @@ open class TradingStateMachine(
             input,
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
             transferStatuses,
+            trackStatuses,
             restriction,
             launchIncentive,
             geo,
