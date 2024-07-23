@@ -75,10 +75,17 @@ import indexer.codegen.IndexerPerpetualPositionResponseObject
     }
  */
 
+internal interface PerpetualPositionProcessorProtocol {
+    fun process(
+        existing: InternalPerpetualPosition?,
+        payload: IndexerPerpetualPositionResponseObject?,
+    ): InternalPerpetualPosition?
+}
+
 internal class PerpetualPositionProcessor(
     parser: ParserProtocol,
     private val localizer: LocalizerProtocol?,
-) : BaseProcessor(parser) {
+) : BaseProcessor(parser), PerpetualPositionProcessorProtocol {
     private val sideStringKeys = mapOf(
         "LONG" to "APP.GENERAL.LONG_POSITION_SHORT",
         "SHORT" to "APP.GENERAL.SHORT_POSITION_SHORT",
@@ -113,7 +120,7 @@ internal class PerpetualPositionProcessor(
         ),
     )
 
-    fun process(
+    override fun process(
         existing: InternalPerpetualPosition?,
         payload: IndexerPerpetualPositionResponseObject?,
     ): InternalPerpetualPosition? {

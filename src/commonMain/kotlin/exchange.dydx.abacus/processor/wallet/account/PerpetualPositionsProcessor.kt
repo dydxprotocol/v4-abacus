@@ -12,7 +12,8 @@ import indexer.codegen.IndexerPerpetualPositionResponseObject
 internal class PerpetualPositionsProcessor(
     parser: ParserProtocol,
     localizer: LocalizerProtocol?,
-    private val itemProcessor: PerpetualPositionProcessor = PerpetualPositionProcessor(parser = parser, localizer = localizer),
+    private val itemProcessor: PerpetualPositionProcessorProtocol =
+        PerpetualPositionProcessor(parser = parser, localizer = localizer),
 ) : BaseProcessor(parser) {
 
     fun process(
@@ -54,7 +55,8 @@ internal class PerpetualPositionsProcessor(
                         modifiedData.modify("subaccountNumber", subaccountNumber)
                     }
 
-                    val item = itemProcessor.received(null, modifiedData)
+                    val itemProcessor = itemProcessor as? PerpetualPositionProcessor
+                    val item = itemProcessor?.received(null, modifiedData)
                     result.safeSet(key, item)
                 }
             }
@@ -72,8 +74,9 @@ internal class PerpetualPositionsProcessor(
             for (item in payload) {
                 parser.asNativeMap(item)?.let { item ->
                     parser.asString(item["market"])?.let {
+                        val itemProcessor = itemProcessor as? PerpetualPositionProcessor
                         val modified =
-                            itemProcessor.receivedChanges(parser.asNativeMap(existing?.get(it)), item)
+                            itemProcessor?.receivedChanges(parser.asNativeMap(existing?.get(it)), item)
                         output.safeSet(it, modified)
                     }
                 }

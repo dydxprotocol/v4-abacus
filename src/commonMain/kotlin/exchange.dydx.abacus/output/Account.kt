@@ -279,13 +279,13 @@ data class SubaccountPosition(
             existing: SubaccountPosition?,
             parser: ParserProtocol,
             data: Map<String, Any>?,
-            id: String?, // e.g., "ETH-USD"
+            positionId: String?, // e.g., "ETH-USD"
             internalState: InternalPerpetualPosition?,
         ): SubaccountPosition? {
             Logger.d { "creating Account Position\n" }
             data?.let {
-                val id = id ?: parser.asString(data["id"])
-                val assetId = ParsingHelper.assetId(id)
+                val id = positionId ?: parser.asString(data["id"])
+                val assetId = if (positionId != null) ParsingHelper.assetId(id) else parser.asString(data["assetId"])
                 val resources = internalState?.resources ?: parser.asMap(data["resources"])?.let {
                     SubaccountPositionResources.create(existing?.resources, parser, it)
                 }
@@ -1540,7 +1540,7 @@ data class Subaccount(
                     existing = null,
                     parser = parser,
                     data = data?.get(key) as? Map<String, Any>,
-                    id = key,
+                    positionId = key,
                     internalState = value,
                 )
                 if (position != null) {
@@ -1582,7 +1582,7 @@ data class Subaccount(
                             existing = obj as? SubaccountPosition,
                             parser = parser,
                             data = it,
-                            id = null,
+                            positionId = null,
                             internalState = null,
                         )
                     }
