@@ -1,6 +1,6 @@
-import exchange.dydx.abacus.output.BlockReward
-import exchange.dydx.abacus.output.HistoricalTradingReward
-import exchange.dydx.abacus.output.TradingRewards
+import exchange.dydx.abacus.output.account.BlockReward
+import exchange.dydx.abacus.output.account.HistoricalTradingReward
+import exchange.dydx.abacus.output.account.TradingRewards
 import exchange.dydx.abacus.utils.Parser
 import kollections.iListOf
 import kollections.toIMap

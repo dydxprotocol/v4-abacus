@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.output.SubaccountHistoricalPNL
+import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.tests.extensions.loadHistoricalPnlsFirst
 import exchange.dydx.abacus.tests.extensions.loadHistoricalPnlsSecond
 import exchange.dydx.abacus.tests.extensions.log

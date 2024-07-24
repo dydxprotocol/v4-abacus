@@ -4,9 +4,9 @@ import abs
 import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.Notification
-import exchange.dydx.abacus.output.PositionSide
-import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.output.TransferRecordType
+import exchange.dydx.abacus.output.account.PositionSide
+import exchange.dydx.abacus.output.account.SubaccountOrder
+import exchange.dydx.abacus.output.account.TransferRecordType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide

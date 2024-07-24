@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.tests.mock.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFill
 import exchange.dydx.abacus.processor.wallet.account.FillProcessorProtocol
 import indexer.codegen.IndexerFillResponseObject
 

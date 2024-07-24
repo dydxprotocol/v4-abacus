@@ -1,15 +1,15 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.output.Account
-import exchange.dydx.abacus.output.BlockReward
-import exchange.dydx.abacus.output.HistoricalTradingReward
 import exchange.dydx.abacus.output.LaunchIncentive
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.LaunchIncentiveSeasons
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.TradingRewards
+import exchange.dydx.abacus.output.account.Account
+import exchange.dydx.abacus.output.account.BlockReward
+import exchange.dydx.abacus.output.account.HistoricalTradingReward
+import exchange.dydx.abacus.output.account.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
@@ -248,7 +248,7 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
                     assertNotNull(rewardsListObj)
                     assertEquals(
                         (rewardsListData?.size ?: 0).toDouble(),
-                        (rewardsListObj.size ?: 0).toDouble(),
+                        rewardsListObj.size.toDouble(),
                         0.0,
                         "$trace.historical.$period.size $doesntMatchText",
                     )

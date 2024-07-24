@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountHistoricalPNL
+import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerPnlTicksResponseObject
 import kotlinx.datetime.Instant

@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import abs
-import exchange.dydx.abacus.output.SubaccountPositionResources
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
+import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol

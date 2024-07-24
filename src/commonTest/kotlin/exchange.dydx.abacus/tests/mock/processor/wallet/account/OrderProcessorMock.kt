@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.tests.mock.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.processor.wallet.account.OrderProcessorProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import indexer.models.IndexerCompositeOrderObject

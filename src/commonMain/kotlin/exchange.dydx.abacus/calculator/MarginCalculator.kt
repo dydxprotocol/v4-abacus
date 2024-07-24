@@ -2,7 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.output.PerpetualMarket
-import exchange.dydx.abacus.output.Subaccount
+import exchange.dydx.abacus.output.account.Subaccount
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
