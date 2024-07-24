@@ -57,7 +57,6 @@ data class Subaccount(
                 return null
             }
             data?.let {
-                val ethereumeAddress = parser.asString(data["ethereumeAddress"])
                 val positionId = parser.asString(data["positionId"])
                 val pnlTotal = parser.asDouble(data["pnlTotal"])
                 val pnl24h = parser.asDouble(data["pnl24h"])
@@ -362,6 +361,7 @@ data class Subaccount(
             }
         }
 
+        /*
         private fun transfers(
             parser: ParserProtocol,
             existing: IList<SubaccountTransfer>?,
@@ -397,5 +397,6 @@ data class Subaccount(
                 obj ?: SubaccountFundingPayment.create(null, parser, itemData)
             }, true)?.toIList()
         }
+         */
     }
 }
