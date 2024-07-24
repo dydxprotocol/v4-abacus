@@ -14,6 +14,7 @@ import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
@@ -191,7 +192,21 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedUnbonding(
+    fun processUnbonding(
+        existing: InternalWalletState,
+        payload: OnChainUnbondingResponse?,
+    ): InternalWalletState {
+        val newAccount = v4accountProcessor.processUnbonding(
+            existing = existing.account,
+            payload = payload,
+        )
+        if (newAccount != existing.account) {
+            existing.account = newAccount
+        }
+        return existing
+    }
+
+    internal fun receivedUnbondingDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
@@ -304,7 +319,7 @@ internal class WalletProcessor(
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedHistoricalPnls(
+            v4accountProcessor.receivedHistoricalPnlsDeprecated(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber,

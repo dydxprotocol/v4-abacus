@@ -17,6 +17,7 @@ import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
 import kollections.iMutableListOf
 
@@ -45,22 +46,6 @@ import kollections.iMutableListOf
           "sumClose": "125.35",
           "netFunding": "-4101.337527"
         },
-        " v": {
-          "market": "LINK-USD",
-          "status": "OPEN",
-          "side": "SHORT",
-          "size": "-11",
-          "maxSize": "-11",
-          "entryPrice": "7.175000",
-          "exitPrice": "0.000000",
-          "unrealizedPnl": "-9.916131",
-          "realizedPnl": "2.022104",
-          "createdAt": "2022-07-20T18:24:29.570Z",
-          "closedAt": null,
-          "sumOpen": "11",
-          "sumClose": "0",
-          "netFunding": "2.022104"
-        },
         "UNI-USD": {
           "market": "UNI-USD",
           "status": "OPEN",
@@ -76,22 +61,6 @@ import kollections.iMutableListOf
           "sumOpen": "11548.4",
           "sumClose": "0",
           "netFunding": "142.629215"
-        },
-        "SUSHI-USD": {
-          "market": "SUSHI-USD",
-          "status": "OPEN",
-          "side": "LONG",
-          "size": "12",
-          "maxSize": "12",
-          "entryPrice": "1.464000",
-          "exitPrice": "0.000000",
-          "unrealizedPnl": "0.729203",
-          "realizedPnl": "0.271316",
-          "createdAt": "2022-07-18T20:36:17.165Z",
-          "closedAt": null,
-          "sumOpen": "12",
-          "sumClose": "0",
-          "netFunding": "0.271316"
         }
       },
       "accountNumber": "0",
@@ -203,10 +172,7 @@ internal class V4AccountProcessor(
         existing: InternalAccountState,
         payload: List<OnChainAccountBalanceObject>?,
     ): InternalAccountState {
-        val balances = balancesProcessor.process(existing.balances, payload)
-        if (balances != existing.balances) {
-            existing.balances = balances
-        }
+        existing.balances = balancesProcessor.process(existing.balances, payload)
         return existing
     }
 
@@ -225,14 +191,8 @@ internal class V4AccountProcessor(
         existing: InternalAccountState,
         payload: OnChainDelegationResponse?,
     ): InternalAccountState {
-        val stakingBalances = delegationsProcessor.process(existing.stakingBalances, payload)
-        if (stakingBalances != existing.stakingBalances) {
-            existing.stakingBalances = stakingBalances
-        }
-        val delegations = delegationsProcessor.processDelegations(existing.stakingDelegations, payload)
-        if (delegations != existing.stakingDelegations) {
-            existing.stakingDelegations = delegations
-        }
+        existing.stakingBalances = delegationsProcessor.process(existing.stakingBalances, payload)
+        existing.stakingDelegations = delegationsProcessor.processDelegations(existing.stakingDelegations, payload)
         return existing
     }
 
@@ -247,6 +207,32 @@ internal class V4AccountProcessor(
         val modifiedDelegations = delegationsProcessor.receivedDelegationsDeprecated(delegations, payload)
         modified.safeSet("stakingDelegations", modifiedDelegations)
         return modified
+    }
+
+    fun processUnbonding(
+        existing: InternalAccountState,
+        payload: OnChainUnbondingResponse?,
+    ): InternalAccountState {
+        if (payload?.unbondingResponses == null) {
+            return existing
+        }
+        val unbondingDelegations: IMutableList<UnbondingDelegation> = iMutableListOf()
+        for (response in payload.unbondingResponses) {
+            val validatorAddress = response.validatorAddress ?: continue
+            for (entry in response.entries ?: emptyList()) {
+                val completionTime = entry.completionTime ?: continue
+                val balance = entry.balance ?: continue
+                unbondingDelegations.add(
+                    UnbondingDelegation(
+                        validatorAddress,
+                        completionTime,
+                        balance,
+                    ),
+                )
+            }
+        }
+        existing.unbondingDelegation = unbondingDelegations
+        return existing
     }
 
     internal fun receivedUnbonding(
@@ -310,7 +296,7 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedHistoricalPnls(
+    internal fun receivedHistoricalPnlsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
         subaccountNumber: Int,

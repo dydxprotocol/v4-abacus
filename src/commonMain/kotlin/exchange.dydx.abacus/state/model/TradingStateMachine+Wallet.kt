@@ -11,6 +11,7 @@ import exchange.dydx.abacus.utils.Logger
 import indexer.codegen.IndexerFillResponse
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 import kollections.iListOf
@@ -296,15 +297,26 @@ internal fun TradingStateMachine.onChainDelegations(payload: String): StateChang
 }
 
 internal fun TradingStateMachine.onChainUnbonding(payload: String): StateChanges {
-    val response = parser.decodeJsonObject(payload)
-    return try {
-        val unbonding = response?.get("unbondingResponses")?.let {
-            parser.asList(it)
-        } ?: iListOf()
-        this.wallet = walletProcessor.receivedUnbonding(wallet, unbonding)
-        return StateChanges(iListOf(Changes.accountBalances), null)
-    } catch (e: Exception) {
-        StateChanges(iListOf())
+    if (staticTyping) {
+        val response = parser.asTypedObject<OnChainUnbondingResponse>(payload)
+        val oldValue = internalState.wallet.account.unbondingDelegation
+        walletProcessor.processUnbonding(internalState.wallet, response)
+        return if (oldValue != internalState.wallet.account.unbondingDelegation) {
+            StateChanges(iListOf(Changes.accountBalances), null)
+        } else {
+            StateChanges(iListOf())
+        }
+    } else {
+        val response = parser.decodeJsonObject(payload)
+        return try {
+            val unbonding = response?.get("unbondingResponses")?.let {
+                parser.asList(it)
+            } ?: iListOf()
+            this.wallet = walletProcessor.receivedUnbondingDeprecated(wallet, unbonding)
+            return StateChanges(iListOf(Changes.accountBalances), null)
+        } catch (e: Exception) {
+            StateChanges(iListOf())
+        }
     }
 }
 
