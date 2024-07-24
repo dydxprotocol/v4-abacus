@@ -47,20 +47,32 @@ sed -i '' 's/BESTEFFORTCANCELED/BEST_EFFORT_CANCELED/' generated/src/main/kotlin
 # replace BESTEFFORTOPENED with BEST_EFFORT_OPENED in IndexerAPIOrderStatus.kt
 sed -i '' 's/BESTEFFORTOPENED/BEST_EFFORT_OPENED/' generated/src/main/kotlin/indexer/codegen/APIOrderStatus.kt
 
+# replace BESTEFFORTCANCELED with BEST_EFFORT_CANCELED in IndexerAPIOrderStatus.kt
+sed -i '' 's/BESTEFFORTCANCELED/BEST_EFFORT_CANCELED/' generated/src/main/kotlin/indexer/codegen/OrderStatus.kt
+
+# replace BESTEFFORTOPENED with BEST_EFFORT_OPENED in IndexerAPIOrderStatus.kt
+sed -i '' 's/BESTEFFORTOPENED/BEST_EFFORT_OPENED/' generated/src/main/kotlin/indexer/codegen/OrderStatus.kt
+
 # replace STOPLIMIT with STOP_LIMIT in IndexerAPIOrderType.kt
-sed -i '' 's/STOPLIMIT/STOP_LIMIT/' generated/src/main/kotlin/indexer/codegen/APIOrderType.kt
+sed -i '' 's/STOPLIMIT/STOP_LIMIT/' generated/src/main/kotlin/indexer/codegen/OrderType.kt
 
 # replace STOPMARKET with STOP_MARKET in IndexerAPIOrderType.kt
-sed -i '' 's/STOPMARKET/STOP_MARKET/' generated/src/main/kotlin/indexer/codegen/APIOrderType.kt
+sed -i '' 's/STOPMARKET/STOP_MARKET/' generated/src/main/kotlin/indexer/codegen/OrderType.kt
 
 # replace TRAILINGSTOP with TRAILING_STOP in IndexerAPIOrderType.kt
-sed -i '' 's/TRAILINGSTOP/TRAILING_STOP/' generated/src/main/kotlin/indexer/codegen/APIOrderType.kt
+sed -i '' 's/TRAILINGSTOP/TRAILING_STOP/' generated/src/main/kotlin/indexer/codegen/OrderType.kt
 
 # replace TAKEPROFIT with TAKE_PROFIT in IndexerAPIOrderType.kt
-sed -i '' 's/TAKEPROFIT/TAKE_PROFIT/' generated/src/main/kotlin/indexer/codegen/APIOrderType.kt
+sed -i '' 's/TAKEPROFIT/TAKE_PROFIT/' generated/src/main/kotlin/indexer/codegen/OrderType.kt
 
 # replace TAKEPROFITMARKET with TAKE_PROFIT_MARKET in IndexerAPIOrderType.kt
-sed -i '' 's/TAKEPROFITMARKET/TAKE_PROFIT_MARKET/' generated/src/main/kotlin/indexer/codegen/APIOrderType.kt
+sed -i '' 's/TAKEPROFITMARKET/TAKE_PROFIT_MARKET/' generated/src/main/kotlin/indexer/codegen/OrderType.kt
+
+# replace PerpetualPositionsMap with Map<String, PerpetualPositionResponseObject> in SubaccountResponseObject.kt
+sed -i '' 's/\ PerpetualPositionsMap/\ Map<String, IndexerPerpetualPositionResponseObject>/g' generated/src/main/kotlin/indexer/codegen/SubaccountResponseObject.kt
+
+# replace AssetPositionsMap with Map<String, AssetPositionResponseObject> in SubaccountResponseObject.kt
+sed -i '' 's/\ AssetPositionsMap/\ Map<String, IndexerAssetPositionResponseObject>/g' generated/src/main/kotlin/indexer/codegen/SubaccountResponseObject.kt
 
 # for each of the time in the generated code, run "swagger_update_file.sh <file>"
 find generated/src/main/kotlin/indexer -type f \

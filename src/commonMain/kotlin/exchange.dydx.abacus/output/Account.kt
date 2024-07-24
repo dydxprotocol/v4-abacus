@@ -10,6 +10,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalStakingDelegationState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.TokenInfo
@@ -278,55 +279,99 @@ data class SubaccountPosition(
             existing: SubaccountPosition?,
             parser: ParserProtocol,
             data: Map<String, Any>?,
+            positionId: String?, // e.g., "ETH-USD"
+            internalState: InternalPerpetualPosition?,
         ): SubaccountPosition? {
             Logger.d { "creating Account Position\n" }
             data?.let {
-                val id = parser.asString(data["id"])
-                val assetId = parser.asString(data["assetId"])
-                val resources = parser.asMap(data["resources"])?.let {
+                val id = positionId ?: parser.asString(data["id"])
+                val assetId = if (positionId != null) ParsingHelper.assetId(id) else parser.asString(data["assetId"])
+                val resources = internalState?.resources ?: parser.asMap(data["resources"])?.let {
                     SubaccountPositionResources.create(existing?.resources, parser, it)
                 }
                 if (id != null && assetId != null && resources !== null) {
-                    val entryPrice =
+                    val childSubaccountNumber = internalState?.subaccountNumber
+                        ?: parser.asInt(data["childSubaccountNumber"])
+
+                    val marginMode = internalState?.marginMode
+                        ?: parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
+
+                    val entryPrice = if (internalState?.entryPrice != null) {
+                        TradeStatesWithDoubleValues(
+                            current = internalState.entryPrice,
+                            postOrder = null,
+                            postAllOrders = null,
+                        )
+                    } else {
                         TradeStatesWithDoubleValues.create(
                             existing?.entryPrice,
                             parser,
                             parser.asMap(data["entryPrice"]),
                         )
-                    val exitPrice = parser.asDouble(data["exitPrice"])
-                    val createdAtMilliseconds =
-                        parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
-                    val closedAtMilliseconds =
-                        parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble()
-                    val netFunding = parser.asDouble(data["netFunding"])
-                    val realizedPnl =
+                    }
+
+                    val exitPrice = internalState?.exitPrice
+                        ?: parser.asDouble(data["exitPrice"])
+                    val createdAtMilliseconds = internalState?.createdAt?.toEpochMilliseconds()?.toDouble()
+                        ?: parser.asDatetime(data["createdAt"])?.toEpochMilliseconds()?.toDouble()
+                    val closedAtMilliseconds = internalState?.closedAt?.toEpochMilliseconds()?.toDouble()
+                        ?: parser.asDatetime(data["closedAt"])?.toEpochMilliseconds()?.toDouble()
+                    val netFunding = internalState?.netFunding ?: parser.asDouble(data["netFunding"])
+
+                    val realizedPnl = if (internalState?.realizedPnl != null) {
+                        TradeStatesWithDoubleValues(
+                            current = internalState.realizedPnl,
+                            postOrder = null,
+                            postAllOrders = null,
+                        )
+                    } else {
                         TradeStatesWithDoubleValues.create(
                             existing?.realizedPnl,
                             parser,
                             parser.asMap(data["realizedPnl"]),
                         )
+                    }
+
                     val realizedPnlPercent = TradeStatesWithDoubleValues.create(
                         existing?.realizedPnlPercent,
                         parser,
                         parser.asMap(data["realizedPnlPercent"]),
                     )
-                    val unrealizedPnl =
+
+                    val unrealizedPnl = if (internalState?.unrealizedPnl != null) {
+                        TradeStatesWithDoubleValues(
+                            current = internalState.unrealizedPnl,
+                            postOrder = null,
+                            postAllOrders = null,
+                        )
+                    } else {
                         TradeStatesWithDoubleValues.create(
                             existing?.unrealizedPnl,
                             parser,
                             parser.asMap(data["unrealizedPnl"]),
                         )
+                    }
+
                     val unrealizedPnlPercent = TradeStatesWithDoubleValues.create(
                         existing?.unrealizedPnlPercent,
                         parser,
                         parser.asMap(data["unrealizedPnlPercent"]),
                     )
-                    val size =
+
+                    val size = if (internalState?.size != null) {
+                        TradeStatesWithDoubleValues(
+                            current = internalState.size,
+                            postOrder = null,
+                            postAllOrders = null,
+                        )
+                    } else {
                         TradeStatesWithDoubleValues.create(
                             existing?.size,
                             parser,
                             parser.asMap(data["size"]),
                         )
+                    }
+
                     val notionalTotal =
                         TradeStatesWithDoubleValues.create(
                             existing?.notionalTotal,
@@ -379,7 +424,6 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["liquidationPrice"]),
                     )
-                    val childSubaccountNumber = parser.asInt(data["childSubaccountNumber"])
                     val freeCollateral = TradeStatesWithDoubleValues.create(
                         null,
                         parser,
@@ -400,7 +444,6 @@ data class SubaccountPosition(
                         parser,
                         parser.asMap(data["equity"]),
                     )
-                    val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
                     val marginValue = TradeStatesWithDoubleValues.create(
                         null,
                         parser,
@@ -439,36 +482,36 @@ data class SubaccountPosition(
                     ) {
                         val side = positionSide(size)
                         SubaccountPosition(
-                            id,
-                            assetId,
-                            side,
-                            entryPrice,
-                            exitPrice,
-                            createdAtMilliseconds,
-                            closedAtMilliseconds,
-                            netFunding,
-                            realizedPnl,
-                            realizedPnlPercent,
-                            unrealizedPnl,
-                            unrealizedPnlPercent,
-                            size,
-                            notionalTotal,
-                            valueTotal,
-                            initialRiskTotal,
-                            adjustedImf,
-                            adjustedMmf,
-                            leverage,
-                            maxLeverage,
-                            buyingPower,
-                            liquidationPrice,
-                            resources,
-                            childSubaccountNumber,
-                            freeCollateral,
-                            marginUsage,
-                            quoteBalance,
-                            equity,
-                            marginMode,
-                            marginValue,
+                            id = id,
+                            assetId = assetId,
+                            side = side,
+                            entryPrice = entryPrice,
+                            exitPrice = exitPrice,
+                            createdAtMilliseconds = createdAtMilliseconds,
+                            closedAtMilliseconds = closedAtMilliseconds,
+                            netFunding = netFunding,
+                            realizedPnl = realizedPnl,
+                            realizedPnlPercent = realizedPnlPercent,
+                            unrealizedPnl = unrealizedPnl,
+                            unrealizedPnlPercent = unrealizedPnlPercent,
+                            size = size,
+                            notionalTotal = notionalTotal,
+                            valueTotal = valueTotal,
+                            initialRiskTotal = initialRiskTotal,
+                            adjustedImf = adjustedImf,
+                            adjustedMmf = adjustedMmf,
+                            leverage = leverage,
+                            maxLeverage = maxLeverage,
+                            buyingPower = buyingPower,
+                            liquidationPrice = liquidationPrice,
+                            resources = resources,
+                            childSubaccountNumber = childSubaccountNumber,
+                            freeCollateral = freeCollateral,
+                            marginUsage = marginUsage,
+                            quoteBalance = quoteBalance,
+                            equity = equity,
+                            marginMode = marginMode,
+                            marginValue = marginValue,
                         )
                     } else {
                         existing
@@ -1313,6 +1356,10 @@ data class Subaccount(
         ): Subaccount? {
             Logger.d { "creating Account\n" }
 
+            if (staticTyping && internalState == null) {
+                Logger.d { "Internal state is null" }
+                return null
+            }
             data?.let {
                 val ethereumeAddress = parser.asString(data["ethereumeAddress"])
                 val positionId = parser.asString(data["positionId"])
@@ -1396,11 +1443,21 @@ data class Subaccount(
                         parser.asMap(data["buyingPower"]),
                     )
 
-                val openPositions = openPositions(
-                    existing?.openPositions,
-                    parser,
-                    parser.asMap(data["openPositions"]),
-                )
+                val openPositions = if (staticTyping) {
+                    openPositions(
+                        existing = existing?.openPositions,
+                        parser = parser,
+                        data = parser.asMap(data["openPositions"]),
+                        openPositions = internalState?.openPositions,
+                    )
+                } else {
+                    openPositionsDeprecated(
+                        existing = existing?.openPositions,
+                        parser = parser,
+                        data = parser.asMap(data["openPositions"]),
+                    )
+                }
+
                 val pendingPositions = pendingPositions(
                     existing?.pendingPositions,
                     parser,
@@ -1478,22 +1535,63 @@ data class Subaccount(
         private fun openPositions(
             existing: IList<SubaccountPosition>?,
             parser: ParserProtocol,
+            data: Map<String, Any>?,
+            openPositions: Map<String, InternalPerpetualPosition>?,
+        ): IList<SubaccountPosition>? {
+            val newEntries: MutableList<SubaccountPosition> = mutableListOf()
+            for ((key, value) in openPositions?.entries ?: emptySet()) {
+                val position = SubaccountPosition.create(
+                    existing = null,
+                    parser = parser,
+                    data = data?.get(key) as? Map<String, Any>,
+                    positionId = key,
+                    internalState = value,
+                )
+                if (position != null) {
+                    newEntries.add(position)
+                }
+            }
+            newEntries.sortByDescending { it.createdAtMilliseconds }
+            return if (newEntries != existing) {
+                newEntries.toIList()
+            } else {
+                existing
+            }
+        }
+
+        private fun openPositionsDeprecated(
+            existing: IList<SubaccountPosition>?,
+            parser: ParserProtocol,
             data: Map<*, *>?,
         ): IList<SubaccountPosition>? {
-            return ParsingHelper.transform(parser, existing, data, {
-                (it as SubaccountPosition).id
-            }, { _, _ ->
-                // not worth the optimization
-                true
-            }, { obj1, obj2 ->
-                val time1 = (obj1 as SubaccountPosition).createdAtMilliseconds
-                val time2 = (obj2 as SubaccountPosition).createdAtMilliseconds
-                ParsingHelper.compare(time1 ?: 0.0, time2 ?: 0.0, false)
-            }, { _, obj, itemData ->
-                parser.asMap(itemData)?.let {
-                    SubaccountPosition.create(obj as? SubaccountPosition, parser, it)
-                }
-            })?.toIList()
+            return ParsingHelper.transform(
+                parser = parser,
+                existing = existing,
+                data = data,
+                key = {
+                    (it as SubaccountPosition).id
+                },
+                changed = { _, _ ->
+                    // not worth the optimization
+                    true
+                },
+                comparison = { obj1, obj2 ->
+                    val time1 = (obj1 as SubaccountPosition).createdAtMilliseconds
+                    val time2 = (obj2 as SubaccountPosition).createdAtMilliseconds
+                    ParsingHelper.compare(time1 ?: 0.0, time2 ?: 0.0, false)
+                },
+                createObject = { _, obj, itemData ->
+                    parser.asMap(itemData)?.let {
+                        SubaccountPosition.create(
+                            existing = obj as? SubaccountPosition,
+                            parser = parser,
+                            data = it,
+                            positionId = null,
+                            internalState = null,
+                        )
+                    }
+                },
+            )?.toIList()
         }
 
         private fun pendingPositions(

@@ -50,6 +50,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
@@ -91,7 +92,7 @@ open class TradingStateMachine(
     private val useParentSubaccount: Boolean,
     val staticTyping: Boolean = false,
 ) {
-    internal val internalState: InternalState = InternalState()
+    internal var internalState: InternalState = InternalState()
 
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
@@ -553,15 +554,13 @@ open class TradingStateMachine(
         return StateResponse(state, changes, errors)
     }
 
-//    internal fun process(host: String, path: String, payload: String): StateResponse {
-//        val url = URL.parse("$host$path")
-//            ?: throw ParsingException(ParsingErrorType.InvalidUrl, "Couldn't parse $host$path")
-//        return rest(url, payload)
-//    }
-
     internal fun resetWallet(accountAddress: String?): StateResponse {
         val wallet = if (accountAddress != null) iMapOf("walletAddress" to accountAddress) else null
         this.wallet = wallet
+        if (accountAddress != internalState.wallet.walletAddress) {
+            internalState.wallet.walletAddress = accountAddress
+            internalState.wallet.account = InternalAccountState()
+        }
         if (accountAddress == null) {
             this.account = null
         }

@@ -15,13 +15,16 @@ import kotlinx.serialization.Serializable
 
 /**
  *
- * Values: OPEN,FILLED,CANCELED,BEST_EFFORT_CANCELED,UNTRIGGERED
+ * @param address
+ * @param subaccountNumber
+ * @param subaccountId
+ * @param username
  */
 @Serializable
-enum class IndexerOrderStatus(val value: kotlin.String) {
-    OPEN("OPEN"), // :/
-    FILLED("FILLED"), // :/
-    CANCELED("CANCELED"), // :/
-    BEST_EFFORT_CANCELED("BEST_EFFORT_CANCELED"), // :/
-    UNTRIGGERED("UNTRIGGERED"); // :/
-}
+data class IndexerTraderSearchResponseObject(
+
+    val address: kotlin.String? = null,
+    val subaccountNumber: kotlin.Double? = null,
+    val subaccountId: kotlin.String? = null,
+    val username: kotlin.String? = null
+)

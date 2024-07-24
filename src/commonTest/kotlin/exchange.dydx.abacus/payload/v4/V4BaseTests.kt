@@ -13,6 +13,7 @@ import exchange.dydx.abacus.output.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
@@ -128,8 +129,14 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         }
     }
 
-    override fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
-        super.verifyAccountState(data, obj, trace)
+    override fun verifyAccountState(
+        data: Map<String, Any>?,
+        state: InternalAccountState?,
+        staticTyping: Boolean,
+        obj: Account?,
+        trace: String
+    ) {
+        super.verifyAccountState(data, state, staticTyping, obj, trace)
         if (data != null) {
             verifyTradingRewardsState(
                 parser.asNativeMap(data["tradingRewards"]),

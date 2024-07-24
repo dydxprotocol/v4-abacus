@@ -17,7 +17,7 @@ internal class ParsingHelper {
     companion object {
         private var parser = Parser()
 
-        internal fun asset(market: String?): String? {
+        internal fun assetId(market: String?): String? {
             return if (market != null) {
                 val split = market.split("-")
                 split.first()

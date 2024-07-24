@@ -1213,6 +1213,7 @@ class V4AccountTests : V4BaseTests() {
 
     @Test
     fun testAccountHistoricalTradingRewards() {
+        reset()
         setup()
         test(
             {

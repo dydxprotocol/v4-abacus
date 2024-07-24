@@ -5,6 +5,7 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.asTypedList
+import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
@@ -12,7 +13,9 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.codegen.IndexerSubaccountResponseObject
 import indexer.models.IndexerCompositeOrderObject
 
 @Suppress("UNCHECKED_CAST")
@@ -22,7 +25,7 @@ internal open class SubaccountProcessor(
 ) : BaseProcessor(parser) {
     internal val assetPositionsProcessor = AssetPositionsProcessor(parser)
     internal val ordersProcessor = OrdersProcessor(parser, localizer)
-    private val perpetualPositionsProcessor = PerpetualPositionsProcessor(parser)
+    private val perpetualPositionsProcessor = PerpetualPositionsProcessor(parser, localizer)
     private val fillsProcessor = FillsProcessor(parser, localizer)
     private val transfersProcessor = TransfersProcessor(parser)
     private val fundingPaymentsProcessor = FundingPaymentsProcessor(parser)
@@ -99,11 +102,33 @@ internal open class SubaccountProcessor(
     ): InternalSubaccountState {
         var state = existing
 
+        val subaccount = parser.asTypedObject<IndexerSubaccountResponseObject>(content["subaccount"])
+        state = process(
+            existing = state,
+            payload = subaccount,
+            firstTime = true,
+        )
+
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
-        state = processFills(state, fills, false)
+        state = processFills(
+            subaccount = state,
+            payload = fills,
+            reset = false,
+        )
 
         val orders = parser.asTypedList<IndexerCompositeOrderObject>(content["orders"])
-        state = processOrders(state, orders, height)
+        state = processOrders(
+            subaccount = state,
+            payload = orders,
+            height = height,
+        )
+
+        val perpetualPositions = content["perpetualPositions"] ?: content["openPerpetualPositions"]
+        val positions = parser.asTypedList<IndexerPerpetualPositionResponseObject>(perpetualPositions)
+        state = processPerpetualPositions(
+            existing = state,
+            payload = positions,
+        )
 
         return state
     }
@@ -117,7 +142,7 @@ internal open class SubaccountProcessor(
         var subaccount = existing ?: mutableMapOf()
         val accountPayload = subaccountPayload(content)
         if (accountPayload != null) {
-            subaccount = received(subaccount, accountPayload, subscribed)
+            subaccount = receivedDeprecated(subaccount, accountPayload, subscribed)
         }
 
         val ordersPayload = parser.asNativeList(content["orders"]) as? List<Map<String, Any>>
@@ -129,7 +154,7 @@ internal open class SubaccountProcessor(
             parser.asNativeList(content["positions"])
                 ?: parser.asNativeList(content["perpetualPositions"])
         if (perpetualPositionsPayload != null) {
-            subaccount = receivedPerpetualPositions(subaccount, perpetualPositionsPayload)
+            subaccount = receivedPerpetualPositionsDeprecated(subaccount, perpetualPositionsPayload)
         }
 
         val fillsPayload = parser.asNativeList(content["fills"])
@@ -163,7 +188,37 @@ internal open class SubaccountProcessor(
             ?: parser.asNativeMap(parser.asNativeList(content["accounts"])?.firstOrNull())
     }
 
-    internal fun received(
+    fun process(
+        existing: InternalSubaccountState,
+        payload: IndexerSubaccountResponseObject?,
+        firstTime: Boolean,
+    ): InternalSubaccountState {
+        if (payload == null) {
+            return existing
+        }
+
+        val modified = existing
+        val subaccountNumber = parser.asInt(payload.subaccountNumber) ?: 0
+        modified.subaccountNumber = subaccountNumber
+        modified.address = payload.address
+        modified.equity = payload.equity
+        modified.freeCollateral = payload.freeCollateral
+        modified.marginEnabled = payload.marginEnabled
+        modified.updatedAtHeight = payload.updatedAtHeight
+        modified.latestProcessedBlockHeight = payload.latestProcessedBlockHeight
+
+        if (firstTime) {
+            modified.positions = perpetualPositionsProcessor.process(
+                existing = existing.positions,
+                payload = payload.openPerpetualPositions,
+            )
+            modified.orders = null
+        }
+
+        return modified
+    }
+
+    internal fun receivedDeprecated(
         subaccount: Map<String, Any>?,
         payload: Map<String, Any>,
         firstTime: Boolean,
@@ -353,13 +408,27 @@ internal open class SubaccountProcessor(
         } ?: subaccount
     }
 
-    private fun receivedPerpetualPositions(
+    private fun processPerpetualPositions(
+        existing: InternalSubaccountState,
+        payload: List<IndexerPerpetualPositionResponseObject>?,
+    ): InternalSubaccountState {
+        val newPositions = perpetualPositionsProcessor.processChanges(
+            existing = existing.positions,
+            payload = payload,
+        )
+        if (existing.positions != newPositions) {
+            existing.positions = newPositions
+        }
+        return existing
+    }
+
+    private fun receivedPerpetualPositionsDeprecated(
         subaccount: Map<String, Any>,
         payload: List<Any>?,
     ): Map<String, Any> {
         return if (payload != null) {
             val modified = subaccount.mutable()
-            val positions = perpetualPositionsProcessor.receivedChanges(
+            val positions = perpetualPositionsProcessor.receivedChangesDeprecated(
                 parser.asNativeMap(subaccount["positions"]),
                 payload,
             )
@@ -603,6 +672,37 @@ internal class V4SubaccountsProcessor(
     localizer: LocalizerProtocol?,
 ) : SubaccountProcessor(parser, localizer) {
     private val subaccountProcessor = V4SubaccountProcessor(parser, localizer)
+
+    fun processSubaccounts(
+        internalState: MutableMap<Int, InternalSubaccountState>,
+        payload: List<Any>?,
+    ): MutableMap<Int, InternalSubaccountState> {
+        return if (payload != null) {
+            internalState.clear()
+            for (item in payload) {
+                val data = parser.asNativeMap(item)
+                if (data != null) {
+                    val subaccountNumber = parser.asInt(data["subaccountNumber"])
+                    if (subaccountNumber != null) {
+                        val existing =
+                            internalState[subaccountNumber] ?: InternalSubaccountState(
+                                subaccountNumber = subaccountNumber,
+                            )
+                        val subaccount = process(
+                            existing = existing,
+                            payload = parser.asTypedObject(data),
+                            firstTime = true,
+                        )
+                        internalState[subaccountNumber] = subaccount
+                    }
+                }
+            }
+            internalState
+        } else {
+            internalState
+        }
+    }
+
     internal fun receivedSubaccounts(
         existing: Map<String, Any>?,
         payload: List<Any>?,
@@ -616,7 +716,7 @@ internal class V4SubaccountsProcessor(
                     if (subaccountNumber != null) {
                         val key = "$subaccountNumber"
                         val existing = parser.asNativeMap(existing?.get(key))
-                        val subaccount = subaccountProcessor.received(existing, data, true)
+                        val subaccount = subaccountProcessor.receivedDeprecated(existing, data, true)
                         modified.safeSet(key, subaccount)
                     }
                 }
