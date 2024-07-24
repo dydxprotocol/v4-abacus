@@ -19,6 +19,7 @@ import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
 import kollections.iMutableListOf
+import kotlinx.serialization.json.JsonNull.content
 
 /*
 "account": {
