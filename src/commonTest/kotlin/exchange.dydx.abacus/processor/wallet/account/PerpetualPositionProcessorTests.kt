@@ -1,7 +1,7 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.SubaccountPositionResources
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
+import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.tests.mock.LocalizerProtocolMock
 import exchange.dydx.abacus.utils.Parser

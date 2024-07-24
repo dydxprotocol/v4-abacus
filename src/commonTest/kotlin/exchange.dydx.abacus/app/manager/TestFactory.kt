@@ -2,7 +2,7 @@ package exchange.dydx.abacus.app.manager
 
 import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.protocols.DYDXChainTransactionsProtocol
 import exchange.dydx.abacus.protocols.FileLocation
 import exchange.dydx.abacus.protocols.FileSystemProtocol

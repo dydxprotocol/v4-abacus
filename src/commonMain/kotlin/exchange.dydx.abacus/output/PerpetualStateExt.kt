@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output
 
+import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.input.OrderSide
 
 fun OrderSide.isOppositeOf(that: PositionSide): Boolean =
