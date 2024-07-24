@@ -125,6 +125,10 @@ class SkipRouteProcessorTests {
             "aggregatePriceImpact" to "0.2607",
             "bridgeFee" to 26.15,
             "slippage" to "1",
+            "warning" to jsonEncoder.encode(mapOf(
+                "type" to "BAD_PRICE_WARNING",
+                "message" to "Difference in USD value of route input and output is large. Input USD value: 130.13 Output USD value: 103.17",
+            )),
             "requestPayload" to mapOf(
                 "fromChainId" to "dydx-mainnet-1",
                 "fromAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
@@ -198,6 +202,10 @@ class SkipRouteProcessorTests {
             "toAmount" to 59.995433,
             "bridgeFee" to 40.0,
             "slippage" to "1",
+            "warning" to jsonEncoder.encode(mapOf(
+                "type" to "BAD_PRICE_WARNING",
+                "message" to "Difference in USD value of route input and output is large. Input USD value: 99.99 Output USD value: 59.99",
+            )),
             "requestPayload" to mapOf(
                 "fromChainId" to "noble-1",
                 "fromAddress" to "uusdc",
