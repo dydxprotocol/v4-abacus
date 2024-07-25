@@ -1005,16 +1005,30 @@ open class TradingStateMachine(
                 val type = parser.asString(transfer["type"]) ?: return null
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
-                        listOf(
-                            ReceiptLine.Equity.rawValue,
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.ExchangeRate.rawValue,
-                            ReceiptLine.ExchangeReceived.rawValue,
-                            ReceiptLine.BridgeFee.rawValue,
-                            ReceiptLine.Fee.rawValue,
-                            ReceiptLine.Slippage.rawValue,
-                            ReceiptLine.TransferRouteEstimatedDuration.rawValue,
-                        )
+                        if (StatsigConfig.useSkip) {
+                            listOf(
+                                ReceiptLine.Equity.rawValue,
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.BridgeFee.rawValue,
+                                // add these back when supported by Skip
+//                            ReceiptLine.ExchangeRate.rawValue,
+//                            ReceiptLine.ExchangeReceived.rawValue,
+//                            ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Slippage.rawValue,
+                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
+                            )
+                        } else {
+                            listOf(
+                                ReceiptLine.Equity.rawValue,
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.ExchangeRate.rawValue,
+                                ReceiptLine.ExchangeReceived.rawValue,
+                                ReceiptLine.Fee.rawValue,
+//                                ReceiptLine.BridgeFee.rawValue,
+                                ReceiptLine.Slippage.rawValue,
+                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
+                            )
+                        }
                     }
 
                     "TRANSFER_OUT" -> {
