@@ -113,11 +113,11 @@ class V4StateManagerConfigs(
     }
 
     fun skipV1Chains(): String {
-        return "$skipHost/v2/info/chains?include_evm=true$onlyTestnets"
+        return "$skipHost/v2/info/chains?include_svm=true&include_evm=true$onlyTestnets"
     }
 
     fun skipV1Assets(): String {
-        return "$skipHost/v2/fungible/assets?include_evm_assets=true$onlyTestnets"
+        return "$skipHost/v2/fungible/assets?include_svm_assets=true&include_evm_assets=true$onlyTestnets"
     }
 
     fun skipV2MsgsDirect(): String {
