@@ -120,7 +120,12 @@ data class Account(
             } else {
                 data["unbondingDelegation"] as IList<UnbondingDelegation>?
             }
-            val stakingRewards = data["stakingRewards"] as StakingRewards?
+
+            val stakingRewards = if (staticTyping) {
+                internalState.stakingRewards
+            } else {
+                data["stakingRewards"] as StakingRewards?
+            }
 
             val tradingRewardsData = parser.asMap(data["tradingRewards"])
             val tradingRewards = if (tradingRewardsData != null) {

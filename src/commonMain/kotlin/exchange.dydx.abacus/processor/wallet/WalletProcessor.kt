@@ -14,6 +14,7 @@ import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainStakingRewardsResponse
 import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
@@ -218,12 +219,26 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedStakingRewards(
+    internal fun processStakingRewards(
+        existing: InternalWalletState,
+        payload: OnChainStakingRewardsResponse?,
+    ): InternalWalletState {
+        val newAccount = v4accountProcessor.processStakingRewards(
+            existing = existing.account,
+            payload = payload,
+        )
+        if (newAccount != existing.account) {
+            existing.account = newAccount
+        }
+        return existing
+    }
+
+    internal fun receivedStakingRewardsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedStakingRewards(
+            v4accountProcessor.receivedStakingRewardsDeprecated(
                 parser.asNativeMap(existing),
                 payload as? Map<String, Any>,
             )

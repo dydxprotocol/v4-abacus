@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
+import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.SubaccountFill
 import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.account.SubaccountOrder
@@ -46,6 +47,7 @@ internal data class InternalAccountState(
 
     var stakingDelegations: List<InternalStakingDelegationState>? = null,
     var unbondingDelegation: List<UnbondingDelegation>? = null,
+    var stakingRewards: StakingRewards? = null,
 
     // season id -> points
     var launchIncentivePoints: MutableMap<String, LaunchIncentivePoint> = mutableMapOf(),

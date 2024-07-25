@@ -4,6 +4,9 @@ import exchange.dydx.abacus.output.account.AccountBalance
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.wallet.account.staking.AccountDelegationsProcessor
+import exchange.dydx.abacus.processor.wallet.account.staking.DelegationUnbondingProcessor
+import exchange.dydx.abacus.processor.wallet.account.staking.StakingRewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
@@ -17,10 +20,10 @@ import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainStakingRewardsResponse
 import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
 import kollections.iMutableListOf
-import kotlinx.serialization.json.JsonNull.content
 
 /*
 "account": {
@@ -168,6 +171,8 @@ internal class V4AccountProcessor(
     private val delegationsProcessor = AccountDelegationsProcessor(parser)
     private val tradingRewardsProcessor = AccountTradingRewardsProcessor(parser)
     private val launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
+    private val stakingRewardsProcessor = StakingRewardsProcessor(parser)
+    private val unbondingProcessor = DelegationUnbondingProcessor(parser)
 
     internal fun processAccountBalances(
         existing: InternalAccountState,
@@ -214,25 +219,7 @@ internal class V4AccountProcessor(
         existing: InternalAccountState,
         payload: OnChainUnbondingResponse?,
     ): InternalAccountState {
-        if (payload?.unbondingResponses == null) {
-            return existing
-        }
-        val unbondingDelegations: IMutableList<UnbondingDelegation> = iMutableListOf()
-        for (response in payload.unbondingResponses) {
-            val validatorAddress = response.validatorAddress ?: continue
-            for (entry in response.entries ?: emptyList()) {
-                val completionTime = entry.completionTime ?: continue
-                val balance = entry.balance ?: continue
-                unbondingDelegations.add(
-                    UnbondingDelegation(
-                        validatorAddress,
-                        completionTime,
-                        balance,
-                    ),
-                )
-            }
-        }
-        existing.unbondingDelegation = unbondingDelegations
+        existing.unbondingDelegation = unbondingProcessor.process(existing.unbondingDelegation, payload)
         return existing
     }
 
@@ -261,7 +248,15 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedStakingRewards(
+    fun processStakingRewards(
+        existing: InternalAccountState,
+        payload: OnChainStakingRewardsResponse?,
+    ): InternalAccountState {
+        existing.stakingRewards = stakingRewardsProcessor.process(existing.stakingRewards, payload)
+        return existing
+    }
+
+    internal fun receivedStakingRewardsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
