@@ -14,6 +14,8 @@ import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainStakingRewardsResponse
+import indexer.models.chain.OnChainUnbondingResponse
 import indexer.models.chain.OnChainUserFeeTierResponse
 import indexer.models.chain.OnChainUserStatsResponse
 import indexer.models.configs.ConfigsLaunchIncentivePoints
@@ -143,13 +145,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: List<OnChainAccountBalanceObject>?,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processAccountBalances(
+        existing.account = v4accountProcessor.processAccountBalances(
             existing = existing.account,
             payload = payload,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -169,13 +168,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainDelegationResponse?
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processStakingDelegations(
+        existing.account = v4accountProcessor.processStakingDelegations(
             existing = existing.account,
             payload = payload,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -191,7 +187,18 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedUnbonding(
+    fun processUnbonding(
+        existing: InternalWalletState,
+        payload: OnChainUnbondingResponse?,
+    ): InternalWalletState {
+        existing.account = v4accountProcessor.processUnbonding(
+            existing = existing.account,
+            payload = payload,
+        )
+        return existing
+    }
+
+    internal fun receivedUnbondingDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
@@ -203,12 +210,23 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedStakingRewards(
+    internal fun processStakingRewards(
+        existing: InternalWalletState,
+        payload: OnChainStakingRewardsResponse?,
+    ): InternalWalletState {
+        existing.account = v4accountProcessor.processStakingRewards(
+            existing = existing.account,
+            payload = payload,
+        )
+        return existing
+    }
+
+    internal fun receivedStakingRewardsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedStakingRewards(
+            v4accountProcessor.receivedStakingRewardsDeprecated(
                 parser.asNativeMap(existing),
                 payload as? Map<String, Any>,
             )
@@ -233,13 +251,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainUserFeeTierResponse?,
     ): InternalWalletState {
-        val user = userProcessor.processOnChainUserFeeTier(
+        existing.user = userProcessor.processOnChainUserFeeTier(
             existing = existing.user,
             payload = payload?.tier,
         )
-        if (user != existing.user) {
-            existing.user = user
-        }
         return existing
     }
     internal fun receivedOnChainUserFeeTierDeprecated(
@@ -261,13 +276,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainUserStatsResponse?,
     ): InternalWalletState {
-        val user = userProcessor.processOnChainUserStats(
+        existing.user = userProcessor.processOnChainUserStats(
             existing = existing.user,
             payload = payload,
         )
-        if (user != existing.user) {
-            existing.user = user
-        }
         return existing
     }
 
@@ -287,14 +299,11 @@ internal class WalletProcessor(
         payload: List<IndexerPnlTicksResponseObject>?,
         subaccountNumber: Int,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processHistoricalPnls(
+        existing.account = v4accountProcessor.processHistoricalPnls(
             existing = existing.account,
             payload = payload,
             subaccountNumber = subaccountNumber,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -304,7 +313,7 @@ internal class WalletProcessor(
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedHistoricalPnls(
+            v4accountProcessor.receivedHistoricalPnlsDeprecated(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber,
@@ -317,14 +326,11 @@ internal class WalletProcessor(
         payload: List<IndexerFillResponseObject>?,
         subaccountNumber: Int,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processFills(
+        existing.account = v4accountProcessor.processFills(
             existing = existing.account,
             payload = payload,
             subaccountNumber = subaccountNumber,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -408,12 +414,11 @@ internal class WalletProcessor(
         season: String,
         payload: ConfigsLaunchIncentivePoints?,
     ): InternalWalletState {
-        val account = v4accountProcessor.processLaunchIncentivePoints(
+        existing.account = v4accountProcessor.processLaunchIncentivePoints(
             existing = existing.account,
             season = season,
             payload = payload,
         )
-        existing.account = account
         return existing
     }
 

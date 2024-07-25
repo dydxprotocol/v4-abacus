@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.processor.wallet.account
+package exchange.dydx.abacus.processor.wallet.account.staking
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.processor.base.BaseProcessor
