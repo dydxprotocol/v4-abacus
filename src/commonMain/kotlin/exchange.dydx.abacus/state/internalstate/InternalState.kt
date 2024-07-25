@@ -9,6 +9,7 @@ import exchange.dydx.abacus.output.account.SubaccountFill
 import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
+import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -62,6 +63,7 @@ internal data class InternalAccountState(
 internal data class InternalSubaccountState(
     var fills: List<SubaccountFill>? = null,
     var orders: List<SubaccountOrder>? = null,
+    var transfers: List<SubaccountTransfer>? = null,
     var historicalPNLs: List<SubaccountHistoricalPNL>? = null,
     var positions: Map<String, InternalPerpetualPosition>? = null,
     var subaccountNumber: Int,

@@ -238,11 +238,18 @@ open class BaseTests(
             )
         }
 
-        verifySubaccountTransfersState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.transfers,
-            "transfers",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.wallet.account.subaccounts) {
+                assertEquals(value.transfers ?: emptyList(), state?.transfers?.get("$key") ?: emptyList())
+            }
+        } else {
+            verifySubaccountTransfersState(
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.transfers,
+                "transfers",
+            )
+        }
+
         verifySubaccountFundingPaymentsState(
             parser.asNativeMap(perp.account?.get("subaccounts")),
             state?.fundingPayments,
