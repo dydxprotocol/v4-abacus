@@ -131,12 +131,21 @@ internal open class SubaccountProcessor(
             payload = positions,
         )
 
-        val transfers = parser.asTypedList<IndexerTransferResponseObject>(content["transfers"])
-        state = processTransfers(
-            subaccount = state,
-            payload = transfers,
-            reset = false,
-        )
+        val transfers: List<IndexerTransferResponseObject>?
+        val transferList = parser.asTypedList<IndexerTransferResponseObject>(content["transfers"])
+        if (transferList != null) {
+            transfers = transferList
+        } else {
+            val transfer = parser.asTypedObject<IndexerTransferResponseObject>(content["transfers"])
+            transfers = if (transfer != null) listOf(transfer) else null
+        }
+        if (transfers != null) {
+            state = processTransfers(
+                subaccount = state,
+                payload = transfers,
+                reset = false,
+            )
+        }
 
         return state
     }
