@@ -1007,11 +1007,12 @@ open class TradingStateMachine(
                     "DEPOSIT", "WITHDRAWAL" -> {
                         listOf(
                             ReceiptLine.Equity.rawValue,
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.ExchangeRate.rawValue,
-                            ReceiptLine.ExchangeReceived.rawValue,
                             ReceiptLine.BridgeFee.rawValue,
-                            ReceiptLine.Fee.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            // add these back when supported by Skip
+//                            ReceiptLine.ExchangeRate.rawValue,
+//                            ReceiptLine.ExchangeReceived.rawValue,
+//                            ReceiptLine.Fee.rawValue,
                             ReceiptLine.Slippage.rawValue,
                             ReceiptLine.TransferRouteEstimatedDuration.rawValue,
                         )
