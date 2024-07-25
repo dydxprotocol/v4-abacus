@@ -62,7 +62,43 @@ class TransferProcessorTests {
     )
 
     @Test
-    fun testProcess() {
+    fun testProces_deposit() {
+        val result = processor.process(payloadMock)
+        assertEquals(transferMock, result)
+    }
+
+    @Test
+    fun testProces_withdrawal() {
+        val payloadMock = payloadMock.copy(
+            type = IndexerTransferType.WITHDRAWAL,
+        )
+        val transferMock = transferMock.copy(
+            type = TransferRecordType.WITHDRAW,
+            resources = transferMock.resources.copy(
+                typeString = "APP.GENERAL.WITHDRAW",
+                typeStringKey = "APP.GENERAL.WITHDRAW",
+                iconLocal = "Outgoing",
+            ),
+        )
+        processor.accountAddress = "recipientAddress"
+        val result = processor.process(payloadMock)
+        assertEquals(transferMock, result)
+    }
+
+    @Test
+    fun testProcess_transferOut() {
+        val payloadMock = payloadMock.copy(
+            type = IndexerTransferType.WITHDRAWAL,
+        )
+        val transferMock = transferMock.copy(
+            type = TransferRecordType.TRANSFER_OUT,
+            resources = transferMock.resources.copy(
+                typeString = "APP.GENERAL.TRANSFER_OUT",
+                typeStringKey = "APP.GENERAL.TRANSFER_OUT",
+                iconLocal = "Outgoing",
+            ),
+        )
+        processor.accountAddress = "differentAddress"
         val result = processor.process(payloadMock)
         assertEquals(transferMock, result)
     }

@@ -73,19 +73,31 @@ internal class TransferProcessor(
         val id = payload?.id ?: payload?.transactionHash
         val type = TransferRecordType.invoke(payload?.type?.value)
         val updatedAtMilliseconds = parser.asDatetime(payload?.createdAt)?.toEpochMilliseconds()?.toDouble()
-        if (payload != null && id != null && type != null && updatedAtMilliseconds != null) {
+        val toAddress = parser.asString(payload?.recipient?.address)
+        val modifiedType = when (type) {
+            // For DEPOSIT, we always show as "Deposit"
+            TransferRecordType.WITHDRAW -> {
+                if (toAddress == accountAddress || toAddress == null) {
+                    type
+                } else {
+                    TransferRecordType.TRANSFER_OUT
+                }
+            }
+            else -> type
+        }
+        if (payload != null && id != null && modifiedType != null && updatedAtMilliseconds != null) {
             return SubaccountTransfer(
                 id = id,
-                type = type,
+                type = modifiedType,
                 asset = payload.symbol,
                 amount = parser.asDouble(payload.size),
                 updatedAtBlock = parser.asInt(payload.createdAtHeight),
                 updatedAtMilliseconds = updatedAtMilliseconds,
                 fromAddress = payload.sender?.address,
-                toAddress = payload.recipient?.address,
+                toAddress = toAddress,
                 transactionHash = payload.transactionHash,
                 resources = createResource(
-                    type = type,
+                    type = modifiedType,
                     toAddress = payload.recipient?.address,
                     transactionHash = payload.transactionHash,
                 ),
@@ -100,29 +112,17 @@ internal class TransferProcessor(
         toAddress: String?,
         transactionHash: String?
     ): SubaccountTransferResources {
-        val modifiedType = when (type) {
-            // For DEPOSIT, we always show as "Deposit"
-            TransferRecordType.WITHDRAW -> {
-                if (toAddress == accountAddress || toAddress == null) {
-                    type
-                } else {
-                    TransferRecordType.TRANSFER_OUT
-                }
-            }
-            else -> type
-        }
-
         val mintscan = transactionHash?.let {
             environment?.links?.mintscan?.replace("{tx_hash}", it)
         }
-        val typeStringKey = typeMap[modifiedType.rawValue]
+        val typeStringKey = typeMap[type.rawValue]
         return SubaccountTransferResources(
             typeStringKey = typeStringKey,
             typeString = typeStringKey?.let { localizer?.localize(it) },
             statusStringKey = null,
             statusString = null,
             blockExplorerUrl = mintscan,
-            iconLocal = typeIconMap[modifiedType.rawValue],
+            iconLocal = typeIconMap[type.rawValue],
             indicator = statusMap["CONFIRMED"],
         )
     }
