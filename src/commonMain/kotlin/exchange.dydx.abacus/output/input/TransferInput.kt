@@ -487,6 +487,7 @@ data class TransferInput(
     val requestPayload: TransferInputRequestPayload?,
     val errors: String?,
     val errorMessage: String?,
+    val warning: String?,
 ) {
     val isCctp: Boolean
         get() = cctpChainIds?.any { it.isCctpEnabled(this) } ?: false
@@ -574,6 +575,7 @@ data class TransferInput(
                     } else {
                         null
                     }
+                val warning = parser.asString(route?.get("warning"))
 
                 return if (existing?.type !== type ||
                     existing?.size !== size ||
@@ -591,7 +593,8 @@ data class TransferInput(
                     existing.resources !== resources ||
                     existing.requestPayload !== requestPayload ||
                     existing.errors != errors ||
-                    existing.errorMessage != errorMessage
+                    existing.errorMessage != errorMessage ||
+                    existing.warning != warning
                 ) {
                     TransferInput(
                         type,
@@ -611,6 +614,7 @@ data class TransferInput(
                         requestPayload,
                         errors,
                         errorMessage,
+                        warning,
                     )
                 } else {
                     existing
