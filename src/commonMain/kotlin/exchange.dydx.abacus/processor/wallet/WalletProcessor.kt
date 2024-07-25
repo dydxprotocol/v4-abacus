@@ -145,13 +145,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: List<OnChainAccountBalanceObject>?,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processAccountBalances(
+        existing.account = v4accountProcessor.processAccountBalances(
             existing = existing.account,
             payload = payload,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -171,13 +168,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainDelegationResponse?
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processStakingDelegations(
+        existing.account = v4accountProcessor.processStakingDelegations(
             existing = existing.account,
             payload = payload,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -197,13 +191,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainUnbondingResponse?,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processUnbonding(
+        existing.account = v4accountProcessor.processUnbonding(
             existing = existing.account,
             payload = payload,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -223,13 +214,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainStakingRewardsResponse?,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processStakingRewards(
+        existing.account = v4accountProcessor.processStakingRewards(
             existing = existing.account,
             payload = payload,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -263,13 +251,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainUserFeeTierResponse?,
     ): InternalWalletState {
-        val user = userProcessor.processOnChainUserFeeTier(
+        existing.user = userProcessor.processOnChainUserFeeTier(
             existing = existing.user,
             payload = payload?.tier,
         )
-        if (user != existing.user) {
-            existing.user = user
-        }
         return existing
     }
     internal fun receivedOnChainUserFeeTierDeprecated(
@@ -291,13 +276,10 @@ internal class WalletProcessor(
         existing: InternalWalletState,
         payload: OnChainUserStatsResponse?,
     ): InternalWalletState {
-        val user = userProcessor.processOnChainUserStats(
+        existing.user = userProcessor.processOnChainUserStats(
             existing = existing.user,
             payload = payload,
         )
-        if (user != existing.user) {
-            existing.user = user
-        }
         return existing
     }
 
@@ -317,14 +299,11 @@ internal class WalletProcessor(
         payload: List<IndexerPnlTicksResponseObject>?,
         subaccountNumber: Int,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processHistoricalPnls(
+        existing.account = v4accountProcessor.processHistoricalPnls(
             existing = existing.account,
             payload = payload,
             subaccountNumber = subaccountNumber,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -347,14 +326,11 @@ internal class WalletProcessor(
         payload: List<IndexerFillResponseObject>?,
         subaccountNumber: Int,
     ): InternalWalletState {
-        val newAccount = v4accountProcessor.processFills(
+        existing.account = v4accountProcessor.processFills(
             existing = existing.account,
             payload = payload,
             subaccountNumber = subaccountNumber,
         )
-        if (newAccount != existing.account) {
-            existing.account = newAccount
-        }
         return existing
     }
 
@@ -438,12 +414,11 @@ internal class WalletProcessor(
         season: String,
         payload: ConfigsLaunchIncentivePoints?,
     ): InternalWalletState {
-        val account = v4accountProcessor.processLaunchIncentivePoints(
+        existing.account = v4accountProcessor.processLaunchIncentivePoints(
             existing = existing.account,
             season = season,
             payload = payload,
         )
-        existing.account = account
         return existing
     }
 
