@@ -131,6 +131,13 @@ internal open class SubaccountProcessor(
             payload = positions,
         )
 
+        val transfers = parser.asTypedList<IndexerTransferResponseObject>(content["transfers"])
+        state = processTransfers(
+            subaccount = state,
+            payload = transfers,
+            reset = false,
+        )
+
         return state
     }
 
@@ -301,15 +308,12 @@ internal open class SubaccountProcessor(
         payload: List<IndexerCompositeOrderObject>?,
         height: BlockAndTime?,
     ): InternalSubaccountState {
-        val newOrders = ordersProcessor.process(
+        subaccount.orders = ordersProcessor.process(
             existing = subaccount.orders,
             payload = payload ?: emptyList(),
             subaccountNumber = subaccount.subaccountNumber,
             height = height,
         )
-        if (subaccount.orders != newOrders) {
-            subaccount.orders = newOrders
-        }
         return subaccount
     }
 
@@ -358,14 +362,11 @@ internal open class SubaccountProcessor(
         payload: List<IndexerFillResponseObject>?,
         reset: Boolean,
     ): InternalSubaccountState {
-        val newFills = fillsProcessor.process(
+        subaccount.fills = fillsProcessor.process(
             existing = if (reset) null else subaccount.fills,
             payload = payload ?: emptyList(),
             subaccountNumber = subaccount.subaccountNumber,
         )
-        if (subaccount.fills != newFills) {
-            subaccount.fills = newFills
-        }
         return subaccount
     }
 
@@ -387,13 +388,10 @@ internal open class SubaccountProcessor(
         payload: List<IndexerTransferResponseObject>?,
         reset: Boolean,
     ): InternalSubaccountState {
-        val newTransfers = transfersProcessor.process(
+        subaccount.transfers = transfersProcessor.process(
             existing = if (reset) null else subaccount.transfers,
             payload = payload ?: emptyList(),
         )
-        if (subaccount.transfers != newTransfers) {
-            subaccount.transfers = newTransfers
-        }
         return subaccount
     }
 
@@ -428,13 +426,10 @@ internal open class SubaccountProcessor(
         existing: InternalSubaccountState,
         payload: List<IndexerPerpetualPositionResponseObject>?,
     ): InternalSubaccountState {
-        val newPositions = perpetualPositionsProcessor.processChanges(
+        existing.positions = perpetualPositionsProcessor.processChanges(
             existing = existing.positions,
             payload = payload,
         )
-        if (existing.positions != newPositions) {
-            existing.positions = newPositions
-        }
         return existing
     }
 
