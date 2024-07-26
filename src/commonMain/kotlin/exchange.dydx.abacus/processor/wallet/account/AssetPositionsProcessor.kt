@@ -14,7 +14,7 @@ internal class AssetPositionsProcessor(parser: ParserProtocol) : BaseProcessor(p
 
     // From REST call
     fun process(
-        payload: Map<String, IndexerAssetPositionResponseObject>?
+         payload: Map<String, IndexerAssetPositionResponseObject>?
     ): Map<String, InternalAssetPositionState>? {
         return if (payload != null) {
             val result = mutableMapOf<String, InternalAssetPositionState>()
@@ -31,19 +31,20 @@ internal class AssetPositionsProcessor(parser: ParserProtocol) : BaseProcessor(p
 
     // From Websocket
     fun processChanges(
+        existing: Map<String, InternalAssetPositionState>?,
         payload: List<IndexerAssetPositionResponseObject>?
     ): Map<String, InternalAssetPositionState>? {
         return if (payload != null) {
-            val result = mutableMapOf<String, InternalAssetPositionState>()
+            var modified = existing?.mutable() ?: mutableMapOf()
             for (item in payload) {
                 val assetPosition = itemProcessor.process(item)
-                if (assetPosition?.assetId != null) {
-                    result[assetPosition.assetId] = assetPosition
+                if (assetPosition?.symbol != null) {
+                    modified[assetPosition.symbol] = assetPosition
                 }
             }
-            result
+            modified
         } else
-            null
+            existing
     }
 
     internal fun received(payload: Map<String, Any>?): Map<String, Any>? {

@@ -12,6 +12,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
@@ -108,6 +109,12 @@ internal open class SubaccountProcessor(
             existing = state,
             payload = subaccount,
             firstTime = subscribed,
+        )
+
+        val assetPositions = parser.asTypedList<IndexerAssetPositionResponseObject>(content["assetPositions"])
+         state = processAssetPositions(
+            subaccount = state,
+            payload = assetPositions,
         )
 
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
@@ -226,17 +233,12 @@ internal open class SubaccountProcessor(
 
         if (firstTime) {
             modified.positions = perpetualPositionsProcessor.process(
-                existing = existing.positions,
                 payload = payload.openPerpetualPositions,
             )
             modified.assetPositions = assetPositionsProcessor.process(
                 payload = payload.assetPositions,
             )
             modified.orders = null
-        } else {
-//            modified.assetPositions = assetPositionsProcessor.processChanges(
-//                payload = payload.assetPositions,
-//            )
         }
 
         return modified
@@ -422,6 +424,18 @@ internal open class SubaccountProcessor(
             }
         } ?: subaccount
     }
+
+    private fun processAssetPositions(
+        subaccount: InternalSubaccountState,
+        payload: List<IndexerAssetPositionResponseObject>?,
+    ): InternalSubaccountState {
+        subaccount.assetPositions = assetPositionsProcessor.processChanges(
+            existing = subaccount.assetPositions,
+            payload = payload,
+        )
+        return subaccount
+    }
+
 
     private fun receivedFundingPayments(
         subaccount: Map<String, Any>,
