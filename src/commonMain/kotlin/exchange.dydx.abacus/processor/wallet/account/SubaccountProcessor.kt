@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.processor.wallet.account
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.calculator.v2.SubaccountCalculatorV2
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -8,7 +10,6 @@ import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -32,6 +33,7 @@ internal open class SubaccountProcessor(
     private val transfersProcessor = TransfersProcessor(parser, localizer)
     private val fundingPaymentsProcessor = FundingPaymentsProcessor(parser)
     private val historicalPNLsProcessor = HistoricalPNLsProcessor(parser)
+    private val subaccountCalculator = SubaccountCalculatorV2(parser)
 
     private val accountKeyMap = mapOf(
         "string" to mapOf(
@@ -112,10 +114,11 @@ internal open class SubaccountProcessor(
         )
 
         val assetPositions = parser.asTypedList<IndexerAssetPositionResponseObject>(content["assetPositions"])
-         state = processAssetPositions(
+        state = processAssetPositions(
             subaccount = state,
             payload = assetPositions,
         )
+        state.quoteBalance[CalculationPeriod.current] = subaccountCalculator.calculateQuoteBalance(state.assetPositions)
 
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
         state = processFills(
@@ -238,6 +241,8 @@ internal open class SubaccountProcessor(
             modified.assetPositions = assetPositionsProcessor.process(
                 payload = payload.assetPositions,
             )
+            modified.quoteBalance[CalculationPeriod.current] = subaccountCalculator.calculateQuoteBalance(modified.assetPositions)
+
             modified.orders = null
         }
 
@@ -275,7 +280,7 @@ internal open class SubaccountProcessor(
             )
 
             val assetPositionsData = parser.asNativeMap(payload["assetPositions"])
-            modified.safeSet("assetPositions", assetPositionsProcessor.received(assetPositionsData))
+            modified.safeSet("assetPositions", assetPositionsProcessor.receivedDeprecated(assetPositionsData))
 
             modified.remove("orders")
         } else {
@@ -284,12 +289,12 @@ internal open class SubaccountProcessor(
                 modified = receivedAssetPositionsDeprecated(modified, assetPositionsPayload).mutable()
             }
         }
-        modified["quoteBalance"] = calculateQuoteBalance(modified, payload)
+        modified["quoteBalance"] = calculateQuoteBalanceDeprecated(modified, payload)
 
         return modified
     }
 
-    internal fun calculateQuoteBalance(
+    internal fun calculateQuoteBalanceDeprecated(
         subaccount: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
@@ -436,7 +441,6 @@ internal open class SubaccountProcessor(
         return subaccount
     }
 
-
     private fun receivedFundingPayments(
         subaccount: Map<String, Any>,
         payload: List<Any>?,
@@ -494,7 +498,7 @@ internal open class SubaccountProcessor(
     ): Map<String, Any> {
         return if (payload != null) {
             val modified = subaccount.mutable()
-            val transformed = assetPositionsProcessor.receivedChanges(
+            val transformed = assetPositionsProcessor.receivedChangesDeprecated(
                 parser.asNativeMap(subaccount["assetPositions"]),
                 payload,
             )
@@ -687,177 +691,5 @@ internal open class SubaccountProcessor(
     override fun accountAddressChanged() {
         super.accountAddressChanged()
         transfersProcessor.accountAddress = accountAddress
-    }
-}
-
-internal class V4SubaccountProcessor(
-    parser: ParserProtocol,
-    localizer: LocalizerProtocol?,
-) : SubaccountProcessor(parser, localizer) {
-    override fun received(
-        existing: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Pair<Map<String, Any>, Boolean> {
-        val orders = parser.asNativeMap(existing["orders"])
-        if (orders != null) {
-            val updated = false
-            val (modifiedOrders, ordersUpdated) = ordersProcessor.received(
-                orders,
-                height,
-            )
-            if (ordersUpdated) {
-                val modified = existing.mutable()
-                modified.safeSet("orders", modifiedOrders)
-                return Pair(modified, true)
-            }
-        }
-        return Pair(existing, false)
-    }
-}
-
-internal class V4SubaccountsProcessor(
-    parser: ParserProtocol,
-    localizer: LocalizerProtocol?,
-) : SubaccountProcessor(parser, localizer) {
-    private val subaccountProcessor = V4SubaccountProcessor(parser, localizer)
-
-    fun processSubaccounts(
-        internalState: MutableMap<Int, InternalSubaccountState>,
-        payload: List<Any>?,
-    ): MutableMap<Int, InternalSubaccountState> {
-        return if (payload != null) {
-            internalState.clear()
-            for (item in payload) {
-                val data = parser.asNativeMap(item)
-                if (data != null) {
-                    val subaccountNumber = parser.asInt(data["subaccountNumber"])
-                    if (subaccountNumber != null) {
-                        val existing =
-                            internalState[subaccountNumber] ?: InternalSubaccountState(
-                                subaccountNumber = subaccountNumber,
-                            )
-                        val subaccount = process(
-                            existing = existing,
-                            payload = parser.asTypedObject(data),
-                            firstTime = true,
-                        )
-                        internalState[subaccountNumber] = subaccount
-                    }
-                }
-            }
-            internalState
-        } else {
-            internalState
-        }
-    }
-
-    internal fun receivedSubaccounts(
-        existing: Map<String, Any>?,
-        payload: List<Any>?,
-    ): Map<String, Any>? {
-        return if (payload != null) {
-            val modified = mutableMapOf<String, Any>()
-            for (itemPayload in payload) {
-                val data = parser.asNativeMap(itemPayload)
-                if (data != null) {
-                    val subaccountNumber = parser.asInt(data?.get("subaccountNumber"))
-                    if (subaccountNumber != null) {
-                        val key = "$subaccountNumber"
-                        val existing = parser.asNativeMap(existing?.get(key))
-                        val subaccount = subaccountProcessor.receivedDeprecated(existing, data, true)
-                        modified.safeSet(key, subaccount)
-                    }
-                }
-            }
-            return modified
-        } else {
-            null
-        }
-    }
-
-    override fun subaccountPayload(content: Map<String, Any>): Map<String, Any>? {
-        return parser.asNativeMap(content["subaccount"])
-            ?: parser.asNativeMap(content["subaccounts"])
-    }
-
-    override fun socketDeprecated(
-        existing: Map<String, Any>?,
-        content: Map<String, Any>,
-        subscribed: Boolean,
-        height: BlockAndTime?,
-    ): Map<String, Any> {
-        val modified = super.socketDeprecated(existing, content, subscribed, height).mutable()
-
-        val assetPositionsPayload =
-            parser.asNativeList(content["assetPositions"]) as? List<Map<String, Any>>
-        if (assetPositionsPayload != null) {
-            val existing = parser.asNativeMap(modified["assetPositions"])
-            modified.safeSet(
-                "assetPositions",
-                assetPositionsProcessor.receivedChanges(existing, assetPositionsPayload),
-            )
-        }
-        modified["quoteBalance"] = calculateQuoteBalance(modified, content)
-        return modified
-    }
-
-    override fun received(
-        existing: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Pair<Map<String, Any>, Boolean> {
-        return subaccountProcessor.received(existing, height)
-    }
-
-    internal fun updateSubaccountsHeight(
-        existing: Map<String, Any>,
-        height: BlockAndTime?,
-    ): Triple<Map<String, Any>, Boolean, List<Int>?> {
-        var updated = false
-        val modifiedSubaccounts = existing.mutable()
-        val modifiedSubaccountIds = mutableListOf<Int>()
-        for ((key, value) in existing) {
-            val keyInt = parser.asInt(key)
-            if (keyInt == null) {
-                Logger.e { "Invalid subaccount key: $key" }
-                continue
-            }
-            val subaccount = parser.asNativeMap(value)
-            if (subaccount != null) {
-                val (modifiedSubaccount, subaccountUpdated) = subaccountProcessor.updateHeight(
-                    subaccount,
-                    height,
-                )
-                if (subaccountUpdated) {
-                    modifiedSubaccounts.safeSet(key, modifiedSubaccount)
-                    updated = true
-                    modifiedSubaccountIds.add(key.toInt())
-                }
-            }
-        }
-        if (updated) {
-            return Triple(modifiedSubaccounts, true, modifiedSubaccountIds)
-        }
-        return Triple(existing, false, null)
-    }
-
-    internal fun orderCanceled(
-        existing: Map<String, Any>,
-        orderId: String,
-        subaccountNumber: Int,
-    ): Pair<Map<String, Any>, Boolean> {
-        val subaccountIndex = "$subaccountNumber"
-        val subaccount = parser.asNativeMap(existing[subaccountIndex])
-        if (subaccount != null) {
-            val (modifiedSubaccount, updated) = subaccountProcessor.orderCanceled(
-                subaccount,
-                orderId,
-            )
-            if (updated) {
-                val modified = existing.mutable()
-                modified.safeSet(subaccountIndex, modifiedSubaccount)
-                return Pair(modified, true)
-            }
-        }
-        return Pair(existing, false)
     }
 }

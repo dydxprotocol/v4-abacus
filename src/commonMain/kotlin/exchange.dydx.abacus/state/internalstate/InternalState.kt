@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.internalstate
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
@@ -74,7 +75,11 @@ internal data class InternalSubaccountState(
     var freeCollateral: String? = null,
     var marginEnabled: Boolean? = null,
     var updatedAtHeight: String? = null,
-    var latestProcessedBlockHeight: String? = null
+    var latestProcessedBlockHeight: String? = null,
+
+    // Calculate:
+    var quoteBalance: MutableMap<CalculationPeriod, Double?> = mutableMapOf(),
+
 ) {
     val openPositions: Map<String, InternalPerpetualPosition>?
         get() {
