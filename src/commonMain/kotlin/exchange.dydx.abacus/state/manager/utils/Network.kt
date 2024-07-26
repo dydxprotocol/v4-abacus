@@ -20,7 +20,11 @@ enum class NetworkStatus(val rawValue: String) {
 }
 
 @JsExport
-class BlockAndTime(val block: Int, val time: Instant)
+class BlockAndTime(
+    val block: Int,
+    val time: Instant,
+    val localTime: Instant = ServerTime.now()
+)
 
 @JsExport
 internal class NetworkState() {
