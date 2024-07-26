@@ -2,11 +2,49 @@ package exchange.dydx.abacus.processor.wallet.account
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAssetPositionState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerAssetPositionResponse
+import indexer.codegen.IndexerAssetPositionResponseObject
 
 internal class AssetPositionsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = AssetPositionProcessor(parser = parser)
+
+    // From REST call
+    fun process(
+        payload: Map<String, IndexerAssetPositionResponseObject>?
+    ): Map<String, InternalAssetPositionState>? {
+        return if (payload != null) {
+            val result = mutableMapOf<String, InternalAssetPositionState>()
+            for ((key, value) in payload) {
+                val assetPosition = itemProcessor.process(value)
+                if(assetPosition != null){
+                    result[key] = assetPosition
+                }
+            }
+            result
+        } else
+            null
+    }
+
+    // From Websocket
+    fun processChanges(
+        payload: List<IndexerAssetPositionResponseObject>?
+    ): Map<String, InternalAssetPositionState>? {
+        return if (payload != null) {
+            val result = mutableMapOf<String, InternalAssetPositionState>()
+            for (item in payload) {
+                val assetPosition = itemProcessor.process(item)
+                if (assetPosition?.assetId != null) {
+                    result[assetPosition.assetId] = assetPosition
+                }
+            }
+            result
+        } else
+            null
+    }
 
     internal fun received(payload: Map<String, Any>?): Map<String, Any>? {
         if (payload != null) {

@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
+import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.SubaccountFill
 import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
@@ -66,6 +67,7 @@ internal data class InternalSubaccountState(
     var transfers: List<SubaccountTransfer>? = null,
     var historicalPNLs: List<SubaccountHistoricalPNL>? = null,
     var positions: Map<String, InternalPerpetualPosition>? = null,
+    var assetPositions: Map<String, InternalAssetPositionState>? = null,
     var subaccountNumber: Int,
     var address: String? = null,
     var equity: String? = null,
@@ -79,6 +81,14 @@ internal data class InternalSubaccountState(
             return positions?.filterValues { it.status == IndexerPerpetualPositionStatus.OPEN }
         }
 }
+
+internal data class InternalAssetPositionState(
+    val symbol: String? = null,
+    val side: PositionSide? = null,
+    val assetId: String? = null,
+    val size: Double? = null,
+    val subaccountNumber: Int? = null,
+)
 
 internal data class InternalPerpetualPosition(
     val market: String? = null,

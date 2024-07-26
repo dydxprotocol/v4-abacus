@@ -107,7 +107,7 @@ internal open class SubaccountProcessor(
         state = process(
             existing = state,
             payload = subaccount,
-            firstTime = true,
+            firstTime = subscribed,
         )
 
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
@@ -229,7 +229,14 @@ internal open class SubaccountProcessor(
                 existing = existing.positions,
                 payload = payload.openPerpetualPositions,
             )
+            modified.assetPositions = assetPositionsProcessor.process(
+                payload = payload.assetPositions,
+            )
             modified.orders = null
+        } else {
+//            modified.assetPositions = assetPositionsProcessor.processChanges(
+//                payload = payload.assetPositions,
+//            )
         }
 
         return modified
@@ -272,7 +279,7 @@ internal open class SubaccountProcessor(
         } else {
             val assetPositionsPayload = payload["assetPositions"] as? List<Map<String, Any>>
             if (assetPositionsPayload != null) {
-                modified = receivedAssetPositions(modified, assetPositionsPayload).mutable()
+                modified = receivedAssetPositionsDeprecated(modified, assetPositionsPayload).mutable()
             }
         }
         modified["quoteBalance"] = calculateQuoteBalance(modified, payload)
@@ -467,7 +474,7 @@ internal open class SubaccountProcessor(
         }
     }
 
-    private fun receivedAssetPositions(
+    private fun receivedAssetPositionsDeprecated(
         subaccount: Map<String, Any>,
         payload: List<Map<String, Any>>?,
     ): Map<String, Any> {
