@@ -333,9 +333,9 @@ internal open class AccountSupervisor(
         val url = accountUrl()
         if (url != null) {
             helper.get(
-                url,
-                null,
-                null,
+                url = url,
+                params = null,
+                headers = null,
                 callback = { _, response, httpCode, _ ->
                     val isValidResponse = helper.success(httpCode) && response != null
                     if (isValidResponse) {

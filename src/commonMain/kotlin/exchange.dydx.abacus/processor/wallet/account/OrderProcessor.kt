@@ -589,7 +589,30 @@ internal class OrderProcessor(
         }
     }
 
-    internal fun canceled(
+    fun canceled(
+        existing: SubaccountOrder,
+    ): SubaccountOrder {
+        var modified = existing
+        if (!existing.status.isFinalized) {
+            modified = modified.copy(
+                status = OrderStatus.Canceling,
+            )
+        }
+        modified = modified.copy(
+            cancelReason = "USER_CANCELED",
+        )
+        val resources = createResources(
+            side = modified.side,
+            type = modified.type,
+            status = modified.status,
+            timeInForce = modified.timeInForce,
+        )
+        return modified.copy(
+            resources = resources,
+        )
+    }
+
+    internal fun canceledDeprecated(
         existing: Map<String, Any>,
     ): Map<String, Any> {
         val modified = existing.mutable()

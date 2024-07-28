@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.v2.SubaccountCalculatorV2
 import exchange.dydx.abacus.processor.base.BaseProcessor
@@ -10,7 +9,6 @@ import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
-import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerAssetPositionResponseObject
@@ -361,13 +359,33 @@ internal open class SubaccountProcessor(
         }
     }
 
-    internal fun updateHeight(
+    fun updateHeight(
+        existing: InternalSubaccountState,
+        height: BlockAndTime?,
+    ): Pair<InternalSubaccountState, Boolean> {
+        if (existing.orders != null) {
+            val (updatedOrders, updated) = ordersProcessor.updateHeight(
+                existing = existing.orders,
+                height = height,
+            )
+            if (updated) {
+                existing.orders = updatedOrders
+                return Pair(existing, true)
+            } else {
+                return Pair(existing, false)
+            }
+        } else {
+            return Pair(existing, false)
+        }
+    }
+
+    internal fun updateHeightDeprecated(
         existing: Map<String, Any>,
         height: BlockAndTime?,
     ): Pair<Map<String, Any>, Boolean> {
         val orders = parser.asNativeMap(existing["orders"])
         if (orders != null) {
-            val (updatedOrders, updated) = ordersProcessor.updateHeight(
+            val (updatedOrders, updated) = ordersProcessor.updateHeightDeprecated(
                 orders,
                 height,
             )
@@ -568,6 +586,7 @@ internal open class SubaccountProcessor(
         return receivedTransfersDeprecated(modified, parser.asNativeList(payload?.get("transfers")), true)
     }
 
+    /*
     private fun modify(
         positions: Map<String, Any>?,
         orders: List<*>?,
@@ -671,14 +690,29 @@ internal open class SubaccountProcessor(
         )
         return modified
     }
+     */
 
-    internal fun orderCanceled(
+    fun orderCanceled(
+        existing: InternalSubaccountState,
+        orderId: String,
+    ): Pair<InternalSubaccountState, Boolean> {
+        if (existing.orders != null) {
+            val (modifiedOrders, updated) = ordersProcessor.canceled(existing.orders, orderId)
+            if (updated) {
+                val modified = existing.copy(orders = modifiedOrders)
+                return Pair(modified, true)
+            }
+        }
+        return Pair(existing, false)
+    }
+
+    internal fun orderCanceledDeprecated(
         existing: Map<String, Any>,
         orderId: String,
     ): Pair<Map<String, Any>, Boolean> {
         val orders = parser.asNativeMap(existing["orders"])
         if (orders != null) {
-            val (modifiedOrders, updated) = ordersProcessor.canceled(orders, orderId)
+            val (modifiedOrders, updated) = ordersProcessor.canceledDeprecated(orders, orderId)
             if (updated) {
                 val modified = existing.mutable()
                 modified.safeSet("orders", modifiedOrders)
