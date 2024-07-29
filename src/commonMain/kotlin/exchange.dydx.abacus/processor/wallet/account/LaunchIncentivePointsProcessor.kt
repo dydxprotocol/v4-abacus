@@ -6,33 +6,11 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.mutable
 import indexer.models.configs.ConfigsLaunchIncentivePoints
 
-internal interface LaunchIncentivePointsProcessorProtocol {
-    fun process(
-        season: String,
-        existing: MutableMap<String, LaunchIncentivePoint>,
-        payload: ConfigsLaunchIncentivePoints?,
-    ): MutableMap<String, LaunchIncentivePoint>
-}
-
 internal class LaunchIncentivePointsProcessor(
     parser: ParserProtocol
-) : BaseProcessor(parser), LaunchIncentivePointsProcessorProtocol {
+) : BaseProcessor(parser) {
     private val itemProcessor = LaunchIncentivePointProcessor(parser = parser)
-
-    override fun process(
-        season: String,
-        existing: MutableMap<String, LaunchIncentivePoint>,
-        payload: ConfigsLaunchIncentivePoints?,
-    ): MutableMap<String, LaunchIncentivePoint> {
-        payload?.let { data ->
-            existing[season] = LaunchIncentivePoint(
-                incentivePoints = data.incentivePoints ?: 0.0,
-                marketMakingIncentivePoints = data.marketMakingIncentivePoints ?: 0.0,
-            )
-        }
-        return existing
-    }
-
+    
     fun received(
         season: String,
         existing: Map<String, Any>?,

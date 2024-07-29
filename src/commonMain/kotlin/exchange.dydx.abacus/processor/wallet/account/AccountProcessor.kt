@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.account.AccountBalance
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.UnbondingDelegation
@@ -744,12 +745,12 @@ internal class V4AccountProcessor(
         season: String,
         payload: ConfigsLaunchIncentivePoints?,
     ): InternalAccountState {
-        val points = launchIncentivePointsProcessor.process(
-            season = season,
-            existing = existing.launchIncentivePoints,
-            payload = payload,
-        )
-        existing.launchIncentivePoints = points
+        if (payload != null) {
+           existing.launchIncentivePoints[season] = LaunchIncentivePoint(
+                incentivePoints = payload.incentivePoints ?: 0.0,
+                marketMakingIncentivePoints = payload.marketMakingIncentivePoints ?: 0.0,
+            )
+        }
         return existing
     }
 
