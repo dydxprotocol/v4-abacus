@@ -90,6 +90,10 @@ internal interface OrderProcessorProtocol {
         existing: SubaccountOrder,
         height: BlockAndTime?,
     ): Pair<SubaccountOrder, Boolean>
+
+    fun canceled(
+        existing: SubaccountOrder,
+    ): SubaccountOrder
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -589,7 +593,7 @@ internal class OrderProcessor(
         }
     }
 
-    fun canceled(
+    override fun canceled(
         existing: SubaccountOrder,
     ): SubaccountOrder {
         var modified = existing
