@@ -100,6 +100,7 @@ internal class TradeInputCalculator(
                         calculateNonMarketTrade(
                             trade,
                             market,
+                            subaccount,
                             type,
                             isBuying,
                             input,
@@ -140,6 +141,7 @@ internal class TradeInputCalculator(
     private fun calculateNonMarketTrade(
         trade: Map<String, Any>,
         market: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
         type: String,
         isBuying: Boolean,
         input: String,
@@ -172,6 +174,16 @@ internal class TradeInputCalculator(
                     modifiedTradeSize.safeSet("size", size)
                 }
 
+                "size.leverage" -> {
+                    val price = nonMarketOrderPrice(tradePrices, market, type, isBuying)
+                    val leverage = parser.asDouble(tradeSize.get("leverage"))
+                    val size = calculateSizeFromLeverageAndLimitPrice(leverage, price, market, subaccount, isBuying)
+                    modifiedTradeSize.safeSet("size", size)
+                    val usdcSize =
+                        if (price != null && size != null) (price * size) else null
+                    modifiedTradeSize.safeSet("usdcSize", usdcSize)
+                }
+
                 else -> {
                     val price = nonMarketOrderPrice(tradeSize, market, type, isBuying)
                     val size = parser.asDouble(tradeSize["size"])
@@ -185,6 +197,46 @@ internal class TradeInputCalculator(
 
         modifiedTrade.safeSet("marketOrder", null)
         return modifiedTrade
+    }
+
+    private fun calculateSizeFromLeverageAndLimitPrice(
+        leverage: Double?,
+        limitPrice: Double?,
+        market: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
+        isBuying: Boolean,
+    ): Double? {
+        if (leverage == null || limitPrice == null || market == null || subaccount == null) {
+            return null
+        }
+
+        val equity = parser.asDouble(parser.value(subaccount, "equity.current")) ?: return null
+        val feeRate = parser.asDouble(parser.value(subaccount, "feeRate")) ?: Numeric.double.ZERO
+        val stepSize = parser.asDouble(parser.value(market, "configs.stepSize")) ?: 0.001
+        
+        val positions = parser.asNativeMap(subaccount["openPositions"])
+        val positionSize =
+            parser.asDouble(
+                parser.value(
+                    positions,
+                    "${market["id"]}.size.current",
+                ),
+            ) ?: Numeric.double.ZERO
+        val orderSign = if (isBuying) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+
+        val existingLeverage = (positionSize * limitPrice) / equity
+
+        val orderSize = ((leverage * equity) - (positionSize * limitPrice)) /
+            (limitPrice + (orderSign * leverage * limitPrice * feeRate))
+
+        val desiredSize = orderSize.abs()
+        if (desiredSize < positionSize) {
+            return Rounder.quickRound(orderSize, stepSize)
+        } else {
+            val rounded = Rounder.quickRound(desiredSize, stepSize)
+            return Rounder.quickRound(rounded, stepSize)
+        }
+
     }
 
     private fun nonMarketOrderPrice(
@@ -504,7 +556,7 @@ internal class TradeInputCalculator(
         return if (equity > Numeric.double.ZERO) {
             val existingLeverage =
                 ((positionSize ?: Numeric.double.ZERO) * oraclePrice) / equity
-            val calculatedIsBuying =
+                val calculatedIsBuying =
                 if (leverage > existingLeverage) {
                     true
                 } else if (leverage < existingLeverage) {
@@ -902,9 +954,10 @@ internal class TradeInputCalculator(
 
             "LIMIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
+                val marginMode = parser.asString(trade["marginMode"])
                 when (timeInForce) {
-                    "GTT" ->
-                        listOf(
+                    "GTT" ->{
+                        val fields = listOf(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
@@ -912,21 +965,33 @@ internal class TradeInputCalculator(
                             postOnlyField(),
                             marginModeField(market, account, subaccount),
                         ).filterNotNull()
-
-                    else ->
-                        listOf(
+                        if (MarginMode.invoke(marginMode) == MarginMode.Cross) {
+                            fields + leverageField()
+                        } else {
+                            fields
+                        }
+}
+                    else -> {
+                        val fields = listOf(
                             sizeField(),
                             limitPriceField(),
                             timeInForceField(),
                             marginModeField(market, account, subaccount),
                             reduceOnlyField(),
                         ).filterNotNull()
+                        if (MarginMode.invoke(marginMode) == MarginMode.Cross) {
+                            fields + leverageField()
+                        } else {
+                            fields
+                        }
+                    }
                 }
             }
 
             "STOP_LIMIT", "TAKE_PROFIT" -> {
                 val execution = parser.asString(trade["execution"])
-                listOf(
+                val marginMode = parser.asString(trade["marginMode"])
+                val fields = listOf(
                     sizeField(),
                     limitPriceField(),
                     triggerPriceField(),
@@ -938,6 +1003,11 @@ internal class TradeInputCalculator(
                         else -> null
                     },
                 ).filterNotNull()
+                if (MarginMode.invoke(marginMode) == MarginMode.Cross) {
+                    fields + leverageField()
+                } else {
+                    fields
+                }
             }
 
             "STOP_MARKET", "TAKE_PROFIT_MARKET" ->

@@ -45,8 +45,8 @@ internal class AssetProcessor(
         deploymentUri: String,
     ): Asset {
         val imageUrl = "$deploymentUri/currencies/${assetId.lowercase()}.png"
-        val primaryDescriptionKey = "__ASSETS.$assetId.PRIMARY"
-        val secondaryDescriptionKey = "__ASSETS.$assetId.SECONDARY"
+        val primaryDescriptionKey = "$assetId.PRIMARY"
+        val secondaryDescriptionKey = "$assetId.SECONDARY"
         val primaryDescription = localizer?.localize(primaryDescriptionKey)
         val secondaryDescription = localizer?.localize(secondaryDescriptionKey)
 
