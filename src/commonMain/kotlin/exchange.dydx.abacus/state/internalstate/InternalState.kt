@@ -14,7 +14,10 @@ import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import indexer.codegen.IndexerHistoricalBlockTradingReward
+import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPositionSide
 import kotlinx.datetime.Instant
@@ -60,6 +63,14 @@ internal data class InternalAccountState(
 
     // subaccount number -> subaccount state
     var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
+
+    var tradingRewards: InternalTradingRewardsState = InternalTradingRewardsState(),
+)
+
+internal data class InternalTradingRewardsState(
+    var historical: MutableMap<HistoricalTradingRewardsPeriod, List<IndexerHistoricalTradingRewardAggregation>> = mutableMapOf(),
+    var blockRewards: MutableList<IndexerHistoricalBlockTradingReward> = mutableListOf(),
+    var total: Double? = null,
 )
 
 internal data class InternalSubaccountState(

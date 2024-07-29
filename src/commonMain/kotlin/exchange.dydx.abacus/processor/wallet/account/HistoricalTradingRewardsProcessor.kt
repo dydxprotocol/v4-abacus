@@ -3,7 +3,6 @@ package exchange.dydx.abacus.processor.wallet.account
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 
-@Suppress("UNCHECKED_CAST")
 internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val itemProcessor = HistoricalTradingRewardProcessor(parser = parser)
 
@@ -18,21 +17,21 @@ internal class HistoricalTradingRewardsProcessor(parser: ParserProtocol) : BaseP
             }
         }
         return mergeDeprecated(
-            parser,
-            existing,
-            history,
-            "startedAt",
-            false,
+            parser = parser,
+            existing = existing,
+            incoming = history,
+            timeField = "startedAt",
+            ascending = false,
         )
     }
 
-    fun receivedBlockTradingReward(
+    fun receivedBlockTradingRewardDeprecated(
         existing: List<Any>?,
         payload: Any,
     ): List<Any>? {
         val modified = existing?.toMutableList() ?: mutableListOf()
         parser.asNativeMap(payload)?.let {
-            modified.add(itemProcessor.receivedBlockTradingReward(null, it))
+            modified.add(itemProcessor.receivedBlockTradingRewardDeprecated(null, it))
         }
         return modified
     }

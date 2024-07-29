@@ -8,9 +8,11 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
@@ -251,13 +253,26 @@ internal class WalletProcessor(
         }
     }
 
+    internal fun processHistoricalTradingRewards(
+        existing: InternalWalletState,
+        payload: List<IndexerHistoricalTradingRewardAggregation>?,
+        period: HistoricalTradingRewardsPeriod,
+    ): InternalWalletState {
+        existing.account = v4accountProcessor.processHistoricalTradingRewards(
+            existing = existing.account,
+            payload = payload,
+            period = period,
+        )
+        return existing
+    }
+
     internal fun receivedHistoricalTradingRewards(
         existing: Map<String, Any>?,
         payload: List<Any>?,
         period: String?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedHistoricalTradingRewards(
+            v4accountProcessor.receivedHistoricalTradingRewardsDeprecated(
                 parser.asNativeMap(existing),
                 payload as? List<Any>,
                 period as? String,
