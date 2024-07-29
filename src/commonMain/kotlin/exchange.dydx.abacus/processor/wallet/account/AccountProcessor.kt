@@ -746,7 +746,7 @@ internal class V4AccountProcessor(
         payload: ConfigsLaunchIncentivePoints?,
     ): InternalAccountState {
         if (payload != null) {
-           existing.launchIncentivePoints[season] = LaunchIncentivePoint(
+            existing.launchIncentivePoints[season] = LaunchIncentivePoint(
                 incentivePoints = payload.incentivePoints ?: 0.0,
                 marketMakingIncentivePoints = payload.marketMakingIncentivePoints ?: 0.0,
             )
