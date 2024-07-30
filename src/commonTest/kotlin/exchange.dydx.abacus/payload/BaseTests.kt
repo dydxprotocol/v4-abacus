@@ -57,6 +57,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
@@ -217,7 +218,13 @@ open class BaseTests(
     }
 
     internal open fun verifyState(state: PerpetualState?) {
-        verifyConfigs(perp.configs, state?.configs, "configs")
+        verifyConfigs(
+            data = perp.configs,
+            obj = state?.configs,
+            staticTyping = perp.staticTyping,
+            internalState = perp.internalState.configs,
+            trace = "configs",
+        )
         verifyWalletState(perp.wallet, state?.wallet, "wallet")
         verifyAccountState(
             data = perp.account,
@@ -1902,19 +1909,33 @@ open class BaseTests(
     private fun verifyConfigs(
         data: Map<String, Any>?,
         obj: Configs?,
+        staticTyping: Boolean,
+        internalState: InternalConfigsState?,
         trace: String,
     ) {
-        if (data != null) {
-            assertNotNull(obj)
-            verifyConfigsNetwork(parser.asNativeMap(data["network"]), obj.network, "$trace.network")
-            verifyConfigsFeeTiers(parser.asList(data["feeTiers"]), obj.feeTiers, "$trace.feeTiers")
-            verifyConfigsFeeDiscounts(
-                parser.asList(data["feeDiscounts"]),
-                obj.feeDiscounts,
-                "$trace.feeDiscounts",
-            )
+        if (staticTyping) {
+            assertEquals(internalState?.feeTiers, obj?.feeTiers, "$trace.feeTiers")
         } else {
-            assertNull(obj)
+            if (data != null) {
+                assertNotNull(obj)
+                verifyConfigsNetwork(
+                    parser.asNativeMap(data["network"]),
+                    obj.network,
+                    "$trace.network",
+                )
+                verifyConfigsFeeTiers(
+                    parser.asList(data["feeTiers"]),
+                    obj.feeTiers,
+                    "$trace.feeTiers",
+                )
+                verifyConfigsFeeDiscounts(
+                    parser.asList(data["feeDiscounts"]),
+                    obj.feeDiscounts,
+                    "$trace.feeDiscounts",
+                )
+            } else {
+                assertNull(obj)
+            }
         }
 //        assertEquals(
 //            parser.asDouble(data?.get("volume24HUSDC")),

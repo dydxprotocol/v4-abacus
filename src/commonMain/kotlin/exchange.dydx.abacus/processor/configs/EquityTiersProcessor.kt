@@ -18,10 +18,10 @@ internal interface EquityTiersProcessorProtocol {
 
 internal class EquityTiersProcessor(
     parser: ParserProtocol
-) : BaseProcessor(parser) {
+) : BaseProcessor(parser), EquityTiersProcessorProtocol {
     private val itemProcessor = EquityTierProcessor(parser = parser)
 
-    fun process(
+    override fun process(
         payload: OnChainEquityTiersResponse?
     ): EquityTiers? {
         if (payload?.equityTierLimitConfig == null) return null

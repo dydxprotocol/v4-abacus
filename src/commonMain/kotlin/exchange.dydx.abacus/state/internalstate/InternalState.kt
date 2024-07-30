@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.EquityTiers
+import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.account.PositionSide
@@ -34,6 +35,7 @@ internal data class InternalState(
 
 internal data class InternalConfigsState(
     var equityTiers: EquityTiers? = null,
+    var feeTiers: List<FeeTier>? = null,
 )
 
 internal data class InternalWalletState(

@@ -1088,12 +1088,16 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testFeeTiers() {
-        val maxLong: Long = 9223372036854775807
-        test(
-            {
-                perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
+            assertEquals(perp.internalState.configs.feeTiers?.size, 9)
+            assertEquals(perp.internalState.configs.feeTiers?.get(0)?.tier, "1")
+        } else {
+            test(
+                {
+                    perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
+                },
+                """
                 {
                     "configs": {
                         "feeTiers": [
@@ -1107,10 +1111,11 @@ class V4AccountTests : V4BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testUserFeeTier() {

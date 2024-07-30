@@ -1,15 +1,20 @@
 package exchange.dydx.abacus.processor.configs
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.models.chain.OnChainEquityTiersResponse
+import indexer.models.chain.OnChainFeeTiersResponse
 
-internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class ConfigsProcessor(
+    parser: ParserProtocol,
+    localier: LocalizerProtocol?,
+) : BaseProcessor(parser) {
     private val equityTiersProcessor = EquityTiersProcessor(parser)
-    private val feeTiersProcessor = FeeTiersProcessor(parser)
+    private val feeTiersProcessor = FeeTiersProcessor(parser, localier)
     private val feeDiscountsProcessor = FeeDiscountsProcessor(parser)
     private val networkConfigsProcessor = NetworkConfigsProcessor(parser)
     private val withdrawalGatingProcessor = WithdrawalGatingProcessor(parser)
@@ -41,14 +46,22 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         }
     }
 
-    internal fun receivedOnChainFeeTiers(
+    fun processOnChainFeeTiers(
+        existing: InternalConfigsState,
+        payload: OnChainFeeTiersResponse?,
+    ): InternalConfigsState {
+        existing.feeTiers = feeTiersProcessor.process(payload?.params?.tiers)
+        return existing
+    }
+
+    internal fun receivedOnChainFeeTiersDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>
     ): Map<String, Any>? {
         return receivedObject(existing, "feeTiers", payload) { existing, payload ->
             val list = parser.asNativeList(payload)
             if (list != null) {
-                feeTiersProcessor.received(list)
+                feeTiersProcessor.receivedDeprecated(list)
             } else {
                 null
             }

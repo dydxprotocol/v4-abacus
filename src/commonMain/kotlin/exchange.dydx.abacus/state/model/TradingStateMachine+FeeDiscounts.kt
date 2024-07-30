@@ -25,10 +25,6 @@ internal fun TradingStateMachine.feeDiscounts(payload: String): StateChanges {
         }
         return StateChanges(iEmptyList())
     }
-    return receivedFeeDiscounts(json)
-}
-
-internal fun TradingStateMachine.receivedFeeDiscounts(payload: List<Any>): StateChanges {
-    configs = configsProcessor.receivedFeeDiscounts(configs, payload)
+    configs = configsProcessor.receivedFeeDiscounts(configs, json)
     return StateChanges(iListOf(Changes.configs))
 }

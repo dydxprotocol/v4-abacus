@@ -9,6 +9,7 @@ import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
+import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -458,44 +459,55 @@ data class Configs(
             internalState: InternalConfigsState?,
             localizer: LocalizerProtocol?,
         ): Configs? {
-            data?.let {
+            if (staticTyping || data != null) {
                 val network =
-                    NetworkConfigs.create(existing?.network, parser, parser.asMap(data["network"]))
-                val feeTiers = FeeTier.create(
-                    existing?.feeTiers,
-                    parser,
-                    parser.asList(data["feeTiers"]),
-                    localizer,
-                )
+                    NetworkConfigs.create(existing?.network, parser, parser.asMap(data?.get("network")))
+
+                val feeTiers = if (staticTyping) {
+                    internalState?.feeTiers?.toIList()
+                } else {
+                    FeeTier.create(
+                        existing?.feeTiers,
+                        parser,
+                        parser.asList(data?.get("feeTiers")),
+                        localizer,
+                    )
+                }
+
                 val feeDiscounts = FeeDiscount.create(
                     existing?.feeDiscounts,
                     parser,
-                    parser.asList(data["feeDiscounts"]),
+                    parser.asList(data?.get("feeDiscounts")),
                     localizer,
                 )
+
                 val equityTiers = if (staticTyping) {
                     internalState?.equityTiers
                 } else {
                     EquityTiers.create(
                         existing?.equityTiers,
                         parser,
-                        parser.asMap(data["equityTiers"]),
+                        parser.asMap(data?.get("equityTiers")),
                     )
                 }
+
                 val withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
-                    parser.asMap(data["withdrawalGating"]),
+                    parser.asMap(data?.get("withdrawalGating")),
                 )
+
                 val withdrawalCapacity = WithdrawalCapacity.create(
                     existing?.withdrawalCapacity,
                     parser,
-                    parser.asMap(data["withdrawalCapacity"]),
+                    parser.asMap(data?.get("withdrawalCapacity")),
                 )
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
                     existing?.feeDiscounts != feeDiscounts ||
-                    existing?.equityTiers != equityTiers
+                    existing?.equityTiers != equityTiers ||
+                    existing?.withdrawalGating != withdrawalGating ||
+                    existing?.withdrawalCapacity != withdrawalCapacity
                 ) {
                     Configs(
                         network = network,

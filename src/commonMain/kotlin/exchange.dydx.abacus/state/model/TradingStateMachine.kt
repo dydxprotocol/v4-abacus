@@ -105,7 +105,7 @@ open class TradingStateMachine(
         processor
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
-    internal val configsProcessor = ConfigsProcessor(parser)
+    internal val configsProcessor = ConfigsProcessor(parser, localizer)
     private val skipProcessor = SkipProcessor(parser = parser, internalState = internalState.transfer)
     private val squidProcessor = SquidProcessor(parser = parser, internalState = internalState.transfer)
     internal val routerProcessor: IRouterProcessor
@@ -1192,10 +1192,14 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.configs)) {
-            this.configs?.let {
-                configs = Configs.create(configs, parser, it, staticTyping, internalState.configs, localizer)
-            } ?: run {
-                configs = null
+            if (staticTyping) {
+                configs = Configs.create(configs, parser, this.configs, staticTyping, internalState.configs, localizer)
+            } else {
+                this.configs?.let {
+                    configs = Configs.create(configs, parser, it, staticTyping, internalState.configs, localizer)
+                } ?: run {
+                    configs = null
+                }
             }
         }
         if (changes.changes.contains(Changes.wallet)) {
