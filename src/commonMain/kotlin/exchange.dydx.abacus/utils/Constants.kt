@@ -20,6 +20,8 @@ internal const val CONDITIONAL_ORDER_FLAGS = 32
 
 // Asset Constants
 internal const val NATIVE_TOKEN_DEFAULT_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+internal const val ARBITRUM_CHAIN_ID = "42161"
+internal const val EVM_CHAIN_TYPE = "evm"
 
 // Polling durations
 internal const val GEO_POLLING_DURATION_SECONDS = 10.0

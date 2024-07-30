@@ -203,7 +203,29 @@ internal class SkipChainsMock {
         "cosmos_autopilot": false
       },
       "is_testnet": false
-    }
+    },
+    {
+    "chain_name": "Arbitrum",
+    "chain_id": "42161",
+    "pfm_enabled": false,
+    "cosmos_module_support": {
+        "authz": false,
+        "feegrant": false
+    },
+    "supports_memo": false,
+    "logo_uri": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png",
+    "bech32_prefix": "",
+    "fee_assets": [],
+    "chain_type": "evm",
+    "ibc_capabilities": {
+        "cosmos_pfm": false,
+        "cosmos_ibc_hooks": false,
+        "cosmos_memo": false,
+        "cosmos_autopilot": false
+    },
+    "is_testnet": false,
+    "pretty_name": "Arbitrum"
+}
     ]
 }"""
 }
