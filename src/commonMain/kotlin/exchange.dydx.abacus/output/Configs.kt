@@ -457,38 +457,38 @@ data class Configs(
         ): Configs? {
             if (data != null) {
                 val network =
-                    NetworkConfigs.create(existing?.network, parser, parser.asMap(data.get("network")))
+                    NetworkConfigs.create(existing?.network, parser, parser.asMap(data["network"]))
 
                 val feeTiers = FeeTier.create(
                     existing?.feeTiers,
                     parser,
-                    parser.asList(data.get("feeTiers")),
+                    parser.asList(data["feeTiers"]),
                     localizer,
                 )
 
                 val feeDiscounts = FeeDiscount.create(
                     existing?.feeDiscounts,
                     parser,
-                    parser.asList(data.get("feeDiscounts")),
+                    parser.asList(data["feeDiscounts"]),
                     localizer,
                 )
 
                 val equityTiers = EquityTiers.create(
                     existing?.equityTiers,
                     parser,
-                    parser.asMap(data.get("equityTiers")),
+                    parser.asMap(data["equityTiers"]),
                 )
 
                 val withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
-                    parser.asMap(data.get("withdrawalGating")),
+                    parser.asMap(data["withdrawalGating"]),
                 )
 
                 val withdrawalCapacity = WithdrawalCapacity.create(
                     existing?.withdrawalCapacity,
                     parser,
-                    parser.asMap(data.get("withdrawalCapacity")),
+                    parser.asMap(data["withdrawalCapacity"]),
                 )
 
                 return if (existing?.network !== network ||
