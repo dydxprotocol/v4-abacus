@@ -7,6 +7,7 @@ import exchange.dydx.abacus.output.EquityTiers
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
+import exchange.dydx.abacus.output.WithdrawalGating
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.SubaccountFill
@@ -36,6 +37,13 @@ internal data class InternalState(
 internal data class InternalConfigsState(
     var equityTiers: EquityTiers? = null,
     var feeTiers: List<FeeTier>? = null,
+    var withdrawalGating: WithdrawalGating? = null,
+    var withdrawalCapacity: InternalWithdrawalCapacityState? = null,
+)
+
+internal data class InternalWithdrawalCapacityState(
+    val capacity: String? = null,
+    val maxWithdrawalCapacity: BigDecimal? = null,
 )
 
 internal data class InternalWalletState(

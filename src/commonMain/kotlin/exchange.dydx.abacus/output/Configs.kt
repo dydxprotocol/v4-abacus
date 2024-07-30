@@ -3,13 +3,11 @@ package exchange.dydx.abacus.output
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -455,53 +453,44 @@ data class Configs(
             existing: Configs?,
             parser: ParserProtocol,
             data: Map<*, *>?,
-            staticTyping: Boolean,
-            internalState: InternalConfigsState?,
             localizer: LocalizerProtocol?,
         ): Configs? {
-            if (staticTyping || data != null) {
+            if (data != null) {
                 val network =
-                    NetworkConfigs.create(existing?.network, parser, parser.asMap(data?.get("network")))
+                    NetworkConfigs.create(existing?.network, parser, parser.asMap(data.get("network")))
 
-                val feeTiers = if (staticTyping) {
-                    internalState?.feeTiers?.toIList()
-                } else {
-                    FeeTier.create(
-                        existing?.feeTiers,
-                        parser,
-                        parser.asList(data?.get("feeTiers")),
-                        localizer,
-                    )
-                }
+                val feeTiers = FeeTier.create(
+                    existing?.feeTiers,
+                    parser,
+                    parser.asList(data.get("feeTiers")),
+                    localizer,
+                )
 
                 val feeDiscounts = FeeDiscount.create(
                     existing?.feeDiscounts,
                     parser,
-                    parser.asList(data?.get("feeDiscounts")),
+                    parser.asList(data.get("feeDiscounts")),
                     localizer,
                 )
 
-                val equityTiers = if (staticTyping) {
-                    internalState?.equityTiers
-                } else {
-                    EquityTiers.create(
-                        existing?.equityTiers,
-                        parser,
-                        parser.asMap(data?.get("equityTiers")),
-                    )
-                }
+                val equityTiers = EquityTiers.create(
+                    existing?.equityTiers,
+                    parser,
+                    parser.asMap(data.get("equityTiers")),
+                )
 
                 val withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
-                    parser.asMap(data?.get("withdrawalGating")),
+                    parser.asMap(data.get("withdrawalGating")),
                 )
 
                 val withdrawalCapacity = WithdrawalCapacity.create(
                     existing?.withdrawalCapacity,
                     parser,
-                    parser.asMap(data?.get("withdrawalCapacity")),
+                    parser.asMap(data.get("withdrawalCapacity")),
                 )
+
                 return if (existing?.network !== network ||
                     existing?.feeTiers != feeTiers ||
                     existing?.feeDiscounts != feeDiscounts ||

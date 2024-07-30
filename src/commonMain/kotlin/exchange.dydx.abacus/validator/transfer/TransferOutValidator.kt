@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator.transfer
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.isAddressValid
@@ -15,6 +16,8 @@ internal class TransferOutValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TransferValidatorProtocol {
     override fun validateTransfer(
+        staticTyping: Boolean,
+        internalState: InternalState,
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,

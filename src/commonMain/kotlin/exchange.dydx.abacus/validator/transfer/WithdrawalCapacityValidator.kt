@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
@@ -17,6 +18,8 @@ internal class WithdrawalCapacityValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TransferValidatorProtocol {
     override fun validateTransfer(
+        staticTyping: Boolean,
+        internalState: InternalState,
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
@@ -26,7 +29,11 @@ internal class WithdrawalCapacityValidator(
         environment: V4Environment?
     ): List<Any>? {
         val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
-        val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
+        val maxWithdrawalCapacity = if (staticTyping) {
+            internalState.configs.withdrawalCapacity?.maxWithdrawalCapacity ?: BigDecimal.fromLong(Long.MAX_VALUE)
+        } else {
+            parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
+        }
         val type = parser.asString(parser.value(transfer, "type"))
         val size = parser.asMap(parser.value(transfer, "size"))
         val usdcSize = parser.asDecimal(size?.get("usdcSize")) ?: BigDecimal.ZERO
@@ -35,21 +42,21 @@ internal class WithdrawalCapacityValidator(
         if (type == TransferType.withdrawal.rawValue && usdcSizeInputIsGreaterThanCapacity) {
             return listOf(
                 error(
-                    ErrorType.error.rawValue,
-                    "",
-                    null,
-                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
-                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
-                    "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
-                    mapOf(
+                    type = ErrorType.error.rawValue,
+                    errorCode = "",
+                    fields = null,
+                    actionStringKey = "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
+                    titleStringKey = "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
+                    textStringKey = "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
+                    textParams = mapOf(
                         "USDC_LIMIT" to mapOf(
                             "value" to maxWithdrawalCapacity.doubleValue(false),
                             "format" to "price",
                         ),
                     ),
-                    null,
-                    environment?.links?.withdrawalGateLearnMore,
-                    "APP.GENERAL.LEARN_MORE_ARROW",
+                    action = null,
+                    link = environment?.links?.withdrawalGateLearnMore,
+                    linkText = "APP.GENERAL.LEARN_MORE_ARROW",
                 ),
             )
         } else {
