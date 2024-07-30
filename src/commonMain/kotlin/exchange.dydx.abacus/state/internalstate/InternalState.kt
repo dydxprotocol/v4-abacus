@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.internalstate
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.EquityTiers
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.account.PositionSide
@@ -28,6 +29,11 @@ internal data class InternalState(
     val wallet: InternalWalletState = InternalWalletState(),
     var rewardsParams: InternalRewardsParamsState? = null,
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
+    val configs: InternalConfigsState = InternalConfigsState(),
+)
+
+internal data class InternalConfigsState(
+    var equityTiers: EquityTiers? = null,
 )
 
 internal data class InternalWalletState(

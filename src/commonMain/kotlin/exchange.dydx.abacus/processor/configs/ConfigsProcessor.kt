@@ -2,8 +2,10 @@ package exchange.dydx.abacus.processor.configs
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.models.chain.OnChainEquityTiersResponse
 
 internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val equityTiersProcessor = EquityTiersProcessor(parser)
@@ -13,7 +15,15 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
     private val withdrawalGatingProcessor = WithdrawalGatingProcessor(parser)
     private val withdrawalCapacityProcessor = WithdrawalCapacityProcessor(parser)
 
-    internal fun receivedOnChainEquityTiers(
+    fun processOnChainEquityTiers(
+        existing: InternalConfigsState,
+        payload: OnChainEquityTiersResponse?
+    ): InternalConfigsState {
+        existing.equityTiers = equityTiersProcessor.process(payload)
+        return existing
+    }
+
+    internal fun receivedOnChainEquityTiersDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any>? {
@@ -24,7 +34,7 @@ internal class ConfigsProcessor(parser: ParserProtocol) : BaseProcessor(parser) 
         return receivedObject(existing, "equityTiers", modified) { existing, payload ->
             val map = parser.asNativeMap(payload) as Map<String, Map<String, List<Any>>>?
             if (map != null) {
-                equityTiersProcessor.received(map)
+                equityTiersProcessor.receivedDeprecated(map)
             } else {
                 null
             }

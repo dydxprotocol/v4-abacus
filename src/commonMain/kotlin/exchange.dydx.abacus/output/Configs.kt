@@ -3,6 +3,7 @@ package exchange.dydx.abacus.output
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
@@ -453,6 +454,8 @@ data class Configs(
             existing: Configs?,
             parser: ParserProtocol,
             data: Map<*, *>?,
+            staticTyping: Boolean,
+            internalState: InternalConfigsState?,
             localizer: LocalizerProtocol?,
         ): Configs? {
             data?.let {
@@ -470,17 +473,21 @@ data class Configs(
                     parser.asList(data["feeDiscounts"]),
                     localizer,
                 )
-                val equityTiers = EquityTiers.create(
-                    existing?.equityTiers,
-                    parser,
-                    parser.asMap(data["equityTiers"]),
-                )
-                var withdrawalGating = WithdrawalGating.create(
+                val equityTiers = if (staticTyping) {
+                    internalState?.equityTiers
+                } else {
+                    EquityTiers.create(
+                        existing?.equityTiers,
+                        parser,
+                        parser.asMap(data["equityTiers"]),
+                    )
+                }
+                val withdrawalGating = WithdrawalGating.create(
                     existing?.withdrawalGating,
                     parser,
                     parser.asMap(data["withdrawalGating"]),
                 )
-                var withdrawalCapacity = WithdrawalCapacity.create(
+                val withdrawalCapacity = WithdrawalCapacity.create(
                     existing?.withdrawalCapacity,
                     parser,
                     parser.asMap(data["withdrawalCapacity"]),
@@ -491,21 +498,21 @@ data class Configs(
                     existing?.equityTiers != equityTiers
                 ) {
                     Configs(
-                        network,
-                        feeTiers,
-                        feeDiscounts,
-                        equityTiers,
-                        withdrawalGating,
-                        withdrawalCapacity,
+                        network = network,
+                        feeTiers = feeTiers,
+                        feeDiscounts = feeDiscounts,
+                        equityTiers = equityTiers,
+                        withdrawalGating = withdrawalGating,
+                        withdrawalCapacity = withdrawalCapacity,
                     )
                 } else {
                     existing ?: Configs(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
+                        network = null,
+                        feeTiers = null,
+                        feeDiscounts = null,
+                        equityTiers = null,
+                        withdrawalGating = null,
+                        withdrawalCapacity = null,
                     )
                 }
             }
