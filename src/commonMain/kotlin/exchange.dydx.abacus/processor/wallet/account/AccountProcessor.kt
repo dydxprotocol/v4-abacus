@@ -18,6 +18,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.codegen.IndexerTransferResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
@@ -327,14 +328,25 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedTransfers(
+    fun processTransfers(
+        existing: InternalAccountState,
+        payload: List<IndexerTransferResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalAccountState {
+        val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+        val newSubaccount = subaccountsProcessor.processTransfers(subaccount, payload)
+        existing.subaccounts[subaccountNumber] = newSubaccount
+        return existing
+    }
+
+    internal fun receivedTransfersDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
         subaccountNumber: Int,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedTransfers(subaccount, payload)
+        val modifiedsubaccount = subaccountsProcessor.receivedTransfersDeprecated(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }

@@ -12,6 +12,7 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.codegen.IndexerTransferResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
@@ -348,13 +349,26 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun receivedTransfers(
+    fun processTransfers(
+        existing: InternalWalletState,
+        payload: List<IndexerTransferResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalWalletState {
+        existing.account = v4accountProcessor.processTransfers(
+            existing = existing.account,
+            payload = payload,
+            subaccountNumber = subaccountNumber,
+        )
+        return existing
+    }
+
+    internal fun receivedTransfersDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>,
         subaccountNumber: Int,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedTransfers(
+            v4accountProcessor.receivedTransfersDeprecated(
                 parser.asNativeMap(existing),
                 parser.asNativeMap(payload),
                 subaccountNumber,

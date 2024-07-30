@@ -1349,11 +1349,15 @@ open class TradingStateMachine(
             if (changes.changes.contains(Changes.transfers)) {
                 val modifiedTransfers = transfers?.toIMutableMap() ?: mutableMapOf()
                 var subaccountTransfers = transfers?.get(subaccountText)
-                subaccountTransfers = SubaccountTransfer.create(
-                    subaccountTransfers,
-                    parser,
-                    subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>,
-                )
+                if (staticTyping) {
+                    subaccountTransfers = internalState.wallet.account.subaccounts[subaccountNumber]?.transfers?.toIList()
+                } else {
+                    subaccountTransfers = SubaccountTransfer.create(
+                        subaccountTransfers,
+                        parser,
+                        subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>,
+                    )
+                }
                 modifiedTransfers.typedSafeSet(subaccountText, subaccountTransfers)
                 transfers = modifiedTransfers
             }

@@ -14,8 +14,13 @@ internal enum class ComparisonOrder {
     descending
 }
 
-internal open class BaseProcessor(val parser: ParserProtocol) {
-    internal var environment: V4Environment? = null
+internal interface BaseProcessorProtocol {
+    var accountAddress: String?
+    var environment: V4Environment?
+}
+
+internal open class BaseProcessor(val parser: ParserProtocol) : BaseProcessorProtocol {
+    override var environment: V4Environment? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -23,7 +28,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
             }
         }
 
-    internal var accountAddress: String? = null
+    override var accountAddress: String? = null
         set(value) {
             if (field != value) {
                 field = value

@@ -9,6 +9,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.Logger
 import indexer.codegen.IndexerFillResponse
+import indexer.codegen.IndexerTransferResponse
 import indexer.models.chain.OnChainAccountBalanceObject
 import indexer.models.chain.OnChainDelegationResponse
 import indexer.models.chain.OnChainStakingRewardsResponse
@@ -215,7 +216,11 @@ internal fun TradingStateMachine.receivedTransfers(
 ): StateChanges {
     val size = parser.asList(payload["transfers"])?.size ?: 0
     return if (size > 0) {
-        wallet = walletProcessor.receivedTransfers(wallet, payload, subaccountNumber)
+        wallet = walletProcessor.receivedTransfersDeprecated(wallet, payload, subaccountNumber)
+        if (staticTyping) {
+            val payload = parser.asTypedObject<IndexerTransferResponse>(payload)
+            walletProcessor.processTransfers(internalState.wallet, payload?.transfers?.toList(), subaccountNumber)
+        }
         StateChanges(iListOf(Changes.transfers), null, iListOf(subaccountNumber))
     } else {
         StateChanges(iListOf<Changes>())
