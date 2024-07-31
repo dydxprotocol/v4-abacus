@@ -17,7 +17,6 @@ class PerpetualPositionsProcessorTests {
     @Test
     fun testProcess_emptyPayload() {
         val output = processor.process(
-            existing = null,
             payload = emptyMap(),
         )
         assertTrue { output.isNullOrEmpty() }
@@ -30,7 +29,6 @@ class PerpetualPositionsProcessorTests {
         }
 
         val output = processor.process(
-            existing = null,
             payload = mapOf(
                 "ETH-USD" to PerpetualPositionProcessorTests.payloadMock,
             ),

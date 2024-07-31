@@ -58,7 +58,7 @@ enum class PositionSide(val rawValue: String) {
     NONE("NONE");
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             PositionSide.values().firstOrNull { it.rawValue == rawValue }
     }
 }
