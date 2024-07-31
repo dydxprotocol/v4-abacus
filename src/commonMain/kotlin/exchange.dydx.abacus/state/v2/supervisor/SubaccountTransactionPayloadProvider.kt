@@ -27,6 +27,7 @@ import kollections.iMutableListOf
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("TooGenericExceptionThrown")
 internal interface SubaccountTransactionPayloadProviderProtocol {
     @Throws(Exception::class)
     fun placeOrderPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload
@@ -54,6 +55,7 @@ internal interface SubaccountTransactionPayloadProviderProtocol {
     fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload
 }
 
+@Suppress("TooGenericExceptionThrown")
 internal class SubaccountTransactionPayloadProvider(
     private val stateMachine: TradingStateMachine,
     private val subaccountNumber: Int,

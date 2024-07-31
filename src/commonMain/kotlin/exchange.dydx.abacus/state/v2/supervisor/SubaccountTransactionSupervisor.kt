@@ -461,7 +461,6 @@ internal class SubaccountTransactionSupervisor(
 
                         else -> {}
                     }
-                    val transferType = transfer.type
                 }
             }
         }
