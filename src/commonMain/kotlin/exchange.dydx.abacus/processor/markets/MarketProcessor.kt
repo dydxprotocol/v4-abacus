@@ -303,7 +303,7 @@ internal class MarketProcessor(
         val modified = market.toMutableMap()
         var trades = market["trades"] as? List<Any>
         for (partialPayload in payload) {
-            parser.asNativeMap(partialPayload)?.let { it ->
+            parser.asNativeMap(partialPayload)?.let {
                 trades = tradesProcessor.channel_dataDeprecated(trades, it)
             }
         }
@@ -430,7 +430,7 @@ internal class MarketProcessor(
         val modified = market.toMutableMap()
         var candles = parser.asNativeMap(market["candles"])
         for (partialPayload in payload) {
-            parser.asNativeMap(partialPayload)?.let { it ->
+            parser.asNativeMap(partialPayload)?.let {
                 candles = candlesProcessor.channel_data(candles, resolution, it)
             }
         }
