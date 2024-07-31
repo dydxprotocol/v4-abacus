@@ -17,27 +17,21 @@ internal class PerpetualPositionsProcessor(
 ) : BaseProcessor(parser) {
 
     fun process(
-        existing: Map<String, InternalPerpetualPosition>? = null,
         payload: Map<String, IndexerPerpetualPositionResponseObject>?,
     ): Map<String, InternalPerpetualPosition>? {
         return if (payload != null) {
             val result = mutableMapOf<String, InternalPerpetualPosition>()
             for ((key, value) in payload.entries) {
-                val existingPosition = existing?.get(key)
-                val newPosition = itemProcessor.process(existingPosition, value)
+                val newPosition = itemProcessor.process(null, value)
                 if (newPosition != null) {
                     result[key] = newPosition
                 } else {
                     result.remove(key)
                 }
             }
-            return if (result != existing) {
-                result
-            } else {
-                existing
-            }
+            return result
         } else {
-            existing
+            null
         }
     }
 

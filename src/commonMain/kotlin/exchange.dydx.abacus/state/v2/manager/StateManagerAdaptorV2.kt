@@ -724,6 +724,5 @@ internal class StateManagerAdaptorV2(
                 ),
             )
         }
-        triggerCompliance(ComplianceAction.CONNECT, null)
     }
 }

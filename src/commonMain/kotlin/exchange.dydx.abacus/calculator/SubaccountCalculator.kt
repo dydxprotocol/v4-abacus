@@ -17,7 +17,6 @@ internal enum class CalculationPeriod(val rawValue: String) {
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 internal class SubaccountCalculator(val parser: ParserProtocol) {
     internal fun calculate(
         subaccount: Map<String, Any>?,
