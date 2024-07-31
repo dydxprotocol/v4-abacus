@@ -229,11 +229,11 @@ class SkipProcessorTests {
             SelectionOption(type = "solana", string = "Solana", stringKey = "Solana", iconUrl = "https://raw.githubusercontent.com/skip-mev/skip-go-registry/main/chains/solana/logo.svg"),
         )
         val expectedChainResources = mapOf(
-            "42161" to TransferInputChainResource(
-                chainName = "Arbitrum",
-                chainId = 42161,
-                rpc = "https://arb-mainnet.g.alchemy.com/v2/$testApiKey",
-                iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png",
+            "1" to TransferInputChainResource(
+                chainName = "Ethereum",
+                chainId = 1,
+                rpc = "https://eth-mainnet.g.alchemy.com/v2/$testApiKey",
+                iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
             ),
         )
         val expectedModified = mapOf(
@@ -244,7 +244,7 @@ class SkipProcessorTests {
                 "withdrawalOptions" to mapOf(
                     "chains" to expectedChains,
                 ),
-                "chain" to "42161",
+                "chain" to "1",
             ),
         )
 
