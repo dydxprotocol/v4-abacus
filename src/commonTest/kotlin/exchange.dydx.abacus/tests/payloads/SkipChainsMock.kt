@@ -4,6 +4,28 @@ internal class SkipChainsMock {
     internal val payload = """{
     "chains": [
         {
+          "chain_name": "Solana",
+          "chain_id": "solana",
+          "pfm_enabled": false,
+          "cosmos_module_support": {
+            "authz": false,
+            "feegrant": false
+          },
+          "supports_memo": false,
+          "logo_uri": "https://raw.githubusercontent.com/skip-mev/skip-go-registry/main/chains/solana/logo.svg",
+          "bech32_prefix": "",
+          "fee_assets": [],
+          "chain_type": "svm",
+          "ibc_capabilities": {
+            "cosmos_pfm": false,
+            "cosmos_ibc_hooks": false,
+            "cosmos_memo": false,
+            "cosmos_autopilot": false
+          },
+          "is_testnet": false,
+          "pretty_name": "Solana"
+        },
+        {
             "chain_name": "kujira",
             "chain_id": "kaiyo-1",
             "pfm_enabled": false,
