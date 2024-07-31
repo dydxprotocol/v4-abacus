@@ -8,8 +8,8 @@ import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.utils.ARBITRUM_CHAIN_ID
-import exchange.dydx.abacus.utils.EVM_CHAIN_TYPE
+import exchange.dydx.abacus.utils.ALLOWED_CHAIN_TYPES
+import exchange.dydx.abacus.utils.ETHEREUM_CHAIN_ID
 import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -161,7 +161,7 @@ internal class SkipProcessor(
     }
 
     override fun defaultChainId(): String? {
-        val selectedChain = getChainById(chainId = ARBITRUM_CHAIN_ID) ?: parser.asNativeMap(this.chains?.firstOrNull())
+        val selectedChain = getChainById(chainId = ETHEREUM_CHAIN_ID) ?: parser.asNativeMap(this.chains?.firstOrNull())
 
         return parser.asString(selectedChain?.get("chain_id"))
     }
@@ -286,7 +286,7 @@ internal class SkipProcessor(
         this.chains?.let {
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
-                    if (parser.asString(chain.get("chain_type")) == EVM_CHAIN_TYPE) {
+                    if (parser.asString(chain.get("chain_type")) in ALLOWED_CHAIN_TYPES) {
                         options.add(chainProcessor.received(chain))
                     }
                 }
