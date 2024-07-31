@@ -52,6 +52,23 @@ class SkipTokensMock {
                     "token_contract": "0x923e030f951A2401426a3407a9bcc7EB715d9a0b",
                     "coingecko_id": "umee",
                     "recommended_symbol": "UMEE"
+                },
+                {
+                    "denom": "ethereum-native",
+                    "chain_id": "1",
+                    "origin_denom": "ethereum-native",
+                    "origin_chain_id": "1",
+                    "trace": "",
+                    "is_cw20": false,
+                    "is_evm": true,
+                    "is_svm": false,
+                    "symbol": "ETH",
+                    "name": "ZEthereum",
+                    "logo_uri": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/eth-blue.svg",
+                    "decimals": 18,
+                    "description": "",
+                    "coingecko_id": "ethereum",
+                    "recommended_symbol": "ETH"
                 }
             ]
         }"""

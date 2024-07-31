@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.FillLiquidity
-import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountFillResources
+import exchange.dydx.abacus.output.account.FillLiquidity
+import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFillResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -109,7 +109,7 @@ internal class FillProcessor(
                 liquidity = liquidity,
                 price = parser.asDouble(payload.price) ?: return null,
                 size = parser.asDouble(payload.size) ?: return null,
-                fee = parser.asDouble(payload.fee) ?: return null,
+                fee = parser.asDouble(payload.fee),
                 createdAtMilliseconds = parser.asDatetime(payload.createdAt)?.toEpochMilliseconds()
                     ?.toDouble() ?: return null,
                 resources = SubaccountFillResources(

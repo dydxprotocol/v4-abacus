@@ -2,10 +2,10 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerStatus
 import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
-import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import kotlin.test.Test
@@ -174,7 +174,7 @@ class V4SquidTests : V4BaseTests() {
     fun testSquidStatus() {
         setup()
 
-        val stateChange = perp.squidStatus(mock.squidStatusMock.payload, null)
+        val stateChange = perp.routerStatus(mock.squidStatusMock.payload, null)
         assertNotNull(stateChange)
         assertNotNull(perp.data?.get("transferStatuses"))
 

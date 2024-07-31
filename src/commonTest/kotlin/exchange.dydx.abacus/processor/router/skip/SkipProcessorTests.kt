@@ -9,6 +9,8 @@ import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.toJsonObject
 import kotlinx.serialization.json.Json
@@ -222,12 +224,9 @@ class SkipProcessorTests {
             payload = payload,
         )
         val expectedChains = listOf(
+            SelectionOption(stringKey = "Arbitrum", string = "Arbitrum", type = "42161", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png"),
             SelectionOption(stringKey = "Ethereum", string = "Ethereum", type = "1", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png"),
-            SelectionOption(stringKey = "aura", string = "aura", type = "xstaxy-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/xstaxy/chain.png"),
-            SelectionOption(stringKey = "cheqd", string = "cheqd", type = "cheqd-mainnet-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/cheqd-mainnet/chain.png"),
-            SelectionOption(stringKey = "kujira", string = "kujira", type = "kaiyo-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/kaiyo/chain.png"),
-            SelectionOption(stringKey = "osmosis", string = "osmosis", type = "osmosis-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/chain.png"),
-            SelectionOption(stringKey = "stride", string = "stride", type = "stride-1", iconUrl = "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stride/chain.png"),
+            SelectionOption(type = "solana", string = "Solana", stringKey = "Solana", iconUrl = "https://raw.githubusercontent.com/skip-mev/skip-go-registry/main/chains/solana/logo.svg"),
         )
         val expectedChainResources = mapOf(
             "1" to TransferInputChainResource(
@@ -277,6 +276,12 @@ class SkipProcessorTests {
         )
         val expectedTokens = listOf(
             SelectionOption(
+                stringKey = "ZEthereum",
+                string = "ZEthereum",
+                type = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+                iconUrl = "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/eth-blue.svg",
+            ),
+            SelectionOption(
                 stringKey = "Euro Coin",
                 string = "Euro Coin",
                 type = "0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
@@ -297,7 +302,7 @@ class SkipProcessorTests {
         )
         val expectedModified = mapOf(
             "transfer" to mapOf(
-                "token" to "0x97e6E0a40a3D02F12d1cEC30ebfbAE04e37C119E",
+                "token" to "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
                 "depositOptions" to mapOf(
                     "tokens" to expectedTokens,
                 ),
@@ -327,6 +332,13 @@ class SkipProcessorTests {
                 symbol = "UMEE",
                 decimals = 6,
                 iconUrl = "https://raw.githubusercontent.com/axelarnetwork/axelar-configs/main/images/tokens/umee.svg",
+            ),
+            "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" to TransferInputTokenResource(
+                name = "ZEthereum",
+                address = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+                symbol = "ETH",
+                decimals = 18,
+                iconUrl = "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/eth-blue.svg",
             ),
         )
 
@@ -360,6 +372,8 @@ class SkipProcessorTests {
                         "fromAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                         "toChainId" to "noble-1",
                         "toAddress" to "uusdc",
+                        "gasPrice" to DEFAULT_GAS_PRICE,
+                        "gasLimit" to DEFAULT_GAS_LIMIT,
                     ),
                 ),
             ),

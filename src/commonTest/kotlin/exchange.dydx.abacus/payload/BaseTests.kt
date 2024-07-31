@@ -6,7 +6,6 @@ import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestThreading
 import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
-import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
@@ -25,18 +24,19 @@ import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.Subaccount
-import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountFundingPayment
-import exchange.dydx.abacus.output.SubaccountHistoricalPNL
-import exchange.dydx.abacus.output.SubaccountOrder
-import exchange.dydx.abacus.output.SubaccountPendingPosition
-import exchange.dydx.abacus.output.SubaccountPosition
-import exchange.dydx.abacus.output.SubaccountTransfer
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.User
 import exchange.dydx.abacus.output.Wallet
+import exchange.dydx.abacus.output.account.Account
+import exchange.dydx.abacus.output.account.Subaccount
+import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFundingPayment
+import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
+import exchange.dydx.abacus.output.account.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountPendingPosition
+import exchange.dydx.abacus.output.account.SubaccountPosition
+import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.ClosePositionInput
 import exchange.dydx.abacus.output.input.ClosePositionInputSize
 import exchange.dydx.abacus.output.input.Input
@@ -56,6 +56,9 @@ import exchange.dydx.abacus.output.input.TradeInputSummary
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
@@ -67,6 +70,7 @@ import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.UIImplementations
 import exchange.dydx.abacus.utils.satisfies
 import exchange.dydx.abacus.utils.toJsonPrettyPrint
+import kollections.toIMap
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -79,13 +83,20 @@ import kotlin.time.Duration.Companion.days
 internal typealias LoadingFunction = () -> StateResponse
 internal typealias VerificationFunction = (response: StateResponse) -> Unit
 
-open class BaseTests(private val maxSubaccountNumber: Int, internal val useParentSubaccount: Boolean) {
+open class BaseTests(
+    private val maxSubaccountNumber: Int,
+    private val useParentSubaccount: Boolean,
+    private val staticTyping: Boolean = true, // turn on static typing for testing
+) {
     open val doAsserts = true
     internal val deploymentUri = "https://api.examples.com"
     internal val doesntMatchText = "doesn't match"
     internal val parser = Parser()
     internal val mock = AbacusMockData()
-    internal var perp = createState(useParentSubaccount)
+    internal var perp = createState(
+        useParentSubaccount = useParentSubaccount,
+        staticTyping = staticTyping,
+    )
 
     companion object {
         fun testIOImplementations(): IOImplementations {
@@ -115,7 +126,10 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         }
     }
 
-    internal open fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
+    internal open fun createState(
+        useParentSubaccount: Boolean,
+        staticTyping: Boolean
+    ): PerpTradingStateMachine {
         val ioImplementations = testIOImplementations()
         return PerpTradingStateMachine(
             environment = mock.v4Environment,
@@ -123,6 +137,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
             formatter = null,
             maxSubaccountNumber = maxSubaccountNumber,
             useParentSubaccount = useParentSubaccount,
+            staticTyping = staticTyping,
         )
     }
 
@@ -133,6 +148,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         perp.wallet = null
         perp.assets = null
         perp.configs = null
+        perp.internalState = InternalState()
         setup()
     }
 
@@ -203,17 +219,37 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
     internal open fun verifyState(state: PerpetualState?) {
         verifyConfigs(perp.configs, state?.configs, "configs")
         verifyWalletState(perp.wallet, state?.wallet, "wallet")
-        verifyAccountState(perp.account, state?.account, "account")
-        verifySubaccountFillsState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.fills,
-            "fills",
+        verifyAccountState(
+            data = perp.account,
+            state = perp.internalState.wallet.account,
+            staticTyping = perp.staticTyping,
+            obj = state?.account,
+            trace = "account",
         )
-        verifySubaccountTransfersState(
-            parser.asNativeMap(perp.account?.get("subaccounts")),
-            state?.transfers,
-            "transfers",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.wallet.account.subaccounts) {
+                assertEquals(value.fills ?: emptyList(), state?.fills?.get("$key") ?: emptyList())
+            }
+        } else {
+            verifySubaccountFillsState(
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.fills,
+                "fills",
+            )
+        }
+
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.wallet.account.subaccounts) {
+                assertEquals(value.transfers ?: emptyList(), state?.transfers?.get("$key") ?: emptyList())
+            }
+        } else {
+            verifySubaccountTransfersState(
+                parser.asNativeMap(perp.account?.get("subaccounts")),
+                state?.transfers,
+                "transfers",
+            )
+        }
+
         verifySubaccountFundingPaymentsState(
             parser.asNativeMap(perp.account?.get("subaccounts")),
             state?.fundingPayments,
@@ -225,7 +261,11 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
             ServerTime.now() - perp.historicalPnlDays.days,
             "historicalPnl",
         )
-        verifyAssetsState(perp.assets, state?.assets, "assets")
+        if (staticTyping) {
+            assertEquals(perp.internalState.assets.toIMap(), state?.assets ?: emptyMap())
+        } else {
+            verifyAssetsState(perp.assets, state?.assets, "assets")
+        }
         verifyMarketsState(
             perp.marketsSummary,
             perp.assets,
@@ -850,30 +890,67 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
         }
     }
 
-    internal open fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
-        if (data != null) {
-            assertNotNull(obj)
+    internal open fun verifyAccountState(
+        data: Map<String, Any>?,
+        state: InternalAccountState?,
+        staticTyping: Boolean,
+        obj: Account?,
+        trace: String
+    ) {
+        if (staticTyping) {
             verifyAccountSubaccountsState(
-                parser.asNativeMap(data["subaccounts"]),
-                obj.subaccounts,
-                "$trace.subaccounts",
+                internalState = state?.subaccounts,
+                obj = obj?.subaccounts,
+                trace = "$trace.subaccounts",
             )
-            verifyAccountSubaccountsState(
-                parser.asNativeMap(data["groupedSubaccounts"]),
-                obj.groupedSubaccounts,
-                "$trace.groupedSubaccounts",
-            )
-            verifyLaunchIncentivePointsState(
-                parser.asNativeMap(data["launchIncentivePoints"]),
-                obj.launchIncentivePoints,
-                "$trace.launchIncentivePoints",
-            )
+            // TODO: Grouped subaccounts
         } else {
-            assertNull(obj)
+            if (data != null) {
+                assertNotNull(obj)
+                verifyAccountSubaccountsStateDeprecated(
+                    parser.asNativeMap(data["subaccounts"]),
+                    obj.subaccounts,
+                    "$trace.subaccounts",
+                )
+                verifyAccountSubaccountsStateDeprecated(
+                    parser.asNativeMap(data["groupedSubaccounts"]),
+                    obj.groupedSubaccounts,
+                    "$trace.groupedSubaccounts",
+                )
+                verifyLaunchIncentivePointsState(
+                    parser.asNativeMap(data["launchIncentivePoints"]),
+                    obj.launchIncentivePoints,
+                    "$trace.launchIncentivePoints",
+                )
+            } else {
+                assertNull(obj)
+            }
         }
     }
 
     private fun verifyAccountSubaccountsState(
+        internalState: Map<Int, InternalSubaccountState>?,
+        obj: Map<String, Subaccount>?,
+        trace: String,
+    ) {
+        if (internalState?.isNotEmpty() == true) {
+            assertNotNull(obj)
+            assertEquals(internalState.size, obj.size, "$trace.size $doesntMatchText")
+            for ((key, itemData) in internalState) {
+                verifyAccountSubaccountState(
+                    internalState = itemData,
+                    obj = obj[key.toString()],
+                    trace = "$trace.$key",
+                )
+            }
+        } else {
+            assertTrue {
+                (obj == null || obj.size == 0)
+            }
+        }
+    }
+
+    private fun verifyAccountSubaccountsStateDeprecated(
         data: Map<String, Any>?,
         obj: Map<String, Subaccount>?,
         trace: String,
@@ -882,7 +959,7 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
             assertNotNull(obj)
             assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
             for ((key, itemData) in data) {
-                verifyAccountSubaccountState(parser.asNativeMap(itemData), obj[key], "$trace.$key")
+                verifyAccountSubaccountStateDeprecated(parser.asNativeMap(itemData), obj[key], "$trace.$key")
             }
         } else {
             assertTrue {
@@ -892,6 +969,29 @@ open class BaseTests(private val maxSubaccountNumber: Int, internal val useParen
     }
 
     private fun verifyAccountSubaccountState(
+        internalState: InternalSubaccountState?,
+        obj: Subaccount?,
+        trace: String,
+    ) {
+        if (internalState != null) {
+            assertNotNull(obj)
+            assertEquals(internalState.subaccountNumber, obj.subaccountNumber, "$trace.subaccountNumber")
+            assertEquals(internalState.marginEnabled, obj.marginEnabled, "$trace.marginEnabled")
+            // TODO: Calculated fields
+//            assertEquals(parser.asDouble(data["pnl24h"]), obj.pnl24h, "$trace.pnl24h")
+//            assertEquals(
+//                parser.asDouble(data["pnl24hPercent"]),
+//                obj.pnl24hPercent,
+//                "$trace.pnl24hPercent",
+//            )
+//            assertEquals(parser.asDouble(data["pnlTotal"]), obj.pnlTotal, "$trace.pnlTotal")
+//            assertEquals(parser.asString(data["positionId"]), obj.positionId, "$trace.positionId
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyAccountSubaccountStateDeprecated(
         data: Map<String, Any>?,
         obj: Subaccount?,
         trace: String,

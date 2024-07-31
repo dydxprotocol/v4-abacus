@@ -13,6 +13,7 @@ import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.ServerTime
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kotlinx.datetime.Clock
@@ -382,10 +383,10 @@ internal class ConnectionsSupervisor(
         val latestBlockAndTime =
             connectionStats.validatorState.blockAndTime ?: connectionStats.indexerState.blockAndTime
                 ?: return null
-        val currentTime = Clock.System.now()
-        val lapsedTime = currentTime - latestBlockAndTime.time
+        val currentTime = ServerTime.now()
+        val lapsedTime = currentTime - latestBlockAndTime.localTime
         return if (lapsedTime.inWholeMilliseconds <= 0L) {
-            // This should never happen unless the clock is wrong, then we don't want to estimate height
+            // This should never happen we use system time, then we don't want to estimate height
             null
         } else {
             val firstBlockAndTime = connectionStats.firstBlockAndTime

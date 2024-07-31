@@ -31,10 +31,11 @@ import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.routerChains
+import exchange.dydx.abacus.state.model.routerStatus
 import exchange.dydx.abacus.state.model.routerTokens
+import exchange.dydx.abacus.state.model.routerTrack
 import exchange.dydx.abacus.state.model.squidRoute
 import exchange.dydx.abacus.state.model.squidRouteV2
-import exchange.dydx.abacus.state.model.squidStatus
 import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
@@ -62,6 +63,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+
+private val OSMOSIS_SWAP_VENUE = mapOf(
+    "name" to "osmosis-poolmanager",
+    "chain_id" to "osmosis-1",
+)
+
+private val NEUTRON_SWAP_VENUE = mapOf(
+    "name" to "neutron-astroport",
+    "chain_id" to "neutron-1",
+)
+
+private const val IBC_BRIDGE_ID = "IBC"
+private const val CCTP_BRIDGE_ID = "CCTP"
+private const val AXELAR_BRIDGE_ID = "AXELAR"
 
 internal class OnboardingSupervisor(
     stateMachine: TradingStateMachine,
@@ -284,6 +299,14 @@ internal class OnboardingSupervisor(
                     neutronChainId to accountAddress.toNeutronAddress(),
                     chainId to accountAddress,
                 ),
+                "swap_venues" to listOf(
+                    OSMOSIS_SWAP_VENUE,
+                    NEUTRON_SWAP_VENUE,
+                ),
+                "bridges" to listOf(
+                    IBC_BRIDGE_ID,
+                    AXELAR_BRIDGE_ID,
+                ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             )
 
@@ -341,8 +364,8 @@ internal class OnboardingSupervisor(
             ),
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
             "bridges" to listOf(
-                "CCTP",
-                "IBC",
+                CCTP_BRIDGE_ID,
+                IBC_BRIDGE_ID,
             ),
         )
         val oldState = stateMachine.state
@@ -613,7 +636,11 @@ internal class OnboardingSupervisor(
         isCctp: Boolean,
         requestId: String?,
     ) {
-        fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
+        if (StatsigConfig.useSkip) {
+            fetchTransferStatusSkip(hash, fromChainId)
+        } else {
+            fetchTransferStatus(hash, fromChainId, toChainId, isCctp)
+        }
     }
 
     private fun simulateWithdrawal(
@@ -1053,6 +1080,14 @@ internal class OnboardingSupervisor(
                 neutronChainId to accountAddress.toNeutronAddress(),
                 toChain to toAddress,
             ),
+            "swap_venues" to listOf(
+                OSMOSIS_SWAP_VENUE,
+                NEUTRON_SWAP_VENUE,
+            ),
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+            ),
             "allow_multi_tx" to false,
             "allow_unsafe" to true,
             "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
@@ -1108,8 +1143,8 @@ internal class OnboardingSupervisor(
             "smart_relay" to true,
             "allow_unsafe" to true,
             "bridges" to listOf(
-                "CCTP",
-                "IBC",
+                CCTP_BRIDGE_ID,
+                IBC_BRIDGE_ID,
             ),
         )
         val oldState = stateMachine.state
@@ -1150,10 +1185,52 @@ internal class OnboardingSupervisor(
             )
             helper.get(url, params, header) { _, response, httpCode, _ ->
                 if (response != null) {
-                    update(stateMachine.squidStatus(response, hash), oldState)
+                    update(stateMachine.routerStatus(response, hash), oldState)
                 } else {
                     Logger.e { "fetchTransferStatus error, code: $httpCode" }
                 }
+            }
+        }
+    }
+
+    private fun fetchTransferStatusSkip(
+        hash: String,
+        fromChainId: String?,
+    ) {
+        val oldState = stateMachine.state
+//        If transfer is not yet tracked, must track first before querying status
+        val isTracked = oldState?.trackStatuses?.get(hash) == true
+        if (!isTracked) {
+            trackTransferSkip(hash = hash, fromChainId = fromChainId)
+            return
+        }
+        val params: IMap<String, String> = iMapOf(
+            "tx_hash" to hash,
+            "chain_id" to fromChainId,
+        ).filterNotNull()
+        val url = helper.configs.skipV2Status()
+        helper.get(url, params) { _, response, httpCode, _ ->
+            if (response != null) {
+                update(stateMachine.routerStatus(response, hash), oldState)
+            } else {
+                Logger.e { "fetchTransferStatus error, code: $httpCode" }
+            }
+        }
+    }
+
+    private fun trackTransferSkip(
+        hash: String,
+        fromChainId: String?,
+    ) {
+        val body: IMap<String, String> = iMapOf(
+            "tx_hash" to hash,
+            "chain_id" to fromChainId,
+        ).filterNotNull()
+        val url = helper.configs.skipV2Track()
+        val oldState = stateMachine.state
+        helper.post(url, null, body.toJsonPrettyPrint()) { _, response, httpCode, _ ->
+            if (response != null) {
+                update(stateMachine.routerTrack(response), oldState)
             }
         }
     }

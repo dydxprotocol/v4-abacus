@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
+import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
+import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.toJsonArray
@@ -14,10 +16,10 @@ class SkipRouteProcessorTests {
 
     /**
      * Tests an EVM CCTP deposit.
-     * This processes an EVM -> Noble USDC transaction (we only support deposits from EVM chains)
+     * This processes an EVM -> Noble USDC transaction
      */
     @Test
-    fun testReceivedCCTPDeposit() {
+    fun testReceivedEvmCCTPDeposit() {
         val payload = skipRouteMock.payload
         val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val expected = mapOf(
@@ -31,6 +33,32 @@ class SkipRouteProcessorTests {
                 "value" to "0",
                 "fromChainId" to "1",
                 "fromAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "toChainId" to "noble-1",
+                "toAddress" to "uusdc",
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
+            ),
+        )
+        assertEquals(expected, result)
+    }
+
+    /**
+     * Tests an SVM CCTP deposit.
+     * This processes an SVM -> Noble USDC transaction
+     */
+    @Test
+    fun testReceivedSolanaCCTPDeposit() {
+        val payload = skipRouteMock.payloadCCTPSolanaToNoble
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
+        val expected = mapOf(
+            "toAmountUSD" to 1498.18,
+            "toAmount" to 1499.8,
+            "bridgeFee" to .2,
+            "slippage" to "1",
+            "requestPayload" to mapOf(
+                "data" to "mock-encoded-solana-tx",
+                "fromChainId" to "solana",
+                "fromAddress" to "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
                 "toChainId" to "noble-1",
                 "toAddress" to "uusdc",
             ),
@@ -79,6 +107,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "uusdc",
                 "data" to jsonEncoder.encode(expectedDataRaw),
                 "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)
@@ -119,6 +149,12 @@ class SkipRouteProcessorTests {
             "aggregatePriceImpact" to "0.2607",
             "bridgeFee" to 26.15,
             "slippage" to "1",
+            "warning" to jsonEncoder.encode(
+                mapOf(
+                    "type" to "BAD_PRICE_WARNING",
+                    "message" to "Difference in USD value of route input and output is large. Input USD value: 130.13 Output USD value: 103.17",
+                ),
+            ),
             "requestPayload" to mapOf(
                 "fromChainId" to "dydx-mainnet-1",
                 "fromAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
@@ -126,6 +162,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "ethereum-native",
                 "data" to jsonEncoder.encode(expectedDataRaw),
                 "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
 
@@ -190,6 +228,12 @@ class SkipRouteProcessorTests {
             "toAmount" to 59.995433,
             "bridgeFee" to 40.0,
             "slippage" to "1",
+            "warning" to jsonEncoder.encode(
+                mapOf(
+                    "type" to "BAD_PRICE_WARNING",
+                    "message" to "Difference in USD value of route input and output is large. Input USD value: 99.99 Output USD value: 59.99",
+                ),
+            ),
             "requestPayload" to mapOf(
                 "fromChainId" to "noble-1",
                 "fromAddress" to "uusdc",
@@ -197,6 +241,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                 "data" to expectedData,
                 "allMessages" to expectedMessagesArray,
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)
@@ -242,6 +288,8 @@ class SkipRouteProcessorTests {
                 "toAddress" to "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
                 "data" to jsonEncoder.encode(expectedDataRaw),
                 "allMessages" to jsonEncoder.encode(listOf(expectedDataRaw)),
+                "gasPrice" to DEFAULT_GAS_PRICE,
+                "gasLimit" to DEFAULT_GAS_LIMIT,
             ),
         )
         assertEquals(expected, result)

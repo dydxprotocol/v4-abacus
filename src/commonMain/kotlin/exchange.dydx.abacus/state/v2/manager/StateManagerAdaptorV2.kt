@@ -672,6 +672,7 @@ internal class StateManagerAdaptorV2(
             state?.input,
             state?.availableSubaccountNumbers ?: iListOf(),
             state?.transferStatuses,
+            state?.trackStatuses,
             restriction,
             state?.launchIncentive,
             state?.compliance,
@@ -705,6 +706,7 @@ internal class StateManagerAdaptorV2(
             state?.input,
             state?.availableSubaccountNumbers ?: iListOf(),
             state?.transferStatuses,
+            state?.trackStatuses,
             state?.restriction,
             state?.launchIncentive,
             Compliance(
@@ -722,6 +724,5 @@ internal class StateManagerAdaptorV2(
                 ),
             )
         }
-        triggerCompliance(ComplianceAction.CONNECT, null)
     }
 }

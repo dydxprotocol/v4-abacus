@@ -1,7 +1,10 @@
 package exchange.dydx.abacus.payload.v4
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.changes.Changes
+import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.historicalTradingRewards
@@ -19,6 +22,7 @@ import kotlinx.datetime.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class V4AccountTests : V4BaseTests() {
     @Test
@@ -255,7 +259,7 @@ class V4AccountTests : V4BaseTests() {
 
     private fun testSubaccountFillsReceived() {
         test(
-            {
+            load = {
                 perp.rest(
                     AbUrl.fromString("$testRestUrl/v4/fills?subaccountNumber=0"),
                     mock.fillsChannel.v4_rest,
@@ -263,41 +267,49 @@ class V4AccountTests : V4BaseTests() {
                     null,
                 )
             },
-            """
-                {
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "0": {
-                                    "fills": [
-                                        {
-                                            "id": "dad7abeb-4c04-58d3-8dda-fd0bc0528deb",
-                                            "side": "BUY",
-                                            "liquidity": "TAKER",
-                                            "type": "LIMIT",
-                                            "marketId": "BTC-USD",
-                                            "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
-                                            "createdAt": "2022-12-14T18:32:21.298Z",
-                                            "price": 18275.31,
-                                            "size" : 4.41E-6,
-                                            "fee": 0.0,
-                                            "resources": {
+            expected = """
+                            {
+                                "wallet": {
+                                    "account": {
+                                        "subaccounts": {
+                                            "0": {
+                                                "fills": [
+                                                    {
+                                                        "id": "dad7abeb-4c04-58d3-8dda-fd0bc0528deb",
+                                                        "side": "BUY",
+                                                        "liquidity": "TAKER",
+                                                        "type": "LIMIT",
+                                                        "marketId": "BTC-USD",
+                                                        "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
+                                                        "createdAt": "2022-12-14T18:32:21.298Z",
+                                                        "price": 18275.31,
+                                                        "size" : 4.41E-6,
+                                                        "fee": 0.0,
+                                                        "resources": {
+                                                        }
+                                                    }
+                                                ]
                                             }
                                         }
-                                    ]
+                                    }
                                 }
                             }
-                        }
-                    }
-                }
             """.trimIndent(),
-            {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    100,
-                    fills?.size,
-                )
+            moreVerification = {
+                if (perp.staticTyping) {
+                    val fills = perp.internalState.wallet.account.subaccounts[0]?.fills
+                    assertEquals(
+                        100,
+                        fills?.size,
+                    )
+                } else {
+                    val fills =
+                        parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
+                    assertEquals(
+                        100,
+                        fills?.size,
+                    )
+                }
             },
         )
 
@@ -501,7 +513,6 @@ class V4AccountTests : V4BaseTests() {
                                             "side": "BUY",
                                             "liquidity": "TAKER",
                                             "type": "LIMIT",
-                                            "marketId": "BTC-USD",
                                             "orderId": "4f2a6f7d-a897-5c4e-986f-d48f5760102a",
                                             "createdAt": "2022-12-14T18:32:21.298Z",
                                             "price": 18275.31,
@@ -518,12 +529,20 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    101,
-                    fills?.size,
-                )
+                if (perp.staticTyping) {
+                    val fills = perp.internalState.wallet.account.subaccounts[0]?.fills
+                    assertEquals(
+                        101,
+                        fills?.size,
+                    )
+                } else {
+                    val fills =
+                        parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
+                    assertEquals(
+                        101,
+                        fills?.size,
+                    )
+                }
             },
         )
     }
@@ -675,12 +694,20 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    102,
-                    fills?.size,
-                )
+                if (perp.staticTyping) {
+                    val fills = perp.internalState.wallet.account.subaccounts[0]?.fills
+                    assertEquals(
+                        102,
+                        fills?.size,
+                    )
+                } else {
+                    val fills =
+                        parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
+                    assertEquals(
+                        102,
+                        fills?.size,
+                    )
+                }
             },
         )
 
@@ -805,17 +832,25 @@ class V4AccountTests : V4BaseTests() {
                 }
             """.trimIndent(),
             {
-                val fills =
-                    parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
-                assertEquals(
-                    112,
-                    fills?.size,
-                )
+                if (perp.staticTyping) {
+                    val fills = perp.internalState.wallet.account.subaccounts[0]?.fills
+                    assertEquals(
+                        112,
+                        fills?.size,
+                    )
+                } else {
+                    val fills =
+                        parser.asList(parser.value(perp.data, "wallet.account.subaccounts.0.fills"))
+                    assertEquals(
+                        112,
+                        fills?.size,
+                    )
+                }
             },
         )
 
         test(
-            {
+            load = {
                 perp.socket(
                     testWsUrl,
                     mock.accountsChannel.v4_position_closed,
@@ -823,29 +858,29 @@ class V4AccountTests : V4BaseTests() {
                     BlockAndTime(16961, Clock.System.now()),
                 )
             },
-            """
-                {
-                    "wallet": {
-                        "account": {
-                            "subaccounts": {
-                                "0": {
-                                    "equity": {
-                                        "current": -41281.9808525066
-                                    },
-                                    "openPositions": {
-                                        "BTC-USD": {
-                                            "size": {
-                                                "current": -1.792239322
+            expected = """
+                            {
+                                "wallet": {
+                                    "account": {
+                                        "subaccounts": {
+                                            "0": {
+                                                "equity": {
+                                                    "current": -41281.9808525066
+                                                },
+                                                "openPositions": {
+                                                    "BTC-USD": {
+                                                        "size": {
+                                                            "current": -1.792239322
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
-                    }
-                }
             """.trimIndent(),
-            {
+            moreVerification = {
                 val ioImplementations = testIOImplementations()
                 val localizer = testLocalizer(ioImplementations)
                 val uiImplementations = testUIImplementations(localizer)
@@ -1032,11 +1067,17 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testUserFeeTier() {
-        test(
-            {
-                perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
+            assertEquals(perp.internalState.wallet.user?.feeTierId, "1")
+            assertEquals(perp.internalState.wallet.user?.makerFeeRate, 0.0)
+            assertEquals(perp.internalState.wallet.user?.takerFeeRate, 0.0)
+        } else {
+            test(
+                {
+                    perp.parseOnChainUserFeeTier(mock.v4OnChainMock.user_fee_tier)
+                },
+                """
                 {
                     "wallet": {
                         "user": {
@@ -1046,18 +1087,24 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testUserStats() {
-        test(
-            {
-                perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
+            assertEquals(perp.internalState.wallet.user?.makerVolume30D, 1.0)
+            assertEquals(perp.internalState.wallet.user?.takerVolume30D, 1.0)
+        } else {
+            test(
+                {
+                    perp.parseOnChainUserStats(mock.v4OnChainMock.user_stats)
+                },
+                """
                 {
                     "wallet": {
                         "user": {
@@ -1066,21 +1113,41 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
     fun testAccountBalances() {
-        test(
-            {
-                val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+        if (perp.staticTyping) {
+            val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
+            perp.update(changes)
+            assertEquals(perp.internalState.wallet.account.balances?.size, 2)
+            assertEquals(
+                perp.internalState.wallet.account.balances?.get("ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5"),
+                InternalAccountBalanceState(
+                    "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
+                    110.0.toBigDecimal(),
+                ),
+            )
+            assertEquals(
+                perp.internalState.wallet.account.balances?.get("dv4tnt"),
+                InternalAccountBalanceState(
+                    "dv4tnt",
+                    1220.0.toBigDecimal(),
+                ),
+            )
+        } else {
+            test(
+                {
+                    val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1097,21 +1164,34 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
     fun testAccountStakingBalances() {
-        test(
-            {
-                val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+        if (perp.staticTyping) {
+            val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+            assertEquals(perp.internalState.wallet.account.stakingBalances?.size, 1)
+            assertEquals(
+                perp.internalState.wallet.account.stakingBalances?.get("dv4tnt"),
+                InternalAccountBalanceState(
+                    "dv4tnt",
+                    2001000.0.toBigDecimal(),
+                ),
+            )
+            assertTrue { changes.changes.contains(Changes.accountBalances) }
+        } else {
+            test(
+                {
+                    val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1124,14 +1204,16 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     @Test
     fun testAccountHistoricalTradingRewards() {
+        reset()
         setup()
         test(
             {

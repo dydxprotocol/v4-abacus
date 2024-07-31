@@ -1,12 +1,25 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.account.SubaccountTransfer
+import exchange.dydx.abacus.output.account.SubaccountTransferResources
+import exchange.dydx.abacus.output.account.TransferRecordType
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerTransferResponseObject
 
-internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal interface TransferProcessorProtocol : BaseProcessorProtocol {
+    fun process(payload: IndexerTransferResponseObject?): SubaccountTransfer?
+}
+
+internal class TransferProcessor(
+    parser: ParserProtocol,
+    private val localizer: LocalizerProtocol?,
+) : BaseProcessor(parser), TransferProcessorProtocol {
     private val transferKeyMap = mapOf(
         "string" to mapOf(
             "id" to "id",
@@ -53,6 +66,66 @@ internal class TransferProcessor(parser: ParserProtocol) : BaseProcessor(parser)
         "PENDING" to "pending",
         "CONFIRMED" to "confirmed",
     )
+
+    override fun process(
+        payload: IndexerTransferResponseObject?,
+    ): SubaccountTransfer? {
+        val id = payload?.id ?: payload?.transactionHash
+        val type = TransferRecordType.invoke(payload?.type?.value)
+        val updatedAtMilliseconds = parser.asDatetime(payload?.createdAt)?.toEpochMilliseconds()?.toDouble()
+        val toAddress = parser.asString(payload?.recipient?.address)
+        val modifiedType = when (type) {
+            // For DEPOSIT, we always show as "Deposit"
+            TransferRecordType.WITHDRAW -> {
+                if (toAddress == accountAddress || toAddress == null) {
+                    type
+                } else {
+                    TransferRecordType.TRANSFER_OUT
+                }
+            }
+            else -> type
+        }
+        if (payload != null && id != null && modifiedType != null && updatedAtMilliseconds != null) {
+            return SubaccountTransfer(
+                id = id,
+                type = modifiedType,
+                asset = payload.symbol,
+                amount = parser.asDouble(payload.size),
+                updatedAtBlock = parser.asInt(payload.createdAtHeight),
+                updatedAtMilliseconds = updatedAtMilliseconds,
+                fromAddress = payload.sender?.address,
+                toAddress = toAddress,
+                transactionHash = payload.transactionHash,
+                resources = createResource(
+                    type = modifiedType,
+                    toAddress = payload.recipient?.address,
+                    transactionHash = payload.transactionHash,
+                ),
+            )
+        } else {
+            return null
+        }
+    }
+
+    private fun createResource(
+        type: TransferRecordType,
+        toAddress: String?,
+        transactionHash: String?
+    ): SubaccountTransferResources {
+        val mintscan = transactionHash?.let {
+            environment?.links?.mintscan?.replace("{tx_hash}", it)
+        }
+        val typeStringKey = typeMap[type.rawValue]
+        return SubaccountTransferResources(
+            typeStringKey = typeStringKey,
+            typeString = typeStringKey?.let { localizer?.localize(it) },
+            statusStringKey = null,
+            statusString = null,
+            blockExplorerUrl = mintscan,
+            iconLocal = typeIconMap[type.rawValue],
+            indicator = statusMap["CONFIRMED"],
+        )
+    }
 
     override fun received(
         existing: Map<String, Any>?,

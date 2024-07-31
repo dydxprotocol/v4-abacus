@@ -147,11 +147,7 @@ internal class V4OnChainMock {
            "index":0,
            "tier":{
               "name":"1",
-              "absoluteVolumeRequirement":{
-                 "low":0,
-                 "high":0,
-                 "unsigned":true
-              },
+              "absoluteVolumeRequirement": "125000000000000",
               "totalVolumeShareRequirementPpm":0,
               "makerVolumeShareRequirementPpm":0,
               "makerFeePpm":0,
@@ -162,8 +158,8 @@ internal class V4OnChainMock {
 
     internal val user_stats = """
         {
-           "makerNotional": 1000000,
-           "takerNotional": 1000000
+           "makerNotional": "1000000",
+           "takerNotional": "1000000"
         }
     """.trimIndent()
 
@@ -195,8 +191,8 @@ internal class V4OnChainMock {
             }
           ],
           "pagination": {
-            "nextKey": {},
-            "total": { "low": 2, "high": 0, "unsigned": true }
+            "nextKey": "",
+            "total": ""
           }
         }
     """.trimIndent()

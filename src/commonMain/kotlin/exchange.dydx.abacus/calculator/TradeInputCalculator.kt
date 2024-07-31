@@ -3,7 +3,9 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.calculator.SlippageConstants.MAJOR_MARKETS
 import exchange.dydx.abacus.calculator.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
+import exchange.dydx.abacus.calculator.SlippageConstants.SLIPPAGE_STEP_SIZE
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER
 import exchange.dydx.abacus.calculator.SlippageConstants.STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER
@@ -35,11 +37,13 @@ enum class TradeCalculation(val rawValue: String) {
 }
 
 internal object SlippageConstants {
+    val MAJOR_MARKETS = listOf("ETH-USD", "BTC-USD", "SOL-USD")
     const val MARKET_ORDER_MAX_SLIPPAGE = 0.05
-    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.1
-    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
-    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.2
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET = 0.05
+    const val STOP_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+    const val TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER = 0.1
+    const val SLIPPAGE_STEP_SIZE = 0.00001
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -1453,18 +1457,9 @@ internal class TradeInputCalculator(
             "MARKET" -> {
                 parser.asNativeMap(trade["marketOrder"])?.let { marketOrder ->
                     val feeRate = parser.asDouble(parser.value(user, "takerFeeRate"))
-                    val bestPrice = marketOrderBestPrice(marketOrder)
+                    val midMarketPrice = marketOrderbookMidPrice(market)
                     val worstPrice = marketOrderWorstPrice(marketOrder)
-                    val slippage =
-                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) {
-                            Rounder.round(
-                                (worstPrice - bestPrice).abs() / bestPrice,
-                                0.00001,
-                            )
-                        } else {
-                            null
-                        }
-
+                    val slippageFromMidPrice = marketOrderSlippageFromMidPrice(worstPrice, midMarketPrice)
                     val price = marketOrderPrice(marketOrder)
                     val side = parser.asString(trade["side"])
                     val payloadPrice = if (price != null) {
@@ -1498,12 +1493,11 @@ internal class TradeInputCalculator(
                         parser.asDouble(market?.get("oraclePrice")) // if no indexPrice(v4), use oraclePrice
                     val priceDiff =
                         slippage(worstPrice, oraclePrice, parser.asString(trade["side"]))
-                    val slippageStepSize = 0.00001
                     val indexSlippage =
                         if (priceDiff != null && oraclePrice != null && oraclePrice > Numeric.double.ZERO) {
                             Rounder.quickRound(
                                 priceDiff / oraclePrice,
-                                slippageStepSize,
+                                SLIPPAGE_STEP_SIZE,
                             )
                         } else {
                             null
@@ -1528,7 +1522,7 @@ internal class TradeInputCalculator(
                         "total",
                         if (total == Numeric.double.ZERO) Numeric.double.ZERO else total,
                     )
-                    summary.safeSet("slippage", slippage)
+                    summary.safeSet("slippage", slippageFromMidPrice)
                     summary.safeSet("indexSlippage", indexSlippage)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
@@ -1543,35 +1537,20 @@ internal class TradeInputCalculator(
             "STOP_MARKET", "TAKE_PROFIT_MARKET" -> {
                 parser.asNativeMap(trade["marketOrder"])?.let { marketOrder ->
                     val feeRate = parser.asDouble(parser.value(user, "takerFeeRate"))
-                    val bestPrice = marketOrderBestPrice(marketOrder)
+                    val midMarketPrice = marketOrderbookMidPrice(market)
                     val worstPrice = marketOrderWorstPrice(marketOrder)
-                    val slippageStepSize = 0.00001
-                    val slippage =
-                        if (worstPrice != null && bestPrice != null && bestPrice > Numeric.double.ZERO) {
-                            Rounder.quickRound(
-                                (worstPrice - bestPrice).abs() / bestPrice,
-                                slippageStepSize,
-                            )
-                        } else {
-                            null
-                        }
+                    val slippageFromMidPrice = marketOrderSlippageFromMidPrice(worstPrice, midMarketPrice)
 
-                    val triggerPrice =
-                        parser.asDouble(parser.value(trade, "price.triggerPrice"))
+                    val triggerPrice = parser.asDouble(parser.value(trade, "price.triggerPrice"))
                     val marketOrderPrice = marketOrderPrice(marketOrder)
-                    val priceslippage =
-                        if (bestPrice != null && marketOrderPrice != null) (marketOrderPrice - bestPrice) else null
-                    val slippagePercentage =
-                        if (priceslippage != null && bestPrice != null) {
-                            abs(priceslippage / bestPrice)
-                        } else {
-                            null
-                        }
+                    val slippagePercentage = if (midMarketPrice != null && marketOrderPrice != null && midMarketPrice > Numeric.double.ZERO) {
+                        abs((marketOrderPrice - midMarketPrice) / midMarketPrice)
+                    } else {
+                        null
+                    }
+
                     val adjustedslippagePercentage = if (slippagePercentage != null) {
-                        val majorMarket = when (parser.asString(trade["marketId"])) {
-                            "BTC-USD", "ETH-USD" -> true
-                            else -> false
-                        }
+                        val majorMarket = MAJOR_MARKETS.contains(parser.asString(trade["marketId"]))
                         if (majorMarket) {
                             if (type == "STOP_MARKET") {
                                 slippagePercentage + STOP_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
@@ -1589,11 +1568,11 @@ internal class TradeInputCalculator(
                         null
                     }
 
-                    val price = if (triggerPrice != null && slippagePercentage != null) {
+                    val price = if (triggerPrice != null && slippageFromMidPrice != null) {
                         if (parser.asString(trade["side"]) == "BUY") {
-                            triggerPrice * (Numeric.double.ONE + slippagePercentage)
+                            triggerPrice * (Numeric.double.ONE + slippageFromMidPrice)
                         } else {
-                            triggerPrice * (Numeric.double.ONE - slippagePercentage)
+                            triggerPrice * (Numeric.double.ONE - slippageFromMidPrice)
                         }
                     } else {
                         null
@@ -1644,7 +1623,7 @@ internal class TradeInputCalculator(
                         "total",
                         if (total == Numeric.double.ZERO) Numeric.double.ZERO else total,
                     )
-                    summary.safeSet("slippage", slippage)
+                    summary.safeSet("slippage", slippageFromMidPrice)
                     summary.safeSet("filled", marketOrderFilled(marketOrder))
                     summary.safeSet("reward", reward)
                     summary.safeSet(
@@ -1749,19 +1728,25 @@ internal class TradeInputCalculator(
         }
     }
 
-    private fun marketOrderBestPrice(marketOrder: Map<String, Any>): Double? {
-        parser.asNativeList(marketOrder["orderbook"])?.let { orderbook ->
-            if (orderbook.isNotEmpty()) {
-                parser.asNativeMap(orderbook.firstOrNull())?.let { firstLine ->
-                    parser.asDouble(firstLine["price"])?.let { bestPrice ->
-                        if (bestPrice != Numeric.double.ZERO) {
-                            return bestPrice
-                        }
-                    }
+    private fun marketOrderbookMidPrice(market: Map<String, Any>?): Double? {
+        return parser.asNativeMap(market?.get("orderbook_consolidated"))?.let { orderbook ->
+            parser.asDouble(parser.value(orderbook, "asks.0.price"))?.let { firstAskPrice ->
+                parser.asDouble(parser.value(orderbook, "bids.0.price"))?.let { firstBidPrice ->
+                    (firstAskPrice + firstBidPrice) / 2.0
                 }
             }
         }
-        return null
+    }
+
+    private fun marketOrderSlippageFromMidPrice(worstPrice: Double?, midMarketPrice: Double?): Double? {
+        return if (worstPrice != null && midMarketPrice != null && midMarketPrice > Numeric.double.ZERO) {
+            Rounder.round(
+                (worstPrice - midMarketPrice).abs() / midMarketPrice,
+                SLIPPAGE_STEP_SIZE,
+            )
+        } else {
+            null
+        }
     }
 
     private fun marketOrderWorstPrice(marketOrder: Map<String, Any>): Double? {

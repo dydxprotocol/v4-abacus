@@ -615,6 +615,97 @@ internal class SkipRouteMock {
         }
     """.trimIndent()
 
+    internal val payloadCCTPSolanaToNoble = """
+        {
+            "msgs": [
+                {
+                    "svm_tx": {
+                        "chain_id": "solana",
+                        "tx": "mock-encoded-solana-tx",
+                        "signer_address": "26qv4GCcx98RihuK3c4T6ozB3J7L6VwCuFVc7Ta2A3Uo"
+                    }
+                }
+            ],
+            "txs": [
+                {
+                    "svm_tx": {
+                        "chain_id": "solana",
+                        "tx": "mock-encoded-solana-tx",
+                        "signer_address": "26qv4GCcx98RihuK3c4T6ozB3J7L6VwCuFVc7Ta2A3Uo"
+                    },
+                    "operations_indices": [
+                        0
+                    ]
+                }
+            ],
+            "route": {
+                "source_asset_denom": "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
+                "source_asset_chain_id": "solana",
+                "dest_asset_denom": "uusdc",
+                "dest_asset_chain_id": "noble-1",
+                "amount_in": "1500000000",
+                "amount_out": "1499800000",
+                "operations": [
+                    {
+                        "cctp_transfer": {
+                            "from_chain_id": "solana",
+                            "to_chain_id": "noble-1",
+                            "burn_token": "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
+                            "denom_in": "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
+                            "denom_out": "uusdc",
+                            "bridge_id": "CCTP",
+                            "smart_relay": true
+                        },
+                        "tx_index": 0,
+                        "amount_in": "1500000000",
+                        "amount_out": "1499800000"
+                    }
+                ],
+                "chain_ids": [
+                    "solana",
+                    "noble-1"
+                ],
+                "does_swap": false,
+                "estimated_amount_out": "1499800000",
+                "swap_venues": [],
+                "txs_required": 1,
+                "usd_amount_in": "1498.38",
+                "usd_amount_out": "1498.18",
+                "estimated_fees": [
+                    {
+                        "fee_type": "SMART_RELAY",
+                        "bridge_id": "CCTP",
+                        "amount": "200000",
+                        "usd_amount": "0.20",
+                        "origin_asset": {
+                            "denom": "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
+                            "chain_id": "solana",
+                            "origin_denom": "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
+                            "origin_chain_id": "solana",
+                            "trace": "",
+                            "is_cw20": false,
+                            "is_evm": false,
+                            "is_svm": false,
+                            "symbol": "USDC",
+                            "name": "USD Coin",
+                            "logo_uri": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx/logo.png",
+                            "decimals": 6,
+                            "coingecko_id": "usd-coin",
+                            "recommended_symbol": "USDC"
+                        },
+                        "chain_id": "solana",
+                        "tx_index": 0
+                    }
+                ],
+                "required_chain_addresses": [
+                    "solana",
+                    "noble-1"
+                ],
+                "estimated_route_duration_seconds": 25
+            }
+        }
+    """.trimIndent()
+
     internal val payloadError = """
     {
   "code": 3,

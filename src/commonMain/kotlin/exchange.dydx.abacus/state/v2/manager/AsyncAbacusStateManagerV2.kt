@@ -13,6 +13,7 @@ import exchange.dydx.abacus.protocols.PresentationProtocol
 import exchange.dydx.abacus.protocols.StateNotificationProtocol
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.protocols.readCachedTextFile
 import exchange.dydx.abacus.state.app.adaptors.V4TransactionErrors
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
@@ -52,7 +53,6 @@ import exchange.dydx.abacus.utils.UIImplementations
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
-import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 
 @JsExport
@@ -362,7 +362,8 @@ class AsyncAbacusStateManagerV2(
     }
 
     private fun parseDocumentation(response: String) {
-        this.documentation = Json.decodeFromString<Documentation>(response)
+        val parser = Parser()
+        this.documentation = parser.asTypedObject<Documentation>(response)
     }
 
     private fun parseEnvironments(response: String): Boolean {

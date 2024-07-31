@@ -14,8 +14,13 @@ internal enum class ComparisonOrder {
     descending
 }
 
-internal open class BaseProcessor(val parser: ParserProtocol) {
-    internal var environment: V4Environment? = null
+internal interface BaseProcessorProtocol {
+    var accountAddress: String?
+    var environment: V4Environment?
+}
+
+internal open class BaseProcessor(val parser: ParserProtocol) : BaseProcessorProtocol {
+    override var environment: V4Environment? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -23,7 +28,7 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
             }
         }
 
-    internal var accountAddress: String? = null
+    override var accountAddress: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -175,54 +180,44 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
         return Pair(existing, false)
     }
 
-    internal open fun merge(
+    internal fun <T : Any> merge(
         parser: ParserProtocol,
-        existing: List<Any>?,
-        incoming: List<Any>?,
-        timeField: String,
+        existing: List<T>?,
+        incoming: List<T>?,
+        timeField: (T?) -> Instant?,
         ascending: Boolean = true
-    ): List<Any>? {
+    ): List<T>? {
         return if (existing != null) {
             if (incoming != null) {
-                val lastIncomingTime =
-                    parser.asDatetime(parser.asNativeMap(incoming.lastOrNull())?.get(timeField))
-                val firstIncomingTime =
-                    parser.asDatetime(parser.asNativeMap(incoming.firstOrNull())?.get(timeField))
-                val lastExisting =
-                    parser.asDatetime(parser.asNativeMap(existing.lastOrNull())?.get(timeField))
-                val firstExisting =
-                    parser.asDatetime(parser.asNativeMap(existing.firstOrNull())?.get(timeField))
-                if (lastIncomingTime != null && firstExisting != null && lastIncomingTime != firstExisting && ascending(
+                val lastIncomingTime = timeField(incoming.lastOrNull())
+                val firstIncomingTime = timeField(incoming.firstOrNull())
+                val lastExisting = timeField(existing.lastOrNull())
+                val firstExisting = timeField(existing.firstOrNull())
+                if (lastIncomingTime != null && firstExisting != null && lastIncomingTime != firstExisting &&
+                    ascending(
                         lastIncomingTime,
                         firstExisting,
                     ) == ascending
                 ) {
-                    val result = mutableListOf<Any>()
-                    result.addAll(incoming)
-                    result.addAll(existing)
-                    result
-                } else if (firstIncomingTime != null && lastExisting != null && firstIncomingTime != lastExisting && ascending(
+                    incoming + existing
+                } else if (firstIncomingTime != null && lastExisting != null && firstIncomingTime != lastExisting &&
+                    ascending(
                         firstIncomingTime,
                         lastExisting,
                     ) != ascending
                 ) {
-                    val result = mutableListOf<Any>()
-                    result.addAll(existing)
-                    result.addAll(incoming)
-                    result
+                    existing + incoming
                 } else {
-                    return ParsingHelper.merge(
-                        parser,
-                        existing,
-                        incoming,
-                        { obj, data ->
-                            val existingTime =
-                                parser.asDatetime(parser.asNativeMap(obj)?.get(timeField))
-                            val incomingTime =
-                                parser.asDatetime(parser.asNativeMap(data)?.get(timeField))
+                    return ParsingHelper.mergeTyped(
+                        parser = parser,
+                        existing = existing,
+                        incoming = incoming,
+                        comparison = { obj, data ->
+                            val existingTime = timeField(obj)
+                            val incomingTime = timeField(data)
                             ParsingHelper.compare(existingTime, incomingTime, ascending)
                         },
-                        { _, _, itemData ->
+                        createObject = { _, _, itemData ->
                             itemData
                         },
                     )!!
@@ -233,6 +228,22 @@ internal open class BaseProcessor(val parser: ParserProtocol) {
         } else {
             incoming
         }
+    }
+
+    internal open fun mergeDeprecated(
+        parser: ParserProtocol,
+        existing: List<Any>?,
+        incoming: List<Any>?,
+        timeField: String,
+        ascending: Boolean = true
+    ): List<Any>? {
+        return merge(
+            parser = parser,
+            existing = existing,
+            incoming = incoming,
+            timeField = { item -> parser.asDatetime(parser.asNativeMap(item)?.get(timeField)) },
+            ascending = ascending,
+        )
     }
 
     private fun ascending(first: Instant, second: Instant): Boolean {

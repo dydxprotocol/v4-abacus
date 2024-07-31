@@ -4,8 +4,8 @@ import exchange.dydx.abacus.output.Notification
 import exchange.dydx.abacus.output.NotificationPriority
 import exchange.dydx.abacus.output.NotificationType
 import exchange.dydx.abacus.output.PerpetualMarket
-import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -219,15 +219,15 @@ class FillsNotificationProvider(
 
         val notificationId = "fill:$fillId"
         return Notification(
-            notificationId,
-            NotificationType.INFO,
-            NotificationPriority.NORMAL,
-            marketImageUrl,
-            title,
-            text,
-            null,
-            paramsAsJson,
-            fill.createdAtMilliseconds,
+            id = notificationId,
+            type = NotificationType.INFO,
+            priority = NotificationPriority.NORMAL,
+            image = marketImageUrl,
+            title = title,
+            text = text,
+            link = null,
+            data = paramsAsJson,
+            updateTimeInMilliseconds = fill.createdAtMilliseconds,
         )
     }
 

@@ -1397,6 +1397,7 @@ internal class FillsMock {
                     {
                         "id": "0cf41e16-036e-534d-bbaf-cf318b44b840",
                         "subaccountId": "052c7837-6b93-554f-bf63-f8e504a7f275",
+                        "market": "ETH-USD",
                         "side": "SELL",
                         "liquidity": "TAKER",
                         "type": "LIMIT",

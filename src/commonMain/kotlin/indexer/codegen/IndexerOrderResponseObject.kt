@@ -64,5 +64,5 @@ data class IndexerOrderResponseObject(
     val ticker: kotlin.String? = null,
     val updatedAt: IndexerIsoString? = null,
     val updatedAtHeight: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )

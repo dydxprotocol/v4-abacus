@@ -1,18 +1,19 @@
 package exchange.dydx.abacus.payload.v4
 
-import exchange.dydx.abacus.output.Account
-import exchange.dydx.abacus.output.BlockReward
-import exchange.dydx.abacus.output.HistoricalTradingReward
 import exchange.dydx.abacus.output.LaunchIncentive
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentivePoints
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.LaunchIncentiveSeasons
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.TradingRewards
+import exchange.dydx.abacus.output.account.Account
+import exchange.dydx.abacus.output.account.BlockReward
+import exchange.dydx.abacus.output.account.HistoricalTradingReward
+import exchange.dydx.abacus.output.account.TradingRewards
 import exchange.dydx.abacus.payload.BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
@@ -28,8 +29,15 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
     internal val testRestUrl =
         "https://indexer.v4staging.dydx.exchange"
-    override fun createState(useParentSubaccount: Boolean): PerpTradingStateMachine {
-        return PerpTradingStateMachine(mock.v4Environment, null, null, 127, useParentSubaccount)
+    override fun createState(useParentSubaccount: Boolean, staticTyping: Boolean): PerpTradingStateMachine {
+        return PerpTradingStateMachine(
+            environment = mock.v4Environment,
+            localizer = null,
+            formatter = null,
+            maxSubaccountNumber = 127,
+            useParentSubaccount = useParentSubaccount,
+            staticTyping = staticTyping,
+        )
     }
 
     internal open fun loadMarkets(): StateResponse {
@@ -121,8 +129,14 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         }
     }
 
-    override fun verifyAccountState(data: Map<String, Any>?, obj: Account?, trace: String) {
-        super.verifyAccountState(data, obj, trace)
+    override fun verifyAccountState(
+        data: Map<String, Any>?,
+        state: InternalAccountState?,
+        staticTyping: Boolean,
+        obj: Account?,
+        trace: String
+    ) {
+        super.verifyAccountState(data, state, staticTyping, obj, trace)
         if (data != null) {
             verifyTradingRewardsState(
                 parser.asNativeMap(data["tradingRewards"]),
@@ -234,7 +248,7 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
                     assertNotNull(rewardsListObj)
                     assertEquals(
                         (rewardsListData?.size ?: 0).toDouble(),
-                        (rewardsListObj.size ?: 0).toDouble(),
+                        rewardsListObj.size.toDouble(),
                         0.0,
                         "$trace.historical.$period.size $doesntMatchText",
                     )

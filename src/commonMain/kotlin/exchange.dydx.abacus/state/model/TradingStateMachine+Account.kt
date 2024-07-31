@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.state.model
 
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
@@ -32,6 +32,12 @@ internal fun TradingStateMachine.account(payload: String): StateChanges {
 internal fun TradingStateMachine.receivedAccount(
     payload: Map<String, Any>
 ): StateChanges {
+    if (staticTyping) {
+        walletProcessor.processAccount(
+            internalState = internalState.wallet,
+            payload = payload,
+        )
+    }
     this.wallet = walletProcessor.receivedAccount(wallet, payload)
     return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }

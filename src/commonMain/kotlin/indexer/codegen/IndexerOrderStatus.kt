@@ -15,13 +15,13 @@ import kotlinx.serialization.Serializable
 
 /**
  *
- * Values: OPEN,FILLED,CANCELED,BESTEFFORTCANCELED,UNTRIGGERED
+ * Values: OPEN,FILLED,CANCELED,BEST_EFFORT_CANCELED,UNTRIGGERED
  */
 @Serializable
 enum class IndexerOrderStatus(val value: kotlin.String) {
     OPEN("OPEN"), // :/
     FILLED("FILLED"), // :/
     CANCELED("CANCELED"), // :/
-    BESTEFFORTCANCELED("BEST_EFFORT_CANCELED"), // :/
+    BEST_EFFORT_CANCELED("BEST_EFFORT_CANCELED"), // :/
     UNTRIGGERED("UNTRIGGERED"); // :/
 }

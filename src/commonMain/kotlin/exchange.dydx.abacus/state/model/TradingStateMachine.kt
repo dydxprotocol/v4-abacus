@@ -9,28 +9,29 @@ import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
-import exchange.dydx.abacus.output.Account
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
+import exchange.dydx.abacus.output.LaunchIncentiveSeasons
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
-import exchange.dydx.abacus.output.Subaccount
-import exchange.dydx.abacus.output.SubaccountFill
-import exchange.dydx.abacus.output.SubaccountFundingPayment
-import exchange.dydx.abacus.output.SubaccountHistoricalPNL
-import exchange.dydx.abacus.output.SubaccountTransfer
 import exchange.dydx.abacus.output.TransferStatus
 import exchange.dydx.abacus.output.Wallet
+import exchange.dydx.abacus.output.account.Account
+import exchange.dydx.abacus.output.account.Subaccount
+import exchange.dydx.abacus.output.account.SubaccountFill
+import exchange.dydx.abacus.output.account.SubaccountFundingPayment
+import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
+import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.Input
 import exchange.dydx.abacus.output.input.ReceiptLine
-import exchange.dydx.abacus.processor.RewardsProcessor
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
+import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.markets.TradeProcessorV2
@@ -41,7 +42,7 @@ import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.responses.AssetJson
+import exchange.dydx.abacus.protocols.asTypedStringMap
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
@@ -51,6 +52,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
@@ -66,9 +68,9 @@ import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
-import exchange.dydx.abacus.utils.toJson
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
+import indexer.models.configs.AssetJson
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -76,7 +78,6 @@ import kollections.iMutableMapOf
 import kollections.toIList
 import kollections.toIMutableMap
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
@@ -93,7 +94,7 @@ open class TradingStateMachine(
     private val useParentSubaccount: Boolean,
     val staticTyping: Boolean = false,
 ) {
-    internal val internalState: InternalState = InternalState()
+    internal var internalState: InternalState = InternalState()
 
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
@@ -115,7 +116,7 @@ open class TradingStateMachine(
             if (StatsigConfig.useSkip) return skipProcessor
             return squidProcessor
         }
-    internal val rewardsProcessor = RewardsProcessor(parser)
+    internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
@@ -226,6 +227,16 @@ open class TradingStateMachine(
         set(value) {
             val modified = data?.mutable() ?: mutableMapOf()
             modified.safeSet("transferStatuses", value)
+            this.data = if (modified.size != 0) modified else null
+        }
+
+    internal var trackStatuses: Map<String, Any>?
+        get() {
+            return parser.asNativeMap(data?.get("trackStatuses"))
+        }
+        set(value) {
+            val modified = data?.mutable() ?: mutableMapOf()
+            modified.safeSet("trackStatuses", value)
             this.data = if (modified.size != 0) modified else null
         }
 
@@ -491,10 +502,6 @@ open class TradingStateMachine(
                 changes = historicalPnl(payload, subaccountNumber)
             }
 
-            "/v3/users" -> {
-                changes = user(payload)
-            }
-
             "/v3/candles" -> {
                 changes = candles(payload)
             }
@@ -550,15 +557,13 @@ open class TradingStateMachine(
         return StateResponse(state, changes, errors)
     }
 
-//    internal fun process(host: String, path: String, payload: String): StateResponse {
-//        val url = URL.parse("$host$path")
-//            ?: throw ParsingException(ParsingErrorType.InvalidUrl, "Couldn't parse $host$path")
-//        return rest(url, payload)
-//    }
-
     internal fun resetWallet(accountAddress: String?): StateResponse {
         val wallet = if (accountAddress != null) iMapOf("walletAddress" to accountAddress) else null
         this.wallet = wallet
+        if (accountAddress != internalState.wallet.walletAddress) {
+            internalState.wallet.walletAddress = accountAddress
+            internalState.wallet.account = InternalAccountState()
+        }
         if (accountAddress == null) {
             this.account = null
         }
@@ -583,23 +588,20 @@ open class TradingStateMachine(
         subaccountNumber: Int?,
         deploymentUri: String
     ): StateChanges {
+        val json = parser.decodeJsonObject(payload)
         if (staticTyping) {
-            return try {
-                val json = Json.parseToJsonElement(payload).jsonObject.toMap()
-                val parsedAssetPayload = Json.decodeFromString<Map<String, AssetJson>?>(json.toJson())
-                    ?: error("Error parsing Asset payload")
-
-                processMarketsConfigurations(
-                    payload = parsedAssetPayload,
-                    subaccountNumber = subaccountNumber,
-                    deploymentUri = deploymentUri,
-                )
-            } catch (e: SerializationException) {
-                Logger.e { "Error parsing asset payload: $e" }
-                StateChanges.noChange
+            val parsedAssetPayload = parser.asTypedStringMap<AssetJson>(json)
+            if (parsedAssetPayload == null) {
+                Logger.e { "Error parsing asset payload" }
+                return StateChanges.noChange
             }
+
+            return processMarketsConfigurations(
+                payload = parsedAssetPayload,
+                subaccountNumber = subaccountNumber,
+                deploymentUri = deploymentUri,
+            )
         } else {
-            val json = parser.decodeJsonObject(payload)
             return if (json != null) {
                 receivedMarketsConfigurationsDeprecated(json, subaccountNumber, deploymentUri)
             } else {
@@ -686,6 +688,7 @@ open class TradingStateMachine(
                 Changes.trades,
                 Changes.configs,
                 Changes.transferStatuses,
+                Changes.trackStatuses,
                 Changes.orderbook,
                 Changes.launchIncentive,
                 -> true
@@ -1005,16 +1008,30 @@ open class TradingStateMachine(
                 val type = parser.asString(transfer["type"]) ?: return null
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
-                        listOf(
-                            ReceiptLine.Equity.rawValue,
-                            ReceiptLine.BuyingPower.rawValue,
-                            ReceiptLine.ExchangeRate.rawValue,
-                            ReceiptLine.ExchangeReceived.rawValue,
-                            ReceiptLine.BridgeFee.rawValue,
-                            ReceiptLine.Fee.rawValue,
-                            ReceiptLine.Slippage.rawValue,
-                            ReceiptLine.TransferRouteEstimatedDuration.rawValue,
-                        )
+                        if (StatsigConfig.useSkip) {
+                            listOf(
+                                ReceiptLine.Equity.rawValue,
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.BridgeFee.rawValue,
+                                // add these back when supported by Skip
+//                            ReceiptLine.ExchangeRate.rawValue,
+//                            ReceiptLine.ExchangeReceived.rawValue,
+//                            ReceiptLine.Fee.rawValue,
+                                ReceiptLine.Slippage.rawValue,
+                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
+                            )
+                        } else {
+                            listOf(
+                                ReceiptLine.Equity.rawValue,
+                                ReceiptLine.BuyingPower.rawValue,
+                                ReceiptLine.ExchangeRate.rawValue,
+                                ReceiptLine.ExchangeReceived.rawValue,
+                                ReceiptLine.Fee.rawValue,
+//                                ReceiptLine.BridgeFee.rawValue,
+                                ReceiptLine.Slippage.rawValue,
+                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
+                            )
+                        }
                     }
 
                     "TRANSFER_OUT" -> {
@@ -1066,6 +1083,7 @@ open class TradingStateMachine(
         var configs = state?.configs
         var input = state?.input
         var transferStatuses = state?.transferStatuses?.toIMutableMap()
+        var trackStatuses = state?.trackStatuses?.toIMutableMap()
         val restriction = state?.restriction
         var launchIncentive = state?.launchIncentive
         val geo = state?.compliance
@@ -1158,6 +1176,9 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.assets)) {
             if (staticTyping) {
                 assets = internalState.assets.toIMutableMap()
+                if (assets.isEmpty()) {
+                    assets = null
+                }
             } else {
                 this.assets?.let {
                     assets = assets ?: mutableMapOf<String, Asset>()
@@ -1181,10 +1202,18 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.wallet)) {
-            this.wallet?.let {
-                wallet = Wallet.create(wallet, parser, it)
-            } ?: run {
-                wallet = null
+            if (staticTyping) {
+                wallet = Wallet.create(internalState.wallet)
+            } else {
+                this.wallet?.let {
+                    wallet = Wallet.createDeprecated(
+                        existing = wallet,
+                        parser = parser,
+                        data = it,
+                    )
+                } ?: run {
+                    wallet = null
+                }
             }
         }
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
@@ -1272,10 +1301,6 @@ open class TradingStateMachine(
                 val start = now - historicalPnlDays.days
                 val modifiedHistoricalPnl = historicalPnl?.toIMutableMap() ?: mutableMapOf()
                 var subaccountHistoricalPnl = historicalPnl?.get(subaccountText)
-                val subaccountHistoricalPnlData =
-                    (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
-                        ?: mutableListOf()
-
                 if (subaccountHistoricalPnl?.size == 1) {
                     // Check if the PNL was generated from equity
                     val first = subaccountHistoricalPnl.firstOrNull()
@@ -1283,12 +1308,24 @@ open class TradingStateMachine(
                         subaccountHistoricalPnl = null
                     }
                 }
-                subaccountHistoricalPnl = SubaccountHistoricalPNL.create(
-                    subaccountHistoricalPnl,
-                    parser,
-                    subaccountHistoricalPnlData,
-                    start,
-                )
+
+                if (staticTyping) {
+                    subaccountHistoricalPnl =
+                        internalState.wallet.account.subaccounts[subaccountNumber]?.historicalPNLs?.toIList()?.filter {
+                            it.createdAtMilliseconds >= start.toEpochMilliseconds()
+                        }
+                } else {
+                    val subaccountHistoricalPnlData =
+                        (subaccountHistoricalPnl(subaccountNumber) as? IList<Map<String, Any>>)?.mutable()
+                            ?: mutableListOf()
+
+                    subaccountHistoricalPnl = SubaccountHistoricalPNL.create(
+                        existing = subaccountHistoricalPnl,
+                        parser = parser,
+                        data = subaccountHistoricalPnlData,
+                        startTime = start,
+                    )
+                }
                 modifiedHistoricalPnl.typedSafeSet(subaccountText, subaccountHistoricalPnl)
                 historicalPnl = modifiedHistoricalPnl
             }
@@ -1315,11 +1352,15 @@ open class TradingStateMachine(
             if (changes.changes.contains(Changes.transfers)) {
                 val modifiedTransfers = transfers?.toIMutableMap() ?: mutableMapOf()
                 var subaccountTransfers = transfers?.get(subaccountText)
-                subaccountTransfers = SubaccountTransfer.create(
-                    subaccountTransfers,
-                    parser,
-                    subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>,
-                )
+                if (staticTyping) {
+                    subaccountTransfers = internalState.wallet.account.subaccounts[subaccountNumber]?.transfers?.toIList()
+                } else {
+                    subaccountTransfers = SubaccountTransfer.create(
+                        subaccountTransfers,
+                        parser,
+                        subaccountTransfers(subaccountNumber) as? IList<Map<String, Any>>,
+                    )
+                }
                 modifiedTransfers.typedSafeSet(subaccountText, subaccountTransfers)
                 transfers = modifiedTransfers
             }
@@ -1367,11 +1408,32 @@ open class TradingStateMachine(
                 }
             }
         }
+        if (changes.changes.contains(Changes.trackStatuses)) {
+            this.trackStatuses?.let {
+                trackStatuses = trackStatuses ?: mutableMapOf<String, Boolean>()
+                for ((key, data) in it) {
+                    val isTracked = parser.asBool(data)
+                    if (isTracked != null) {
+                        trackStatuses!![key] = isTracked
+                    } else {
+                        trackStatuses!!.remove(key)
+                    }
+                }
+            }
+        }
         if (changes.changes.contains(Changes.launchIncentive)) {
-            this.launchIncentive?.let {
-                launchIncentive = LaunchIncentive.create(launchIncentive, parser, it)
-            } ?: run {
-                launchIncentive = null
+            if (staticTyping) {
+                launchIncentive = LaunchIncentive(
+                    seasons = LaunchIncentiveSeasons(
+                        seasons = internalState.launchIncentive.seasons?.toIList() ?: iListOf(),
+                    ),
+                )
+            } else {
+                this.launchIncentive?.let {
+                    launchIncentive = LaunchIncentive.create(launchIncentive, parser, it)
+                } ?: run {
+                    launchIncentive = null
+                }
             }
         }
         return PerpetualState(
@@ -1391,6 +1453,7 @@ open class TradingStateMachine(
             input,
             subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
             transferStatuses,
+            trackStatuses,
             restriction,
             launchIncentive,
             geo,

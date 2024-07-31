@@ -47,10 +47,10 @@ fun TradingStateMachine.loadv4SubaccountsWithPositions(
     endpoint: String,
 ): StateResponse {
     return rest(
-        AbUrl.fromString(endpoint),
-        mock.accountsChannel.v4accountsReceivedWithPositions,
-        0,
-        null,
+        url = AbUrl.fromString(urlString = endpoint),
+        payload = mock.accountsChannel.v4accountsReceivedWithPositions,
+        subaccountNumber = 0,
+        height = null,
     )
 }
 

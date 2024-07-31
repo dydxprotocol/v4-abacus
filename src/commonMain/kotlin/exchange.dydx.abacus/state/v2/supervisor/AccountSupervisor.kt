@@ -435,10 +435,12 @@ internal open class AccountSupervisor(
             val oldState = stateMachine.state
             update(stateMachine.onChainDelegations(response), oldState)
         }
+
         helper.getOnChain(QueryType.GetCurrentUnstaking, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainUnbonding(response), oldState)
         }
+
         helper.getOnChain(QueryType.GetStakingRewards, paramsInJson) { response ->
             val oldState = stateMachine.state
             update(stateMachine.onChainStakingRewards(response), oldState)
@@ -545,15 +547,17 @@ internal open class AccountSupervisor(
         val maxDuration = Clock.System.now() - tradingRewardsStartDate + 2.days
 
         helper.retrieveTimed(
-            url,
-            historicalTradingRewardsInPeriod,
-            "startedAt",
-            1.days,
-            maxDuration,
-            "startingBeforeOrAt",
-            null,
-            params,
-            previousUrl,
+            url = url,
+            items = historicalTradingRewardsInPeriod,
+            timeField = { item ->
+                helper.parser.asDatetime(helper.parser.asMap(item)?.get("startedAt"))
+            },
+            sampleDuration = 1.days,
+            maxDuration = maxDuration,
+            beforeParam = "startingBeforeOrAt",
+            afterParam = null,
+            additionalParams = params,
+            previousUrl = previousUrl,
         ) { url, response, httpCode, _ ->
             if (helper.success(httpCode) && !response.isNullOrEmpty()) {
                 val historicalTradingRewards = helper.parser.decodeJsonObject(response)?.toIMap()
@@ -577,11 +581,11 @@ internal open class AccountSupervisor(
         val url = helper.configs.launchIncentiveUrl("points")
         if (url != null) {
             helper.get(
-                "$url/$accountAddress",
-                iMapOf(
+                url = "$url/$accountAddress",
+                params = iMapOf(
                     "n" to season,
                 ),
-                null,
+                headers = null,
             ) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
                     val oldState = stateMachine.state
@@ -1039,6 +1043,7 @@ internal open class AccountSupervisor(
                 state?.input,
                 state?.availableSubaccountNumbers ?: iListOf(),
                 state?.transferStatuses,
+                state?.trackStatuses,
                 restriction,
                 state?.launchIncentive,
                 state?.compliance,
@@ -1073,6 +1078,7 @@ internal open class AccountSupervisor(
                 state?.input,
                 state?.availableSubaccountNumbers ?: iListOf(),
                 state?.transferStatuses,
+                state?.trackStatuses,
                 state?.restriction,
                 state?.launchIncentive,
                 Compliance(

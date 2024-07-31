@@ -20,9 +20,15 @@ internal const val CONDITIONAL_ORDER_FLAGS = 32
 
 // Asset Constants
 internal const val NATIVE_TOKEN_DEFAULT_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+internal const val ETHEREUM_CHAIN_ID = "1"
+internal val ALLOWED_CHAIN_TYPES = listOf("evm", "svm")
 
 // Polling durations
 internal const val GEO_POLLING_DURATION_SECONDS = 10.0
 
 // Autosweep Constants
 internal const val MIN_USDC_AMOUNT_FOR_AUTO_SWEEP = 20000
+
+// Gas Constants based on historical Squid responses
+internal const val DEFAULT_GAS_LIMIT = 1500000
+internal const val DEFAULT_GAS_PRICE = 1520000000

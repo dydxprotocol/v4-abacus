@@ -1,9 +1,12 @@
 package exchange.dydx.abacus.processor.wallet.account
 
-import exchange.dydx.abacus.output.AccountBalance
-import exchange.dydx.abacus.output.StakingRewards
-import exchange.dydx.abacus.output.UnbondingDelegation
+import exchange.dydx.abacus.output.account.AccountBalance
+import exchange.dydx.abacus.output.account.StakingRewards
+import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.wallet.account.staking.AccountDelegationsProcessor
+import exchange.dydx.abacus.processor.wallet.account.staking.DelegationUnbondingProcessor
+import exchange.dydx.abacus.processor.wallet.account.staking.StakingRewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.SocketInfo
@@ -14,6 +17,13 @@ import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerPnlTicksResponseObject
+import indexer.codegen.IndexerTransferResponseObject
+import indexer.models.chain.OnChainAccountBalanceObject
+import indexer.models.chain.OnChainDelegationResponse
+import indexer.models.chain.OnChainStakingRewardsResponse
+import indexer.models.chain.OnChainUnbondingResponse
+import indexer.models.configs.ConfigsLaunchIncentivePoints
 import kollections.iMutableListOf
 
 /*
@@ -41,22 +51,6 @@ import kollections.iMutableListOf
           "sumClose": "125.35",
           "netFunding": "-4101.337527"
         },
-        " v": {
-          "market": "LINK-USD",
-          "status": "OPEN",
-          "side": "SHORT",
-          "size": "-11",
-          "maxSize": "-11",
-          "entryPrice": "7.175000",
-          "exitPrice": "0.000000",
-          "unrealizedPnl": "-9.916131",
-          "realizedPnl": "2.022104",
-          "createdAt": "2022-07-20T18:24:29.570Z",
-          "closedAt": null,
-          "sumOpen": "11",
-          "sumClose": "0",
-          "netFunding": "2.022104"
-        },
         "UNI-USD": {
           "market": "UNI-USD",
           "status": "OPEN",
@@ -72,22 +66,6 @@ import kollections.iMutableListOf
           "sumOpen": "11548.4",
           "sumClose": "0",
           "netFunding": "142.629215"
-        },
-        "SUSHI-USD": {
-          "market": "SUSHI-USD",
-          "status": "OPEN",
-          "side": "LONG",
-          "size": "12",
-          "maxSize": "12",
-          "entryPrice": "1.464000",
-          "exitPrice": "0.000000",
-          "unrealizedPnl": "0.729203",
-          "realizedPnl": "0.271316",
-          "createdAt": "2022-07-18T20:36:17.165Z",
-          "closedAt": null,
-          "sumOpen": "12",
-          "sumClose": "0",
-          "netFunding": "0.271316"
         }
       },
       "accountNumber": "0",
@@ -185,7 +163,6 @@ import kollections.iMutableListOf
       },
  */
 
-@Suppress("UNCHECKED_CAST")
 internal class V4AccountProcessor(
     parser: ParserProtocol,
     localizer: LocalizerProtocol?,
@@ -195,29 +172,56 @@ internal class V4AccountProcessor(
     private val delegationsProcessor = AccountDelegationsProcessor(parser)
     private val tradingRewardsProcessor = AccountTradingRewardsProcessor(parser)
     private val launchIncentivePointsProcessor = LaunchIncentivePointsProcessor(parser)
+    private val stakingRewardsProcessor = StakingRewardsProcessor(parser)
+    private val unbondingProcessor = DelegationUnbondingProcessor(parser)
 
-    internal fun receivedAccountBalances(
+    internal fun processAccountBalances(
+        existing: InternalAccountState,
+        payload: List<OnChainAccountBalanceObject>?,
+    ): InternalAccountState {
+        existing.balances = balancesProcessor.process(existing.balances, payload)
+        return existing
+    }
+
+    internal fun receivedAccountBalancesDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val balances = parser.asNativeMap(parser.value(existing, "balances"))
-        val modifiedBalances = balancesProcessor.receivedBalances(balances, payload)
+        val modifiedBalances = balancesProcessor.receivedBalancesDeprecated(balances, payload)
         modified.safeSet("balances", modifiedBalances)
         return modified
     }
 
-    internal fun receivedDelegations(
+    internal fun processStakingDelegations(
+        existing: InternalAccountState,
+        payload: OnChainDelegationResponse?,
+    ): InternalAccountState {
+        existing.stakingBalances = delegationsProcessor.process(existing.stakingBalances, payload)
+        existing.stakingDelegations = delegationsProcessor.processDelegations(existing.stakingDelegations, payload)
+        return existing
+    }
+
+    internal fun receivedDelegationsDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val delegations = parser.asNativeMap(parser.value(existing, "stakingBalances"))
-        val modifiedStakingBalance = delegationsProcessor.received(delegations, payload)
+        val modifiedStakingBalance = delegationsProcessor.receivedDeprecated(delegations, payload)
         modified.safeSet("stakingBalances", modifiedStakingBalance)
-        val modifiedDelegations = delegationsProcessor.receivedDelegations(delegations, payload)
+        val modifiedDelegations = delegationsProcessor.receivedDelegationsDeprecated(delegations, payload)
         modified.safeSet("stakingDelegations", modifiedDelegations)
         return modified
+    }
+
+    fun processUnbonding(
+        existing: InternalAccountState,
+        payload: OnChainUnbondingResponse?,
+    ): InternalAccountState {
+        existing.unbondingDelegation = unbondingProcessor.process(existing.unbondingDelegation, payload)
+        return existing
     }
 
     internal fun receivedUnbonding(
@@ -245,7 +249,15 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedStakingRewards(
+    fun processStakingRewards(
+        existing: InternalAccountState,
+        payload: OnChainStakingRewardsResponse?,
+    ): InternalAccountState {
+        existing.stakingRewards = stakingRewardsProcessor.process(existing.stakingRewards, payload)
+        return existing
+    }
+
+    internal fun receivedStakingRewardsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
     ): Map<String, Any>? {
@@ -270,14 +282,25 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedHistoricalPnls(
+    internal fun processHistoricalPnls(
+        existing: InternalAccountState,
+        payload: List<IndexerPnlTicksResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalAccountState {
+        val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+        val newSubaccount = subaccountsProcessor.processsHistoricalPNLs(subaccount, payload)
+        existing.subaccounts[subaccountNumber] = newSubaccount
+        return existing
+    }
+
+    internal fun receivedHistoricalPnlsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
         subaccountNumber: Int,
     ): Map<String, Any>? {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedHistoricalPnls(subaccount, payload)
+        val modifiedsubaccount = subaccountsProcessor.receivedHistoricalPnlsDeprecated(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
@@ -305,14 +328,25 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedTransfers(
+    fun processTransfers(
+        existing: InternalAccountState,
+        payload: List<IndexerTransferResponseObject>?,
+        subaccountNumber: Int,
+    ): InternalAccountState {
+        val subaccount = existing.subaccounts[subaccountNumber] ?: InternalSubaccountState(subaccountNumber = subaccountNumber)
+        val newSubaccount = subaccountsProcessor.processTransfers(subaccount, payload)
+        existing.subaccounts[subaccountNumber] = newSubaccount
+        return existing
+    }
+
+    internal fun receivedTransfersDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>?,
         subaccountNumber: Int,
     ): Map<String, Any> {
         val modified = existing?.mutable() ?: mutableMapOf()
         val subaccount = parser.asNativeMap(parser.value(existing, "subaccounts.$subaccountNumber"))
-        val modifiedsubaccount = subaccountsProcessor.receivedTransfers(subaccount, payload)
+        val modifiedsubaccount = subaccountsProcessor.receivedTransfersDeprecated(subaccount, payload)
         modified.safeSet("subaccounts.$subaccountNumber", modifiedsubaccount)
         return modified
     }
@@ -331,6 +365,21 @@ internal class V4AccountProcessor(
                 payload,
             )
         modified.safeSet("tradingRewards.historical.$period", modifiedHistoricalTradingRewards)
+        return modified
+    }
+
+    fun processAccount(
+        internalState: InternalAccountState,
+        content: Map<String, Any>?,
+    ): InternalAccountState {
+        var modified = internalState
+        val subaccounts = parser.asNativeList(parser.value(content, "subaccounts"))
+        subaccountsProcessor.processSubaccounts(
+            internalState = internalState.subaccounts,
+            payload = subaccounts,
+        )
+
+        // TODO: Updating the account with the trading rewards
         return modified
     }
 
@@ -659,7 +708,21 @@ internal class V4AccountProcessor(
         subaccountsProcessor.accountAddress = accountAddress
     }
 
-    internal fun receivedLaunchIncentivePoint(
+    fun processLaunchIncentivePoints(
+        existing: InternalAccountState,
+        season: String,
+        payload: ConfigsLaunchIncentivePoints?,
+    ): InternalAccountState {
+        val points = launchIncentivePointsProcessor.process(
+            season = season,
+            existing = existing.launchIncentivePoints,
+            payload = payload,
+        )
+        existing.launchIncentivePoints = points
+        return existing
+    }
+
+    internal fun receivedLaunchIncentivePointDeprecated(
         existing: Map<String, Any>,
         season: String,
         payload: Any,

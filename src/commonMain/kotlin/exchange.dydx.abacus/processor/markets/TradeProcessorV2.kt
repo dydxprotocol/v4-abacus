@@ -72,7 +72,7 @@ internal class TradesProcessorV2(
 }
 
 internal class TradeProcessorV2(
-    private val localizer: LocalizerProtocol,
+    private val localizer: LocalizerProtocol?,
 ) {
     fun process(payload: IndexerTradeResponseObject): MarketTrade? {
         return try {
@@ -85,7 +85,7 @@ internal class TradeProcessorV2(
                 createdAtMilliseconds = payload.createdAt?.toDouble() ?: parseException(payload),
                 resources = run {
                     val key = payload.side?.name?.let { sideStringKeys[it] } ?: parseException(payload)
-                    val string = localizer.localize(key)
+                    val string = localizer?.localize(key)
 
                     MarketTradeResources(
                         sideString = string,

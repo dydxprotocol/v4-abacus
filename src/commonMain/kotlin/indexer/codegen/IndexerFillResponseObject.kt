@@ -46,5 +46,5 @@ data class IndexerFillResponseObject(
     val createdAtHeight: kotlin.String? = null,
     val orderId: kotlin.String? = null,
     val clientMetadata: kotlin.String? = null,
-    val subaccountNumber: kotlin.Double? = null
+    val subaccountNumber: kotlin.Int? = null
 )

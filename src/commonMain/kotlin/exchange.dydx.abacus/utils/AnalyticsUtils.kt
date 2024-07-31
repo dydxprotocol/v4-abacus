@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.utils
 
-import exchange.dydx.abacus.output.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -133,6 +133,7 @@ class AnalyticsUtils {
             "reduceOnly" to payload.reduceOnly,
             "side" to payload.side,
             "size" to payload.size,
+            "sizeInput" to payload.sizeInput,
             "subaccountNumber" to payload.subaccountNumber,
             "timeInForce" to payload.timeInForce,
             "triggerPrice" to payload.triggerPrice,
