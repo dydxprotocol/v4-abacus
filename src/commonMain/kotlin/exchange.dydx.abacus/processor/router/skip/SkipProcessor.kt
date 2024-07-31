@@ -8,6 +8,8 @@ import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.utils.ALLOWED_CHAIN_TYPES
+import exchange.dydx.abacus.utils.ETHEREUM_CHAIN_ID
 import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -159,8 +161,7 @@ internal class SkipProcessor(
     }
 
     override fun defaultChainId(): String? {
-//        eth mainnet chainId is 1
-        val selectedChain = getChainById("1") ?: parser.asNativeMap(this.chains?.firstOrNull())
+        val selectedChain = getChainById(chainId = ETHEREUM_CHAIN_ID) ?: parser.asNativeMap(this.chains?.firstOrNull())
 
         return parser.asString(selectedChain?.get("chain_id"))
     }
@@ -168,7 +169,7 @@ internal class SkipProcessor(
     override fun getTokenByDenomAndChainId(tokenDenom: String?, chainId: String?): Map<String, Any>? {
         val tokensList = filteredTokens(chainId)
         tokensList?.find {
-            parser.asString(parser.asNativeMap(it)?.get("denom")) == tokenDenom
+            parser.asString(parser.asNativeMap(it)?.get("denom")) == (tokenDenom ?: NATIVE_TOKEN_DEFAULT_ADDRESS)
         }?.let {
             return parser.asNativeMap(it)
         }
@@ -221,18 +222,33 @@ internal class SkipProcessor(
     }
 
     override fun defaultTokenAddress(chainId: String?): String? {
-        return chainId?.let { cid ->
-            // Retrieve the list of filtered tokens for the given chainId
-            val filteredTokens = this.filteredTokens(cid)?.mapNotNull {
-                parser.asString(parser.asNativeMap(it)?.get("denom"))
-            }.orEmpty()
-            // Find a matching CctpChainTokenInfo and check if its tokenAddress is in the filtered tokens
-            cctpChainIds?.firstOrNull { it.chainId == cid && filteredTokens.contains(it.tokenAddress) }?.tokenAddress
-                ?: run {
-                    // Fallback to the first token's address from the filtered list if no CctpChainTokenInfo match is found
-                    filteredTokens.firstOrNull()
-                }
+        if (chainId == null) {
+            return null
         }
+        val filteredTokensForChainId = filteredTokens(chainId) ?: return null
+
+        // Find if any CctpChainTokenInfo item belongs to the provided chainId
+        val cctpChain = cctpChainIds?.find { it.chainId == chainId }
+//        If one does, then check for a token in the filteredTokens whose denom matches the found cctpChainTokenInfo, if one exists
+        val filteredCctpToken = filteredTokensForChainId.find {
+            parser.asString(parser.asNativeMap(it)?.get("denom")) == cctpChain?.tokenAddress
+        }
+        if (filteredCctpToken != null) {
+            return parser.asString(parser.asNativeMap(filteredCctpToken)?.get("denom"))
+        }
+//        If no cctp item available, check for a native token item
+        val nativeChain = filteredTokensForChainId?.find {
+            parser.asString(parser.asNativeMap(it)?.get("denom")) == NATIVE_TOKEN_DEFAULT_ADDRESS
+        }
+        if (nativeChain != null) {
+            return parser.asString(parser.asNativeMap(nativeChain)?.get("denom"))
+        }
+//        Otherwise, just grab the first available token if any exist
+        val firstTokenOrNull = parser.asNativeMap(filteredTokensForChainId?.firstOrNull())
+        if (firstTokenOrNull != null) {
+            return parser.asString(parser.asNativeMap(firstTokenOrNull)?.get("denom"))
+        }
+        return null
     }
 
     override fun chainResources(chainId: String?): Map<String, TransferInputChainResource>? {
@@ -270,7 +286,7 @@ internal class SkipProcessor(
         this.chains?.let {
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
-                    if (parser.asString(chain.get("chainType")) != "cosmos") {
+                    if (parser.asString(chain.get("chain_type")) in ALLOWED_CHAIN_TYPES) {
                         options.add(chainProcessor.received(chain))
                     }
                 }
@@ -293,6 +309,8 @@ internal class SkipProcessor(
             }
         }
         options.sortBy { parser.asString(it.stringKey) }
-        return options
+
+        val sortedOptions = options.sortedBy { if (it.type === NATIVE_TOKEN_DEFAULT_ADDRESS) 0 else 1 }
+        return sortedOptions
     }
 }
