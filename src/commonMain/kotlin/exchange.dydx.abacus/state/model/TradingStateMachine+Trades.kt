@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import kollections.iListOf
 
 internal fun TradingStateMachine.receivedTrades(
@@ -9,7 +10,16 @@ internal fun TradingStateMachine.receivedTrades(
     payload: Map<String, Any>
 ): StateChanges? {
     return if (market != null) {
-        this.marketsSummary = marketsProcessor.receivedTrades(marketsSummary, market, payload)
+        this.marketsSummary = marketsProcessor.receivedTradesDeprecated(marketsSummary, market, payload)
+        if (staticTyping) {
+            val marketState = internalState.markets[market]
+            val trades = tradesProcessorV2.processSubscribed(payload)
+            if (marketState != null) {
+                marketState.trades = trades
+            } else {
+                internalState.markets[market] = InternalMarketState(trades)
+            }
+        }
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
         null
@@ -21,7 +31,16 @@ internal fun TradingStateMachine.receivedTradesChanges(
     payload: Map<String, Any>
 ): StateChanges? {
     return if (market != null) {
-        this.marketsSummary = marketsProcessor.receivedTradesChanges(marketsSummary, market, payload)
+        this.marketsSummary = marketsProcessor.receivedTradesChangesDeprecated(marketsSummary, market, payload)
+        if (staticTyping) {
+            val marketState = internalState.markets[market]
+            val trades = tradesProcessorV2.processChannelData(marketState?.trades, payload)
+            if (marketState != null) {
+                marketState.trades = trades
+            } else {
+                internalState.markets[market] = InternalMarketState(trades)
+            }
+        }
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
         null
