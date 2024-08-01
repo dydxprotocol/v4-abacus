@@ -1091,7 +1091,15 @@ open class TradingStateMachine(
         if (changes.changes.contains(Changes.markets)) {
             parser.asNativeMap(data?.get("markets"))?.let {
                 marketsSummary =
-                    PerpetualMarketSummary.apply(marketsSummary, parser, it, this.assets, changes)
+                    PerpetualMarketSummary.apply(
+                        existing = marketsSummary,
+                        parser = parser,
+                        data = it,
+                        assets = this.assets,
+                        staticTyping = staticTyping,
+                        marketSummaryState = internalState.marketsSummary,
+                        changes = changes
+                    )
             } ?: run {
                 marketsSummary = null
             }

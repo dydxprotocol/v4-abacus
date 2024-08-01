@@ -6,6 +6,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
@@ -50,6 +51,9 @@ data class MarketStatus(
             }
         }
     }
+
+    val canDisplay: Boolean
+        get() = canTrade || canReduce
 }
 
 /* for V4 only */
@@ -942,63 +946,50 @@ data class PerpetualMarketSummary(
     val markets: IMap<String, PerpetualMarket>?,
 ) {
     companion object {
-        internal fun create(
-            existing: PerpetualMarketSummary?,
-            parser: ParserProtocol,
-            data: Map<String, Any>,
-            assets: Map<String, Any>?
-        ): PerpetualMarketSummary? {
-            Logger.d { "creating Perpetual Market Summary\n" }
-
-            val markets: IMutableMap<String, PerpetualMarket> =
-                iMutableMapOf()
-            val marketsData = parser.asMap(data["markets"]) ?: return null
-
-            for ((key, value) in marketsData) {
-                val marketData = parser.asMap(value) ?: iMapOf()
-                PerpetualMarket.create(
-                    existing?.markets?.get(key),
-                    parser,
-                    marketData,
-                    assets,
-                    false,
-                    false,
-                )
-                    ?.let { market ->
-                        markets[key] = market
-                    }
-            }
-
-            return perpetualMarketSummary(existing, parser, data, markets)
-        }
-
         internal fun apply(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
             assets: Map<String, Any>?,
+            staticTyping: Boolean,
+            marketSummaryState: InternalMarketSummaryState,
             changes: StateChanges,
         ): PerpetualMarketSummary? {
-            val marketsData = parser.asMap(data["markets"]) ?: return null
-            val changedMarkets = changes.markets ?: marketsData.keys
+            if (staticTyping) {
+                if (marketSummaryState.markets.isEmpty()) {
+                    return null
+                }
+                val changedMarkets = changes.markets ?: marketSummaryState.markets.keys
+                val markets = existing?.markets?.mutable() ?: iMutableMapOf()
+                for (marketId in changedMarkets) {
+                    val perpetualMarket = marketSummaryState.markets[marketId]?.perpetualMarket
+                    if (perpetualMarket != null) {
+                        markets[marketId] = perpetualMarket
+                    }
+                }
+                return perpetualMarketSummary(existing, parser, data, markets)
+            } else {
+                val marketsData = parser.asMap(data["markets"]) ?: return null
+                val changedMarkets = changes.markets ?: marketsData.keys
 
-            val markets = existing?.markets?.mutable() ?: iMutableMapOf()
-            for (marketId in changedMarkets) {
-                val marketData = parser.asMap(marketsData[marketId]) ?: continue
+                val markets = existing?.markets?.mutable() ?: iMutableMapOf()
+                for (marketId in changedMarkets) {
+                    val marketData = parser.asMap(marketsData[marketId]) ?: continue
 //                val marketData = parser.asMap(configDataMap["configs"]) ?: continue
-                val existingMarket = existing?.markets?.get(marketId)
+                    val existingMarket = existing?.markets?.get(marketId)
 
-                val perpMarket = PerpetualMarket.create(
-                    existingMarket,
-                    parser,
-                    marketData,
-                    assets,
-                    changes.changes.contains(Changes.orderbook),
-                    changes.changes.contains(Changes.trades),
-                )
-                markets.typedSafeSet(marketId, perpMarket)
+                    val perpMarket = PerpetualMarket.create(
+                        existing = existingMarket,
+                        parser = parser,
+                        data = marketData,
+                        assets = assets,
+                        resetOrderbook = changes.changes.contains(Changes.orderbook),
+                        resetTrades = changes.changes.contains(Changes.trades),
+                    )
+                    markets.typedSafeSet(marketId, perpMarket)
+                }
+                return perpetualMarketSummary(existing, parser, data, markets)
             }
-            return perpetualMarketSummary(existing, parser, data, markets)
         }
 
         private fun perpetualMarketSummary(
@@ -1020,10 +1011,10 @@ data class PerpetualMarketSummary(
                 existing
             } else {
                 PerpetualMarketSummary(
-                    volume24HUSDC,
-                    openInterestUSDC,
-                    trades24H,
-                    newMarkets,
+                    volume24HUSDC = volume24HUSDC,
+                    openInterestUSDC = openInterestUSDC,
+                    trades24H = trades24H,
+                    markets = newMarkets,
                 )
             }
         }

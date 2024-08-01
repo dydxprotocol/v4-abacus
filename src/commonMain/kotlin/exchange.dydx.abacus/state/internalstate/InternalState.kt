@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.MarketTrade
+import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.SubaccountFill
@@ -26,7 +27,16 @@ internal data class InternalState(
     val wallet: InternalWalletState = InternalWalletState(),
     var rewardsParams: InternalRewardsParamsState? = null,
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
-    val markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
+    val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
+)
+
+internal data class InternalMarketSummaryState(
+    var markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
+)
+
+internal data class InternalMarketState(
+    var trades: List<MarketTrade>? = null,
+    var perpetualMarket: PerpetualMarket? = null,
 )
 
 internal data class InternalWalletState(
@@ -153,8 +163,4 @@ internal data class InternalRewardsParamsState(
 
 internal data class InternalLaunchIncentiveState(
     var seasons: List<LaunchIncentiveSeason>? = null,
-)
-
-internal data class InternalMarketState(
-    var trades: List<MarketTrade>? = null,
 )
