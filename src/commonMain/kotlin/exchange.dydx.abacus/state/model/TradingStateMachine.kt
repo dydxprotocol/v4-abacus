@@ -98,7 +98,7 @@ open class TradingStateMachine(
 
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
-    internal val tradesProcessorV2 = TradesProcessorV2(TradeProcessorV2(localizer))
+    internal val tradesProcessorV2 = TradesProcessorV2(TradeProcessorV2(parser, localizer))
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(
             parser = parser,
