@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.account.AccountBalance
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.UnbondingDelegation
@@ -224,7 +225,7 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedUnbonding(
+    internal fun receivedUnbondingDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
@@ -632,13 +633,30 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun updateHeight(
+    fun updateHeight(
+        existing: InternalAccountState,
+        height: BlockAndTime?,
+    ): Triple<InternalAccountState, Boolean, List<Int>?> {
+        val subaccounts = existing.subaccounts
+        if (subaccounts != null) {
+            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeight(
+                existing = subaccounts,
+                height = height,
+            )
+            if (updated) {
+                return Triple(existing, true, subaccountIds)
+            }
+        }
+        return Triple(existing, false, null)
+    }
+
+    internal fun updateHeightDeprecated(
         existing: Map<String, Any>,
         height: BlockAndTime?,
     ): Triple<Map<String, Any>, Boolean, List<Int>?> {
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
         if (subaccounts != null) {
-            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeight(
+            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeightDeprecated(
                 subaccounts,
                 height,
             )
@@ -685,7 +703,21 @@ internal class V4AccountProcessor(
         return Pair(existing, false)
     }
 
-    internal fun orderCanceled(
+    fun orderCanceled(
+        existing: InternalAccountState,
+        orderId: String,
+        subaccountNumber: Int,
+    ): Pair<InternalAccountState, Boolean> {
+        val subaccounts = existing.subaccounts
+        val (modifiedSubaccounts, updated) = subaccountsProcessor.orderCanceled(
+            existing = subaccounts,
+            orderId = orderId,
+            subaccountNumber = subaccountNumber,
+        )
+        return Pair(existing, updated)
+    }
+
+    internal fun orderCanceledDeprecated(
         existing: Map<String, Any>,
         orderId: String,
         subaccountNumber: Int,
@@ -693,7 +725,7 @@ internal class V4AccountProcessor(
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))?.mutable()
         if (subaccounts != null) {
             val (modifiedSubaccounts, updated) =
-                subaccountsProcessor.orderCanceled(subaccounts, orderId, subaccountNumber)
+                subaccountsProcessor.orderCanceledDeprecated(subaccounts, orderId, subaccountNumber)
             if (updated) {
                 val modified = existing.mutable()
                 modified.safeSet("subaccounts", modifiedSubaccounts)
@@ -713,12 +745,12 @@ internal class V4AccountProcessor(
         season: String,
         payload: ConfigsLaunchIncentivePoints?,
     ): InternalAccountState {
-        val points = launchIncentivePointsProcessor.process(
-            season = season,
-            existing = existing.launchIncentivePoints,
-            payload = payload,
-        )
-        existing.launchIncentivePoints = points
+        if (payload != null) {
+            existing.launchIncentivePoints[season] = LaunchIncentivePoint(
+                incentivePoints = payload.incentivePoints ?: 0.0,
+                marketMakingIncentivePoints = payload.marketMakingIncentivePoints ?: 0.0,
+            )
+        }
         return existing
     }
 

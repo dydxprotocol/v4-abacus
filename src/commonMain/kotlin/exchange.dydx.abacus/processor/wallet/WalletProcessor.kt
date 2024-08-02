@@ -121,14 +121,31 @@ internal class WalletProcessor(
         }
     }
 
-    internal fun updateHeight(
+    fun updateHeight(
+        existing: InternalWalletState?,
+        height: BlockAndTime?,
+    ): Triple<InternalWalletState?, Boolean, List<Int>?> {
+        if (existing != null) {
+            val (modifiedAccount, accountUpdated, subaccountIds) = v4accountProcessor.updateHeight(
+                existing = existing.account,
+                height = height,
+            )
+            if (accountUpdated) {
+                existing.account = modifiedAccount
+                return Triple(existing, true, subaccountIds)
+            }
+        }
+        return Triple(existing, false, null)
+    }
+
+    internal fun updateHeightDeprecated(
         existing: Map<String, Any>?,
         height: BlockAndTime?,
     ): Triple<Map<String, Any>?, Boolean, List<Int>?> {
         if (existing != null) {
             val account = parser.asNativeMap(existing["account"])
             if (account != null) {
-                val (modifiedAccount, accountUpdated, subaccountIds) = v4accountProcessor.updateHeight(
+                val (modifiedAccount, accountUpdated, subaccountIds) = v4accountProcessor.updateHeightDeprecated(
                     account,
                     height,
                 )
@@ -204,7 +221,7 @@ internal class WalletProcessor(
         payload: List<Any>?,
     ): Map<String, Any>? {
         return receivedObject(existing, "account", payload) { existing, payload ->
-            v4accountProcessor.receivedUnbonding(
+            v4accountProcessor.receivedUnbondingDeprecated(
                 parser.asNativeMap(existing),
                 payload as? List<Any>,
             )
@@ -397,14 +414,27 @@ internal class WalletProcessor(
         return Pair(existing, false)
     }
 
-    internal fun orderCanceled(
+    fun orderCanceled(
+        existing: InternalWalletState,
+        orderId: String,
+        subaccountNumber: Int,
+    ): Pair<InternalWalletState, Boolean> {
+        val (modifiedAccount, updated) = v4accountProcessor.orderCanceled(
+            existing = existing.account,
+            orderId = orderId,
+            subaccountNumber = subaccountNumber,
+        )
+        return Pair(existing, updated)
+    }
+
+    internal fun orderCanceledDeprecated(
         existing: Map<String, Any>,
         orderId: String,
         subaccountNumber: Int,
     ): Pair<Map<String, Any>, Boolean> {
         val account = parser.asNativeMap(existing["account"])
         if (account != null) {
-            val (modifiedAccount, updated) = v4accountProcessor.orderCanceled(
+            val (modifiedAccount, updated) = v4accountProcessor.orderCanceledDeprecated(
                 account,
                 orderId,
                 subaccountNumber,

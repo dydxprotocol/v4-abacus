@@ -231,19 +231,32 @@ internal fun TradingStateMachine.orderCanceled(
     orderId: String,
     subaccountNumber: Int
 ): StateChanges {
-    val wallet = wallet
-    if (wallet != null) {
+    if (staticTyping) {
         val (modifiedWallet, updated) = walletProcessor.orderCanceled(
-            wallet,
-            orderId,
-            subaccountNumber,
+            existing = internalState.wallet,
+            orderId = orderId,
+            subaccountNumber = subaccountNumber,
         )
-        if (updated) {
-            this.wallet = modifiedWallet
-            return StateChanges(iListOf(Changes.subaccount), null, iListOf(subaccountNumber))
+        return if (updated) {
+            StateChanges(iListOf(Changes.subaccount), null, iListOf(subaccountNumber))
+        } else {
+            StateChanges(iListOf<Changes>())
         }
+    } else {
+        val wallet = wallet
+        if (wallet != null) {
+            val (modifiedWallet, updated) = walletProcessor.orderCanceledDeprecated(
+                wallet,
+                orderId,
+                subaccountNumber,
+            )
+            if (updated) {
+                this.wallet = modifiedWallet
+                return StateChanges(iListOf(Changes.subaccount), null, iListOf(subaccountNumber))
+            }
+        }
+        return StateChanges(iListOf<Changes>())
     }
-    return StateChanges(iListOf<Changes>())
 }
 
 internal fun TradingStateMachine.onChainAccountBalances(payload: String): StateChanges {
