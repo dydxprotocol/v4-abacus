@@ -7,6 +7,7 @@ import exchange.dydx.abacus.output.MarketStatus
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.base.BaseProcessorProtocol
 import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IndexerResponseParsingException
@@ -25,11 +26,17 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
+internal interface MarketProcessorProtocol : BaseProcessorProtocol {
+    fun process(marketId: String, payload: IndexerCompositeMarketObject): PerpetualMarket?
+    fun processOraclePrice(marketId: String, payload: IndexerWsMarketOraclePriceObject): PerpetualMarket?
+    fun clearCachedOraclePrice(marketId: String)
+}
+
 @Suppress("UNCHECKED_CAST")
 internal class MarketProcessor(
     parser: ParserProtocol,
     private val calculateSparklines: Boolean,
-) : BaseProcessor(parser) {
+) : BaseProcessor(parser), MarketProcessorProtocol {
     private val tradesProcessor = TradesProcessor(parser)
     private val orderbookProcessor = OrderbookProcessor(parser)
     private val candlesProcessor = CandlesProcessor(parser)
@@ -141,28 +148,41 @@ internal class MarketProcessor(
         ),
     )
 
-    private var cachedIndexerMarketResponse: IndexerCompositeMarketObject? = null
-    private var cachedIndexerOraclePrice: IndexerWsMarketOraclePriceObject? = null
+    private var cachedIndexerMarketResponses: MutableMap<String, IndexerCompositeMarketObject> = mutableMapOf()
+    private var cachedIndexerOraclePrices: MutableMap<String, IndexerWsMarketOraclePriceObject> = mutableMapOf()
 
-    fun process(
+    override fun process(
+        marketId: String,
         payload: IndexerCompositeMarketObject,
     ): PerpetualMarket? {
-        cachedIndexerMarketResponse = if (cachedIndexerMarketResponse != null) {
-            cachedIndexerMarketResponse?.copyNotNulls(payload)
+        val cached = cachedIndexerMarketResponses[marketId]
+        if (cached != null) {
+            cachedIndexerMarketResponses[marketId] = cached.copyNotNulls(payload)
         } else {
-            payload
+            cachedIndexerMarketResponses[marketId] = payload
         }
-        return createPerpetualMarket()
+        return createPerpetualMarket(marketId)
     }
 
-    fun processOraclePrice(
+    override fun processOraclePrice(
+        marketId: String,
         payload: IndexerWsMarketOraclePriceObject
     ): PerpetualMarket? {
-        cachedIndexerOraclePrice = payload
-        return createPerpetualMarket()
+        cachedIndexerOraclePrices[marketId] = payload
+        return createPerpetualMarket(marketId)
     }
 
-    private fun createPerpetualMarket(): PerpetualMarket? {
+    override fun clearCachedOraclePrice(
+        marketId: String,
+    ) {
+        cachedIndexerOraclePrices.remove(marketId)
+    }
+
+    private fun createPerpetualMarket(
+        marketId: String,
+    ): PerpetualMarket? {
+        val cachedIndexerMarketResponse = cachedIndexerMarketResponses[marketId]
+        val cachedIndexerOraclePrice = cachedIndexerOraclePrices[marketId]
         val payload = cachedIndexerMarketResponse ?: return null
         val name = parser.asString(payload.ticker) ?: return null
         val oraclePrice = parser.asDouble(cachedIndexerOraclePrice?.oraclePrice) ?: parser.asDouble(payload.oraclePrice)
@@ -184,7 +204,7 @@ internal class MarketProcessor(
                 ),
                 status = status,
                 configs = createConfigs(payload),
-                perpetual = createMarketPerpetual(payload),
+                perpetual = createMarketPerpetual(payload, oraclePrice),
             )
             return newValue
         } catch (e: IndexerResponseParsingException) {
@@ -239,7 +259,7 @@ internal class MarketProcessor(
             minOrderSize = stepSize,
             initialMarginFraction = parser.asDouble(payload.initialMarginFraction),
             maintenanceMarginFraction = parser.asDouble(payload.maintenanceMarginFraction),
-            incrementalInitialMarginFraction = null,
+            incrementalInitialMarginFraction = parser.asDouble(payload.incrementalInitialMarginFraction),
             incrementalPositionSize = parser.asDouble(payload.incrementalPositionSize),
             maxPositionSize = parser.asDouble(payload.maxPositionSize),
             basePositionNotional = null,
@@ -277,10 +297,10 @@ internal class MarketProcessor(
 
     private fun createMarketPerpetual(
         payload: IndexerCompositeMarketObject,
+        oraclePrice: Double? = null,
     ): MarketPerpetual? {
         val nextFundingRate = parser.asDouble(payload.nextFundingRate)
         val openInterest = parser.asDouble(payload.openInterest)
-        val oraclePrice = parser.asDouble(payload.oraclePrice)
         return if (openInterest != null) {
             MarketPerpetual(
                 volume24H = parser.asDouble(payload.volume24H),
@@ -391,7 +411,7 @@ internal class MarketProcessor(
         }
     }
 
-    internal fun receivedConfigurations(
+    internal fun receivedConfigurationsDeprecated(
         market: Map<String, Any>?,
         payload: Map<String, Any>,
     ): Map<String, Any> {

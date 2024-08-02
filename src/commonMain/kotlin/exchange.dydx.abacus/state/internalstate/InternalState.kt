@@ -157,9 +157,9 @@ internal data class InternalPerpetualPosition(
         get() {
             return if (subaccountNumber != null) {
                 if (subaccountNumber >= NUM_PARENT_SUBACCOUNTS) {
-                    MarginMode.Cross
-                } else {
                     MarginMode.Isolated
+                } else {
+                    MarginMode.Cross
                 }
             } else {
                 null

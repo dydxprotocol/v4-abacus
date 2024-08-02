@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * AssetJson from ${V4_WEB_URL}/configs/markets.json
  */
 @Serializable
-data class AssetJson(
+data class ConfigsMarketAsset(
     val name: String,
     val websiteLink: String? = null,
     val whitepaperLink: String? = null,

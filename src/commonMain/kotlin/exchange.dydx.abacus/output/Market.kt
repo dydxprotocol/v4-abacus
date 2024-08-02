@@ -10,7 +10,6 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
@@ -19,6 +18,7 @@ import kollections.JsExport
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kotlinx.serialization.Serializable
 import numberOfDecimals
 
@@ -958,12 +958,10 @@ data class PerpetualMarketSummary(
                 if (marketSummaryState.markets.isEmpty()) {
                     return null
                 }
-                val changedMarkets = changes.markets ?: marketSummaryState.markets.keys
-                val markets = existing?.markets?.mutable() ?: iMutableMapOf()
-                for (marketId in changedMarkets) {
-                    val perpetualMarket = marketSummaryState.markets[marketId]?.perpetualMarket
-                    if (perpetualMarket != null) {
-                        markets[marketId] = perpetualMarket
+                val markets: MutableMap<String, PerpetualMarket> = mutableMapOf()
+                for ((marketId, market) in marketSummaryState.markets) {
+                    market.perpetualMarket?.let {
+                        markets[marketId] = it
                     }
                 }
                 return perpetualMarketSummary(existing, parser, data, markets)
@@ -995,7 +993,7 @@ data class PerpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
-            newMarkets: IMutableMap<String, PerpetualMarket>,
+            newMarkets: Map<String, PerpetualMarket>,
         ): PerpetualMarketSummary? {
             val volume24HUSDC = parser.asDouble(data["volume24HUSDC"])
             val openInterestUSDC = parser.asDouble(data["openInterestUSDC"])
@@ -1013,7 +1011,7 @@ data class PerpetualMarketSummary(
                     volume24HUSDC = volume24HUSDC,
                     openInterestUSDC = openInterestUSDC,
                     trades24H = trades24H,
-                    markets = newMarkets,
+                    markets = newMarkets.toIMap(),
                 )
             }
         }

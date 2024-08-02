@@ -71,7 +71,7 @@ import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
-import indexer.models.configs.AssetJson
+import indexer.models.configs.ConfigsMarketAsset
 import kollections.JsExport
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -591,7 +591,7 @@ open class TradingStateMachine(
     ): StateChanges {
         val json = parser.decodeJsonObject(payload)
         if (staticTyping) {
-            val parsedAssetPayload = parser.asTypedStringMap<AssetJson>(json)
+            val parsedAssetPayload = parser.asTypedStringMap<ConfigsMarketAsset>(json)
             if (parsedAssetPayload == null) {
                 Logger.e { "Error parsing asset payload" }
                 return StateChanges.noChange

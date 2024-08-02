@@ -57,7 +57,7 @@ internal class MarketsSummaryProcessor(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.processChannelData(parser.asNativeMap(existing?.get("markets")), content)
+        val markets = marketsProcessor.processChannelDataDeprecated(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
@@ -71,12 +71,12 @@ internal class MarketsSummaryProcessor(
         return modify(existing, markets)
     }
 
-    internal fun receivedConfigurations(
+    internal fun receivedConfigurationsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
         val markets =
-            marketsProcessor.receivedConfigurations(parser.asNativeMap(existing?.get("markets")), payload)
+            marketsProcessor.receivedConfigurationsDeprecated(parser.asNativeMap(existing?.get("markets")), payload)
         return modify(existing, markets)!!
     }
 

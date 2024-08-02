@@ -273,12 +273,18 @@ open class BaseTests(
         } else {
             verifyAssetsState(perp.assets, state?.assets, "assets")
         }
-        verifyMarketsState(
-            perp.marketsSummary,
-            perp.assets,
-            state?.marketsSummary,
-            "markets",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.marketsSummary.markets) {
+                assertEquals(value.perpetualMarket, state?.marketsSummary?.markets?.get(key))
+            }
+        } else {
+            verifyMarketsState(
+                perp.marketsSummary,
+                perp.assets,
+                state?.marketsSummary,
+                "markets",
+            )
+        }
         verifyMarketsHistoricalFundingsState(
             parser.asNativeMap(perp.marketsSummary?.get("markets")),
             state?.historicalFundings,

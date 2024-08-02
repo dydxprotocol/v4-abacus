@@ -8,7 +8,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
-import indexer.models.configs.AssetJson
+import indexer.models.configs.ConfigsMarketAsset
 import kollections.iListOf
 import kollections.toIList
 
@@ -134,15 +134,10 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
 }
 
 internal fun TradingStateMachine.processMarketsConfigurations(
-    payload: Map<String, AssetJson>,
+    payload: Map<String, ConfigsMarketAsset>,
     subaccountNumber: Int?,
     deploymentUri: String,
 ): StateChanges {
-    this.marketsSummary = marketsProcessor.receivedConfigurations(
-        existing = this.marketsSummary,
-        payload = payload,
-    )
-
     internalState.assets = assetsProcessor.processConfigurations(
         existing = internalState.assets,
         payload = payload,
@@ -181,7 +176,7 @@ internal fun TradingStateMachine.receivedMarketsConfigurationsDeprecated(
     subaccountNumber: Int?,
     deploymentUri: String,
 ): StateChanges {
-    this.marketsSummary = marketsProcessor.receivedConfigurations(
+    this.marketsSummary = marketsProcessor.receivedConfigurationsDeprecated(
         existing = this.marketsSummary,
         payload = payload,
     )

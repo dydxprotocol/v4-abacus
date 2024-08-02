@@ -39,6 +39,9 @@ data class IndexerCompositeMarketObject(
     val basePositionSize: kotlin.String? = null,
     val incrementalPositionSize: kotlin.String? = null,
     val maxPositionSize: kotlin.String? = null,
+
+    // Unused fields
+    val incrementalInitialMarginFraction: kotlin.String? = null,
 ) {
     fun copyNotNulls(from: IndexerCompositeMarketObject): IndexerCompositeMarketObject {
         return IndexerCompositeMarketObject(
@@ -70,6 +73,7 @@ data class IndexerCompositeMarketObject(
             basePositionSize = from.basePositionSize ?: basePositionSize,
             incrementalPositionSize = from.incrementalPositionSize ?: incrementalPositionSize,
             maxPositionSize = from.maxPositionSize ?: maxPositionSize,
+            incrementalInitialMarginFraction = from.incrementalInitialMarginFraction ?: incrementalInitialMarginFraction,
         )
     }
 }
