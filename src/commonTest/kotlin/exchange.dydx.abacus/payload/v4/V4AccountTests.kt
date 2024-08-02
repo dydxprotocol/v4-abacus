@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.internalstate.InternalAccountBalanceState
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.notification.NotificationsProvider
 import exchange.dydx.abacus.state.model.historicalTradingRewards
 import exchange.dydx.abacus.state.model.onChainAccountBalances
@@ -1215,16 +1216,62 @@ class V4AccountTests : V4BaseTests() {
     fun testAccountHistoricalTradingRewards() {
         reset()
         setup()
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.weeklyCall,
-                    "WEEKLY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+
+        if (perp.staticTyping) {
+            var changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.weeklyCall,
+                period = HistoricalTradingRewardsPeriod.WEEKLY,
+            )
+            perp.update(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 1)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.WEEKLY]?.size,
+                2,
+            )
+
+            changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.dailyCall,
+                period = HistoricalTradingRewardsPeriod.DAILY,
+            )
+            perp.update(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 2)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.DAILY]?.size,
+                2,
+            )
+
+            changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.monthlyCall,
+                period = HistoricalTradingRewardsPeriod.MONTHLY,
+            )
+            perp.update(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 3)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.MONTHLY]?.size,
+                2,
+            )
+
+            changes = perp.historicalTradingRewards(
+                payload = mock.historicalTradingRewards.monthlySecondCall,
+                period = HistoricalTradingRewardsPeriod.MONTHLY,
+            )
+            perp.update(changes)
+            assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 3)
+            assertEquals(
+                perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.MONTHLY]?.size,
+                3,
+            )
+        } else {
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.weeklyCall,
+                        HistoricalTradingRewardsPeriod.WEEKLY,
+                    )
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1248,21 +1295,21 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
 
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.dailyCall,
-                    "DAILY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.dailyCall,
+                        HistoricalTradingRewardsPeriod.DAILY,
+                    )
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1295,21 +1342,21 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
 
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.monthlyCall,
-                    "MONTHLY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.monthlyCall,
+                        HistoricalTradingRewardsPeriod.MONTHLY,
+                    )
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1349,21 +1396,21 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
 
-        test(
-            {
-                val changes = perp.historicalTradingRewards(
-                    mock.historicalTradingRewards.monthlySecondCall,
-                    "MONTHLY",
-                )
-                perp.update(changes)
-                return@test StateResponse(perp.state, changes)
-            },
-            """
+            test(
+                {
+                    val changes = perp.historicalTradingRewards(
+                        mock.historicalTradingRewards.monthlySecondCall,
+                        HistoricalTradingRewardsPeriod.MONTHLY,
+                    )
+                    perp.update(changes)
+                    return@test StateResponse(perp.state, changes)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1401,9 +1448,10 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 }
