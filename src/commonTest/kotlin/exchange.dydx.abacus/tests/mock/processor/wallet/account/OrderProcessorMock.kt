@@ -10,6 +10,8 @@ internal class OrderProcessorMock : OrderProcessorProtocol {
     var processAction: ((existing: SubaccountOrder?, payload: IndexerCompositeOrderObject, subaccountNumber: Int, height: BlockAndTime?) -> SubaccountOrder?)? = null
     var updateHeightCallCount = 0
     var updateHeightAction: ((existing: SubaccountOrder, height: BlockAndTime?) -> Pair<SubaccountOrder, Boolean>)? = null
+    var canceledCallCount = 0
+    var canceledAction: ((existing: SubaccountOrder) -> SubaccountOrder)? = null
 
     override fun process(
         existing: SubaccountOrder?,
@@ -27,5 +29,10 @@ internal class OrderProcessorMock : OrderProcessorProtocol {
     ): Pair<SubaccountOrder, Boolean> {
         updateHeightCallCount++
         return updateHeightAction?.invoke(existing, height) ?: Pair(existing, false)
+    }
+
+    override fun canceled(existing: SubaccountOrder): SubaccountOrder {
+        canceledCallCount++
+        return canceledAction?.invoke(existing) ?: existing
     }
 }

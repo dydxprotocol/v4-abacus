@@ -39,6 +39,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
 import exchange.dydx.abacus.state.model.account
+import exchange.dydx.abacus.state.model.historicalTradingRewards
 import exchange.dydx.abacus.state.model.launchIncentivePoints
 import exchange.dydx.abacus.state.model.onChainAccountBalances
 import exchange.dydx.abacus.state.model.onChainDelegations
@@ -46,7 +47,6 @@ import exchange.dydx.abacus.state.model.onChainStakingRewards
 import exchange.dydx.abacus.state.model.onChainUnbonding
 import exchange.dydx.abacus.state.model.onChainUserFeeTier
 import exchange.dydx.abacus.state.model.onChainUserStats
-import exchange.dydx.abacus.state.model.receivedHistoricalTradingRewards
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
@@ -333,9 +333,9 @@ internal open class AccountSupervisor(
         val url = accountUrl()
         if (url != null) {
             helper.get(
-                url,
-                null,
-                null,
+                url = url,
+                params = null,
+                headers = null,
                 callback = { _, response, httpCode, _ ->
                     val isValidResponse = helper.success(httpCode) && response != null
                     if (isValidResponse) {
@@ -560,17 +560,10 @@ internal open class AccountSupervisor(
             previousUrl = previousUrl,
         ) { url, response, httpCode, _ ->
             if (helper.success(httpCode) && !response.isNullOrEmpty()) {
-                val historicalTradingRewards = helper.parser.decodeJsonObject(response)?.toIMap()
-                if (historicalTradingRewards != null) {
-                    val changes =
-                        stateMachine.receivedHistoricalTradingRewards(
-                            historicalTradingRewards,
-                            period.rawValue,
-                        )
-                    update(changes, oldState)
-                    if (changes.changes.contains(Changes.tradingRewards)) {
-                        retrieveHistoricalTradingRewards(period, url)
-                    }
+                val changes = stateMachine.historicalTradingRewards(response, period)
+                update(changes, oldState)
+                if (changes.changes.contains(Changes.tradingRewards)) {
+                    retrieveHistoricalTradingRewards(period, url)
                 }
             }
         }

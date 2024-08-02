@@ -2,6 +2,8 @@ package exchange.dydx.abacus.output.account
 
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTradingRewardsState
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
@@ -12,6 +14,7 @@ import exchange.dydx.abacus.utils.nextMonth
 import exchange.dydx.abacus.utils.previousMonth
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
+import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import kollections.JsExport
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
@@ -38,22 +41,78 @@ data class TradingRewards(
         internal fun create(
             existing: TradingRewards?,
             parser: ParserProtocol,
+            internalState: InternalTradingRewardsState,
+        ): TradingRewards? {
+            if (internalState.total == null && internalState.blockRewards.isEmpty() && internalState.historical.isEmpty()) {
+                return null
+            }
+            val filledHistory = internalState.total?.let {
+                createHistoricalTradingRewards(
+                    total = it,
+                    existing = existing?.filledHistory,
+                    historical = internalState.historical,
+                    fillZeros = true,
+                    parser = parser,
+                )
+            }
+            val rawHistory = internalState.total?.let {
+                createHistoricalTradingRewards(
+                    total = it,
+                    existing = existing?.rawHistory,
+                    historical = internalState.historical,
+                    fillZeros = false,
+                    parser = parser,
+                )
+            }
+            val blockRewards = internalState.blockRewards.mapNotNull {
+                val tradingReward = parser.asDouble(it.tradingReward)
+                val createdAtMilliseconds =
+                    parser.asDatetime(it.createdAt)?.toEpochMilliseconds()?.toDouble()
+                val createdAtHeight = parser.asInt(it.createdAtHeight)
+                if (tradingReward != null && createdAtMilliseconds != null && createdAtHeight != null) {
+                    BlockReward(
+                        tradingReward,
+                        createdAtMilliseconds,
+                        createdAtHeight,
+                    )
+                } else {
+                    null
+                }
+            }.toIList()
+
+            return TradingRewards(
+                total = internalState.total,
+                blockRewards = blockRewards,
+                filledHistory = filledHistory,
+                rawHistory = rawHistory,
+            )
+        }
+
+        internal fun createDeprecated(
+            existing: TradingRewards?,
+            parser: ParserProtocol,
             data: Map<String, Any>?
         ): TradingRewards? {
             Logger.d { "creating TradingRewards\n" }
             data?.let {
                 val total = parser.asDouble(data["total"])
                 val filledHistory = total?.let {
-                    createHistoricalTradingRewards(
-                        it,
-                        existing?.filledHistory,
-                        parser.asMap(data["historical"]),
+                    createHistoricalTradingRewardsDeprecated(
+                        total = it,
+                        existing = existing?.filledHistory,
+                        data = parser.asMap(data["historical"]),
                         fillZeros = true,
-                        parser,
+                        parser = parser,
                     )
                 }
                 val rawHistory = total?.let {
-                    createHistoricalTradingRewards(it, existing?.rawHistory, parser.asMap(data["historical"]), fillZeros = false, parser)
+                    createHistoricalTradingRewardsDeprecated(
+                        total = it,
+                        existing = existing?.rawHistory,
+                        data = parser.asMap(data["historical"]),
+                        fillZeros = false,
+                        parser = parser,
+                    )
                 }
                 val blockRewards = parser.asList(data["blockRewards"])?.map {
                     BlockReward.create(null, parser, parser.asMap(it))
@@ -81,6 +140,31 @@ data class TradingRewards(
         private fun createHistoricalTradingRewards(
             total: Double,
             existing: IMap<String, IList<HistoricalTradingReward>>?,
+            historical: Map<HistoricalTradingRewardsPeriod, List<IndexerHistoricalTradingRewardAggregation>>?,
+            fillZeros: Boolean,
+            parser: ParserProtocol,
+        ): IMap<String, IList<HistoricalTradingReward>> {
+            val objs = iMutableMapOf<String, IList<HistoricalTradingReward>>()
+            HistoricalTradingRewardsPeriod.values().forEach { period ->
+                val periodObjs = existing?.get(period.name)
+                val periodData = historical?.get(period)
+                val rewards =
+                    createHistoricalTradingRewardsPerPeriod(
+                        existing = periodObjs,
+                        rewards = periodData,
+                        parser = parser,
+                        period = period.name,
+                        total = total,
+                        fillZeros = fillZeros,
+                    )
+                objs.typedSafeSet(period.name, rewards)
+            }
+            return objs
+        }
+
+        private fun createHistoricalTradingRewardsDeprecated(
+            total: Double,
+            existing: IMap<String, IList<HistoricalTradingReward>>?,
             data: Map<String, Any>?,
             fillZeros: Boolean,
             parser: ParserProtocol,
@@ -91,13 +175,139 @@ data class TradingRewards(
                 val periodObjs = existing?.get(period)
                 val periodData = parser.asList(data?.get(period))
                 val rewards =
-                    createHistoricalTradingRewardsPerPeriod(periodObjs, periodData, parser, period, total, fillZeros)
+                    createHistoricalTradingRewardsPerPeriodDeprecated(periodObjs, periodData, parser, period, total, fillZeros)
                 objs.typedSafeSet(period, rewards)
             }
             return objs
         }
 
         private fun createHistoricalTradingRewardsPerPeriod(
+            existing: IList<HistoricalTradingReward>?,
+            rewards: List<IndexerHistoricalTradingRewardAggregation>?,
+            parser: ParserProtocol,
+            period: String,
+            total: Double,
+            fillZeros: Boolean
+        ): IList<HistoricalTradingReward> {
+            val result = iMutableListOf<HistoricalTradingReward>()
+            if (rewards != null) {
+                var objIndex = 0
+                var dataIndex = 0
+                var lastStart: Double? = null
+                var cumulativeAmount: Double = total
+
+                while (existing != null && objIndex < existing.size && dataIndex < rewards.size) {
+                    val obj = existing[objIndex]
+                    val item = rewards[dataIndex]
+                    val itemStart = parser.asDatetime(item.startedAt)?.toEpochMilliseconds()?.toDouble()
+                    if (itemStart != null) {
+                        val objStart = obj.startedAtInMilliseconds
+                        val comparison = ParsingHelper.compare(objStart, itemStart, true)
+                        when {
+                            (comparison == ComparisonOrder.ascending) -> {
+                                // item is newer than obj
+                                val synced =
+                                    HistoricalTradingReward.create(
+                                        parser = parser,
+                                        data = item,
+                                        cumulativeAmount = cumulativeAmount,
+                                        period = period,
+                                    )
+                                if (fillZeros) {
+                                    addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                }
+                                result.add(synced!!)
+                                dataIndex++
+                                lastStart = synced.startedAtInMilliseconds
+                                cumulativeAmount -= parser.asDouble(item.tradingReward)!!
+                            }
+
+                            (comparison == ComparisonOrder.descending) -> {
+                                // item is older than obj
+                                val synced =
+                                    obj.copy(
+                                        cumulativeAmount = cumulativeAmount,
+                                    )
+                                if (fillZeros) {
+                                    addHistoricalTradingRewards(result, synced, period, lastStart)
+                                }
+                                result.add(synced)
+                                objIndex++
+                                lastStart = synced.startedAtInMilliseconds
+                                cumulativeAmount -= obj.amount
+                            }
+
+                            else -> {
+                                // same thing
+                                val synced =
+                                    HistoricalTradingReward.create(
+                                        parser = parser,
+                                        data = item,
+                                        cumulativeAmount = cumulativeAmount,
+                                        period = period,
+                                    )
+                                if (fillZeros) {
+                                    addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                                }
+                                result.add(synced!!)
+                                objIndex++
+                                dataIndex++
+                                lastStart = synced.startedAtInMilliseconds
+                                cumulativeAmount -= obj.amount
+                            }
+                        }
+                    } else {
+                        dataIndex++
+                    }
+                }
+                if (existing != null) {
+                    while (objIndex < existing.size) {
+                        val obj = existing[objIndex]
+                        val synced =
+                            obj.copy(
+                                cumulativeAmount = cumulativeAmount,
+                            )
+                        if (fillZeros) {
+                            addHistoricalTradingRewards(result, synced, period, lastStart)
+                        }
+                        result.add(synced)
+                        objIndex++
+                        lastStart = obj.startedAtInMilliseconds
+                        cumulativeAmount -= obj.amount
+                    }
+                }
+                while (dataIndex < rewards.size) {
+                    val item = rewards[dataIndex]
+                    val itemStart = parser.asDatetime(item.startedAt)?.toEpochMilliseconds()?.toDouble()
+
+                    if (item != null && itemStart != null) {
+                        val synced =
+                            HistoricalTradingReward.create(
+                                parser = parser,
+                                data = item,
+                                cumulativeAmount = cumulativeAmount,
+                                period = period,
+                            )
+                        if (fillZeros) {
+                            addHistoricalTradingRewards(result, synced!!, period, lastStart)
+                        }
+                        result.add(synced!!)
+                        dataIndex++
+                        lastStart = synced.startedAtInMilliseconds
+                        cumulativeAmount -= synced.amount
+                    } else {
+                        dataIndex++
+                    }
+                }
+            } else {
+                if (fillZeros) {
+                    result.add(currentPeriodPlaceHolder(period, total))
+                }
+            }
+            return result
+        }
+
+        private fun createHistoricalTradingRewardsPerPeriodDeprecated(
             objs: IList<HistoricalTradingReward>?,
             data: List<Any>?,
             parser: ParserProtocol,
@@ -127,7 +337,7 @@ data class TradingRewards(
                                 modified.safeSet("cumulativeAmount", cumulativeAmount)
 
                                 val synced =
-                                    HistoricalTradingReward.create(null, parser, modified, period)
+                                    HistoricalTradingReward.createDeprecated(null, parser, modified, period)
                                 if (fillZeros) {
                                     addHistoricalTradingRewards(result, synced!!, period, lastStart)
                                 }
@@ -146,7 +356,7 @@ data class TradingRewards(
                                     "endedAt" to obj.endedAt,
                                 )
 
-                                val synced = HistoricalTradingReward.create(obj, parser, modified, period)
+                                val synced = HistoricalTradingReward.createDeprecated(obj, parser, modified, period)
                                 if (fillZeros) {
                                     addHistoricalTradingRewards(result, synced!!, period, lastStart)
                                 }
@@ -162,7 +372,7 @@ data class TradingRewards(
                                 modified.safeSet("cumulativeAmount", cumulativeAmount)
 
                                 val synced =
-                                    HistoricalTradingReward.create(obj, parser, modified, period)
+                                    HistoricalTradingReward.createDeprecated(obj, parser, modified, period)
 
                                 if (fillZeros) {
                                     addHistoricalTradingRewards(result, synced!!, period, lastStart)
@@ -188,7 +398,7 @@ data class TradingRewards(
                             "endedAt" to obj.endedAt,
                         )
 
-                        val synced = HistoricalTradingReward.create(obj, parser, modified, period)
+                        val synced = HistoricalTradingReward.createDeprecated(obj, parser, modified, period)
                         if (fillZeros) {
                             addHistoricalTradingRewards(result, synced!!, period, lastStart)
                         }
@@ -207,7 +417,7 @@ data class TradingRewards(
                         val modified = item.mutable()
                         modified.safeSet("cumulativeAmount", cumulativeAmount)
 
-                        val synced = HistoricalTradingReward.create(null, parser, modified, period)
+                        val synced = HistoricalTradingReward.createDeprecated(null, parser, modified, period)
                         if (fillZeros) {
                             addHistoricalTradingRewards(result, synced!!, period, lastStart)
                         }
@@ -236,10 +446,10 @@ data class TradingRewards(
                 else -> today(now)
             }
             return HistoricalTradingReward(
-                0.0,
-                total,
-                thisPeriod.start.toEpochMilliseconds().toDouble(),
-                thisPeriod.end.toEpochMilliseconds().toDouble(),
+                amount = 0.0,
+                cumulativeAmount = total,
+                startedAtInMilliseconds = thisPeriod.start.toEpochMilliseconds().toDouble(),
+                endedAtInMilliseconds = thisPeriod.end.toEpochMilliseconds().toDouble(),
             )
         }
 
@@ -250,31 +460,31 @@ data class TradingRewards(
         ): HistoricalTradingReward {
             return when (period) {
                 "DAILY" -> HistoricalTradingReward(
-                    0.0,
-                    total,
-                    lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble(),
+                    amount = 0.0,
+                    cumulativeAmount = total,
+                    startedAtInMilliseconds = lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
+                    endedAtInMilliseconds = lastStartTime.toEpochMilliseconds().toDouble(),
                 )
 
                 "WEEKLY" -> HistoricalTradingReward(
-                    0.0,
-                    total,
-                    lastStartTime.minus(7.days).toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble(),
+                    amount = 0.0,
+                    cumulativeAmount = total,
+                    startedAtInMilliseconds = lastStartTime.minus(7.days).toEpochMilliseconds().toDouble(),
+                    endedAtInMilliseconds = lastStartTime.toEpochMilliseconds().toDouble(),
                 )
 
                 "MONTHLY" -> HistoricalTradingReward(
-                    0.0,
-                    total,
-                    lastStartTime.previousMonth().toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble(),
+                    amount = 0.0,
+                    cumulativeAmount = total,
+                    startedAtInMilliseconds = lastStartTime.previousMonth().toEpochMilliseconds().toDouble(),
+                    endedAtInMilliseconds = lastStartTime.toEpochMilliseconds().toDouble(),
                 )
 
                 else -> HistoricalTradingReward(
-                    0.0,
-                    total,
-                    lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
-                    lastStartTime.toEpochMilliseconds().toDouble(),
+                    amount = 0.0,
+                    cumulativeAmount = total,
+                    startedAtInMilliseconds = lastStartTime.minus(1.days).toEpochMilliseconds().toDouble(),
+                    endedAtInMilliseconds = lastStartTime.toEpochMilliseconds().toDouble(),
                 )
             }
         }

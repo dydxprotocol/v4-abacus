@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.wallet.account
 
+import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.account.AccountBalance
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.UnbondingDelegation
@@ -9,14 +10,19 @@ import exchange.dydx.abacus.processor.wallet.account.staking.DelegationUnbonding
 import exchange.dydx.abacus.processor.wallet.account.staking.StakingRewardsProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.protocols.asTypedList
+import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.responses.SocketInfo
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerFillResponseObject
+import indexer.codegen.IndexerHistoricalBlockTradingReward
+import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.models.chain.OnChainAccountBalanceObject
@@ -224,7 +230,7 @@ internal class V4AccountProcessor(
         return existing
     }
 
-    internal fun receivedUnbonding(
+    internal fun receivedUnbondingDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
     ): Map<String, Any>? {
@@ -351,7 +357,24 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun receivedHistoricalTradingRewards(
+    internal fun processHistoricalTradingRewards(
+        existing: InternalAccountState,
+        payload: List<IndexerHistoricalTradingRewardAggregation>?,
+        period: HistoricalTradingRewardsPeriod,
+    ): InternalAccountState {
+        val modifiedHistoricalTradingRewards = tradingRewardsProcessor.processHistoricalTradingRewards(
+            existing = existing.tradingRewards.historical[period],
+            payload = payload,
+        )
+        if (modifiedHistoricalTradingRewards != null) {
+            existing.tradingRewards.historical[period] = modifiedHistoricalTradingRewards
+        } else {
+            existing.tradingRewards.historical.remove(period)
+        }
+        return existing
+    }
+
+    internal fun receivedHistoricalTradingRewardsDeprecated(
         existing: Map<String, Any>?,
         payload: List<Any>?,
         period: String?,
@@ -360,7 +383,7 @@ internal class V4AccountProcessor(
         val historicalTradingRewards =
             parser.asNativeList(parser.value(existing, "tradingRewards.historical.$period"))
         val modifiedHistoricalTradingRewards =
-            tradingRewardsProcessor.recievedHistoricalTradingRewards(
+            tradingRewardsProcessor.recievedHistoricalTradingRewardsDeprecated(
                 historicalTradingRewards,
                 payload,
             )
@@ -379,7 +402,15 @@ internal class V4AccountProcessor(
             payload = subaccounts,
         )
 
-        // TODO: Updating the account with the trading rewards
+        internalState.tradingRewards.total = parser.asDouble(parser.value(content, "totalTradingRewards"))
+
+        /* block trading rewards are only sent in subaccounts.0 channel */
+        val blockTradingRewards =
+            parser.asTypedList<IndexerHistoricalBlockTradingReward>(parser.value(content, "subaccounts.0.tradingRewards"))
+        if (blockTradingRewards != null) {
+            internalState.tradingRewards.blockRewards.addAll(blockTradingRewards)
+        }
+
         return modified
     }
 
@@ -396,19 +427,18 @@ internal class V4AccountProcessor(
         modified.safeSet("subaccounts", modifiedSubaccounts)
 
         val tradingRewards = parser.asNativeMap(parser.value(existing, "tradingRewards"))
-        val modifiedTradingRewards = tradingRewardsProcessor.receivedTotalTradingRewards(
+        val modifiedTradingRewards = tradingRewardsProcessor.receivedTotalTradingRewardsDeprecated(
             tradingRewards,
             payload?.get("totalTradingRewards"),
         )
         modified.safeSet("tradingRewards", modifiedTradingRewards)
 
-        val test = parser.value(payload, "subaccounts.0.tradingRewards")
         /* block trading rewards are only sent in subaccounts.0 channel */
         val tradingRewardsPayload =
             parser.asNativeList(parser.value(payload, "subaccounts.0.tradingRewards"))
         if (tradingRewardsPayload != null) {
             for (item in tradingRewardsPayload) {
-                modified = receivedBlockTradingReward(modified, item)
+                modified = receivedBlockTradingRewardDeprecated(modified, item)
             }
         }
         return modified
@@ -434,14 +464,10 @@ internal class V4AccountProcessor(
             }
         }
 
-        // TODO: Updating the account with the trading rewards
-
-//        /* block trading rewards are only sent in subaccounts.0 channel */
-//        val tradingRewardsPayload =
-//            parser.value(content, "tradingReward")
-//        if (tradingRewardsPayload != null) {
-//            modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
-//        }
+        val tradingReward = parser.asTypedObject<IndexerHistoricalBlockTradingReward>(content["tradingReward"])
+        if (tradingReward != null) {
+            existing.tradingRewards.blockRewards.add(tradingReward)
+        }
 
         return account ?: existing
     }
@@ -470,7 +496,7 @@ internal class V4AccountProcessor(
         val tradingRewardsPayload =
             parser.value(content, "tradingReward")
         if (tradingRewardsPayload != null) {
-            modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+            modified = receivedBlockTradingRewardDeprecated(modified, tradingRewardsPayload)
         }
         return modified
     }
@@ -577,14 +603,10 @@ internal class V4AccountProcessor(
                 subaccountsProcessor.processChannelData(subaccount, content, height)
             existing.subaccounts[subaccountNumber] = modifiedsubaccount
 
-            // TODO: Updating the account with the trading rewards
-
-//            /* block trading rewards are only sent in subaccounts.0 channel */
-//            val tradingRewardsPayload = content["tradingReward"]
-//            if (tradingRewardsPayload != null) {
-//                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
-//            }
-//            return modified
+            val tradingReward = parser.asTypedObject<IndexerHistoricalBlockTradingReward>(content["tradingReward"])
+            if (tradingReward != null) {
+                existing.tradingRewards.blockRewards.add(tradingReward)
+            }
         }
         return existing
     }
@@ -609,7 +631,7 @@ internal class V4AccountProcessor(
             /* block trading rewards are only sent in subaccounts.0 channel */
             val tradingRewardsPayload = content["tradingReward"]
             if (tradingRewardsPayload != null) {
-                modified = receivedBlockTradingReward(modified, tradingRewardsPayload)
+                modified = receivedBlockTradingRewardDeprecated(modified, tradingRewardsPayload)
             }
             return modified
         } else {
@@ -617,14 +639,14 @@ internal class V4AccountProcessor(
         }
     }
 
-    private fun receivedBlockTradingReward(
+    private fun receivedBlockTradingRewardDeprecated(
         existing: Map<String, Any>,
         payload: Any,
     ): MutableMap<String, Any> {
         val modified = existing.mutable()
         val blockRewards =
             parser.asNativeList(parser.value(existing, "tradingRewards.blockRewards"))
-        val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingReward(
+        val modifiedTradingRewards = tradingRewardsProcessor.recievedBlockTradingRewardDeprecated(
             blockRewards,
             payload,
         )
@@ -632,13 +654,30 @@ internal class V4AccountProcessor(
         return modified
     }
 
-    internal fun updateHeight(
+    fun updateHeight(
+        existing: InternalAccountState,
+        height: BlockAndTime?,
+    ): Triple<InternalAccountState, Boolean, List<Int>?> {
+        val subaccounts = existing.subaccounts
+        if (subaccounts != null) {
+            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeight(
+                existing = subaccounts,
+                height = height,
+            )
+            if (updated) {
+                return Triple(existing, true, subaccountIds)
+            }
+        }
+        return Triple(existing, false, null)
+    }
+
+    internal fun updateHeightDeprecated(
         existing: Map<String, Any>,
         height: BlockAndTime?,
     ): Triple<Map<String, Any>, Boolean, List<Int>?> {
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))
         if (subaccounts != null) {
-            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeight(
+            val (modifiedSubaccounts, updated, subaccountIds) = subaccountsProcessor.updateSubaccountsHeightDeprecated(
                 subaccounts,
                 height,
             )
@@ -685,7 +724,21 @@ internal class V4AccountProcessor(
         return Pair(existing, false)
     }
 
-    internal fun orderCanceled(
+    fun orderCanceled(
+        existing: InternalAccountState,
+        orderId: String,
+        subaccountNumber: Int,
+    ): Pair<InternalAccountState, Boolean> {
+        val subaccounts = existing.subaccounts
+        val (modifiedSubaccounts, updated) = subaccountsProcessor.orderCanceled(
+            existing = subaccounts,
+            orderId = orderId,
+            subaccountNumber = subaccountNumber,
+        )
+        return Pair(existing, updated)
+    }
+
+    internal fun orderCanceledDeprecated(
         existing: Map<String, Any>,
         orderId: String,
         subaccountNumber: Int,
@@ -693,7 +746,7 @@ internal class V4AccountProcessor(
         val subaccounts = parser.asNativeMap(parser.value(existing, "subaccounts"))?.mutable()
         if (subaccounts != null) {
             val (modifiedSubaccounts, updated) =
-                subaccountsProcessor.orderCanceled(subaccounts, orderId, subaccountNumber)
+                subaccountsProcessor.orderCanceledDeprecated(subaccounts, orderId, subaccountNumber)
             if (updated) {
                 val modified = existing.mutable()
                 modified.safeSet("subaccounts", modifiedSubaccounts)
@@ -713,12 +766,12 @@ internal class V4AccountProcessor(
         season: String,
         payload: ConfigsLaunchIncentivePoints?,
     ): InternalAccountState {
-        val points = launchIncentivePointsProcessor.process(
-            season = season,
-            existing = existing.launchIncentivePoints,
-            payload = payload,
-        )
-        existing.launchIncentivePoints = points
+        if (payload != null) {
+            existing.launchIncentivePoints[season] = LaunchIncentivePoint(
+                incentivePoints = payload.incentivePoints ?: 0.0,
+                marketMakingIncentivePoints = payload.marketMakingIncentivePoints ?: 0.0,
+            )
+        }
         return existing
     }
 

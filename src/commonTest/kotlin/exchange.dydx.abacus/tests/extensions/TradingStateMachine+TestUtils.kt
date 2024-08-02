@@ -1,11 +1,16 @@
 package exchange.dydx.abacus.tests.extensions
 
+import exchange.dydx.abacus.responses.ParsingError
+import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.app.adaptors.NetworkParam
+import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.state.model.onChainEquityTiers
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
 import exchange.dydx.abacus.utils.ServerTime
+import kollections.iListOf
 import kotlinx.datetime.Instant
 
 fun TradingStateMachine.loadMarkets(mock: AbacusMockData): StateResponse {
@@ -283,4 +288,20 @@ fun TradingStateMachine.log(text: String, from: Instant): Instant {
     print(timeLapse)
     print("\n\n")
     return now
+}
+
+fun TradingStateMachine.parseOnChainEquityTiers(payload: String): StateResponse {
+    var changes: StateChanges? = null
+    var error: ParsingError? = null
+    try {
+        changes = onChainEquityTiers(payload)
+    } catch (e: ParsingException) {
+        error = e.toParsingError()
+    }
+    if (changes != null) {
+        update(changes)
+    }
+
+    val errors = if (error != null) iListOf(error) else null
+    return StateResponse(state, changes, errors)
 }

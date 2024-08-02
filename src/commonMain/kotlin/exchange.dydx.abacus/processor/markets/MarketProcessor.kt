@@ -155,17 +155,17 @@ internal class MarketProcessor(
         return createPerpetualMarket()
     }
 
-     fun processOraclePrice(
+    fun processOraclePrice(
         payload: IndexerWsMarketOraclePriceObject
     ): PerpetualMarket? {
-         cachedIndexerOraclePrice = payload
-         return createPerpetualMarket()
+        cachedIndexerOraclePrice = payload
+        return createPerpetualMarket()
     }
 
     private fun createPerpetualMarket(): PerpetualMarket? {
         val payload = cachedIndexerMarketResponse ?: return null
         val name = parser.asString(payload.ticker) ?: return null
-        val oraclePrice = parser.asDouble(cachedIndexerOraclePrice?.oraclePrice) ?:  parser.asDouble(payload.oraclePrice)
+        val oraclePrice = parser.asDouble(cachedIndexerOraclePrice?.oraclePrice) ?: parser.asDouble(payload.oraclePrice)
         val status = createStatus(payload.status)
         if (status == null || !status.canDisplay) {
             return null
@@ -292,7 +292,7 @@ internal class MarketProcessor(
                 openInterestUSDC = oraclePrice?.let { openInterest * it } ?: 0.0,
                 openInterestLowerCap = parser.asDouble(payload.openInterestLowerCap),
                 openInterestUpperCap = parser.asDouble(payload.openInterestUpperCap),
-                line = null
+                line = null,
             )
         } else {
             null

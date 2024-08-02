@@ -127,16 +127,28 @@ data class Account(
                 data["stakingRewards"] as StakingRewards?
             }
 
-            val tradingRewardsData = parser.asMap(data["tradingRewards"])
-            val tradingRewards = if (tradingRewardsData != null) {
-                TradingRewards.create(existing?.tradingRewards, parser, tradingRewardsData)
+            val tradingRewards = if (staticTyping) {
+                TradingRewards.create(
+                    existing = existing?.tradingRewards,
+                    parser = parser,
+                    internalState = internalState.tradingRewards,
+                )
             } else {
-                null
+                val tradingRewardsData = parser.asMap(data["tradingRewards"])
+                if (tradingRewardsData != null) {
+                    TradingRewards.createDeprecated(
+                        existing?.tradingRewards,
+                        parser,
+                        tradingRewardsData,
+                    )
+                } else {
+                    null
+                }
             }
 
             val launchIncentivePoints = if (staticTyping) {
                 val points = internalState.launchIncentivePoints
-                if (points != null && points.isNotEmpty()) {
+                if (points.isNotEmpty()) {
                     LaunchIncentivePoints(points = points.toIMap())
                 } else {
                     null

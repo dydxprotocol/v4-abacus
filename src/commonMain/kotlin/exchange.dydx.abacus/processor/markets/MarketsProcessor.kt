@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.markets
 
-import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
@@ -29,17 +28,17 @@ internal class MarketsProcessor(
     ): InternalMarketSummaryState {
         for ((marketId, marketData) in content ?: mapOf()) {
             val receivedMarket = marketProcessor.process(
-                payload = marketData
+                payload = marketData,
             )
             val marketState = existing.markets[marketId] ?: InternalMarketState()
             marketState.perpetualMarket = receivedMarket
-            existing.markets[marketId] =  marketState
+            existing.markets[marketId] = marketState
         }
         return existing
     }
 
     fun processChannelData(
-        existing:InternalMarketSummaryState,
+        existing: InternalMarketSummaryState,
         content: IndexerWsMarketUpdateResponse?,
     ): InternalMarketSummaryState {
         if (content != null) {
@@ -47,9 +46,9 @@ internal class MarketsProcessor(
                 for ((marketId, marketData) in content.trading) {
                     val marketState = existing.markets[marketId] ?: InternalMarketState()
                     val receivedMarket = marketProcessor.process(
-                        payload = marketData
+                        payload = marketData,
                     )
-                    if (receivedMarket !=  marketState.perpetualMarket) {
+                    if (receivedMarket != marketState.perpetualMarket) {
                         marketState.perpetualMarket = receivedMarket
                         existing.markets[marketId] = marketState
                     }
@@ -59,9 +58,9 @@ internal class MarketsProcessor(
                 for ((marketId, oracleData) in content.oraclePrices) {
                     val marketState = existing.markets[marketId] ?: InternalMarketState()
                     val receivedMarket = marketProcessor.processOraclePrice(
-                        payload = oracleData
+                        payload = oracleData,
                     )
-                    if (receivedMarket !=  marketState.perpetualMarket) {
+                    if (receivedMarket != marketState.perpetualMarket) {
                         marketState.perpetualMarket = receivedMarket
                         existing.markets[marketId] = marketState
                     }
@@ -72,7 +71,7 @@ internal class MarketsProcessor(
     }
 
     fun processChannelBatchData(
-        existing:InternalMarketSummaryState,
+        existing: InternalMarketSummaryState,
         content: List<IndexerWsMarketUpdateResponse>?,
     ): InternalMarketSummaryState {
         for (response in content ?: listOf()) {

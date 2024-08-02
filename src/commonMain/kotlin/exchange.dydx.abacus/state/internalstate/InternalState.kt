@@ -3,10 +3,13 @@ package exchange.dydx.abacus.state.internalstate
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.Asset
+import exchange.dydx.abacus.output.EquityTiers
+import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.PerpetualMarket
+import exchange.dydx.abacus.output.WithdrawalGating
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
 import exchange.dydx.abacus.output.account.SubaccountFill
@@ -16,7 +19,10 @@ import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import indexer.codegen.IndexerHistoricalBlockTradingReward
+import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPositionSide
 import kotlinx.datetime.Instant
@@ -27,6 +33,7 @@ internal data class InternalState(
     val wallet: InternalWalletState = InternalWalletState(),
     var rewardsParams: InternalRewardsParamsState? = null,
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
+    val configs: InternalConfigsState = InternalConfigsState(),
     val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
 )
 
@@ -37,6 +44,18 @@ internal data class InternalMarketSummaryState(
 internal data class InternalMarketState(
     var trades: List<MarketTrade>? = null,
     var perpetualMarket: PerpetualMarket? = null,
+)
+
+internal data class InternalConfigsState(
+    var equityTiers: EquityTiers? = null,
+    var feeTiers: List<FeeTier>? = null,
+    var withdrawalGating: WithdrawalGating? = null,
+    var withdrawalCapacity: InternalWithdrawalCapacityState? = null,
+)
+
+internal data class InternalWithdrawalCapacityState(
+    val capacity: String? = null,
+    val maxWithdrawalCapacity: BigDecimal? = null,
 )
 
 internal data class InternalWalletState(
@@ -72,6 +91,14 @@ internal data class InternalAccountState(
 
     // subaccount number -> subaccount state
     var groupedSubaccounts: MutableMap<Int, InternalSubaccountState> = mutableMapOf(),
+
+    var tradingRewards: InternalTradingRewardsState = InternalTradingRewardsState(),
+)
+
+internal data class InternalTradingRewardsState(
+    var historical: MutableMap<HistoricalTradingRewardsPeriod, List<IndexerHistoricalTradingRewardAggregation>> = mutableMapOf(),
+    var blockRewards: MutableList<IndexerHistoricalBlockTradingReward> = mutableListOf(),
+    var total: Double? = null,
 )
 
 internal data class InternalSubaccountState(

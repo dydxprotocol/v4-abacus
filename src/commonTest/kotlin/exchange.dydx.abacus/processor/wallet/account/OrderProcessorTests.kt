@@ -166,4 +166,26 @@ class OrderProcessorTests {
 
         assertTrue { !updated }
     }
+
+    @Test
+    fun testCanceled() {
+        val existing = orderMock.copy(
+            status = OrderStatus.Open,
+        )
+        val updatedOrder = orderProcessor.canceled(
+            existing = existing,
+        )
+        assertEquals(
+            expected = orderMock.copy(
+                status = OrderStatus.Canceling,
+                updatedAtMilliseconds = updatedAt.toEpochMilliseconds().toDouble(),
+                cancelReason = "USER_CANCELED",
+                resources = orderMock.resources.copy(
+                    statusString = "APP.TRADE.CANCELING",
+                    statusStringKey = "APP.TRADE.CANCELING",
+                ),
+            ),
+            actual = updatedOrder,
+        )
+    }
 }

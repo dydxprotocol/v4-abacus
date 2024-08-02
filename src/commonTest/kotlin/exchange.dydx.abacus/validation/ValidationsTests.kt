@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validation
 import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.model.trade
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 
 open class ValidationsTests : V4BaseTests() {
     override fun setup() {

@@ -128,7 +128,31 @@ internal class V4SubaccountsProcessor(
         return subaccountProcessor.received(existing, height)
     }
 
-    internal fun updateSubaccountsHeight(
+    fun updateSubaccountsHeight(
+        existing: MutableMap<Int, InternalSubaccountState>,
+        height: BlockAndTime?,
+    ): Triple<Map<Int, InternalSubaccountState>, Boolean, List<Int>?> {
+        var updated = false
+        val modifiedSubaccountIds = mutableListOf<Int>()
+        for ((key, value) in existing) {
+            val (modifiedSubaccount, subaccountUpdated) = subaccountProcessor.updateHeight(
+                existing = value,
+                height = height,
+            )
+            if (subaccountUpdated) {
+                existing[key] = modifiedSubaccount
+                updated = true
+                modifiedSubaccountIds.add(key)
+            }
+        }
+        return if (updated) {
+            Triple(existing, true, modifiedSubaccountIds)
+        } else {
+            Triple(existing, false, null)
+        }
+    }
+
+    internal fun updateSubaccountsHeightDeprecated(
         existing: Map<String, Any>,
         height: BlockAndTime?,
     ): Triple<Map<String, Any>, Boolean, List<Int>?> {
@@ -143,7 +167,7 @@ internal class V4SubaccountsProcessor(
             }
             val subaccount = parser.asNativeMap(value)
             if (subaccount != null) {
-                val (modifiedSubaccount, subaccountUpdated) = subaccountProcessor.updateHeight(
+                val (modifiedSubaccount, subaccountUpdated) = subaccountProcessor.updateHeightDeprecated(
                     subaccount,
                     height,
                 )
@@ -160,7 +184,26 @@ internal class V4SubaccountsProcessor(
         return Triple(existing, false, null)
     }
 
-    internal fun orderCanceled(
+    fun orderCanceled(
+        existing: MutableMap<Int, InternalSubaccountState>,
+        orderId: String,
+        subaccountNumber: Int,
+    ): Pair<MutableMap<Int, InternalSubaccountState>, Boolean> {
+        val subaccount = existing[subaccountNumber]
+        if (subaccount != null) {
+            val (modifiedSubaccount, updated) = subaccountProcessor.orderCanceled(
+                existing = subaccount,
+                orderId = orderId,
+            )
+            if (updated) {
+                existing[subaccountNumber] = modifiedSubaccount
+                return Pair(existing, true)
+            }
+        }
+        return Pair(existing, false)
+    }
+
+    internal fun orderCanceledDeprecated(
         existing: Map<String, Any>,
         orderId: String,
         subaccountNumber: Int,
@@ -168,7 +211,7 @@ internal class V4SubaccountsProcessor(
         val subaccountIndex = "$subaccountNumber"
         val subaccount = parser.asNativeMap(existing[subaccountIndex])
         if (subaccount != null) {
-            val (modifiedSubaccount, updated) = subaccountProcessor.orderCanceled(
+            val (modifiedSubaccount, updated) = subaccountProcessor.orderCanceledDeprecated(
                 subaccount,
                 orderId,
             )
