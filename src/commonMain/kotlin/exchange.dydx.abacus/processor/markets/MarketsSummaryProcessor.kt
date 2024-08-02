@@ -6,8 +6,10 @@ import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
 @Suppress("UNCHECKED_CAST")
-internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklines: Boolean = false) :
-    BaseProcessor(parser) {
+internal class MarketsSummaryProcessor(
+    parser: ParserProtocol,
+    calculateSparklines: Boolean = false
+) : BaseProcessor(parser) {
     private val marketsProcessor = MarketsProcessor(parser, calculateSparklines)
 
     internal var groupingMultiplier: Int
@@ -78,22 +80,24 @@ internal class MarketsSummaryProcessor(parser: ParserProtocol, calculateSparklin
         return modify(existing, markets)
     }
 
-    internal fun receivedTrades(
+    @Deprecated("static-typing")
+    internal fun receivedTradesDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
     ): Map<String, Any>? {
         val markets =
-            marketsProcessor.receivedTrades(parser.asNativeMap(existing?.get("markets")), market, payload)
+            marketsProcessor.receivedTradesDeprecated(parser.asNativeMap(existing?.get("markets")), market, payload)
         return modify(existing, markets)
     }
 
-    internal fun receivedTradesChanges(
+    @Deprecated("static-typing")
+    internal fun receivedTradesChangesDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.receivedTradesChanges(
+        val markets = marketsProcessor.receivedTradesChangesDeprecated(
             parser.asNativeMap(existing?.get("markets")),
             market,
             payload,

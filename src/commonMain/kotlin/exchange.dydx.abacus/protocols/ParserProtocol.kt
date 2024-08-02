@@ -50,8 +50,9 @@ interface ParserProtocol {
 }
 
 private val jsonCoder = Json {
-    ignoreUnknownKeys = true;
+    ignoreUnknownKeys = true
     coerceInputValues = true
+    explicitNulls = false
 }
 
 internal inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>? {

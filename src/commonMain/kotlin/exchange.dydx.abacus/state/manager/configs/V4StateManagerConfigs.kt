@@ -113,11 +113,11 @@ class V4StateManagerConfigs(
     }
 
     fun skipV1Chains(): String {
-        return "$skipHost/v2/info/chains?include_evm=true$onlyTestnets"
+        return "$skipHost/v2/info/chains?include_evm=true$includeSvmChains$onlyTestnets"
     }
 
     fun skipV1Assets(): String {
-        return "$skipHost/v2/fungible/assets?include_evm_assets=true$onlyTestnets"
+        return "$skipHost/v2/fungible/assets?include_evm_assets=true$includeSvmAssets$onlyTestnets"
     }
 
     fun skipV2MsgsDirect(): String {
@@ -133,6 +133,15 @@ class V4StateManagerConfigs(
     }
 
     val nobleDenom = "uusdc"
+
+    private val includeSvmChains: String
+        get() {
+            return if (environment.isMainNet) "" else "&include_svm=true"
+        }
+    private val includeSvmAssets: String
+        get() {
+            return if (environment.isMainNet) "" else "&include_svm_assets=true"
+        }
 
     private val onlyTestnets: String
         get() {

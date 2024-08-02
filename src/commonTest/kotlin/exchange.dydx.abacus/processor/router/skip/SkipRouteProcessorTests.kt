@@ -16,10 +16,10 @@ class SkipRouteProcessorTests {
 
     /**
      * Tests an EVM CCTP deposit.
-     * This processes an EVM -> Noble USDC transaction (we only support deposits from EVM chains)
+     * This processes an EVM -> Noble USDC transaction
      */
     @Test
-    fun testReceivedCCTPDeposit() {
+    fun testReceivedEvmCCTPDeposit() {
         val payload = skipRouteMock.payload
         val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
         val expected = mapOf(
@@ -37,6 +37,30 @@ class SkipRouteProcessorTests {
                 "toAddress" to "uusdc",
                 "gasPrice" to DEFAULT_GAS_PRICE,
                 "gasLimit" to DEFAULT_GAS_LIMIT,
+            ),
+        )
+        assertEquals(expected, result)
+    }
+
+    /**
+     * Tests an SVM CCTP deposit.
+     * This processes an SVM -> Noble USDC transaction
+     */
+    @Test
+    fun testReceivedSolanaCCTPDeposit() {
+        val payload = skipRouteMock.payloadCCTPSolanaToNoble
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
+        val expected = mapOf(
+            "toAmountUSD" to 1498.18,
+            "toAmount" to 1499.8,
+            "bridgeFee" to .2,
+            "slippage" to "1",
+            "requestPayload" to mapOf(
+                "data" to "mock-encoded-solana-tx",
+                "fromChainId" to "solana",
+                "fromAddress" to "98bVPZQCHZmCt9v3ni9kwtjKgLuzHBpstQkdPyAucBNx",
+                "toChainId" to "noble-1",
+                "toAddress" to "uusdc",
             ),
         )
         assertEquals(expected, result)

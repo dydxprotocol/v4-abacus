@@ -7,6 +7,7 @@ import exchange.dydx.abacus.output.EquityTiers
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
+import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.WithdrawalGating
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
@@ -32,6 +33,7 @@ internal data class InternalState(
     var rewardsParams: InternalRewardsParamsState? = null,
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
     val configs: InternalConfigsState = InternalConfigsState(),
+    val markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
 )
 
 internal data class InternalConfigsState(
@@ -178,4 +180,8 @@ internal data class InternalRewardsParamsState(
 
 internal data class InternalLaunchIncentiveState(
     var seasons: List<LaunchIncentiveSeason>? = null,
+)
+
+internal data class InternalMarketState(
+    var trades: List<MarketTrade>? = null,
 )
