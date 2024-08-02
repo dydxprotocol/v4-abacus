@@ -4,13 +4,18 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.ParserProtocol
 
+@Deprecated("static-typing")
 @Suppress("UNCHECKED_CAST")
-internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class TradesProcessor(
+    parser: ParserProtocol,
+) : BaseProcessor(parser) {
     @Suppress("PropertyName")
     private val LIMIT = 500
 
     private val tradeProcessor = TradeProcessor(parser = parser)
-    internal fun subscribed(
+
+    @Deprecated("static-typing")
+    internal fun subscribedDeprecated(
         content: Map<String, Any>,
     ): List<Any>? {
         val payload =
@@ -18,8 +23,9 @@ internal class TradesProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
         return if (payload != null) received(payload) else null
     }
 
+    @Deprecated("static-typing")
     @Suppress("FunctionName")
-    internal fun channel_data(
+    internal fun channel_dataDeprecated(
         existing: List<Any>?,
         content: Map<String, Any>,
     ): List<Any>? {

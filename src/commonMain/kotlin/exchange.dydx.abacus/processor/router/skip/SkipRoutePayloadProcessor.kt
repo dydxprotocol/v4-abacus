@@ -22,7 +22,7 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
             "route.source_asset_denom" to "fromAddress",
             "route.dest_asset_chain_id" to "toChainId",
             "route.dest_asset_denom" to "toAddress",
-
+            "txs.0.svm_tx.tx" to "solanaTransaction",
 //            SQUID PARAMS THAT ARE NOW DEPRECATED:
 //            "route.transactionRequest.routeType" to "routeType",
 //            "route.transactionRequest.gasPrice" to "gasPrice",
@@ -34,17 +34,20 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
 
     enum class TxType {
         EVM,
-        COSMOS
+        COSMOS,
+        SOLANA
     }
 
-//    DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
+    //    DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
 //    Create custom exceptions for better error handling specificity and expressiveness
     @Suppress("TooGenericExceptionThrown")
     internal fun getTxType(payload: Map<String, Any>): TxType {
         val evm = parser.value(payload, "txs.0.evm_tx")
         val cosmos = parser.value(payload, "txs.0.cosmos_tx")
+        val solana = parser.value(payload, "txs.0.svm_tx")
         if (evm != null) return TxType.EVM
         if (cosmos != null) return TxType.COSMOS
+        if (solana != null) return TxType.SOLANA
         throw Error("SkipRoutePayloadProcessor: txType is not evm or cosmos")
     }
 
@@ -102,6 +105,16 @@ internal class SkipRoutePayloadProcessor(parser: ParserProtocol) : BaseProcessor
 //            save all messages in array
             modified.safeSet("data", jsonEncodePayload(formattedMessage))
             modified.safeSet("allMessages", jsonEncodePayload(allFormattedMessages))
+        }
+        if (txType == TxType.SOLANA) {
+            if (modified["solanaTransaction"] != null) {
+                modified.safeSet("data", modified["solanaTransaction"])
+                modified.remove("solanaTransaction")
+
+                // These are EVM specific fields and do not make sense for solana
+                modified.remove("gasPrice")
+                modified.remove("gasLimit")
+            }
         }
         return modified
     }

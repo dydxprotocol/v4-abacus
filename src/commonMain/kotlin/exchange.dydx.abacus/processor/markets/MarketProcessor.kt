@@ -12,8 +12,10 @@ import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("UNCHECKED_CAST")
-internal class MarketProcessor(parser: ParserProtocol, private val calculateSparklines: Boolean) :
-    BaseProcessor(parser) {
+internal class MarketProcessor(
+    parser: ParserProtocol,
+    private val calculateSparklines: Boolean,
+) : BaseProcessor(parser) {
     private val tradesProcessor = TradesProcessor(parser)
     private val orderbookProcessor = OrderbookProcessor(parser)
     private val candlesProcessor = CandlesProcessor(parser)
@@ -271,23 +273,25 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         return perpetual
     }
 
-    internal fun receivedTrades(
+    @Deprecated("static-typing")
+    internal fun receivedTradesDeprecated(
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
         val modified = market.toMutableMap()
-        val trades = tradesProcessor.subscribed(payload)
+        val trades = tradesProcessor.subscribedDeprecated(payload)
         modified.safeSet("trades", trades)
         return modified
     }
 
-    internal fun receivedTradesChanges(
+    @Deprecated("static-typing")
+    internal fun receivedTradesChangesDeprecated(
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {
         val modified = market.toMutableMap()
         val trades =
-            tradesProcessor.channel_data(market["trades"] as? List<Map<String, Any>>, payload)
+            tradesProcessor.channel_dataDeprecated(market["trades"] as? List<Map<String, Any>>, payload)
         modified.safeSet("trades", trades)
         return modified
     }
@@ -299,8 +303,8 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val modified = market.toMutableMap()
         var trades = market["trades"] as? List<Any>
         for (partialPayload in payload) {
-            parser.asNativeMap(partialPayload)?.let { it ->
-                trades = tradesProcessor.channel_data(trades, it)
+            parser.asNativeMap(partialPayload)?.let {
+                trades = tradesProcessor.channel_dataDeprecated(trades, it)
             }
         }
         modified.safeSet("trades", trades)
@@ -426,7 +430,7 @@ internal class MarketProcessor(parser: ParserProtocol, private val calculateSpar
         val modified = market.toMutableMap()
         var candles = parser.asNativeMap(market["candles"])
         for (partialPayload in payload) {
-            parser.asNativeMap(partialPayload)?.let { it ->
+            parser.asNativeMap(partialPayload)?.let {
                 candles = candlesProcessor.channel_data(candles, resolution, it)
             }
         }
