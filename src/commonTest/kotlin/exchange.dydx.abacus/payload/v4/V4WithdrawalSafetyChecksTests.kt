@@ -13,6 +13,7 @@ import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.tests.extensions.loadAccounts
 import kollections.iListOf
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V4WithdrawalSafetyChecksTests : V4BaseTests() {
 
@@ -25,11 +26,15 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
     @Test
     fun testGating() {
         setup()
-        test(
-            {
-                perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
+            assertEquals(perp.internalState.configs.withdrawalGating?.withdrawalsAndTransfersUnblockedAtBlock, 16750)
+        } else {
+            test(
+                {
+                    perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
+                },
+                """
             {
                 "configs": {
                     "withdrawalGating": {
@@ -39,15 +44,56 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
+
         perp.currentBlockAndHeight = mock.heightMock.beforeCurrentBlockAndHeight
         perp.transfer(TransferType.withdrawal.rawValue, TransferInputField.type)
-        test(
+
+        if (perp.staticTyping) {
+            test(
+                {
+                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                },
+                """
             {
-                perp.transfer("1235.0", TransferInputField.usdcSize)
-            },
-            """
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "",
+                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_TITLE"
+                                },
+                                "text": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_DESCRIPTION",
+                                    "params": [
+                                        {
+                                            "value": 1.0,
+                                            "format": "string",
+                                            "key": "SECONDS"
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_PAUSED_ACTION"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+                """.trimIndent(),
+            )
+        } else {
+            test(
+                {
+                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                },
+                """
             {
                 "configs": {
                     "withdrawalGating": {
@@ -84,15 +130,45 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
                     ]
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
+
         perp.currentBlockAndHeight = mock.heightMock.afterCurrentBlockAndHeight
         perp.transfer(TransferType.transferOut.rawValue, TransferInputField.type)
-        test(
+
+        if (perp.staticTyping) {
+            test(
+                {
+                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                },
+                """
             {
-                perp.transfer("1235.0", TransferInputField.usdcSize)
-            },
-            """
+                "input": {
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_ADDRESS",
+                            "fields": [
+                                "address"
+                            ],
+                            "resources": {
+                                "action": {
+                                    "stringKey": "APP.DIRECT_TRANSFER_MODAL.ENTER_ETH_ADDRESS"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+                """.trimIndent(),
+            )
+        } else {
+            test(
+                {
+                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                },
+                """
             {
                 "configs": {
                     "withdrawalGating": {
@@ -118,8 +194,9 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
                     ]
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     @Test
@@ -127,11 +204,51 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
         setup()
         perp.transfer("WITHDRAWAL", TransferInputField.type)
         perp.transfer("1235.0", TransferInputField.usdcSize)
-        test(
+        if (perp.staticTyping) {
+            test(
+                {
+                    perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
+                },
+                """
             {
-                perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
-            },
-            """
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "",
+                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE"
+                                },
+                                "text": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
+                                    "params": [
+                                        {
+                                            "value": 1234.567891,
+                                            "format": "price",
+                                            "key": "USDC_LIMIT"
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+                """.trimIndent(),
+            )
+            assertEquals(parser.asDouble(perp.internalState.configs.withdrawalCapacity?.maxWithdrawalCapacity), 1234.567891)
+            assertEquals(perp.internalState.configs.withdrawalCapacity?.capacity, "1234567891")
+        } else {
+            test(
+                {
+                    perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
+                },
+                """
             {
                 "input": {
                     "errors": [
@@ -182,8 +299,9 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 }
 

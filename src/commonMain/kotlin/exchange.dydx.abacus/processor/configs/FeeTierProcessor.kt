@@ -4,7 +4,6 @@ import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
 
-@Suppress("UNCHECKED_CAST")
 internal class FeeTierProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
     private val feeTierKeyMap = mapOf(
         "string" to mapOf(

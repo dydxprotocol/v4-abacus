@@ -4,6 +4,7 @@ import abs
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.validator.BaseInputValidator
@@ -34,6 +35,8 @@ internal class TradeInputDataValidator(
     BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
 
     override fun validateTrade(
+        staticTyping: Boolean,
+        internalState: InternalState,
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,

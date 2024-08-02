@@ -21,6 +21,7 @@ import exchange.dydx.abacus.output.PerpetualMarketSummary
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.TransferStatus
 import exchange.dydx.abacus.output.Wallet
+import exchange.dydx.abacus.output.WithdrawalCapacity
 import exchange.dydx.abacus.output.account.Account
 import exchange.dydx.abacus.output.account.Subaccount
 import exchange.dydx.abacus.output.account.SubaccountFill
@@ -34,6 +35,8 @@ import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
+import exchange.dydx.abacus.processor.markets.TradeProcessorV2
+import exchange.dydx.abacus.processor.markets.TradesProcessorV2
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.router.squid.SquidProcessor
@@ -96,6 +99,7 @@ open class TradingStateMachine(
 
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(parser)
+    internal val tradesProcessorV2 = TradesProcessorV2(TradeProcessorV2(parser, localizer))
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(
             parser = parser,
@@ -105,7 +109,7 @@ open class TradingStateMachine(
         processor
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
-    internal val configsProcessor = ConfigsProcessor(parser)
+    internal val configsProcessor = ConfigsProcessor(parser, localizer)
     private val skipProcessor = SkipProcessor(parser = parser, internalState = internalState.transfer)
     private val squidProcessor = SquidProcessor(parser = parser, internalState = internalState.transfer)
     internal val routerProcessor: IRouterProcessor
@@ -623,15 +627,17 @@ open class TradingStateMachine(
             }
 
             this.input = inputValidator.validate(
-                subaccountNumber,
-                this.wallet,
-                this.user,
-                subaccount,
-                parser.asNativeMap(this.marketsSummary?.get("markets")),
-                this.input,
-                this.configs,
-                this.currentBlockAndHeight,
-                this.environment,
+                staticTyping = staticTyping,
+                internalState = this.internalState,
+                subaccountNumber = subaccountNumber,
+                wallet = this.wallet,
+                user = this.user,
+                subaccount = subaccount,
+                markets = parser.asNativeMap(this.marketsSummary?.get("markets")),
+                input = this.input,
+                configs = this.configs,
+                currentBlockAndHeight = this.currentBlockAndHeight,
+                environment = this.environment,
             )
 
             if (subaccountNumber != null) {
@@ -1192,10 +1198,23 @@ open class TradingStateMachine(
             }
         }
         if (changes.changes.contains(Changes.configs)) {
-            this.configs?.let {
-                configs = Configs.create(configs, parser, it, localizer)
-            } ?: run {
-                configs = null
+            if (staticTyping) {
+                configs = Configs(
+                    network = null,
+                    feeTiers = internalState.configs.feeTiers?.toIList(),
+                    feeDiscounts = null,
+                    equityTiers = internalState.configs.equityTiers,
+                    withdrawalGating = internalState.configs.withdrawalGating,
+                    withdrawalCapacity = WithdrawalCapacity(
+                        capacity = internalState.configs.withdrawalCapacity?.capacity,
+                    ),
+                )
+            } else {
+                this.configs?.let {
+                    configs = Configs.create(configs, parser, it, localizer)
+                } ?: run {
+                    configs = null
+                }
             }
         }
         if (changes.changes.contains(Changes.wallet)) {
@@ -1375,15 +1394,17 @@ open class TradingStateMachine(
 
             if (changes.changes.contains(Changes.input)) {
                 this.input = inputValidator.validate(
-                    subaccountNumber,
-                    this.wallet,
-                    this.user,
-                    subaccount,
-                    parser.asNativeMap(this.marketsSummary?.get("markets")),
-                    this.input,
-                    this.configs,
-                    this.currentBlockAndHeight,
-                    this.environment,
+                    staticTyping = staticTyping,
+                    internalState = internalState,
+                    subaccountNumber = subaccountNumber,
+                    wallet = this.wallet,
+                    user = this.user,
+                    subaccount = subaccount,
+                    markets = parser.asNativeMap(this.marketsSummary?.get("markets")),
+                    input = this.input,
+                    configs = this.configs,
+                    currentBlockAndHeight = this.currentBlockAndHeight,
+                    environment = this.environment,
                 )
                 this.input?.let {
                     input = Input.create(input, parser, it, environment, internalState)
@@ -1562,22 +1583,6 @@ open class TradingStateMachine(
             }
         }
         return noChange()
-    }
-
-    fun parseOnChainEquityTiers(payload: String): StateResponse {
-        var changes: StateChanges? = null
-        var error: ParsingError? = null
-        try {
-            changes = onChainEquityTiers(payload)
-        } catch (e: ParsingException) {
-            error = e.toParsingError()
-        }
-        if (changes != null) {
-            update(changes)
-        }
-
-        val errors = if (error != null) iListOf(error) else null
-        return StateResponse(state, changes, errors)
     }
 
     fun parseOnChainFeeTiers(payload: String): StateResponse {

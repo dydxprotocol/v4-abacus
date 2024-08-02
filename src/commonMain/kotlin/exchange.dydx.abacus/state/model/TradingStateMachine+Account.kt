@@ -29,7 +29,7 @@ internal fun TradingStateMachine.account(payload: String): StateChanges {
     }
 }
 
-internal fun TradingStateMachine.receivedAccount(
+private fun TradingStateMachine.receivedAccount(
     payload: Map<String, Any>
 ): StateChanges {
     if (staticTyping) {
@@ -46,14 +46,31 @@ internal fun TradingStateMachine.updateHeight(
     height: BlockAndTime,
 ): StateResponse {
     this.currentBlockAndHeight = height
-    val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(wallet, height)
-    return if (updated) {
-        this.wallet = modifiedWallet
-        val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
-        val realChanges = update(changes)
-        StateResponse(state, realChanges, null, null)
+    if (staticTyping) {
+        val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeight(
+            existing = internalState.wallet,
+            height = height,
+        )
+        return if (updated) {
+            val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
+            val realChanges = update(changes)
+            StateResponse(state, realChanges, null, null)
+        } else {
+            return StateResponse(state, null, null, null)
+        }
     } else {
-        return StateResponse(state, null, null, null)
+        val (modifiedWallet, updated, subaccountIds) = walletProcessor.updateHeightDeprecated(
+            wallet,
+            height,
+        )
+        return if (updated) {
+            this.wallet = modifiedWallet
+            val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
+            val realChanges = update(changes)
+            StateResponse(state, realChanges, null, null)
+        } else {
+            return StateResponse(state, null, null, null)
+        }
     }
 }
 

@@ -38,7 +38,7 @@ internal class HistoricalTradingRewardProcessor(parser: ParserProtocol) : BasePr
         return transform(existing, payload, tradingRewardKeyMap)
     }
 
-    fun receivedBlockTradingReward(
+    fun receivedBlockTradingRewardDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
