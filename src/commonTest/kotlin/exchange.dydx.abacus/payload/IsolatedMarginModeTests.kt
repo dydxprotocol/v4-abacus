@@ -7,6 +7,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 import kotlin.test.BeforeTest
 import kotlin.test.DefaultAsserter.assertTrue
 import kotlin.test.Test

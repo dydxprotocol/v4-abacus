@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import exchange.dydx.abacus.output.EquityTier
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.changes.Changes
@@ -16,6 +17,7 @@ import exchange.dydx.abacus.tests.extensions.loadv4SubaccountSubscribed
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountWithOrdersAndFillsChanged
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
 import exchange.dydx.abacus.tests.extensions.log
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
@@ -972,11 +974,54 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testEquityTiers() {
-        test(
-            {
-                perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+            assertEquals(
+                perp.internalState.configs.equityTiers?.shortTermOrderEquityTiers?.size,
+                6,
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.statefulOrderEquityTiers?.size,
+                6,
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.shortTermOrderEquityTiers?.get(0),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 0.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 20.0,
+                    maxOrders = 0,
+                ),
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.shortTermOrderEquityTiers?.get(1),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 20.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 100.0,
+                    maxOrders = 1,
+                ),
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.statefulOrderEquityTiers?.get(0),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 0.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 20.0,
+                    maxOrders = 0,
+                ),
+            )
+            assertEquals(
+                perp.internalState.configs.equityTiers?.statefulOrderEquityTiers?.get(1),
+                EquityTier(
+                    requiredTotalNetCollateralUSD = 20.0,
+                    nextLevelRequiredTotalNetCollateralUSD = 100.0,
+                    maxOrders = 1,
+                ),
+            )
+        } else {
+            test(
+                {
+                    perp.parseOnChainEquityTiers(mock.v4OnChainMock.equity_tiers)
+                },
+                """
                 {
                     "configs": {
                         "equityTiers": {
@@ -1035,19 +1080,24 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testFeeTiers() {
-        val maxLong: Long = 9223372036854775807
-        test(
-            {
-                perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
+            assertEquals(perp.internalState.configs.feeTiers?.size, 9)
+            assertEquals(perp.internalState.configs.feeTiers?.get(0)?.tier, "1")
+        } else {
+            test(
+                {
+                    perp.parseOnChainFeeTiers(mock.v4OnChainMock.fee_tiers)
+                },
+                """
                 {
                     "configs": {
                         "feeTiers": [
@@ -1061,10 +1111,11 @@ class V4AccountTests : V4BaseTests() {
                         ]
                     }
                 }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testUserFeeTier() {

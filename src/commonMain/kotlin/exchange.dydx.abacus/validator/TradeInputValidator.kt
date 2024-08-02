@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
@@ -29,6 +30,8 @@ internal class TradeInputValidator(
     )
 
     override fun validate(
+        staticTyping: Boolean,
+        internalState: InternalState,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -61,13 +64,15 @@ internal class TradeInputValidator(
             for (validator in tradeValidators) {
                 val validatorErrors =
                     validator.validateTrade(
-                        subaccount,
-                        market,
-                        configs,
-                        transaction,
-                        change,
-                        restricted,
-                        environment,
+                        staticTyping = staticTyping,
+                        internalState = internalState,
+                        subaccount = subaccount,
+                        market = market,
+                        configs = configs,
+                        trade = transaction,
+                        change = change,
+                        restricted = restricted,
+                        environment = environment,
                     )
                 if (validatorErrors != null) {
                     errors.addAll(validatorErrors)

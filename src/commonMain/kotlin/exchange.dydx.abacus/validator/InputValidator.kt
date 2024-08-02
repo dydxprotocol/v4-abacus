@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -86,6 +87,8 @@ internal class InputValidator(
     )
 
     fun validate(
+        staticTyping: Boolean,
+        internalState: InternalState,
         subaccountNumber: Int?,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
@@ -103,15 +106,17 @@ internal class InputValidator(
 
             val errors = sort(
                 validateTransaction(
-                    wallet,
-                    user,
-                    subaccount,
-                    markets,
-                    configs,
-                    currentBlockAndHeight,
-                    transaction,
-                    transactionType,
-                    environment,
+                    staticTyping = staticTyping,
+                    internalState = internalState,
+                    wallet = wallet,
+                    user = user,
+                    subaccount = subaccount,
+                    markets = markets,
+                    configs = configs,
+                    currentBlockAndHeight = currentBlockAndHeight,
+                    transaction = transaction,
+                    transactionType = transactionType,
+                    environment = environment,
                 ),
             )
 
@@ -135,6 +140,8 @@ internal class InputValidator(
     }
 
     private fun validateTransaction(
+        staticTyping: Boolean,
+        internalState: InternalState,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -151,15 +158,17 @@ internal class InputValidator(
             for (validator in validators) {
                 val validatorErrors =
                     validator.validate(
-                        wallet,
-                        user,
-                        subaccount,
-                        markets,
-                        configs,
-                        currentBlockAndHeight,
-                        transaction,
-                        transactionType,
-                        environment,
+                        staticTyping = staticTyping,
+                        internalState = internalState,
+                        wallet = wallet,
+                        user = user,
+                        subaccount = subaccount,
+                        markets = markets,
+                        configs = configs,
+                        currentBlockAndHeight = currentBlockAndHeight,
+                        transaction = transaction,
+                        transactionType = transactionType,
+                        environment = environment,
                     )
                 if (validatorErrors != null) {
                     result.addAll(validatorErrors)

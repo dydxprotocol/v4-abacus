@@ -20,6 +20,7 @@ import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadv4SubaccountsWithPositions
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 import indexer.codegen.IndexerHistoricalBlockTradingReward
 import indexer.codegen.IndexerHistoricalTradingRewardAggregation
 import kotlin.test.assertEquals

@@ -9,6 +9,7 @@ import exchange.dydx.abacus.tests.extensions.loadMarkets
 import exchange.dydx.abacus.tests.extensions.loadMarketsConfigurations
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import exchange.dydx.abacus.tests.extensions.loadUser
+import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 
 open class V3BaseTests : BaseTests(0, false) {
     internal fun loadMarkets(): StateResponse {

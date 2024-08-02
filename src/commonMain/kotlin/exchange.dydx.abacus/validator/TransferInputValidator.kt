@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
+import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.transfer.DepositValidator
@@ -14,8 +15,7 @@ internal class TransferInputValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) :
-    BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     private val transferValidators = listOf<TransferValidatorProtocol>(
         DepositValidator(localizer, formatter, parser),
         TransferOutValidator(localizer, formatter, parser),
@@ -24,6 +24,8 @@ internal class TransferInputValidator(
     )
 
     override fun validate(
+        staticTyping: Boolean,
+        internalState: InternalState,
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -40,13 +42,15 @@ internal class TransferInputValidator(
             for (validator in transferValidators) {
                 val validatorErrors =
                     validator.validateTransfer(
-                        wallet,
-                        subaccount,
-                        transaction,
-                        configs,
-                        currentBlockAndHeight,
-                        restricted,
-                        environment,
+                        staticTyping = staticTyping,
+                        internalState = internalState,
+                        wallet = wallet,
+                        subaccount = subaccount,
+                        transfer = transaction,
+                        configs = configs,
+                        currentBlockAndHeight = currentBlockAndHeight,
+                        restricted = restricted,
+                        environment = environment,
                     )
                 if (validatorErrors != null) {
                     errors.addAll(validatorErrors)
