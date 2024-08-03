@@ -1,6 +1,5 @@
 package exchange.dydx.abacus.processor.markets
 
-import exchange.dydx.abacus.processor.wallet.account.HistoricalPNLProcessorTests.Companion.payload
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.tests.mock.processor.markets.MarketProcessorMock
 import exchange.dydx.abacus.utils.Parser
@@ -81,5 +80,27 @@ class MarketsProcessorTests {
         val result = processor.processChannelBatchData(state, payload)
         assertEquals(2, marketProcessor.processCallCount)
         assertEquals(2, marketProcessor.processOraclePriceCallCount)
+    }
+
+    @Test
+    fun testProcessSparklines() {
+        val state = InternalMarketSummaryState()
+        marketProcessor.processAction = { _, _ ->
+            MarketProcessorTests.outputMock
+        }
+
+        val payload = mapOf(
+            "BTC-USD" to MarketProcessorTests.marketPayloadMock,
+            "ETH-USD" to MarketProcessorTests.marketPayloadMock,
+        )
+        processor.processSubscribed(state, payload)
+
+        val sparklines = mapOf(
+            "BTC-USD" to listOf("1", "2", "3"),
+            "ETH-USD" to listOf("1", "2", "3"),
+        )
+        val result = processor.processSparklines(state, sparklines)
+        assertEquals(2, marketProcessor.processSparklinesCallCount)
+        assertEquals(2, result.markets.size)
     }
 }

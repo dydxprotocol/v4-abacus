@@ -11,6 +11,7 @@ import indexer.codegen.IndexerPerpetualMarketStatus
 import indexer.codegen.IndexerPerpetualMarketType
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketOraclePriceObject
+import kollections.toIList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -142,5 +143,12 @@ class MarketProcessorTests {
         val output = processor.processOraclePrice("BTC-USD", oraclePricePayloadMock)
         assertEquals(output?.oraclePrice, 10000.0000)
         assertEquals(output?.priceChange24HPercent, 0.014011676210602023)
+    }
+
+    @Test
+    fun testProcessSparklines() {
+        processor.process("BTC-USD", marketPayloadMock)
+        val output = processor.processSparklines("BTC-USD", listOf("1", "2", "3"))
+        assertEquals(output?.perpetual?.line, listOf(3.0, 2.0, 1.0).toIList())
     }
 }

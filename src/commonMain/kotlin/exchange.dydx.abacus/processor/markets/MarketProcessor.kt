@@ -21,6 +21,7 @@ import indexer.codegen.IndexerPerpetualMarketStatus
 import indexer.codegen.IndexerPerpetualMarketType
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketOraclePriceObject
+import kollections.toIList
 import numberOfDecimals
 import kotlin.math.max
 import kotlin.math.min
@@ -29,6 +30,7 @@ import kotlin.time.Duration.Companion.seconds
 internal interface MarketProcessorProtocol : BaseProcessorProtocol {
     fun process(marketId: String, payload: IndexerCompositeMarketObject): PerpetualMarket?
     fun processOraclePrice(marketId: String, payload: IndexerWsMarketOraclePriceObject): PerpetualMarket?
+    fun processSparklines(marketId: String, payload: List<String>): PerpetualMarket?
     fun clearCachedOraclePrice(marketId: String)
 }
 
@@ -150,6 +152,7 @@ internal class MarketProcessor(
 
     private var cachedIndexerMarketResponses: MutableMap<String, IndexerCompositeMarketObject> = mutableMapOf()
     private var cachedIndexerOraclePrices: MutableMap<String, IndexerWsMarketOraclePriceObject> = mutableMapOf()
+    private var cachedIndexerSparklines: MutableMap<String, List<Double>> = mutableMapOf()
 
     override fun process(
         marketId: String,
@@ -169,6 +172,14 @@ internal class MarketProcessor(
         payload: IndexerWsMarketOraclePriceObject
     ): PerpetualMarket? {
         cachedIndexerOraclePrices[marketId] = payload
+        return createPerpetualMarket(marketId)
+    }
+
+    override fun processSparklines(
+        marketId: String,
+        payload: List<String>,
+    ): PerpetualMarket? {
+        cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
         return createPerpetualMarket(marketId)
     }
 
@@ -204,7 +215,7 @@ internal class MarketProcessor(
                 ),
                 status = status,
                 configs = createConfigs(payload),
-                perpetual = createMarketPerpetual(payload, oraclePrice),
+                perpetual = createMarketPerpetual(payload, oraclePrice, cachedIndexerSparklines[marketId]),
             )
             return newValue
         } catch (e: IndexerResponseParsingException) {
@@ -297,7 +308,8 @@ internal class MarketProcessor(
 
     private fun createMarketPerpetual(
         payload: IndexerCompositeMarketObject,
-        oraclePrice: Double? = null,
+        oraclePrice: Double?,
+        line: List<Double>?,
     ): MarketPerpetual? {
         val nextFundingRate = parser.asDouble(payload.nextFundingRate)
         val openInterest = parser.asDouble(payload.openInterest)
@@ -312,7 +324,7 @@ internal class MarketProcessor(
                 openInterestUSDC = oraclePrice?.let { openInterest * it } ?: 0.0,
                 openInterestLowerCap = parser.asDouble(payload.openInterestLowerCap),
                 openInterestUpperCap = parser.asDouble(payload.openInterestUpperCap),
-                line = null,
+                line = line?.toIList(),
             )
         } else {
             null
@@ -583,7 +595,7 @@ internal class MarketProcessor(
         }
     }
 
-    internal fun receivedSparklines(
+    internal fun receivedSparklinesDeprecated(
         market: Map<String, Any>,
         payload: List<Any>,
     ): Map<String, Any> {

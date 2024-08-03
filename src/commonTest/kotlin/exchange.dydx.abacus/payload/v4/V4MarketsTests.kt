@@ -197,16 +197,27 @@ class V4MarketsTests : V4BaseTests() {
     }
 
     private fun testMarketsSparklinesChanged() {
-        test(
-            {
-                perp.rest(
-                    AbUrl.fromString("$testRestUrl/v4/sparklines?timePeriod=ONE_DAY"),
-                    mock.candles.v4SparklinesFirstCall,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.rest(
+                url = AbUrl.fromString("$testRestUrl/v4/sparklines?timePeriod=ONE_DAY"),
+                payload = mock.candles.v4SparklinesFirstCall,
+                subaccountNumber = 0,
+                height = null,
+            )
+            val btcLine = perp.internalState.marketsSummary.markets["BTC-USD"]?.perpetualMarket?.perpetual?.line
+            assertEquals(btcLine?.get(0), 29308.0)
+            assertEquals(btcLine?.get(1), 29373.0)
+        } else {
+            test(
+                {
+                    perp.rest(
+                        AbUrl.fromString("$testRestUrl/v4/sparklines?timePeriod=ONE_DAY"),
+                        mock.candles.v4SparklinesFirstCall,
+                        0,
+                        null,
+                    )
+                },
+                """
             {
                 "markets": {
                     "markets": {
@@ -230,15 +241,27 @@ class V4MarketsTests : V4BaseTests() {
                 }
             }
             """,
-        )
+            )
+        }
     }
 
     private fun testMarketsChanged() {
-        test(
-            {
-                perp.loadv4MarketsChanged(mock, testWsUrl)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4MarketsChanged(mock, testWsUrl)
+            val btcPerpetual = perp.internalState.marketsSummary.markets["BTC-USD"]?.perpetualMarket?.perpetual
+            assertEquals(btcPerpetual?.openInterest, 3531.250439547)
+            assertEquals(btcPerpetual?.volume24H, 493681565.92757831256)
+            assertEquals(btcPerpetual?.trades24H, 922900.0)
+            val ethPerpetual = perp.internalState.marketsSummary.markets["ETH-USD"]?.perpetualMarket?.perpetual
+            assertEquals(ethPerpetual?.openInterest, 46115.767606)
+            assertEquals(ethPerpetual?.volume24H, 493203231.416110155)
+            assertEquals(ethPerpetual?.trades24H, 939491.0)
+        } else {
+            test(
+                {
+                    perp.loadv4MarketsChanged(mock, testWsUrl)
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -299,8 +322,9 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testMarketsBatchChanged() {
