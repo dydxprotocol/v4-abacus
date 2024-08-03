@@ -839,7 +839,6 @@ data class MarketOrderbook(
 depending on the timing of v3_markets socket channel and /config/markets.json,
 the object may contain empty fields until both payloads are received and processed
 */
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class PerpetualMarket(
@@ -964,7 +963,7 @@ data class PerpetualMarketSummary(
                         markets[marketId] = it
                     }
                 }
-                return perpetualMarketSummary(existing, parser, data, markets)
+                return createPerpetualMarketSummary(existing, parser, data, markets)
             } else {
                 val marketsData = parser.asMap(data["markets"]) ?: return null
                 val changedMarkets = changes.markets ?: marketsData.keys
@@ -985,11 +984,11 @@ data class PerpetualMarketSummary(
                     )
                     markets.typedSafeSet(marketId, perpMarket)
                 }
-                return perpetualMarketSummary(existing, parser, data, markets)
+                return createPerpetualMarketSummary(existing, parser, data, markets)
             }
         }
 
-        private fun perpetualMarketSummary(
+        private fun createPerpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
