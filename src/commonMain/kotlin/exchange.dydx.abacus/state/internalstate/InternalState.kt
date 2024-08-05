@@ -8,6 +8,7 @@ import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.LaunchIncentivePoint
 import exchange.dydx.abacus.output.LaunchIncentiveSeason
 import exchange.dydx.abacus.output.MarketTrade
+import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.WithdrawalGating
 import exchange.dydx.abacus.output.account.PositionSide
 import exchange.dydx.abacus.output.account.StakingRewards
@@ -33,7 +34,16 @@ internal data class InternalState(
     var rewardsParams: InternalRewardsParamsState? = null,
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
     val configs: InternalConfigsState = InternalConfigsState(),
-    val markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
+    val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
+)
+
+internal data class InternalMarketSummaryState(
+    var markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
+)
+
+internal data class InternalMarketState(
+    var trades: List<MarketTrade>? = null,
+    var perpetualMarket: PerpetualMarket? = null,
 )
 
 internal data class InternalConfigsState(
@@ -147,9 +157,9 @@ internal data class InternalPerpetualPosition(
         get() {
             return if (subaccountNumber != null) {
                 if (subaccountNumber >= NUM_PARENT_SUBACCOUNTS) {
-                    MarginMode.Cross
-                } else {
                     MarginMode.Isolated
+                } else {
+                    MarginMode.Cross
                 }
             } else {
                 null
@@ -180,8 +190,4 @@ internal data class InternalRewardsParamsState(
 
 internal data class InternalLaunchIncentiveState(
     var seasons: List<LaunchIncentiveSeason>? = null,
-)
-
-internal data class InternalMarketState(
-    var trades: List<MarketTrade>? = null,
 )

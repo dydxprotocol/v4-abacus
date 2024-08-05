@@ -15,14 +15,14 @@ internal fun TradingStateMachine.receivedTrades(
     return if (market != null) {
         this.marketsSummary = marketsProcessor.receivedTradesDeprecated(marketsSummary, market, payload)
         if (staticTyping) {
-            val marketState = internalState.markets[market]
+            val marketState = internalState.marketsSummary.markets[market]
             val response = parser.asTypedObject<TradesResponse>(payload.toJson())
             val trades = response?.let { tradesProcessorV2.processSubscribed(it) } ?: emptyList()
 
             if (marketState != null) {
                 marketState.trades = trades
             } else {
-                internalState.markets[market] = InternalMarketState(trades)
+                internalState.marketsSummary.markets[market] = InternalMarketState(trades)
             }
         }
         StateChanges(iListOf(Changes.trades), iListOf(market))
@@ -67,7 +67,7 @@ private fun TradingStateMachine.processTradeUpdates(
     market: String,
     payload: Map<String, Any>,
 ) {
-    val marketState = internalState.markets[market]
+    val marketState = internalState.marketsSummary.markets[market]
     val response = parser.asTypedObject<TradesResponse>(payload.toJson())
     val trades = response?.let {
         tradesProcessorV2.processChannelData(marketState?.trades, it)
@@ -76,6 +76,6 @@ private fun TradingStateMachine.processTradeUpdates(
     if (marketState != null) {
         marketState.trades = trades
     } else {
-        internalState.markets[market] = InternalMarketState(trades)
+        internalState.marketsSummary.markets[market] = InternalMarketState(trades)
     }
 }

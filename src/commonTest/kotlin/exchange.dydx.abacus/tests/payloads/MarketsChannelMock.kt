@@ -2757,15 +2757,17 @@ internal class MarketsChannelMock {
            "message_id":2,
            "channel":"v4_markets",
            "contents":{
-              "BTC-USD":{
-                 "volume24H":"493681565.92757831256",
-                 "trades24H":922900,
-                 "openInterest":"3531.250439547"
-              },
-              "ETH-USD":{
-                 "volume24H":"493203231.416110155",
-                 "trades24H":939491,
-                 "openInterest":"46115.767606"
+              "trading": {
+                  "BTC-USD":{
+                     "volume24H":"493681565.92757831256",
+                     "trades24H":922900,
+                     "openInterest":"3531.250439547"
+                  },
+                  "ETH-USD":{
+                     "volume24H":"493203231.416110155",
+                     "trades24H":939491,
+                     "openInterest":"46115.767606"
+                  }
               }
            }
         }
@@ -2806,7 +2808,7 @@ internal class MarketsChannelMock {
               {
                  "oraclePrices":{
                      "BTC-USD":{
-                        "price": "21000.00",
+                        "oraclePrice": "21000.00",
                         "effectiveAt": "2022-06-01T12:01:01.002Z",
                         "effectiveAtHeight": "500",
                         "marketId": 0

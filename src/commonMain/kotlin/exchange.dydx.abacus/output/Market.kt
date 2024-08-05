@@ -6,19 +6,19 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
-import exchange.dydx.abacus.utils.IMutableMap
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.typedSafeSet
 import kollections.JsExport
-import kollections.iMapOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kotlinx.serialization.Serializable
 import numberOfDecimals
 
@@ -50,6 +50,9 @@ data class MarketStatus(
             }
         }
     }
+
+    val canDisplay: Boolean
+        get() = canTrade || canReduce
 }
 
 /* for V4 only */
@@ -836,7 +839,6 @@ data class MarketOrderbook(
 depending on the timing of v3_markets socket channel and /config/markets.json,
 the object may contain empty fields until both payloads are received and processed
 */
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class PerpetualMarket(
@@ -942,70 +944,55 @@ data class PerpetualMarketSummary(
     val markets: IMap<String, PerpetualMarket>?,
 ) {
     companion object {
-        internal fun create(
-            existing: PerpetualMarketSummary?,
-            parser: ParserProtocol,
-            data: Map<String, Any>,
-            assets: Map<String, Any>?
-        ): PerpetualMarketSummary? {
-            Logger.d { "creating Perpetual Market Summary\n" }
-
-            val markets: IMutableMap<String, PerpetualMarket> =
-                iMutableMapOf()
-            val marketsData = parser.asMap(data["markets"]) ?: return null
-
-            for ((key, value) in marketsData) {
-                val marketData = parser.asMap(value) ?: iMapOf()
-                PerpetualMarket.create(
-                    existing?.markets?.get(key),
-                    parser,
-                    marketData,
-                    assets,
-                    false,
-                    false,
-                )
-                    ?.let { market ->
-                        markets[key] = market
-                    }
-            }
-
-            return perpetualMarketSummary(existing, parser, data, markets)
-        }
-
         internal fun apply(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
             assets: Map<String, Any>?,
+            staticTyping: Boolean,
+            marketSummaryState: InternalMarketSummaryState,
             changes: StateChanges,
         ): PerpetualMarketSummary? {
-            val marketsData = parser.asMap(data["markets"]) ?: return null
-            val changedMarkets = changes.markets ?: marketsData.keys
+            if (staticTyping) {
+                if (marketSummaryState.markets.isEmpty()) {
+                    return null
+                }
+                val markets: MutableMap<String, PerpetualMarket> = mutableMapOf()
+                for ((marketId, market) in marketSummaryState.markets) {
+                    market.perpetualMarket?.let {
+                        markets[marketId] = it
+                    }
+                }
+                return createPerpetualMarketSummary(existing, parser, data, markets)
+            } else {
+                val marketsData = parser.asMap(data["markets"]) ?: return null
+                val changedMarkets = changes.markets ?: marketsData.keys
 
-            val markets = existing?.markets?.mutable() ?: iMutableMapOf()
-            for (marketId in changedMarkets) {
-                val marketData = parser.asMap(marketsData[marketId]) ?: continue
+                val markets = existing?.markets?.mutable() ?: iMutableMapOf()
+                for (marketId in changedMarkets) {
+                    val marketData = parser.asMap(marketsData[marketId]) ?: continue
 //                val marketData = parser.asMap(configDataMap["configs"]) ?: continue
-                val existingMarket = existing?.markets?.get(marketId)
+                    val existingMarket = existing?.markets?.get(marketId)
 
-                val perpMarket = PerpetualMarket.create(
-                    existingMarket,
-                    parser,
-                    marketData,
-                    assets,
-                    changes.changes.contains(Changes.orderbook),
-                    changes.changes.contains(Changes.trades),
-                )
-                markets.typedSafeSet(marketId, perpMarket)
+                    val perpMarket = PerpetualMarket.create(
+                        existing = existingMarket,
+                        parser = parser,
+                        data = marketData,
+                        assets = assets,
+                        resetOrderbook = changes.changes.contains(Changes.orderbook),
+                        resetTrades = changes.changes.contains(Changes.trades),
+                    )
+                    markets.typedSafeSet(marketId, perpMarket)
+                }
+                return createPerpetualMarketSummary(existing, parser, data, markets)
             }
-            return perpetualMarketSummary(existing, parser, data, markets)
         }
 
-        private fun perpetualMarketSummary(
+        private fun createPerpetualMarketSummary(
             existing: PerpetualMarketSummary?,
             parser: ParserProtocol,
             data: Map<String, Any>,
-            newMarkets: IMutableMap<String, PerpetualMarket>,
+            newMarkets: Map<String, PerpetualMarket>,
         ): PerpetualMarketSummary? {
             val volume24HUSDC = parser.asDouble(data["volume24HUSDC"])
             val openInterestUSDC = parser.asDouble(data["openInterestUSDC"])
@@ -1020,10 +1007,10 @@ data class PerpetualMarketSummary(
                 existing
             } else {
                 PerpetualMarketSummary(
-                    volume24HUSDC,
-                    openInterestUSDC,
-                    trades24H,
-                    newMarkets,
+                    volume24HUSDC = volume24HUSDC,
+                    openInterestUSDC = openInterestUSDC,
+                    trades24H = trades24H,
+                    markets = newMarkets.toIMap(),
                 )
             }
         }

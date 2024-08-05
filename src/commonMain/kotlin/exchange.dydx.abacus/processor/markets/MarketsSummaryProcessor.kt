@@ -2,10 +2,12 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.models.IndexerCompositeMarketObject
+import indexer.models.IndexerWsMarketUpdateResponse
 
-@Suppress("UNCHECKED_CAST")
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
     calculateSparklines: Boolean = false
@@ -18,39 +20,63 @@ internal class MarketsSummaryProcessor(
             marketsProcessor.groupingMultiplier = value
         }
 
-    internal fun subscribed(
+    fun processSubscribed(
+        existing: InternalMarketSummaryState,
+        content: Map<String, IndexerCompositeMarketObject>?,
+    ): InternalMarketSummaryState {
+        val markets = marketsProcessor.processSubscribed(existing, content)
+        return existing
+    }
+
+    fun processChannelData(
+        existing: InternalMarketSummaryState,
+        content: IndexerWsMarketUpdateResponse?,
+    ): InternalMarketSummaryState {
+        val markets = marketsProcessor.processChannelData(existing, content)
+        return existing
+    }
+
+    fun processChannelBatchData(
+        existing: InternalMarketSummaryState,
+        content: List<IndexerWsMarketUpdateResponse>?,
+    ): InternalMarketSummaryState {
+        val markets = marketsProcessor.processChannelBatchData(existing, content)
+        return existing
+    }
+
+    internal fun subscribedDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.processSubscribed(parser.asNativeMap(existing?.get("markets")), content)
+        val markets = marketsProcessor.processSubscribedDeprecated(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
     @Suppress("FunctionName")
-    internal fun channel_data(
+    internal fun channel_dataDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.processChannelData(parser.asNativeMap(existing?.get("markets")), content)
+        val markets = marketsProcessor.processChannelDataDeprecated(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
     @Suppress("FunctionName")
-    internal fun channel_batch_data(
+    internal fun channel_batch_dataDeprecated(
         existing: Map<String, Any>?,
         content: List<Any>
     ): Map<String, Any>? {
         val markets =
-            marketsProcessor.processChannelBatchData(parser.asNativeMap(existing?.get("markets")), content)
+            marketsProcessor.processChannelBatchDataDeprecated(parser.asNativeMap(existing?.get("markets")), content)
         return modify(existing, markets)
     }
 
-    internal fun receivedConfigurations(
+    internal fun receivedConfigurationsDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
         val markets =
-            marketsProcessor.receivedConfigurations(parser.asNativeMap(existing?.get("markets")), payload)
+            marketsProcessor.receivedConfigurationsDeprecated(parser.asNativeMap(existing?.get("markets")), payload)
         return modify(existing, markets)!!
     }
 
