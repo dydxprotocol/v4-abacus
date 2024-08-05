@@ -530,7 +530,7 @@ internal class MarketProcessor(
         return modified
     }
 
-    internal fun receivedOrderbook(
+    internal fun receivedOrderbookDeprecated(
         market: Map<String, Any>,
         payload: Map<String, Any>,
     ): Map<String, Any> {

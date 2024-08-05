@@ -1,8 +1,10 @@
 package exchange.dydx.abacus.state.model
 
+import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import indexer.codegen.IndexerOrderbookResponseObject
 import kollections.iListOf
 
 internal fun TradingStateMachine.receivedOrderbook(
@@ -11,7 +13,13 @@ internal fun TradingStateMachine.receivedOrderbook(
     subaccountNumber: Int
 ): StateChanges? {
     return if (market != null) {
-        this.marketsSummary = marketsProcessor.receivedOrderbook(marketsSummary, market, payload)
+        if (staticTyping) {
+            val orderbookPayload = parser.asTypedObject<IndexerOrderbookResponseObject>(payload)
+            print("orderbookPayload: $orderbookPayload")
+        } else {
+            this.marketsSummary =
+                marketsProcessor.receivedOrderbookDeprecated(marketsSummary, market, payload)
+        }
         StateChanges(iListOf(Changes.orderbook, Changes.input), iListOf(market), iListOf(subaccountNumber))
     } else {
         null

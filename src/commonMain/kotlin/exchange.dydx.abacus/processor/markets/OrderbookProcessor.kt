@@ -7,6 +7,7 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerOrderbookResponseObject
 import tickDecimals
 
 @Suppress("UNCHECKED_CAST")
@@ -18,6 +19,19 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
     private var groupingLookup: MutableMap<Int, Double>? = null
 
     private var lastOffset: Long = 0
+
+    fun processSubscribed(
+        existing: Map<String, Any>,
+        content: IndexerOrderbookResponseObject?,
+    ): Map<String, Any> {
+
+        return if (content != null) {
+            val orderbook = received(existing, content)
+            calculate(orderbook)
+        } else {
+            existing
+        }
+    }
 
     internal fun subscribed(
         content: Map<String, Any>

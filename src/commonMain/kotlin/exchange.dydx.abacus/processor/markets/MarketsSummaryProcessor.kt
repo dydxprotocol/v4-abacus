@@ -5,26 +5,30 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerOrderbookResponseObject
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
-    calculateSparklines: Boolean = false
+    calculateSparklines: Boolean = false,
+    private val staticTyping: Boolean,
 ) : BaseProcessor(parser) {
     private val marketsProcessor = MarketsProcessor(parser, calculateSparklines)
+    private val orderbookProcessor = OrderbookProcessor(parser)
 
     internal var groupingMultiplier: Int
-        get() = marketsProcessor.groupingMultiplier
+        get() = if (staticTyping) orderbookProcessor.groupingMultiplier else marketsProcessor.groupingMultiplier
         set(value) {
-            marketsProcessor.groupingMultiplier = value
+            if (staticTyping) orderbookProcessor.groupingMultiplier = value
+            else marketsProcessor.groupingMultiplier = value
         }
 
     fun processSubscribed(
         existing: InternalMarketSummaryState,
         content: Map<String, IndexerCompositeMarketObject>?,
     ): InternalMarketSummaryState {
-        val markets = marketsProcessor.processSubscribed(existing, content)
+        marketsProcessor.processSubscribed(existing, content)
         return existing
     }
 
@@ -32,7 +36,7 @@ internal class MarketsSummaryProcessor(
         existing: InternalMarketSummaryState,
         content: IndexerWsMarketUpdateResponse?,
     ): InternalMarketSummaryState {
-        val markets = marketsProcessor.processChannelData(existing, content)
+        marketsProcessor.processChannelData(existing, content)
         return existing
     }
 
@@ -40,7 +44,7 @@ internal class MarketsSummaryProcessor(
         existing: InternalMarketSummaryState,
         content: List<IndexerWsMarketUpdateResponse>?,
     ): InternalMarketSummaryState {
-        val markets = marketsProcessor.processChannelBatchData(existing, content)
+        marketsProcessor.processChannelBatchData(existing, content)
         return existing
     }
 
@@ -48,7 +52,15 @@ internal class MarketsSummaryProcessor(
         existing: InternalMarketSummaryState,
         content: Map<String, List<String>>?,
     ): InternalMarketSummaryState {
-        val markets = marketsProcessor.processSparklines(existing, content)
+        marketsProcessor.processSparklines(existing, content)
+        return existing
+    }
+
+    fun processOrderbook(
+        existing: InternalMarketSummaryState,
+        market: String,
+        content: IndexerOrderbookResponseObject?,
+    ): InternalMarketSummaryState {
         return existing
     }
 
@@ -88,12 +100,12 @@ internal class MarketsSummaryProcessor(
         return modify(existing, markets)!!
     }
 
-    internal fun receivedOrderbook(
+    internal fun receivedOrderbookDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
     ): Map<String, Any>? {
-        val markets = marketsProcessor.receivedOrderbook(
+        val markets = marketsProcessor.receivedOrderbookDeprecated(
             parser.asNativeMap(existing?.get("markets")),
             market,
             payload,
