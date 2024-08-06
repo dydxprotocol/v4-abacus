@@ -98,7 +98,10 @@ open class TradingStateMachine(
     internal var internalState: InternalState = InternalState()
 
     internal val parser: ParserProtocol = Parser()
-    internal val marketsProcessor = MarketsSummaryProcessor(parser)
+    internal val marketsProcessor = MarketsSummaryProcessor(
+        parser = parser,
+        staticTyping = staticTyping,
+    )
     internal val tradesProcessorV2 = TradesProcessorV2(TradeProcessorV2(parser, localizer))
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(
@@ -1112,15 +1115,19 @@ open class TradingStateMachine(
             orderbooks = if (markets != null) {
                 val modified = orderbooks?.toIMutableMap() ?: iMutableMapOf()
                 for (marketId in markets) {
-                    val data =
-                        parser.asNativeMap(
-                            parser.value(
-                                data,
-                                "markets.markets.$marketId.orderbook",
-                            ),
-                        )
-                    val existing = orderbooks?.get(marketId)
-                    val orderbook = MarketOrderbook.create(existing, parser, data)
+                    val orderbook = if (staticTyping) {
+                        internalState.marketsSummary.markets[marketId]?.groupedOrderbook
+                    } else {
+                        val data =
+                            parser.asNativeMap(
+                                parser.value(
+                                    data,
+                                    "markets.markets.$marketId.orderbook",
+                                ),
+                            )
+                        val existing = orderbooks?.get(marketId)
+                        MarketOrderbook.create(existing, parser, data)
+                    }
                     modified.typedSafeSet(marketId, orderbook)
                 }
                 modified

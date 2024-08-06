@@ -2,12 +2,14 @@ package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerOrderbookResponseObject
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
+import indexer.models.IndexerWsOrderbookUpdateResponse
 
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
@@ -21,7 +23,7 @@ internal class MarketsSummaryProcessor(
         get() = if (staticTyping) orderbookProcessor.groupingMultiplier else marketsProcessor.groupingMultiplier
         set(value) {
             if (staticTyping) orderbookProcessor.groupingMultiplier = value
-            else marketsProcessor.groupingMultiplier = value
+            marketsProcessor.groupingMultiplier = value
         }
 
     fun processSubscribed(
@@ -58,9 +60,46 @@ internal class MarketsSummaryProcessor(
 
     fun processOrderbook(
         existing: InternalMarketSummaryState,
-        market: String,
+        tickSize: Double?,
+        marketId: String,
         content: IndexerOrderbookResponseObject?,
     ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = orderbookProcessor.processSubscribed(
+            existing = marketState,
+            tickSize = tickSize,
+            content = content,
+        )
+        return existing
+    }
+
+    fun processBatchOrderbookChanges(
+        existing: InternalMarketSummaryState,
+        tickSize: Double?,
+        marketId: String,
+        content: List<IndexerWsOrderbookUpdateResponse>?,
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = orderbookProcessor.processChannelBatchData(
+            existing = marketState,
+            tickSize = tickSize,
+            content = content,
+        )
+        return existing
+    }
+
+    fun groupOrderbook(
+        existing: InternalMarketSummaryState,
+        tickSize: Double?,
+        marketId: String,
+        groupingMultiplier: Int,
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = orderbookProcessor.processGrouping(
+            existing = marketState,
+            tickSize = tickSize,
+            groupingMultiplier = groupingMultiplier,
+        )
         return existing
     }
 
@@ -113,7 +152,7 @@ internal class MarketsSummaryProcessor(
         return modify(existing, markets)
     }
 
-    internal fun receivedBatchOrderbookChanges(
+    internal fun receivedBatchOrderbookChangesDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: List<Any>
@@ -255,7 +294,7 @@ internal class MarketsSummaryProcessor(
         }
     }
 
-    internal fun groupOrderbook(existing: Map<String, Any>?, market: String?): Map<String, Any>? {
+    internal fun groupOrderbookDeprecated(existing: Map<String, Any>?, market: String?): Map<String, Any>? {
         val markets =
             marketsProcessor.groupOrderbook(parser.asNativeMap(existing?.get("markets")), market)
         return modify(existing, markets)
