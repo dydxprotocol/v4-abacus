@@ -26,8 +26,6 @@ import kotlinx.serialization.Serializable
  * @param usdVolume
  * @param trades
  * @param startingOpenInterest
- * @param orderbookMidPriceOpen
- * @param orderbookMidPriceClose
  * @param id
  */
 @Serializable
@@ -44,7 +42,5 @@ data class IndexerCandleResponseObject(
     val usdVolume: kotlin.String? = null,
     val trades: kotlin.Double? = null,
     val startingOpenInterest: kotlin.String? = null,
-    val orderbookMidPriceOpen: kotlin.String? = null,
-    val orderbookMidPriceClose: kotlin.String? = null,
     val id: kotlin.String? = null
 )

@@ -45,11 +45,19 @@ class V4CandlesTests : V3BaseTests() {
     }
 
     private fun testCandlesAllMarkets() {
-        test(
-            {
-                perp.loadCandlesAllMarkets(mock)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadCandlesAllMarkets(mock)
+            val market = perp.internalState.marketsSummary.markets["ETH-USD"]
+            assertEquals(1, market?.candles?.size)
+            val firstItem = market?.candles?.get("1HOUR")?.first()
+            assertEquals(1785.7, firstItem?.open)
+            assertEquals(1797.4, firstItem?.close)
+        } else {
+            test(
+                {
+                    perp.loadCandlesAllMarkets(mock)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -72,16 +80,24 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testCandlesFirstCall() {
-        test(
-            {
-                perp.loadCandlesFirst(mock)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadCandlesFirst(mock)
+            val market = perp.internalState.marketsSummary.markets["ETH-USD"]
+            val firstItem = market?.candles?.get("15MINS")?.first()
+            assertEquals(1780.6, firstItem?.open)
+            assertEquals(1782.3, firstItem?.close)
+        } else {
+            test(
+                {
+                    perp.loadCandlesFirst(mock)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -104,16 +120,24 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testCandlesSecondCall() {
-        test(
-            {
-                perp.loadCandlesSecond(mock)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadCandlesSecond(mock)
+            val market = perp.internalState.marketsSummary.markets["ETH-USD"]
+            val firstItem = market?.candles?.get("15MINS")?.first()
+            assertEquals(1709.7, firstItem?.open)
+            assertEquals(1709.7, firstItem?.close)
+        } else {
+            test(
+                {
+                    perp.loadCandlesSecond(mock)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -136,16 +160,24 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testCandlesSubscribed() {
-        test(
-            {
-                perp.socket(testWsUrl, mock.candles.v4_subscribed, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.candles.v4_subscribed, 0, null)
+            val market = perp.internalState.marketsSummary.markets["ETH-USD"]
+            val firstItem = market?.candles?.get("1HOUR")?.first()
+            assertEquals(1785.7, firstItem?.open)
+            assertEquals(1797.4, firstItem?.close)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.candles.v4_subscribed, 0, null)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -168,19 +200,36 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            { response ->
-                assertEquals(125, response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size)
-            },
-        )
+                """.trimIndent(),
+                { response ->
+                    assertEquals(
+                        125,
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size,
+                    )
+                },
+            )
+        }
     }
 
     private fun testCandlesChannelData() {
-        test(
-            {
-                perp.socket(testWsUrl, mock.candles.v4_channel_data, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.candles.v4_channel_data, 0, null)
+            val market = perp.internalState.marketsSummary.markets["ETH-USD"]
+            val firstItem = market?.candles?.get("15MINS")?.first()
+            assertEquals(1709.7, firstItem?.open)
+            assertEquals(1709.7, firstItem?.close)
+
+            val candles = perp.internalState.marketsSummary.markets["ETH-USD"]?.candles?.get("1HOUR")
+            assertEquals(125, candles?.size)
+            val lastCandle = candles?.last()
+            assertEquals(1582.8, lastCandle?.close)
+            assertEquals(1577.7, lastCandle?.open)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.candles.v4_channel_data, 0, null)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -203,22 +252,35 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            { response ->
-                assertEquals(125, response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size)
-                val lastCandle = response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
-                assertEquals(1582.8, lastCandle?.close)
-                assertEquals(1577.7, lastCandle?.open)
-            },
-        )
+                """.trimIndent(),
+                { response ->
+                    assertEquals(
+                        125,
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size,
+                    )
+                    val lastCandle =
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
+                    assertEquals(1582.8, lastCandle?.close)
+                    assertEquals(1577.7, lastCandle?.open)
+                },
+            )
+        }
     }
 
     private fun testCandlesChannelBatchData() {
-        test(
-            {
-                perp.socket(testWsUrl, mock.candles.v4_channel_batch_data, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.candles.v4_channel_batch_data, 0, null)
+            val candles = perp.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")
+            assertEquals(126, candles?.size)
+            val lastCandle = candles?.last()
+            assertEquals(1590.8, lastCandle?.close)
+            assertEquals(1598.0, lastCandle?.open)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.candles.v4_channel_batch_data, 0, null)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -233,20 +295,33 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            { response ->
-                assertEquals(126, response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size)
-                val lastCandle = response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
-                assertEquals(1590.8, lastCandle?.close)
-                assertEquals(1598.0, lastCandle?.open)
-            },
-        )
+                """.trimIndent(),
+                { response ->
+                    assertEquals(
+                        126,
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size,
+                    )
+                    val lastCandle =
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
+                    assertEquals(1590.8, lastCandle?.close)
+                    assertEquals(1598.0, lastCandle?.open)
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.candles.v4_channel_batch_data_2, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.candles.v4_channel_batch_data_2, 0, null)
+            val candles = perp.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")
+            assertEquals(126, candles?.size)
+            val lastCandle = candles?.last()
+            assertEquals(1592.7, lastCandle?.close)
+            assertEquals(1598.0, lastCandle?.open)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.candles.v4_channel_batch_data_2, 0, null)
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -261,13 +336,18 @@ class V4CandlesTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            { response ->
-                assertEquals(126, response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size)
-                val lastCandle = response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
-                assertEquals(1592.7, lastCandle?.close)
-                assertEquals(1598.0, lastCandle?.open)
-            },
-        )
+                """.trimIndent(),
+                { response ->
+                    assertEquals(
+                        126,
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.size,
+                    )
+                    val lastCandle =
+                        response.state?.candles?.get("ETH-USD")?.candles?.get("1HOUR")?.last()
+                    assertEquals(1592.7, lastCandle?.close)
+                    assertEquals(1598.0, lastCandle?.open)
+                },
+            )
+        }
     }
 }
