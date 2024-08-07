@@ -7,45 +7,49 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.utils.IndexerResponseParsingException
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.parseException
+import indexer.codegen.IndexerTradeResponse
 import indexer.codegen.IndexerTradeResponseObject
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class TradesResponse(
-    val trades: List<IndexerTradeResponseObject>
-)
 
 internal class TradesProcessorV2(
     private val tradeProcessor: TradeProcessorV2,
     private val limit: Int = TRADES_LIMIT,
 ) {
     fun processSubscribed(
-        payload: TradesResponse
-    ): List<MarketTrade> {
-        return payload.trades.mapNotNull {
+        existing: InternalMarketState,
+        payload: IndexerTradeResponse?
+    ): InternalMarketState {
+        existing.trades = payload?.trades?.mapNotNull {
             tradeProcessor.process(it)
         }
+        return existing
     }
 
     fun processChannelData(
-        existing: List<MarketTrade>?,
-        payload: TradesResponse,
-    ): List<MarketTrade> {
-        val new = payload.trades.mapNotNull {
+        existing: InternalMarketState,
+        payload: IndexerTradeResponse?,
+    ): InternalMarketState {
+        val new = payload?.trades?.mapNotNull {
             tradeProcessor.process(it)
         }
-        val merged = existing?.let {
-            mergeWithIds(new, existing) { trade -> trade.id }
-        } ?: new
+        val existingTrades = existing.trades
+        val merged =
+            if (new != null && existingTrades != null) {
+                mergeWithIds(new, existingTrades) { trade -> trade.id }
+            } else {
+                new ?: existingTrades ?: emptyList()
+            }
 
-        return if (merged.size > limit) {
+        existing.trades = if (merged.size > limit) {
             merged.subList(0, limit)
         } else {
             merged
         }
+
+        return existing
     }
 }
 

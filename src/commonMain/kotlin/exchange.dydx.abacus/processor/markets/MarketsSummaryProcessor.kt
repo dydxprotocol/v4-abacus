@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.processor.markets
 
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
@@ -9,18 +10,21 @@ import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerCandleResponse
 import indexer.codegen.IndexerCandleResponseObject
 import indexer.codegen.IndexerOrderbookResponseObject
+import indexer.codegen.IndexerTradeResponse
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 import indexer.models.IndexerWsOrderbookUpdateResponse
 
 internal class MarketsSummaryProcessor(
     parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
     calculateSparklines: Boolean = false,
     private val staticTyping: Boolean,
 ) : BaseProcessor(parser) {
     private val marketsProcessor = MarketsProcessor(parser, calculateSparklines)
     private val orderbookProcessor = OrderbookProcessor(parser)
     private val candlesProcessor = CandlesProcessor(parser)
+    private val tradesProcessor = TradesProcessorV2(TradeProcessorV2(parser, localizer))
 
     internal var groupingMultiplier: Int
         get() = if (staticTyping) orderbookProcessor.groupingMultiplier else marketsProcessor.groupingMultiplier
@@ -147,6 +151,32 @@ internal class MarketsSummaryProcessor(
             existing = marketState,
             tickSize = tickSize,
             groupingMultiplier = groupingMultiplier,
+        )
+        return existing
+    }
+
+    fun processTradesSubscribed(
+        existing: InternalMarketSummaryState,
+        marketId: String,
+        content: IndexerTradeResponse?
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = tradesProcessor.processSubscribed(
+            existing = marketState,
+            payload = content,
+        )
+        return existing
+    }
+
+    fun processTradesUpdates(
+        existing: InternalMarketSummaryState,
+        marketId: String,
+        content: IndexerTradeResponse?
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = tradesProcessor.processChannelData(
+            existing = marketState,
+            payload = content,
         )
         return existing
     }

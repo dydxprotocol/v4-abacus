@@ -3,9 +3,11 @@ package exchange.dydx.abacus.processor.markets
 import exchange.dydx.abacus.output.MarketTrade
 import exchange.dydx.abacus.output.MarketTradeResources
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.utils.DummyLocalizer
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerOrderSide
+import indexer.codegen.IndexerTradeResponse
 import indexer.codegen.IndexerTradeResponseObject
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -18,15 +20,16 @@ class TradesProcessorV2Tests {
     )
 
     @Test fun testSubscribed_happyPath() {
-        val payload = TradesResponse(
-            listOf(
+        val payload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("1"),
                 indexerTrade("2"),
                 indexerTrade("3"),
             ),
         )
 
-        val trades = processor.processSubscribed(payload)
+        val state = InternalMarketState()
+        processor.processSubscribed(state, payload)
 
         assertContentEquals(
             listOf(
@@ -34,13 +37,13 @@ class TradesProcessorV2Tests {
                 expectedMarketTrade("2"),
                 expectedMarketTrade("3"),
             ),
-            trades,
+            state.trades,
         )
     }
 
     @Test fun testSubscribed_invalidTrades() {
-        val payload = TradesResponse(
-            listOf(
+        val payload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("1"),
                 IndexerTradeResponseObject(
                     id = "2",
@@ -54,32 +57,34 @@ class TradesProcessorV2Tests {
             ),
         )
 
-        val trades = processor.processSubscribed(payload)
+        val state = InternalMarketState()
+        processor.processSubscribed(state, payload)
 
         assertContentEquals(
             listOf(
                 expectedMarketTrade("1"),
             ),
-            trades,
+            state.trades,
         )
     }
 
     @Test fun testChannelData_happyPath() {
-        val subscribedPayload = TradesResponse(
-            listOf(
+        val subscribedPayload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("1"),
                 indexerTrade("2"),
             ),
         )
-        val initialTrades = processor.processSubscribed(subscribedPayload)
-        val channelPayload = TradesResponse(
-            listOf(
+        val state = InternalMarketState()
+        processor.processSubscribed(state, subscribedPayload)
+        val channelPayload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("3"),
                 indexerTrade("4"),
             ),
         )
 
-        val finalTrades = processor.processChannelData(initialTrades, channelPayload)
+        processor.processChannelData(state, channelPayload)
 
         assertContentEquals(
             listOf(
@@ -88,20 +93,21 @@ class TradesProcessorV2Tests {
                 expectedMarketTrade("1"),
                 expectedMarketTrade("2"),
             ),
-            finalTrades,
+            state.trades,
         )
     }
 
     @Test fun testChannelData_overTradesLimit() {
-        val subscribedPayload = TradesResponse(
-            listOf(
+        val subscribedPayload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("1"),
                 indexerTrade("2"),
             ),
         )
-        val initialTrades = processor.processSubscribed(subscribedPayload)
-        val channelPayload = TradesResponse(
-            listOf(
+        val state = InternalMarketState()
+        processor.processSubscribed(state, subscribedPayload)
+        val channelPayload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("3"),
                 indexerTrade("4"),
                 indexerTrade("5"),
@@ -109,7 +115,7 @@ class TradesProcessorV2Tests {
             ),
         )
 
-        val finalTrades = processor.processChannelData(initialTrades, channelPayload)
+        processor.processChannelData(state, channelPayload)
 
         assertContentEquals(
             listOf(
@@ -119,26 +125,29 @@ class TradesProcessorV2Tests {
                 expectedMarketTrade("6"),
                 expectedMarketTrade("1"),
             ),
-            finalTrades,
+            state.trades,
         )
     }
 
     @Test fun testChannelData_duplicateIds() {
-        val subscribedPayload = TradesResponse(
-            listOf(
+        val subscribedPayload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("1"),
                 indexerTrade("2"),
             ),
         )
-        val initialTrades = processor.processSubscribed(subscribedPayload)
-        val channelPayload = TradesResponse(
-            listOf(
+        val state = InternalMarketState()
+        processor.processSubscribed(state, subscribedPayload)
+        val initialTrades = state.trades
+        val channelPayload = IndexerTradeResponse(
+            trades = arrayOf(
                 indexerTrade("1").copy(size = "500.0"),
                 indexerTrade("2").copy(size = "500.0"),
             ),
         )
 
-        val finalTrades = processor.processChannelData(initialTrades, channelPayload)
+        processor.processChannelData(state, channelPayload)
+        val finalTrades = state.trades
 
         assertContentEquals(
             listOf(
