@@ -10,9 +10,11 @@ class MarketProcessorMock : MarketProcessorProtocol {
     var processAction: ((String, IndexerCompositeMarketObject) -> PerpetualMarket?)? = null
     var processOraclePriceAction: ((String, IndexerWsMarketOraclePriceObject) -> PerpetualMarket?)? = null
     var clearCachedOraclePriceAction: ((String) -> Unit)? = null
+    var processSparklinesAction: ((String, List<String>) -> PerpetualMarket?)? = null
     var processCallCount = 0
     var processOraclePriceCallCount = 0
     var clearCachedOraclePriceCallCount = 0
+    var processSparklinesCallCount = 0
 
     override fun process(
         marketId: String,
@@ -28,6 +30,11 @@ class MarketProcessorMock : MarketProcessorProtocol {
     ): PerpetualMarket? {
         processOraclePriceCallCount++
         return processOraclePriceAction?.invoke(marketId, payload)
+    }
+
+    override fun processSparklines(marketId: String, payload: List<String>): PerpetualMarket? {
+        processSparklinesCallCount++
+        return processSparklinesAction?.invoke(marketId, payload)
     }
 
     override fun clearCachedOraclePrice(marketId: String) {

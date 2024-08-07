@@ -26,6 +26,11 @@ internal interface MarketsProcessorProtocol : BaseProcessorProtocol {
         existing: InternalMarketSummaryState,
         content: List<IndexerWsMarketUpdateResponse>?,
     ): InternalMarketSummaryState
+
+    fun processSparklines(
+        existing: InternalMarketSummaryState,
+        content: Map<String, List<String>>?
+    ): InternalMarketSummaryState
 }
 
 internal class MarketsProcessor(
@@ -99,6 +104,24 @@ internal class MarketsProcessor(
     ): InternalMarketSummaryState {
         for (response in content ?: listOf()) {
             processChannelData(existing, response)
+        }
+        return existing
+    }
+
+    override fun processSparklines(
+        existing: InternalMarketSummaryState,
+        content: Map<String, List<String>>?
+    ): InternalMarketSummaryState {
+        for ((marketId, sparklines) in content ?: mapOf()) {
+            val marketState = existing.markets[marketId] ?: InternalMarketState()
+            val receivedMarket = marketProcessor.processSparklines(
+                marketId = marketId,
+                payload = sparklines,
+            )
+            if (receivedMarket != marketState.perpetualMarket) {
+                marketState.perpetualMarket = receivedMarket
+                existing.markets[marketId] = marketState
+            }
         }
         return existing
     }
@@ -302,7 +325,7 @@ internal class MarketsProcessor(
         return existing
     }
 
-    internal fun receivedSparklines(
+    internal fun receivedSparklinesDeprecated(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ): Map<String, Any> {
@@ -311,7 +334,7 @@ internal class MarketsProcessor(
             parser.asString(key)?.let { market ->
                 parser.asNativeMap(existing?.get(market))?.let { marketData ->
                     parser.asNativeList(itemData)?.let { list ->
-                        modified[market] = marketProcessorDeprecated!!.receivedSparklines(marketData, list)
+                        modified[market] = marketProcessorDeprecated!!.receivedSparklinesDeprecated(marketData, list)
                     }
                 }
             }

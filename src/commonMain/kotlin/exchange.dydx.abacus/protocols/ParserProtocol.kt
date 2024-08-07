@@ -63,6 +63,9 @@ internal inline fun <reified T> ParserProtocol.asTypedList(list: Any?): List<T>?
         } else {
             val itemString: String? = asString(item)
             if (itemString != null) {
+                if (itemString is T) {
+                    return@mapNotNull itemString
+                }
                 try {
                     jsonCoder.decodeFromString<T>(itemString)
                 } catch (e: SerializationException) {
@@ -91,6 +94,9 @@ internal inline fun <reified T> ParserProtocol.asTypedObject(item: Any?): T? {
         asString(item)
     }
     return if (itemString != null) {
+        if (itemString is T) {
+            itemString
+        }
         try {
             jsonCoder.decodeFromString<T>(itemString)
         } catch (e: SerializationException) {
@@ -114,6 +120,20 @@ internal inline fun <reified T> ParserProtocol.asTypedStringMap(payload: Map<Str
     val result = mutableMapOf<String, T>()
     for ((key, value) in payload) {
         val typedValue = asTypedObject<T>(value)
+        if (typedValue != null) {
+            result[key] = typedValue
+        }
+    }
+    return result
+}
+
+internal inline fun <reified T> ParserProtocol.asTypedStringMapOfList(payload: Map<String, List<T>>?): Map<String, List<T>>? {
+    if (payload == null) {
+        return null
+    }
+    val result = mutableMapOf<String, List<T>>()
+    for ((key, value) in payload) {
+        val typedValue = asTypedList<T>(value)
         if (typedValue != null) {
             result[key] = typedValue
         }
