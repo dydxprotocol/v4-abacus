@@ -103,14 +103,6 @@ internal class MarketsSummaryProcessor(
         return existing
     }
 
-    fun processSparklines(
-        existing: InternalMarketSummaryState,
-        content: Map<String, List<String>>?,
-    ): InternalMarketSummaryState {
-        val markets = marketsProcessor.processSparklines(existing, content)
-        return existing
-    }
-
     internal fun subscribedDeprecated(
         existing: Map<String, Any>?,
         content: Map<String, Any>
