@@ -455,20 +455,11 @@ class V4MarketsTests : V4BaseTests() {
     }
 
     private fun testTradesSubscribed() {
-        if (perp.staticTyping) {
-            perp.loadv4TradesSubscribed(mock, testWsUrl)
-            val trades = perp.state?.trades?.get("ETH-USD")
-            assertEquals(trades?.size, 100)
-            val firstItem = trades?.firstOrNull()
-            assertEquals(firstItem?.side?.rawValue, "SELL")
-            assertEquals(firstItem?.size, 9.5E-4)
-            assertEquals(firstItem?.price, 1255.98)
-        } else {
-            test(
-                {
-                    perp.loadv4TradesSubscribed(mock, testWsUrl)
-                },
-                """
+        test(
+            {
+                perp.loadv4TradesSubscribed(mock, testWsUrl)
+            },
+            """
                 {
                    "markets":{
                       "markets":{
@@ -488,34 +479,24 @@ class V4MarketsTests : V4BaseTests() {
                       }
                    }
                 }
-                """.trimIndent(),
-                {
-                    val trades =
-                        parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
-                    assertEquals(
-                        100,
-                        trades?.size,
-                    )
-                },
-            )
-        }
+            """.trimIndent(),
+            {
+                val trades =
+                    parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
+                assertEquals(
+                    100,
+                    trades?.size,
+                )
+            },
+        )
     }
 
     private fun testTradesChanged() {
-        if (perp.staticTyping) {
-            perp.loadv4TradesChanged(mock, testWsUrl)
-            val trades = perp.state?.trades?.get("ETH-USD")
-            assertEquals(trades?.size, 101)
-            val firstItem = trades?.firstOrNull()
-            assertEquals(firstItem?.side?.rawValue, "BUY")
-            assertEquals(firstItem?.size, 1.593707)
-            assertEquals(firstItem?.price, 1255.949)
-        } else {
-            test(
-                {
-                    perp.loadv4TradesChanged(mock, testWsUrl)
-                },
-                """
+        test(
+            {
+                perp.loadv4TradesChanged(mock, testWsUrl)
+            },
+            """
                 {
                    "markets":{
                       "markets":{
@@ -534,34 +515,24 @@ class V4MarketsTests : V4BaseTests() {
                       }
                    }
                 }
-                """.trimIndent(),
-                {
-                    val trades =
-                        parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
-                    assertEquals(
-                        101,
-                        trades?.size,
-                    )
-                },
-            )
-        }
+            """.trimIndent(),
+            {
+                val trades =
+                    parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
+                assertEquals(
+                    101,
+                    trades?.size,
+                )
+            },
+        )
     }
 
     private fun testTradesBatchChanged() {
-        if (perp.staticTyping) {
-            perp.loadv4TradesBatchChanged(mock, testWsUrl)
-            val trades = perp.state?.trades?.get("ETH-USD")
-            assertEquals(trades?.size, 240)
-            val firstItem = trades?.firstOrNull()
-            assertEquals(firstItem?.side?.rawValue, "SELL")
-            assertEquals(firstItem?.size, 1.02E-4)
-            assertEquals(firstItem?.price, 1291.255)
-        } else {
-            test(
-                {
-                    perp.loadv4TradesBatchChanged(mock, testWsUrl)
-                },
-                """
+        test(
+            {
+                perp.loadv4TradesBatchChanged(mock, testWsUrl)
+            },
+            """
                 {
                    "markets":{
                       "markets":{
@@ -580,30 +551,24 @@ class V4MarketsTests : V4BaseTests() {
                       }
                    }
                 }
-                """.trimIndent(),
-                {
-                    val trades =
-                        parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
-                    assertEquals(
-                        240,
-                        trades?.size,
-                    )
-                },
-            )
-        }
+            """.trimIndent(),
+            {
+                val trades =
+                    parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
+                assertEquals(
+                    240,
+                    trades?.size,
+                )
+            },
+        )
     }
 
     private fun testMarketNotOnline() {
-        if (perp.staticTyping) {
-            perp.loadv4MarketsSubscribed(mock, testWsUrl)
-            val trades = perp.state?.trades?.get("ETH-USD")
-            assertEquals(trades?.size, 240)
-        } else {
-            test(
-                {
-                    perp.socket(testWsUrl, mock.marketsChannel.v4_oracle_price_not_in_list, 0, null)
-                },
-                """
+        test(
+            {
+                perp.socket(testWsUrl, mock.marketsChannel.v4_oracle_price_not_in_list, 0, null)
+            },
+            """
                 {
                    "markets":{
                       "markets":{
@@ -613,17 +578,16 @@ class V4MarketsTests : V4BaseTests() {
                       }
                    }
                 }
-                """.trimIndent(),
-                {
-                    val trades =
-                        parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
-                    assertEquals(
-                        240,
-                        trades?.size,
-                    )
-                },
-            )
-        }
+            """.trimIndent(),
+            {
+                val trades =
+                    parser.asList(parser.value(perp.data, "markets.markets.ETH-USD.trades"))
+                assertEquals(
+                    240,
+                    trades?.size,
+                )
+            },
+        )
     }
 
     @Test

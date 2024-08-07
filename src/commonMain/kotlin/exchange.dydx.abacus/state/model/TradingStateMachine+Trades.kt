@@ -1,10 +1,11 @@
 package exchange.dydx.abacus.state.model
 
+import exchange.dydx.abacus.processor.markets.TradesResponse
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.utils.toJson
-import indexer.codegen.IndexerTradeResponse
 import kollections.iListOf
 
 internal fun TradingStateMachine.receivedTrades(
@@ -12,15 +13,17 @@ internal fun TradingStateMachine.receivedTrades(
     payload: Map<String, Any>
 ): StateChanges? {
     return if (market != null) {
+        this.marketsSummary = marketsProcessor.receivedTradesDeprecated(marketsSummary, market, payload)
         if (staticTyping) {
-            val response = parser.asTypedObject<IndexerTradeResponse>(payload.toJson())
-            marketsProcessor.processTradesSubscribed(
-                existing = internalState.marketsSummary,
-                marketId = market,
-                content = response,
-            )
-        } else {
-            this.marketsSummary = marketsProcessor.receivedTradesDeprecated(marketsSummary, market, payload)
+            val marketState = internalState.marketsSummary.markets[market]
+            val response = parser.asTypedObject<TradesResponse>(payload.toJson())
+            val trades = response?.let { tradesProcessorV2.processSubscribed(it) } ?: emptyList()
+
+            if (marketState != null) {
+                marketState.trades = trades
+            } else {
+                internalState.marketsSummary.markets[market] = InternalMarketState(trades)
+            }
         }
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
@@ -33,15 +36,9 @@ internal fun TradingStateMachine.receivedTradesChanges(
     payload: Map<String, Any>
 ): StateChanges? {
     return if (market != null) {
+        this.marketsSummary = marketsProcessor.receivedTradesChangesDeprecated(marketsSummary, market, payload)
         if (staticTyping) {
-            val response = parser.asTypedObject<IndexerTradeResponse>(payload.toJson())
-            marketsProcessor.processTradesUpdates(
-                existing = internalState.marketsSummary,
-                marketId = market,
-                content = response,
-            )
-        } else {
-            this.marketsSummary = marketsProcessor.receivedTradesChangesDeprecated(marketsSummary, market, payload)
+            processTradeUpdates(market, payload)
         }
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
@@ -54,20 +51,31 @@ internal fun TradingStateMachine.receivedBatchedTradesChanges(
     payload: List<Any>
 ): StateChanges? {
     return if (market != null) {
+        this.marketsSummary = marketsProcessor.receivedBatchedTradesChanges(marketsSummary, market, payload)
         if (staticTyping) {
             payload.mapNotNull { parser.asNativeMap(it) }.forEach { tradeUpdatePayload ->
-                val response = parser.asTypedObject<IndexerTradeResponse>(tradeUpdatePayload.toJson())
-                marketsProcessor.processTradesUpdates(
-                    existing = internalState.marketsSummary,
-                    marketId = market,
-                    content = response,
-                )
+                processTradeUpdates(market, tradeUpdatePayload)
             }
-        } else {
-            this.marketsSummary = marketsProcessor.receivedBatchedTradesChanges(marketsSummary, market, payload)
         }
         StateChanges(iListOf(Changes.trades), iListOf(market))
     } else {
         null
+    }
+}
+
+private fun TradingStateMachine.processTradeUpdates(
+    market: String,
+    payload: Map<String, Any>,
+) {
+    val marketState = internalState.marketsSummary.markets[market]
+    val response = parser.asTypedObject<TradesResponse>(payload.toJson())
+    val trades = response?.let {
+        tradesProcessorV2.processChannelData(marketState?.trades, it)
+    } ?: emptyList()
+
+    if (marketState != null) {
+        marketState.trades = trades
+    } else {
+        internalState.marketsSummary.markets[market] = InternalMarketState(trades)
     }
 }

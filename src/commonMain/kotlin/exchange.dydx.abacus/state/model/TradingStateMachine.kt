@@ -36,6 +36,8 @@ import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
+import exchange.dydx.abacus.processor.markets.TradeProcessorV2
+import exchange.dydx.abacus.processor.markets.TradesProcessorV2
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.router.squid.SquidProcessor
@@ -100,9 +102,9 @@ open class TradingStateMachine(
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(
         parser = parser,
-        localizer = localizer,
         staticTyping = staticTyping,
     )
+    internal val tradesProcessorV2 = TradesProcessorV2(TradeProcessorV2(parser, localizer))
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(
             parser = parser,
@@ -1140,20 +1142,15 @@ open class TradingStateMachine(
             if (markets != null) {
                 val modified = trades?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    if (staticTyping) {
-                        val trades = internalState.marketsSummary.markets[marketId]?.trades
-                        modified.typedSafeSet(marketId, trades?.toIList())
-                    } else {
-                        val data = parser.asList(
-                            parser.value(
-                                data,
-                                "markets.markets.$marketId.trades",
-                            ),
-                        ) as? IList<Map<String, Any>>
-                        val existing = trades?.get(marketId)
-                        val trades = MarketTrade.create(existing, parser, data, localizer)
-                        modified.typedSafeSet(marketId, trades)
-                    }
+                    val data = parser.asList(
+                        parser.value(
+                            data,
+                            "markets.markets.$marketId.trades",
+                        ),
+                    ) as? IList<Map<String, Any>>
+                    val existing = trades?.get(marketId)
+                    val trades = MarketTrade.create(existing, parser, data, localizer)
+                    modified.typedSafeSet(marketId, trades)
                 }
                 trades = modified
             } else {

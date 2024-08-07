@@ -2,7 +2,6 @@ package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.tests.extensions.loadv4TradesChanged
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class V4DuplicateWebsocketMessageTests : V4BaseTests() {
 
@@ -81,20 +80,11 @@ class V4DuplicateWebsocketMessageTests : V4BaseTests() {
         setup()
 
         repeat(2) {
-            if (perp.staticTyping) {
-                perp.loadv4TradesChanged(mock, testWsUrl)
-                val market = perp.internalState.marketsSummary.markets.get("ETH-USD")
-                assertEquals(1, market?.trades?.size)
-                val firstItem = market?.trades?.get(0)
-                assertEquals("8ee6d90d-272d-5edd-bf0f-2e4d6ae3d3b7", firstItem?.id)
-                assertEquals("BUY", firstItem?.side?.rawValue)
-                assertEquals(1.593707, firstItem?.size)
-            } else {
-                test(
-                    {
-                        perp.loadv4TradesChanged(mock, testWsUrl)
-                    },
-                    """
+            test(
+                {
+                    perp.loadv4TradesChanged(mock, testWsUrl)
+                },
+                """
                 {
                    "markets":{
                       "markets":{
@@ -114,9 +104,8 @@ class V4DuplicateWebsocketMessageTests : V4BaseTests() {
                       }
                    }
                 }
-                    """.trimIndent(),
-                )
-            }
+                """.trimIndent(),
+            )
         }
     }
 }

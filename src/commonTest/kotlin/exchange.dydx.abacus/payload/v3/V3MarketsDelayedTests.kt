@@ -4,7 +4,6 @@ import exchange.dydx.abacus.tests.extensions.loadTrades
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class V3MarketsDelayedTests : V3BaseTests() {
     @Test
@@ -29,16 +28,11 @@ class V3MarketsDelayedTests : V3BaseTests() {
                 assertNull(perp.state?.marketsSummary)
             },
         )
-
-        if (perp.staticTyping) {
-            perp.loadTrades(mock)
-            assertNull(perp.state?.marketsSummary)
-        } else {
-            test(
-                {
-                    perp.loadTrades(mock)
-                },
-                """
+        test(
+            {
+                perp.loadTrades(mock)
+            },
+            """
                 {
                     "markets": {
                         "markets": {
@@ -51,13 +45,11 @@ class V3MarketsDelayedTests : V3BaseTests() {
                         }
                     }
                 }
-                """.trimIndent(),
-                {
-                    assertNull(perp.state?.marketsSummary)
-                },
-            )
-        }
-
+            """.trimIndent(),
+            {
+                assertNull(perp.state?.marketsSummary)
+            },
+        )
         test(
             {
                 loadMarkets()
@@ -82,17 +74,11 @@ class V3MarketsDelayedTests : V3BaseTests() {
 
     @Test
     fun testTradesFirst() {
-        if (perp.staticTyping) {
-            perp.loadTrades(mock)
-            val market = perp.internalState.marketsSummary.markets.get("ETH-USD")
-            assertTrue { market?.trades?.isNotEmpty() == true }
-            assertNull(perp.state?.marketsSummary)
-        } else {
-            test(
-                {
-                    perp.loadTrades(mock)
-                },
-                """
+        test(
+            {
+                perp.loadTrades(mock)
+            },
+            """
                 {
                     "markets": {
                         "markets": {
@@ -103,24 +89,16 @@ class V3MarketsDelayedTests : V3BaseTests() {
                         }
                     }
                 }
-                """.trimIndent(),
-                {
-                    assertNull(perp.state?.marketsSummary)
-                },
-            )
-        }
-
-        if (perp.staticTyping) {
-            loadOrderbook()
-            val market = perp.internalState.marketsSummary.markets.get("ETH-USD")
-            assertTrue { market?.trades?.isNotEmpty() == true }
-            assertNull(perp.state?.marketsSummary)
-        } else {
-            test(
-                {
-                    loadOrderbook()
-                },
-                """
+            """.trimIndent(),
+            {
+                assertNull(perp.state?.marketsSummary)
+            },
+        )
+        test(
+            {
+                loadOrderbook()
+            },
+            """
                 {
                     "markets": {
                         "markets": {
@@ -133,24 +111,16 @@ class V3MarketsDelayedTests : V3BaseTests() {
                         }
                     }
                 }
-                """.trimIndent(),
-                {
-                    assertNull(perp.state?.marketsSummary)
-                },
-            )
-        }
-
-        if (perp.staticTyping) {
-            loadMarkets()
-            val market = perp.internalState.marketsSummary.markets.get("ETH-USD")
-            assertTrue { market?.trades?.isNotEmpty() == true }
-            assertNotNull(perp.state?.marketsSummary)
-        } else {
-            test(
-                {
-                    loadMarkets()
-                },
-                """
+            """.trimIndent(),
+            {
+                assertNull(perp.state?.marketsSummary)
+            },
+        )
+        test(
+            {
+                loadMarkets()
+            },
+            """
                 {
                     "markets": {
                         "markets": {
@@ -161,11 +131,10 @@ class V3MarketsDelayedTests : V3BaseTests() {
                         }
                     }
                 }
-                """.trimIndent(),
-                {
-                    assertNotNull(perp.state?.marketsSummary)
-                },
-            )
-        }
+            """.trimIndent(),
+            {
+                assertNotNull(perp.state?.marketsSummary)
+            },
+        )
     }
 }

@@ -88,6 +88,7 @@ internal fun TradingStateMachine.receivedCandles(
 ): StateChanges {
     if (staticTyping) {
         val candlesPayload = parser.asTypedObject<IndexerCandleResponse>(payload)
+        print(candlesPayload)
         marketsProcessor.processCandles(
             existing = internalState.marketsSummary,
             marketId = marketId,
