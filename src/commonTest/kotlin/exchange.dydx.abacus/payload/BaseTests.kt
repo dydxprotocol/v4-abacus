@@ -290,11 +290,17 @@ open class BaseTests(
             state?.historicalFundings,
             "historicalFundings",
         )
-        verifyMarketsTradesState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.trades,
-            "trades",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.marketsSummary.markets) {
+                assertEquals(value.trades, state?.trades?.get(key))
+            }
+        } else {
+            verifyMarketsTradesState(
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.trades,
+                "trades",
+            )
+        }
         verifyMarketsCandlesState(
             parser.asNativeMap(perp.marketsSummary?.get("markets")),
             state?.candles,
