@@ -53,9 +53,27 @@ enum class TradeInputField(val rawValue: String) {
     bracketsExecution("brackets.execution");
 
     companion object {
-        operator fun invoke(rawValue: String) =
+        operator fun invoke(rawValue: String?) =
             TradeInputField.values().firstOrNull { it.rawValue == rawValue }
     }
+
+    internal val tradeDataOption: String?
+        get() = when (this) {
+            type, side -> null
+            size, usdcSize, leverage -> "options.needsSize"
+            limitPrice -> "options.needsLimitPrice"
+            triggerPrice -> "options.needsTriggerPrice"
+            trailingPercent -> "options.needsTrailingPercent"
+            targetLeverage -> "options.needsTargetLeverage"
+            goodTilDuration, goodTilUnit -> "options.needsGoodUntil"
+            reduceOnly -> "options.needsReduceOnly"
+            postOnly -> "options.needsPostOnly"
+            bracketsStopLossPrice, bracketsStopLossPercent, bracketsTakeProfitPrice, bracketsTakeProfitPercent, bracketsGoodUntilDuration, bracketsGoodUntilUnit, bracketsStopLossReduceOnly, bracketsTakeProfitReduceOnly, bracketsExecution -> "options.needsBrackets"
+            timeInForceType -> "options.timeInForceOptions"
+            execution -> "options.executionOptions"
+            marginMode -> "options.marginModeOptions"
+            else -> null
+        }
 }
 
 internal fun TradingStateMachine.tradeInMarket(
@@ -97,13 +115,13 @@ internal fun TradingStateMachine.tradeInMarket(
                 subaccountNumber,
             )
         }.also {
-            val existingPosition = MarginCalculator.findExistingPosition(
+            val existingPosition = MarginCalculator.findExistingPositionDeprecated(
                 parser,
                 account,
                 marketId,
                 subaccountNumber,
             )
-            val existingOrder = MarginCalculator.findExistingOrder(
+            val existingOrder = MarginCalculator.findExistingOrderDeprecated(
                 parser,
                 account,
                 marketId,
@@ -158,8 +176,8 @@ private fun TradingStateMachine.initiateTrade(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
 
-    val marginMode = MarginCalculator.findExistingMarginMode(parser, account, marketId, subaccountNumber)
-        ?: MarginCalculator.findMarketMarginMode(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
+    val marginMode = MarginCalculator.findExistingMarginModeDeprecated(parser, account, marketId, subaccountNumber)
+        ?: MarginCalculator.findMarketMarginModeDeprecated(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
 
     trade.safeSet("marginMode", marginMode)
 
@@ -374,48 +392,8 @@ fun TradingStateMachine.trade(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-private fun tradeDataOption(typeText: String?): String? {
-    return when (typeText) {
-        TradeInputField.type.rawValue,
-        TradeInputField.side.rawValue,
-        -> null
-
-        TradeInputField.size.rawValue,
-        TradeInputField.usdcSize.rawValue,
-        TradeInputField.leverage.rawValue,
-        -> "options.needsSize"
-
-        TradeInputField.limitPrice.rawValue -> "options.needsLimitPrice"
-        TradeInputField.triggerPrice.rawValue -> "options.needsTriggerPrice"
-        TradeInputField.trailingPercent.rawValue -> "options.needsTrailingPercent"
-        TradeInputField.targetLeverage.rawValue -> "options.needsTargetLeverage"
-
-        TradeInputField.goodTilDuration.rawValue -> "options.needsGoodUntil"
-        TradeInputField.goodTilUnit.rawValue -> "options.needsGoodUntil"
-        TradeInputField.reduceOnly.rawValue -> "options.needsReduceOnly"
-        TradeInputField.postOnly.rawValue -> "options.needsPostOnly"
-
-        TradeInputField.bracketsStopLossPrice.rawValue,
-        TradeInputField.bracketsStopLossPercent.rawValue,
-        TradeInputField.bracketsTakeProfitPrice.rawValue,
-        TradeInputField.bracketsTakeProfitPercent.rawValue,
-        TradeInputField.bracketsGoodUntilDuration.rawValue,
-        TradeInputField.bracketsGoodUntilUnit.rawValue,
-        TradeInputField.bracketsStopLossReduceOnly.rawValue,
-        TradeInputField.bracketsTakeProfitReduceOnly.rawValue,
-        TradeInputField.bracketsExecution.rawValue,
-        -> "options.needsBrackets"
-
-        TradeInputField.timeInForceType.rawValue -> "options.timeInForceOptions"
-        TradeInputField.execution.rawValue -> "options.executionOptions"
-        TradeInputField.marginMode.rawValue -> "options.marginModeOptions"
-
-        else -> null
-    }
-}
-
 private fun TradingStateMachine.validTradeInput(trade: Map<String, Any>, typeText: String?): Boolean {
-    val option = tradeDataOption(typeText)
+    val option = TradeInputField.invoke(typeText)?.tradeDataOption
     return if (option != null) {
         val value = parser.value(trade, option)
         if (parser.asList(value) != null) {

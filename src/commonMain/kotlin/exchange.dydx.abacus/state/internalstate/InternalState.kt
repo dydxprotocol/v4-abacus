@@ -37,6 +37,27 @@ internal data class InternalState(
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
     val configs: InternalConfigsState = InternalConfigsState(),
     val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
+    val input: InternalInputState = InternalInputState(),
+)
+
+internal enum class InternalInputType {
+    TRADE,
+    TRANSFER,
+}
+
+internal data class InternalInputState(
+    var trade: InternalTradeInputState = InternalTradeInputState(),
+    var currentType: InternalInputType? = null,
+)
+
+internal data class InternalTradeInputState(
+    var marketId: String? = null,
+    var size: Double? = null,
+    var price: Double? = null,
+    var type: String? = null, // TODO: enum
+    var side: String? = null, // TODO: enum
+    var marginMode: String? = null, // TODO: enum
+
 )
 
 internal data class InternalMarketSummaryState(

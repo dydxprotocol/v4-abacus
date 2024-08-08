@@ -3,9 +3,13 @@ package exchange.dydx.abacus.calculator
 import abs
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.output.account.Subaccount
+import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
@@ -18,6 +22,21 @@ import kotlin.math.min
 
 internal object MarginCalculator {
     fun findExistingPosition(
+        account: InternalAccountState,
+        marketId: String?,
+        subaccountNumber: Int,
+    ): InternalPerpetualPosition? {
+        val position = account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)
+        return if (
+            (position?.size ?: 0.0) != 0.0
+        ) {
+            position
+        } else {
+            null
+        }
+    }
+
+    fun findExistingPositionDeprecated(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         marketId: String?,
@@ -41,6 +60,18 @@ internal object MarginCalculator {
     }
 
     fun findExistingOrder(
+        account: InternalAccountState,
+        marketId: String?,
+        subaccountNumber: Int,
+    ): SubaccountOrder? {
+        val orders = account.groupedSubaccounts[subaccountNumber]?.orders
+        return orders?.firstOrNull {
+            it.marketId == marketId &&
+                it.status in listOf(OrderStatus.Open, OrderStatus.Pending, OrderStatus.Untriggered, OrderStatus.PartiallyFilled)
+        }
+    }
+
+    fun findExistingOrderDeprecated(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         marketId: String?,
@@ -75,17 +106,39 @@ internal object MarginCalculator {
     }
 
     fun findExistingMarginMode(
+        account: InternalAccountState,
+        marketId: String?,
+        subaccountNumber: Int,
+    ): String? {
+        val position = findExistingPosition(account, marketId, subaccountNumber)
+        if (position != null) {
+            // return if (position.equity != 0.0) "ISOLATED" else "CROSS"
+        }
+
+        val openOrder = findExistingOrder(account, marketId, subaccountNumber)
+        return if (openOrder != null) {
+            if (openOrder.subaccountNumber != subaccountNumber) {
+                "ISOLATED"
+            } else {
+                "CROSS"
+            }
+        } else {
+            null
+        }
+    }
+
+    fun findExistingMarginModeDeprecated(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         marketId: String?,
         subaccountNumber: Int,
     ): String? {
-        val position = findExistingPosition(parser, account, marketId, subaccountNumber)
+        val position = findExistingPositionDeprecated(parser, account, marketId, subaccountNumber)
         if (position != null) {
             return if (position["equity"] != null) "ISOLATED" else "CROSS"
         }
 
-        val openOrder = findExistingOrder(parser, account, marketId, subaccountNumber)
+        val openOrder = findExistingOrderDeprecated(parser, account, marketId, subaccountNumber)
         if (openOrder != null) {
             return if ((
                     parser.asInt(
@@ -106,6 +159,12 @@ internal object MarginCalculator {
     }
 
     fun findMarketMarginMode(
+        market: PerpetualMarket?,
+    ): String {
+        return market?.configs?.perpetualMarketType?.rawValue ?: "CROSS"
+    }
+
+    fun findMarketMarginModeDeprecated(
         parser: ParserProtocol,
         market: Map<String, Any>?,
     ): String {
@@ -126,11 +185,11 @@ internal object MarginCalculator {
     ): Boolean {
         val marketId = parser.asString(market?.get("id"))
         val existingMarginMode =
-            findExistingMarginMode(parser, account, marketId, subaccountNumber)
+            findExistingMarginModeDeprecated(parser, account, marketId, subaccountNumber)
         return if (existingMarginMode != null) {
             false
         } else if (marketId != null) {
-            findMarketMarginMode(parser, market) == "CROSS"
+            findMarketMarginModeDeprecated(parser, market) == "CROSS"
         } else {
             true
         }
@@ -242,7 +301,7 @@ internal object MarginCalculator {
         tradeInput: Map<String, Any>?
     ): Int {
         val marketId = parser.asString(tradeInput?.get("marketId")) ?: return subaccountNumber
-        val position = findExistingPosition(parser, account, marketId, subaccountNumber)
+        val position = findExistingPositionDeprecated(parser, account, marketId, subaccountNumber)
         return parser.asInt(position?.get("subaccountNumber")) ?: subaccountNumber
     }
 
