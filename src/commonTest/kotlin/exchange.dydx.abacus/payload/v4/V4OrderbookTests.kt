@@ -12,7 +12,7 @@ class V4OrderbookTests : V3BaseTests() {
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
 
     @Test
-    fun testCandles() {
+    fun testOrderbook() {
         loadMarkets()
         loadMarketsConfigurations()
 

@@ -220,14 +220,14 @@ internal class MarketsProcessor(
         return markets
     }
 
-    internal fun receivedOrderbook(
+    internal fun receivedOrderbookDeprecated(
         existing: Map<String, Any>?,
         market: String,
         payload: Map<String, Any>
     ): Map<String, Any> {
         val marketData = parser.asNativeMap(existing?.get(market)) ?: mutableMapOf()
         val markets = existing?.mutable() ?: mutableMapOf()
-        markets[market] = marketProcessorDeprecated!!.receivedOrderbook(marketData, payload)
+        markets[market] = marketProcessorDeprecated!!.receivedOrderbookDeprecated(marketData, payload)
         return markets
     }
 

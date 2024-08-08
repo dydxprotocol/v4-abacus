@@ -1,16 +1,30 @@
 package exchange.dydx.abacus.processor.markets
 
+import exchange.dydx.abacus.calculator.OrderbookCalculator
+import exchange.dydx.abacus.calculator.OrderbookCalculatorProtocol
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalOrderbook
+import exchange.dydx.abacus.state.internalstate.InternalOrderbookTick
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerOrderbookResponseObject
+import indexer.codegen.IndexerOrderbookResponsePriceLevel
+import indexer.models.IndexerWsOrderbookUpdateItem
+import indexer.models.IndexerWsOrderbookUpdateResponse
+import indexer.models.getPrice
+import indexer.models.getSize
 import tickDecimals
 
 @Suppress("UNCHECKED_CAST")
-internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser) {
+internal class OrderbookProcessor(
+    parser: ParserProtocol,
+    private val calculator: OrderbookCalculatorProtocol = OrderbookCalculator(parser),
+) : BaseProcessor(parser) {
     private var entryProcessor = OrderbookEntryProcessor(parser = parser)
     internal var groupingMultiplier: Int = 1
 
@@ -19,7 +33,103 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
 
     private var lastOffset: Long = 0
 
-    internal fun subscribed(
+    private val defaultTickSize = 0.1
+
+    fun processSubscribed(
+        existing: InternalMarketState,
+        tickSize: Double?,
+        content: IndexerOrderbookResponseObject?,
+    ): InternalMarketState {
+        existing.rawOrderbook = InternalOrderbook(
+            asks = content?.asks?.mapNotNull {
+                createTick(it)
+            },
+            bids = content?.bids?.mapNotNull {
+                createTick(it)
+            },
+        )
+        existing.consolidatedOrderbook = calculator.consolidate(
+            rawOrderbook = existing.rawOrderbook,
+        )
+        existing.groupedOrderbook = calculator.calculate(
+            rawOrderbook = existing.rawOrderbook,
+            tickSize = tickSize ?: defaultTickSize,
+            groupingMultiplier = groupingMultiplier,
+        )
+        return existing
+    }
+
+    fun processChannelBatchData(
+        existing: InternalMarketState,
+        tickSize: Double?,
+        content: List<IndexerWsOrderbookUpdateResponse>?,
+    ): InternalMarketState {
+        content?.forEach {
+            processChannelData(existing, tickSize, it)
+        }
+        return existing
+    }
+
+    fun processGrouping(
+        existing: InternalMarketState,
+        tickSize: Double?,
+        groupingMultiplier: Int,
+    ): InternalMarketState {
+        this.groupingMultiplier = groupingMultiplier
+        existing.groupedOrderbook = calculator.calculate(
+            rawOrderbook = existing.rawOrderbook,
+            tickSize = tickSize ?: defaultTickSize,
+            groupingMultiplier = groupingMultiplier,
+        )
+        return existing
+    }
+
+    private fun processChannelData(
+        existing: InternalMarketState,
+        tickSize: Double?,
+        content: IndexerWsOrderbookUpdateResponse?,
+    ): InternalMarketState {
+        existing.rawOrderbook = InternalOrderbook(
+            asks = processChangesBinary(
+                existing = existing.rawOrderbook?.asks,
+                changes = content?.asks,
+                ascending = true,
+            ),
+            bids = processChangesBinary(
+                existing = existing.rawOrderbook?.bids,
+                changes = content?.bids,
+                ascending = false,
+            ),
+        )
+        existing.consolidatedOrderbook = calculator.consolidate(
+            rawOrderbook = existing.rawOrderbook,
+        )
+        existing.groupedOrderbook = calculator.calculate(
+            rawOrderbook = existing.rawOrderbook,
+            tickSize = tickSize ?: defaultTickSize,
+            groupingMultiplier = groupingMultiplier,
+        )
+        return existing
+    }
+
+    private fun createTick(payload: IndexerOrderbookResponsePriceLevel): InternalOrderbookTick? {
+        val price = parser.asDouble(payload.price)
+        val size = parser.asDouble(payload.size)
+        return createTick(price, size)
+    }
+
+    private fun createTick(price: Double?, size: Double?): InternalOrderbookTick? {
+        return if (price != null && size != null) {
+            InternalOrderbookTick(
+                price = price,
+                size = size,
+            )
+        } else {
+            null
+        }
+    }
+
+    internal fun subscribedDeprecated(
         content: Map<String, Any>
     ): Map<String, Any> {
         return received(null, content)
@@ -79,14 +189,14 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             val orderbook = existing?.mutable() ?: mutableMapOf()
             // offset in v4 is always null. We just increment our own offset
             val offset = parser.asLong(payload["offset"]) ?: (lastOffset + 1)
-            orderbook["asks"] = receivedChanges(
+            orderbook["asks"] = receivedChangesDeprecated(
                 orderbook["asks"] as? List<Map<String, Any>>,
                 parser.asNativeList(payload["asks"] ?: payload["ask"]),
                 offset,
                 true,
             )
 
-            orderbook["bids"] = receivedChanges(
+            orderbook["bids"] = receivedChangesDeprecated(
                 orderbook["bids"] as? List<Map<String, Any>>,
                 parser.asNativeList(payload["bids"] ?: payload["bid"]),
                 offset,
@@ -98,7 +208,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return existing
     }
 
-    private fun receivedChanges(
+    private fun receivedChangesDeprecated(
         existing: List<Map<String, Any>>?,
         changes: List<Any>?,
         offset: Long?,
@@ -108,7 +218,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
             return existing ?: mutableListOf()
         }
 
-        val bindaryResult = receivedChangesBinary(existing, changes, offset, ascending)
+        val bindaryResult = receivedChangesBinaryDeprecated(existing, changes, offset, ascending)
         /*
         k = Number of channel_data contained in channel_batched_data
         g = Number of changed items in channel_data
@@ -130,7 +240,53 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         return bindaryResult
     }
 
-    private fun receivedChangesBinary(
+    private fun processChangesBinary(
+        existing: List<InternalOrderbookTick>?,
+        changes: List<IndexerWsOrderbookUpdateItem>?,
+        ascending: Boolean
+    ): List<InternalOrderbookTick> {
+        val comparator = compareBy<InternalOrderbookTick> {
+            val price = it.price
+            if (ascending) price else (price * Numeric.double.NEGATIVE)
+        }
+
+        val orderbook = existing?.mutable() ?: mutableListOf()
+        for (change in changes ?: emptyList()) {
+            processChangeBinary(orderbook, change, comparator)
+        }
+        return orderbook
+    }
+
+    private fun processChangeBinary(
+        orderbook: MutableList<InternalOrderbookTick>,
+        change: IndexerWsOrderbookUpdateItem,
+        comparator: Comparator<InternalOrderbookTick>,
+    ) {
+        val price = change.getPrice(parser)
+        val size = change.getSize(parser)
+        if (price != null && size != null) {
+            val item = InternalOrderbookTick(
+                price = price,
+                size = size,
+            )
+            val index = orderbook.binarySearch(item, comparator)
+            if (index >= 0) {
+                // found the item
+                val existing = orderbook[index]
+                orderbook.removeAt(index)
+                if (size != Numeric.double.ZERO) {
+                    orderbook.add(index, item)
+                }
+            } else {
+                if (size != Numeric.double.ZERO) {
+                    val insertionIndex = (index + 1) * -1
+                    orderbook.add(insertionIndex, item)
+                }
+            }
+        }
+    }
+
+    private fun receivedChangesBinaryDeprecated(
         existing: List<Map<String, Any>>?,
         changes: List<Any>,
         offset: Long?,
@@ -146,12 +302,12 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         }
         var orderbook = existing?.mutable() ?: mutableListOf()
         for (change in changes) {
-            orderbook = receiveChangeBinary(orderbook, change, offset, comparator)
+            orderbook = receiveChangeBinaryDeprecated(orderbook, change, offset, comparator)
         }
         return orderbook
     }
 
-    private fun receiveChangeBinary(
+    private fun receiveChangeBinaryDeprecated(
         existing: List<Map<String, Any>>,
         change: Any,
         offset: Long?,
@@ -516,7 +672,7 @@ internal class OrderbookProcessor(parser: ParserProtocol) : BaseProcessor(parser
         }
     }
 
-    fun group(orderbook: List<Any>?, grouping: Double): List<Any>? {
+    private fun group(orderbook: List<Any>?, grouping: Double): List<Any>? {
         return if (!orderbook.isNullOrEmpty()) {
             // orderbook always ordered in increasing depth which is either increasing (asks) or decreasing (bids) price
             // we want to round asks up and bids down so they don't have an overlapping group in the middle

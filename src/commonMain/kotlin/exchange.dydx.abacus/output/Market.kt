@@ -494,7 +494,6 @@ data class MarketCandle(
 /*
     "1MIN", "5MINS", "15MINS", "30MINS", "1HOUR", "4HOURS", "1DAY"
  */
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class MarketCandles(
@@ -656,7 +655,6 @@ data class MarketTrade(
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class OrderbookLine(
@@ -707,7 +705,7 @@ Under extreme conditions, orderbook may be obsent, or one-sided
 */
 
 @JsExport
-@kotlinx.serialization.Serializable
+@Serializable
 data class MarketOrderbookGrouping(val multiplier: OrderbookGrouping, val tickSize: Double?) {
     companion object {
         internal fun create(

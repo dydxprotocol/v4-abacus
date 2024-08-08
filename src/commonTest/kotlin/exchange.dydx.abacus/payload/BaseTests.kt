@@ -300,11 +300,17 @@ open class BaseTests(
             state?.candles,
             "candles",
         )
-        verifyMarketsOrderbookState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.orderbooks,
-            "orderbooks",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.marketsSummary.markets) {
+                assertEquals(value.groupedOrderbook, state?.orderbooks?.get(key))
+            }
+        } else {
+            verifyMarketsOrderbookState(
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.orderbooks,
+                "orderbooks",
+            )
+        }
         verifyInputState(perp.input, state?.input, "input")
     }
 
