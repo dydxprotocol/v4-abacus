@@ -217,7 +217,7 @@ fun TradingStateMachine.trade(
     var sizeChanged = false
     if (typeText != null) {
         if (validTradeInput(trade, typeText)) {
-            var subaccountNumbers =
+            val subaccountNumbers =
                 MarginCalculator.getChangedSubaccountNumbers(
                     parser,
                     account,
@@ -225,8 +225,8 @@ fun TradingStateMachine.trade(
                     trade,
                 )
 
-            when (typeText) {
-                TradeInputField.type.rawValue, TradeInputField.side.rawValue -> {
+            when (type) {
+                TradeInputField.type, TradeInputField.side -> {
                     val text = parser.asString(data)
                     if (text != null) {
                         if (parser.asString(parser.value(trade, "size.input")) == "size.leverage") {
@@ -246,7 +246,7 @@ fun TradingStateMachine.trade(
                     }
                 }
 
-                TradeInputField.lastInput.rawValue -> {
+                TradeInputField.lastInput -> {
                     trade.safeSet(typeText, parser.asString(data))
                     changes = StateChanges(
                         iListOf(Changes.input),
@@ -255,10 +255,10 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.size.rawValue,
-                TradeInputField.usdcSize.rawValue,
-                TradeInputField.leverage.rawValue,
-                TradeInputField.targetLeverage.rawValue,
+                TradeInputField.size,
+                TradeInputField.usdcSize,
+                TradeInputField.leverage,
+                TradeInputField.targetLeverage,
                 -> {
                     sizeChanged =
                         (parser.asDouble(data) != parser.asDouble(parser.value(trade, typeText)))
@@ -270,13 +270,13 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.limitPrice.rawValue,
-                TradeInputField.triggerPrice.rawValue,
-                TradeInputField.trailingPercent.rawValue,
-                TradeInputField.bracketsStopLossPrice.rawValue,
-                TradeInputField.bracketsStopLossPercent.rawValue,
-                TradeInputField.bracketsTakeProfitPrice.rawValue,
-                TradeInputField.bracketsTakeProfitPercent.rawValue,
+                TradeInputField.limitPrice,
+                TradeInputField.triggerPrice,
+                TradeInputField.trailingPercent,
+                TradeInputField.bracketsStopLossPrice,
+                TradeInputField.bracketsStopLossPercent,
+                TradeInputField.bracketsTakeProfitPrice,
+                TradeInputField.bracketsTakeProfitPercent,
                 -> {
                     trade.safeSet(typeText, parser.asDouble(data))
                     changes = StateChanges(
@@ -286,7 +286,7 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.marginMode.rawValue
+                TradeInputField.marginMode
                 -> {
                     trade.safeSet(typeText, parser.asString(data))
                     val changedSubaccountNumbers =
@@ -303,11 +303,11 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.timeInForceType.rawValue,
-                TradeInputField.goodTilUnit.rawValue,
-                TradeInputField.bracketsGoodUntilUnit.rawValue,
-                TradeInputField.execution.rawValue,
-                TradeInputField.bracketsExecution.rawValue,
+                TradeInputField.timeInForceType,
+                TradeInputField.goodTilUnit,
+                TradeInputField.bracketsGoodUntilUnit,
+                TradeInputField.execution,
+                TradeInputField.bracketsExecution,
                 -> {
                     trade.safeSet(typeText, parser.asString(data))
                     changes = StateChanges(
@@ -317,8 +317,8 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.goodTilDuration.rawValue,
-                TradeInputField.bracketsGoodUntilDuration.rawValue,
+                TradeInputField.goodTilDuration,
+                TradeInputField.bracketsGoodUntilDuration,
                 -> {
                     trade.safeSet(typeText, parser.asInt(data))
                     changes = StateChanges(
@@ -328,10 +328,10 @@ fun TradingStateMachine.trade(
                     )
                 }
 
-                TradeInputField.reduceOnly.rawValue,
-                TradeInputField.postOnly.rawValue,
-                TradeInputField.bracketsStopLossReduceOnly.rawValue,
-                TradeInputField.bracketsTakeProfitReduceOnly.rawValue,
+                TradeInputField.reduceOnly,
+                TradeInputField.postOnly,
+                TradeInputField.bracketsStopLossReduceOnly,
+                TradeInputField.bracketsTakeProfitReduceOnly,
                 -> {
                     trade.safeSet(typeText, parser.asBool(data))
                     changes = StateChanges(
@@ -354,10 +354,10 @@ fun TradingStateMachine.trade(
         )
     }
     if (sizeChanged) {
-        when (typeText) {
-            TradeInputField.size.rawValue,
-            TradeInputField.usdcSize.rawValue,
-            TradeInputField.leverage.rawValue,
+        when (type) {
+            TradeInputField.size,
+            TradeInputField.usdcSize,
+            TradeInputField.leverage,
             -> {
                 trade.safeSet("size.input", typeText)
             }
@@ -374,7 +374,7 @@ fun TradingStateMachine.trade(
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 
-fun TradingStateMachine.tradeDataOption(typeText: String?): String? {
+private fun tradeDataOption(typeText: String?): String? {
     return when (typeText) {
         TradeInputField.type.rawValue,
         TradeInputField.side.rawValue,
@@ -414,8 +414,8 @@ fun TradingStateMachine.tradeDataOption(typeText: String?): String? {
     }
 }
 
-fun TradingStateMachine.validTradeInput(trade: Map<String, Any>, typeText: String?): Boolean {
-    val option = this.tradeDataOption(typeText)
+private fun TradingStateMachine.validTradeInput(trade: Map<String, Any>, typeText: String?): Boolean {
+    val option = tradeDataOption(typeText)
     return if (option != null) {
         val value = parser.value(trade, option)
         if (parser.asList(value) != null) {
