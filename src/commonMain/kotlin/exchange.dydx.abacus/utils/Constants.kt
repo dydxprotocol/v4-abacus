@@ -24,7 +24,7 @@ internal const val ETHEREUM_CHAIN_ID = "1"
 internal val ALLOWED_CHAIN_TYPES = listOf("evm", "svm")
 
 // Polling durations
-internal const val GEO_POLLING_DURATION_SECONDS = 10.0
+internal const val GEO_POLLING_DURATION_SECONDS = 600.0
 
 // Autosweep Constants
 internal const val MIN_USDC_AMOUNT_FOR_AUTO_SWEEP = 20000

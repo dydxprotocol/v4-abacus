@@ -484,7 +484,6 @@ internal class StateManagerAdaptorV2(
             true
         }
     }
-
     private fun fetchGeo() {
         val url = environment.endpoints.geo
         if (url != null) {
