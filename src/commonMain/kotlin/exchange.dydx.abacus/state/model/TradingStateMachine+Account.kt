@@ -53,7 +53,7 @@ internal fun TradingStateMachine.updateHeight(
         )
         return if (updated) {
             val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
-            val realChanges = update(changes)
+            val realChanges = updateStateChanges(changes)
             StateResponse(state, realChanges, null, null)
         } else {
             return StateResponse(state, null, null, null)
@@ -66,7 +66,7 @@ internal fun TradingStateMachine.updateHeight(
         return if (updated) {
             this.wallet = modifiedWallet
             val changes = StateChanges(iListOf(Changes.subaccount), null, subaccountIds?.toIList())
-            val realChanges = update(changes)
+            val realChanges = updateStateChanges(changes)
             StateResponse(state, realChanges, null, null)
         } else {
             return StateResponse(state, null, null, null)

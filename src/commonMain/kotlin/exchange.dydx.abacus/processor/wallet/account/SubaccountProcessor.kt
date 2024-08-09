@@ -7,6 +7,7 @@ import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.protocols.asTypedList
 import exchange.dydx.abacus.protocols.asTypedObject
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.utils.mutable
@@ -116,7 +117,10 @@ internal open class SubaccountProcessor(
             subaccount = state,
             payload = assetPositions,
         )
-        state.quoteBalance[CalculationPeriod.current] = subaccountCalculator.calculateQuoteBalance(state.assetPositions)
+
+        val subaccountCalculated = state.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
+        state.calculated[CalculationPeriod.current] = subaccountCalculated
+        subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(state.assetPositions)
 
         val fills = parser.asTypedList<IndexerFillResponseObject>(content["fills"])
         state = processFills(
@@ -222,29 +226,32 @@ internal open class SubaccountProcessor(
             return existing
         }
 
-        val modified = existing
         val subaccountNumber = parser.asInt(payload.subaccountNumber) ?: 0
-        modified.subaccountNumber = subaccountNumber
-        modified.address = payload.address
-        modified.equity = payload.equity
-        modified.freeCollateral = payload.freeCollateral
-        modified.marginEnabled = payload.marginEnabled
-        modified.updatedAtHeight = payload.updatedAtHeight
-        modified.latestProcessedBlockHeight = payload.latestProcessedBlockHeight
+        existing.subaccountNumber = subaccountNumber
+        existing.address = payload.address
+
+        existing.equity = parser.asDouble(payload.equity)
+        existing.freeCollateral = parser.asDouble(payload.freeCollateral)
+        existing.marginEnabled = payload.marginEnabled
+        existing.updatedAtHeight = payload.updatedAtHeight
+        existing.latestProcessedBlockHeight = payload.latestProcessedBlockHeight
 
         if (firstTime) {
-            modified.positions = perpetualPositionsProcessor.process(
+            existing.positions = perpetualPositionsProcessor.process(
                 payload = payload.openPerpetualPositions,
             )
-            modified.assetPositions = assetPositionsProcessor.process(
+            existing.assetPositions = assetPositionsProcessor.process(
                 payload = payload.assetPositions,
             )
-            modified.quoteBalance[CalculationPeriod.current] = subaccountCalculator.calculateQuoteBalance(modified.assetPositions)
 
-            modified.orders = null
+            val subaccountCalculated = existing.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
+            existing.calculated[CalculationPeriod.current] = subaccountCalculated
+            subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(existing.assetPositions)
+
+            existing.orders = null
         }
 
-        return modified
+        return existing
     }
 
     internal fun receivedDeprecated(

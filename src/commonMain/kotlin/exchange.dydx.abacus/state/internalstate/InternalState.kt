@@ -137,21 +137,41 @@ internal data class InternalSubaccountState(
     var assetPositions: Map<String, InternalAssetPositionState>? = null,
     var subaccountNumber: Int,
     var address: String? = null,
-    var equity: String? = null,
-    var freeCollateral: String? = null,
+    var equity: Double? = null,
+    var freeCollateral: Double? = null,
     var marginEnabled: Boolean? = null,
     var updatedAtHeight: String? = null,
     var latestProcessedBlockHeight: String? = null,
 
-    // Calculate:
-    var quoteBalance: MutableMap<CalculationPeriod, Double?> = mutableMapOf(),
+    var pendingPositions: List<InternalPerpetualPendingPosition>? = null,
 
+    // for parent subaccount only.  This contains the consolidated open positions of all child subaccounts
+    var childSubaccountOpenPositions: Map<String, InternalPerpetualPosition>? = null,
+
+    // Calculated:
+    val calculated: MutableMap<CalculationPeriod, InternalSubaccountCalculated> = mutableMapOf(),
 ) {
+    val isParentSubaccount: Boolean
+        get() = subaccountNumber < NUM_PARENT_SUBACCOUNTS
+
     val openPositions: Map<String, InternalPerpetualPosition>?
-        get() {
-            return positions?.filterValues { it.status == IndexerPerpetualPositionStatus.OPEN }
-        }
+        get() = positions?.filterValues { it.status == IndexerPerpetualPositionStatus.OPEN }
+
+    val groupedOpenPositions: Map<String, InternalPerpetualPosition>?
+        get() = if (isParentSubaccount) childSubaccountOpenPositions else openPositions
 }
+
+internal data class InternalSubaccountCalculated(
+    var quoteBalance: Double? = null,
+    var notionalTotal: Double? = null,
+    var valueTotal: Double? = null,
+    var initialRiskTotal: Double? = null,
+    var equity: Double? = null,
+    var freeCollateral: Double? = null,
+    var leverage: Double? = null,
+    var marginUsage: Double? = null,
+    var buyingPower: Double? = null,
+)
 
 internal data class InternalAssetPositionState(
     val symbol: String? = null,
@@ -159,6 +179,22 @@ internal data class InternalAssetPositionState(
     val assetId: String? = null,
     val size: Double? = null,
     val subaccountNumber: Int? = null,
+)
+
+internal data class InternalPerpetualPendingPosition(
+    val assetId: String? = null,
+    val marketId: String? = null,
+    val firstOrderId: String? = null,
+    val orderCount: Int? = null,
+
+    // calculated
+    val calculated: MutableMap<CalculationPeriod, InternalPendingPositionCalculated> = mutableMapOf(),
+)
+
+internal data class InternalPendingPositionCalculated(
+    val quoteBalance: Double? = null,
+    val freeCollateral: Double? = null,
+    val equity: Double? = null,
 )
 
 internal data class InternalPerpetualPosition(
@@ -179,6 +215,9 @@ internal data class InternalPerpetualPosition(
     val exitPrice: Double? = null,
     val subaccountNumber: Int? = null,
     val resources: SubaccountPositionResources? = null,
+
+    // Calculated:
+    val calculated: MutableMap<CalculationPeriod, InternalPositionCalculated> = mutableMapOf(),
 ) {
     val marginMode: MarginMode?
         get() {
@@ -193,6 +232,23 @@ internal data class InternalPerpetualPosition(
             }
         }
 }
+
+internal data class InternalPositionCalculated(
+    var valueTotal: Double? = null,
+    var notionalTotal: Double? = null,
+    var adjustedImf: Double? = null,
+    var adjustedMmf: Double? = null,
+    var initialRiskTotal: Double? = null,
+    var maxLeverage: Double? = null,
+    var unrealizedPnl: Double? = null,
+    var unrealizedPnlPercent: Double? = null,
+    var marginValue: Double? = null,
+    var realizedPnlPercent: Double? = null,
+    var leverage: Double? = null,
+    var size: Double? = null,
+    var liquidationPrice: Double? = null,
+    var buyingPower: Double? = null,
+)
 
 internal data class InternalAccountBalanceState(
     val denom: String,

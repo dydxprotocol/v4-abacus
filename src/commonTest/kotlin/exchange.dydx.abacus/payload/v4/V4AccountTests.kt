@@ -1176,7 +1176,7 @@ class V4AccountTests : V4BaseTests() {
     fun testAccountBalances() {
         if (perp.staticTyping) {
             val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
-            perp.update(changes)
+            perp.updateStateChanges(changes)
             assertEquals(perp.internalState.wallet.account.balances?.size, 2)
             assertEquals(
                 perp.internalState.wallet.account.balances?.get("ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5"),
@@ -1196,7 +1196,7 @@ class V4AccountTests : V4BaseTests() {
             test(
                 {
                     val changes = perp.onChainAccountBalances(mock.v4OnChainMock.account_balances)
-                    perp.update(changes)
+                    perp.updateStateChanges(changes)
                     return@test StateResponse(perp.state, changes)
                 },
                 """
@@ -1240,7 +1240,7 @@ class V4AccountTests : V4BaseTests() {
             test(
                 {
                     val changes = perp.onChainDelegations(mock.v4OnChainMock.account_delegations)
-                    perp.update(changes)
+                    perp.updateStateChanges(changes)
                     return@test StateResponse(perp.state, changes)
                 },
                 """
@@ -1273,7 +1273,7 @@ class V4AccountTests : V4BaseTests() {
                 payload = mock.historicalTradingRewards.weeklyCall,
                 period = HistoricalTradingRewardsPeriod.WEEKLY,
             )
-            perp.update(changes)
+            perp.updateStateChanges(changes)
             assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 1)
             assertEquals(
                 perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.WEEKLY]?.size,
@@ -1284,7 +1284,7 @@ class V4AccountTests : V4BaseTests() {
                 payload = mock.historicalTradingRewards.dailyCall,
                 period = HistoricalTradingRewardsPeriod.DAILY,
             )
-            perp.update(changes)
+            perp.updateStateChanges(changes)
             assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 2)
             assertEquals(
                 perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.DAILY]?.size,
@@ -1295,7 +1295,7 @@ class V4AccountTests : V4BaseTests() {
                 payload = mock.historicalTradingRewards.monthlyCall,
                 period = HistoricalTradingRewardsPeriod.MONTHLY,
             )
-            perp.update(changes)
+            perp.updateStateChanges(changes)
             assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 3)
             assertEquals(
                 perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.MONTHLY]?.size,
@@ -1306,7 +1306,7 @@ class V4AccountTests : V4BaseTests() {
                 payload = mock.historicalTradingRewards.monthlySecondCall,
                 period = HistoricalTradingRewardsPeriod.MONTHLY,
             )
-            perp.update(changes)
+            perp.updateStateChanges(changes)
             assertEquals(perp.internalState.wallet.account.tradingRewards.historical.size, 3)
             assertEquals(
                 perp.internalState.wallet.account.tradingRewards.historical[HistoricalTradingRewardsPeriod.MONTHLY]?.size,
@@ -1319,7 +1319,7 @@ class V4AccountTests : V4BaseTests() {
                         mock.historicalTradingRewards.weeklyCall,
                         HistoricalTradingRewardsPeriod.WEEKLY,
                     )
-                    perp.update(changes)
+                    perp.updateStateChanges(changes)
                     return@test StateResponse(perp.state, changes)
                 },
                 """
@@ -1357,7 +1357,7 @@ class V4AccountTests : V4BaseTests() {
                         mock.historicalTradingRewards.dailyCall,
                         HistoricalTradingRewardsPeriod.DAILY,
                     )
-                    perp.update(changes)
+                    perp.updateStateChanges(changes)
                     return@test StateResponse(perp.state, changes)
                 },
                 """
@@ -1404,7 +1404,7 @@ class V4AccountTests : V4BaseTests() {
                         mock.historicalTradingRewards.monthlyCall,
                         HistoricalTradingRewardsPeriod.MONTHLY,
                     )
-                    perp.update(changes)
+                    perp.updateStateChanges(changes)
                     return@test StateResponse(perp.state, changes)
                 },
                 """
@@ -1458,7 +1458,7 @@ class V4AccountTests : V4BaseTests() {
                         mock.historicalTradingRewards.monthlySecondCall,
                         HistoricalTradingRewardsPeriod.MONTHLY,
                     )
-                    perp.update(changes)
+                    perp.updateStateChanges(changes)
                     return@test StateResponse(perp.state, changes)
                 },
                 """

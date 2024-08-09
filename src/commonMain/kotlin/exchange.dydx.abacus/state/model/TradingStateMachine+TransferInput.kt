@@ -187,7 +187,7 @@ fun TradingStateMachine.transfer(
 
     this.input = input
     changes?.let {
-        update(it)
+        updateStateChanges(it)
     }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }

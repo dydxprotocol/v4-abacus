@@ -139,7 +139,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
 
     input["adjustIsolatedMargin"] = adjustIsolatedMargin
     this.input = input
-    changes?.let { update(it) }
+    changes?.let { updateStateChanges(it) }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 

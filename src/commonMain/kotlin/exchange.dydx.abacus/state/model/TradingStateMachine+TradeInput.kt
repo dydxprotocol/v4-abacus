@@ -77,7 +77,7 @@ internal fun TradingStateMachine.tradeInMarket(
                 )
 
             changes.let {
-                update(it)
+                updateStateChanges(it)
             }
             return StateResponse(state, changes, null)
         }
@@ -143,7 +143,7 @@ internal fun TradingStateMachine.tradeInMarket(
             )
 
         changes.let {
-            update(it)
+            updateStateChanges(it)
         }
         return StateResponse(state, changes, null)
     }
@@ -369,7 +369,7 @@ fun TradingStateMachine.trade(
     this.input = input
 
     changes?.let {
-        update(it)
+        updateStateChanges(it)
     }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }

@@ -110,7 +110,7 @@ internal fun TradingStateMachine.setOrderbookGrouping(
             )
 
         changes.let {
-            update(it)
+            updateStateChanges(it)
         }
         return StateResponse(state, changes, null)
     } else {
