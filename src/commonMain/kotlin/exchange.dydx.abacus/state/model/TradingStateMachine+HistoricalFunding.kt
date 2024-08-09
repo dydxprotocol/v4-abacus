@@ -13,7 +13,7 @@ internal fun TradingStateMachine.historicalFundings(payload: String): StateChang
     }
 }
 
-internal fun TradingStateMachine.receivedHistoricalFundings(payload: Map<String, Any>): StateChanges {
+private fun TradingStateMachine.receivedHistoricalFundings(payload: Map<String, Any>): StateChanges {
     val marketId = parser.asString(
         parser.value(payload, "historicalFunding.0.market") ?: parser.value(
             payload,

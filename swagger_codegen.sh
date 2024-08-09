@@ -74,6 +74,31 @@ sed -i '' 's/\ PerpetualPositionsMap/\ Map<String, IndexerPerpetualPositionRespo
 # replace AssetPositionsMap with Map<String, AssetPositionResponseObject> in SubaccountResponseObject.kt
 sed -i '' 's/\ AssetPositionsMap/\ Map<String, IndexerAssetPositionResponseObject>/g' generated/src/main/kotlin/indexer/codegen/SubaccountResponseObject.kt
 
+# add import kotlinx.serialization.Serializable to the top of CandleResolution.kt
+sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.Serializable/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("1MIN") to _1MIN("1MIN") in CandleResolution.kt
+sed -i '' 's/_1MIN("1MIN")/@SerialName("1MIN")\n    _1MIN("1MIN")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("5MIN") to _5MIN("5MIN") in CandleResolution.kt
+sed -i '' 's/_5MINS("5MINS")/@SerialName("5MINS")\n    _5MINS("5MINS")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("15MIN") to _15MIN("15MIN") in CandleResolution.kt
+sed -i '' 's/_15MINS("15MINS")/@SerialName("15MINS")\n    _15MINS("15MINS")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("30MIN") to _30MIN("30MIN") in CandleResolution.kt
+sed -i '' 's/_30MINS("30MINS")/@SerialName("30MINS")\n    _30MINS("30MINS")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("1HOUR") to _1HOUR("1HOUR") in CandleResolution.kt
+sed -i '' 's/_1HOUR("1HOUR")/@SerialName("1HOUR")\n    _1HOUR("1HOUR")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("4HOUR") to _4HOUR("4HOUR") in CandleResolution.kt
+sed -i '' 's/_4HOURS("4HOURS")/@SerialName("4HOURS")\n    _4HOURS("4HOURS")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+# add @SerialName("1DAY") to _1DAY("1DAY") in CandleResolution.kt
+sed -i '' 's/_1DAY("1DAY")/@SerialName("1DAY")\n    _1DAY("1DAY")/' generated/src/main/kotlin/indexer/codegen/CandleResolution.kt
+
+
 # for each of the time in the generated code, run "swagger_update_file.sh <file>"
 find generated/src/main/kotlin/indexer -type f \
     -exec $CURRENT_DIR/swagger_update_file.sh {} \;
