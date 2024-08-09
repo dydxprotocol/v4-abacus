@@ -18,6 +18,7 @@ internal class SquidProcessor(
     override var chains: List<Any>? = null
     override var tokens: List<Any>? = null
     override var exchangeDestinationChainId: String? = null
+    override var cosmosWalletConnected: Boolean? = false
 
     override fun receivedChains(
         existing: Map<String, Any>?,

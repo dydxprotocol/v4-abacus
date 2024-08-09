@@ -283,6 +283,7 @@ internal class StateManagerAdaptorV2(
         }
         set(value) {
             accounts.cosmosWalletConnected = value
+            onboarding.cosmosWalletConnected = value
         }
 
     internal var sourceAddress: String?

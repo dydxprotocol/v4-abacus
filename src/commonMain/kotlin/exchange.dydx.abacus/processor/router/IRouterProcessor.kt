@@ -8,6 +8,7 @@ interface IRouterProcessor {
     var tokens: List<Any>?
     var chains: List<Any>?
     var exchangeDestinationChainId: String?
+    var cosmosWalletConnected: Boolean?
 
     fun receivedChains(
         existing: Map<String, Any>?,

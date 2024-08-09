@@ -84,6 +84,15 @@ internal class OnboardingSupervisor(
     analyticsUtils: AnalyticsUtils,
     private val configs: OnboardingConfigs,
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
+
+    var cosmosWalletConnected: Boolean? = false
+        set(value) {
+            if (field != value) {
+                field = value
+                stateMachine.routerProcessor.cosmosWalletConnected = value
+            }
+        }
+
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
 
