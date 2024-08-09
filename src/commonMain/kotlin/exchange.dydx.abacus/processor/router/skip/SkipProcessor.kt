@@ -28,7 +28,13 @@ internal class SkipProcessor(
 
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
     override var exchangeDestinationChainId: String? = null
-    override var cosmosWalletConnected: Boolean? = false
+    override var cosmosWalletConnected: Boolean? = false 
+        set(value) {
+            if (field != value) {
+                field = value
+                internalState.chains = chainOptions()
+            }
+        }
 
     override fun receivedV2SdkInfo(
         existing: Map<String, Any>?,
