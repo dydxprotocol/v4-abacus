@@ -903,6 +903,16 @@ open class TradingStateMachine(
                 setOf(CalculationPeriod.current)
             }
 
+            if (staticTyping) {
+                internalState.wallet.account = accountCalculatorV2.calculate(
+                    account = internalState.wallet.account,
+                    subaccountNumbers = subaccountNumbers,
+                    marketsSummary = internalState.marketsSummary,
+                    periods = periods,
+                    price = null, // priceOverwrite(markets),
+                    configs = null, // This is used to get the IMF.. with "null" the default value 0.05 will be used
+                )
+            }
             this.marketsSummary?.let { marketsSummary ->
                 parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
                     val modifiedAccount = accountCalculator.calculate(
@@ -914,12 +924,6 @@ open class TradingStateMachine(
                         periods = periods,
                     )
                     this.account = modifiedAccount
-                }
-                if (staticTyping) {
-                    internalState.wallet.account = accountCalculatorV2.calculate(
-                        account = internalState.wallet.account,
-                        subaccountNumbers = subaccountNumbers,
-                    )
                 }
             }
         }
@@ -1268,13 +1272,13 @@ open class TradingStateMachine(
         }
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
         val accountData = this.account
-        if (accountData != null) {
+        if (accountData != null || staticTyping) {
             if (changes.changes.contains(Changes.subaccount)) {
                 account = if (account == null) {
                     Account.create(
                         existing = null,
                         parser = parser,
-                        data = accountData,
+                        data = accountData ?: emptyMap(),
                         tokensInfo = tokensInfo,
                         localizer = localizer,
                         staticTyping = staticTyping,
@@ -1308,15 +1312,15 @@ open class TradingStateMachine(
                         }
                     }
                     Account(
-                        account.balances,
-                        account.stakingBalances,
-                        account.stakingDelegations,
-                        account.unbondingDelegation,
-                        account.stakingRewards,
-                        subaccounts,
-                        groupedSubaccounts,
-                        account.tradingRewards,
-                        account.launchIncentivePoints,
+                        balances = account.balances,
+                        stakingBalances = account.stakingBalances,
+                        stakingDelegations = account.stakingDelegations,
+                        unbondingDelegation = account.unbondingDelegation,
+                        stakingRewards = account.stakingRewards,
+                        subaccounts = subaccounts,
+                        groupedSubaccounts = groupedSubaccounts,
+                        tradingRewards = account.tradingRewards,
+                        launchIncentivePoints = account.launchIncentivePoints,
                     )
                 }
             }
@@ -1327,7 +1331,7 @@ open class TradingStateMachine(
                 account = Account.create(
                     existing = account,
                     parser = parser,
-                    data = accountData,
+                    data = accountData ?: emptyMap(),
                     tokensInfo = tokensInfo,
                     localizer = localizer,
                     staticTyping = staticTyping,
