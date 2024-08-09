@@ -299,7 +299,7 @@ fun TradingStateMachine.parseOnChainEquityTiers(payload: String): StateResponse 
         error = e.toParsingError()
     }
     if (changes != null) {
-        update(changes)
+        updateStateChanges(changes)
     }
 
     val errors = if (error != null) iListOf(error) else null

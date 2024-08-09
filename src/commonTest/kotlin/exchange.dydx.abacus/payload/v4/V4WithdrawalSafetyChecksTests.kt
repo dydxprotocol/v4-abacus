@@ -314,7 +314,7 @@ private fun TradingStateMachine.parseOnChainWithdrawalCapacity(payload: String):
         error = e.toParsingError()
     }
     if (changes != null) {
-        update(changes)
+        updateStateChanges(changes)
     }
 
     val errors = if (error != null) iListOf(error) else null
@@ -330,7 +330,7 @@ private fun TradingStateMachine.parseOnChainWithdrawalGating(payload: String): S
         error = e.toParsingError()
     }
     if (changes != null) {
-        update(changes)
+        updateStateChanges(changes)
     }
 
     val errors = if (error != null) iListOf(error) else null
