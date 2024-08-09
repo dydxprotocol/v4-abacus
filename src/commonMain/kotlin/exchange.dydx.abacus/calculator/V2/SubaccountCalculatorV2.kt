@@ -242,7 +242,7 @@ internal class SubaccountCalculatorV2(
 
         val position = positions?.get(marketId) ?: return null
         val market = markets?.get(marketId) ?: return null
-        val calculated = position.calculated.get(period)
+        val calculated = position.calculated[period]
         val maintenanceMarginFraction = calculated?.adjustedMmf ?: return null
         val oraclePrice = market.perpetualMarket?.oraclePrice ?: return null
         val size = calculated.size ?: return null
