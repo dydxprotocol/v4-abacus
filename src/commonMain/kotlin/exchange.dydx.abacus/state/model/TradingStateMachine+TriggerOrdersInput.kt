@@ -165,7 +165,7 @@ fun TradingStateMachine.triggerOrders(
 
     input["triggerOrders"] = triggerOrders
     this.input = input
-    changes?.let { update(it) }
+    changes?.let { updateStateChanges(it) }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 

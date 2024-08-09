@@ -178,7 +178,7 @@ class V4SquidTests : V4BaseTests() {
         assertNotNull(stateChange)
         assertNotNull(perp.data?.get("transferStatuses"))
 
-        perp.update(stateChange)
+        perp.updateStateChanges(stateChange)
 
         test({
             perp.transfer("DEPOSIT", TransferInputField.type, 0)
