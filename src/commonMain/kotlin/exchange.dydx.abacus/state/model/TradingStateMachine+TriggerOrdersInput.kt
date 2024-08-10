@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.model
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.mutable
@@ -133,7 +134,7 @@ fun TradingStateMachine.triggerOrders(
                 else -> {}
             }
         } else {
-            error = cannotModify(typeText)
+            error = ParsingError.cannotModify(typeText)
         }
     } else {
         changes =

@@ -21,6 +21,16 @@ import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.TradeInputBracket
+import exchange.dydx.abacus.output.input.TradeInputBracketSide
+import exchange.dydx.abacus.output.input.TradeInputGoodUntil
+import exchange.dydx.abacus.output.input.TradeInputMarketOrder
+import exchange.dydx.abacus.output.input.TradeInputPrice
+import exchange.dydx.abacus.output.input.TradeInputSize
+import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
@@ -52,12 +62,39 @@ internal data class InternalInputState(
 
 internal data class InternalTradeInputState(
     var marketId: String? = null,
-    var size: Double? = null,
-    var price: Double? = null,
-    var type: String? = null, // TODO: enum
-    var side: String? = null, // TODO: enum
-    var marginMode: String? = null, // TODO: enum
+    var size: TradeInputSize? = null,
+    var price: TradeInputPrice? = null,
+    var type: OrderType? = null,
+    var side: OrderSide? = null,
+    var marginMode: MarginMode? = null,
+    var targetLeverage: Double? = null,
+    var timeInForce: String? = null,
+    var goodTil: TradeInputGoodUntil? = null,
+    var execution: String? = null,
+    var reduceOnly: Boolean = false,
+    var postOnly: Boolean = false,
+    var fee: Double? = null,
 
+    var bracket: TradeInputBracket? = null,
+    var options: InternalTradeInputOptions = InternalTradeInputOptions(),
+)
+
+internal data class InternalTradeInputOptions(
+    var needsMarginMode: Boolean = false,
+    var needsSize: Boolean  = false,
+    var needsLeverage: Boolean = false,
+    var maxLeverage: Double? = null,
+    var needsLimitPrice: Boolean = false,
+    var needsTargetLeverage: Boolean = false,
+    var needsTriggerPrice: Boolean = false,
+    var needsTrailingPercent: Boolean = false,
+    var needsGoodUntil: Boolean = false,
+    var needsReduceOnly: Boolean = false,
+    var needsPostOnly: Boolean = false,
+    var needsBrackets: Boolean = false,
+    var timeInForceOptions: SelectionOption? = null,
+    var executionOptions: SelectionOption? = null,
+    var marginModeOptions: SelectionOption? = null,
 )
 
 internal data class InternalMarketSummaryState(
@@ -295,3 +332,41 @@ internal data class InternalRewardsParamsState(
 internal data class InternalLaunchIncentiveState(
     var seasons: List<LaunchIncentiveSeason>? = null,
 )
+
+internal fun TradeInputSize.Companion.safeCreate(existing: TradeInputSize?): TradeInputSize {
+    return existing ?: TradeInputSize(
+        size = null,
+        usdcSize = null,
+        leverage = null,
+        input = null,
+    )
+}
+
+internal fun TradeInputBracket.Companion.safeCreate(existing: TradeInputBracket?): TradeInputBracket {
+    return existing ?: TradeInputBracket(
+        stopLoss = null,
+        takeProfit = null,
+        goodTil = null,
+        execution = null,
+    )
+}
+
+internal fun TradeInputPrice.Companion.safeCreate(existing: TradeInputPrice?): TradeInputPrice {
+    return existing ?: TradeInputPrice(
+        limitPrice = null,
+        triggerPrice = null,
+        trailingPercent = null,
+    )
+}
+
+internal fun TradeInputBracketSide.Companion.safeCreate(existing: TradeInputBracketSide?): TradeInputBracketSide {
+    return existing ?: TradeInputBracketSide(
+        triggerPrice = null, percent = null, reduceOnly = false
+    )
+}
+
+internal fun TradeInputGoodUntil.Companion.safeCreate(existing: TradeInputGoodUntil?): TradeInputGoodUntil {
+    return existing ?: TradeInputGoodUntil(
+        duration = null, unit = null
+    )
+}

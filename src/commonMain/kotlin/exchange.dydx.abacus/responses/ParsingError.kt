@@ -46,3 +46,10 @@ class ParsingException(
         return ParsingError(type = type, message = message ?: "null", stackTrace = stackTrace)
     }
 }
+
+internal fun ParsingError.Companion.cannotModify(typeText: String): ParsingError {
+    return ParsingError(
+        ParsingErrorType.InvalidInput,
+        "$typeText cannot be modified for the selected trade input",
+    )
+}

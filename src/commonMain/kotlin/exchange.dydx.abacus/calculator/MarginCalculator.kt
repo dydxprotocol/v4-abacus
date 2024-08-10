@@ -2,6 +2,7 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.output.PerpetualMarket
+import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.account.Subaccount
 import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.MarginMode
@@ -10,6 +11,8 @@ import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
@@ -109,18 +112,19 @@ internal object MarginCalculator {
         account: InternalAccountState,
         marketId: String?,
         subaccountNumber: Int,
-    ): String? {
+    ): MarginMode? {
         val position = findExistingPosition(account, marketId, subaccountNumber)
         if (position != null) {
             // return if (position.equity != 0.0) "ISOLATED" else "CROSS"
+            return position.marginMode
         }
 
         val openOrder = findExistingOrder(account, marketId, subaccountNumber)
         return if (openOrder != null) {
             if (openOrder.subaccountNumber != subaccountNumber) {
-                "ISOLATED"
+                MarginMode.Isolated
             } else {
-                "CROSS"
+                MarginMode.Cross
             }
         } else {
             null
@@ -160,8 +164,13 @@ internal object MarginCalculator {
 
     fun findMarketMarginMode(
         market: PerpetualMarket?,
-    ): String {
-        return market?.configs?.perpetualMarketType?.rawValue ?: "CROSS"
+    ): MarginMode {
+        val marketType = market?.configs?.perpetualMarketType
+        return when (marketType) {
+            PerpetualMarketType.ISOLATED -> return MarginMode.Isolated
+            PerpetualMarketType.CROSS -> return MarginMode.Cross
+            else -> MarginMode.Cross
+        }
     }
 
     fun findMarketMarginModeDeprecated(
@@ -195,6 +204,74 @@ internal object MarginCalculator {
         }
     }
 
+    fun getChildSubaccountNumberForIsolatedMarginTrade(
+        parser: ParserProtocol,
+        subaccounts: Map<Int, InternalSubaccountState>,
+        subaccountNumber: Int,
+        marketId: String,
+    ): Int {
+        // FE only supports subaccounts that are related to the "main" account (i.e. subaccount 0) and its children
+        // If there are other utilized subaccounts (e.g. subaccount 1 or 129), ignore them as candidates
+        val relevantSubaccounts = subaccounts.filterKeys {
+            key -> parser.asInt(key)?.let { it % NUM_PARENT_SUBACCOUNTS == 0 } ?: false
+        }
+        val utilizedSubaccountsMarketIdMap = relevantSubaccounts.mapValues {
+            val subaccount = it.value
+            val openPositions = subaccount.openPositions
+            val openOrders = subaccount.orders?.filter { order ->
+                val status = order.status
+                order.status == OrderStatus.Open || status == OrderStatus.Pending || status == OrderStatus.Untriggered || status == OrderStatus.PartiallyFilled
+            }
+
+            val positionMarketIds = openPositions?.values?.mapNotNull { position ->
+                position.market
+            } ?: iListOf()
+
+            val openOrderMarketIds = openOrders?.map { order ->
+                order.marketId
+            } ?: iListOf()
+
+            // Return the combined list of marketIds w/o duplicates
+            (positionMarketIds + openOrderMarketIds).toSet()
+        }
+
+        // Check if an existing childSubaccount is available to use for Isolated Margin Trade
+        var availableSubaccountNumber = subaccountNumber
+        utilizedSubaccountsMarketIdMap.forEach { (key, marketIds) ->
+            val subaccountNumberToCheck = parser.asInt(key)
+            if (subaccountNumberToCheck == null) {
+                Logger.e { "Invalid subaccount number: $key" }
+                return@forEach
+            }
+            if (subaccountNumberToCheck != subaccountNumber) {
+                if (marketIds.contains(marketId) && marketIds.size <= 1) {
+                    return subaccountNumberToCheck
+                } else if (marketIds.isEmpty()) {
+                    // Check if subaccount equity is 0 so that funds are moved to a clean account if reclaimUnutilizedChildSubaccountFunds has not been called yet
+                    val equity = subaccounts[subaccountNumberToCheck]?.calculated?.get(CalculationPeriod.current)?.equity ?: 0.0
+                   if (availableSubaccountNumber == subaccountNumber && equity == 0.0) {
+                        availableSubaccountNumber = subaccountNumberToCheck
+                    }
+                }
+            }
+        }
+        if (availableSubaccountNumber != subaccountNumber) {
+            return availableSubaccountNumber
+        }
+
+        // Find new childSubaccount number available for Isolated Margin Trade
+        val existingSubaccountNumbers = utilizedSubaccountsMarketIdMap.keys
+        for (offset in NUM_PARENT_SUBACCOUNTS..MAX_SUBACCOUNT_NUMBER step NUM_PARENT_SUBACCOUNTS) {
+            val tentativeSubaccountNumber = offset + subaccountNumber
+            if (!existingSubaccountNumbers.contains(tentativeSubaccountNumber)) {
+                return tentativeSubaccountNumber
+            }
+        }
+
+        // User has reached the maximum number of childSubaccounts for their current parentSubaccount
+        error("No available subaccount number")
+    }
+
     /**
      * @description Get the childSubaccount number that is available for the given marketId
      * @param parser ParserProtocol
@@ -202,7 +279,7 @@ internal object MarginCalculator {
      * @param subaccountNumber Parent subaccount number
      * @param tradeInput Trade input data (data.input.trade)
      */
-    fun getChildSubaccountNumberForIsolatedMarginTrade(
+    fun getChildSubaccountNumberForIsolatedMarginTradeDeprecated(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         subaccountNumber: Int,
@@ -282,11 +359,34 @@ internal object MarginCalculator {
 
     fun getChangedSubaccountNumbers(
         parser: ParserProtocol,
+        subaccounts: Map<Int, InternalSubaccountState>,
+        subaccountNumber: Int,
+        tradeInput: InternalTradeInputState?
+    ): IList<Int> {
+        val marketId = tradeInput?.marketId
+        if (tradeInput?.marginMode != MarginMode.Isolated || marketId == null) {
+            return iListOf(subaccountNumber)
+        }
+        val childSubaccountNumber = getChildSubaccountNumberForIsolatedMarginTrade(
+            parser = parser,
+            subaccounts = subaccounts,
+            subaccountNumber = subaccountNumber,
+            marketId = marketId
+        )
+        if (subaccountNumber != childSubaccountNumber) {
+            return iListOf(subaccountNumber, childSubaccountNumber)
+        }
+
+        return iListOf(subaccountNumber)
+    }
+
+    fun getChangedSubaccountNumbersDeprecated(
+        parser: ParserProtocol,
         account: Map<String, Any>?,
         subaccountNumber: Int,
         tradeInput: Map<String, Any>?
     ): IList<Int> {
-        val childSubaccountNumber = getChildSubaccountNumberForIsolatedMarginTrade(parser, account, subaccountNumber, tradeInput)
+        val childSubaccountNumber = getChildSubaccountNumberForIsolatedMarginTradeDeprecated(parser, account, subaccountNumber, tradeInput)
         if (childSubaccountNumber != null && subaccountNumber != childSubaccountNumber) {
             return iListOf(subaccountNumber, childSubaccountNumber)
         }
