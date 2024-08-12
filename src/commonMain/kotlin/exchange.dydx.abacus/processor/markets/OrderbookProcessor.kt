@@ -33,6 +33,8 @@ internal class OrderbookProcessor(
 
     private var lastOffset: Long = 0
 
+    private val defaultTickSize = 0.1
+
     fun processSubscribed(
         existing: InternalMarketState,
         tickSize: Double?,
@@ -51,7 +53,7 @@ internal class OrderbookProcessor(
         )
         existing.groupedOrderbook = calculator.calculate(
             rawOrderbook = existing.rawOrderbook,
-            tickSize = tickSize ?: 0.1,
+            tickSize = tickSize ?: defaultTickSize,
             groupingMultiplier = groupingMultiplier,
         )
         return existing
@@ -76,7 +78,7 @@ internal class OrderbookProcessor(
         this.groupingMultiplier = groupingMultiplier
         existing.groupedOrderbook = calculator.calculate(
             rawOrderbook = existing.rawOrderbook,
-            tickSize = tickSize ?: 0.1,
+            tickSize = tickSize ?: defaultTickSize,
             groupingMultiplier = groupingMultiplier,
         )
         return existing
@@ -104,7 +106,7 @@ internal class OrderbookProcessor(
         )
         existing.groupedOrderbook = calculator.calculate(
             rawOrderbook = existing.rawOrderbook,
-            tickSize = tickSize ?: 0.1,
+            tickSize = tickSize ?: defaultTickSize,
             groupingMultiplier = groupingMultiplier,
         )
         return existing
