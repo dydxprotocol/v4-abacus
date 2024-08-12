@@ -52,8 +52,9 @@ internal fun TradingStateMachine.receivedMarketsChanges(
         val response = parser.asTypedObject<IndexerWsMarketUpdateResponse>(payload)
         marketsProcessor.processChannelData(internalState.marketsSummary, response)
     }
+    val markets = parser.asNativeMap(payload.get("trading"))
     marketsSummary = marketsProcessor.channel_dataDeprecated(marketsSummary, payload)
-    marketsSummary = marketsCalculator.calculate(marketsSummary, assets, payload.keys)
+    marketsSummary = marketsCalculator.calculate(marketsSummary, assets, markets?.keys)
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser,
         account,
@@ -79,7 +80,7 @@ internal fun TradingStateMachine.receivedMarketsChanges(
                 Changes.historicalPnl,
             )
         },
-        payload.keys.toIList(),
+        markets?.keys?.toIList(),
         subaccountNumbers,
     )
 }
