@@ -24,13 +24,12 @@ import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.Tooltip
 import exchange.dydx.abacus.output.input.TradeInputBracket
 import exchange.dydx.abacus.output.input.TradeInputBracketSide
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
-import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
-import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
@@ -63,6 +62,7 @@ internal data class InternalInputState(
 internal data class InternalTradeInputState(
     var marketId: String? = null,
     var size: TradeInputSize? = null,
+    var sizePercent: Double? = null,
     var price: TradeInputPrice? = null,
     var type: OrderType? = null,
     var side: OrderSide? = null,
@@ -77,11 +77,14 @@ internal data class InternalTradeInputState(
 
     var bracket: TradeInputBracket? = null,
     var options: InternalTradeInputOptions = InternalTradeInputOptions(),
-)
+) {
+    val isBuying: Boolean
+        get() = side == OrderSide.Buy || side == null
+}
 
 internal data class InternalTradeInputOptions(
     var needsMarginMode: Boolean = false,
-    var needsSize: Boolean  = false,
+    var needsSize: Boolean = false,
     var needsLeverage: Boolean = false,
     var maxLeverage: Double? = null,
     var needsLimitPrice: Boolean = false,
@@ -92,9 +95,11 @@ internal data class InternalTradeInputOptions(
     var needsReduceOnly: Boolean = false,
     var needsPostOnly: Boolean = false,
     var needsBrackets: Boolean = false,
-    var timeInForceOptions: SelectionOption? = null,
-    var executionOptions: SelectionOption? = null,
-    var marginModeOptions: SelectionOption? = null,
+    var timeInForceOptions: List<SelectionOption>? = null,
+    var executionOptions: List<SelectionOption>? = null,
+    var marginModeOptions: List<SelectionOption>? = null,
+    var reduceOnlyTooltip: Tooltip? = null,
+    var postOnlyTooltip: Tooltip? = null,
 )
 
 internal data class InternalMarketSummaryState(
@@ -361,12 +366,15 @@ internal fun TradeInputPrice.Companion.safeCreate(existing: TradeInputPrice?): T
 
 internal fun TradeInputBracketSide.Companion.safeCreate(existing: TradeInputBracketSide?): TradeInputBracketSide {
     return existing ?: TradeInputBracketSide(
-        triggerPrice = null, percent = null, reduceOnly = false
+        triggerPrice = null,
+        percent = null,
+        reduceOnly = false,
     )
 }
 
 internal fun TradeInputGoodUntil.Companion.safeCreate(existing: TradeInputGoodUntil?): TradeInputGoodUntil {
     return existing ?: TradeInputGoodUntil(
-        duration = null, unit = null
+        duration = null,
+        unit = null,
     )
 }

@@ -42,14 +42,18 @@ data class Input(
             parser: ParserProtocol,
             data: Map<*, *>?,
             environment: V4Environment?,
-            internalState: InternalState?
+            internalState: InternalState?,
+            staticTyping: Boolean,
         ): Input? {
             Logger.d { "creating Input\n" }
 
             data?.let {
                 val current = InputType.invoke(parser.asString(data["current"]))
-                val trade =
+                val trade = if (staticTyping) {
+                    TradeInput.create(state = internalState?.input?.trade)
+                } else {
                     TradeInput.create(existing?.trade, parser, parser.asMap(data["trade"]))
+                }
                 val closePosition =
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
                 val transfer =

@@ -46,7 +46,7 @@ import exchange.dydx.abacus.state.model.TradeInputField.usdcSize
 internal val TradeInputField.validTradeInputAction: ((InternalTradeInputState) -> Boolean)?
     get() = when (this) {
         type, side -> null
-        size, usdcSize, leverage -> { it -> it.options.needsSize  }
+        size, usdcSize, leverage -> { it -> it.options.needsSize }
         limitPrice -> { it -> it.options.needsLimitPrice }
         triggerPrice -> { it -> it.options.needsTriggerPrice }
         trailingPercent -> { it -> it.options.needsTrailingPercent }
@@ -171,7 +171,7 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
         bracketsGoodUntilUnit -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             trade.bracket = braket.copy(
-                goodTil = TradeInputGoodUntil.safeCreate(braket.goodTil).copy(unit = value)
+                goodTil = TradeInputGoodUntil.safeCreate(braket.goodTil).copy(unit = value),
             )
         }
 
@@ -190,7 +190,7 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             trade.bracket = braket.copy(
                 goodTil = TradeInputGoodUntil.safeCreate(braket.goodTil)
-                    .copy(duration = parser.asDouble(value))
+                    .copy(duration = parser.asDouble(value)),
             )
         }
 
@@ -210,8 +210,8 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             val takeProfit = TradeInputBracketSide.safeCreate(braket.takeProfit)
             trade.bracket = braket.copy(
                 takeProfit = takeProfit.copy(
-                    reduceOnly = parser.asBool(value) ?: false
-                )
+                    reduceOnly = parser.asBool(value) ?: false,
+                ),
             )
         }
 

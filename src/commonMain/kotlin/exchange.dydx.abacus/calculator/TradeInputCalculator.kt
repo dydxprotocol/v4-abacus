@@ -32,7 +32,7 @@ enum class TradeCalculation(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            TradeCalculation.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 

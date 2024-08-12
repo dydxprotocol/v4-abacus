@@ -1466,7 +1466,14 @@ open class TradingStateMachine(
                     environment = this.environment,
                 )
                 this.input?.let {
-                    input = Input.create(input, parser, it, environment, internalState)
+                    input = Input.create(
+                        existing = input,
+                        parser = parser,
+                        data = it,
+                        environment = environment,
+                        internalState = internalState,
+                        staticTyping = staticTyping,
+                    )
                 }
             }
         }

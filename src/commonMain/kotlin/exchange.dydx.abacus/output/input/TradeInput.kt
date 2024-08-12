@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
@@ -85,46 +87,117 @@ data class TradeInputOptions(
         private val typeOptionsV4Array =
             iListOf(
                 SelectionOption(
-                    OrderType.Limit.rawValue,
-                    null,
-                    "APP.TRADE.LIMIT_ORDER_SHORT",
-                    null,
+                    type = OrderType.Limit.rawValue,
+                    string = null,
+                    stringKey = "APP.TRADE.LIMIT_ORDER_SHORT",
+                    iconUrl = null,
                 ),
                 SelectionOption(
-                    OrderType.Market.rawValue,
-                    null,
-                    "APP.TRADE.MARKET_ORDER_SHORT",
-                    null,
-                ),
-                SelectionOption(OrderType.StopLimit.rawValue, null, "APP.TRADE.STOP_LIMIT", null),
-                SelectionOption(OrderType.StopMarket.rawValue, null, "APP.TRADE.STOP_MARKET", null),
-                SelectionOption(
-                    OrderType.TakeProfitLimit.rawValue,
-                    null,
-                    "APP.TRADE.TAKE_PROFIT",
-                    null,
+                    type = OrderType.Market.rawValue,
+                    string = null,
+                    stringKey = "APP.TRADE.MARKET_ORDER_SHORT",
+                    iconUrl = null,
                 ),
                 SelectionOption(
-                    OrderType.TakeProfitMarket.rawValue,
-                    null,
-                    "APP.TRADE.TAKE_PROFIT_MARKET",
-                    null,
+                    type = OrderType.StopLimit.rawValue,
+                    string = null,
+                    stringKey = "APP.TRADE.STOP_LIMIT",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = OrderType.StopMarket.rawValue,
+                    string = null,
+                    stringKey = "APP.TRADE.STOP_MARKET",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = OrderType.TakeProfitLimit.rawValue,
+                    string = null,
+                    stringKey = "APP.TRADE.TAKE_PROFIT",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = OrderType.TakeProfitMarket.rawValue,
+                    string = null,
+                    stringKey = "APP.TRADE.TAKE_PROFIT_MARKET",
+                    iconUrl = null,
                 ),
             )
 
         private val sideOptionsArray =
             iListOf(
-                SelectionOption(OrderSide.Buy.rawValue, null, "APP.GENERAL.BUY", null),
-                SelectionOption(OrderSide.Sell.rawValue, null, "APP.GENERAL.SELL", null),
+                SelectionOption(
+                    type = OrderSide.Buy.rawValue,
+                    string = null,
+                    stringKey = "APP.GENERAL.BUY",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = OrderSide.Sell.rawValue,
+                    string = null,
+                    stringKey = "APP.GENERAL.SELL",
+                    iconUrl = null,
+                ),
             )
 
         private val goodTilUnitOptionsArray =
             iListOf(
-                SelectionOption("M", null, "APP.GENERAL.TIME_STRINGS.MINUTES_SHORT", null),
-                SelectionOption("H", null, "APP.GENERAL.TIME_STRINGS.HOURS", null),
-                SelectionOption("D", null, "APP.GENERAL.TIME_STRINGS.DAYS", null),
-                SelectionOption("W", null, "APP.GENERAL.TIME_STRINGS.WEEKS", null),
+                SelectionOption(
+                    type = "M",
+                    string = null,
+                    stringKey = "APP.GENERAL.TIME_STRINGS.MINUTES_SHORT",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = "H",
+                    string = null,
+                    stringKey = "APP.GENERAL.TIME_STRINGS.HOURS",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = "D",
+                    string = null,
+                    stringKey = "APP.GENERAL.TIME_STRINGS.DAYS",
+                    iconUrl = null,
+                ),
+                SelectionOption(
+                    type = "W",
+                    string = null,
+                    stringKey = "APP.GENERAL.TIME_STRINGS.WEEKS",
+                    iconUrl = null,
+                ),
             )
+
+        internal fun create(
+            state: InternalTradeInputOptions?,
+        ): TradeInputOptions? {
+            if (state == null) {
+                return null
+            }
+
+            return TradeInputOptions(
+                needsMarginMode = state.needsMarginMode,
+                needsSize = state.needsSize,
+                needsLeverage = state.needsLeverage,
+                maxLeverage = state.maxLeverage,
+                needsLimitPrice = state.needsLimitPrice,
+                needsTargetLeverage = state.needsTargetLeverage,
+                needsTriggerPrice = state.needsTriggerPrice,
+                needsTrailingPercent = state.needsTrailingPercent,
+                needsGoodUntil = state.needsGoodUntil,
+                needsReduceOnly = state.needsReduceOnly,
+                needsPostOnly = state.needsPostOnly,
+                needsBrackets = state.needsBrackets,
+                typeOptions = typeOptionsV4Array,
+                sideOptions = sideOptionsArray,
+                timeInForceOptions = state.timeInForceOptions?.toIList(),
+                goodTilUnitOptions = goodTilUnitOptionsArray,
+                executionOptions = state.executionOptions?.toIList(),
+                marginModeOptions = state.marginModeOptions?.toIList(),
+                reduceOnlyTooltip = state.reduceOnlyTooltip,
+                postOnlyTooltip = state.postOnlyTooltip,
+            )
+        }
 
         internal fun create(
             existing: TradeInputOptions?,
@@ -156,9 +229,9 @@ data class TradeInputOptions(
                     for (i in data.indices) {
                         val item = data[i]
                         SelectionOption.create(
-                            existing?.marginModeOptions?.getOrNull(i),
-                            parser,
-                            parser.asMap(item),
+                            existing = existing?.marginModeOptions?.getOrNull(i),
+                            parser = parser,
+                            data = parser.asMap(item),
                         )?.let {
                             marginModeOptions?.add(it)
                         }
@@ -250,9 +323,9 @@ data class TradeInputOptions(
             return null
         }
 
-        fun buildToolTip(stringKey: String?): Tooltip? {
+        private fun buildToolTip(stringKey: String?): Tooltip? {
             return if (stringKey != null) {
-                Tooltip("$stringKey.TITLE", "$stringKey.BODY")
+                Tooltip(titleStringKey = "$stringKey.TITLE", bodyStringKey = "$stringKey.BODY")
             } else {
                 null
             }
@@ -702,45 +775,6 @@ enum class OrderTimeInForce(val rawValue: String) {
 
 @JsExport
 @Serializable
-enum class ReceiptLine(val rawValue: String) {
-    Equity("EQUITY"),
-    BuyingPower("BUYING_POWER"),
-    MarginUsage("MARGIN_USAGE"),
-    ExpectedPrice("EXPECTED_PRICE"),
-    Fee("FEE"),
-    Total("TOTAL"),
-    WalletBalance("WALLET_BALANCE"),
-    BridgeFee("BRIDGE_FEE"),
-    ExchangeRate("EXCHANGE_RATE"),
-    ExchangeReceived("EXCHANGE_RECEIVED"),
-    Slippage("SLIPPAGE"),
-    GasFee("GAS_FEES"),
-    Reward("REWARD"),
-    TransferRouteEstimatedDuration("TRANSFER_ROUTE_ESTIMATE_DURATION"),
-    CrossFreeCollateral("CROSS_FREE_COLLATERAL"),
-    CrossMarginUsage("CROSS_MARGIN_USAGE"),
-    PositionMargin("POSITION_MARGIN"),
-    PositionLeverage("POSITION_LEVERAGE"),
-    LiquidationPrice("LIQUIDATION_PRICE");
-
-    companion object {
-        operator fun invoke(rawValue: String) =
-            ReceiptLine.values().firstOrNull { it.rawValue == rawValue }
-
-        internal fun create(
-            parser: ParserProtocol,
-            data: List<Any>?,
-        ): IList<ReceiptLine>? {
-            return data?.mapNotNull {
-                val string = parser.asString(it)
-                if (string != null) invoke(string) else null
-            }?.toIList()
-        }
-    }
-}
-
-@JsExport
-@Serializable
 data class TradeInput(
     val type: OrderType?,
     val side: OrderSide?,
@@ -761,6 +795,34 @@ data class TradeInput(
     val summary: TradeInputSummary?,
 ) {
     companion object {
+        internal fun create(
+            state: InternalTradeInputState?
+        ): TradeInput? {
+            if (state == null) {
+                return null
+            }
+
+            return TradeInput(
+                type = state.type,
+                side = state.side,
+                marketId = state.marketId,
+                size = state.size,
+                price = state.price,
+                timeInForce = state.timeInForce,
+                goodTil = state.goodTil,
+                execution = state.execution,
+                reduceOnly = state.reduceOnly,
+                postOnly = state.postOnly,
+                fee = state.fee,
+                marginMode = state.marginMode ?: MarginMode.Cross,
+                targetLeverage = state.targetLeverage ?: 1.0,
+                bracket = state.bracket,
+                marketOrder = null, // TODO
+                options = TradeInputOptions.create(state.options),
+                summary = null, // TODO
+            )
+        }
+
         internal fun create(
             existing: TradeInput?,
             parser: ParserProtocol,

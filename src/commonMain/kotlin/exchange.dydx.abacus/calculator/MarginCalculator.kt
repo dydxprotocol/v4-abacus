@@ -213,7 +213,8 @@ internal object MarginCalculator {
         // FE only supports subaccounts that are related to the "main" account (i.e. subaccount 0) and its children
         // If there are other utilized subaccounts (e.g. subaccount 1 or 129), ignore them as candidates
         val relevantSubaccounts = subaccounts.filterKeys {
-            key -> parser.asInt(key)?.let { it % NUM_PARENT_SUBACCOUNTS == 0 } ?: false
+                key ->
+            parser.asInt(key)?.let { it % NUM_PARENT_SUBACCOUNTS == 0 } ?: false
         }
         val utilizedSubaccountsMarketIdMap = relevantSubaccounts.mapValues {
             val subaccount = it.value
@@ -249,7 +250,7 @@ internal object MarginCalculator {
                 } else if (marketIds.isEmpty()) {
                     // Check if subaccount equity is 0 so that funds are moved to a clean account if reclaimUnutilizedChildSubaccountFunds has not been called yet
                     val equity = subaccounts[subaccountNumberToCheck]?.calculated?.get(CalculationPeriod.current)?.equity ?: 0.0
-                   if (availableSubaccountNumber == subaccountNumber && equity == 0.0) {
+                    if (availableSubaccountNumber == subaccountNumber && equity == 0.0) {
                         availableSubaccountNumber = subaccountNumberToCheck
                     }
                 }
@@ -371,7 +372,7 @@ internal object MarginCalculator {
             parser = parser,
             subaccounts = subaccounts,
             subaccountNumber = subaccountNumber,
-            marketId = marketId
+            marketId = marketId,
         )
         if (subaccountNumber != childSubaccountNumber) {
             return iListOf(subaccountNumber, childSubaccountNumber)

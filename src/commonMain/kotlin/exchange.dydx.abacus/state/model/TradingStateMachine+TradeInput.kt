@@ -5,15 +5,12 @@ import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.output.input.MarginMode
-import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet

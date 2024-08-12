@@ -25,8 +25,8 @@ enum class ClosePositionInputField(val rawValue: String) {
     percent("size.percent");
 
     companion object {
-        operator fun invoke(rawValue: String) =
-            ClosePositionInputField.values().firstOrNull { it.rawValue == rawValue }
+        operator fun invoke(rawValue: String?) =
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 

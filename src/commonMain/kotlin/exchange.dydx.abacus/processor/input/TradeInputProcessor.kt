@@ -9,9 +9,6 @@ import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
-import exchange.dydx.abacus.output.input.TradeInputBracket
-import exchange.dydx.abacus.output.input.TradeInputBracketSide
-import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.ParsingError
@@ -52,8 +49,6 @@ import exchange.dydx.abacus.state.model.TradeInputField.trailingPercent
 import exchange.dydx.abacus.state.model.TradeInputField.triggerPrice
 import exchange.dydx.abacus.state.model.TradeInputField.type
 import exchange.dydx.abacus.state.model.TradeInputField.usdcSize
-import exchange.dydx.abacus.state.model.TradingStateMachine
-import exchange.dydx.abacus.utils.safeSet
 import kollections.iListOf
 import kotlin.math.abs
 
@@ -75,7 +70,7 @@ internal class TradeInputResult(
 internal class TradeInputProcessor(
     private val parser: ParserProtocol,
     private val calculator: TradeInputCalculator = TradeInputCalculator(parser, TradeCalculation.trade)
-): TradeInputProcessorProtocol {
+) : TradeInputProcessorProtocol {
     override fun tradeInMarket(
         inputState: InternalInputState,
         marketState: InternalMarketState,
@@ -160,7 +155,7 @@ internal class TradeInputProcessor(
                     iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                     null,
                     iListOf(subaccountNumber),
-                )
+                ),
             )
         }
 
@@ -182,7 +177,7 @@ internal class TradeInputProcessor(
                 TradeInputField.type, TradeInputField.side -> {
                     if (inputData != null) {
                         if (trade.size?.input == "size.leverage") {
-                            trade.size =  TradeInputSize.safeCreate(trade.size).copy(input = "size.size")
+                            trade.size = TradeInputSize.safeCreate(trade.size).copy(input = "size.size")
                         }
                         inputType.updateValueAction?.invoke(trade, inputData, parser)
                         changes = StateChanges(
@@ -249,7 +244,7 @@ internal class TradeInputProcessor(
                             parser = parser,
                             subaccounts = accountState.subaccounts,
                             subaccountNumber = subaccountNumber,
-                            tradeInput = trade
+                            tradeInput = trade,
                         )
                     changes = StateChanges(
                         changes = iListOf(Changes.input, Changes.subaccount),
@@ -258,7 +253,6 @@ internal class TradeInputProcessor(
                     )
                 }
             }
-
         } else {
             error = ParsingError.cannotModify(inputType.rawValue)
         }
@@ -361,7 +355,7 @@ internal class TradeInputProcessor(
         )
 
         // TODO - implement TradeInputCalculatorV2
-        //calculator.calculate()
+        // calculator.calculate()
 
         return InternalTradeInputState(
             marketId = marketId,
@@ -373,4 +367,3 @@ internal class TradeInputProcessor(
         )
     }
 }
-
