@@ -13,6 +13,7 @@ import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
 import exchange.dydx.abacus.output.LaunchIncentiveSeasons
+import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
@@ -77,6 +78,7 @@ import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kollections.toIMutableMap
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -1180,11 +1182,25 @@ open class TradingStateMachine(
             if (markets != null) {
                 val modified = candles?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    val data =
-                        parser.asNativeMap(parser.value(data, "markets.markets.$marketId.candles"))
-                    val existing = candles?.get(marketId)
-                    val candles = MarketCandles.create(existing, parser, data)
-                    modified.typedSafeSet(marketId, candles)
+                    if (staticTyping) {
+                        val candles = internalState.marketsSummary.markets[marketId]?.candles
+                        val marketCandles: MutableMap<String, IList<MarketCandle>> = mutableMapOf()
+                        for ((key, value) in candles ?: emptyMap()) {
+                            marketCandles[key] = value.toIList()
+                        }
+                        modified.typedSafeSet(marketId, MarketCandles(candles = marketCandles.toIMap()))
+                    } else {
+                        val data =
+                            parser.asNativeMap(
+                                parser.value(
+                                    data,
+                                    "markets.markets.$marketId.candles",
+                                ),
+                            )
+                        val existing = candles?.get(marketId)
+                        val candles = MarketCandles.create(existing, parser, data)
+                        modified.typedSafeSet(marketId, candles)
+                    }
                 }
                 candles = modified
             } else {

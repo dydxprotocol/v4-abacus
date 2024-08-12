@@ -6,6 +6,8 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerCandleResponse
+import indexer.codegen.IndexerCandleResponseObject
 import indexer.codegen.IndexerOrderbookResponseObject
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
@@ -18,6 +20,7 @@ internal class MarketsSummaryProcessor(
 ) : BaseProcessor(parser) {
     private val marketsProcessor = MarketsProcessor(parser, calculateSparklines)
     private val orderbookProcessor = OrderbookProcessor(parser)
+    private val candlesProcessor = CandlesProcessor(parser)
 
     internal var groupingMultiplier: Int
         get() = if (staticTyping) orderbookProcessor.groupingMultiplier else marketsProcessor.groupingMultiplier
@@ -55,6 +58,51 @@ internal class MarketsSummaryProcessor(
         content: Map<String, List<String>>?,
     ): InternalMarketSummaryState {
         marketsProcessor.processSparklines(existing, content)
+        return existing
+    }
+
+    fun processCandles(
+        existing: InternalMarketSummaryState,
+        marketId: String,
+        resolution: String,
+        content: IndexerCandleResponse?
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = candlesProcessor.processSubscribed(
+            existing = marketState,
+            resolution = resolution,
+            payload = content,
+        )
+        return existing
+    }
+
+    fun processBatchCandlesChanges(
+        existing: InternalMarketSummaryState,
+        marketId: String,
+        resolution: String,
+        content: List<IndexerCandleResponseObject>?,
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = candlesProcessor.processBatchUpdate(
+            existing = marketState,
+            resolution = resolution,
+            payload = content,
+        )
+        return existing
+    }
+
+    fun processCandlesChanges(
+        existing: InternalMarketSummaryState,
+        marketId: String,
+        resolution: String,
+        content: IndexerCandleResponseObject?,
+    ): InternalMarketSummaryState {
+        val marketState = existing.markets[marketId] ?: InternalMarketState()
+        existing.markets[marketId] = candlesProcessor.processUpdate(
+            existing = marketState,
+            resolution = resolution,
+            payload = content,
+        )
         return existing
     }
 
@@ -221,7 +269,7 @@ internal class MarketsSummaryProcessor(
         return modify(existing, markets)
     }
 
-    internal fun receivedCandles(
+    internal fun receivedCandlesDeprecated(
         existing: Map<String, Any>?,
         market: String,
         resolution: String,
