@@ -404,7 +404,6 @@ data class TradeInputSummary(
     }
 }
 
-@Suppress("UNCHECKED_CAST")
 @JsExport
 @Serializable
 data class OrderbookUsage(

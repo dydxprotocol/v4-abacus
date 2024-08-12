@@ -28,6 +28,7 @@ import exchange.dydx.abacus.output.input.Tooltip
 import exchange.dydx.abacus.output.input.TradeInputBracket
 import exchange.dydx.abacus.output.input.TradeInputBracketSide
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
+import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
@@ -74,9 +75,9 @@ internal data class InternalTradeInputState(
     var reduceOnly: Boolean = false,
     var postOnly: Boolean = false,
     var fee: Double? = null,
-
     var bracket: TradeInputBracket? = null,
     var options: InternalTradeInputOptions = InternalTradeInputOptions(),
+    var marketOrder: TradeInputMarketOrder? = null,
 ) {
     val isBuying: Boolean
         get() = side == OrderSide.Buy || side == null
