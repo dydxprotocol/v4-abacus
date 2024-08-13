@@ -12,31 +12,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsExecution
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsGoodUntilDuration
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsGoodUntilUnit
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsStopLossPercent
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsStopLossPrice
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsStopLossReduceOnly
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsTakeProfitPercent
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsTakeProfitPrice
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsTakeProfitReduceOnly
-import exchange.dydx.abacus.state.model.TradeInputField.execution
-import exchange.dydx.abacus.state.model.TradeInputField.goodTilDuration
-import exchange.dydx.abacus.state.model.TradeInputField.goodTilUnit
-import exchange.dydx.abacus.state.model.TradeInputField.leverage
-import exchange.dydx.abacus.state.model.TradeInputField.limitPrice
-import exchange.dydx.abacus.state.model.TradeInputField.marginMode
-import exchange.dydx.abacus.state.model.TradeInputField.postOnly
-import exchange.dydx.abacus.state.model.TradeInputField.reduceOnly
-import exchange.dydx.abacus.state.model.TradeInputField.side
-import exchange.dydx.abacus.state.model.TradeInputField.size
-import exchange.dydx.abacus.state.model.TradeInputField.targetLeverage
-import exchange.dydx.abacus.state.model.TradeInputField.timeInForceType
-import exchange.dydx.abacus.state.model.TradeInputField.trailingPercent
-import exchange.dydx.abacus.state.model.TradeInputField.triggerPrice
-import exchange.dydx.abacus.state.model.TradeInputField.type
-import exchange.dydx.abacus.state.model.TradeInputField.usdcSize
 
 //
 // Contains the helper functions for each of the trade input fields
@@ -45,75 +20,75 @@ import exchange.dydx.abacus.state.model.TradeInputField.usdcSize
 // Returns the validation action for the trade input field
 internal val TradeInputField.validTradeInputAction: ((InternalTradeInputState) -> Boolean)?
     get() = when (this) {
-        type, side -> null
-        size, usdcSize, leverage -> { it -> it.options.needsSize }
-        limitPrice -> { it -> it.options.needsLimitPrice }
-        triggerPrice -> { it -> it.options.needsTriggerPrice }
-        trailingPercent -> { it -> it.options.needsTrailingPercent }
-        targetLeverage -> { it -> it.options.needsTargetLeverage }
-        goodTilDuration, goodTilUnit -> { it -> it.options.needsGoodUntil }
-        reduceOnly -> { it -> it.options.needsReduceOnly }
-        postOnly -> { it -> it.options.needsPostOnly }
-        bracketsStopLossPrice,
-        bracketsStopLossPercent,
-        bracketsTakeProfitPrice,
-        bracketsTakeProfitPercent,
-        bracketsGoodUntilDuration,
-        bracketsGoodUntilUnit,
-        bracketsStopLossReduceOnly,
-        bracketsTakeProfitReduceOnly,
-        bracketsExecution -> { it -> it.options.needsBrackets }
-        timeInForceType -> { it -> it.options.timeInForceOptions != null }
-        execution -> { it -> it.options.executionOptions != null }
-        marginMode -> { it -> it.options.marginModeOptions != null }
+        TradeInputField.type, TradeInputField.side -> null
+        TradeInputField.size, TradeInputField.usdcSize, TradeInputField.leverage -> { it -> it.options.needsSize }
+        TradeInputField.limitPrice -> { it -> it.options.needsLimitPrice }
+        TradeInputField.triggerPrice -> { it -> it.options.needsTriggerPrice }
+        TradeInputField.trailingPercent -> { it -> it.options.needsTrailingPercent }
+        TradeInputField.targetLeverage -> { it -> it.options.needsTargetLeverage }
+        TradeInputField.goodTilDuration, TradeInputField.goodTilUnit -> { it -> it.options.needsGoodUntil }
+        TradeInputField.reduceOnly -> { it -> it.options.needsReduceOnly }
+        TradeInputField.postOnly -> { it -> it.options.needsPostOnly }
+        TradeInputField.bracketsStopLossPrice,
+        TradeInputField.bracketsStopLossPercent,
+        TradeInputField.bracketsTakeProfitPrice,
+        TradeInputField.bracketsTakeProfitPercent,
+        TradeInputField.bracketsGoodUntilDuration,
+        TradeInputField.bracketsGoodUntilUnit,
+        TradeInputField.bracketsStopLossReduceOnly,
+        TradeInputField.bracketsTakeProfitReduceOnly,
+        TradeInputField.bracketsExecution -> { it -> it.options.needsBrackets }
+        TradeInputField.timeInForceType -> { it -> it.options.timeInForceOptions != null }
+        TradeInputField.execution -> { it -> it.options.executionOptions != null }
+        TradeInputField.marginMode -> { it -> it.options.marginModeOptions != null }
         TradeInputField.lastInput -> { it -> true }
     }
 
 // Returns the action to read value for the trade input field
 internal val TradeInputField.valueAction: ((InternalTradeInputState) -> Any?)?
     get() = when (this) {
-        type -> { it -> it.type }
-        side -> { it -> it.side }
+        TradeInputField.type -> { it -> it.type }
+        TradeInputField.side -> { it -> it.side }
 
-        marginMode -> { it -> it.marginMode }
-        targetLeverage -> { it -> it.targetLeverage }
+        TradeInputField.marginMode -> { it -> it.marginMode }
+        TradeInputField.targetLeverage -> { it -> it.targetLeverage }
 
-        size -> { it -> it.size?.size }
-        usdcSize -> { it -> it.size?.usdcSize }
-        leverage -> { it -> it.size?.leverage }
+        TradeInputField.size -> { it -> it.size?.size }
+        TradeInputField.usdcSize -> { it -> it.size?.usdcSize }
+        TradeInputField.leverage -> { it -> it.size?.leverage }
 
         TradeInputField.lastInput -> { it -> it.size?.input }
-        limitPrice -> { it -> it.price?.limitPrice }
-        triggerPrice -> { it -> it.price?.triggerPrice }
-        trailingPercent -> { it -> it.price?.trailingPercent }
+        TradeInputField.limitPrice -> { it -> it.price?.limitPrice }
+        TradeInputField.triggerPrice -> { it -> it.price?.triggerPrice }
+        TradeInputField.trailingPercent -> { it -> it.price?.trailingPercent }
 
-        timeInForceType -> { it -> it.timeInForce }
-        goodTilDuration -> { it -> it.goodTil?.duration }
-        goodTilUnit -> { it -> it.goodTil?.unit }
+        TradeInputField.timeInForceType -> { it -> it.timeInForce }
+        TradeInputField.goodTilDuration -> { it -> it.goodTil?.duration }
+        TradeInputField.goodTilUnit -> { it -> it.goodTil?.unit }
 
-        execution -> { it -> it.execution }
-        reduceOnly -> { it -> it.reduceOnly }
-        postOnly -> { it -> it.postOnly }
+        TradeInputField.execution -> { it -> it.execution }
+        TradeInputField.reduceOnly -> { it -> it.reduceOnly }
+        TradeInputField.postOnly -> { it -> it.postOnly }
 
-        bracketsStopLossPrice -> { it -> it.bracket?.stopLoss?.triggerPrice }
-        bracketsStopLossPercent -> { it -> it.bracket?.stopLoss?.percent }
-        bracketsStopLossReduceOnly -> { it -> it.bracket?.stopLoss?.reduceOnly }
-        bracketsTakeProfitPrice -> { it -> it.bracket?.takeProfit?.triggerPrice }
-        bracketsTakeProfitPercent -> { it -> it.bracket?.takeProfit?.percent }
-        bracketsTakeProfitReduceOnly -> { it -> it.bracket?.takeProfit?.reduceOnly }
-        bracketsGoodUntilDuration -> { it -> it.bracket?.goodTil?.duration }
-        bracketsGoodUntilUnit -> { it -> it.bracket?.goodTil?.unit }
-        bracketsExecution -> { it -> it.bracket?.execution }
+        TradeInputField.bracketsStopLossPrice -> { it -> it.bracket?.stopLoss?.triggerPrice }
+        TradeInputField.bracketsStopLossPercent -> { it -> it.bracket?.stopLoss?.percent }
+        TradeInputField.bracketsStopLossReduceOnly -> { it -> it.bracket?.stopLoss?.reduceOnly }
+        TradeInputField.bracketsTakeProfitPrice -> { it -> it.bracket?.takeProfit?.triggerPrice }
+        TradeInputField.bracketsTakeProfitPercent -> { it -> it.bracket?.takeProfit?.percent }
+        TradeInputField.bracketsTakeProfitReduceOnly -> { it -> it.bracket?.takeProfit?.reduceOnly }
+        TradeInputField.bracketsGoodUntilDuration -> { it -> it.bracket?.goodTil?.duration }
+        TradeInputField.bracketsGoodUntilUnit -> { it -> it.bracket?.goodTil?.unit }
+        TradeInputField.bracketsExecution -> { it -> it.bracket?.execution }
     }
 
 // Returns the write action to update value for the trade input field
 internal val TradeInputField.updateValueAction: ((InternalTradeInputState, String?, ParserProtocol) -> Unit)?
     get() = when (this) {
-        type -> { trade, value, parser ->
+        TradeInputField.type -> { trade, value, parser ->
             trade.type = OrderType.invoke(value)
         }
 
-        side -> { trade, value, parser ->
+        TradeInputField.side -> { trade, value, parser ->
             trade.side = OrderSide.invoke(value)
         }
 
@@ -121,78 +96,78 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             trade.size = TradeInputSize.safeCreate(trade.size).copy(input = value)
         }
 
-        limitPrice -> { trade, value, parser ->
+        TradeInputField.limitPrice -> { trade, value, parser ->
             trade.price = TradeInputPrice.safeCreate(trade.price).copy(limitPrice = parser.asDouble(value))
         }
 
-        triggerPrice -> { trade, value, parser ->
+        TradeInputField.triggerPrice -> { trade, value, parser ->
             trade.price = TradeInputPrice.safeCreate(trade.price).copy(triggerPrice = parser.asDouble(value))
         }
 
-        trailingPercent -> { trade, value, parser ->
+        TradeInputField.trailingPercent -> { trade, value, parser ->
             trade.price = TradeInputPrice.safeCreate(trade.price).copy(trailingPercent = parser.asDouble(value))
         }
 
-        bracketsStopLossPrice -> { trade, value, parser ->
+        TradeInputField.bracketsStopLossPrice -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             val stopLoss = TradeInputBracketSide.safeCreate(braket.stopLoss)
             trade.bracket =
                 braket.copy(stopLoss = stopLoss.copy(triggerPrice = parser.asDouble(value)))
         }
 
-        bracketsStopLossPercent -> { trade, value, parser ->
+        TradeInputField.bracketsStopLossPercent -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             val stopLoss = TradeInputBracketSide.safeCreate(braket.stopLoss)
             trade.bracket = braket.copy(stopLoss = stopLoss.copy(percent = parser.asDouble(value)))
         }
 
-        bracketsTakeProfitPrice -> { trade, value, parser ->
+        TradeInputField.bracketsTakeProfitPrice -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             val takeProfit = TradeInputBracketSide.safeCreate(braket.takeProfit)
             trade.bracket =
                 braket.copy(takeProfit = takeProfit.copy(triggerPrice = parser.asDouble(value)))
         }
 
-        bracketsTakeProfitPercent -> { trade, value, parser ->
+        TradeInputField.bracketsTakeProfitPercent -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             val takeProfit = TradeInputBracketSide.safeCreate(braket.takeProfit)
             trade.bracket =
                 braket.copy(takeProfit = takeProfit.copy(percent = parser.asDouble(value)))
         }
 
-        marginMode -> { trade, value, parser ->
+        TradeInputField.marginMode -> { trade, value, parser ->
             trade.marginMode = MarginMode.invoke(value)
         }
 
-        timeInForceType -> { trade, value, parser ->
+        TradeInputField.timeInForceType -> { trade, value, parser ->
             trade.timeInForce = value
         }
 
-        goodTilUnit -> { trade, value, parser ->
+        TradeInputField.goodTilUnit -> { trade, value, parser ->
             trade.goodTil = TradeInputGoodUntil.safeCreate(trade.goodTil).copy(unit = value)
         }
 
-        bracketsGoodUntilUnit -> { trade, value, parser ->
+        TradeInputField.bracketsGoodUntilUnit -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             trade.bracket = braket.copy(
                 goodTil = TradeInputGoodUntil.safeCreate(braket.goodTil).copy(unit = value),
             )
         }
 
-        execution -> { trade, value, parser ->
+        TradeInputField.execution -> { trade, value, parser ->
             trade.execution = value
         }
 
-        bracketsExecution -> { trade, value, parser ->
+        TradeInputField.bracketsExecution -> { trade, value, parser ->
             trade.bracket = TradeInputBracket.safeCreate(trade.bracket).copy(execution = value)
         }
 
-        goodTilDuration -> { trade, value, parser ->
+        TradeInputField.goodTilDuration -> { trade, value, parser ->
             trade.goodTil = TradeInputGoodUntil.safeCreate(trade.goodTil)
                 .copy(duration = parser.asDouble(value))
         }
 
-        bracketsGoodUntilDuration -> { trade, value, parser ->
+        TradeInputField.bracketsGoodUntilDuration -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             trade.bracket = braket.copy(
                 goodTil = TradeInputGoodUntil.safeCreate(braket.goodTil)
@@ -200,22 +175,22 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             )
         }
 
-        reduceOnly -> { trade, value, parser ->
+        TradeInputField.reduceOnly -> { trade, value, parser ->
             trade.reduceOnly = parser.asBool(value) ?: false
         }
 
-        postOnly -> { trade, value, parser ->
+        TradeInputField.postOnly -> { trade, value, parser ->
             trade.postOnly = parser.asBool(value) ?: false
         }
 
-        bracketsStopLossReduceOnly -> { trade, value, parser ->
+        TradeInputField.bracketsStopLossReduceOnly -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             val stopLoss = TradeInputBracketSide.safeCreate(braket.stopLoss)
             trade.bracket =
                 braket.copy(stopLoss = stopLoss.copy(reduceOnly = parser.asBool(value) ?: false))
         }
 
-        bracketsTakeProfitReduceOnly -> { trade, value, parser ->
+        TradeInputField.bracketsTakeProfitReduceOnly -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
             val takeProfit = TradeInputBracketSide.safeCreate(braket.takeProfit)
             trade.bracket = braket.copy(
@@ -225,19 +200,19 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             )
         }
 
-        targetLeverage -> { trade, value, parser ->
+        TradeInputField.targetLeverage -> { trade, value, parser ->
             trade.targetLeverage = parser.asDouble(value)
         }
 
-        size -> { trade, value, parser ->
+        TradeInputField.size -> { trade, value, parser ->
             trade.size = TradeInputSize.safeCreate(trade.size).copy(size = parser.asDouble(value))
         }
 
-        usdcSize -> { trade, value, parser ->
+        TradeInputField.usdcSize -> { trade, value, parser ->
             trade.size = TradeInputSize.safeCreate(trade.size).copy(usdcSize = parser.asDouble(value))
         }
 
-        leverage -> { trade, value, parser ->
+        TradeInputField.leverage -> { trade, value, parser ->
             trade.size = TradeInputSize.safeCreate(trade.size).copy(leverage = parser.asDouble(value))
         }
     }
