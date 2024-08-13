@@ -6,6 +6,9 @@ internal class OrderTypeProcessor {
             // hacky fix until indexer fix is in (CT-916)
             if (type == "LIQUIDATION") return "LIMIT"
 
+            if (type == "DELEVERAGED") return "LIQUIDATED" // CT-1118
+            if (type == "OFFSETTING") return "DELEVERAGED" // CT-1118
+
             return if (clientMetadata == 1) {
                 when (type) {
                     "LIMIT" -> "MARKET"
