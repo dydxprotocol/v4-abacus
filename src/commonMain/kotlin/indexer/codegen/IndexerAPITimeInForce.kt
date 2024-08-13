@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: GTT,FOK,IOC
  */
+@JsExport
 @Serializable
 enum class IndexerAPITimeInForce(val value: kotlin.String) {
     GTT("GTT"), // :/

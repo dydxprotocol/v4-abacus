@@ -12,9 +12,11 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  */
+@JsExport
 @Serializable
 class IndexerAssetPositionsMap()

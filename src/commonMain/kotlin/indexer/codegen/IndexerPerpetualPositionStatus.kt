@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: OPEN,CLOSED,LIQUIDATED
  */
+@JsExport
 @Serializable
 enum class IndexerPerpetualPositionStatus(val value: kotlin.String) {
     OPEN("OPEN"), // :/

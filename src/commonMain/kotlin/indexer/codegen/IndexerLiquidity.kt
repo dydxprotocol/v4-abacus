@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: TAKER,MAKER
  */
+@JsExport
 @Serializable
 enum class IndexerLiquidity(val value: kotlin.String) {
     TAKER("TAKER"), // :/

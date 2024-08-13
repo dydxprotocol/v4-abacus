@@ -11,13 +11,14 @@
  */
 package indexer.codegen
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: _1MIN,_5MINS,_15MINS,_30MINS,_1HOUR,_4HOURS,_1DAY
  */
+@JsExport
 @Serializable
 enum class IndexerCandleResolution(val value: kotlin.String) {
     @SerialName("1MIN")

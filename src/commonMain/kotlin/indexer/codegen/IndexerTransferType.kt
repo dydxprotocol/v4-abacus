@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: TRANSFERIN,TRANSFEROUT,DEPOSIT,WITHDRAWAL
  */
+@JsExport
 @Serializable
 enum class IndexerTransferType(val value: kotlin.String) {
     TRANSFERIN("TRANSFER_IN"), // :/

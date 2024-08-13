@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: DAILY,WEEKLY,MONTHLY
  */
+@JsExport
 @Serializable
 enum class IndexerTradingRewardAggregationPeriod(val value: kotlin.String) {
     DAILY("DAILY"), // :/

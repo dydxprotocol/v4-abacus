@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -37,6 +38,7 @@ import kotlinx.serialization.Serializable
  * @param openInterestUpperCap
  * @param baseOpenInterest
  */
+@JsExport
 @Serializable
 data class IndexerPerpetualMarketResponseObject(
 
