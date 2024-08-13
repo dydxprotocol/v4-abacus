@@ -338,9 +338,9 @@ Time in force, GTT (Good Til Time) or  IOC (Immediate or Cancel)
 
 Market ID
 
-## displayID
+## displayId
 
-marketID to display in the UI
+Displayable market ID.
 
 ## clobPairId
 

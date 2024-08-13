@@ -23,9 +23,9 @@ Fill ID
 
 Market ID
 
-## displayID
+## displayId
 
-Id to render in the UI
+Displayable market ID.
 
 ## orderId
 

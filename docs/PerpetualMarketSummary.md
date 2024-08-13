@@ -58,7 +58,7 @@ Name of the market
 
 ## displayId
 
-ID to display in the UI
+Displayable market ID.
 
 ## indexPrice
 
