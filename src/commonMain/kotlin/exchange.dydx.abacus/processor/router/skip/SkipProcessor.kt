@@ -202,11 +202,12 @@ internal class SkipProcessor(
             }
         }
 
-        val filteredTokens = mutableListOf<Map<String, Any>>()
-//        we have to replace skip's {chain-name}-native naming bc it doesn't play well with
-//        any of our SDKs.
-//        however, their {chain-name}-native denom naming is required for their API
-//        so we need to store both values
+        val tokensWithSkipDenom = mutableListOf<Map<String, Any>>()
+/*        we have to replace skip's {chain-name}-native naming bc it doesn't play well with
+        any of our SDKs.
+        however, their {chain-name}-native denom naming is required for their API
+        so we need to store both values
+ */
         assetsForChainId?.forEach {
             val token = parser.asNativeMap(it)?.toMutableMap()
             if (token != null) {
@@ -215,10 +216,21 @@ internal class SkipProcessor(
                     token["skipDenom"] = denom
                     token["denom"] = NATIVE_TOKEN_DEFAULT_ADDRESS
                 }
-                filteredTokens.add(token.toMap())
+                tokensWithSkipDenom.add(token.toMap())
             }
         }
-        return filteredTokens
+
+        /*
+            Context: https://dydx-team.slack.com/archives/C0738MMRX9C/p1722978579167729?thread_ts=1722974628.149899&cid=C0738MMRX9C
+            We are hitting ibc rate limits for USDT https://ibc.range.org/ibc/rate-limits
+            As a result, users' funds are getting stuck mid transfers for USDT Axelar swaps into cosmos.
+            To remediate this, skip has limited high value transfers while we are hiding the route from the UI
+         */
+        return tokensWithSkipDenom.filter {
+            val token = parser.asMap(it)
+            val tokenSymbol = parser.asString(token?.get("symbol"))
+            tokenSymbol?.contains("USDT") != true
+        }
     }
 
     override fun defaultTokenAddress(chainId: String?): String? {
