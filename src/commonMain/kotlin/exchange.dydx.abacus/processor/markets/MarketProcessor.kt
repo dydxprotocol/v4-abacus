@@ -207,7 +207,7 @@ internal class MarketProcessor(
                 assetId = MarketId.getAssetId(name) ?: parseException(payload),
                 oraclePrice = oraclePrice,
                 market = name,
-                displayId = MarketId.getDisplayId(name) ?: parseException(payload),
+                displayId = MarketId.getDisplayId(name),
                 marketCaps = null,
                 priceChange24H = parser.asDouble(payload.priceChange24H),
                 priceChange24HPercent = calculatePriceChange24HPercent(

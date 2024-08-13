@@ -150,7 +150,7 @@ class FillsNotificationProvider(
         fill: SubaccountFill,
     ): Notification? {
         val fillId = fill.id
-        val marketId = fill.marketId
+        val marketId = fill.displayId
         val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
         val assetText = asset.name
         val marketImageUrl = asset.resources?.imageUrl

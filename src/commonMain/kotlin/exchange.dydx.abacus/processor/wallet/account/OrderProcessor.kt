@@ -8,6 +8,7 @@ import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderTimeInForce
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -147,6 +148,7 @@ internal class OrderProcessor(
             "id" to "id",
             "clientId" to "clientId",
             "market" to "marketId",
+            "displayId" to "displayId",
             "side" to "side",
             "type" to "type",
             "status" to "status",
@@ -206,6 +208,7 @@ internal class OrderProcessor(
         val side = OrderSide.invoke(payload.side?.value) ?: return null
         val status = OrderStatus.invoke(payload.status?.value) ?: return null
         val marketId = payload.ticker ?: return null
+        val displayId = MarketId.getDisplayId(marketId)
         val price = parser.asDouble(payload.price) ?: return null
         val size = parser.asDouble(payload.size) ?: return null
 
@@ -262,6 +265,7 @@ internal class OrderProcessor(
             status = modifiedStatus,
             timeInForce = timeInForce,
             marketId = marketId,
+            displayId = displayId,
             clobPairId = parser.asInt(payload.clobPairId),
             orderFlags = orderFlags,
             price = price,
@@ -390,9 +394,15 @@ internal class OrderProcessor(
     ): Map<String, Any>? {
         return if (shouldUpdateDeprecated(existing, payload)) {
             val modified = transform(existing, payload, orderKeyMap)
-            if (modified["marketId"] == null) {
-                modified.safeSet("marketId", payload["ticker"])
+
+            parser.asString(payload["ticker"])?.let {marketId ->
+                modified.safeSet("displayId", MarketId.getDisplayId(marketId))
+
+                if (modified["marketId"] == null) {
+                    modified.safeSet("marketId", payload["ticker"])
+                }
             }
+
             if (modified["id"] == null) {
                 modified.safeSet("id", payload["clientId"])
             }

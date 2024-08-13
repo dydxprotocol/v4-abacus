@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
@@ -207,8 +208,14 @@ internal class PerpetualPositionProcessor(
             modified.safeSet("marginMode", if (this >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
         }
 
-        ParsingHelper.assetId(parser.asString(modified["id"]))?.let {
-            modified["assetId"] = it
+        parser.asString(modified["id"])?.let { marketId ->
+            MarketId.getDisplayId(marketId).let { displayId ->
+                modified["displayId"] = displayId
+            }
+
+            MarketId.getAssetId(marketId)?.let { assetId ->
+                modified["assetId"] = assetId
+            }
         }
 
         val resources = parser.asNativeMap(modified["resources"])?.toMutableMap()

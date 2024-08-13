@@ -1,20 +1,9 @@
 package exchange.dydx.abacus.processor.utils
 
 internal object MarketId {
-    internal fun getAssetId(
-        marketId: String,
-    ): String? {
-        val elements = marketId.split("-")
-        val baseAssetLongForm = elements.first()
-        val baseAssetElements = baseAssetLongForm.split(",")
-
-        return if (baseAssetElements.isNotEmpty()) {
-            baseAssetElements.first()
-        } else {
-            null
-        }
-    }
-
+    /**
+     * Get the human readable displayId from the unique market id (ticker).
+     */
     internal fun getDisplayId(
         marketId: String,
     ): String {
@@ -24,9 +13,29 @@ internal object MarketId {
         val baseAssetElements = baseAssetLongForm.split(",")
 
         return if (baseAssetElements.isNotEmpty()) {
-            "fake" + baseAssetElements.first() + "-" + quoteAsset
+            "*" + baseAssetElements.first() + "-" + quoteAsset
         } else {
             marketId
+        }
+    }
+
+    /**
+     * Get the asset id from the market id.
+     */
+    internal fun getAssetId(
+        marketId: String,
+    ): String? {
+        // TODO: Uncomment after smoke test is complete
+//        val displayId = getDisplayId(marketId)
+//        val elements = displayId.split("-")
+        val elements = marketId.split("-")
+        val baseAssetLongForm = elements.first()
+        val baseAssetElements = baseAssetLongForm.split(",")
+
+        return if (baseAssetElements.isNotEmpty()) {
+            baseAssetElements.first()
+        } else {
+            null
         }
     }
 }

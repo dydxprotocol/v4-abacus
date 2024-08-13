@@ -3,6 +3,7 @@ package exchange.dydx.abacus.output.account
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.IList
@@ -17,6 +18,7 @@ import kotlinx.serialization.Serializable
 data class SubaccountFill(
     val id: String,
     val marketId: String,
+    val displayId: String,
     val orderId: String?,
     val subaccountNumber: Int?,
     val marginMode: MarginMode?,
@@ -40,6 +42,7 @@ data class SubaccountFill(
             data?.let {
                 val id = parser.asString(data["id"])
                 val marketId = parser.asString(data["marketId"])
+                val displayId = parser.asString(data["displayId"])
                 val orderId = parser.asString(data["orderId"])
                 val subaccountNumber = parser.asInt(data["subaccountNumber"])
                 val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
@@ -57,12 +60,13 @@ data class SubaccountFill(
                 val resources = parser.asMap(data["resources"])?.let {
                     SubaccountFillResources.create(existing?.resources, parser, it, localizer)
                 }
-                return if (id != null && marketId != null && side != null && type != null && liquidity != null &&
+                return if (id != null && marketId != null && displayId != null && side != null && type != null && liquidity != null &&
                     price != null && size != null && createdAtMilliseconds != null && resources != null
                 ) {
                     val fee = parser.asDouble(data["fee"])
                     if (existing?.id != id ||
                         existing.marketId != marketId ||
+                        existing.displayId != displayId ||
                         existing.orderId != orderId ||
                         existing.subaccountNumber != subaccountNumber ||
                         existing.marginMode != marginMode ||
@@ -75,19 +79,20 @@ data class SubaccountFill(
                         existing.resources !== resources
                     ) {
                         SubaccountFill(
-                            id,
-                            marketId,
-                            orderId,
-                            subaccountNumber,
-                            marginMode,
-                            side,
-                            type,
-                            liquidity,
-                            price,
-                            size,
-                            fee,
-                            createdAtMilliseconds,
-                            resources,
+                            id = id,
+                            marketId = marketId,
+                            displayId = displayId,
+                            orderId = orderId,
+                            subaccountNumber = subaccountNumber,
+                            marginMode = marginMode,
+                            side = side,
+                            type = type,
+                            liquidity = liquidity,
+                            price = price,
+                            size = size,
+                            fee = fee,
+                            createdAtMilliseconds = createdAtMilliseconds,
+                            resources = resources,
                         )
                     } else {
                         existing

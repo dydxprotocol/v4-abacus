@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
@@ -238,7 +239,8 @@ internal class SubaccountTransformer {
             "id" to marketId,
             "status" to "OPEN",
             "id" to marketId,
-            "assetId" to ParsingHelper.assetId(marketId)!!,
+            "displayId" to MarketId.getDisplayId(marketId),
+            "assetId" to MarketId.getAssetId(marketId)!!,
             "side" to {
                 "current" to "NONE"
             },
