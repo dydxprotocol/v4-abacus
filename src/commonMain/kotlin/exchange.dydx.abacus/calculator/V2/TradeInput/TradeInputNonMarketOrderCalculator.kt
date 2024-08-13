@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2.TradeInput
+package exchange.dydx.abacus.calculator.v2.tradeInput
 
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputPrice

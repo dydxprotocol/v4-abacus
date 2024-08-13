@@ -4,8 +4,7 @@ import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
-import exchange.dydx.abacus.calculator.TradeInputCalculator
-import exchange.dydx.abacus.calculator.v2.TradeInput.TradeInputCalculatorV2
+import exchange.dydx.abacus.calculator.v2.tradeInput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
@@ -28,33 +27,7 @@ import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsExecution
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsGoodUntilDuration
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsGoodUntilUnit
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsStopLossPercent
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsStopLossPrice
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsStopLossReduceOnly
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsTakeProfitPercent
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsTakeProfitPrice
-import exchange.dydx.abacus.state.model.TradeInputField.bracketsTakeProfitReduceOnly
-import exchange.dydx.abacus.state.model.TradeInputField.execution
-import exchange.dydx.abacus.state.model.TradeInputField.goodTilDuration
-import exchange.dydx.abacus.state.model.TradeInputField.goodTilUnit
-import exchange.dydx.abacus.state.model.TradeInputField.leverage
-import exchange.dydx.abacus.state.model.TradeInputField.limitPrice
-import exchange.dydx.abacus.state.model.TradeInputField.marginMode
-import exchange.dydx.abacus.state.model.TradeInputField.postOnly
-import exchange.dydx.abacus.state.model.TradeInputField.reduceOnly
-import exchange.dydx.abacus.state.model.TradeInputField.side
-import exchange.dydx.abacus.state.model.TradeInputField.size
-import exchange.dydx.abacus.state.model.TradeInputField.targetLeverage
-import exchange.dydx.abacus.state.model.TradeInputField.timeInForceType
-import exchange.dydx.abacus.state.model.TradeInputField.trailingPercent
-import exchange.dydx.abacus.state.model.TradeInputField.triggerPrice
-import exchange.dydx.abacus.state.model.TradeInputField.type
-import exchange.dydx.abacus.state.model.TradeInputField.usdcSize
 import kollections.iListOf
-import kotlin.math.abs
 
 internal interface TradeInputProcessorProtocol {
     fun tradeInMarket(
@@ -149,7 +122,7 @@ internal class TradeInputProcessor(
         )
     }
 
-   override fun trade(
+    override fun trade(
         inputState: InternalInputState,
         walletState: InternalWalletState,
         marketSummaryState: InternalMarketSummaryState,
@@ -279,12 +252,12 @@ internal class TradeInputProcessor(
         }
 
         if (sizeChanged) {
-            when (type) {
+            when (inputType) {
                 TradeInputField.size,
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
                 -> {
-                    TradeInputSize.safeCreate(trade.size).copy(input = type.rawValue)
+                    trade.size = TradeInputSize.safeCreate(trade.size).copy(input = inputType.rawValue)
                 }
                 else -> {}
             }

@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2.TradeInput
+package exchange.dydx.abacus.calculator.v2.tradeInput
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
@@ -122,7 +122,7 @@ internal class TradeInputOptionsCalculator(
                     limitPriceField(),
                     triggerPriceField(),
                     goodTilField(),
-                    executionField(true),
+                    executionField(includesDefaultAndPostOnly = true),
                     marginModeField(market, account, subaccount),
                     when (execution) {
                         "IOC" -> reduceOnlyField()
@@ -136,7 +136,7 @@ internal class TradeInputOptionsCalculator(
                     sizeField(),
                     triggerPriceField(),
                     goodTilField(),
-                    executionField(false),
+                    executionField(includesDefaultAndPostOnly = false),
                     marginModeField(market, account, subaccount),
                     reduceOnlyField(),
                 ).filterNotNull()
@@ -147,7 +147,7 @@ internal class TradeInputOptionsCalculator(
                     sizeField(),
                     trailingPercentField(),
                     goodTilField(),
-                    executionField(false),
+                    executionField(includesDefaultAndPostOnly = false),
                     marginModeField(market, account, subaccount),
                 ).filterNotNull()
             }
@@ -297,7 +297,7 @@ internal class TradeInputOptionsCalculator(
             market = market,
         )
         if (options.needsGoodUntil) {
-            if (trade.goodTil == null) {
+            if (trade.goodTil?.duration == null) {
                 val goodTil = TradeInputGoodUntil.safeCreate(trade.goodTil)
                 trade.goodTil = goodTil.copy(duration = 28.0)
             }
@@ -426,7 +426,7 @@ internal class TradeInputOptionsCalculator(
                 stopLossField(),
                 takeProfitField(),
                 goodTilField(),
-                executionField(false),
+                executionField(includesDefaultAndPostOnly = false),
             ),
         )
     }

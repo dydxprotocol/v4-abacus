@@ -36,8 +36,8 @@ class TradeInputOptionsTests : V4BaseTests() {
                     type = "CROSS",
                     stringKey = "APP.TRADE.CROSS_MARGIN",
                     string = null,
-                    iconUrl = null
-                )
+                    iconUrl = null,
+                ),
             )
             assertEquals(
                 trade.options.marginModeOptions?.get(1),
@@ -45,11 +45,9 @@ class TradeInputOptionsTests : V4BaseTests() {
                     type = "ISOLATED",
                     stringKey = "APP.TRADE.ISOLATED_MARGIN",
                     string = null,
-                    iconUrl = null
-                )
+                    iconUrl = null,
+                ),
             )
-
-
         } else {
             test(
                 {
@@ -80,7 +78,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -106,7 +104,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -120,7 +118,6 @@ class TradeInputOptionsTests : V4BaseTests() {
             test({
                 perp.trade("BUY", TradeInputField.side, 0)
             }, null)
-
         }
 
         if (perp.staticTyping) {
@@ -161,7 +158,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -203,7 +200,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -245,7 +242,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -269,8 +266,8 @@ class TradeInputOptionsTests : V4BaseTests() {
                     type = "GTT",
                     stringKey = "APP.TRADE.GOOD_TIL_TIME",
                     string = null,
-                    iconUrl = null
-                )
+                    iconUrl = null,
+                ),
             )
             assertEquals(
                 options.timeInForceOptions?.get(1),
@@ -278,8 +275,8 @@ class TradeInputOptionsTests : V4BaseTests() {
                     type = "IOC",
                     stringKey = "APP.TRADE.IMMEDIATE_OR_CANCEL",
                     string = null,
-                    iconUrl = null
-                )
+                    iconUrl = null,
+                ),
             )
         } else {
             test(
@@ -316,7 +313,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
     }

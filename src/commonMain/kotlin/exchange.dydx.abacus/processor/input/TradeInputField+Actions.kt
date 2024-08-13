@@ -122,18 +122,15 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
         }
 
         limitPrice -> { trade, value, parser ->
-            trade.price =
-                TradeInputPrice.safeCreate(trade.price).copy(limitPrice = parser.asDouble(value))
+            trade.price = TradeInputPrice.safeCreate(trade.price).copy(limitPrice = parser.asDouble(value))
         }
 
         triggerPrice -> { trade, value, parser ->
-            trade.price =
-                TradeInputPrice.safeCreate(trade.price).copy(triggerPrice = parser.asDouble(value))
+            trade.price = TradeInputPrice.safeCreate(trade.price).copy(triggerPrice = parser.asDouble(value))
         }
 
         trailingPercent -> { trade, value, parser ->
-            trade.price = TradeInputPrice.safeCreate(trade.price)
-                .copy(trailingPercent = parser.asDouble(value))
+            trade.price = TradeInputPrice.safeCreate(trade.price).copy(trailingPercent = parser.asDouble(value))
         }
 
         bracketsStopLossPrice -> { trade, value, parser ->
@@ -237,12 +234,10 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
         }
 
         usdcSize -> { trade, value, parser ->
-            trade.size =
-                TradeInputSize.safeCreate(trade.size).copy(usdcSize = parser.asDouble(value))
+            trade.size = TradeInputSize.safeCreate(trade.size).copy(usdcSize = parser.asDouble(value))
         }
 
         leverage -> { trade, value, parser ->
-            trade.size =
-                TradeInputSize.safeCreate(trade.size).copy(leverage = parser.asDouble(value))
+            trade.size = TradeInputSize.safeCreate(trade.size).copy(leverage = parser.asDouble(value))
         }
     }

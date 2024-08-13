@@ -9,7 +9,7 @@ import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
-import exchange.dydx.abacus.calculator.v2.TradeInput.TradeInputCalculatorV2
+import exchange.dydx.abacus.calculator.v2.tradeInput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive

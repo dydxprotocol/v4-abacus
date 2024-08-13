@@ -47,7 +47,7 @@ class V4NoAccountTradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
