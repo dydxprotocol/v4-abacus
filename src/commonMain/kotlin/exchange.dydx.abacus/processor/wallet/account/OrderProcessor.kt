@@ -395,7 +395,7 @@ internal class OrderProcessor(
         return if (shouldUpdateDeprecated(existing, payload)) {
             val modified = transform(existing, payload, orderKeyMap)
 
-            parser.asString(payload["ticker"])?.let {marketId ->
+            parser.asString(payload["ticker"])?.let { marketId ->
                 modified.safeSet("displayId", MarketId.getDisplayId(marketId))
 
                 if (modified["marketId"] == null) {

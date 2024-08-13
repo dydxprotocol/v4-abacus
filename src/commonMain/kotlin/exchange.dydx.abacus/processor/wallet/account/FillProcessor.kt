@@ -141,7 +141,7 @@ internal class FillProcessor(
         subaccountNumber: Int,
     ): Map<String, Any> {
         val fill = transform(existing, payload, fillKeyMap)
-        parser.asString(payload["ticker"])?.let {marketId ->
+        parser.asString(payload["ticker"])?.let { marketId ->
             if (fill["marketId"] == null) {
                 fill.safeSet("marketId", marketId)
             }

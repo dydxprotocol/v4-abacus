@@ -4,7 +4,6 @@ import abs
 import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet

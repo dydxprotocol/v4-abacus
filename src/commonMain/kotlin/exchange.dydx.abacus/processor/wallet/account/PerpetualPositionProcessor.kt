@@ -11,7 +11,6 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
-import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 
