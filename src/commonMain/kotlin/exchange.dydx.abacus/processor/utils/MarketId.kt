@@ -13,7 +13,7 @@ internal object MarketId {
         val baseAssetElements = baseAssetLongForm.split(",")
 
         return if (baseAssetElements.isNotEmpty()) {
-            "*" + baseAssetElements.first() + "-" + quoteAsset
+            baseAssetElements.first() + "-" + quoteAsset
         } else {
             marketId
         }
@@ -25,10 +25,8 @@ internal object MarketId {
     internal fun getAssetId(
         marketId: String,
     ): String? {
-        // TODO: Uncomment after smoke test is complete
-//        val displayId = getDisplayId(marketId)
-//        val elements = displayId.split("-")
-        val elements = marketId.split("-")
+        val displayId = getDisplayId(marketId)
+        val elements = displayId.split("-")
         val baseAssetLongForm = elements.first()
         val baseAssetElements = baseAssetLongForm.split(",")
 
