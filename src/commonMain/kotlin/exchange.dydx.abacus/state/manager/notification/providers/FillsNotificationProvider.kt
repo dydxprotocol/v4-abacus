@@ -178,11 +178,10 @@ class FillsNotificationProvider(
 
         when (fill.type) {
             OrderType.Deleveraged -> {
-                // CT-1118
-                title = uiImplementations.localizer?.localize("NOTIFICATIONS.LIQUIDATION.TITLE")
+                title = uiImplementations.localizer?.localize("NOTIFICATIONS.DELEVERAGED.TITLE")
                     ?: return null
                 text = uiImplementations.localizer?.localize(
-                    "NOTIFICATIONS.LIQUIDATION.BODY",
+                    "NOTIFICATIONS.DELEVERAGED.BODY",
                     paramsAsJson,
                 )
             }
@@ -207,11 +206,10 @@ class FillsNotificationProvider(
             }
 
             OrderType.Offsetting -> {
-                // CT-1118
-                title = uiImplementations.localizer?.localize("NOTIFICATIONS.DELEVERAGED.TITLE")
+                title = uiImplementations.localizer?.localize("NOTIFICATIONS.OFFSETTING.TITLE")
                     ?: return null
                 text = uiImplementations.localizer?.localize(
-                    "NOTIFICATIONS.DELEVERAGED.BODY",
+                    "NOTIFICATIONS.OFFSETTING.BODY",
                     paramsAsJson,
                 )
             }
