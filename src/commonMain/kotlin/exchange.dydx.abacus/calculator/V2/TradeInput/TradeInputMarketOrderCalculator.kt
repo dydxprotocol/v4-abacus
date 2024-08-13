@@ -391,35 +391,35 @@ internal class TradeInputMarketOrderCalculator(
         /*
         Breaking naming rules a little bit to match the documentation above
          */
-        @Suppress("LocalVariableName", "PropertyName")
-        val OR = oraclePrice
+        @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
+        val _OR = oraclePrice
 
-        @Suppress("LocalVariableName", "PropertyName")
+        @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
         val LV = leverage
 
-        @Suppress("LocalVariableName", "PropertyName")
+        @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
         val OS: Double =
             if (isBuying) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
 
-        @Suppress("LocalVariableName", "PropertyName")
+        @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
         val FR = feeRate
 
-        @Suppress("LocalVariableName", "PropertyName")
+        @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
         var AE = equity
 
-        @Suppress("LocalVariableName", "PropertyName")
+        @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
         var SZ = positionSize ?: Numeric.double.ZERO
 
         orderbookLoop@ for (element in orderbook) {
             val entryPrice = element.price
             val entrySize = element.size
             if (entryPrice != Numeric.double.ZERO) {
-                @Suppress("LocalVariableName", "PropertyName")
+                @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
                 val MP = entryPrice
 
-                @Suppress("LocalVariableName", "PropertyName")
-                val X = ((LV * AE) - (SZ * OR)) /
-                    (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
+                @Suppress("LocalVariableName", "PropertyName", "VariableNaming")
+                val X = ((LV * AE) - (SZ * _OR)) /
+                    (_OR + (OS * LV * MP * FR) - (LV * (_OR - MP)))
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
                     val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
@@ -439,7 +439,7 @@ internal class TradeInputMarketOrderCalculator(
                     if (!isBuying) {
                         signedSize *= exchange.dydx.abacus.utils.Numeric.double.NEGATIVE
                     }
-                    AE = AE + (signedSize * (OR - MP)) - (rounded * MP * FR)
+                    AE = AE + (signedSize * (_OR - MP)) - (rounded * MP * FR)
                     SZ += signedSize
                     marketOrderOrderBook.add(matchingOrderbookEntry(element, rounded))
                 }

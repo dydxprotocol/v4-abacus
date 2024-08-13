@@ -13,7 +13,6 @@ import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
-import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalRewardsParamsState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
@@ -329,10 +328,6 @@ internal class TradeInputSummaryCalculator {
         } else {
             null
         }
-    }
-
-    private fun marketOrderWorstPrice(marketOrder: TradeInputMarketOrder): Double? {
-        return marketOrder.worstPrice
     }
 
     private fun slippage(price: Double?, oraclePrice: Double?, side: OrderSide?): Double? {
