@@ -141,12 +141,16 @@ internal class FillProcessor(
         subaccountNumber: Int,
     ): Map<String, Any> {
         val fill = transform(existing, payload, fillKeyMap)
-        parser.asString(payload["ticker"])?.let { marketId ->
-            if (fill["marketId"] == null) {
-                fill.safeSet("marketId", marketId)
-            }
 
-            fill.safeSet("displayId", MarketId.getDisplayId(marketId))
+        if (fill["marketId"] == null) {
+            fill.safeSet("marketId", parser.asString(payload["ticker"]))
+            parser.asString(payload["ticker"])?.let { marketId ->
+                fill.safeSet("displayId", MarketId.getDisplayId(marketId))
+            }
+        } else {
+            parser.asString(fill["marketId"])?.let { marketId ->
+                fill.safeSet("displayId", MarketId.getDisplayId(marketId))
+            }
         }
 
         val fillSubaccountNumber = parser.asInt(payload["subaccountNumber"])

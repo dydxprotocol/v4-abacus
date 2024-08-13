@@ -99,6 +99,7 @@ class FillsNotificationProvider(
         val fill = fillsForOrder.firstOrNull() ?: return null
         val orderId = order.id
         val marketId = fill.marketId
+        val displayId = fill.displayId
         val market = market(stateMachine, marketId) ?: return null
         val tickSize = market.configs?.tickSize ?: return null
         val asset = stateMachine.state?.assetOfMarket(marketId)
@@ -114,7 +115,7 @@ class FillsNotificationProvider(
         val orderTypeText = text(orderType)
         val params = (
             iMapOf(
-                "MARKET" to marketId,
+                "MARKET" to displayId,
                 "ASSET" to assetText,
                 "SIDE" to sideText,
                 "AMOUNT" to amountText,
@@ -150,7 +151,8 @@ class FillsNotificationProvider(
         fill: SubaccountFill,
     ): Notification? {
         val fillId = fill.id
-        val marketId = fill.displayId
+        val marketId = fill.marketId
+        val displayId = fill.displayId
         val asset = stateMachine.state?.assetOfMarket(marketId) ?: return null
         val assetText = asset.name
         val marketImageUrl = asset.resources?.imageUrl
@@ -162,7 +164,7 @@ class FillsNotificationProvider(
         val fillTypeText = text(fillType)
         val params = (
             iMapOf(
-                "MARKET" to marketId,
+                "MARKET" to displayId,
                 "ASSET" to assetText,
                 "SIDE" to sideText,
                 "AMOUNT" to amountText,
