@@ -9,7 +9,6 @@ internal class OrderTypeProcessor {
             if (type == "DELEVERAGED") return "LIQUIDATED" // CT-1118
             if (type == "OFFSETTING") return "DELEVERAGED" // CT-1118
 
-
             return if (clientMetadata == 1) {
                 when (type) {
                     "LIMIT" -> "MARKET"
