@@ -24,7 +24,7 @@ internal class AssetsProcessor(
         deploymentUri: String
     ): MutableMap<String, Asset> {
         for ((key, data) in payload) {
-            val assetId = MarketId.assetid(key)
+            val assetId = MarketId.getAssetId(key)
             if (assetId != null) {
                 val asset = assetProcessor.process(
                     assetId = assetId,
@@ -46,7 +46,7 @@ internal class AssetsProcessor(
     ): Map<String, Any> {
         val assets = existing?.mutable() ?: mutableMapOf<String, Any>()
         for ((key, data) in payload) {
-            val assetId = MarketId.assetid(key)
+            val assetId = MarketId.getAssetId(key)
             if (assetId != null) {
                 val marketPayload = parser.asNativeMap(data)
                 if (marketPayload != null) {

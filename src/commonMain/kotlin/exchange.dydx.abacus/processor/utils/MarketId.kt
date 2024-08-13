@@ -1,16 +1,32 @@
 package exchange.dydx.abacus.processor.utils
 
-internal class MarketId {
-    companion object {
-        internal fun assetid(
-            marketId: String,
-        ): String? {
-            val elements = marketId.split("-")
-            return if (elements.size == 2) {
-                elements.first()
-            } else {
-                null
-            }
+internal object MarketId {
+    internal fun getAssetId(
+        marketId: String,
+    ): String? {
+        val elements = marketId.split("-")
+        val baseAssetLongForm = elements.first()
+        val baseAssetElements = baseAssetLongForm.split(",")
+
+        return if (baseAssetElements.isNotEmpty()) {
+            baseAssetElements.first()
+        } else {
+            null
+        }
+    }
+
+    internal fun getDisplayId(
+        marketId: String,
+    ): String {
+        val elements = marketId.split("-")
+        val baseAssetLongForm = elements.first()
+        val quoteAsset = elements.last()
+        val baseAssetElements = baseAssetLongForm.split(",")
+
+        return if (baseAssetElements.isNotEmpty()) {
+            "fake" + baseAssetElements.first() + "-" + quoteAsset
+        } else {
+            marketId
         }
     }
 }

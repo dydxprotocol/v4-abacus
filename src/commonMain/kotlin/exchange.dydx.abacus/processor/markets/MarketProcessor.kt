@@ -204,9 +204,10 @@ internal class MarketProcessor(
         try {
             val newValue = PerpetualMarket(
                 id = name,
-                assetId = MarketId.assetid(name) ?: parseException(payload),
+                assetId = MarketId.getAssetId(name) ?: parseException(payload),
                 oraclePrice = oraclePrice,
                 market = name,
+                displayId = MarketId.getDisplayId(name) ?: parseException(payload),
                 marketCaps = null,
                 priceChange24H = parser.asDouble(payload.priceChange24H),
                 priceChange24HPercent = calculatePriceChange24HPercent(
@@ -345,7 +346,8 @@ internal class MarketProcessor(
 
         if (name != null) {
             output["id"] = name
-            output.safeSet("assetId", MarketId.assetid(name))
+            output.safeSet("assetId", MarketId.getAssetId(name))
+            output.safeSet("displayId", MarketId.getDisplayId(name))
         }
         output["status"] = status(payload)
         output["configs"] = configs(parser.asNativeMap(existing?.get("configs")), payload)
