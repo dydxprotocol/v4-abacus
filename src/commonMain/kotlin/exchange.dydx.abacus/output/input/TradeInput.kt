@@ -777,6 +777,9 @@ enum class OrderStatus(val rawValue: String) {
         // once an order is filled, canceled, or canceled with partial fill
         // there is no need to update status again
         get() = listOf(Filled, Canceled, PartiallyCanceled).contains(this)
+
+    val isOpen: Boolean
+        get() = listOf(Open, Pending, Untriggered, PartiallyFilled).contains(this)
 }
 
 @JsExport

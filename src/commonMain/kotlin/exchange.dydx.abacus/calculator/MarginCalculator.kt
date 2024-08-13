@@ -237,8 +237,7 @@ internal object MarginCalculator {
             val subaccount = it.value
             val openPositions = subaccount.openPositions
             val openOrders = subaccount.orders?.filter { order ->
-                val status = order.status
-                order.status == OrderStatus.Open || status == OrderStatus.Pending || status == OrderStatus.Untriggered || status == OrderStatus.PartiallyFilled
+                order.status.isOpen
             }
 
             val positionMarketIds = openPositions?.values?.mapNotNull { position ->
