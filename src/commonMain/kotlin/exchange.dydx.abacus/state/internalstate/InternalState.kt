@@ -109,6 +109,8 @@ internal data class InternalTradeInputOptions(
     var needsReduceOnly: Boolean = false,
     var needsPostOnly: Boolean = false,
     var needsBrackets: Boolean = false,
+    var sideOptions: List<SelectionOption>? = null,
+    var orderTypeOptions: List<SelectionOption>? = null,
     var timeInForceOptions: List<SelectionOption>? = null,
     var executionOptions: List<SelectionOption>? = null,
     var marginModeOptions: List<SelectionOption>? = null,

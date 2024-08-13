@@ -3,6 +3,7 @@ package exchange.dydx.abacus.calculator.v2.tradeinput
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.Tooltip
@@ -15,6 +16,7 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.safeCreate
+import kollections.iListOf
 
 internal class TradeInputOptionsCalculator(
     private val parser: ParserProtocol,
@@ -302,6 +304,11 @@ internal class TradeInputOptionsCalculator(
                 trade.goodTil = goodTil.copy(duration = 28.0)
             }
         }
+
+        options.sideOptions = sideOptions
+        options.orderTypeOptions = orderTypeOptions
+
+        trade.options = options
 
         return trade
     }
@@ -606,5 +613,60 @@ internal class TradeInputOptionsCalculator(
             stringKey = "APP.TRADE.ISOLATED_MARGIN",
             string = null,
             iconUrl = null,
+        )
+
+    private val sideOptions = listOf(
+        SelectionOption(
+            type = OrderSide.Buy.rawValue,
+            string = null,
+            stringKey = "APP.GENERAL.BUY",
+            iconUrl = null,
+        ),
+        SelectionOption(
+            type = OrderSide.Sell.rawValue,
+            string = null,
+            stringKey = "APP.GENERAL.SELL",
+            iconUrl = null,
+        ),
+    )
+
+    val orderTypeOptions =
+        iListOf(
+            SelectionOption(
+                type = OrderType.Limit.rawValue,
+                string = null,
+                stringKey = "APP.TRADE.LIMIT_ORDER_SHORT",
+                iconUrl = null,
+            ),
+            SelectionOption(
+                type = OrderType.Market.rawValue,
+                string = null,
+                stringKey = "APP.TRADE.MARKET_ORDER_SHORT",
+                iconUrl = null,
+            ),
+            SelectionOption(
+                type = OrderType.StopLimit.rawValue,
+                string = null,
+                stringKey = "APP.TRADE.STOP_LIMIT",
+                iconUrl = null,
+            ),
+            SelectionOption(
+                type = OrderType.StopMarket.rawValue,
+                string = null,
+                stringKey = "APP.TRADE.STOP_MARKET",
+                iconUrl = null,
+            ),
+            SelectionOption(
+                type = OrderType.TakeProfitLimit.rawValue,
+                string = null,
+                stringKey = "APP.TRADE.TAKE_PROFIT",
+                iconUrl = null,
+            ),
+            SelectionOption(
+                type = OrderType.TakeProfitMarket.rawValue,
+                string = null,
+                stringKey = "APP.TRADE.TAKE_PROFIT_MARKET",
+                iconUrl = null,
+            ),
         )
 }
