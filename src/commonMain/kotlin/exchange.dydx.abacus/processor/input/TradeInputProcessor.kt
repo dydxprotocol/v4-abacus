@@ -5,6 +5,7 @@ import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
+import exchange.dydx.abacus.calculator.v2.TradeInput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
@@ -17,11 +18,14 @@ import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.state.internalstate.InternalInputState
 import exchange.dydx.abacus.state.internalstate.InternalInputType
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradeInputField.bracketsExecution
@@ -55,11 +59,22 @@ import kotlin.math.abs
 internal interface TradeInputProcessorProtocol {
     fun tradeInMarket(
         inputState: InternalInputState,
-        marketState: InternalMarketState,
-        accountState: InternalAccountState,
+        marketSummaryState: InternalMarketSummaryState,
+        walletState: InternalWalletState,
+        configs: InternalConfigsState,
         marketId: String,
         subaccountNumber: Int,
     ): StateChanges
+
+    fun trade(
+        inputState: InternalInputState,
+        walletState: InternalWalletState,
+        marketSummaryState: InternalMarketSummaryState,
+        configs: InternalConfigsState,
+        inputData: String?,
+        inputType: TradeInputField?,
+        subaccountNumber: Int,
+    ): TradeInputResult
 }
 
 internal class TradeInputResult(
@@ -69,20 +84,21 @@ internal class TradeInputResult(
 
 internal class TradeInputProcessor(
     private val parser: ParserProtocol,
-    private val calculator: TradeInputCalculator = TradeInputCalculator(parser, TradeCalculation.trade)
+    private val calculator: TradeInputCalculatorV2 = TradeInputCalculatorV2(parser, TradeCalculation.trade)
 ) : TradeInputProcessorProtocol {
     override fun tradeInMarket(
         inputState: InternalInputState,
-        marketState: InternalMarketState,
-        accountState: InternalAccountState,
+        marketSummaryState: InternalMarketSummaryState,
+        walletState: InternalWalletState,
+        configs: InternalConfigsState,
         marketId: String,
         subaccountNumber: Int,
     ): StateChanges {
         if (inputState.trade.marketId == marketId) {
-            if (inputState.currentType == InternalInputType.TRADE) {
+            if (inputState.currentType == InternalInputType.Trade) {
                 return StateChanges(iListOf()) // no change
             } else {
-                inputState.currentType = InternalInputType.TRADE
+                inputState.currentType = InternalInputType.Trade
                 return StateChanges(
                     changes = iListOf(Changes.input),
                     markets = null,
@@ -102,25 +118,27 @@ internal class TradeInputProcessor(
             inputState.trade = initialTradeInputState(
                 marketId = marketId,
                 subaccountNumber = subaccountNumber,
-                accountState = accountState,
-                marketState = marketState,
+                walletState = walletState,
+                marketSummaryState = marketSummaryState,
+                configs = configs,
             )
         }
 
+        val market = marketSummaryState.markets[marketId]
         initiateMarginModeLeverage(
             trade = inputState.trade,
-            marketState = marketState,
-            accountState = accountState,
+            marketState = market,
+            accountState = walletState.account,
             marketId = marketId,
             subaccountNumber = subaccountNumber,
         )
 
-        inputState.currentType = InternalInputType.TRADE
+        inputState.currentType = InternalInputType.Trade
 
         val subaccountNumbers =
             MarginCalculator.getChangedSubaccountNumbers(
                 parser = parser,
-                subaccounts = accountState.subaccounts,
+                subaccounts = walletState.account.subaccounts,
                 subaccountNumber = subaccountNumber,
                 tradeInput = inputState.trade,
             )
@@ -131,30 +149,33 @@ internal class TradeInputProcessor(
         )
     }
 
-    fun trade(
+   override fun trade(
         inputState: InternalInputState,
-        accountState: InternalAccountState,
+        walletState: InternalWalletState,
+        marketSummaryState: InternalMarketSummaryState,
+        configs: InternalConfigsState,
         inputData: String?,
         inputType: TradeInputField?,
         subaccountNumber: Int,
     ): TradeInputResult {
-        inputState.currentType = InternalInputType.TRADE
+        inputState.currentType = InternalInputType.Trade
 
         if (inputState.trade.marketId == null) {
             // new trade
             inputState.trade = initialTradeInputState(
                 marketId = null,
                 subaccountNumber = subaccountNumber,
-                accountState = accountState,
-                marketState = null,
+                walletState = walletState,
+                marketSummaryState = marketSummaryState,
+                configs = configs,
             )
         }
         if (inputType == null) {
             return TradeInputResult(
                 changes = StateChanges(
-                    iListOf(Changes.wallet, Changes.subaccount, Changes.input),
-                    null,
-                    iListOf(subaccountNumber),
+                    changes = iListOf(Changes.wallet, Changes.subaccount, Changes.input),
+                    markets = null,
+                    subaccountNumbers = iListOf(subaccountNumber),
                 ),
             )
         }
@@ -169,7 +190,7 @@ internal class TradeInputProcessor(
             val subaccountNumbers =
                 MarginCalculator.getChangedSubaccountNumbers(
                     parser = parser,
-                    subaccounts = accountState.subaccounts,
+                    subaccounts = walletState.account.subaccounts,
                     subaccountNumber = subaccountNumber,
                     tradeInput = trade,
                 )
@@ -242,7 +263,7 @@ internal class TradeInputProcessor(
                     val changedSubaccountNumbers =
                         MarginCalculator.getChangedSubaccountNumbers(
                             parser = parser,
-                            subaccounts = accountState.subaccounts,
+                            subaccounts = walletState.account.subaccounts,
                             subaccountNumber = subaccountNumber,
                             tradeInput = trade,
                         )
@@ -277,7 +298,7 @@ internal class TradeInputProcessor(
 
     private fun initiateMarginModeLeverage(
         trade: InternalTradeInputState,
-        marketState: InternalMarketState,
+        marketState: InternalMarketState?,
         accountState: InternalAccountState,
         marketId: String,
         subaccountNumber: Int,
@@ -306,7 +327,7 @@ internal class TradeInputProcessor(
                 if (existingOrder.subaccountNumber == subaccountNumber) MarginMode.Cross else MarginMode.Isolated
             trade.targetLeverage = 1.0
         } else {
-            val marketType = marketState.perpetualMarket?.configs?.perpetualMarketType
+            val marketType = marketState?.perpetualMarket?.configs?.perpetualMarketType
             trade.marginMode = when (marketType) {
                 PerpetualMarketType.CROSS -> MarginMode.Cross
                 PerpetualMarketType.ISOLATED -> MarginMode.Isolated
@@ -319,51 +340,34 @@ internal class TradeInputProcessor(
     private fun initialTradeInputState(
         marketId: String?,
         subaccountNumber: Int,
-        accountState: InternalAccountState,
-        marketState: InternalMarketState?,
+        walletState: InternalWalletState,
+        marketSummaryState: InternalMarketSummaryState,
+        configs: InternalConfigsState,
     ): InternalTradeInputState {
-//
-//        val trade = exchange.dydx.abacus.utils.mutableMapOf<String, Any>()
-//        trade["type"] = "LIMIT"
-//        trade["side"] = "BUY"
-//        trade["marketId"] = marketId ?: "ETH-USD"
-
-//        val marginMode = MarginCalculator.findExistingMarginModeDeprecated(parser, account, marketId, subaccountNumber)
-//            ?: MarginCalculator.findMarketMarginMode(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
-//
-//        trade.safeSet("marginMode", marginMode)
-//
-//        val calculator = TradeInputCalculator(parser, TradeCalculation.trade)
-//        val params = exchange.dydx.abacus.utils.mutableMapOf<String, Any>()
-//        params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
-//        params.safeSet("account", account)
-//        params.safeSet("user", user)
-//        params.safeSet("trade", trade)
-//        params.safeSet("rewardsParams", rewardsParams)
-//        params.safeSet("configs", configs)
-//
-//        val modified = calculator.calculate(params, subaccountNumber, null)
-//
-//        return parser.asMap(modified["trade"])?.mutable() ?: trade
-
+        val market = marketSummaryState.markets[marketId]
         val marginMode = MarginCalculator.findExistingMarginMode(
-            account = accountState,
+            account = walletState.account,
             marketId = marketId,
             subaccountNumber = subaccountNumber,
         ) ?: MarginCalculator.findMarketMarginMode(
-            market = marketState?.perpetualMarket,
+            market = market?.perpetualMarket,
         )
 
-        // TODO - implement TradeInputCalculatorV2
-        // calculator.calculate()
-
-        return InternalTradeInputState(
-            marketId = marketId,
-            size = null,
-            price = null,
-            type = OrderType.Limit,
-            side = OrderSide.Buy,
-            marginMode = marginMode,
+        return calculator.calculate(
+            trade = InternalTradeInputState(
+                marketId = marketId ?: "ETH-USD",
+                size = null,
+                price = null,
+                type = OrderType.Limit,
+                side = OrderSide.Buy,
+                marginMode = marginMode,
+            ),
+            wallet = walletState,
+            marketSummary = marketSummaryState,
+            rewardsParams = null,
+            configs = configs,
+            subaccountNumber = subaccountNumber,
+            input = null,
         )
     }
 }

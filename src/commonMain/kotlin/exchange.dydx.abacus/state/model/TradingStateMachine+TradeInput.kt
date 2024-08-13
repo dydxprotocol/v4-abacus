@@ -90,12 +90,11 @@ internal fun TradingStateMachine.tradeInMarket(
     subaccountNumber: Int,
 ): StateResponse {
     if (staticTyping) {
-        val market = internalState.marketsSummary.markets[marketId]
-            ?: return StateResponse(state, StateChanges(iListOf()), null)
         val changes = tradeInputProcessor.tradeInMarket(
             inputState = internalState.input,
-            marketState = market,
-            accountState = internalState.wallet.account,
+            marketSummaryState = internalState.marketsSummary,
+            walletState = internalState.wallet,
+            configs = internalState.configs,
             marketId = marketId,
             subaccountNumber = subaccountNumber,
         )
@@ -226,7 +225,9 @@ fun TradingStateMachine.trade(
     if (staticTyping) {
         val result = tradeInputProcessor.trade(
             inputState = internalState.input,
-            accountState = internalState.wallet.account,
+            walletState = internalState.wallet,
+            marketSummaryState = internalState.marketsSummary,
+            configs = internalState.configs,
             inputType = type,
             inputData = data,
             subaccountNumber = subaccountNumber,

@@ -1,8 +1,10 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputSummary
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
@@ -349,6 +351,24 @@ data class TradeInputSummary(
     val positionLeverage: Double?
 ) {
     companion object {
+        internal fun create(
+            state: InternalTradeInputSummary?,
+        ): TradeInputSummary? {
+            return TradeInputSummary(
+                price = state?.price,
+                payloadPrice = state?.payloadPrice,
+                size = state?.size,
+                usdcSize = state?.usdcSize,
+                slippage = state?.slippage,
+                fee = state?.fee,
+                total = state?.total,
+                reward = state?.reward,
+                filled = state?.filled ?: false,
+                positionMargin = state?.positionMargin,
+                positionLeverage = state?.positionLeverage,
+            )
+        }
+
         internal fun create(
             existing: TradeInputSummary?,
             parser: ParserProtocol,
@@ -816,9 +836,9 @@ data class TradeInput(
                 marginMode = state.marginMode ?: MarginMode.Cross,
                 targetLeverage = state.targetLeverage ?: 1.0,
                 bracket = state.bracket,
-                marketOrder = null, // TODO
+                marketOrder = state.marketOrder,
                 options = TradeInputOptions.create(state.options),
-                summary = null, // TODO
+                summary = TradeInputSummary.create(state.summary),
             )
         }
 

@@ -51,8 +51,11 @@ internal data class InternalState(
 )
 
 internal enum class InternalInputType {
-    TRADE,
-    TRANSFER,
+    Trade,
+    Transfer,
+    TriggerOrder,
+    AdjustIsolatedMargin,
+    ClosePosition,
 }
 
 internal data class InternalInputState(

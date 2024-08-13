@@ -109,8 +109,13 @@ internal val TradeInputField.valueAction: ((InternalTradeInputState) -> Any?)?
 // Returns the write action to update value for the trade input field
 internal val TradeInputField.updateValueAction: ((InternalTradeInputState, String?, ParserProtocol) -> Unit)?
     get() = when (this) {
-        type -> { trade, value, parser -> trade.type = OrderType.invoke(value) }
-        side -> { trade, value, parser -> trade.side = OrderSide.invoke(value) }
+        type -> { trade, value, parser ->
+            trade.type = OrderType.invoke(value)
+        }
+
+        side -> { trade, value, parser ->
+            trade.side = OrderSide.invoke(value)
+        }
 
         TradeInputField.lastInput -> { trade, value, parser ->
             trade.size = TradeInputSize.safeCreate(trade.size).copy(input = value)
@@ -162,7 +167,9 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             trade.marginMode = MarginMode.invoke(value)
         }
 
-        timeInForceType -> { trade, value, parser -> trade.timeInForce = value }
+        timeInForceType -> { trade, value, parser ->
+            trade.timeInForce = value
+        }
 
         goodTilUnit -> { trade, value, parser ->
             trade.goodTil = TradeInputGoodUntil.safeCreate(trade.goodTil).copy(unit = value)
@@ -175,7 +182,9 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             )
         }
 
-        execution -> { trade, value, parser -> trade.execution = value }
+        execution -> { trade, value, parser ->
+            trade.execution = value
+        }
 
         bracketsExecution -> { trade, value, parser ->
             trade.bracket = TradeInputBracket.safeCreate(trade.bracket).copy(execution = value)
@@ -194,9 +203,13 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             )
         }
 
-        reduceOnly -> { trade, value, parser -> trade.reduceOnly = parser.asBool(value) ?: false }
+        reduceOnly -> { trade, value, parser ->
+            trade.reduceOnly = parser.asBool(value) ?: false
+        }
 
-        postOnly -> { trade, value, parser -> trade.postOnly = parser.asBool(value) ?: false }
+        postOnly -> { trade, value, parser ->
+            trade.postOnly = parser.asBool(value) ?: false
+        }
 
         bracketsStopLossReduceOnly -> { trade, value, parser ->
             val braket = TradeInputBracket.safeCreate(trade.bracket)
@@ -215,7 +228,10 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
             )
         }
 
-        targetLeverage -> { trade, value, parser -> trade.targetLeverage = parser.asDouble(value) }
+        targetLeverage -> { trade, value, parser ->
+            trade.targetLeverage = parser.asDouble(value)
+        }
+
         size -> { trade, value, parser ->
             trade.size = TradeInputSize.safeCreate(trade.size).copy(size = parser.asDouble(value))
         }
