@@ -4,6 +4,7 @@ import RpcConfigsProcessor
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
+import exchange.dydx.abacus.processor.router.ChainType
 import exchange.dydx.abacus.processor.router.skip.SkipRoutePayloadProcessor
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -89,7 +90,8 @@ internal class OnboardingSupervisor(
         set(value) {
             if (field != value) {
                 field = value
-                stateMachine.routerProcessor.cosmosWalletConnected = value
+                stateMachine.routerProcessor.selectedChainType =
+                    if (value == true) ChainType.COSMOS else ChainType.EVM
             }
         }
 

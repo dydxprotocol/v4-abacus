@@ -21,8 +21,6 @@ internal const val CONDITIONAL_ORDER_FLAGS = 32
 // Asset Constants
 internal const val NATIVE_TOKEN_DEFAULT_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 internal const val ETHEREUM_CHAIN_ID = "1"
-internal val ALLOWED_CHAIN_TYPES = listOf("evm", "svm")
-internal const val COSMOS_CHAIN_TYPES = "cosmos"
 
 // Polling durations
 internal const val GEO_POLLING_DURATION_SECONDS = 600.0

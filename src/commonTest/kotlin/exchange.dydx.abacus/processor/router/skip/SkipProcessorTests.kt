@@ -226,7 +226,6 @@ class SkipProcessorTests {
         val expectedChains = listOf(
             SelectionOption(stringKey = "Arbitrum", string = "Arbitrum", type = "42161", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png"),
             SelectionOption(stringKey = "Ethereum", string = "Ethereum", type = "1", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png"),
-            SelectionOption(type = "solana", string = "Solana", stringKey = "Solana", iconUrl = "https://raw.githubusercontent.com/skip-mev/skip-go-registry/main/chains/solana/logo.svg"),
         )
         val expectedChainResources = mapOf(
             "1" to TransferInputChainResource(

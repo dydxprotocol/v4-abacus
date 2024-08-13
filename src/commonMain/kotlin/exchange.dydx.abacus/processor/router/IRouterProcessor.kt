@@ -4,11 +4,17 @@ import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 
+enum class ChainType(val rawValue: String) {
+    EVM("evm"),
+    COSMOS("cosmos"),
+    SVM("svm"),
+}
+
 interface IRouterProcessor {
     var tokens: List<Any>?
     var chains: List<Any>?
     var exchangeDestinationChainId: String?
-    var cosmosWalletConnected: Boolean?
+    var selectedChainType: ChainType?
 
     fun receivedChains(
         existing: Map<String, Any>?,

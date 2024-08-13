@@ -4,12 +4,11 @@ import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.router.ChainType
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
-import exchange.dydx.abacus.utils.ALLOWED_CHAIN_TYPES
-import exchange.dydx.abacus.utils.COSMOS_CHAIN_TYPES
 import exchange.dydx.abacus.utils.ETHEREUM_CHAIN_ID
 import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
@@ -28,7 +27,7 @@ internal class SkipProcessor(
 
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
     override var exchangeDestinationChainId: String? = null
-    override var cosmosWalletConnected: Boolean? = false 
+    override var selectedChainType: ChainType? = ChainType.EVM
         set(value) {
             if (field != value) {
                 field = value
@@ -302,16 +301,11 @@ internal class SkipProcessor(
     override fun chainOptions(): List<SelectionOption> {
         val chainProcessor = SkipChainProcessor(parser)
         val options = mutableListOf<SelectionOption>()
-        val allowChainTypes = if (cosmosWalletConnected == true) {
-            ALLOWED_CHAIN_TYPES + COSMOS_CHAIN_TYPES
-        } else {
-            ALLOWED_CHAIN_TYPES
-        }
 
         this.chains?.let {
             for (chain in it) {
                 parser.asNativeMap(chain)?.let { chain ->
-                    if (parser.asString(chain.get("chain_type")) in allowChainTypes) {
+                    if (parser.asString(chain.get("chain_type")) == selectedChainType?.rawValue) {
                         options.add(chainProcessor.received(chain))
                     }
                 }
