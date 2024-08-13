@@ -78,10 +78,27 @@ internal data class InternalTradeInputState(
     var bracket: TradeInputBracket? = null,
     var options: InternalTradeInputOptions = InternalTradeInputOptions(),
     var marketOrder: TradeInputMarketOrder? = null,
+    var summary: InternalTradeInputSummary? = null,
 ) {
     val isBuying: Boolean
         get() = side == OrderSide.Buy || side == null
 }
+
+internal data class InternalTradeInputSummary(
+    val price: Double?,
+    val payloadPrice: Double?,
+    val size: Double?,
+    val usdcSize: Double?,
+    val slippage: Double?,
+    val fee: Double?,
+    val total: Double?,
+    val reward: Double?,
+    val filled: Boolean,
+    val positionMargin: Double?,
+    val positionLeverage: Double?,
+    val indexSlippage: Double? = null,
+    val feeRate: Double? = null,
+)
 
 internal data class InternalTradeInputOptions(
     var needsMarginMode: Boolean = false,
@@ -99,6 +116,7 @@ internal data class InternalTradeInputOptions(
     var timeInForceOptions: List<SelectionOption>? = null,
     var executionOptions: List<SelectionOption>? = null,
     var marginModeOptions: List<SelectionOption>? = null,
+    var goodTilUnitOptions: List<SelectionOption>? = null,
     var reduceOnlyTooltip: Tooltip? = null,
     var postOnlyTooltip: Tooltip? = null,
 )

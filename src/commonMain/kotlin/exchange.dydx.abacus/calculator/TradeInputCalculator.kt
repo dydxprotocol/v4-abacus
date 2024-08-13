@@ -32,7 +32,7 @@ enum class TradeCalculation(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            entries.firstOrNull { it.rawValue == rawValue }
+            TradeCalculation.values().firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -1120,7 +1120,7 @@ internal class TradeInputCalculator(
         account: Map<String, Any>?,
         subaccount: Map<String, Any>?
     ): Map<String, Any>? {
-        val selectableMarginMode = MarginCalculator.selectableMarginModes(
+        val selectableMarginMode = MarginCalculator.selectableMarginModesDeprecated(
             parser = parser,
             account = account,
             market = market,
@@ -1414,11 +1414,7 @@ internal class TradeInputCalculator(
             tokenPrice > 0.0
         ) {
             val feeMultiplier = feeMultiplierPpm / QUANTUM_MULTIPLIER
-            return feeMultiplier * (fee - maxMakerRebate * notional) / (
-                tokenPrice * 10.0.pow(
-                    tokenPriceExponent,
-                )
-                )
+            return feeMultiplier * (fee - maxMakerRebate * notional) / (tokenPrice * 10.0.pow(tokenPriceExponent))
         }
         return null
     }

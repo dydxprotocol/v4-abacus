@@ -1,84 +1,30 @@
-package exchange.dydx.abacus.calculator.v2
+@file:Suppress("ktlint:standard:property-naming")
+
+package exchange.dydx.abacus.calculator.v2.TradeInput
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.output.input.OrderSide
-import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
-import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.internalstate.InternalOrderbook
 import exchange.dydx.abacus.state.internalstate.InternalOrderbookTick
-import exchange.dydx.abacus.state.internalstate.InternalRewardsParamsState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
-import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
-import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import kollections.toIList
 
-internal class TradeInputCalculatorV2(
+internal class TradeInputMarketOrderCalculator(
     private val calculation: TradeCalculation,
-    private val marginModeCalculator: TradeInputMarginModeCalculator = TradeInputMarginModeCalculator(),
 ) {
     fun calculate(
-        trade: InternalTradeInputState,
-        wallet: InternalWalletState,
-        marketSummary: InternalMarketSummaryState,
-        rewardsParams: InternalRewardsParamsState?,
-        subaccountNumber: Int,
-        input: String?,
-    ): InternalTradeInputState {
-        val account = wallet.account
-        val subaccount =
-            account.groupedSubaccounts[subaccountNumber] ?: account.subaccounts[subaccountNumber]
-        val user = wallet.user
-        val markets = marketSummary.markets
-
-        marginModeCalculator.updateTradeInputMarginMode(
-            tradeInput = trade,
-            markets = markets,
-            account = account,
-            subaccountNumber = subaccountNumber,
-        )
-
-        if (input != null) {
-            when (trade.type) {
-                OrderType.Market,
-                OrderType.StopMarket,
-                OrderType.TakeProfitMarket ->
-                    calculateMarketOrderTrade(
-                        trade = trade,
-                        market = markets[trade.marketId],
-                        subaccount = subaccount,
-                        user = user,
-                        input = input,
-                    )
-
-                OrderType.Limit -> TODO()
-                OrderType.StopLimit -> TODO()
-                OrderType.TakeProfitLimit -> TODO()
-                OrderType.TrailingStop -> TODO()
-                OrderType.Liquidated -> TODO()
-                OrderType.Liquidation -> TODO()
-                OrderType.Offsetting -> TODO()
-                OrderType.Deleveraged -> TODO()
-                OrderType.FinalSettlement -> TODO()
-                null -> TODO()
-            }
-        }
-
-        return trade
-    }
-
-    private fun calculateMarketOrderTrade(
         trade: InternalTradeInputState,
         market: InternalMarketState?,
         subaccount: InternalSubaccountState?,
@@ -91,30 +37,29 @@ internal class TradeInputCalculatorV2(
         val marketOrder = createMarketOrder(
             trade = trade,
             market = market,
-        subaccount = subaccount,
-        user = user,
-        input = input,
+            subaccount = subaccount,
+            user = user,
+            input = input,
         )
         val filled = marketOrder?.filled ?: false
         var tradeSize = TradeInputSize.safeCreate(trade.size)
         when (input) {
             "size.size", "size.percent" ->
-                tradeSize = tradeSize.copy(usdcSize =  if (filled) marketOrder?.usdcSize else null)
+                tradeSize = tradeSize.copy(usdcSize = if (filled) marketOrder?.usdcSize else null)
 
             "size.usdcSize" ->
                 tradeSize = tradeSize.copy(size = if (filled) marketOrder?.size else null)
-
 
             "size.leverage" -> {
                 tradeSize = tradeSize.copy(
                     size = if (filled) marketOrder?.size else null,
                     usdcSize = if (filled) marketOrder?.usdcSize else null,
                 )
-                val orderbook = parser.asNativeMap(market?.get("orderbook_consolidated"))
+                val orderbook = market?.consolidatedOrderbook
                 if (marketOrder != null && orderbook != null) {
-                    val side = side(marketOrder, orderbook)
-                    if (side != null && side != parser.asString(modified["side"])) {
-                        modified.safeSet("side", side)
+                    val side = calculateSide(marketOrder, orderbook)
+                    if (side != null && side != trade.side) {
+                        trade.side = side
                     }
                 }
             }
@@ -124,6 +69,22 @@ internal class TradeInputCalculatorV2(
         trade.size = tradeSize
 
         return trade
+    }
+
+    private fun calculateSide(
+        marketOrder: TradeInputMarketOrder,
+        orderbook: InternalOrderbook,
+    ): OrderSide? {
+        val firstMarketOrderbookPrice = marketOrder.orderbook?.firstOrNull()?.price ?: return null
+        val firstAskPrice = orderbook.asks?.firstOrNull()?.price ?: return null
+        val firstBidPrice = orderbook.bids?.firstOrNull()?.price ?: return null
+        return if (firstMarketOrderbookPrice == firstAskPrice) {
+            OrderSide.Buy
+        } else if (firstMarketOrderbookPrice == firstBidPrice) {
+            OrderSide.Sell
+        } else {
+            null
+        }
     }
 
     private fun calculateClosePositionSize(
@@ -174,7 +135,7 @@ internal class TradeInputCalculatorV2(
                 "size.size", "size.percent" -> {
                     val orderbook = getOrderbook(market = market, isBuying = trade.isBuying)
                     createMarketOrderFromSize(
-                        size =  tradeSize.size,
+                        size = tradeSize.size,
                         orderbook = orderbook,
                     )
                 }
@@ -184,7 +145,7 @@ internal class TradeInputCalculatorV2(
                     val orderbook = getOrderbook(market = market, isBuying = trade.isBuying)
                     createMarketOrderFromUsdcSize(
                         usdcSize = tradeSize.usdcSize,
-                                orderbook = orderbook,
+                        orderbook = orderbook,
                         stepSize = stepSize,
                     )
                 }
@@ -274,7 +235,7 @@ internal class TradeInputCalculatorV2(
     ): TradeInputMarketOrder? {
         return if (usdcSize != null && usdcSize != Numeric.double.ZERO) {
             if (orderbook != null) {
-                val desiredUsdcSize =  usdcSize
+                val desiredUsdcSize = usdcSize
                 var sizeTotal = Numeric.double.ZERO
                 var usdcSizeTotal = Numeric.double.ZERO
                 var worstPrice: Double? = null
@@ -430,36 +391,35 @@ internal class TradeInputCalculatorV2(
         /*
         Breaking naming rules a little bit to match the documentation above
          */
-        @Suppress("LocalVariableName")
+        @Suppress("LocalVariableName", "PropertyName")
         val OR = oraclePrice
 
-        @Suppress("LocalVariableName")
+        @Suppress("LocalVariableName", "PropertyName")
         val LV = leverage
 
-        @Suppress("LocalVariableName")
+        @Suppress("LocalVariableName", "PropertyName")
         val OS: Double =
             if (isBuying) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
 
-        @Suppress("LocalVariableName")
+        @Suppress("LocalVariableName", "PropertyName")
         val FR = feeRate
 
-        @Suppress("LocalVariableName")
+        @Suppress("LocalVariableName", "PropertyName")
         var AE = equity
 
-        @Suppress("LocalVariableName")
+        @Suppress("LocalVariableName", "PropertyName")
         var SZ = positionSize ?: Numeric.double.ZERO
 
         orderbookLoop@ for (element in orderbook) {
-
             val entryPrice = element.price
             val entrySize = element.size
             if (entryPrice != Numeric.double.ZERO) {
-
+                @Suppress("LocalVariableName", "PropertyName")
                 val MP = entryPrice
 
-                @Suppress("LocalVariableName")
+                @Suppress("LocalVariableName", "PropertyName")
                 val X = ((LV * AE) - (SZ * OR)) /
-                        (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
+                    (OR + (OS * LV * MP * FR) - (LV * (OR - MP)))
                 val desiredSize = X.abs()
                 if (desiredSize < entrySize) {
                     val rounded = this.rounded(sizeTotal, desiredSize, stepSize)
@@ -540,5 +500,4 @@ internal class TradeInputCalculatorV2(
         val rounded = Rounder.quickRound(desiredTotal, stepSize)
         return rounded - sizeTotal
     }
-
 }

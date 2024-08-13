@@ -10,6 +10,7 @@ import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
@@ -187,6 +188,22 @@ internal object MarginCalculator {
     }
 
     fun selectableMarginModes(
+        account: InternalAccountState,
+        market: InternalMarketState?,
+        subaccountNumber: Int,
+    ): Boolean {
+        val marketId = market?.perpetualMarket?.id
+        val existingMarginMode = findExistingMarginMode(account, marketId, subaccountNumber)
+        return if (existingMarginMode != null) {
+            false
+        } else if (marketId != null) {
+            findMarketMarginMode(market?.perpetualMarket) == MarginMode.Cross
+        } else {
+            true
+        }
+    }
+
+    fun selectableMarginModesDeprecated(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         market: Map<String, Any>?,

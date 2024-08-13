@@ -1,4 +1,4 @@
-package exchange.dydx.abacus.calculator.v2
+package exchange.dydx.abacus.calculator.v2.TradeInput
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
@@ -15,15 +15,15 @@ internal class TradeInputMarginModeCalculator {
         subaccountNumber: Int,
     ): InternalTradeInputState {
         val existingMarginMode = MarginCalculator.findExistingMarginMode(
-                account = account,
-                marketId = tradeInput.marketId,
-                subaccountNumber = subaccountNumber,
-            )
+            account = account,
+            marketId = tradeInput.marketId,
+            subaccountNumber = subaccountNumber,
+        )
 
         // If there is an existing position or order, we have to use the same margin mode
         if (existingMarginMode != null) {
             tradeInput.marginMode = existingMarginMode
-            if ( existingMarginMode == MarginMode.Isolated && tradeInput.targetLeverage == null) {
+            if (existingMarginMode == MarginMode.Isolated && tradeInput.targetLeverage == null) {
                 val existingPosition = MarginCalculator.findExistingPosition(
                     account = account,
                     marketId = tradeInput.marketId,

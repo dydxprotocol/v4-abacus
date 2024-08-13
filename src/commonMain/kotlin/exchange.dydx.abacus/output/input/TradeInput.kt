@@ -191,7 +191,7 @@ data class TradeInputOptions(
                 typeOptions = typeOptionsV4Array,
                 sideOptions = sideOptionsArray,
                 timeInForceOptions = state.timeInForceOptions?.toIList(),
-                goodTilUnitOptions = goodTilUnitOptionsArray,
+                goodTilUnitOptions = state.goodTilUnitOptions?.toIList() ?: goodTilUnitOptionsArray,
                 executionOptions = state.executionOptions?.toIList(),
                 marginModeOptions = state.marginModeOptions?.toIList(),
                 reduceOnlyTooltip = state.reduceOnlyTooltip,
