@@ -6,7 +6,6 @@ import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.output.account.Subaccount
 import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.MarginMode
-import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.TradeInput
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
@@ -70,8 +69,7 @@ internal object MarginCalculator {
     ): SubaccountOrder? {
         val orders = account.groupedSubaccounts[subaccountNumber]?.orders
         return orders?.firstOrNull {
-            it.marketId == marketId &&
-                it.status in listOf(OrderStatus.Open, OrderStatus.Pending, OrderStatus.Untriggered, OrderStatus.PartiallyFilled)
+            it.marketId == marketId && it.status.isOpen
         }
     }
 
