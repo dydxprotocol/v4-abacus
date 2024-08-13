@@ -19,7 +19,7 @@ enum class InputType(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            InputType.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 

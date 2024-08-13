@@ -31,6 +31,7 @@ import exchange.dydx.abacus.output.account.SubaccountFundingPayment
 import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.Input
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
@@ -55,7 +56,6 @@ import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
-import exchange.dydx.abacus.state.internalstate.InternalInputType
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
@@ -650,19 +650,19 @@ open class TradingStateMachine(
             if (subaccountNumber != null) {
                 if (staticTyping) {
                     when (internalState.input.currentType) {
-                        InternalInputType.Trade -> {
+                        InputType.TRADE -> {
                             calculateTrade(subaccountNumber)
                         }
-                        InternalInputType.Transfer -> {
+                        InputType.TRADE -> {
                             calculateTransfer(subaccountNumber)
                         }
-                        InternalInputType.TriggerOrder -> {
+                        InputType.TRIGGER_ORDERS -> {
                             calculateTriggerOrders(subaccountNumber)
                         }
-                        InternalInputType.AdjustIsolatedMargin -> {
+                        InputType.ADJUST_ISOLATED_MARGIN -> {
                             calculateAdjustIsolatedMargin(subaccountNumber)
                         }
-                        InternalInputType.ClosePosition -> {
+                        InputType.CLOSE_POSITION -> {
                             calculateClosePosition(subaccountNumber)
                         }
                         else -> {}

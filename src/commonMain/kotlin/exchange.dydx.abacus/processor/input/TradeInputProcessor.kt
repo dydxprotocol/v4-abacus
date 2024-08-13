@@ -7,6 +7,7 @@ import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.v2.TradeInput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.PerpetualMarketType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -20,7 +21,6 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.state.internalstate.InternalInputState
-import exchange.dydx.abacus.state.internalstate.InternalInputType
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
@@ -95,10 +95,10 @@ internal class TradeInputProcessor(
         subaccountNumber: Int,
     ): StateChanges {
         if (inputState.trade.marketId == marketId) {
-            if (inputState.currentType == InternalInputType.Trade) {
+            if (inputState.currentType == InputType.TRADE) {
                 return StateChanges(iListOf()) // no change
             } else {
-                inputState.currentType = InternalInputType.Trade
+                inputState.currentType = InputType.TRADE
                 return StateChanges(
                     changes = iListOf(Changes.input),
                     markets = null,
@@ -133,7 +133,7 @@ internal class TradeInputProcessor(
             subaccountNumber = subaccountNumber,
         )
 
-        inputState.currentType = InternalInputType.Trade
+        inputState.currentType = InputType.TRADE
 
         val subaccountNumbers =
             MarginCalculator.getChangedSubaccountNumbers(
@@ -158,7 +158,7 @@ internal class TradeInputProcessor(
         inputType: TradeInputField?,
         subaccountNumber: Int,
     ): TradeInputResult {
-        inputState.currentType = InternalInputType.Trade
+        inputState.currentType = InputType.TRADE
 
         if (inputState.trade.marketId == null) {
             // new trade

@@ -20,6 +20,7 @@ import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -50,17 +51,9 @@ internal data class InternalState(
     val input: InternalInputState = InternalInputState(),
 )
 
-internal enum class InternalInputType {
-    Trade,
-    Transfer,
-    TriggerOrder,
-    AdjustIsolatedMargin,
-    ClosePosition,
-}
-
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
-    var currentType: InternalInputType? = null,
+    var currentType: InputType? = null,
 )
 
 internal data class InternalTradeInputState(
