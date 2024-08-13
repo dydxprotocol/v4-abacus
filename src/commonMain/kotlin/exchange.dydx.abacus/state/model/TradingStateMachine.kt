@@ -13,6 +13,7 @@ import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
 import exchange.dydx.abacus.output.LaunchIncentiveSeasons
+import exchange.dydx.abacus.output.MarketCandle
 import exchange.dydx.abacus.output.MarketCandles
 import exchange.dydx.abacus.output.MarketHistoricalFunding
 import exchange.dydx.abacus.output.MarketOrderbook
@@ -35,8 +36,6 @@ import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
-import exchange.dydx.abacus.processor.markets.TradeProcessorV2
-import exchange.dydx.abacus.processor.markets.TradesProcessorV2
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
 import exchange.dydx.abacus.processor.router.squid.SquidProcessor
@@ -77,6 +76,7 @@ import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.iMutableMapOf
 import kollections.toIList
+import kollections.toIMap
 import kollections.toIMutableMap
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -100,9 +100,9 @@ open class TradingStateMachine(
     internal val parser: ParserProtocol = Parser()
     internal val marketsProcessor = MarketsSummaryProcessor(
         parser = parser,
+        localizer = localizer,
         staticTyping = staticTyping,
     )
-    internal val tradesProcessorV2 = TradesProcessorV2(TradeProcessorV2(parser, localizer))
     internal val assetsProcessor = run {
         val processor = AssetsProcessor(
             parser = parser,
@@ -1140,15 +1140,20 @@ open class TradingStateMachine(
             if (markets != null) {
                 val modified = trades?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    val data = parser.asList(
-                        parser.value(
-                            data,
-                            "markets.markets.$marketId.trades",
-                        ),
-                    ) as? IList<Map<String, Any>>
-                    val existing = trades?.get(marketId)
-                    val trades = MarketTrade.create(existing, parser, data, localizer)
-                    modified.typedSafeSet(marketId, trades)
+                    if (staticTyping) {
+                        val trades = internalState.marketsSummary.markets[marketId]?.trades
+                        modified.typedSafeSet(marketId, trades?.toIList())
+                    } else {
+                        val data = parser.asList(
+                            parser.value(
+                                data,
+                                "markets.markets.$marketId.trades",
+                            ),
+                        ) as? IList<Map<String, Any>>
+                        val existing = trades?.get(marketId)
+                        val trades = MarketTrade.create(existing, parser, data, localizer)
+                        modified.typedSafeSet(marketId, trades)
+                    }
                 }
                 trades = modified
             } else {
@@ -1180,11 +1185,25 @@ open class TradingStateMachine(
             if (markets != null) {
                 val modified = candles?.toIMutableMap() ?: mutableMapOf()
                 for (marketId in markets) {
-                    val data =
-                        parser.asNativeMap(parser.value(data, "markets.markets.$marketId.candles"))
-                    val existing = candles?.get(marketId)
-                    val candles = MarketCandles.create(existing, parser, data)
-                    modified.typedSafeSet(marketId, candles)
+                    if (staticTyping) {
+                        val candles = internalState.marketsSummary.markets[marketId]?.candles
+                        val marketCandles: MutableMap<String, IList<MarketCandle>> = mutableMapOf()
+                        for ((key, value) in candles ?: emptyMap()) {
+                            marketCandles[key] = value.toIList()
+                        }
+                        modified.typedSafeSet(marketId, MarketCandles(candles = marketCandles.toIMap()))
+                    } else {
+                        val data =
+                            parser.asNativeMap(
+                                parser.value(
+                                    data,
+                                    "markets.markets.$marketId.candles",
+                                ),
+                            )
+                        val existing = candles?.get(marketId)
+                        val candles = MarketCandles.create(existing, parser, data)
+                        modified.typedSafeSet(marketId, candles)
+                    }
                 }
                 candles = modified
             } else {

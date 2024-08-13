@@ -87,7 +87,7 @@ internal typealias VerificationFunction = (response: StateResponse) -> Unit
 open class BaseTests(
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
-    private val staticTyping: Boolean = true, // turn on static typing for testing
+    private val staticTyping: Boolean = false, // turn on static typing for testing
 ) {
     open val doAsserts = true
     internal val deploymentUri = "https://api.examples.com"
@@ -290,11 +290,17 @@ open class BaseTests(
             state?.historicalFundings,
             "historicalFundings",
         )
-        verifyMarketsTradesState(
-            parser.asNativeMap(perp.marketsSummary?.get("markets")),
-            state?.trades,
-            "trades",
-        )
+        if (staticTyping) {
+            for ((key, value) in perp.internalState.marketsSummary.markets) {
+                assertEquals(value.trades, state?.trades?.get(key))
+            }
+        } else {
+            verifyMarketsTradesState(
+                parser.asNativeMap(perp.marketsSummary?.get("markets")),
+                state?.trades,
+                "trades",
+            )
+        }
         verifyMarketsCandlesState(
             parser.asNativeMap(perp.marketsSummary?.get("markets")),
             state?.candles,
