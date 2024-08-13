@@ -92,8 +92,8 @@ internal data class InternalTradeInputSummary(
     val filled: Boolean,
     val positionMargin: Double?,
     val positionLeverage: Double?,
-    val indexSlippage: Double? = null,
-    val feeRate: Double? = null,
+    val indexSlippage: Double?,
+    val feeRate: Double?,
 )
 
 internal data class InternalTradeInputOptions(
