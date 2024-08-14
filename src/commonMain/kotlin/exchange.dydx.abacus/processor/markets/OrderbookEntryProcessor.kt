@@ -18,7 +18,7 @@ internal class OrderbookEntryProcessor(parser: ParserProtocol) : BaseProcessor(p
         payload: Map<String, Any>
     ): Map<String, Any> {
         val received = transform(existing, payload, orderbookEntryKeyMap)
-        received["offset"] = 0.toLong()
+        received["offset"] = 0.toLong()f
         return received
     }
 
