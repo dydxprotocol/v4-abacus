@@ -14,7 +14,9 @@ import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-@Suppress("NotImplementedDeclaration", "ForbiddenComment")
+private const val UNISWAP_SUFFIX = "uniswap"
+
+@Suppress("NotImplementedDeclaration")
 internal class SkipProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState
@@ -24,6 +26,8 @@ internal class SkipProcessor(
 //    possibly want to use a different variable so we aren't stuck with this bad type
 //    actual type of the tokens payload is Map<str, Map<str, List<Map<str, Any>>>>
     override var tokens: List<Any>? = null
+
+    override var evmSwapVenues: List<Any?> = listOf()
 
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
     override var exchangeDestinationChainId: String? = null
@@ -58,6 +62,25 @@ internal class SkipProcessor(
             internalState.chainResources = chainResources(chainId = selectedChainId)
         }
         return modified
+    }
+
+    override fun receivedEvmSwapVenues(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ) {
+        val venues = parser.asNativeList(payload?.get("venues"))
+        val evmSwapVenues = venues?.filter {
+            parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
+        }?.map {
+            val swapVenue = parser.asMap(it)
+            mapOf(
+                "name" to parser.asString(swapVenue?.get("name")),
+                "chain_id" to parser.asString(swapVenue?.get("chain_id")),
+            )
+        }
+        if (evmSwapVenues != null) {
+            this.evmSwapVenues = evmSwapVenues
+        }
     }
 
     override fun receivedTokens(
