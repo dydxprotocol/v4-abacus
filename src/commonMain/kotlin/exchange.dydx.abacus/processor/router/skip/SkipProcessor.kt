@@ -8,6 +8,7 @@ import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.utils.ALLOWED_CHAIN_TYPES
 import exchange.dydx.abacus.utils.ETHEREUM_CHAIN_ID
 import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
@@ -66,18 +67,20 @@ internal class SkipProcessor(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ) {
-        val venues = parser.asNativeList(payload.get("venues"))
-        val evmSwapVenues = venues?.filter {
-            parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
-        }?.map {
-            val swapVenue = parser.asMap(it)
-            mapOf(
-                "name" to parser.asString(swapVenue?.get("name")),
-                "chain_id" to parser.asString(swapVenue?.get("chain_id")),
-            )
-        }
-        if (evmSwapVenues != null) {
-            this.internalState.evmSwapVenues = evmSwapVenues
+        if (StatsigConfig.ff_enable_evm_swaps == true) {
+            val venues = parser.asNativeList(payload.get("venues"))
+            val evmSwapVenues = venues?.filter {
+                parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
+            }?.map {
+                val swapVenue = parser.asMap(it)
+                mapOf(
+                    "name" to parser.asString(swapVenue?.get("name")),
+                    "chain_id" to parser.asString(swapVenue?.get("chain_id")),
+                )
+            }
+            if (evmSwapVenues != null) {
+                this.internalState.evmSwapVenues = evmSwapVenues
+            }
         }
     }
 

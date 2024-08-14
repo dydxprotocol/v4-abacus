@@ -306,6 +306,11 @@ internal class OnboardingSupervisor(
         )
         val evmSwapVenues = stateMachine.internalState.transfer.evmSwapVenues
         val swapVenues = evmSwapVenues + nonEvmSwapVenues
+        val bridges = mutableListOf(
+            IBC_BRIDGE_ID,
+            AXELAR_BRIDGE_ID
+        )
+        if (StatsigConfig.ff_enable_evm_swaps) bridges.add(CCTP_BRIDGE_ID)
         if (fromAmount != null && fromAmount > 0) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
@@ -321,11 +326,7 @@ internal class OnboardingSupervisor(
                     chainId to accountAddress,
                 ),
                 "swap_venues" to swapVenues,
-                "bridges" to listOf(
-                    IBC_BRIDGE_ID,
-                    AXELAR_BRIDGE_ID,
-                    CCTP_BRIDGE_ID,
-                ),
+                "bridges" to bridges,
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
                 "smart_swap_options" to SMART_SWAP_OPTIONS,
             )
