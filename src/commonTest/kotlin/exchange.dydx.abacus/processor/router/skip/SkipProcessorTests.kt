@@ -426,7 +426,7 @@ class SkipProcessorTests {
             payload = templateToMap(SkipVenuesMock.venues),
         )
 
-        val result = skipProcessor.evmSwapVenues
+        val result = internalState.evmSwapVenues
 
         val expected =
             listOf(
