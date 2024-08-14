@@ -14,6 +14,7 @@ import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
+//   Skip only supports uniswap evm swaps right now. We can expand this later
 private const val UNISWAP_SUFFIX = "uniswap"
 
 internal class SkipProcessor(
