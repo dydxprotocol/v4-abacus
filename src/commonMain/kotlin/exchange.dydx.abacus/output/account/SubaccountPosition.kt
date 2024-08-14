@@ -3,12 +3,12 @@ package exchange.dydx.abacus.output.account
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
-import exchange.dydx.abacus.utils.ParsingHelper
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
@@ -17,6 +17,7 @@ import kotlinx.serialization.Serializable
 data class SubaccountPosition(
     val id: String,
     val assetId: String,
+    val displayId: String,
     val side: TradeStatesWithPositionSides,
     val entryPrice: TradeStatesWithDoubleValues,
     val exitPrice: Double?,
@@ -56,12 +57,14 @@ data class SubaccountPosition(
         ): SubaccountPosition? {
             Logger.d { "creating Account Position\n" }
             data?.let {
-                val id = positionId ?: parser.asString(data["id"])
-                val assetId = if (positionId != null) ParsingHelper.assetId(id) else parser.asString(data["assetId"])
+                val id = positionId ?: parser.asString(data["id"]) ?: error("id not found")
+                val displayId = if (positionId != null) MarketId.getDisplayId(id) else parser.asString(data["displayId"])
+                val assetId = if (positionId != null) MarketId.getAssetId(id) else parser.asString(data["assetId"])
                 val resources = internalState?.resources ?: parser.asMap(data["resources"])?.let {
                     SubaccountPositionResources.create(existing?.resources, parser, it)
                 }
-                if (id != null && assetId != null && resources !== null) {
+
+                if (displayId !== null && assetId != null && resources !== null) {
                     val childSubaccountNumber = internalState?.subaccountNumber
                         ?: parser.asInt(data["childSubaccountNumber"])
 
@@ -224,6 +227,7 @@ data class SubaccountPosition(
 
                     return if (existing?.id != id ||
                         existing.assetId != assetId ||
+                        existing.displayId != displayId ||
                         existing.entryPrice !== entryPrice ||
                         existing.exitPrice != exitPrice ||
                         existing.createdAtMilliseconds != createdAtMilliseconds ||
@@ -256,6 +260,7 @@ data class SubaccountPosition(
                         SubaccountPosition(
                             id = id,
                             assetId = assetId,
+                            displayId = displayId,
                             side = side,
                             entryPrice = entryPrice,
                             exitPrice = exitPrice,

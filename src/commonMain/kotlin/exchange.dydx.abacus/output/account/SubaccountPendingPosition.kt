@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SubaccountPendingPosition(
     val assetId: String,
+    val displayId: String,
     val marketId: String,
     val firstOrderId: String,
     val orderCount: Int,
@@ -26,6 +27,7 @@ data class SubaccountPendingPosition(
             Logger.d { "creating Account Pending Position\n" }
             data?.let {
                 val assetId = parser.asString(data["assetId"]) ?: return null
+                val displayId = parser.asString(data["displayId"]) ?: return null
                 val marketId = parser.asString(data["marketId"]) ?: return null
                 val firstOrderId = parser.asString(data["firstOrderId"]) ?: return null
                 val orderCount = parser.asInt(data["orderCount"]) ?: return null
@@ -46,6 +48,7 @@ data class SubaccountPendingPosition(
                 )
 
                 return if (existing?.assetId != assetId ||
+                    existing?.displayId != displayId ||
                     existing.marketId != marketId ||
                     existing.firstOrderId != firstOrderId ||
                     existing.orderCount != orderCount ||
@@ -54,13 +57,14 @@ data class SubaccountPendingPosition(
                     existing.equity !== equity
                 ) {
                     SubaccountPendingPosition(
-                        assetId,
-                        marketId,
-                        firstOrderId,
-                        orderCount,
-                        freeCollateral,
-                        quoteBalance,
-                        equity,
+                        assetId = assetId,
+                        displayId = displayId,
+                        marketId = marketId,
+                        firstOrderId = firstOrderId,
+                        orderCount = orderCount,
+                        freeCollateral = freeCollateral,
+                        quoteBalance = quoteBalance,
+                        equity = equity,
                     )
                 } else {
                     existing
