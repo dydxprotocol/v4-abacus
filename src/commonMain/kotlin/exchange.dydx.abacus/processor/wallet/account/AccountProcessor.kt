@@ -395,7 +395,7 @@ internal class V4AccountProcessor(
         internalState: InternalAccountState,
         content: Map<String, Any>?,
     ): InternalAccountState {
-        var modified = internalState
+        val modified = internalState
         val subaccounts = parser.asNativeList(parser.value(content, "subaccounts"))
         subaccountsProcessor.processSubaccounts(
             internalState = internalState.subaccounts,

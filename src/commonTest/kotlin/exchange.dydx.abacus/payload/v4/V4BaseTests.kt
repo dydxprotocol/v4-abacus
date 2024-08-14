@@ -141,16 +141,16 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
         trace: String
     ) {
         super.verifyAccountState(data, state, staticTyping, obj, trace)
-        if (data != null) {
+        if (data != null || (staticTyping && state != null)) {
             verifyTradingRewardsState(
-                data = parser.asNativeMap(data["tradingRewards"]),
+                data = parser.asNativeMap(data?.get("tradingRewards")),
                 obj = obj!!.tradingRewards,
                 staticTyping = staticTyping,
                 state = state?.tradingRewards,
                 trace = "$trace.tradingRewards",
             )
             verifyLaunchIncentivePointsState(
-                parser.asNativeMap(data["launchIncentivePoints"]),
+                parser.asNativeMap(data?.get("launchIncentivePoints")),
                 obj.launchIncentivePoints,
                 "$trace.launchIncentivePoints",
             )

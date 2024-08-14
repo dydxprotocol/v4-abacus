@@ -72,7 +72,7 @@ internal open class NetworkSupervisor(
         if (changes != null) {
             var realChanges = changes
             changes.let {
-                realChanges = stateMachine.update(it)
+                realChanges = stateMachine.updateStateChanges(it)
             }
             if (realChanges != null) {
                 helper.ioImplementations.threading?.async(ThreadingType.main) {
