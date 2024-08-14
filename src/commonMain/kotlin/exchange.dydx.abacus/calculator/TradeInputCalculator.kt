@@ -74,7 +74,7 @@ internal class TradeInputCalculator(
             subaccountNumber,
         )
 
-        val marginMode = parser.asString(parser.value(trade, "marginMode"))
+        val marginMode = parser.asString(parser.value(trade, "marginMode"))?.let { MarginMode.invoke(it) }
 
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -90,7 +90,7 @@ internal class TradeInputCalculator(
                         calculateMarketOrderTrade(
                             trade,
                             market,
-                            if (marginMode === "ISOLATED") {
+                            if (marginMode == MarginMode.Isolated) {
                                 subaccount
                             } else {
                                 crossMarginSubaccount
