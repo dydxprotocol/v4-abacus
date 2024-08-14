@@ -119,9 +119,28 @@ fun calculateVaultPositions(positions: IndexerVaultPositionResponse?): VaultPosi
         return null
     }
 
-    return VaultPositions(positions = positions.positions.map { position -> })
+    return VaultPositions(positions = positions.positions.map { p-> calculateVaultPosition(p) })
+}
 
-
+fun calculateVaultPosition(position: IndexerVaultPosition): VaultPosition {
+    return VaultPosition(
+        asset = Asset(
+            id = "BTC",
+            name = "Bitcoin"
+        ),
+        marketId = "BTC-USD",
+        marginUsdc = 10000.0,
+        currentLeverageMultiple = 2.5,
+        currentPosition = CurrentPosition(
+            asset = 0.5,
+            usdc = 15000.0
+        ),
+        thirtyDayPnl = ThirtyDayPnl(
+            percent = 5.2,
+            absolute = 520.0,
+            sparklinePoints = listOf(1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.2)
+        )
+    )
 }
 
 
