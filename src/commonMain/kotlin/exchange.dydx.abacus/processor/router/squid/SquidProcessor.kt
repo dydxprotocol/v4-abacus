@@ -11,7 +11,6 @@ import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-@Suppress("NotImplementedDeclaration")
 internal class SquidProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState,
