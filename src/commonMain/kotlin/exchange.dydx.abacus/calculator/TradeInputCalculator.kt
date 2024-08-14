@@ -59,16 +59,10 @@ internal class TradeInputCalculator(
         input: String?,
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
-        val fallbackSubaccount = parser.asNativeMap(
-            parser.value(
-                account,
-                "subaccounts.$subaccountNumber",
-            ),
-        )
-        val subaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-            ?: fallbackSubaccount
+
         val crossMarginSubaccount = parser.asMap(parser.value(account, "subaccounts.$subaccountNumber"))
-            ?: fallbackSubaccount
+        val subaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
+            ?: crossMarginSubaccount
 
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
