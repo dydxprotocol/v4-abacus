@@ -7,6 +7,7 @@ import exchange.dydx.abacus.output.input.TransferInputTokenResource
 interface IRouterProcessor {
     var tokens: List<Any>?
     var chains: List<Any>?
+    var evmSwapVenues: List<Any?>
     var exchangeDestinationChainId: String?
 
     fun receivedEvmSwapVenues(
