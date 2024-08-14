@@ -9,4 +9,5 @@ internal data class InternalTransferInputState(
     var tokens: List<SelectionOption>? = null,
     var chainResources: Map<String, TransferInputChainResource>? = null,
     var tokenResources: Map<String, TransferInputTokenResource>? = null,
+    var evmSwapVenues: List<Any?> = listOf(),
 )
