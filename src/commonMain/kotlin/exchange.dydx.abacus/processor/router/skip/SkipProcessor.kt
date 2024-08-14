@@ -27,8 +27,6 @@ internal class SkipProcessor(
 //    actual type of the tokens payload is Map<str, Map<str, List<Map<str, Any>>>>
     override var tokens: List<Any>? = null
 
-    override var evmSwapVenues: List<Any?> = listOf()
-
     var skipTokens: Map<String, Map<String, List<Map<String, Any>>>>? = null
     override var exchangeDestinationChainId: String? = null
 
@@ -79,7 +77,7 @@ internal class SkipProcessor(
             )
         }
         if (evmSwapVenues != null) {
-            this.evmSwapVenues = evmSwapVenues
+            this.internalState.evmSwapVenues = evmSwapVenues
         }
     }
 

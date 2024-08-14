@@ -304,7 +304,7 @@ internal class OnboardingSupervisor(
             OSMOSIS_SWAP_VENUE,
             NEUTRON_SWAP_VENUE,
         )
-        val evmSwapVenues = stateMachine.routerProcessor.evmSwapVenues
+        val evmSwapVenues = stateMachine.internalState.transfer.evmSwapVenues
         val swapVenues = evmSwapVenues + nonEvmSwapVenues
         if (fromAmount != null && fromAmount > 0) {
             val body: Map<String, Any> = mapOf(
