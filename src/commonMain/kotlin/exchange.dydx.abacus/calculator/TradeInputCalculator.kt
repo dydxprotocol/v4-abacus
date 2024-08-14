@@ -12,6 +12,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -66,6 +67,14 @@ internal class TradeInputCalculator(
                     "subaccounts.$subaccountNumber",
                 ),
             )
+        val crossMarginSubaccount = parser.asMap(parser.value(account, "subaccounts.$subaccountNumber"))
+            ?: parser.asNativeMap(
+                parser.value(
+                    account,
+                    "subaccounts.$subaccountNumber",
+                ),
+            )
+
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
@@ -75,6 +84,9 @@ internal class TradeInputCalculator(
             parser.asNativeMap(state["trade"]),
             subaccountNumber,
         )
+
+        val marginMode = parser.asString(parser.value(trade, "marginMode"))
+
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
         val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
@@ -89,7 +101,7 @@ internal class TradeInputCalculator(
                         calculateMarketOrderTrade(
                             trade,
                             market,
-                            subaccount,
+                            if (marginMode === "ISOLATED") { subaccount } else { crossMarginSubaccount },
                             user,
                             isBuying,
                             input,
@@ -109,7 +121,7 @@ internal class TradeInputCalculator(
                 finalize(
                     modifiedTrade,
                     account,
-                    subaccount,
+                    crossMarginSubaccount,
                     user,
                     market,
                     rewardsParams,
@@ -117,7 +129,7 @@ internal class TradeInputCalculator(
                     type,
                 )
             } else {
-                finalize(trade, account, subaccount, user, market, rewardsParams, feeTiers, type)
+                finalize(trade, account, crossMarginSubaccount, user, market, rewardsParams, feeTiers, type)
             }
             modified["trade"] = trade
             modified.safeSet(
