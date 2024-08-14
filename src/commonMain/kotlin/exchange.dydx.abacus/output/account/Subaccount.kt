@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.output.account
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.TradeStatesWithDoubleValues
 import exchange.dydx.abacus.processor.base.ComparisonOrder
 import exchange.dydx.abacus.protocols.LocalizerProtocol
@@ -57,10 +58,11 @@ data class Subaccount(
                 return null
             }
             data?.let {
-                val positionId = parser.asString(data["positionId"])
-                val pnlTotal = parser.asDouble(data["pnlTotal"])
-                val pnl24h = parser.asDouble(data["pnl24h"])
-                val pnl24hPercent = parser.asDouble(data["pnl24hPercent"])
+                val positionId = if (staticTyping) null else parser.asString(data["positionId"])
+                val pnlTotal = if (staticTyping) null else parser.asDouble(data["pnlTotal"])
+                val pnl24h = if (staticTyping) null else parser.asDouble(data["pnl24h"])
+                val pnl24hPercent =
+                    if (staticTyping) null else parser.asDouble(data["pnl24hPercent"])
                 /*
                 val historicalPnl = (data["historicalPnl"] as? List<*>)?.let {
                     val historicalPnl = iMutableListOf<AccountHistoricalPNL>()
@@ -76,74 +78,160 @@ data class Subaccount(
                     AccountHistoricalPNLs.fromArray(historicalPnl)
                 }
                  */
-                val subaccountNumber = parser.asInt(data["subaccountNumber"]) ?: 0
-                val quoteBalance =
+
+                val subaccountNumber = if (staticTyping) {
+                    internalState?.subaccountNumber ?: 0
+                } else {
+                    parser.asInt(data["subaccountNumber"]) ?: 0
+                }
+
+                val quoteBalance = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.quoteBalance,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.quoteBalance,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.quoteBalance,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.quoteBalance,
                         parser,
                         parser.asMap(data["quoteBalance"]),
                     )
-                val notionalTotal =
+                }
+
+                val notionalTotal = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.notionalTotal,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.notionalTotal,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.notionalTotal,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.notionalTotal,
                         parser,
                         parser.asMap(data["notionalTotal"]),
                     )
-                val valueTotal =
+                }
+
+                val valueTotal = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.valueTotal,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.valueTotal,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.valueTotal,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.valueTotal,
                         parser,
                         parser.asMap(data["valueTotal"]),
                     )
-                val initialRiskTotal =
+                }
+
+                val initialRiskTotal = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.initialRiskTotal,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.initialRiskTotal,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.initialRiskTotal,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.initialRiskTotal,
                         parser,
                         parser.asMap(data["initialRiskTotal"]),
                     )
-                val adjustedImf =
+                }
+
+                val adjustedImf = if (staticTyping) {
+                    // This is not being set at the subaccount level
+                    TradeStatesWithDoubleValues(
+                        current = null,
+                        postOrder = null,
+                        postAllOrders = null,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.adjustedImf,
                         parser,
                         parser.asMap(data["adjustedImf"]),
                     )
-                val equity =
+                }
+
+                val equity = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.equity,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.equity,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.equity,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.equity,
                         parser,
                         parser.asMap(data["equity"]),
                     )
-                val freeCollateral =
+                }
+
+                val freeCollateral = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.freeCollateral,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.freeCollateral,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.freeCollateral,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.freeCollateral,
                         parser,
                         parser.asMap(data["freeCollateral"]),
                     )
-                val leverage =
+                }
+
+                val leverage = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.leverage,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.leverage,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.leverage,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.leverage,
                         parser,
                         parser.asMap(data["leverage"]),
                     )
-                val marginUsage =
+                }
+
+                val marginUsage = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.marginUsage,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.marginUsage,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.marginUsage,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.marginUsage,
                         parser,
                         parser.asMap(data["marginUsage"]),
                     )
-                val buyingPower =
+                }
+
+                val buyingPower = if (staticTyping) {
+                    TradeStatesWithDoubleValues(
+                        current = internalState?.calculated?.get(CalculationPeriod.current)?.buyingPower,
+                        postOrder = internalState?.calculated?.get(CalculationPeriod.post)?.buyingPower,
+                        postAllOrders = internalState?.calculated?.get(CalculationPeriod.settled)?.buyingPower,
+                    )
+                } else {
                     TradeStatesWithDoubleValues.create(
                         existing?.buyingPower,
                         parser,
                         parser.asMap(data["buyingPower"]),
                     )
+                }
 
                 val openPositions = if (staticTyping) {
-                    openPositions(
+                    createOpenPositions(
                         existing = existing?.openPositions,
                         parser = parser,
-                        data = parser.asMap(data["openPositions"]),
-                        openPositions = internalState?.openPositions,
+                        openPositions = internalState?.groupedOpenPositions,
+                        subaccount = internalState,
                     )
                 } else {
                     openPositionsDeprecated(
@@ -177,7 +265,11 @@ data class Subaccount(
                     ))
 
                  */
-                val marginEnabled = parser.asBool(data["marginEnabled"]) ?: true
+                val marginEnabled = if (staticTyping) {
+                    internalState?.marginEnabled ?: true
+                } else {
+                    parser.asBool(data["marginEnabled"]) ?: true
+                }
 
                 return if (existing?.subaccountNumber != subaccountNumber ||
                     existing.positionId != positionId ||
@@ -227,20 +319,21 @@ data class Subaccount(
             return null
         }
 
-        private fun openPositions(
+        private fun createOpenPositions(
             existing: IList<SubaccountPosition>?,
             parser: ParserProtocol,
-            data: Map<String, Any>?,
             openPositions: Map<String, InternalPerpetualPosition>?,
-        ): IList<SubaccountPosition>? {
+            subaccount: InternalSubaccountState?,
+        ): IList<SubaccountPosition> {
             val newEntries: MutableList<SubaccountPosition> = mutableListOf()
             for ((key, value) in openPositions?.entries ?: emptySet()) {
                 val position = SubaccountPosition.create(
                     existing = null,
                     parser = parser,
-                    data = data?.get(key) as? Map<String, Any>,
+                    data = emptyMap(),
                     positionId = key,
-                    internalState = value,
+                    position = value,
+                    subaccount = subaccount,
                 )
                 if (position != null) {
                     newEntries.add(position)
@@ -282,7 +375,8 @@ data class Subaccount(
                             parser = parser,
                             data = it,
                             positionId = null,
-                            internalState = null,
+                            position = null,
+                            subaccount = null,
                         )
                     }
                 },

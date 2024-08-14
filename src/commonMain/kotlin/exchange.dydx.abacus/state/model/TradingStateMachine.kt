@@ -455,7 +455,7 @@ open class TradingStateMachine(
             }
             var realChanges = changes
             changes?.let {
-                realChanges = update(it)
+                realChanges = updateStateChanges(it)
             }
             return StateResponse(state, realChanges, null, info)
         } catch (e: ParsingException) {
@@ -554,7 +554,7 @@ open class TradingStateMachine(
             }
         }
         if (changes != null) {
-            update(changes)
+            updateStateChanges(changes)
         }
 
         val errors = if (error != null) iListOf(error) else null
@@ -582,7 +582,7 @@ open class TradingStateMachine(
                 Changes.fundingPayments,
             ),
         )
-        update(changes)
+        updateStateChanges(changes)
         walletProcessor.accountAddress = accountAddress
         return StateResponse(state, changes, null)
     }
@@ -614,7 +614,7 @@ open class TradingStateMachine(
         }
     }
 
-    internal fun update(changes: StateChanges): StateChanges {
+    internal fun updateStateChanges(changes: StateChanges): StateChanges {
         if (changes.changes.contains(Changes.input)) {
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
 
@@ -674,7 +674,7 @@ open class TradingStateMachine(
         val wallet = state?.wallet
         val input = state?.input
 
-        state = update(state, changes, tokensInfo, localizer)
+        state = updateState(state, changes, tokensInfo, localizer)
 
         val realChanges = iMutableListOf<Changes>()
         for (change in changes.changes) {
@@ -903,6 +903,16 @@ open class TradingStateMachine(
                 setOf(CalculationPeriod.current)
             }
 
+            if (staticTyping) {
+                internalState.wallet.account = accountCalculatorV2.calculate(
+                    account = internalState.wallet.account,
+                    subaccountNumbers = subaccountNumbers,
+                    marketsSummary = internalState.marketsSummary,
+                    periods = periods,
+                    price = null, // priceOverwrite(markets),
+                    configs = null, // This is used to get the IMF.. with "null" the default value 0.05 will be used
+                )
+            }
             this.marketsSummary?.let { marketsSummary ->
                 parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
                     val modifiedAccount = accountCalculator.calculate(
@@ -915,22 +925,35 @@ open class TradingStateMachine(
                     )
                     this.account = modifiedAccount
                 }
-                if (staticTyping) {
-                    internalState.wallet.account = accountCalculatorV2.calculate(
+            }
+        }
+
+        if (staticTyping) {
+            if (internalState.wallet.account.groupedSubaccounts.isNotEmpty()) {
+                if (changes.changes.contains(Changes.fills)) {
+                    internalState.wallet.account = mergeFills(
+                        account = internalState.wallet.account,
+                        subaccountNumbers = subaccountNumbers,
+                    )
+                }
+                if (changes.changes.contains(Changes.transfers) || changes.changes.contains(Changes.fundingPayments)) {
+                    internalState.wallet.account = mergeTransfers(
                         account = internalState.wallet.account,
                         subaccountNumbers = subaccountNumbers,
                     )
                 }
             }
-        }
-        if (parser.value(account, "groupedSubaccounts") != null) {
-            if (changes.changes.contains(Changes.fills)) {
-                this.account = mergeFills(this.account, subaccountNumbers)
+        } else {
+            if (parser.value(account, "groupedSubaccounts") != null) {
+                if (changes.changes.contains(Changes.fills)) {
+                    this.account = mergeFillsDeprecated(this.account, subaccountNumbers)
+                }
+                if (changes.changes.contains(Changes.transfers)) {
+                    this.account = mergeTransfersDeprecated(this.account, subaccountNumbers)
+                }
             }
-            if (changes.changes.contains(Changes.transfers)) {
-                this.account = mergeTransfers(this.account, subaccountNumbers)
-            }
         }
+
         if (changes.changes.contains(Changes.input)) {
             val modified = this.input?.mutable() ?: return
             when (parser.asString(modified["current"])) {
@@ -1068,7 +1091,7 @@ open class TradingStateMachine(
         }
     }
 
-    private fun update(
+    private fun updateState(
         state: PerpetualState?,
         changes: StateChanges,
         tokensInfo: Map<String, TokenInfo>,
@@ -1268,13 +1291,13 @@ open class TradingStateMachine(
         }
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
         val accountData = this.account
-        if (accountData != null) {
+        if (accountData != null || staticTyping) {
             if (changes.changes.contains(Changes.subaccount)) {
                 account = if (account == null) {
                     Account.create(
                         existing = null,
                         parser = parser,
-                        data = accountData,
+                        data = accountData ?: emptyMap(),
                         tokensInfo = tokensInfo,
                         localizer = localizer,
                         staticTyping = staticTyping,
@@ -1308,15 +1331,15 @@ open class TradingStateMachine(
                         }
                     }
                     Account(
-                        account.balances,
-                        account.stakingBalances,
-                        account.stakingDelegations,
-                        account.unbondingDelegation,
-                        account.stakingRewards,
-                        subaccounts,
-                        groupedSubaccounts,
-                        account.tradingRewards,
-                        account.launchIncentivePoints,
+                        balances = account.balances,
+                        stakingBalances = account.stakingBalances,
+                        stakingDelegations = account.stakingDelegations,
+                        unbondingDelegation = account.unbondingDelegation,
+                        stakingRewards = account.stakingRewards,
+                        subaccounts = subaccounts,
+                        groupedSubaccounts = groupedSubaccounts,
+                        tradingRewards = account.tradingRewards,
+                        launchIncentivePoints = account.launchIncentivePoints,
                     )
                 }
             }
@@ -1327,7 +1350,7 @@ open class TradingStateMachine(
                 account = Account.create(
                     existing = account,
                     parser = parser,
-                    data = accountData,
+                    data = accountData ?: emptyMap(),
                     tokensInfo = tokensInfo,
                     localizer = localizer,
                     staticTyping = staticTyping,
@@ -1489,26 +1512,26 @@ open class TradingStateMachine(
             }
         }
         return PerpetualState(
-            assets,
-            marketsSummary,
-            orderbooks,
-            candles,
-            trades,
-            historicalFundings,
-            wallet,
-            account,
-            historicalPnl,
-            fills,
-            transfers,
-            fundingPayments,
-            configs,
-            input,
-            subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
-            transferStatuses,
-            trackStatuses,
-            restriction,
-            launchIncentive,
-            geo,
+            assets = assets,
+            marketsSummary = marketsSummary,
+            orderbooks = orderbooks,
+            candles = candles,
+            trades = trades,
+            historicalFundings = historicalFundings,
+            wallet = wallet,
+            account = account,
+            historicalPnl = historicalPnl,
+            fills = fills,
+            transfers = transfers,
+            fundingPayments = fundingPayments,
+            configs = configs,
+            input = input,
+            availableSubaccountNumbers = subaccountNumbersWithPlaceholders(maxSubaccountNumber()),
+            transferStatuses = transferStatuses,
+            trackStatuses = trackStatuses,
+            restriction = restriction,
+            launchIncentive = launchIncentive,
+            compliance = geo,
         )
     }
 
@@ -1548,7 +1571,7 @@ open class TradingStateMachine(
             val historicalPnls = state?.historicalPnl?.get("$subaccountNumber") ?: return noChange()
             val first = historicalPnls.firstOrNull() ?: return noChange()
             val changes = StateChanges(iListOf(Changes.historicalPnl))
-            state = update(state, changes, tokensInfo, localizer)
+            state = updateState(state, changes, tokensInfo, localizer)
             StateResponse(state, changes)
         } else {
             noChange()
@@ -1572,7 +1595,7 @@ open class TradingStateMachine(
                     null,
                     iListOf(subaccountNumber),
                 )
-                state = update(state, changes, tokensInfo, localizer)
+                state = updateState(state, changes, tokensInfo, localizer)
                 StateResponse(state, changes)
             } else {
                 noChange()
@@ -1612,7 +1635,7 @@ open class TradingStateMachine(
                 this.wallet = wallet
 
                 val changes = StateChanges(iListOf(Changes.subaccount))
-                state = update(state, changes, tokensInfo, localizer)
+                state = updateState(state, changes, tokensInfo, localizer)
                 return StateResponse(state, changes)
             }
         }
@@ -1628,7 +1651,7 @@ open class TradingStateMachine(
             error = e.toParsingError()
         }
         if (changes != null) {
-            update(changes)
+            updateStateChanges(changes)
         }
 
         val errors = if (error != null) iListOf(error) else null
@@ -1644,7 +1667,7 @@ open class TradingStateMachine(
             error = e.toParsingError()
         }
         if (changes != null) {
-            update(changes)
+            updateStateChanges(changes)
         }
 
         val errors = if (error != null) iListOf(error) else null
@@ -1660,7 +1683,7 @@ open class TradingStateMachine(
             error = e.toParsingError()
         }
         if (changes != null) {
-            update(changes)
+            updateStateChanges(changes)
         }
 
         val errors = if (error != null) iListOf(error) else null
@@ -1669,7 +1692,7 @@ open class TradingStateMachine(
 
     fun updateResponse(changes: StateChanges?): StateResponse {
         if (changes != null) {
-            update(changes)
+            updateStateChanges(changes)
         }
 
         return StateResponse(state, changes, null)

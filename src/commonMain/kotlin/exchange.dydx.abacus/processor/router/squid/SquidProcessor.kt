@@ -21,6 +21,10 @@ internal class SquidProcessor(
     override var exchangeDestinationChainId: String? = null
     override var selectedChainType: ChainType? = ChainType.EVM
 
+    override fun receivedEvmSwapVenues(existing: Map<String, Any>?, payload: Map<String, Any>) {
+        throw NotImplementedError("receivedEvmSwapVenues is not implemented in SquidProcessor!")
+    }
+
     override fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
