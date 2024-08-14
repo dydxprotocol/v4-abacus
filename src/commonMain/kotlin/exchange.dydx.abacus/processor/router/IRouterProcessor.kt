@@ -9,6 +9,11 @@ interface IRouterProcessor {
     var chains: List<Any>?
     var exchangeDestinationChainId: String?
 
+    fun receivedEvmSwapVenues(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>,
+    )
+
     fun receivedChains(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
