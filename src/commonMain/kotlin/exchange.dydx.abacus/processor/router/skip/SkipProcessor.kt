@@ -68,7 +68,7 @@ internal class SkipProcessor(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ) {
-        val venues = parser.asNativeList(payload?.get("venues"))
+        val venues = parser.asNativeList(payload.get("venues"))
         val evmSwapVenues = venues?.filter {
             parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
         }?.map {
