@@ -16,7 +16,6 @@ import exchange.dydx.abacus.utils.safeSet
 
 private const val UNISWAP_SUFFIX = "uniswap"
 
-@Suppress("NotImplementedDeclaration")
 internal class SkipProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState
