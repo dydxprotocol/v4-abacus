@@ -60,7 +60,7 @@ internal class TradeInputCalculator(
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
 
-        val crossMarginSubaccount = parser.asMap(parser.value(account, "subaccounts.$subaccountNumber"))
+        val crossMarginSubaccount = parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
         val subaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
             ?: crossMarginSubaccount
 
