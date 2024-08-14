@@ -50,6 +50,7 @@ class FillProcessorTests {
             orderId = "2222",
             subaccountNumber = 0,
             marketId = "WETH-DAI",
+            displayId = "WETH-DAI",
             marginMode = MarginMode.Cross,
             createdAtMilliseconds = createdAt.toEpochMilliseconds().toDouble(),
             resources = SubaccountFillResources(

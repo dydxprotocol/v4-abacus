@@ -62,6 +62,7 @@ class MarketProcessorTests {
             id = "BTC-USD",
             assetId = "BTC",
             market = "BTC-USD",
+            displayId = "BTC-USD",
             oraclePrice = 20000.0000,
             marketCaps = null,
             priceChange24H = 138.180620,

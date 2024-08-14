@@ -41,6 +41,7 @@ class PositionsNotificationProvider(
             for ((marketId, data) in positions) {
                 val position = parser.asMap(data) ?: continue
                 val positionStatus = parser.asString(position["status"])
+                val displayId = parser.asString(position["displayId"])
                 if (positionStatus == "CLOSED") {
                     val closedAt = parser.asDatetime(position["closedAt"]) ?: continue
                     val asset = stateMachine.state?.assetOfMarket(marketId) ?: continue
@@ -48,7 +49,7 @@ class PositionsNotificationProvider(
                     val marketImageUrl = asset.resources?.imageUrl
                     val params = (
                         iMapOf(
-                            "MARKET" to marketId,
+                            "MARKET" to displayId,
                             "ASSET" to assetText,
                         ).filterValues { it != null } as Map<String, String>
                         ).toIMap()
