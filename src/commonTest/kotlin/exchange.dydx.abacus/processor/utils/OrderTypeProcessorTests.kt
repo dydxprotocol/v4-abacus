@@ -11,6 +11,16 @@ class OrderTypeProcessorTests {
         assertEquals("LIMIT", result)
     }
 
+    fun testOrderTypeDeleveraged() {
+        val result = OrderTypeProcessor.orderType("DELEVERAGED", null)
+        assertEquals("LIQUIDATED", result)
+    }
+
+    fun testOrderTypeOffsetting() {
+        val result = OrderTypeProcessor.orderType("OFFSETTING", null)
+        assertEquals("DELEVERAGED", result)
+    }
+
     @Test
     fun testOrderTypeLimitWithClientMetadata() {
         val result = OrderTypeProcessor.orderType("LIMIT", 1)
