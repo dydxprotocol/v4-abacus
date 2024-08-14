@@ -63,12 +63,12 @@ data class SubaccountPosition(
                 val id = positionId ?: parser.asString(data["id"]) ?: error("id not found")
                 val displayId = if (positionId != null) MarketId.getDisplayId(id) else parser.asString(data["displayId"])
                 val assetId = if (positionId != null) MarketId.getAssetId(id) else parser.asString(data["assetId"])
-                val resources = internalState?.resources ?: parser.asMap(data["resources"])?.let {
+                val resources = position?.resources ?: parser.asMap(data["resources"])?.let {
                     SubaccountPositionResources.create(existing?.resources, parser, it)
                 }
 
                 if (displayId !== null && assetId != null && resources !== null) {
-                    val childSubaccountNumber = internalState?.subaccountNumber
+                    val childSubaccountNumber = position?.subaccountNumber
                         ?: parser.asInt(data["childSubaccountNumber"])
 
                     val marginMode = position?.marginMode
