@@ -17,7 +17,6 @@ internal class SquidProcessor(
 ) : BaseProcessor(parser), IRouterProcessor {
     override var chains: List<Any>? = null
     override var tokens: List<Any>? = null
-    override var evmSwapVenues: List<Any?> = listOf()
     override var exchangeDestinationChainId: String? = null
 
     override fun receivedEvmSwapVenues(existing: Map<String, Any>?, payload: Map<String, Any>) {
