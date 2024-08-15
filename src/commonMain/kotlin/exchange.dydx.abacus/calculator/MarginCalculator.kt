@@ -205,7 +205,7 @@ internal object MarginCalculator {
         return if (existingMarginMode != null) {
             false
         } else if (marketId != null) {
-            findMarketMarginMode(market?.perpetualMarket) == MarginMode.Cross
+            findMarketMarginMode(market.perpetualMarket) == MarginMode.Cross
         } else {
             true
         }

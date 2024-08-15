@@ -24,6 +24,7 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.Tooltip
 import exchange.dydx.abacus.output.input.TradeInputBracket
@@ -54,6 +55,7 @@ internal data class InternalState(
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
     var currentType: InputType? = null,
+    var receiptLines: List<ReceiptLine>? = null,
 )
 
 internal data class InternalTradeInputState(

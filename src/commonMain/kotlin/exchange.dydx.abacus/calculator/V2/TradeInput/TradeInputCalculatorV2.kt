@@ -4,6 +4,7 @@ import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.v2.AccountTransformerV2
 import exchange.dydx.abacus.output.FeeTier
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
@@ -36,8 +37,10 @@ internal class TradeInputCalculatorV2(
         input: String?,
     ): InternalTradeInputState {
         val account = wallet.account
+
+        val crossMarginSubaccount = account.subaccounts[subaccountNumber]
         val subaccount =
-            account.groupedSubaccounts[subaccountNumber] ?: account.subaccounts[subaccountNumber]
+            account.groupedSubaccounts[subaccountNumber] ?: crossMarginSubaccount
         val user = wallet.user
         val markets = marketSummary.markets
 
@@ -56,7 +59,7 @@ internal class TradeInputCalculatorV2(
                     marketOrderCalculator.calculate(
                         trade = trade,
                         market = markets[trade.marketId],
-                        subaccount = subaccount,
+                        subaccount = if (trade.marginMode == MarginMode.Isolated) subaccount else crossMarginSubaccount,
                         user = user,
                         input = input,
                     )
@@ -109,7 +112,6 @@ internal class TradeInputCalculatorV2(
         rewardsParams: InternalRewardsParamsState?,
         feeTiers: List<FeeTier>?,
     ): InternalTradeInputState {
-        val type = trade.type
         val marketId = market?.perpetualMarket?.id
         val position = if (marketId != null) {
             subaccount?.openPositions?.get(marketId)
