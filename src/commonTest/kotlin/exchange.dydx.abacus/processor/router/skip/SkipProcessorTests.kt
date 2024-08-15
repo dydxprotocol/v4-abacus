@@ -421,7 +421,7 @@ class SkipProcessorTests {
     }
 
     @Test
-    fun receivedEvmSwapVenuesEvmSwapsEnabled() {
+    fun receivedEvmSwapVenuesEvmSwaps() {
         StatsigConfig.ff_enable_evm_swaps = true
         skipProcessor.receivedEvmSwapVenues(
             existing = mapOf(),
@@ -469,21 +469,6 @@ class SkipProcessorTests {
                     "chain_id" to "81457",
                 ),
             )
-        assertEquals(expected, result)
-    }
-
-    @Test
-    fun receivedEvmSwapVenuesEvmSwapsDisabled() {
-        StatsigConfig.ff_enable_evm_swaps = false
-        skipProcessor.receivedEvmSwapVenues(
-            existing = mapOf(),
-            payload = templateToMap(SkipVenuesMock.venues),
-        )
-
-        val result = internalState.evmSwapVenues
-
-        val expected = listOf<Any?>()
-
         assertEquals(expected, result)
     }
 }
