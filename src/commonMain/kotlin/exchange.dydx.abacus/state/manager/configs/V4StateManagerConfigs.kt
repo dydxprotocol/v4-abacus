@@ -132,6 +132,8 @@ class V4StateManagerConfigs(
         return "$skipHost/v2/tx/status"
     }
 
+    val skipV2Venues = "$skipHost/v2/fungible/venues"
+
     val nobleDenom = "uusdc"
 
     private val includeSvmChains: String

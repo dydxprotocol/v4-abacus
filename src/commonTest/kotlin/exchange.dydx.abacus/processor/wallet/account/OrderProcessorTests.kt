@@ -46,6 +46,7 @@ class OrderProcessorTests {
             status = OrderStatus.Open,
             timeInForce = null,
             marketId = "WETH-DAI",
+            displayId = "WETH-DAI",
             clobPairId = null,
             orderFlags = null,
             price = 3.0,

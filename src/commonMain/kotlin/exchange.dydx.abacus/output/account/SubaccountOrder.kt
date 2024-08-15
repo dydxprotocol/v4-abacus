@@ -22,6 +22,7 @@ data class SubaccountOrder(
     val status: OrderStatus,
     val timeInForce: OrderTimeInForce?,
     val marketId: String,
+    val displayId: String,
     val clobPairId: Int?,
     val orderFlags: Int?,
     val price: Double,
@@ -57,6 +58,7 @@ data class SubaccountOrder(
                 val id = parser.asString(data["id"])
                 val clientId = parser.asInt(data["clientId"])
                 val marketId = parser.asString(data["marketId"])
+                val displayId = parser.asString(data["displayId"])
                 val clobPairId = parser.asInt(data["clobPairId"])
                 val orderFlags = parser.asInt(data["orderFlags"])
                 val typeString = parser.asString(data["type"])
@@ -76,7 +78,7 @@ data class SubaccountOrder(
                     SubaccountOrderResources.create(existing?.resources, parser, it, localizer)
                 }
                 val marginMode = parser.asString(data["marginMode"])?.let { MarginMode.invoke(it) }
-                if (id != null && marketId != null && type != null && side != null && status != null && price != null && size != null &&
+                if (id != null && marketId != null && displayId != null && type != null && side != null && status != null && price != null && size != null &&
                     resources != null
                 ) {
                     val triggerPrice = parser.asDouble(data["triggerPrice"])
@@ -108,6 +110,7 @@ data class SubaccountOrder(
                         existing.status !== status ||
                         existing.timeInForce !== timeInForce ||
                         existing.marketId != marketId ||
+                        existing.displayId != displayId ||
                         existing.clobPairId != clobPairId ||
                         existing.orderFlags != orderFlags ||
                         existing.price != price ||
@@ -130,34 +133,35 @@ data class SubaccountOrder(
                         existing.marginMode != marginMode
                     ) {
                         SubaccountOrder(
-                            subaccountNumber,
-                            id,
-                            clientId,
-                            type,
-                            side,
-                            status,
-                            timeInForce,
-                            marketId,
-                            clobPairId,
-                            orderFlags,
-                            price,
-                            triggerPrice,
-                            trailingPercent,
-                            size,
-                            remainingSize,
-                            totalFilled,
-                            goodTilBlock,
-                            goodTilBlockTime,
-                            createdAtHeight,
-                            createdAtMilliseconds,
-                            unfillableAtMilliseconds,
-                            expiresAtMilliseconds,
-                            updatedAtMilliseconds,
-                            postOnly,
-                            reduceOnly,
-                            cancelReason,
-                            resources,
-                            marginMode,
+                            subaccountNumber = subaccountNumber,
+                            id = id,
+                            clientId = clientId,
+                            type = type,
+                            side = side,
+                            status = status,
+                            timeInForce = timeInForce,
+                            marketId = marketId,
+                            displayId = displayId,
+                            clobPairId = clobPairId,
+                            orderFlags = orderFlags,
+                            price = price,
+                            triggerPrice = triggerPrice,
+                            trailingPercent = trailingPercent,
+                            size = size,
+                            remainingSize = remainingSize,
+                            totalFilled = totalFilled,
+                            goodTilBlock = goodTilBlock,
+                            goodTilBlockTime = goodTilBlockTime,
+                            createdAtHeight = createdAtHeight,
+                            createdAtMilliseconds = createdAtMilliseconds,
+                            unfillableAtMilliseconds = unfillableAtMilliseconds,
+                            expiresAtMilliseconds = expiresAtMilliseconds,
+                            updatedAtMilliseconds = updatedAtMilliseconds,
+                            postOnly = postOnly,
+                            reduceOnly = reduceOnly,
+                            cancelReason = cancelReason,
+                            resources = resources,
+                            marginMode = marginMode,
                         )
                     } else {
                         existing

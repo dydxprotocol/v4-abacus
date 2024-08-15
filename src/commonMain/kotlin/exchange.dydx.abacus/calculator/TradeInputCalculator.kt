@@ -59,13 +59,11 @@ internal class TradeInputCalculator(
         input: String?,
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
+
+        val crossMarginSubaccount = parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
         val subaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-            ?: parser.asNativeMap(
-                parser.value(
-                    account,
-                    "subaccounts.$subaccountNumber",
-                ),
-            )
+            ?: crossMarginSubaccount
+
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
@@ -75,6 +73,9 @@ internal class TradeInputCalculator(
             parser.asNativeMap(state["trade"]),
             subaccountNumber,
         )
+
+        val marginMode = parser.asString(parser.value(trade, "marginMode"))?.let { MarginMode.invoke(it) }
+
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
         val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
@@ -89,7 +90,11 @@ internal class TradeInputCalculator(
                         calculateMarketOrderTrade(
                             trade,
                             market,
-                            subaccount,
+                            if (marginMode == MarginMode.Isolated) {
+                                subaccount
+                            } else {
+                                crossMarginSubaccount
+                            }, // TODO: incorrect for isolated trades; fix CT-1092
                             user,
                             isBuying,
                             input,
