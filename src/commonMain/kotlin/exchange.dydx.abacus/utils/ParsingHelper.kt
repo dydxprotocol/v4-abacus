@@ -17,15 +17,6 @@ internal class ParsingHelper {
     companion object {
         private var parser = Parser()
 
-        internal fun assetId(market: String?): String? {
-            return if (market != null) {
-                val split = market.split("-")
-                split.first()
-            } else {
-                null
-            }
-        }
-
         internal inline fun <reified T : Any> transform(
             parser: ParserProtocol,
             existing: List<T>?,

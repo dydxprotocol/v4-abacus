@@ -14,7 +14,9 @@ import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-@Suppress("NotImplementedDeclaration", "ForbiddenComment")
+//   Skip only supports uniswap evm swaps right now. We can expand this later
+private const val UNISWAP_SUFFIX = "uniswap"
+
 internal class SkipProcessor(
     parser: ParserProtocol,
     private val internalState: InternalTransferInputState
@@ -58,6 +60,25 @@ internal class SkipProcessor(
             internalState.chainResources = chainResources(chainId = selectedChainId)
         }
         return modified
+    }
+
+    override fun receivedEvmSwapVenues(
+        existing: Map<String, Any>?,
+        payload: Map<String, Any>
+    ) {
+        val venues = parser.asNativeList(payload.get("venues"))
+        val evmSwapVenues = venues?.filter {
+            parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
+        }?.map {
+            val swapVenue = parser.asMap(it)
+            mapOf(
+                "name" to parser.asString(swapVenue?.get("name")),
+                "chain_id" to parser.asString(swapVenue?.get("chain_id")),
+            )
+        }
+        if (evmSwapVenues != null) {
+            this.internalState.evmSwapVenues = evmSwapVenues
+        }
     }
 
     override fun receivedTokens(

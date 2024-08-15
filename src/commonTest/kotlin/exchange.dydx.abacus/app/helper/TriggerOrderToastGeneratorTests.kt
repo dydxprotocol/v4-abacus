@@ -56,6 +56,7 @@ class TriggerOrderToastGeneratorTests {
                         "side": "Buy",
                         "status": "Untriggered",
                         "marketId": "ETH-USD",
+                        "displayId": "ETH-USD",
                         "price": 1000,
                         "triggerPrice": 2000,
                         "size": 1,
@@ -70,6 +71,7 @@ class TriggerOrderToastGeneratorTests {
                     {
                         "id": "ETH-USD",
                         "assetId": "assetId",
+                        "displayId": "ETH-USD",
                         "side": {
                             "current": "SHORT"
                         },
