@@ -12,7 +12,6 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerPerpetualPositionStatus
 import kotlin.math.max
 import kotlin.math.min
@@ -50,9 +49,21 @@ internal class SubaccountTransformerV2(
                 subaccount = subaccount,
                 delta = delta,
                 period = period,
-                hasTransfer = transfer != null
+                hasTransfer = transfer != null,
             )
         }
+    }
+
+    fun applyTransferToSubaccount(
+        subaccount: InternalSubaccountState,
+        transfer: Double,
+        period: CalculationPeriod,
+    ) {
+        applyDeltaToSubaccount(
+            subaccount = subaccount,
+            delta = Delta(usdcSize = transfer),
+            period = period,
+        )
     }
 
     private fun deltaFromTrade(
@@ -67,19 +78,21 @@ internal class SubaccountTransformerV2(
         val summary = trade.summary
 
         if (summary != null && summary.filled) {
-            val multiplier =  if (side == OrderSide.Buy) Numeric.double.NEGATIVE else Numeric.double.POSITIVE
-            val originalPrice =  summary.price
+            val multiplier = if (side == OrderSide.Buy) Numeric.double.NEGATIVE else Numeric.double.POSITIVE
+            val originalPrice = summary.price
             val price = if (market != null) {
                 executionPrice(
                     oraclePrice = market.perpetualMarket?.oraclePrice,
                     limitPrice = originalPrice,
                     isBuying = side == OrderSide.Buy,
                 )
-            } else originalPrice
+            } else {
+                originalPrice
+            }
             val size = (summary.size ?: Numeric.double.ZERO) * multiplier * Numeric.double.NEGATIVE
             val usdcSize = (price ?: Numeric.double.ZERO) * (
-                    summary.size ?: Numeric.double.ZERO
-                    ) * multiplier + (transfer ?: 0.0)
+                summary.size ?: Numeric.double.ZERO
+                ) * multiplier + (transfer ?: 0.0)
             val fee = (summary.fee ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
             val feeRate = summary.feeRate ?: Numeric.double.ZERO
 
@@ -96,7 +109,7 @@ internal class SubaccountTransformerV2(
             }
         }
 
-        return  Delta(
+        return Delta(
             marketId = marketId,
             usdcSize = transfer,
         )
@@ -125,7 +138,7 @@ internal class SubaccountTransformerV2(
         delta: Delta?,
         period: CalculationPeriod,
         hasTransfer: Boolean = false,
-    ): InternalSubaccountState {
+    ) {
         val deltaMarketId = delta?.marketId
         val positions = subaccount.positions
 
@@ -145,22 +158,20 @@ internal class SubaccountTransformerV2(
             subaccount.positions = applyDeltaToPositions(
                 positions = positions,
                 delta = modifiedDelta,
-                period = period
+                period = period,
             )
         }
 
         val calculatedAtPeriod = subaccount.calculated[period] ?: InternalSubaccountCalculated()
-        val usdcSize = modifiedDelta?.usdcSize  ?: Numeric.double.ZERO
+        val usdcSize = modifiedDelta?.usdcSize ?: Numeric.double.ZERO
         if (delta != null && usdcSize != Numeric.double.ZERO) {
             val fee = modifiedDelta?.fee ?: Numeric.double.ZERO
             val quoteBalance = subaccount.calculated[CalculationPeriod.current]?.quoteBalance ?: Numeric.double.ZERO
-            calculatedAtPeriod.quoteBalance  = quoteBalance + usdcSize + fee
+            calculatedAtPeriod.quoteBalance = quoteBalance + usdcSize + fee
         } else {
             calculatedAtPeriod.quoteBalance = null
         }
         subaccount.calculated[period] = calculatedAtPeriod
-
-        return subaccount
     }
 
     private fun transformDelta(
@@ -169,7 +180,7 @@ internal class SubaccountTransformerV2(
         hasTransfer: Boolean = false,
     ): Delta {
         val marketId = delta.marketId
-        if (delta.reduceOnly == true && !hasTransfer)  {
+        if (delta.reduceOnly == true && !hasTransfer) {
             val size = delta.size ?: Numeric.double.ZERO
             val price = delta.price ?: Numeric.double.ZERO
             val modifiedSize =
@@ -241,7 +252,7 @@ internal class SubaccountTransformerV2(
             val modifiedDelta = if (delta != null) {
                 transformDelta(
                     delta = delta,
-                   positionSize = Numeric.double.ZERO,
+                    positionSize = Numeric.double.ZERO,
                 )
             } else {
                 null
@@ -249,13 +260,13 @@ internal class SubaccountTransformerV2(
             modified[deltaMarketId] = applyDeltaToPosition(
                 position = position,
                 delta = modifiedDelta,
-                period = period
+                period = period,
             )
         }
 
         return removeNullPositions(
             positions = modified,
-            exceptMarketId = deltaMarketId
+            exceptMarketId = deltaMarketId,
         )
     }
 
@@ -279,7 +290,7 @@ internal class SubaccountTransformerV2(
         val deltaSize = delta?.size
         val calculatedAtPeriod = position.calculated[period] ?: InternalPositionCalculated()
         if (delta != null && deltaSize != null) {
-            val currentSize = position.calculated[CalculationPeriod.current]?.size  ?: Numeric.double.ZERO
+            val currentSize = position.calculated[CalculationPeriod.current]?.size ?: Numeric.double.ZERO
             calculatedAtPeriod.size = currentSize + deltaSize
         } else {
             calculatedAtPeriod.size = null
@@ -322,12 +333,11 @@ internal class SubaccountTransformerV2(
                     leverage = null,
                     size = 0.0,
                     liquidationPrice = null,
-                    buyingPower = null
+                    buyingPower = null,
 
-                )
-            )
+                ),
+            ),
 
         )
     }
-
 }

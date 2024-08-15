@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.calculator.v2.tradeinput
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.TradeCalculation
+import exchange.dydx.abacus.calculator.v2.AccountTransformerV2
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -22,6 +24,7 @@ internal class TradeInputCalculatorV2(
     private val nonMarketOrderCalculator: TradeInputNonMarketOrderCalculator = TradeInputNonMarketOrderCalculator(),
     private val optionsCalculator: TradeInputOptionsCalculator = TradeInputOptionsCalculator(parser),
     private val summaryCalculator: TradeInputSummaryCalculator = TradeInputSummaryCalculator(),
+    private val accountTransformer: AccountTransformerV2 = AccountTransformerV2(parser),
 ) {
     fun calculate(
         trade: InternalTradeInputState,
@@ -84,6 +87,14 @@ internal class TradeInputCalculatorV2(
             market = markets[trade.marketId],
             rewardsParams = rewardsParams,
             feeTiers = configs.feeTiers,
+        )
+
+        accountTransformer.applyTradeToAccount(
+            account = account,
+            subaccountNumber = subaccountNumber,
+            trade = trade,
+            market = markets[trade.marketId],
+            CalculationPeriod.post,
         )
 
         return trade
