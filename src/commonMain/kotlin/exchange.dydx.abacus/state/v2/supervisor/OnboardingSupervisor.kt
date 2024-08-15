@@ -106,7 +106,9 @@ internal class OnboardingSupervisor(
                 retrieveSkipTransferChains()
             }
             retrieveSkipTransferTokens()
-            retrieveSkipEvmSwapVenues()
+            if (StatsigConfig.ff_enable_evm_swaps) {
+                retrieveSkipEvmSwapVenues()
+            }
         } else {
             retrieveTransferAssets()
         }

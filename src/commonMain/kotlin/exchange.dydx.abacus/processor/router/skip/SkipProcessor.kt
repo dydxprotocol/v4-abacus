@@ -67,20 +67,18 @@ internal class SkipProcessor(
         existing: Map<String, Any>?,
         payload: Map<String, Any>
     ) {
-        if (StatsigConfig.ff_enable_evm_swaps) {
-            val venues = parser.asNativeList(payload.get("venues"))
-            val evmSwapVenues = venues?.filter {
-                parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
-            }?.map {
-                val swapVenue = parser.asMap(it)
-                mapOf(
-                    "name" to parser.asString(swapVenue?.get("name")),
-                    "chain_id" to parser.asString(swapVenue?.get("chain_id")),
-                )
-            }
-            if (evmSwapVenues != null) {
-                this.internalState.evmSwapVenues = evmSwapVenues
-            }
+        val venues = parser.asNativeList(payload.get("venues"))
+        val evmSwapVenues = venues?.filter {
+            parser.asString(parser.asMap(it)?.get("name"))?.endsWith(UNISWAP_SUFFIX) == true
+        }?.map {
+            val swapVenue = parser.asMap(it)
+            mapOf(
+                "name" to parser.asString(swapVenue?.get("name")),
+                "chain_id" to parser.asString(swapVenue?.get("chain_id")),
+            )
+        }
+        if (evmSwapVenues != null) {
+            this.internalState.evmSwapVenues = evmSwapVenues
         }
     }
 
