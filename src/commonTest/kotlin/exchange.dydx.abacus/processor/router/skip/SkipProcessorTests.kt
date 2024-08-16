@@ -5,10 +5,12 @@ import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.RpcConfigs
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.tests.payloads.SkipTokensMock
+import exchange.dydx.abacus.tests.payloads.SkipVenuesMock
 import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
 import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
 import exchange.dydx.abacus.utils.Parser
@@ -415,6 +417,58 @@ class SkipProcessorTests {
             ),
             "is_testnet" to false,
         ).toJsonObject()
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun receivedEvmSwapVenuesEvmSwaps() {
+        StatsigConfig.ff_enable_evm_swaps = true
+        skipProcessor.receivedEvmSwapVenues(
+            existing = mapOf(),
+            payload = templateToMap(SkipVenuesMock.venues),
+        )
+
+        val result = internalState.evmSwapVenues
+
+        val expected =
+            listOf(
+                mapOf(
+                    "name" to "ethereum-uniswap",
+                    "chain_id" to "1",
+                ),
+                mapOf(
+                    "name" to "binance-uniswap",
+                    "chain_id" to "56",
+                ),
+                mapOf(
+                    "name" to "polygon-uniswap",
+                    "chain_id" to "137",
+                ),
+                mapOf(
+                    "name" to "optimism-uniswap",
+                    "chain_id" to "10",
+                ),
+                mapOf(
+                    "name" to "arbitrum-uniswap",
+                    "chain_id" to "42161",
+                ),
+                mapOf(
+                    "name" to "base-uniswap",
+                    "chain_id" to "8453",
+                ),
+                mapOf(
+                    "name" to "celo-uniswap",
+                    "chain_id" to "42220",
+                ),
+                mapOf(
+                    "name" to "avalanche-uniswap",
+                    "chain_id" to "43114",
+                ),
+                mapOf(
+                    "name" to "blast-uniswap",
+                    "chain_id" to "81457",
+                ),
+            )
         assertEquals(expected, result)
     }
 }
