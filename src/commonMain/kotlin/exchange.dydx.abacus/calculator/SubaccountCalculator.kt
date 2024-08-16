@@ -320,7 +320,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 val freeCollateral = parser.asDouble(value(subaccount, "freeCollateral", period))
 
                 for ((key, position) in positions) {
-                    val marginMode = parser.asString(parser.value(position, "marginMode"))
+                    val marginMode = parser.asString(parser.value(position, "marginMode"))?.let { MarginMode.invoke(it) }
                     val adjustedImf = parser.asDouble(value(position, "adjustedImf", period))
                     val marketLeverage = if (adjustedImf != null && adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else Numeric.double.ONE
 
