@@ -235,6 +235,27 @@ internal data class InternalSubaccountState(
 ) {
     val isParentSubaccount: Boolean
         get() = subaccountNumber < NUM_PARENT_SUBACCOUNTS
+
+    fun deepCopy(): InternalSubaccountState {
+        return InternalSubaccountState(
+            fills = fills?.map { it.copy() },
+            orders = orders?.map { it.copy() },
+            transfers = transfers?.map { it.copy() },
+            historicalPNLs = historicalPNLs?.map { it.copy() },
+            positions = positions?.map { it.key to it.value.copy() }?.toMap(),
+            assetPositions = assetPositions?.map { it.key to it.value.copy() }?.toMap(),
+            subaccountNumber = subaccountNumber,
+            address = address,
+            equity = equity,
+            freeCollateral = freeCollateral,
+            marginEnabled = marginEnabled,
+            updatedAtHeight = updatedAtHeight,
+            latestProcessedBlockHeight = latestProcessedBlockHeight,
+            pendingPositions = pendingPositions?.map { it.copy() },
+            openPositions = openPositions?.map { it.key to it.value.copy() }?.toMap(),
+            calculated = calculated.map { it.key to it.value.copy() }.toMap().toMutableMap(),
+        )
+    }
 }
 
 internal data class InternalSubaccountCalculated(

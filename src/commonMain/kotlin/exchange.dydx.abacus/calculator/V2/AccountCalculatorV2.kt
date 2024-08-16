@@ -60,17 +60,19 @@ internal class AccountCalculatorV2(
         val subaccounts = account.subaccounts
         val subaccountNumbers = subaccounts.keys.sorted()
 
-        // merge child subaccounts with parent subaccount and store it into groupedSubaccounts
+        // Merge child subaccounts with parent subaccount and store it into groupedSubaccounts
+        // We need to copy its entire content not just references, so that the subaccount calculations
+        // are not affected by the parent subaccount calculations.
         val groupedSubaccounts = mutableMapOf<Int, InternalSubaccountState>()
         for (subaccountNumber in subaccountNumbers) {
             val subaccount = subaccounts[subaccountNumber] ?: continue
             if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
-                // this is a parent subaccount
-                groupedSubaccounts[subaccountNumber] = subaccount.copy()
+                // this is a parent subaccount..
+                groupedSubaccounts[subaccountNumber] = subaccount.deepCopy()
             } else {
                 val parentSubaccountNumber = subaccountNumber % NUM_PARENT_SUBACCOUNTS
                 var parentSubaccount = groupedSubaccounts[parentSubaccountNumber]
-                    ?: subaccounts[parentSubaccountNumber]?.copy()
+                    ?: subaccounts[parentSubaccountNumber]?.deepCopy()
                     ?: InternalSubaccountState(subaccountNumber = parentSubaccountNumber)
 
                 parentSubaccount = mergeChildOpenPositions(
