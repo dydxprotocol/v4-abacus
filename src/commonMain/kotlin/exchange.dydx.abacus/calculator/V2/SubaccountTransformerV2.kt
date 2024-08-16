@@ -2,6 +2,8 @@ package exchange.dydx.abacus.calculator.v2
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.TradeStatesWithStringValues
+import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
@@ -317,23 +319,39 @@ internal class SubaccountTransformerV2(
             closedAt = null,
             exitPrice = null,
             subaccountNumber = null,
-            resources = null,
+            resources = SubaccountPositionResources(
+                sideStringKey = TradeStatesWithStringValues(
+                    current = "APP.GENERAL.NONE",
+                    postOrder = null,
+                    postAllOrders = null,
+                ),
+                indicator = TradeStatesWithStringValues(
+                    current = "none",
+                    postOrder = null,
+                    postAllOrders = null,
+                ),
+                sideString = TradeStatesWithStringValues(
+                    current = null,
+                    postOrder = null,
+                    postAllOrders = null,
+                ),
+            ),
             calculated = mutableMapOf(
                 CalculationPeriod.current to InternalPositionCalculated(
                     valueTotal = 0.0,
                     notionalTotal = 0.0,
-                    adjustedImf = null,
-                    adjustedMmf = null,
-                    initialRiskTotal = null,
-                    maxLeverage = null,
-                    unrealizedPnl = null,
-                    unrealizedPnlPercent = null,
-                    marginValue = null,
+                    adjustedImf = 0.0,
+                    adjustedMmf = 0.0,
+                    initialRiskTotal = 0.0,
+                    maxLeverage = 0.0,
+                    unrealizedPnl = 0.0,
+                    unrealizedPnlPercent = 0.0,
+                    marginValue = 0.0,
                     realizedPnlPercent = 0.0,
-                    leverage = null,
+                    leverage = 0.0,
                     size = 0.0,
-                    liquidationPrice = null,
-                    buyingPower = null,
+                    liquidationPrice = 0.0,
+                    buyingPower = 0.0,
 
                 ),
             ),
