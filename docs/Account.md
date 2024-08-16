@@ -232,7 +232,13 @@ Leverage of the position
 
 ## maxLeverage
 
-Max leverage allowed for the position, calculated from adjustedImf
+Max leverage allowed for the position
+
+```
+max_market_leverage = 1 / adjustedImf
+
+max_leverage = subaccount.freeCollateral * max_market_leverage / suabccount.equity
+```
 
 ## buyingPower
 

@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.calculator
 
 import abs
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
@@ -133,7 +134,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                             set(null, modified, "adjustedImf", period)
                             set(null, modified, "adjustedMmf", period)
                             set(null, modified, "initialRiskTotal", period)
-                            set(null, modified, "maxLeverage", period)
                             set(null, modified, "unrealizedPnl", period)
                             set(null, modified, "unrealizedPnlPercent", period)
                             set(null, modified, "marginValue", period)
@@ -150,12 +150,12 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 configs,
                                 notional,
                             )
-                            val maxLeverage =
-                                if (adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else null
+
+                            val marginMode = parser.asString(parser.value(position, "marginMode"))
+
                             set(adjustedImf, modified, "adjustedImf", period)
                             set(adjustedMmf, modified, "adjustedMmf", period)
                             set(adjustedImf * notional, modified, "initialRiskTotal", period)
-                            set(maxLeverage, modified, "maxLeverage", period)
 
                             if (entryPrice != null) {
                                 val entryValue = size * entryPrice
@@ -167,7 +167,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                                 set(unrealizedPnlPercent, modified, "unrealizedPnlPercent", period)
                             }
 
-                            val marginMode = parser.asString(parser.value(position, "marginMode"))
                             when (marginMode) {
                                 "ISOLATED" -> {
                                     val equity = parser.asDouble(value(subaccount, "equity", period))
@@ -190,7 +189,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     set(null, modified, "adjustedImf", period)
                     set(null, modified, "adjustedMmf", period)
                     set(null, modified, "initialRiskTotal", period)
-                    set(null, modified, "maxLeverage", period)
                     set(null, modified, "unrealizedPnl", period)
                     set(null, modified, "unrealizedPnlPercent", period)
                     set(null, modified, "marginValue", period)
@@ -204,7 +202,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 set(null, modified, "adjustedImf", period)
                 set(null, modified, "adjustedMmf", period)
                 set(null, modified, "initialRiskTotal", period)
-                set(null, modified, "maxLeverage", period)
                 set(null, modified, "marginValue", period)
             }
         }
@@ -320,12 +317,27 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                 val initialRiskTotal =
                     parser.asDouble(value(subaccount, "initialRiskTotal", period))
                 val equity = parser.asDouble(value(subaccount, "equity", period))
+                val freeCollateral = parser.asDouble(value(subaccount, "freeCollateral", period))
+
                 for ((key, position) in positions) {
+                    val marginMode = parser.asString(parser.value(position, "marginMode"))
+                    val adjustedImf = parser.asDouble(value(position, "adjustedImf", period))
+                    val marketLeverage = if (adjustedImf != null && adjustedImf != Numeric.double.ZERO) Numeric.double.ONE / adjustedImf else Numeric.double.ONE
+
                     val leverage = calculatePositionLeverage(
                         equity = equity,
                         notionalValue = parser.asDouble(value(position, "valueTotal", period)),
                     )
                     set(leverage, position, "leverage", period)
+
+                    val maxLeverage = calculatePositionMaxLeverage(
+                        marginMode = marginMode,
+                        adjustedImf = adjustedImf,
+                        freeCollateral = freeCollateral,
+                        equity = equity,
+                    )
+                    set(maxLeverage, position, "maxLeverage", period)
+
                     val liquidationPrice = calculatePositionLiquidationPrice(
                         equity = equity ?: Numeric.double.ZERO,
                         marketId = key,
@@ -337,7 +349,7 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
                     val buyingPower = calculatePositionBuyingPower(
                         equity = equity,
                         initialRiskTotal = initialRiskTotal,
-                        imf = parser.asDouble(value(position, "adjustedImf", period)),
+                        imf = adjustedImf,
                     )
                     set(buyingPower, position, "buyingPower", period)
                 }
@@ -353,6 +365,25 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
             notionalValue / equity
         } else {
             null
+        }
+    }
+
+    private fun calculatePositionMaxLeverage(
+        marginMode: MarginMode?,
+        adjustedImf: Double?,
+        freeCollateral: Double?,
+        equity: Double?,
+    ): Double? {
+        val marketMaxLeverage = if (adjustedImf != null && adjustedImf != Numeric.double.ZERO) {
+            Numeric.double.ONE / adjustedImf
+        } else {
+            Numeric.double.ONE
+        }
+        return if (marginMode == MarginMode.Isolated) {
+            // TODO: CT-1111
+            marketMaxLeverage
+        } else {
+            (freeCollateral ?: Numeric.double.ZERO) * marketMaxLeverage / (equity ?: Numeric.double.ONE)
         }
     }
 
