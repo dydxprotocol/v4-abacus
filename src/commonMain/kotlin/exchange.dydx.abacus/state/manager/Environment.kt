@@ -542,6 +542,7 @@ class V4Environment(
 }
 
 @JsExport
+@Suppress("PropertyName")
 data object StatsigConfig {
     var useSkip: Boolean = false
     var ff_enable_evm_swaps: Boolean = false
