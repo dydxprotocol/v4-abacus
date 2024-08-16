@@ -140,7 +140,7 @@ internal class SubaccountTransformerV2(
         hasTransfer: Boolean = false,
     ) {
         val deltaMarketId = delta?.marketId
-        val positions = subaccount.positions
+        val positions = subaccount.openPositions
 
         val marketPosition = positions?.get(deltaMarketId)
         val modifiedDelta = if (delta != null) {
@@ -155,7 +155,7 @@ internal class SubaccountTransformerV2(
         }
 
         if (positions != null) {
-            subaccount.positions = applyDeltaToPositions(
+            subaccount.openPositions = applyDeltaToPositions(
                 positions = positions,
                 delta = modifiedDelta,
                 period = period,

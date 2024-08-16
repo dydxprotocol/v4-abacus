@@ -227,20 +227,14 @@ internal data class InternalSubaccountState(
 
     var pendingPositions: List<InternalPerpetualPendingPosition>? = null,
 
-    // for parent subaccount only.  This contains the consolidated open positions of all child subaccounts
-    var childSubaccountOpenPositions: Map<String, InternalPerpetualPosition>? = null,
+    // calculated: For parent subaccount, this contains the calculated values of all child subaccounts
+    var openPositions: Map<String, InternalPerpetualPosition>? = null,
 
     // Calculated:
     val calculated: MutableMap<CalculationPeriod, InternalSubaccountCalculated> = mutableMapOf(),
 ) {
     val isParentSubaccount: Boolean
         get() = subaccountNumber < NUM_PARENT_SUBACCOUNTS
-
-    val openPositions: Map<String, InternalPerpetualPosition>?
-        get() = positions?.filterValues { it.status == IndexerPerpetualPositionStatus.OPEN }
-
-    val groupedOpenPositions: Map<String, InternalPerpetualPosition>?
-        get() = if (isParentSubaccount) childSubaccountOpenPositions else openPositions
 }
 
 internal data class InternalSubaccountCalculated(

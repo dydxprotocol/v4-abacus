@@ -60,16 +60,17 @@ internal class AccountCalculatorV2(
         val subaccounts = account.subaccounts
         val subaccountNumbers = subaccounts.keys.sorted()
 
+        // merge child subaccounts with parent subaccount and store it into groupedSubaccounts
         val groupedSubaccounts = mutableMapOf<Int, InternalSubaccountState>()
         for (subaccountNumber in subaccountNumbers) {
             val subaccount = subaccounts[subaccountNumber] ?: continue
             if (subaccountNumber < NUM_PARENT_SUBACCOUNTS) {
                 // this is a parent subaccount
-                groupedSubaccounts[subaccountNumber] = subaccount
+                groupedSubaccounts[subaccountNumber] = subaccount.copy()
             } else {
                 val parentSubaccountNumber = subaccountNumber % NUM_PARENT_SUBACCOUNTS
                 var parentSubaccount = groupedSubaccounts[parentSubaccountNumber]
-                    ?: subaccounts[parentSubaccountNumber]
+                    ?: subaccounts[parentSubaccountNumber]?.copy()
                     ?: InternalSubaccountState(subaccountNumber = parentSubaccountNumber)
 
                 parentSubaccount = mergeChildOpenPositions(
@@ -106,7 +107,7 @@ internal class AccountCalculatorV2(
         childSubaccountNumber: Int,
         childSubaccount: InternalSubaccountState,
     ): InternalSubaccountState {
-        val parentOpenPositions = parentSubaccount.childSubaccountOpenPositions ?: parentSubaccount.openPositions
+        val parentOpenPositions = parentSubaccount.openPositions
         val modifiedOpenPositions = parentOpenPositions?.toMutableMap() ?: mutableMapOf()
         val childOpenPositions = childSubaccount.openPositions
         for ((market, childOpenPosition) in childOpenPositions ?: emptyMap()) {
@@ -116,7 +117,7 @@ internal class AccountCalculatorV2(
 //            )
             modifiedOpenPositions[market] = childOpenPosition
         }
-        parentSubaccount.childSubaccountOpenPositions = modifiedOpenPositions
+        parentSubaccount.openPositions = modifiedOpenPositions
 
         return parentSubaccount
     }
