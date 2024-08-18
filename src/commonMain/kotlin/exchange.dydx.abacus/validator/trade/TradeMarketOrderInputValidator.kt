@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator.trade
 
 import abs
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -19,8 +20,15 @@ internal class TradeMarketOrderInputValidator(
     private val marketOrderWarningSlippage = 0.05
 
     override fun validateTrade(
-        staticTyping: Boolean,
         internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -149,14 +157,14 @@ internal class TradeMarketOrderInputValidator(
         actionStringKey: String? = null,
         slippagePercentValue: Double? = null
     ): Map<String, Any> {
-        return error(
+        return errorDeprecated(
             type = errorLevel,
-            errorCode,
-            fields,
-            actionStringKey,
-            "ERRORS.TRADE_BOX_TITLE.$errorCode",
-            "ERRORS.TRADE_BOX.$errorCode",
-            slippagePercentValue?.let {
+            errorCode = errorCode,
+            fields = fields,
+            actionStringKey = actionStringKey,
+            titleStringKey = "ERRORS.TRADE_BOX_TITLE.$errorCode",
+            textStringKey = "ERRORS.TRADE_BOX.$errorCode",
+            textParams = slippagePercentValue?.let {
                 mapOf(
                     "SLIPPAGE" to mapOf(
                         "value" to it,

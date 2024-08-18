@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.trade
 
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -14,11 +15,17 @@ internal class TradeBracketOrdersValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) :
-    BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     override fun validateTrade(
-        staticTyping: Boolean,
         internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -408,27 +415,27 @@ internal class TradeBracketOrdersValidator(
         text: String,
         params: Map<String, Any>?,
     ): Map<String, Any> {
-        return error(
-            "ERROR",
-            errorCode,
-            fields,
-            "APP.TRADE.ENTER_TRIGGER_PRICE",
-            title,
-            text,
-            params,
+        return errorDeprecated(
+            type = "ERROR",
+            errorCode = errorCode,
+            fields = fields,
+            actionStringKey = "APP.TRADE.ENTER_TRIGGER_PRICE",
+            titleStringKey = title,
+            textStringKey = text,
+            textParams = params,
         )
     }
 
     private fun reduceOnlyError(
         field: List<String>,
     ): Map<String, Any> {
-        return error(
-            "ERROR",
-            "WOULD_NOT_REDUCE_UNCHECK",
-            field,
-            "APP.TRADE.ENTER_TRIGGER_PRICE",
-            "ERRORS.TRADE_BOX_TITLE.WOULD_NOT_REDUCE_UNCHECK",
-            "ERRORS.TRADE_BOX.WOULD_NOT_REDUCE_UNCHECK",
+        return errorDeprecated(
+            type = "ERROR",
+            errorCode = "WOULD_NOT_REDUCE_UNCHECK",
+            fields = field,
+            actionStringKey = "APP.TRADE.ENTER_TRIGGER_PRICE",
+            titleStringKey = "ERRORS.TRADE_BOX_TITLE.WOULD_NOT_REDUCE_UNCHECK",
+            textStringKey = "ERRORS.TRADE_BOX.WOULD_NOT_REDUCE_UNCHECK",
         )
     }
 }

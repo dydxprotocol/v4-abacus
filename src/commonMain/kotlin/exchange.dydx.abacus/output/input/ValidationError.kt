@@ -142,7 +142,7 @@ enum class ErrorType(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            ErrorType.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -154,7 +154,7 @@ enum class ErrorAction(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            ErrorAction.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 

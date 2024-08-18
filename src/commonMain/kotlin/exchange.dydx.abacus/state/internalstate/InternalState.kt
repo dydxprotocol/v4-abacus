@@ -33,6 +33,7 @@ import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
@@ -54,9 +55,20 @@ internal data class InternalState(
 
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
-    var currentType: InputType? = null,
     var receiptLines: List<ReceiptLine>? = null,
-)
+    var errors: List<ValidationError>? = null,
+    var childSubaccountErrors: List<ValidationError>? = null,
+) {
+    var currentType: InputType? = null
+        set(value) {
+            if (field != value) {
+                receiptLines = null
+                errors = null
+                childSubaccountErrors = null
+                field = value
+            }
+        }
+}
 
 internal data class InternalTradeInputState(
     var marketId: String? = null,

@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -14,8 +16,16 @@ internal class AccountInputValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     override fun validate(
-        staticTyping: Boolean,
         internalState: InternalState,
+        subaccountNumber: Int?,
+        currentBlockAndHeight: BlockAndTime?,
+        inputType: InputType,
+        environment: V4Environment?,
+    ): List<ValidationError>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun validateDeprecated(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -40,15 +50,15 @@ internal class AccountInputValidator(
         return if (wallet != null) {
             null
         } else {
-            error(
-                "ERROR",
-                "REQUIRED_WALLET",
-                null,
-                "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
-                "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
-                "ERRORS.TRADE_BOX.CONNECT_WALLET_TO_TRADE",
-                null,
-                "/onboard",
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = "REQUIRED_WALLET",
+                fields = null,
+                actionStringKey = "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.CONNECT_WALLET_TO_TRADE",
+                textStringKey = "ERRORS.TRADE_BOX.CONNECT_WALLET_TO_TRADE",
+                textParams = null,
+                action = "/onboard",
             )
         }
     }
@@ -61,15 +71,15 @@ internal class AccountInputValidator(
         return if (account != null) {
             null
         } else {
-            error(
-                "ERROR",
-                "REQUIRED_ACCOUNT",
-                null,
-                "ERRORS.TRADE_BOX_TITLE.DEPOSIT_TO_TRADE",
-                "ERRORS.TRADE_BOX_TITLE.DEPOSIT_TO_TRADE",
-                "ERRORS.TRADE_BOX.DEPOSIT_TO_TRADE",
-                null,
-                "/deposit",
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = "REQUIRED_ACCOUNT",
+                fields = null,
+                actionStringKey = "ERRORS.TRADE_BOX_TITLE.DEPOSIT_TO_TRADE",
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.DEPOSIT_TO_TRADE",
+                textStringKey = "ERRORS.TRADE_BOX.DEPOSIT_TO_TRADE",
+                textParams = null,
+                action = "/deposit",
             )
         }
     }
@@ -89,15 +99,15 @@ internal class AccountInputValidator(
             // subaccountNumber is null when a childSubaccount has not been created yet
             null
         } else {
-            error(
-                "ERROR",
-                "NO_EQUITY_DEPOSIT_FIRST",
-                null,
-                "ERRORS.TRADE_BOX_TITLE.NO_EQUITY_DEPOSIT_FIRST",
-                "ERRORS.TRADE_BOX_TITLE.NO_EQUITY_DEPOSIT_FIRST",
-                "ERRORS.TRADE_BOX.NO_EQUITY_DEPOSIT_FIRST",
-                null,
-                "/deposit",
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = "NO_EQUITY_DEPOSIT_FIRST",
+                fields = null,
+                actionStringKey = "ERRORS.TRADE_BOX_TITLE.NO_EQUITY_DEPOSIT_FIRST",
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.NO_EQUITY_DEPOSIT_FIRST",
+                textStringKey = "ERRORS.TRADE_BOX.NO_EQUITY_DEPOSIT_FIRST",
+                textParams = null,
+                action = "/deposit",
             )
         }
     }

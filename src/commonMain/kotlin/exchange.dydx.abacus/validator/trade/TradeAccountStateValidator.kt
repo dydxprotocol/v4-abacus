@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.trade
 
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -15,11 +16,17 @@ internal class TradeAccountStateValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) :
-    BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     override fun validateTrade(
-        staticTyping: Boolean,
         internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -110,13 +117,13 @@ internal class TradeAccountStateValidator(
                             marginUsage > Numeric.double.ONE
                         )
                 ) {
-                    error(
-                        "ERROR",
-                        "INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
-                        "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
+                    errorDeprecated(
+                        type = "ERROR",
+                        errorCode = "INVALID_NEW_ACCOUNT_MARGIN_USAGE",
+                        fields = listOf("size.size"),
+                        actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                        titleStringKey = "ERRORS.TRADE_BOX_TITLE.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
+                        textStringKey = "ERRORS.TRADE_BOX.INVALID_NEW_ACCOUNT_MARGIN_USAGE",
                     )
                 } else {
                     null
@@ -139,13 +146,13 @@ internal class TradeAccountStateValidator(
                 parser.asNativeMap(subaccount["orders"]),
             )
         ) {
-            error(
-                "ERROR",
-                "ORDER_CROSSES_OWN_ORDER",
-                listOf("size.size"),
-                "APP.TRADE.MODIFY_SIZE_FIELD",
-                "ERRORS.TRADE_BOX_TITLE.ORDER_CROSSES_OWN_ORDER",
-                "ERRORS.TRADE_BOX.ORDER_CROSSES_OWN_ORDER",
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = "ORDER_CROSSES_OWN_ORDER",
+                fields = listOf("size.size"),
+                actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.ORDER_CROSSES_OWN_ORDER",
+                textStringKey = "ERRORS.TRADE_BOX.ORDER_CROSSES_OWN_ORDER",
             )
         } else {
             null
@@ -244,13 +251,13 @@ internal class TradeAccountStateValidator(
                     }
                 }
                 if (overleveraged) {
-                    error(
-                        "ERROR",
-                        "ORDER_WITH_CURRENT_ORDERS_INVALID",
-                        null,
-                        null,
-                        "ERRORS.TRADE_BOX_TITLE.ORDER_WITH_CURRENT_ORDERS_INVALID",
-                        "ERRORS.TRADE_BOX.ORDER_WITH_CURRENT_ORDERS_INVALID",
+                    errorDeprecated(
+                        type = "ERROR",
+                        errorCode = "ORDER_WITH_CURRENT_ORDERS_INVALID",
+                        fields = null,
+                        actionStringKey = null,
+                        titleStringKey = "ERRORS.TRADE_BOX_TITLE.ORDER_WITH_CURRENT_ORDERS_INVALID",
+                        textStringKey = "ERRORS.TRADE_BOX.ORDER_WITH_CURRENT_ORDERS_INVALID",
                     )
                 } else {
                     null

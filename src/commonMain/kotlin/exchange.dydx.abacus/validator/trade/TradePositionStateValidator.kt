@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.trade
 
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -14,11 +15,17 @@ internal class TradePositionStateValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) :
-    BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     override fun validateTrade(
-        staticTyping: Boolean,
         internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -79,14 +86,14 @@ internal class TradePositionStateValidator(
                 PositionChange.CROSSING, PositionChange.NEW, PositionChange.INCREASING -> true
                 else -> false
             }
-            error(
-                if (isError) "ERROR" else "WARNING",
-                "MARKET_STATUS_CLOSE_ONLY",
-                if (isError) listOf("size.size") else null,
-                if (isError) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
-                "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-                "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                mapOf(
+            errorDeprecated(
+                type = if (isError) "ERROR" else "WARNING",
+                errorCode = "MARKET_STATUS_CLOSE_ONLY",
+                fields = if (isError) listOf("size.size") else null,
+                actionStringKey = if (isError) "APP.TRADE.MODIFY_SIZE_FIELD" else null,
+                titleStringKey = "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
+                textStringKey = "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
+                textParams = mapOf(
                     "MARKET" to mapOf(
                         "value" to marketId,
                         "format" to "string",
@@ -113,14 +120,14 @@ internal class TradePositionStateValidator(
         }
         val symbol = parser.asString(market?.get("assetId")) ?: return null
         return if (size > maxSize) {
-            error(
-                "ERROR",
-                "NEW_POSITION_SIZE_OVER_MAX",
-                listOf("size.size"),
-                "APP.TRADE.MODIFY_SIZE_FIELD",
-                "ERRORS.TRADE_BOX_TITLE.NEW_POSITION_SIZE_OVER_MAX",
-                "ERRORS.TRADE_BOX.NEW_POSITION_SIZE_OVER_MAX",
-                mapOf(
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = "NEW_POSITION_SIZE_OVER_MAX",
+                fields = listOf("size.size"),
+                actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.NEW_POSITION_SIZE_OVER_MAX",
+                textStringKey = "ERRORS.TRADE_BOX.NEW_POSITION_SIZE_OVER_MAX",
+                textParams = mapOf(
                     "MAX_SIZE" to mapOf(
                         "value" to maxSize,
                         "format" to "size",
@@ -146,13 +153,13 @@ internal class TradePositionStateValidator(
         val needsReduceOnly = parser.asBool(parser.value(trade, "options.needsReduceOnly")) ?: false
         return if (needsReduceOnly && parser.asBool(trade["reduceOnly"]) == true) {
             when (change) {
-                PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING -> error(
-                    "ERROR",
-                    "ORDER_WOULD_FLIP_POSITION",
-                    listOf("size.size"),
-                    "APP.TRADE.MODIFY_SIZE_FIELD",
-                    "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
-                    "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION",
+                PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING -> errorDeprecated(
+                    type = "ERROR",
+                    errorCode = "ORDER_WOULD_FLIP_POSITION",
+                    fields = listOf("size.size"),
+                    actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                    titleStringKey = "ERRORS.TRADE_BOX_TITLE.ORDER_WOULD_FLIP_POSITION",
+                    textStringKey = "ERRORS.TRADE_BOX.ORDER_WOULD_FLIP_POSITION",
                 )
 
                 else -> null

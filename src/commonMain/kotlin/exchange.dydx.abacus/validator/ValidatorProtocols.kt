@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
@@ -24,8 +26,14 @@ enum class PositionChange(val rawValue: String) {
 
 internal interface ValidatorProtocol {
     fun validate(
-        staticTyping: Boolean,
         internalState: InternalState,
+        subaccountNumber: Int?,
+        currentBlockAndHeight: BlockAndTime?,
+        inputType: InputType,
+        environment: V4Environment?,
+    ): List<ValidationError>?
+
+    fun validateDeprecated(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -40,8 +48,13 @@ internal interface ValidatorProtocol {
 
 internal interface TradeValidatorProtocol {
     fun validateTrade(
-        staticTyping: Boolean,
         internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?,
+    ): List<ValidationError>?
+
+    fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -54,8 +67,13 @@ internal interface TradeValidatorProtocol {
 
 internal interface TransferValidatorProtocol {
     fun validateTransfer(
-        staticTyping: Boolean,
         internalState: InternalState,
+        currentBlockAndHeight: BlockAndTime?,
+        restricted: Boolean,
+        environment: V4Environment?,
+    ): List<ValidationError>?
+
+    fun validateTransferDeprecated(
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,

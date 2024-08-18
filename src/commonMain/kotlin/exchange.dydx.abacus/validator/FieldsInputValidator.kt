@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -11,11 +13,18 @@ internal class FieldsInputValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) :
-    BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     override fun validate(
-        staticTyping: Boolean,
         internalState: InternalState,
+        subaccountNumber: Int?,
+        currentBlockAndHeight: BlockAndTime?,
+        inputType: InputType,
+        environment: V4Environment?,
+    ): List<ValidationError>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun validateDeprecated(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -63,7 +72,7 @@ internal class FieldsInputValidator(
             val errorCode = errorCode(field)
             val errorStringKey = errorStringKey(transaction, transactionType, field)
             if (errorCode != null && errorStringKey != null) {
-                required(errorCode, field, errorStringKey)
+                requiredDeprecated(errorCode, field, errorStringKey)
             } else {
                 null
             }

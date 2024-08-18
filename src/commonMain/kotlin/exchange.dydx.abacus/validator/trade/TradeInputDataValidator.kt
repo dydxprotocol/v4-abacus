@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator.trade
 
 import abs
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -31,12 +32,18 @@ internal class TradeInputDataValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) :
-    BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
 
     override fun validateTrade(
-        staticTyping: Boolean,
         internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -96,14 +103,14 @@ internal class TradeInputDataValidator(
                 parser.asDouble(configs["minOrderSize"])?.let { minOrderSize ->
                     if (size.abs() < minOrderSize) {
                         errors.add(
-                            error(
-                                "ERROR",
-                                "ORDER_SIZE_BELOW_MIN_SIZE",
-                                null,
-                                null,
-                                "ERRORS.TRADE_BOX_TITLE.ORDER_SIZE_BELOW_MIN_SIZE",
-                                "ERRORS.TRADE_BOX.ORDER_SIZE_BELOW_MIN_SIZE",
-                                mapOf(
+                            errorDeprecated(
+                                type = "ERROR",
+                                errorCode = "ORDER_SIZE_BELOW_MIN_SIZE",
+                                fields = null,
+                                actionStringKey = null,
+                                titleStringKey = "ERRORS.TRADE_BOX_TITLE.ORDER_SIZE_BELOW_MIN_SIZE",
+                                textStringKey = "ERRORS.TRADE_BOX.ORDER_SIZE_BELOW_MIN_SIZE",
+                                textParams = mapOf(
                                     "MIN_SIZE" to mapOf(
                                         "value" to minOrderSize,
                                         "format" to "size",
@@ -143,25 +150,25 @@ internal class TradeInputDataValidator(
                                         if (side == "BUY" && limitPrice < triggerPrice) {
                                             // BUY
                                             return listOf(
-                                                error(
-                                                    "ERROR",
-                                                    "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                    listOf("price.triggerPrice"),
-                                                    "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                    "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
-                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                errorDeprecated(
+                                                    type = "ERROR",
+                                                    errorCode = "LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                    fields = listOf("price.triggerPrice"),
+                                                    actionStringKey = "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                    titleStringKey = "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
+                                                    textStringKey = "ERRORS.TRADE_BOX.LIMIT_MUST_ABOVE_TRIGGER_PRICE",
                                                 ),
                                             )
                                         } else if (side == "SELL" && limitPrice > triggerPrice) {
                                             // SELL
                                             return listOf(
-                                                error(
-                                                    "ERROR",
-                                                    "LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                    listOf("price.triggerPrice"),
-                                                    "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                                                    "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
-                                                    "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                errorDeprecated(
+                                                    type = "ERROR",
+                                                    errorCode = "LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                    fields = listOf("price.triggerPrice"),
+                                                    actionStringKey = "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                                                    titleStringKey = "ERRORS.TRADE_BOX_TITLE.LIMIT_MUST_BELOW_TRIGGER_PRICE",
+                                                    textStringKey = "ERRORS.TRADE_BOX.LIMIT_MUST_BELOW_TRIGGER_PRICE",
                                                 ),
                                             )
                                         } else {
@@ -200,13 +207,13 @@ internal class TradeInputDataValidator(
             val timeInterval = GoodTil.duration(goodTil, parser)
             if (timeInterval != null && timeInterval > 90.days) {
                 listOf(
-                    error(
-                        "ERROR",
-                        "INVALID_GOOD_TIL",
-                        listOf("goodTil"),
-                        "APP.TRADE.MODIFY_GOOD_TIL",
-                        "ERRORS.TRADE_BOX_TITLE.INVALID_GOOD_TIL",
-                        "ERRORS.TRADE_BOX.INVALID_GOOD_TIL_MAX_90_DAYS",
+                    errorDeprecated(
+                        type = "ERROR",
+                        errorCode = "INVALID_GOOD_TIL",
+                        fields = listOf("goodTil"),
+                        actionStringKey = "APP.TRADE.MODIFY_GOOD_TIL",
+                        titleStringKey = "ERRORS.TRADE_BOX_TITLE.INVALID_GOOD_TIL",
+                        textStringKey = "ERRORS.TRADE_BOX.INVALID_GOOD_TIL_MAX_90_DAYS",
                     ),
                 )
             } else {

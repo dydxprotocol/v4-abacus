@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.trade
 
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -24,6 +25,15 @@ internal class TradeTriggerPriceValidator(
     formatter: Formatter?,
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+    override fun validateTrade(
+        internalState: InternalState,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
     /*
     They are still used to calculate payload, but no longer used for validation
     private val stopMarketSlippageBufferBTC = 0.05; // 5% for Stop Market
@@ -32,9 +42,7 @@ internal class TradeTriggerPriceValidator(
     private val takeProfitMarketSlippageBuffer = 0.2; // 20% for Take Profit Market
      */
 
-    override fun validateTrade(
-        staticTyping: Boolean,
-        internalState: InternalState,
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
         configs: Map<String, Any>?,
@@ -178,24 +186,24 @@ internal class TradeTriggerPriceValidator(
                 ),
         )
         return when (triggerToIndex) {
-            RelativeToPrice.ABOVE -> error(
-                "ERROR",
-                "TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                fields,
-                action,
-                "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                "ERRORS.TRADE_BOX.TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                params,
+            RelativeToPrice.ABOVE -> errorDeprecated(
+                type = "ERROR",
+                errorCode = "TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                fields = fields,
+                actionStringKey = action,
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                textStringKey = "ERRORS.TRADE_BOX.TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                textParams = params,
             )
 
-            else -> error(
-                "ERROR",
-                "TRIGGER_MUST_BELOW_INDEX_PRICE",
-                fields,
-                action,
-                "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_BELOW_INDEX_PRICE",
-                "ERRORS.TRADE_BOX.TRIGGER_MUST_BELOW_INDEX_PRICE",
-                params,
+            else -> errorDeprecated(
+                type = "ERROR",
+                errorCode = "TRIGGER_MUST_BELOW_INDEX_PRICE",
+                fields = fields,
+                actionStringKey = action,
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.TRIGGER_MUST_BELOW_INDEX_PRICE",
+                textStringKey = "ERRORS.TRADE_BOX.TRIGGER_MUST_BELOW_INDEX_PRICE",
+                textParams = params,
             )
         }
     }
@@ -253,24 +261,24 @@ internal class TradeTriggerPriceValidator(
                 ),
             )
         return when (triggerToLiquidation) {
-            RelativeToPrice.ABOVE -> error(
-                "ERROR",
-                "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                fields,
-                action,
-                "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                params,
+            RelativeToPrice.ABOVE -> errorDeprecated(
+                type = "ERROR",
+                errorCode = "SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                fields = fields,
+                actionStringKey = action,
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                textStringKey = "ERRORS.TRADE_BOX.SELL_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                textParams = params,
             )
 
-            RelativeToPrice.BELOW -> error(
-                "ERROR",
-                "BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                fields,
-                action,
-                "ERRORS.TRADE_BOX_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                "ERRORS.TRADE_BOX.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
-                params,
+            RelativeToPrice.BELOW -> errorDeprecated(
+                type = "ERROR",
+                errorCode = "BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                fields = fields,
+                actionStringKey = action,
+                titleStringKey = "ERRORS.TRADE_BOX_TITLE.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                textStringKey = "ERRORS.TRADE_BOX.BUY_TRIGGER_TOO_CLOSE_TO_LIQUIDATION_PRICE",
+                textParams = params,
             )
         }
     }

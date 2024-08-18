@@ -11,12 +11,17 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
+
+internal interface InputFieldProtocol {
+    val test: ((InternalTradeInputState) -> Any?)?
+}
 
 @JsExport
 @Serializable
@@ -55,7 +60,7 @@ enum class TradeInputField(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            TradeInputField.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 
     internal val tradeDataOption: String?

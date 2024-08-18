@@ -1,7 +1,9 @@
 package exchange.dydx.abacus.validator
 import abs
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -24,12 +26,19 @@ internal class TriggerOrdersInputValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol
-) :
-    BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
+) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
 
     override fun validate(
-        staticTyping: Boolean,
         internalState: InternalState,
+        subaccountNumber: Int?,
+        currentBlockAndHeight: BlockAndTime?,
+        inputType: InputType,
+        environment: V4Environment?,
+    ): List<ValidationError>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun validateDeprecated(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -221,14 +230,14 @@ internal class TriggerOrdersInputValidator(
         tickSize: String,
     ): List<Any>? {
         return listOf(
-            error(
-                "ERROR",
-                errorCode,
-                listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
-                "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                titleStringKey,
-                textStringKey,
-                mapOf(
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = errorCode,
+                fields = listOf(TriggerOrdersInputField.stopLossPrice.rawValue),
+                actionStringKey = "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                titleStringKey = titleStringKey,
+                textStringKey = textStringKey,
+                textParams = mapOf(
                     "TRIGGER_PRICE_LIMIT" to mapOf(
                         "value" to liquidationPrice,
                         "format" to "price",
@@ -249,7 +258,7 @@ internal class TriggerOrdersInputValidator(
 
         if (triggerPrice == null && limitPrice != null) {
             errors.add(
-                required(
+                requiredDeprecated(
                     "REQUIRED_TRIGGER_PRICE",
                     "price.triggerPrice",
                     "APP.TRADE.ENTER_TRIGGER_PRICE",
@@ -291,13 +300,13 @@ internal class TriggerOrdersInputValidator(
 
         if (triggerPrice != null && triggerPrice <= 0 || (limitPrice != null && limitPrice <= 0)) {
             return listOf(
-                error(
-                    "ERROR",
-                    "PRICE_MUST_POSITIVE",
-                    fields,
-                    "APP.TRADE.MODIFY_PRICE",
-                    "ERRORS.TRIGGERS_FORM_TITLE.PRICE_MUST_POSITIVE",
-                    "ERRORS.TRIGGERS_FORM.PRICE_MUST_POSITIVE",
+                errorDeprecated(
+                    type = "ERROR",
+                    errorCode = "PRICE_MUST_POSITIVE",
+                    fields = fields,
+                    actionStringKey = "APP.TRADE.MODIFY_PRICE",
+                    titleStringKey = "ERRORS.TRIGGERS_FORM_TITLE.PRICE_MUST_POSITIVE",
+                    textStringKey = "ERRORS.TRIGGERS_FORM.PRICE_MUST_POSITIVE",
                 ),
             )
         }
@@ -428,13 +437,13 @@ internal class TriggerOrdersInputValidator(
         textStringKey: String,
     ): List<Any>? {
         return listOf(
-            error(
-                "ERROR",
-                errorCode,
-                fields,
-                "APP.TRADE.MODIFY_TRIGGER_PRICE",
-                titleStringKey,
-                textStringKey,
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = errorCode,
+                fields = fields,
+                actionStringKey = "APP.TRADE.MODIFY_TRIGGER_PRICE",
+                titleStringKey = titleStringKey,
+                textStringKey = textStringKey,
             ),
         )
     }
@@ -452,14 +461,14 @@ internal class TriggerOrdersInputValidator(
                 parser.asDouble(configs["minOrderSize"])?.let { minOrderSize ->
                     if (size.abs() < minOrderSize) {
                         errors.add(
-                            error(
-                                "ERROR",
-                                "ORDER_SIZE_BELOW_MIN_SIZE",
-                                listOf(TriggerOrdersInputField.size.rawValue),
-                                null,
-                                "ERRORS.TRADE_BOX_TITLE.ORDER_SIZE_BELOW_MIN_SIZE",
-                                "ERRORS.TRADE_BOX.ORDER_SIZE_BELOW_MIN_SIZE",
-                                mapOf(
+                            errorDeprecated(
+                                type = "ERROR",
+                                errorCode = "ORDER_SIZE_BELOW_MIN_SIZE",
+                                fields = listOf(TriggerOrdersInputField.size.rawValue),
+                                actionStringKey = null,
+                                titleStringKey = "ERRORS.TRADE_BOX_TITLE.ORDER_SIZE_BELOW_MIN_SIZE",
+                                textStringKey = "ERRORS.TRADE_BOX.ORDER_SIZE_BELOW_MIN_SIZE",
+                                textParams = mapOf(
                                     "MIN_SIZE" to mapOf(
                                         "value" to minOrderSize,
                                         "format" to "size",
@@ -499,40 +508,40 @@ internal class TriggerOrdersInputValidator(
         val isStopLoss = type == OrderType.StopLimit || type == OrderType.StopMarket
 
         return when (triggerToIndex) {
-            RelativeToPrice.ABOVE -> error(
-                "ERROR",
-                "TRIGGER_MUST_ABOVE_INDEX_PRICE",
-                fields,
-                action,
-                if (isStopLoss) {
+            RelativeToPrice.ABOVE -> errorDeprecated(
+                type = "ERROR",
+                errorCode = "TRIGGER_MUST_ABOVE_INDEX_PRICE",
+                fields = fields,
+                actionStringKey = action,
+                titleStringKey = if (isStopLoss) {
                     "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE"
                 } else {
                     "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
                 },
-                if (isStopLoss) {
+                textStringKey = if (isStopLoss) {
                     "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_ABOVE_INDEX_PRICE"
                 } else {
                     "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_ABOVE_INDEX_PRICE"
                 },
-                params,
+                textParams = params,
             )
 
-            else -> error(
-                "ERROR",
-                "TRIGGER_MUST_BELOW_INDEX_PRICE",
-                fields,
-                action,
-                if (isStopLoss) {
+            else -> errorDeprecated(
+                type = "ERROR",
+                errorCode = "TRIGGER_MUST_BELOW_INDEX_PRICE",
+                fields = fields,
+                actionStringKey = action,
+                titleStringKey = if (isStopLoss) {
                     "ERRORS.TRIGGERS_FORM_TITLE.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
                 } else {
                     "ERRORS.TRIGGERS_FORM_TITLE.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE"
                 },
-                if (isStopLoss) {
+                textStringKey = if (isStopLoss) {
                     "ERRORS.TRIGGERS_FORM.STOP_LOSS_TRIGGER_MUST_BELOW_INDEX_PRICE"
                 } else {
                     "ERRORS.TRIGGERS_FORM.TAKE_PROFIT_TRIGGER_MUST_BELOW_INDEX_PRICE"
                 },
-                params,
+                textParams = params,
             )
         }
     }

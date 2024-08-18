@@ -1,78 +1,52 @@
-package exchange.dydx.abacus.validator
+package exchange.dydx.abacus.validator.trade
 
-import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.internalstate.InternalState
-import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
-import exchange.dydx.abacus.validator.transfer.DepositValidator
-import exchange.dydx.abacus.validator.transfer.TransferOutValidator
-import exchange.dydx.abacus.validator.transfer.WithdrawalCapacityValidator
-import exchange.dydx.abacus.validator.transfer.WithdrawalGatingValidator
+import exchange.dydx.abacus.validator.BaseInputValidator
+import exchange.dydx.abacus.validator.PositionChange
+import exchange.dydx.abacus.validator.TradeValidatorProtocol
 
-internal class TransferInputValidator(
+internal class TradeResctrictedValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
-) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
-    private val transferValidators = listOf<TransferValidatorProtocol>(
-        DepositValidator(localizer, formatter, parser),
-        TransferOutValidator(localizer, formatter, parser),
-        WithdrawalGatingValidator(localizer, formatter, parser),
-        WithdrawalCapacityValidator(localizer, formatter, parser),
-    )
-
-    override fun validate(
+) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
+    override fun validateTrade(
         internalState: InternalState,
-        subaccountNumber: Int?,
-        currentBlockAndHeight: BlockAndTime?,
-        inputType: InputType,
-        environment: V4Environment?,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?
     ): List<ValidationError>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun validateDeprecated(
-        wallet: Map<String, Any>?,
-        user: Map<String, Any>?,
-        subaccount: Map<String, Any>?,
-        markets: Map<String, Any>?,
-        configs: Map<String, Any>?,
-        currentBlockAndHeight: BlockAndTime?,
-        transaction: Map<String, Any>,
-        transactionType: String,
-        environment: V4Environment?,
-    ): List<Any>? {
-        if (transactionType == "transfer") {
-            val errors = mutableListOf<Any>()
-            val restricted = parser.asBool(user?.get("restricted")) ?: false
-            for (validator in transferValidators) {
-                val validatorErrors =
-                    validator.validateTransferDeprecated(
-                        wallet = wallet,
-                        subaccount = subaccount,
-                        transfer = transaction,
-                        configs = configs,
-                        currentBlockAndHeight = currentBlockAndHeight,
-                        restricted = restricted,
-                        environment = environment,
-                    )
-                if (validatorErrors != null) {
-                    errors.addAll(validatorErrors)
-                }
-            }
-            return errors
-        }
         return null
     }
 
-    private fun validateClosingOnly(
+    override fun validateTradeDeprecated(
         subaccount: Map<String, Any>?,
         market: Map<String, Any>?,
+        configs: Map<String, Any>?,
         trade: Map<String, Any>,
+        change: PositionChange,
+        restricted: Boolean,
+        environment: V4Environment?,
+    ): List<Any>? {
+        val closeOnlyError =
+            validateClosingOnlyDeprecated(
+                parser = parser,
+                market = market,
+                change = change,
+                restricted = restricted,
+            )
+
+        return closeOnlyError?.let { listOf(it) }
+    }
+
+    private fun validateClosingOnlyDeprecated(
+        parser: ParserProtocol,
+        market: Map<String, Any>?,
         change: PositionChange,
         restricted: Boolean,
     ): Map<String, Any>? {
@@ -86,8 +60,8 @@ internal class TransferInputValidator(
                         errorDeprecated(
                             type = "ERROR",
                             errorCode = "RESTRICTED_USER",
-                            fields = listOf("size.size"),
-                            actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                            fields = null,
+                            actionStringKey = null,
                             titleStringKey = "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_POSITION_ONLY",
                             textStringKey = "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY",
                         )

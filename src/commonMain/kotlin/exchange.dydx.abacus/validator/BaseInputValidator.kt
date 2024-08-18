@@ -1,11 +1,19 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.output.input.ErrorAction
+import exchange.dydx.abacus.output.input.ErrorParam
+import exchange.dydx.abacus.output.input.ErrorResources
+import exchange.dydx.abacus.output.input.ErrorString
+import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.utils.JsonEncoder
 import exchange.dydx.abacus.utils.filterNotNull
 import exchange.dydx.abacus.utils.mutable
+import kollections.iListOf
+import kollections.toIList
 
 internal open class BaseInputValidator(
     internal val localizer: LocalizerProtocol?,
@@ -13,7 +21,32 @@ internal open class BaseInputValidator(
     val parser: ParserProtocol,
 ) {
     private val jsonEncoder = JsonEncoder()
-    internal fun required(
+
+    fun required(
+        errorCode: String,
+        field: String,
+        actionStringKey: String,
+    ): ValidationError {
+        return ValidationError(
+            code = errorCode,
+            type = ErrorType.required,
+            fields = iListOf(field),
+            action = null,
+            link = null,
+            linkText = null,
+            resources = ErrorResources(
+                title = null,
+                text = null,
+                action = ErrorString(
+                    stringKey = actionStringKey,
+                    params = null,
+                    localized = null,
+                ),
+            ),
+        )
+    }
+
+    internal fun requiredDeprecated(
         errorCode: String,
         field: String,
         actionStringKey: String,
@@ -30,7 +63,50 @@ internal open class BaseInputValidator(
         )
     }
 
-    internal fun error(
+    fun error(
+        type: ErrorType,
+        errorCode: String,
+        fields: List<String>?,
+        actionStringKey: String?,
+        titleStringKey: String,
+        textStringKey: String,
+        textParams: Map<String, Any>? = null,
+        action: ErrorAction? = null,
+        link: String? = null,
+        linkText: String? = null,
+    ): ValidationError {
+        return ValidationError(
+            code = errorCode,
+            type = type,
+            fields = fields?.toIList(),
+            action = action,
+            link = link,
+            linkText = linkText,
+            resources = ErrorResources(
+                title = ErrorString(
+                    stringKey = titleStringKey,
+                    params = null,
+                    localized = localize(titleStringKey),
+                ),
+                text = ErrorString(
+                    stringKey = textStringKey,
+                    params = params(parser, textParams)?.toIList(),
+                    localized = localize(titleStringKey, textParams),
+                ),
+                action = if (actionStringKey != null) {
+                    ErrorString(
+                        stringKey = actionStringKey,
+                        params = null,
+                        localized = null,
+                    )
+                } else {
+                    null
+                },
+            ),
+        )
+    }
+
+    internal fun errorDeprecated(
         type: String,
         errorCode: String,
         fields: List<String>?,
@@ -57,7 +133,7 @@ internal open class BaseInputValidator(
                 "text" to listOfNotNull(
                     localize(textStringKey, textParams)?.let { "localized" to it } ?: run { null },
                     "stringKey" to textStringKey,
-                    "params" to params(parser, textParams),
+                    "params" to paramsDeprecated(parser, textParams),
                 ).toMap(),
                 "action" to listOfNotNull(
                     localize(actionStringKey, null)?.let { "localized" to it } ?: run { null },
@@ -115,6 +191,27 @@ internal open class BaseInputValidator(
     }
 
     private fun params(
+        parser: ParserProtocol,
+        map: Map<String, Any>?,
+    ): List<ErrorParam>? {
+        if (map != null) {
+            val params = mutableListOf<ErrorParam>()
+            for ((key, value) in map) {
+                parser.asNativeMap(value)?.let {
+                    val param = ErrorParam(
+                        key = key,
+                        value = parser.asString(it["value"]),
+                        format = parser.asString(it["format"]),
+                    )
+                    params.add(param)
+                }
+            }
+            return params
+        }
+        return null
+    }
+
+    private fun paramsDeprecated(
         parser: ParserProtocol,
         map: Map<String, Any>?,
     ): List<Map<String, Any>>? {
