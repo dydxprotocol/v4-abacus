@@ -191,6 +191,8 @@ internal data class InternalUserState(
     var takerFeeRate: Double? = null,
     var makerVolume30D: Double? = null,
     var takerVolume30D: Double? = null,
+
+    var restricted: Boolean = false, // TODO: Not being used
 )
 
 internal data class InternalAccountState(

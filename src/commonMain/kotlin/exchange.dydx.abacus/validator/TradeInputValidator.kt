@@ -1,11 +1,14 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
@@ -43,14 +46,19 @@ internal class TradeInputValidator(
         if (transactionType != InputType.TRANSFER || transactionType != InputType.CLOSE_POSITION) {
             return null
         }
+        val change = getPositionChange(
+            subaccount = internalState.wallet.account.subaccounts[subaccountNumber],
+            trade = internalState.input.trade,
+        )
+        val restricted = internalState.wallet.user?.restricted ?: false
 
         val errors = mutableListOf<ValidationError>()
         for (validator in tradeValidators) {
             val validatorErrors =
                 validator.validateTrade(
                     internalState = internalState,
-                    change = PositionChange.NONE,
-                    restricted = false,
+                    change = change,
+                    restricted = restricted,
                     environment = environment,
                 )
             if (validatorErrors != null) {
@@ -74,7 +82,7 @@ internal class TradeInputValidator(
     ): List<Any>? {
         if (transactionType == "trade" || transactionType == "closePosition") {
             val marketId = parser.asString(transaction["marketId"]) ?: return null
-            val change = change(parser, subaccount, transaction)
+            val change = getPositionChangeDeprecated(parser, subaccount, transaction)
             val restricted = parser.asBool(user?.get("restricted")) ?: false
             val market = parser.asNativeMap(markets?.get(marketId))
             val errors = mutableListOf<Any>()
@@ -99,7 +107,50 @@ internal class TradeInputValidator(
         return null
     }
 
-    private fun change(
+    private fun getPositionChange(
+        subaccount: InternalSubaccountState?,
+        trade: InternalTradeInputState,
+    ): PositionChange {
+        val marketId = trade.marketId ?: return PositionChange.NONE
+        val position = subaccount?.openPositions?.get(marketId) ?: return PositionChange.NONE
+        val size = position.calculated[CalculationPeriod.current]?.size ?: Numeric.double.ZERO
+        val postOrder = position.calculated[CalculationPeriod.post]?.size ?: Numeric.double.ZERO
+        return if (size != Numeric.double.ZERO) {
+            if (postOrder != Numeric.double.ZERO) {
+                if (size > Numeric.double.ZERO) {
+                    if (postOrder > size) {
+                        PositionChange.INCREASING
+                    } else if (postOrder < Numeric.double.ZERO) {
+                        PositionChange.CROSSING
+                    } else if (postOrder < size) {
+                        PositionChange.DECREASING
+                    } else {
+                        PositionChange.NONE
+                    }
+                } else {
+                    if (postOrder > size) {
+                        PositionChange.DECREASING
+                    } else if (postOrder > Numeric.double.ZERO) {
+                        PositionChange.CROSSING
+                    } else if (postOrder < size) {
+                        PositionChange.INCREASING
+                    } else {
+                        PositionChange.NONE
+                    }
+                }
+            } else {
+                PositionChange.CLOSING
+            }
+        } else {
+            if (postOrder != Numeric.double.ZERO) {
+                PositionChange.NEW
+            } else {
+                PositionChange.NONE
+            }
+        }
+    }
+
+    private fun getPositionChangeDeprecated(
         parser: ParserProtocol,
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
