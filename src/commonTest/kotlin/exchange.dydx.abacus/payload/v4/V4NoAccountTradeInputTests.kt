@@ -5,6 +5,7 @@ import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.tests.extensions.loadOrderbook
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V4NoAccountTradeInputTests : V4BaseTests() {
     @Test
@@ -30,11 +31,15 @@ class V4NoAccountTradeInputTests : V4BaseTests() {
     }
 
     private fun testOnce() {
-        test(
-            {
-                perp.tradeInMarket("ETH-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("ETH-USD", 0)
+            assertEquals(perp.internalState.input.trade.marketId, "ETH-USD")
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("ETH-USD", 0)
+                },
+                """
             {
                 "input": {
                     "trade": {
@@ -42,8 +47,9 @@ class V4NoAccountTradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         test({
             perp.trade("LIMIT", TradeInputField.type, 0)

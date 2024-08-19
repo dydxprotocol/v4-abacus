@@ -16,7 +16,7 @@ class AccountTransformer() {
     ): Map<String, Any>? {
         val modified = account?.mutable() ?: return null
         val childSubaccountNumber =
-            MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(
+            MarginCalculator.getChildSubaccountNumberForIsolatedMarginTradeDeprecated(
                 parser,
                 account,
                 subaccountNumber ?: 0,

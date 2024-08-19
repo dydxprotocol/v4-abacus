@@ -744,7 +744,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
             "marketId" to "ARB-USD",
         )
 
-        val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTrade(parser, account, 0, tradeInput)
+        val childSubaccountNumber = MarginCalculator.getChildSubaccountNumberForIsolatedMarginTradeDeprecated(parser, account, 0, tradeInput)
         assertEquals(childSubaccountNumber, 256)
     }
 

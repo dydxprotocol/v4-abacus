@@ -24,7 +24,7 @@ internal fun TradingStateMachine.receivedMarkets(
     // TODO remove deprecated
     marketsSummary = marketsProcessor.subscribedDeprecated(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
         parser = parser,
         account = account,
         subaccountNumber = subaccountNumber,
@@ -55,7 +55,7 @@ internal fun TradingStateMachine.receivedMarketsChanges(
     val markets = parser.asNativeMap(payload.get("trading"))
     marketsSummary = marketsProcessor.channel_dataDeprecated(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, markets?.keys)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
         parser,
         account,
         subaccountNumber,
@@ -104,7 +104,7 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
         }
     }
     marketsSummary = marketsCalculator.calculate(marketsSummary, assets, keys)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
         parser = parser,
         account = account,
         subaccountNumber = subaccountNumber,
@@ -150,7 +150,7 @@ internal fun TradingStateMachine.processMarketsConfigurations(
         assets = internalState.assets,
         keys = null,
     )
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
         parser = parser,
         account = account,
         subaccountNumber = subaccountNumber ?: 0,
@@ -191,7 +191,7 @@ internal fun TradingStateMachine.receivedMarketsConfigurationsDeprecated(
         assets = assets,
         keys = null,
     )
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
         parser = parser,
         account = account,
         subaccountNumber = subaccountNumber ?: 0,

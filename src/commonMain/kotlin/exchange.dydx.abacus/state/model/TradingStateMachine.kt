@@ -9,6 +9,7 @@ import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
+import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.LaunchIncentive
@@ -30,10 +31,12 @@ import exchange.dydx.abacus.output.account.SubaccountFundingPayment
 import exchange.dydx.abacus.output.account.SubaccountHistoricalPNL
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.Input
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
+import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
 import exchange.dydx.abacus.processor.router.IRouterProcessor
@@ -122,6 +125,7 @@ open class TradingStateMachine(
         }
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
+    internal val tradeInputProcessor = TradeInputProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
@@ -644,28 +648,49 @@ open class TradingStateMachine(
             )
 
             if (subaccountNumber != null) {
-                when (this.input?.get("current")) {
-                    "trade" -> {
-                        calculateTrade(subaccountNumber)
+                if (staticTyping) {
+                    when (internalState.input.currentType) {
+                        InputType.TRADE -> {
+                            calculateTrade(subaccountNumber)
+                        }
+                        InputType.TRADE -> {
+                            calculateTransfer(subaccountNumber)
+                        }
+                        InputType.TRIGGER_ORDERS -> {
+                            calculateTriggerOrders(subaccountNumber)
+                        }
+                        InputType.ADJUST_ISOLATED_MARGIN -> {
+                            calculateAdjustIsolatedMargin(subaccountNumber)
+                        }
+                        InputType.CLOSE_POSITION -> {
+                            calculateClosePosition(subaccountNumber)
+                        }
+                        else -> {}
                     }
+                } else {
+                    when (this.input?.get("current")) {
+                        "trade" -> {
+                            calculateTrade(subaccountNumber)
+                        }
 
-                    "closePosition" -> {
-                        calculateClosePosition(subaccountNumber)
+                        "closePosition" -> {
+                            calculateClosePosition(subaccountNumber)
+                        }
+
+                        "transfer" -> {
+                            calculateTransfer(subaccountNumber)
+                        }
+
+                        "triggerOrders" -> {
+                            calculateTriggerOrders(subaccountNumber)
+                        }
+
+                        "adjustIsolatedMargin" -> {
+                            calculateAdjustIsolatedMargin(subaccountNumber)
+                        }
+
+                        else -> {}
                     }
-
-                    "transfer" -> {
-                        calculateTransfer(subaccountNumber)
-                    }
-
-                    "triggerOrders" -> {
-                        calculateTriggerOrders(subaccountNumber)
-                    }
-
-                    "adjustIsolatedMargin" -> {
-                        calculateAdjustIsolatedMargin(subaccountNumber)
-                    }
-
-                    else -> {}
                 }
             }
         }
@@ -724,24 +749,37 @@ open class TradingStateMachine(
     }
 
     private fun calculateTrade(tag: String, calculation: TradeCalculation, subaccountNumber: Int) {
-        val input = this.input?.mutable()
-        val trade = parser.asNativeMap(input?.get(tag))
-        val inputType = parser.asString(parser.value(trade, "size.input"))
-        val calculator = TradeInputCalculator(parser, calculation)
-        val params = mutableMapOf<String, Any>()
-        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
-        params.safeSet("account", account)
-        params.safeSet("user", user)
-        params.safeSet("trade", trade)
-        params.safeSet("rewardsParams", rewardsParams)
-        params.safeSet("configs", configs)
+        if (staticTyping) {
+            val calculator = TradeInputCalculatorV2(parser, calculation)
+            calculator.calculate(
+                trade = internalState.input.trade,
+                wallet = internalState.wallet,
+                marketSummary = internalState.marketsSummary,
+                rewardsParams = internalState.rewardsParams,
+                configs = internalState.configs,
+                subaccountNumber = subaccountNumber,
+                input = internalState.input.trade.size?.input,
+            )
+        } else {
+            val input = this.input?.mutable()
+            val trade = parser.asNativeMap(input?.get(tag))
+            val inputType = parser.asString(parser.value(trade, "size.input"))
+            val calculator = TradeInputCalculator(parser, calculation)
+            val params = mutableMapOf<String, Any>()
+            params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+            params.safeSet("account", account)
+            params.safeSet("user", user)
+            params.safeSet("trade", trade)
+            params.safeSet("rewardsParams", rewardsParams)
+            params.safeSet("configs", configs)
 
-        val modified = calculator.calculate(params, subaccountNumber, inputType)
-        this.setMarkets(parser.asNativeMap(modified["markets"]))
-        this.account = parser.asNativeMap(modified["account"])
-        input?.safeSet(tag, parser.asNativeMap(modified["trade"]))
+            val modified = calculator.calculate(params, subaccountNumber, inputType)
+            this.setMarkets(parser.asNativeMap(modified["markets"]))
+            this.account = parser.asNativeMap(modified["account"])
+            input?.safeSet(tag, parser.asNativeMap(modified["trade"]))
 
-        this.input = input
+            this.input = input
+        }
     }
 
     private fun calculateClosePosition(subaccountNumber: Int) {
@@ -1464,7 +1502,14 @@ open class TradingStateMachine(
                     environment = this.environment,
                 )
                 this.input?.let {
-                    input = Input.create(input, parser, it, environment, internalState)
+                    input = Input.create(
+                        existing = input,
+                        parser = parser,
+                        data = it,
+                        environment = environment,
+                        internalState = internalState,
+                        staticTyping = staticTyping,
+                    )
                 }
             }
         }
