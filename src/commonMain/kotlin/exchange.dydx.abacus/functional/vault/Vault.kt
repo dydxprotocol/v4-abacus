@@ -2,9 +2,12 @@ package exchange.dydx.abacus.functional.vault
 import exchange.dydx.abacus.protocols.asTypedObject
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
+import kotlin.time.Duration.Companion.days
 
 @JsExport
 @Serializable
@@ -65,7 +68,6 @@ fun getVaultPositionsResponse(apiResponse: String): IndexerVaultPositionResponse
     return parser.asTypedObject<IndexerVaultPositionResponse>(apiResponse)
 }
 
-
 @JsExport
 @Serializable
 data class VaultDetails(
@@ -83,7 +85,7 @@ data class VaultPositions(
 @JsExport
 @Serializable
 data class VaultHistoryEntry(
-    val date: Int? = null,
+    val date: Double? = null,
     val equity: Double? = null,
     val totalPnl: Double? = null
 )
@@ -117,10 +119,52 @@ data class ThirtyDayPnl(
 
 @JsExport
 fun calculateVaultSummary(historical: IndexerVaultHistoricalPnlResponse?): VaultDetails? {
-    if (historical == null) {
+    if (historical?.vaultOfVaultsPnl.isNullOrEmpty()) {
         return null
     }
 
+    val vaultOfVaultsPnl = historical!!.vaultOfVaultsPnl!!.sortedByDescending { parser.asDouble(it.createdAt) }
+
+    val history = vaultOfVaultsPnl.mapNotNull { entry ->
+        parser.asDouble(entry.createdAt)?.let { createdAt ->
+            VaultHistoryEntry(
+                date = createdAt,
+                equity = parser.asDouble(entry.equity) ?: 0.0,
+                totalPnl = parser.asDouble(entry.totalPnl) ?: 0.0
+            )
+        }
+    }
+
+    val latestEntry = history.first()
+    val latestTime = latestEntry.date ?: Clock.System.now().toEpochMilliseconds().toDouble()
+    val thirtyDaysAgoTime = latestTime - 30.days.inWholeMilliseconds
+
+    val thirtyDaysAgoEntry = history.find {
+        (it.date ?: Double.MAX_VALUE) <= thirtyDaysAgoTime
+    }
+
+    val totalValue = latestEntry.equity ?: 0.0
+
+    val latestTotalPnl = latestEntry.totalPnl ?: 0.0
+    val thirtyDaysAgoTotalPnl = thirtyDaysAgoEntry?.totalPnl ?: 0.0
+
+    val thirtyDayReturnPercent = if (thirtyDaysAgoEntry != null) {
+        val pnlDifference = latestTotalPnl - thirtyDaysAgoTotalPnl
+        val thirtyDaysAgoEquity = thirtyDaysAgoEntry.equity ?: 0.0
+        if (thirtyDaysAgoEquity != 0.0) {
+            (pnlDifference / thirtyDaysAgoEquity)
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    }
+
+    return VaultDetails(
+        totalValue = totalValue,
+        thirtyDayReturnPercent = thirtyDayReturnPercent,
+        history = history
+    )
 }
 
 

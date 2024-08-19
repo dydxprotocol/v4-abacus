@@ -41,7 +41,7 @@ data class VaultAccount(
     val balanceUsdc: Double?,
     val allTimeReturnUsdc: Double?,
     val vaultTransfers: List<VaultTransfer>?,
-    val totalVaultTransfers: Int?,
+    val totalVaultTransfersCount: Int?,
 )
 
 @JsExport
@@ -69,7 +69,7 @@ fun calculateUserVaultInfo(vaultInfo: AccountVaultResponse, vaultTransfers: Inde
     return VaultAccount(
         balanceUsdc = presentValue,
         allTimeReturnUsdc = allTimeReturn,
-        totalVaultTransfers = vaultTransfers.totalResults,
+        totalVaultTransfersCount = vaultTransfers.totalResults,
         vaultTransfers = vaultTransfers.transfersSubset?.map { el ->
             VaultTransfer(
                 timestampMs = parser.asDouble(el.createdAt),
