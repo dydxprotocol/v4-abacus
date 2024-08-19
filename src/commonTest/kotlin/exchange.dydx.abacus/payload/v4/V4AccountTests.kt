@@ -628,7 +628,7 @@ class V4AccountTests : V4BaseTests() {
                                             "resources": {
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": 0.4066
+                                                "current": 0.7995
                                             },
                                             "valueTotal": {
                                                 "current": -43112.854562506596
@@ -670,7 +670,7 @@ class V4AccountTests : V4BaseTests() {
                                                 "current": -7.640711804814775E-4
                                             },
                                             "unrealizedPnlPercent": {
-                                                "current": -0.3848
+                                                "current": -0.587
                                             },
                                             "valueTotal": {
                                                 "current": -186164.40898202002
