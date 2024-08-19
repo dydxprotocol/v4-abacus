@@ -157,7 +157,7 @@ fun calculateVaultSummary(historical: IndexerVaultHistoricalPnlResponse?): Vault
     val totalValue = latestEntry.equity ?: 0.0
 
     val latestTotalPnl = latestEntry.totalPnl ?: 0.0
-    val thirtyDaysAgoTotalPnl = thirtyDaysAgoEntry?.totalPnl ?: 0.0
+    val thirtyDaysAgoTotalPnl = thirtyDaysAgoEntry.totalPnl ?: 0.0
 
     val pnlDifference = latestTotalPnl - thirtyDaysAgoTotalPnl
     val thirtyDaysAgoEquity = thirtyDaysAgoEntry.equity ?: 0.0
@@ -242,7 +242,7 @@ fun calculateThirtyDayPnl(vaultHistoricalPnl: IndexerVaultHistoricalPnl?): Thirt
     } ?: sortedPnl.last()
 
     val latestTotalPnl = parser.asDouble(latestEntry.totalPnl) ?: 0.0
-    val thirtyDaysAgoTotalPnl = parser.asDouble(thirtyDaysAgoEntry?.totalPnl) ?: 0.0
+    val thirtyDaysAgoTotalPnl = parser.asDouble(thirtyDaysAgoEntry.totalPnl) ?: 0.0
     val absolutePnl = latestTotalPnl - thirtyDaysAgoTotalPnl
 
     val thirtyDaysAgoEquity = parser.asDouble(thirtyDaysAgoEntry.equity) ?: 0.0
