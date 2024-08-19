@@ -10,7 +10,7 @@ import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
-val parser = Parser();
+val parser = Parser()
 
 
 @JsExport
@@ -26,19 +26,20 @@ data class AccountVaultResponse(
 
 @JsExport
 fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
-    return parser.asTypedObject<AccountVaultResponse>(apiResponse);
+    return parser.asTypedObject<AccountVaultResponse>(apiResponse)
 }
 
 
 @JsExport
 fun getTransfersBetweenResponse(apiResponse: String): IndexerTransferBetweenResponse? {
-    return parser.asTypedObject<IndexerTransferBetweenResponse>(apiResponse);
+    return parser.asTypedObject<IndexerTransferBetweenResponse>(apiResponse)
 }
 
 @JsExport
 @Serializable
 data class VaultAccount(
     val balanceUsdc: Double?,
+    val withdrawableUsdc: Double?,
     val allTimeReturnUsdc: Double?,
     val vaultTransfers: List<VaultTransfer>?,
     val totalVaultTransfersCount: Int?,
@@ -57,17 +58,19 @@ data class VaultTransfer(
 @Serializable
 enum class VaultTransferType {
     WITHDRAWAL,
-    DEPOSIT;
+    DEPOSIT
 }
 
 @JsExport
 fun calculateUserVaultInfo(vaultInfo: AccountVaultResponse, vaultTransfers: IndexerTransferBetweenResponse): VaultAccount {
     val presentValue = vaultInfo.equity
     val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
+    val withdrawable = vaultInfo.withdrawable_amount
     val allTimeReturn = if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
 
     return VaultAccount(
         balanceUsdc = presentValue,
+        withdrawableUsdc = withdrawable,
         allTimeReturnUsdc = allTimeReturn,
         totalVaultTransfersCount = vaultTransfers.totalResults,
         vaultTransfers = vaultTransfers.transfersSubset?.map { el ->
