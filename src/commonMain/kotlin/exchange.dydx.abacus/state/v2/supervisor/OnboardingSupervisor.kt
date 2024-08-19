@@ -106,7 +106,9 @@ internal class OnboardingSupervisor(
                 retrieveSkipTransferChains()
             }
             retrieveSkipTransferTokens()
-            retrieveSkipEvmSwapVenues()
+            if (StatsigConfig.ff_enable_evm_swaps) {
+                retrieveSkipEvmSwapVenues()
+            }
         } else {
             retrieveTransferAssets()
         }
@@ -306,6 +308,23 @@ internal class OnboardingSupervisor(
         )
         val evmSwapVenues = stateMachine.internalState.transfer.evmSwapVenues
         val swapVenues = evmSwapVenues + nonEvmSwapVenues
+        val evmSwapEnabledOptions = mapOf(
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+                CCTP_BRIDGE_ID,
+            ),
+            "smart_swap_options" to SMART_SWAP_OPTIONS,
+            "swap_venues" to swapVenues,
+        )
+        val evmSwapDisabledOptions = mapOf(
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+            ),
+            "swap_venues" to nonEvmSwapVenues,
+        )
+        val options = if (StatsigConfig.ff_enable_evm_swaps) evmSwapEnabledOptions else evmSwapDisabledOptions
         if (fromAmount != null && fromAmount > 0) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
@@ -320,15 +339,8 @@ internal class OnboardingSupervisor(
                     neutronChainId to accountAddress.toNeutronAddress(),
                     chainId to accountAddress,
                 ),
-                "swap_venues" to swapVenues,
-                "bridges" to listOf(
-                    IBC_BRIDGE_ID,
-                    AXELAR_BRIDGE_ID,
-                    CCTP_BRIDGE_ID,
-                ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-                "smart_swap_options" to SMART_SWAP_OPTIONS,
-            )
+            ) + options
 
             val oldState = stateMachine.state
             val header = iMapOf(
