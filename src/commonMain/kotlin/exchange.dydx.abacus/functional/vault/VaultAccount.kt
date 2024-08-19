@@ -3,7 +3,10 @@ package exchange.dydx.abacus.functional.vault
 import exchange.dydx.abacus.protocols.asTypedObject
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerTransferBetweenResponse
-import indexer.codegen.IndexerTransferType
+import indexer.codegen.IndexerTransferType.DEPOSIT
+import indexer.codegen.IndexerTransferType.TRANSFERIN
+import indexer.codegen.IndexerTransferType.TRANSFEROUT
+import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
@@ -71,17 +74,12 @@ fun calculateUserVaultInfo(vaultInfo: AccountVaultResponse, vaultTransfers: Inde
             VaultTransfer(
                 timestampMs = parser.asDouble(el.createdAt),
                 amountUsdc = parser.asDouble(el.size),
-                type = if (el.type == null) {
-                    (null)
-                } else if (el.type === IndexerTransferType.TRANSFEROUT) {
-                    (VaultTransferType.DEPOSIT)
-                } else if (el.type === IndexerTransferType.TRANSFERIN) {
-                    (VaultTransferType.WITHDRAWAL)
-                } else {
-                    null
+                type = when (el.type) {
+                    TRANSFEROUT -> VaultTransferType.DEPOSIT
+                    TRANSFERIN -> VaultTransferType.WITHDRAWAL
+                    DEPOSIT, WITHDRAWAL, null -> null
                 },
-                id = el.id,
-            )
-        },
+                id = el.id)
+            },
     )
 }

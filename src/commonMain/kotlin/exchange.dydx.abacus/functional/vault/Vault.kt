@@ -24,8 +24,25 @@ data class IndexerVaultHistoricalPnlResponse(
 )
 
 @JsExport
+@Serializable
+data class IndexerVaultHistoricalPnl(
+    val marketId: String? = null,
+    val historicalPnl: List<IndexerHistoricalPnl>? = null
+)
+@JsExport
+@Serializable
+data class IndexerSubvaultHistoricalPnlResponse(
+    val vaultsPnl: List<IndexerVaultHistoricalPnl>? = null
+)
+
+@JsExport
 fun getVaultHistoricalPnlResponse(apiResponse: String): IndexerVaultHistoricalPnlResponse? {
     return parser.asTypedObject<IndexerVaultHistoricalPnlResponse>(apiResponse);
+}
+
+@JsExport
+fun getSubvaultHistoricalPnlResponse(apiResponse: String): IndexerSubvaultHistoricalPnlResponse? {
+    return parser.asTypedObject<IndexerSubvaultHistoricalPnlResponse>(apiResponse);
 }
 
 @JsExport
@@ -74,7 +91,7 @@ data class VaultHistoryEntry(
 @JsExport
 @Serializable
 data class VaultPosition(
-    val asset: Asset? = null,
+    val assetId: String? = null,
     val marketId: String? = null,
     val marginUsdc: Double? = null,
     val currentLeverageMultiple: Double? = null,
@@ -82,12 +99,6 @@ data class VaultPosition(
     val thirtyDayPnl: ThirtyDayPnl? = null
 )
 
-@JsExport
-@Serializable
-data class Asset(
-    val id: String? = null,
-    val name: String? = null
-)
 
 @JsExport
 @Serializable
@@ -114,20 +125,19 @@ fun calculateVaultSummary(historical: IndexerVaultHistoricalPnlResponse?): Vault
 
 
 @JsExport
-fun calculateVaultPositions(positions: IndexerVaultPositionResponse?): VaultPositions? {
+fun calculateVaultPositions(positions: IndexerVaultPositionResponse?, histories: IndexerSubvaultHistoricalPnlResponse?): VaultPositions? {
     if (positions?.positions == null) {
         return null
     }
 
-    return VaultPositions(positions = positions.positions.map { p-> calculateVaultPosition(p) })
+    val historiesMap = histories?.vaultsPnl?.associateBy { it.marketId }
+
+    return VaultPositions(positions = positions.positions.map { calculateVaultPosition(it, historiesMap?.get(it.market)) })
 }
 
-fun calculateVaultPosition(position: IndexerVaultPosition): VaultPosition {
+fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVaultHistoricalPnl?): VaultPosition {
     return VaultPosition(
-        asset = Asset(
-            id = "BTC",
-            name = "Bitcoin"
-        ),
+        assetId = "BTC",
         marketId = "BTC-USD",
         marginUsdc = 10000.0,
         currentLeverageMultiple = 2.5,
