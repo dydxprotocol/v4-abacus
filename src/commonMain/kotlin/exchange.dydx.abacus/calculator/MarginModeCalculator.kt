@@ -16,7 +16,7 @@ object MarginModeCalculator {
         val modified = tradeInput?.mutable() ?: return null
         val marketId = parser.asString(tradeInput["marketId"])
         val existingMarginMode =
-            MarginCalculator.findExistingMarginMode(
+            MarginCalculator.findExistingMarginModeDeprecated(
                 parser,
                 account,
                 marketId,
@@ -29,7 +29,7 @@ object MarginModeCalculator {
                 existingMarginMode == "ISOLATED" &&
                 parser.asDouble(tradeInput["targetLeverage"]) == null
             ) {
-                val existingPosition = MarginCalculator.findExistingPosition(
+                val existingPosition = MarginCalculator.findExistingPositionDeprecated(
                     parser,
                     account,
                     marketId,
@@ -39,7 +39,7 @@ object MarginModeCalculator {
                 modified["targetLeverage"] = existingPositionLeverage ?: 1.0
             }
         } else {
-            val marketMarginMode = MarginCalculator.findMarketMarginMode(
+            val marketMarginMode = MarginCalculator.findMarketMarginModeDeprecated(
                 parser,
                 parser.asMap(markets?.get(marketId)),
             )

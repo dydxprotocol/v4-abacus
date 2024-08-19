@@ -20,7 +20,18 @@ import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.SelectionOption
+import exchange.dydx.abacus.output.input.Tooltip
+import exchange.dydx.abacus.output.input.TradeInputBracket
+import exchange.dydx.abacus.output.input.TradeInputBracketSide
+import exchange.dydx.abacus.output.input.TradeInputGoodUntil
+import exchange.dydx.abacus.output.input.TradeInputMarketOrder
+import exchange.dydx.abacus.output.input.TradeInputPrice
+import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
@@ -37,6 +48,75 @@ internal data class InternalState(
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),
     val configs: InternalConfigsState = InternalConfigsState(),
     val marketsSummary: InternalMarketSummaryState = InternalMarketSummaryState(),
+    val input: InternalInputState = InternalInputState(),
+)
+
+internal data class InternalInputState(
+    var trade: InternalTradeInputState = InternalTradeInputState(),
+    var currentType: InputType? = null,
+)
+
+internal data class InternalTradeInputState(
+    var marketId: String? = null,
+    var size: TradeInputSize? = null,
+    var sizePercent: Double? = null,
+    var price: TradeInputPrice? = null,
+    var type: OrderType? = null,
+    var side: OrderSide? = null,
+    var marginMode: MarginMode? = null,
+    var targetLeverage: Double? = null,
+    var timeInForce: String? = null,
+    var goodTil: TradeInputGoodUntil? = null,
+    var execution: String? = null,
+    var reduceOnly: Boolean = false,
+    var postOnly: Boolean = false,
+    var fee: Double? = null,
+    var bracket: TradeInputBracket? = null,
+    var options: InternalTradeInputOptions = InternalTradeInputOptions(),
+    var marketOrder: TradeInputMarketOrder? = null,
+    var summary: InternalTradeInputSummary? = null,
+) {
+    val isBuying: Boolean
+        get() = side == OrderSide.Buy || side == null
+}
+
+internal data class InternalTradeInputSummary(
+    val price: Double?,
+    val payloadPrice: Double?,
+    val size: Double?,
+    val usdcSize: Double?,
+    val slippage: Double?,
+    val fee: Double?,
+    val total: Double?,
+    val reward: Double?,
+    val filled: Boolean,
+    val positionMargin: Double?,
+    val positionLeverage: Double?,
+    val indexSlippage: Double?,
+    val feeRate: Double?,
+)
+
+internal data class InternalTradeInputOptions(
+    var needsMarginMode: Boolean = false,
+    var needsSize: Boolean = false,
+    var needsLeverage: Boolean = false,
+    var maxLeverage: Double? = null,
+    var needsLimitPrice: Boolean = false,
+    var needsTargetLeverage: Boolean = false,
+    var needsTriggerPrice: Boolean = false,
+    var needsTrailingPercent: Boolean = false,
+    var needsGoodUntil: Boolean = false,
+    var needsReduceOnly: Boolean = false,
+    var needsPostOnly: Boolean = false,
+    var needsBrackets: Boolean = false,
+    var sideOptions: List<SelectionOption>? = null,
+    var orderTypeOptions: List<SelectionOption>? = null,
+    var timeInForceOptions: List<SelectionOption>? = null,
+    var executionOptions: List<SelectionOption>? = null,
+    var marginModeOptions: List<SelectionOption>? = null,
+    var goodTilUnitOptions: List<SelectionOption>? = null,
+    var reduceOnlyTooltip: Tooltip? = null,
+    var postOnlyTooltip: Tooltip? = null,
 )
 
 internal data class InternalMarketSummaryState(
@@ -274,3 +354,44 @@ internal data class InternalRewardsParamsState(
 internal data class InternalLaunchIncentiveState(
     var seasons: List<LaunchIncentiveSeason>? = null,
 )
+
+internal fun TradeInputSize.Companion.safeCreate(existing: TradeInputSize?): TradeInputSize {
+    return existing ?: TradeInputSize(
+        size = null,
+        usdcSize = null,
+        leverage = null,
+        input = null,
+    )
+}
+
+internal fun TradeInputBracket.Companion.safeCreate(existing: TradeInputBracket?): TradeInputBracket {
+    return existing ?: TradeInputBracket(
+        stopLoss = null,
+        takeProfit = null,
+        goodTil = null,
+        execution = null,
+    )
+}
+
+internal fun TradeInputPrice.Companion.safeCreate(existing: TradeInputPrice?): TradeInputPrice {
+    return existing ?: TradeInputPrice(
+        limitPrice = null,
+        triggerPrice = null,
+        trailingPercent = null,
+    )
+}
+
+internal fun TradeInputBracketSide.Companion.safeCreate(existing: TradeInputBracketSide?): TradeInputBracketSide {
+    return existing ?: TradeInputBracketSide(
+        triggerPrice = null,
+        percent = null,
+        reduceOnly = false,
+    )
+}
+
+internal fun TradeInputGoodUntil.Companion.safeCreate(existing: TradeInputGoodUntil?): TradeInputGoodUntil {
+    return existing ?: TradeInputGoodUntil(
+        duration = null,
+        unit = null,
+    )
+}

@@ -43,7 +43,7 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.historicalPnl)
     changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
         parser,
         account,
         subaccountNumber ?: 0,

@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.RpcConfigs
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
@@ -419,7 +420,8 @@ class SkipProcessorTests {
     }
 
     @Test
-    fun receivedEvmSwapVenues() {
+    fun receivedEvmSwapVenuesEvmSwaps() {
+        StatsigConfig.ff_enable_evm_swaps = true
         skipProcessor.receivedEvmSwapVenues(
             existing = mapOf(),
             payload = templateToMap(SkipVenuesMock.venues),
