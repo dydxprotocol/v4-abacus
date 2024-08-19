@@ -29,6 +29,13 @@ internal fun TradingStateMachine.routerTokens(payload: String): StateChanges? {
     }
 }
 
+internal fun TradingStateMachine.evmSwapVenues(payload: String) {
+    val json = parser.decodeJsonObject(payload)
+    if (json != null) {
+        routerProcessor.receivedEvmSwapVenues(input, json)
+    }
+}
+
 internal fun TradingStateMachine.squidV2SdkInfo(payload: String): StateChanges? {
     val json = parser.decodeJsonObject(payload)
     return if (json != null) {

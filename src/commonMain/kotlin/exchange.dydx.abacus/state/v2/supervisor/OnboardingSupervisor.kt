@@ -30,6 +30,7 @@ import exchange.dydx.abacus.state.manager.SystemUtils
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
+import exchange.dydx.abacus.state.model.evmSwapVenues
 import exchange.dydx.abacus.state.model.routerChains
 import exchange.dydx.abacus.state.model.routerStatus
 import exchange.dydx.abacus.state.model.routerTokens
@@ -74,6 +75,10 @@ private val NEUTRON_SWAP_VENUE = mapOf(
     "chain_id" to "neutron-1",
 )
 
+private val SMART_SWAP_OPTIONS = mapOf(
+    "evm_swaps" to true,
+)
+
 private const val IBC_BRIDGE_ID = "IBC"
 private const val CCTP_BRIDGE_ID = "CCTP"
 private const val AXELAR_BRIDGE_ID = "AXELAR"
@@ -101,6 +106,9 @@ internal class OnboardingSupervisor(
                 retrieveSkipTransferChains()
             }
             retrieveSkipTransferTokens()
+            if (StatsigConfig.ff_enable_evm_swaps) {
+                retrieveSkipEvmSwapVenues()
+            }
         } else {
             retrieveTransferAssets()
         }
@@ -131,11 +139,19 @@ internal class OnboardingSupervisor(
         }
     }
 
+    private fun retrieveSkipEvmSwapVenues() {
+        helper.get(helper.configs.skipV2Venues, null, null) { _, response, httpCode, _ ->
+            if (!helper.success(httpCode) || response == null) {
+                Logger.e { "retrieveSkipEVMSwapVenues error, code: $httpCode" }
+            } else {
+                stateMachine.evmSwapVenues(response)
+            }
+        }
+    }
+
     private fun retrieveSkipTransferTokens() {
         val oldState = stateMachine.state
         val tokensUrl = helper.configs.skipV1Assets()
-//            add API key injection for all skip methods
-//            val header = iMapOf("authorization" to skipAPIKey)
         helper.get(tokensUrl, null, null) { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.routerTokens(response), oldState)
@@ -285,6 +301,30 @@ internal class OnboardingSupervisor(
         val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom ?: return
         val fromAmountString = helper.parser.asString(fromAmount) ?: return
         val url = helper.configs.skipV2MsgsDirect()
+
+        val nonEvmSwapVenues = listOf(
+            OSMOSIS_SWAP_VENUE,
+            NEUTRON_SWAP_VENUE,
+        )
+        val evmSwapVenues = stateMachine.internalState.transfer.evmSwapVenues
+        val swapVenues = evmSwapVenues + nonEvmSwapVenues
+        val evmSwapEnabledOptions = mapOf(
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+                CCTP_BRIDGE_ID,
+            ),
+            "smart_swap_options" to SMART_SWAP_OPTIONS,
+            "swap_venues" to swapVenues,
+        )
+        val evmSwapDisabledOptions = mapOf(
+            "bridges" to listOf(
+                IBC_BRIDGE_ID,
+                AXELAR_BRIDGE_ID,
+            ),
+            "swap_venues" to nonEvmSwapVenues,
+        )
+        val options = if (StatsigConfig.ff_enable_evm_swaps) evmSwapEnabledOptions else evmSwapDisabledOptions
         if (fromAmount != null && fromAmount > 0) {
             val body: Map<String, Any> = mapOf(
                 "amount_in" to fromAmountString,
@@ -299,16 +339,8 @@ internal class OnboardingSupervisor(
                     neutronChainId to accountAddress.toNeutronAddress(),
                     chainId to accountAddress,
                 ),
-                "swap_venues" to listOf(
-                    OSMOSIS_SWAP_VENUE,
-                    NEUTRON_SWAP_VENUE,
-                ),
-                "bridges" to listOf(
-                    IBC_BRIDGE_ID,
-                    AXELAR_BRIDGE_ID,
-                ),
                 "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-            )
+            ) + options
 
             val oldState = stateMachine.state
             val header = iMapOf(

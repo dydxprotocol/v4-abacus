@@ -3,6 +3,7 @@ package exchange.dydx.abacus.state.model
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.mutable
@@ -178,7 +179,7 @@ fun TradingStateMachine.transfer(
                 else -> {}
             }
         } else {
-            error = cannotModify(typeText)
+            error = ParsingError.cannotModify(typeText)
         }
     } else {
         changes = StateChanges(iListOf(Changes.wallet, Changes.subaccount, Changes.input), null, iListOf(subaccountNumber))
@@ -187,7 +188,7 @@ fun TradingStateMachine.transfer(
 
     this.input = input
     changes?.let {
-        update(it)
+        updateStateChanges(it)
     }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }

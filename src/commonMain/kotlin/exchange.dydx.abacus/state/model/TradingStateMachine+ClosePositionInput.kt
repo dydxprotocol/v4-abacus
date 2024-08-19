@@ -2,8 +2,11 @@ package exchange.dydx.abacus.state.model
 
 import abs
 import exchange.dydx.abacus.calculator.MarginCalculator
+import exchange.dydx.abacus.calculator.TradeCalculation
+import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.Numeric
@@ -22,8 +25,8 @@ enum class ClosePositionInputField(val rawValue: String) {
     percent("size.percent");
 
     companion object {
-        operator fun invoke(rawValue: String) =
-            ClosePositionInputField.values().firstOrNull { it.rawValue == rawValue }
+        operator fun invoke(rawValue: String?) =
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -86,7 +89,7 @@ fun TradingStateMachine.closePosition(
                     subaccountNumberChanges,
                 )
             } else {
-                error = cannotModify(typeText)
+                error = ParsingError.cannotModify(typeText)
             }
         }
         ClosePositionInputField.size.rawValue, ClosePositionInputField.percent.rawValue -> {
@@ -113,7 +116,7 @@ fun TradingStateMachine.closePosition(
     this.input = input
 
     changes?.let {
-        update(it)
+        updateStateChanges(it)
     }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
@@ -144,4 +147,27 @@ fun TradingStateMachine.getPosition(
     } else {
         null
     }
+}
+
+private fun TradingStateMachine.initiateClosePosition(
+    marketId: String?,
+    subaccountNumber: Int,
+): MutableMap<String, Any> {
+    val trade = mutableMapOf<String, Any>()
+    trade["type"] = "MARKET"
+    trade["side"] = "BUY"
+    trade["marketId"] = marketId ?: "ETH-USD"
+
+    val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
+    val params = mutableMapOf<String, Any>()
+    params.safeSet("markets", parser.asMap(marketsSummary?.get("markets")))
+    params.safeSet("account", account)
+    params.safeSet("user", user)
+    params.safeSet("trade", trade)
+    params.safeSet("rewardsParams", rewardsParams)
+    params.safeSet("configs", configs)
+
+    val modified = calculator.calculate(params, subaccountNumber, null)
+
+    return parser.asMap(modified["trade"])?.mutable() ?: trade
 }

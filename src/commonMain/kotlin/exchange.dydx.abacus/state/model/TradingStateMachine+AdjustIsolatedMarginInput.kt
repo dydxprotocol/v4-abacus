@@ -4,6 +4,7 @@ import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
+import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.utils.IList
@@ -127,7 +128,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                 }
             }
         } else {
-            error = cannotModify(type.name)
+            error = ParsingError.cannotModify(type.name)
         }
     } else {
         changes = StateChanges(
@@ -139,7 +140,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
 
     input["adjustIsolatedMargin"] = adjustIsolatedMargin
     this.input = input
-    changes?.let { update(it) }
+    changes?.let { updateStateChanges(it) }
     return StateResponse(state, changes, if (error != null) iListOf(error) else null)
 }
 

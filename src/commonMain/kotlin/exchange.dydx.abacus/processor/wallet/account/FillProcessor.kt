@@ -7,6 +7,7 @@ import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.processor.utils.OrderTypeProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -33,6 +34,7 @@ internal class FillProcessor(
             "liquidity" to "liquidity",
             "type" to "type",
             "market" to "marketId",
+            "displayId" to "displayId",
             "orderId" to "orderId",
         ),
         "datetime" to mapOf(
@@ -88,6 +90,7 @@ internal class FillProcessor(
 
             val id = payload.id ?: return null
             val marketId = payload.market ?: return null
+            val displayId = MarketId.getDisplayId(marketId)
             val side = payload.side?.name?.let { OrderSide.invoke(rawValue = it) } ?: return null
             val liquidity =
                 payload.liquidity?.name?.let { FillLiquidity.invoke(rawValue = it) } ?: return null
@@ -101,6 +104,7 @@ internal class FillProcessor(
             return SubaccountFill(
                 id = id,
                 marketId = marketId,
+                displayId = displayId,
                 orderId = payload.orderId,
                 subaccountNumber = fillSubaccountNumber,
                 marginMode = if (fillSubaccountNumber >= NUM_PARENT_SUBACCOUNTS) MarginMode.Isolated else MarginMode.Cross,
@@ -137,8 +141,16 @@ internal class FillProcessor(
         subaccountNumber: Int,
     ): Map<String, Any> {
         val fill = transform(existing, payload, fillKeyMap)
+
         if (fill["marketId"] == null) {
             fill.safeSet("marketId", parser.asString(payload["ticker"]))
+            parser.asString(payload["ticker"])?.let { marketId ->
+                fill.safeSet("displayId", MarketId.getDisplayId(marketId))
+            }
+        } else {
+            parser.asString(fill["marketId"])?.let { marketId ->
+                fill.safeSet("displayId", MarketId.getDisplayId(marketId))
+            }
         }
 
         val fillSubaccountNumber = parser.asInt(payload["subaccountNumber"])
