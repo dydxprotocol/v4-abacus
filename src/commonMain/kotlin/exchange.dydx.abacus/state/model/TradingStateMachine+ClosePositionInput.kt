@@ -157,6 +157,9 @@ private fun TradingStateMachine.initiateClosePosition(
     trade["type"] = "MARKET"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
+    // default full close
+    trade.safeSet("size.percent", 1)
+    trade.safeSet("size.input", "size.percent")
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
     val params = mutableMapOf<String, Any>()
@@ -167,7 +170,7 @@ private fun TradingStateMachine.initiateClosePosition(
     params.safeSet("rewardsParams", rewardsParams)
     params.safeSet("configs", configs)
 
-    val modified = calculator.calculate(params, subaccountNumber, null)
+    val modified = calculator.calculate(params, subaccountNumber, "size.percent")
 
     return parser.asMap(modified["trade"])?.mutable() ?: trade
 }
