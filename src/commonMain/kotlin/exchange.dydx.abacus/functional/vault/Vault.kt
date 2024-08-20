@@ -13,7 +13,6 @@ import exchange.dydx.abacus.utils.IMap
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import kotlinx.datetime.Clock
-
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 import kotlin.time.Duration.Companion.days
@@ -112,7 +111,6 @@ data class VaultPosition(
     val thirtyDayPnl: ThirtyDayPnl? = null
 )
 
-
 @JsExport
 @Serializable
 data class CurrentPosition(
@@ -141,7 +139,7 @@ fun calculateVaultSummary(historical: IndexerVaultHistoricalPnlResponse?): Vault
             VaultHistoryEntry(
                 date = createdAt,
                 equity = parser.asDouble(entry.equity) ?: 0.0,
-                totalPnl = parser.asDouble(entry.totalPnl) ?: 0.0
+                totalPnl = parser.asDouble(entry.totalPnl) ?: 0.0,
             )
         }
     }
@@ -170,15 +168,16 @@ fun calculateVaultSummary(historical: IndexerVaultHistoricalPnlResponse?): Vault
     return VaultDetails(
         totalValue = totalValue,
         thirtyDayReturnPercent = thirtyDayReturnPercent,
-        history = history
+        history = history,
     )
 }
 
-
 @JsExport
-fun calculateVaultPositions(positions: IndexerVaultPositionResponse?,
-                            histories: IndexerSubvaultHistoricalPnlResponse?,
-                            markets: IMap<String, PerpetualMarket>?): VaultPositions? {
+fun calculateVaultPositions(
+    positions: IndexerVaultPositionResponse?,
+    histories: IndexerSubvaultHistoricalPnlResponse?,
+    markets: IMap<String, PerpetualMarket>?
+): VaultPositions? {
     if (positions?.positions == null) {
         return null
     }
@@ -203,8 +202,10 @@ fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVault
             assetPositions = assetPositionsMap,
             positions = perpetualPosition?.let { mapOf((it.market ?: "") to it) },
             subaccountNumber = 0,
-            calculated = mutableMapOf(CalculationPeriod.current to
-                    InternalSubaccountCalculated(quoteBalance = calculator.calculateQuoteBalance(assetPositionsMap)))
+            calculated = mutableMapOf(
+                CalculationPeriod.current to
+                    InternalSubaccountCalculated(quoteBalance = calculator.calculateQuoteBalance(assetPositionsMap)),
+            ),
         ),
         marketsSummary = InternalMarketSummaryState(markets = mutableMapOf(position.market to InternalMarketState(perpetualMarket = perpetualMarket))),
         periods = setOf(CalculationPeriod.current),
@@ -221,7 +222,7 @@ fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVault
             asset = perpCalculated?.size,
             usdc = perpCalculated?.notionalTotal,
         ),
-        thirtyDayPnl = calculateThirtyDayPnl(history)
+        thirtyDayPnl = calculateThirtyDayPnl(history),
     )
 }
 
@@ -268,9 +269,6 @@ fun calculateThirtyDayPnl(vaultHistoricalPnl: IndexerVaultHistoricalPnl?): Thirt
     return ThirtyDayPnl(
         percent = percentPnl,
         absolute = absolutePnl,
-        sparklinePoints = sparklinePoints
+        sparklinePoints = sparklinePoints,
     )
 }
-
-
-

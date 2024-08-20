@@ -12,23 +12,22 @@ import kotlin.js.JsExport
 
 val parser = Parser()
 
-
 @JsExport
 @Serializable
 data class AccountVaultResponse(
     val address: String? = null,
     val shares: Double? = null,
+    @Suppress("ConstructorParameterNaming")
     val locked_shares: Double? = null,
     val equity: Double? = null,
+    @Suppress("ConstructorParameterNaming")
     val withdrawable_amount: Double? = null,
 )
-
 
 @JsExport
 fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
     return parser.asTypedObject<AccountVaultResponse>(apiResponse)
 }
-
 
 @JsExport
 fun getTransfersBetweenResponse(apiResponse: String): IndexerTransferBetweenResponse? {
@@ -82,7 +81,8 @@ fun calculateUserVaultInfo(vaultInfo: AccountVaultResponse, vaultTransfers: Inde
                     TRANSFERIN -> VaultTransferType.WITHDRAWAL
                     DEPOSIT, WITHDRAWAL, null -> null
                 },
-                id = el.id)
-            },
+                id = el.id,
+            )
+        },
     )
 }
