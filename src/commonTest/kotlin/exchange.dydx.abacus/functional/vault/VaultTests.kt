@@ -5,6 +5,7 @@ import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
+import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerPositionSide
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,13 +18,13 @@ class VaultTests {
     fun calculateVaultSummary_basic() {
         val historicalPnl = IndexerVaultHistoricalPnlResponse(
             vaultOfVaultsPnl = listOf(
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
                     netTransfers = "0.0",
                     createdAt = "1659465600000",
                 ),
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "5000.0",
                     totalPnl = "500",
                     netTransfers = "0.0",
@@ -75,31 +76,31 @@ class VaultTests {
 
         val historicalPnl = IndexerVaultHistoricalPnlResponse(
             vaultOfVaultsPnl = listOf(
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
                     netTransfers = "0.0",
                     createdAt = latestTimestamp.toString(),
                 ),
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "9700.0",
                     totalPnl = "700.0",
                     netTransfers = "0.0",
                     createdAt = twentyNineDaysAgoTimestamp.toString(),
                 ),
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "9500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
                     createdAt = thirtyDaysAgoTimestamp.toString(),
                 ),
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "9300.0",
                     totalPnl = "300.0",
                     netTransfers = "0.0",
                     createdAt = thirtyOneDaysAgoTimestamp.toString(),
                 ),
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "9000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
@@ -149,13 +150,13 @@ class VaultTests {
         val history = IndexerVaultHistoricalPnl(
             marketId = "BTC-USD",
             historicalPnl = listOf(
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "10500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
                     createdAt = "1659465600000",
                 ),
-                IndexerHistoricalPnl(
+                IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",
