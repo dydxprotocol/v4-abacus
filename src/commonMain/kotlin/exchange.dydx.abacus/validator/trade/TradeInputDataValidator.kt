@@ -41,6 +41,7 @@ internal class TradeInputDataValidator(
 
     override fun validateTrade(
         internalState: InternalState,
+        subaccountNumber: Int?,
         change: PositionChange,
         restricted: Boolean,
         environment: V4Environment?
@@ -95,7 +96,7 @@ internal class TradeInputDataValidator(
              */
             errors.addAll(it)
         }
-        validateLimitPrice(trade, market)?.let {
+        validateLimitPriceDeprecated(trade, market)?.let {
             /*
             LIMIT_MUST_ABOVE_TRIGGER_PRICE
             LIMIT_MUST_BELOW_TRIGGER_PRICE
@@ -105,7 +106,7 @@ internal class TradeInputDataValidator(
             errors.addAll(it)
         }
 
-        validateTimeInForce(trade, market)?.let {
+        validateTimeInForceDeprecated(trade, market)?.let {
             /*
             LIMIT_MUST_ABOVE_TRIGGER_PRICE
             LIMIT_MUST_BELOW_TRIGGER_PRICE
@@ -203,7 +204,7 @@ internal class TradeInputDataValidator(
         LIMIT_MUST_BELOW_TRIGGER_PRICE
          */
         return when (trade.type) {
-            OrderType.Limit, OrderType.TakeProfitLimit -> {
+            OrderType.StopLimit, OrderType.TakeProfitLimit -> {
                 if (trade.execution != "IOC") {
                     return null
                 }
@@ -243,7 +244,7 @@ internal class TradeInputDataValidator(
         }
     }
 
-    private fun validateLimitPrice(
+    private fun validateLimitPriceDeprecated(
         trade: Map<String, Any>,
         market: Map<String, Any>?,
     ): List<Any>? {
@@ -320,7 +321,7 @@ internal class TradeInputDataValidator(
         return null
     }
 
-    private fun validateTimeInForce(
+    private fun validateTimeInForceDeprecated(
         trade: Map<String, Any>,
         market: Map<String, Any>?,
     ): List<Any>? {

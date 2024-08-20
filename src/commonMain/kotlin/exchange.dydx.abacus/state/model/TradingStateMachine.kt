@@ -1547,16 +1547,14 @@ open class TradingStateMachine(
                     )
                 }
 
-                this.input?.let {
-                    input = Input.create(
-                        existing = input,
-                        parser = parser,
-                        data = it,
-                        environment = environment,
-                        internalState = internalState,
-                        staticTyping = staticTyping,
-                    )
-                }
+                input = Input.create(
+                    existing = input,
+                    parser = parser,
+                    data = this.input,
+                    environment = environment,
+                    internalState = internalState,
+                    staticTyping = staticTyping,
+                )
             }
         }
         if (changes.changes.contains(Changes.transferStatuses)) {

@@ -35,7 +35,7 @@ internal class TriggerOrdersInputValidator(
         inputType: InputType,
         environment: V4Environment?,
     ): List<ValidationError>? {
-        TODO("Not yet implemented")
+        return null
     }
 
     override fun validateDeprecated(

@@ -85,7 +85,7 @@ internal data class InternalTradeInputState(
     var reduceOnly: Boolean = false,
     var postOnly: Boolean = false,
     var fee: Double? = null,
-    var bracket: TradeInputBracket? = null,
+    var brackets: TradeInputBracket? = null,
     var options: InternalTradeInputOptions = InternalTradeInputOptions(),
     var marketOrder: TradeInputMarketOrder? = null,
     var summary: InternalTradeInputSummary? = null,

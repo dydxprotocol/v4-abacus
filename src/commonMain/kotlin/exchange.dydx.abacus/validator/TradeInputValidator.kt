@@ -43,7 +43,7 @@ internal class TradeInputValidator(
         environment: V4Environment?,
     ): List<ValidationError>? {
         val transactionType = internalState.input.currentType
-        if (transactionType != InputType.TRANSFER || transactionType != InputType.CLOSE_POSITION) {
+        if (transactionType != InputType.TRADE && transactionType != InputType.CLOSE_POSITION) {
             return null
         }
         val change = getPositionChange(
@@ -57,6 +57,7 @@ internal class TradeInputValidator(
             val validatorErrors =
                 validator.validateTrade(
                     internalState = internalState,
+                    subaccountNumber = subaccountNumber ?: 0,
                     change = change,
                     restricted = restricted,
                     environment = environment,

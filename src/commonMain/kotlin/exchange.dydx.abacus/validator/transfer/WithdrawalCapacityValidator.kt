@@ -24,7 +24,7 @@ internal class WithdrawalCapacityValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
-        TODO("Not yet implemented")
+        return null
     }
 
     override fun validateTransferDeprecated(

@@ -49,6 +49,7 @@ internal interface ValidatorProtocol {
 internal interface TradeValidatorProtocol {
     fun validateTrade(
         internalState: InternalState,
+        subaccountNumber: Int?,
         change: PositionChange,
         restricted: Boolean,
         environment: V4Environment?,

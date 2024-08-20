@@ -19,6 +19,7 @@ internal class TradeResctrictedValidator(
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     override fun validateTrade(
         internalState: InternalState,
+        subaccountNumber: Int?,
         change: PositionChange,
         restricted: Boolean,
         environment: V4Environment?

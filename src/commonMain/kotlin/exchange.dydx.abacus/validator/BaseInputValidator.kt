@@ -91,7 +91,7 @@ internal open class BaseInputValidator(
                 text = ErrorString(
                     stringKey = textStringKey,
                     params = params(parser, textParams)?.toIList(),
-                    localized = localize(titleStringKey, textParams),
+                    localized = localize(textStringKey, textParams),
                 ),
                 action = if (actionStringKey != null) {
                     ErrorString(

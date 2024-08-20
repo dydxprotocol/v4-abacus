@@ -753,7 +753,7 @@ enum class OrderType(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            OrderType.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -855,7 +855,7 @@ data class TradeInput(
                 fee = state.fee,
                 marginMode = state.marginMode ?: MarginMode.Cross,
                 targetLeverage = state.targetLeverage ?: 1.0,
-                bracket = state.bracket,
+                bracket = state.brackets,
                 marketOrder = state.marketOrder,
                 options = TradeInputOptions.create(state.options),
                 summary = TradeInputSummary.create(state.summary),
