@@ -12,12 +12,14 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param price
  * @param size
  */
+@JsExport
 @Serializable
 data class IndexerOrderbookResponsePriceLevel(
 

@@ -90,6 +90,15 @@ internal class TradeBracketOrdersValidator(
             errors.add(it)
         }
 
+        validateStopLoss(
+            position = position,
+            trade = trade,
+            price = price,
+            tickSize = tickSize,
+        )?.let {
+            errors.add(it)
+        }
+
         return errors
     }
 

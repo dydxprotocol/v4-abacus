@@ -15,6 +15,7 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.Numeric
 import indexer.codegen.IndexerPerpetualPositionStatus
+import kotlin.math.max
 
 internal class SubaccountCalculatorV2(
     val parser: ParserProtocol
@@ -396,13 +397,15 @@ internal class SubaccountCalculatorV2(
                             calculated.maxLeverage = maxLeverage
 
                             if (entryPrice != null) {
+                                val leverage = position.calculated[period]?.leverage
+                                val scaledLeverage = max(leverage?.abs() ?: 1.0, 1.0)
                                 val entryValue = size * entryPrice
                                 val currentValue = size * oraclePrice
                                 val unrealizedPnl = currentValue - entryValue
-                                val unrealizedPnlPercent =
-                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() else null
+                                val scaledUnrealizedPnlPercent =
+                                    if (entryValue != Numeric.double.ZERO) unrealizedPnl / entryValue.abs() * scaledLeverage else null
                                 calculated.unrealizedPnl = unrealizedPnl
-                                calculated.unrealizedPnlPercent = unrealizedPnlPercent
+                                calculated.unrealizedPnlPercent = scaledUnrealizedPnlPercent
                             }
 
                             val marginMode = position.marginMode

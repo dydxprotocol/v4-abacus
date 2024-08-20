@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: LIMIT,LIQUIDATED,LIQUIDATION,DELEVERAGED,OFFSETTING
  */
+@JsExport
 @Serializable
 enum class IndexerFillType(val value: kotlin.String) {
     LIMIT("LIMIT"), // :/

@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: MANUAL,USGEO,CAGEO,GBGEO,SANCTIONEDGEO,COMPLIANCEPROVIDER
  */
+@JsExport
 @Serializable
 enum class IndexerComplianceReason(val value: kotlin.String) {
     MANUAL("MANUAL"), // :/

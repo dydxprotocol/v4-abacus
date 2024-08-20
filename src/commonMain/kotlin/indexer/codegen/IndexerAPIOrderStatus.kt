@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: OPEN,FILLED,CANCELED,BEST_EFFORT_CANCELED,UNTRIGGERED,BEST_EFFORT_OPENED
  */
+@JsExport
 @Serializable
 enum class IndexerAPIOrderStatus(val value: kotlin.String) {
     OPEN("OPEN"), // :/

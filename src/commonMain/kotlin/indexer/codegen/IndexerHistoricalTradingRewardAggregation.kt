@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -22,6 +23,7 @@ import kotlinx.serialization.Serializable
  * @param endedAtHeight
  * @param period
  */
+@JsExport
 @Serializable
 data class IndexerHistoricalTradingRewardAggregation(
 

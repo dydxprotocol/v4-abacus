@@ -12,12 +12,14 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param subaccountNumber
  * @param address
  */
+@JsExport
 @Serializable
 data class IndexerTransferResponseObjectSender(
 

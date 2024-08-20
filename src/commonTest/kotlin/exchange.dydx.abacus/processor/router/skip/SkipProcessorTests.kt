@@ -5,6 +5,7 @@ import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.manager.RpcConfigs
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.tests.payloads.RpcMock
 import exchange.dydx.abacus.tests.payloads.SkipChainsMock
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
@@ -227,7 +228,6 @@ class SkipProcessorTests {
         val expectedChains = listOf(
             SelectionOption(stringKey = "Arbitrum", string = "Arbitrum", type = "42161", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png"),
             SelectionOption(stringKey = "Ethereum", string = "Ethereum", type = "1", iconUrl = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png"),
-            SelectionOption(type = "solana", string = "Solana", stringKey = "Solana", iconUrl = "https://raw.githubusercontent.com/skip-mev/skip-go-registry/main/chains/solana/logo.svg"),
         )
         val expectedChainResources = mapOf(
             "1" to TransferInputChainResource(
@@ -420,7 +420,8 @@ class SkipProcessorTests {
     }
 
     @Test
-    fun receivedEvmSwapVenues() {
+    fun receivedEvmSwapVenuesEvmSwaps() {
+        StatsigConfig.ff_enable_evm_swaps = true
         skipProcessor.receivedEvmSwapVenues(
             existing = mapOf(),
             payload = templateToMap(SkipVenuesMock.venues),
