@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param rewards
  */
+@JsExport
 @Serializable
 data class IndexerHistoricalTradingRewardAggregationsResponse(
 

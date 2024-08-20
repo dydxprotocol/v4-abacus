@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -21,6 +22,7 @@ import kotlinx.serialization.Serializable
  * @param transfersSubset
  * @param totalNetTransfers
  */
+@JsExport
 @Serializable
 data class IndexerTransferBetweenResponse(
 

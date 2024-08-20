@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: BUY,SELL
  */
+@JsExport
 @Serializable
 enum class IndexerOrderSide(val value: kotlin.String) {
     BUY("BUY"), // :/

@@ -12,12 +12,14 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param height
  * @param time
  */
+@JsExport
 @Serializable
 data class IndexerHeightResponse(
 

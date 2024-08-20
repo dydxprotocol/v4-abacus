@@ -12,12 +12,14 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param iso
  * @param epoch
  */
+@JsExport
 @Serializable
 data class IndexerTimeResponse(
 

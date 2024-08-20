@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: PERPETUAL,SPOT
  */
+@JsExport
 @Serializable
 enum class IndexerMarketType(val value: kotlin.String) {
     PERPETUAL("PERPETUAL"), // :/

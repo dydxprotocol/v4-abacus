@@ -4,6 +4,7 @@ import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
 import exchange.dydx.abacus.processor.base.BaseProcessor
+import exchange.dydx.abacus.processor.router.ChainType
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
@@ -18,6 +19,7 @@ internal class SquidProcessor(
     override var chains: List<Any>? = null
     override var tokens: List<Any>? = null
     override var exchangeDestinationChainId: String? = null
+    override var selectedChainType: ChainType? = ChainType.EVM
 
     override fun receivedEvmSwapVenues(existing: Map<String, Any>?, payload: Map<String, Any>) {
         throw NotImplementedError("receivedEvmSwapVenues is not implemented in SquidProcessor!")

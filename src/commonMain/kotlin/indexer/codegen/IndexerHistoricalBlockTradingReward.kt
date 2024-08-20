@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -19,6 +20,7 @@ import kotlinx.serialization.Serializable
  * @param createdAt
  * @param createdAtHeight
  */
+@JsExport
 @Serializable
 data class IndexerHistoricalBlockTradingReward(
 
