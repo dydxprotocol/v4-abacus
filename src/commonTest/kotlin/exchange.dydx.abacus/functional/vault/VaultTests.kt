@@ -151,12 +151,14 @@ class VaultTests {
             marketId = "BTC-USD",
             historicalPnl = listOf(
                 IndexerPnlTicksResponseObject(
+                    id = "1",
                     equity = "10500.0",
                     totalPnl = "500.0",
                     netTransfers = "0.0",
                     createdAt = "1659465600000",
                 ),
                 IndexerPnlTicksResponseObject(
+                    id = "2",
                     equity = "10000.0",
                     totalPnl = "0.0",
                     netTransfers = "0.0",

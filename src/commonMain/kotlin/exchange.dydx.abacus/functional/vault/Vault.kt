@@ -190,12 +190,13 @@ fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVault
         subaccount = InternalSubaccountState(
             equity = parser.asDouble(position.equity) ?: 0.0,
             assetPositions = assetPositionsMap,
-            positions = perpetualPosition?.let { mapOf((it.market ?: "") to it) },
+            openPositions = perpetualPosition?.let { mapOf((it.market ?: "") to it) },
             subaccountNumber = 0,
             calculated = mutableMapOf(
                 CalculationPeriod.current to
                     InternalSubaccountCalculated(quoteBalance = calculator.calculateQuoteBalance(assetPositionsMap)),
             ),
+
         ),
         marketsSummary = InternalMarketSummaryState(markets = mutableMapOf(position.market to InternalMarketState(perpetualMarket = perpetualMarket))),
         periods = setOf(CalculationPeriod.current),
