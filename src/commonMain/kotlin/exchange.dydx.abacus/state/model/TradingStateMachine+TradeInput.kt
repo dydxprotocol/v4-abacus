@@ -19,10 +19,6 @@ import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
 
-internal interface InputFieldProtocol {
-    val test: ((InternalTradeInputState) -> Any?)?
-}
-
 @JsExport
 @Serializable
 enum class TradeInputField(val rawValue: String) {
