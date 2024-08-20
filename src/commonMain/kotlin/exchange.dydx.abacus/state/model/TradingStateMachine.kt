@@ -4,6 +4,7 @@ import exchange.dydx.abacus.calculator.AccountCalculator
 import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarketCalculator
+import exchange.dydx.abacus.calculator.ReceiptCalculator
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
@@ -130,6 +131,8 @@ open class TradingStateMachine(
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
     internal val accountCalculatorV2 = AccountCalculatorV2(parser, useParentSubaccount)
+
+    private val receiptCalculator = ReceiptCalculator()
 
     internal val inputValidator = InputValidator(localizer, formatter, parser)
 
@@ -931,17 +934,16 @@ open class TradingStateMachine(
     private fun recalculateStates(changes: StateChanges) {
         val subaccountNumbers = changes.subaccountNumbers ?: allSubaccountNumbers()
         if (changes.changes.contains(Changes.subaccount)) {
-            val periods = if (this.input != null) {
-                setOf(
-                    CalculationPeriod.current,
-                    CalculationPeriod.post,
-                    CalculationPeriod.settled,
-                )
-            } else {
-                setOf(CalculationPeriod.current)
-            }
-
             if (staticTyping) {
+                val periods = if (internalState.input.currentType != null) {
+                    setOf(
+                        CalculationPeriod.current,
+                        CalculationPeriod.post,
+                        CalculationPeriod.settled,
+                    )
+                } else {
+                    setOf(CalculationPeriod.current)
+                }
                 internalState.wallet.account = accountCalculatorV2.calculate(
                     account = internalState.wallet.account,
                     subaccountNumbers = subaccountNumbers,
@@ -952,6 +954,16 @@ open class TradingStateMachine(
                 )
             }
             this.marketsSummary?.let { marketsSummary ->
+                val periods = if (this.input != null) {
+                    setOf(
+                        CalculationPeriod.current,
+                        CalculationPeriod.post,
+                        CalculationPeriod.settled,
+                    )
+                } else {
+                    setOf(CalculationPeriod.current)
+                }
+
                 parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
                     val modifiedAccount = accountCalculator.calculate(
                         account = account,
@@ -993,41 +1005,65 @@ open class TradingStateMachine(
         }
 
         if (changes.changes.contains(Changes.input)) {
-            val modified = this.input?.mutable() ?: return
-            when (parser.asString(modified["current"])) {
-                "trade" -> {
-                    when (parser.asString(parser.value(modified, "trade.size.input"))) {
-                        "size.size", "size.usdcSize" -> {
-                            val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
-                            val marketId = parser.asString(parser.value(modified, "trade.marketId"))
-                            if (subaccountNumber != null && marketId != null) {
-                                val leverage =
-                                    parser.asDouble(
-                                        parser.value(
-                                            this.account,
-                                            "subaccounts.$subaccountNumber.openPositions.$marketId.leverage.postOrder",
-                                        ),
-                                    )
-                                modified.safeSet("trade.size.leverage", leverage)
-                            } else {
-                                modified.safeSet("trade.size.leverage", null)
-                            }
-                        }
-
-                        else -> {
+            if (staticTyping) {
+                // finalize the trade input leverage
+                if (internalState.input.currentType == InputType.TRADE) {
+                    val trade = internalState.input.trade
+                    val account = internalState.wallet.account
+                    if (trade.size?.input == "size.size" || trade.size?.input == "size.usdcSize") {
+                        val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
+                        val marketId = trade.marketId
+                        if (subaccountNumber != null && marketId != null) {
+                            val position = account.subaccounts[subaccountNumber]?.openPositions?.get(marketId)
+                            val postOrderLeverage = position?.calculated?.get(CalculationPeriod.post)?.leverage
+                            trade.size = trade.size?.copy(leverage = postOrderLeverage)
+                        } else {
+                            trade.size = trade.size?.copy(leverage = null)
                         }
                     }
                 }
+                // calculate the receipt lines
+                receiptCalculator.calculate(
+                    input = internalState.input,
+                )
+            } else {
+                val modified = this.input?.mutable() ?: return
+                when (parser.asString(modified["current"])) {
+                    "trade" -> {
+                        when (parser.asString(parser.value(modified, "trade.size.input"))) {
+                            "size.size", "size.usdcSize" -> {
+                                val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
+                                val marketId =
+                                    parser.asString(parser.value(modified, "trade.marketId"))
+                                if (subaccountNumber != null && marketId != null) {
+                                    val leverage =
+                                        parser.asDouble(
+                                            parser.value(
+                                                this.account,
+                                                "subaccounts.$subaccountNumber.openPositions.$marketId.leverage.postOrder",
+                                            ),
+                                        )
+                                    modified.safeSet("trade.size.leverage", leverage)
+                                } else {
+                                    modified.safeSet("trade.size.leverage", null)
+                                }
+                            }
 
-                "triggerOrders" -> {
-                    // TODO: update price diffs based on price.input
-                }
+                            else -> {
+                            }
+                        }
+                    }
 
-                "closePosition", "transfer" -> {
+                    "triggerOrders" -> {
+                        // TODO: update price diffs based on price.input
+                    }
+
+                    "closePosition", "transfer" -> {
+                    }
                 }
+                modified.safeSet("receiptLines", calculateReceipt(modified))
+                this.input = modified
             }
-            modified.safeSet("receiptLines", calculateReceipt(modified))
-            this.input = modified
         }
     }
 

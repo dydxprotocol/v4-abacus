@@ -6,6 +6,7 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
+import kollections.toIList
 import kotlinx.serialization.Serializable
 
 @JsExport
@@ -48,7 +49,12 @@ data class Input(
             Logger.d { "creating Input\n" }
 
             data?.let {
-                val current = InputType.invoke(parser.asString(data["current"]))
+                val current = if (staticTyping) {
+                    internalState?.input?.currentType
+                } else {
+                    InputType.invoke(parser.asString(data["current"]))
+                }
+
                 val trade = if (staticTyping) {
                     TradeInput.create(state = internalState?.input?.trade)
                 } else {
@@ -56,17 +62,27 @@ data class Input(
                 }
                 val closePosition =
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
+
                 val transfer =
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment, internalState?.transfer)
+
                 val triggerOrders =
                     TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data["triggerOrders"]))
+
                 val adjustIsolatedMargin =
                     AdjustIsolatedMarginInput.create(existing?.adjustIsolatedMargin, parser, parser.asMap(data["adjustIsolatedMargin"]))
+
                 val errors =
                     ValidationError.create(existing?.errors, parser, parser.asList(data["errors"]))
+
                 val childSubaccountErrors =
                     ValidationError.create(existing?.childSubaccountErrors, parser, parser.asList(data["childSubaccountErrors"]))
-                val receiptLines = ReceiptLine.create(parser, parser.asList(data["receiptLines"]))
+
+                val receiptLines = if (staticTyping) {
+                    internalState?.input?.receiptLines?.toIList()
+                } else {
+                    ReceiptLine.create(parser, parser.asList(data["receiptLines"]))
+                }
 
                 return if (existing?.current !== current ||
                     existing?.trade !== trade ||

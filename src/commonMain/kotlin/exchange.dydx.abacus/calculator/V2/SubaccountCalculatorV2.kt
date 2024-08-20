@@ -93,6 +93,7 @@ internal class SubaccountCalculatorV2(
                     initialRiskTotal += positionCalculated?.initialRiskTotal ?: Numeric.double.ZERO
                 }
 
+                calculated.notionalTotal = notionalTotal
                 calculated.valueTotal = valueTotal
                 calculated.initialRiskTotal = initialRiskTotal
 
@@ -313,7 +314,7 @@ internal class SubaccountCalculatorV2(
         price: Map<String, Double>?,
         periods: Set<CalculationPeriod>,
     ): InternalSubaccountState {
-        for ((key, position) in subaccount.positions ?: emptyMap()) {
+        for ((key, position) in subaccount.openPositions ?: emptyMap()) {
             val market = markets?.get(key)
             if (market != null) {
                 calculatePositionValues(

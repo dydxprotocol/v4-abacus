@@ -31,7 +31,7 @@ enum class ReceiptLine(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            ReceiptLine.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
 
         internal fun create(
             parser: ParserProtocol,

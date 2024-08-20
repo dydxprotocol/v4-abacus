@@ -15,6 +15,7 @@ import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerFillResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
+import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerSubaccountResponseObject
 import indexer.codegen.IndexerTransferResponseObject
@@ -240,16 +241,18 @@ internal open class SubaccountProcessor(
             existing.positions = perpetualPositionsProcessor.process(
                 payload = payload.openPerpetualPositions,
             )
+            existing.openPositions = existing.positions?.filterValues {
+                it.status == IndexerPerpetualPositionStatus.OPEN
+            }
             existing.assetPositions = assetPositionsProcessor.process(
                 payload = payload.assetPositions,
             )
-
-            val subaccountCalculated = existing.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
-            existing.calculated[CalculationPeriod.current] = subaccountCalculated
-            subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(existing.assetPositions)
-
             existing.orders = null
         }
+
+        val subaccountCalculated = existing.calculated[CalculationPeriod.current] ?: InternalSubaccountCalculated()
+        existing.calculated[CalculationPeriod.current] = subaccountCalculated
+        subaccountCalculated.quoteBalance = subaccountCalculator.calculateQuoteBalance(existing.assetPositions)
 
         return existing
     }
@@ -489,6 +492,9 @@ internal open class SubaccountProcessor(
             existing = existing.positions,
             payload = payload,
         )
+        existing.openPositions = existing.positions?.filterValues {
+            it.status == IndexerPerpetualPositionStatus.OPEN
+        }
         return existing
     }
 

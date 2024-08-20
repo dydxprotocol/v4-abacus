@@ -230,7 +230,7 @@ data class Subaccount(
                     createOpenPositions(
                         existing = existing?.openPositions,
                         parser = parser,
-                        openPositions = internalState?.groupedOpenPositions,
+                        openPositions = internalState?.openPositions,
                         subaccount = internalState,
                     )
                 } else {
