@@ -11,6 +11,7 @@
  */
 package indexer.codegen
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
