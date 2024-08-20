@@ -12,6 +12,7 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.IMap
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
+import indexer.codegen.IndexerPnlTicksResponseObject
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
@@ -20,26 +21,15 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @JsExport
 @Serializable
-data class IndexerHistoricalPnl(
-    val equity: String? = null,
-    val totalPnl: String? = null,
-    val netTransfers: String? = null,
-    val createdAt: String? = null,
-    val blockHeight: String? = null,
-    val blockTime: String? = null
-)
-
-@JsExport
-@Serializable
 data class IndexerVaultHistoricalPnlResponse(
-    val vaultOfVaultsPnl: List<IndexerHistoricalPnl>? = null
+    val vaultOfVaultsPnl: List<IndexerPnlTicksResponseObject>? = null
 )
 
 @JsExport
 @Serializable
 data class IndexerVaultHistoricalPnl(
     val marketId: String? = null,
-    val historicalPnl: List<IndexerHistoricalPnl>? = null
+    val historicalPnl: List<IndexerPnlTicksResponseObject>? = null
 )
 
 @JsExport
