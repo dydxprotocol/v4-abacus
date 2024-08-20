@@ -346,12 +346,7 @@ class SkipRouteProcessorTests {
         StatsigConfig.dc_max_safe_bridge_fees = Float.POSITIVE_INFINITY
         val payload = skipRouteMock.payloadDydxToEthNoWarning
         val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
-        val expectedWarning = JsonEncoder().encode(
-            mapOf(
-                "type" to "BAD_PRICE_WARNING",
-                "message" to "Difference in USD value of route input and output is large (26.15). Input USD Value: 130.13 Output USD value: 103.17",
-            ),
-        )
+        val expectedWarning = null
 
         assertEquals(expectedWarning, result.get("warning"))
     }
