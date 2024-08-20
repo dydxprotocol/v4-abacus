@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -30,6 +31,7 @@ import kotlinx.serialization.Serializable
  * @param clientMetadata
  * @param subaccountNumber
  */
+@JsExport
 @Serializable
 data class IndexerFillResponseObject(
 

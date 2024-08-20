@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: CROSS,ISOLATED
  */
+@JsExport
 @Serializable
 enum class IndexerPerpetualMarketType(val value: kotlin.String) {
     CROSS("CROSS"), // :/

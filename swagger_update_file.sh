@@ -10,12 +10,12 @@ if [ -z "$FILE" ]; then
 fi
 
 # Add "import kotlinx.serialization.Serializable" after "package indexer.codegen"
-sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.Serializable/' $FILE
+sed -i '' 's/package indexer.codegen/package indexer.codegen\n\nimport kotlinx.serialization.Serializable\nimport kotlin.js.JsExport/' $FILE
 
 # Add @Serializable annotation to the class
-sed -i '' 's/^data\ class /@Serializable\ndata\ class /' $FILE
-sed -i '' 's/^enum\ class /@Serializable\nenum\ class /' $FILE
-sed -i '' 's/^class /@Serializable\nclass /' $FILE
+sed -i '' 's/^data\ class /@JsExport\n@Serializable\ndata\ class /' $FILE
+sed -i '' 's/^enum\ class /@JsExport\n@Serializable\nenum\ class /' $FILE
+sed -i '' 's/^class /@JsExport\n@Serializable\nclass /' $FILE
 
 # For each of the line that starts with ""import indexer.codegen.", get the class name and replace it with IndexerCLASSNAME"
 # For example, if the line is "import indexer.codegen.Order", replace it with "import indexer.codegen.IndexerOrder"

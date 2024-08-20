@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param historicalFunding
  */
+@JsExport
 @Serializable
 data class IndexerHistoricalFundingResponse(
 

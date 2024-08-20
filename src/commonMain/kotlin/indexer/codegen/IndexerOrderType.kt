@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: LIMIT,MARKET,STOP_LIMIT,STOP_MARKET,TRAILING_STOP,TAKE_PROFIT,TAKE_PROFIT_MARKET
  */
+@JsExport
 @Serializable
 enum class IndexerOrderType(val value: kotlin.String) {
     LIMIT("LIMIT"), // :/

@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -19,6 +20,7 @@ import kotlinx.serialization.Serializable
  * @param reason
  * @param updatedAt
  */
+@JsExport
 @Serializable
 data class IndexerComplianceV2Response(
 

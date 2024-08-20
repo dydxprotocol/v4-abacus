@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: ONEDAY,SEVENDAYS
  */
+@JsExport
 @Serializable
 enum class IndexerSparklineTimePeriod(val value: kotlin.String) {
     ONEDAY("ONE_DAY"), // :/
