@@ -752,7 +752,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     fun testGetShouldTransferCollateral() {
         assertTrue(
             "Should result in a transfer",
-            MarginCalculator.getShouldTransferInCollateral(
+            MarginCalculator.getShouldTransferInCollateralDeprecated(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -780,7 +780,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If reduce only is true, should not transfer in
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferInCollateral(
+            MarginCalculator.getShouldTransferInCollateralDeprecated(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -808,7 +808,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If full close + no open orders, should transfer out
         assertEquals(
             true,
-            MarginCalculator.getShouldTransferOutRemainingCollateral(
+            MarginCalculator.getShouldTransferOutRemainingCollateralDeprecated(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -836,7 +836,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If postOrder is less than current, should not transfer in
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferInCollateral(
+            MarginCalculator.getShouldTransferInCollateralDeprecated(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(
@@ -864,7 +864,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
         // If reducing position to full close but has open orders, should not transfer out
         assertEquals(
             false,
-            MarginCalculator.getShouldTransferOutRemainingCollateral(
+            MarginCalculator.getShouldTransferOutRemainingCollateralDeprecated(
                 parser,
                 subaccount = mapOf(
                     "openPositions" to mapOf(

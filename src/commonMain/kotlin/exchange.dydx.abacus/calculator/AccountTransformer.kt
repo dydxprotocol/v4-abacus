@@ -51,15 +51,15 @@ class AccountTransformer() {
             var transferAmountAppliedToParent = 0.0
             var transferAmountAppliedToChild = 0.0
 
-            val shouldTransferCollateralToChild = MarginCalculator.getShouldTransferInCollateral(parser, subaccount = childSubaccount, trade)
-            val shouldTransferOutRemainingCollateralFromChild = MarginCalculator.getShouldTransferOutRemainingCollateral(parser, subaccount = childSubaccount, trade)
+            val shouldTransferCollateralToChild = MarginCalculator.getShouldTransferInCollateralDeprecated(parser, subaccount = childSubaccount, trade)
+            val shouldTransferOutRemainingCollateralFromChild = MarginCalculator.getShouldTransferOutRemainingCollateralDeprecated(parser, subaccount = childSubaccount, trade)
 
             if (shouldTransferCollateralToChild) {
-                val transferAmount = MarginCalculator.calculateIsolatedMarginTransferAmount(parser, trade, market, subaccount = childSubaccount) ?: 0.0
+                val transferAmount = MarginCalculator.calculateIsolatedMarginTransferAmountDeprecated(parser, trade, market, subaccount = childSubaccount) ?: 0.0
                 transferAmountAppliedToParent = transferAmount * -1
                 transferAmountAppliedToChild = transferAmount
             } else if (shouldTransferOutRemainingCollateralFromChild) {
-                val remainingCollateral = MarginCalculator.getEstimateRemainingCollateralAfterClosePosition(parser, subaccount = childSubaccount, trade) ?: 0.0
+                val remainingCollateral = MarginCalculator.getEstimateRemainingCollateralAfterClosePositionDeprecated(parser, subaccount = childSubaccount, trade) ?: 0.0
                 transferAmountAppliedToParent = remainingCollateral
             }
 

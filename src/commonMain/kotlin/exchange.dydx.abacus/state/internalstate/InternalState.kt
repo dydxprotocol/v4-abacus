@@ -24,6 +24,7 @@ import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.Tooltip
 import exchange.dydx.abacus.output.input.TradeInputBracket
@@ -54,6 +55,7 @@ internal data class InternalState(
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
     var currentType: InputType? = null,
+    var receiptLines: List<ReceiptLine>? = null,
 )
 
 internal data class InternalTradeInputState(
@@ -225,8 +227,8 @@ internal data class InternalSubaccountState(
 
     var pendingPositions: List<InternalPerpetualPendingPosition>? = null,
 
-    // for parent subaccount only.  This contains the consolidated open positions of all child subaccounts
-    var childSubaccountOpenPositions: Map<String, InternalPerpetualPosition>? = null,
+    // calculated: For parent subaccount, this contains the calculated values of all child subaccounts
+    var openPositions: Map<String, InternalPerpetualPosition>? = null,
 
     // Calculated:
     val calculated: MutableMap<CalculationPeriod, InternalSubaccountCalculated> = mutableMapOf(),
@@ -234,11 +236,26 @@ internal data class InternalSubaccountState(
     val isParentSubaccount: Boolean
         get() = subaccountNumber < NUM_PARENT_SUBACCOUNTS
 
-    val openPositions: Map<String, InternalPerpetualPosition>?
-        get() = positions?.filterValues { it.status == IndexerPerpetualPositionStatus.OPEN }
-
-    val groupedOpenPositions: Map<String, InternalPerpetualPosition>?
-        get() = if (isParentSubaccount) childSubaccountOpenPositions else openPositions
+    fun deepCopy(): InternalSubaccountState {
+        return InternalSubaccountState(
+            fills = fills?.map { it.copy() },
+            orders = orders?.map { it.copy() },
+            transfers = transfers?.map { it.copy() },
+            historicalPNLs = historicalPNLs?.map { it.copy() },
+            positions = positions?.map { it.key to it.value.copy() }?.toMap(),
+            assetPositions = assetPositions?.map { it.key to it.value.copy() }?.toMap(),
+            subaccountNumber = subaccountNumber,
+            address = address,
+            equity = equity,
+            freeCollateral = freeCollateral,
+            marginEnabled = marginEnabled,
+            updatedAtHeight = updatedAtHeight,
+            latestProcessedBlockHeight = latestProcessedBlockHeight,
+            pendingPositions = pendingPositions?.map { it.copy() },
+            openPositions = openPositions?.map { it.key to it.value.copy() }?.toMap(),
+            calculated = calculated.map { it.key to it.value.copy() }.toMap().toMutableMap(),
+        )
+    }
 }
 
 internal data class InternalSubaccountCalculated(

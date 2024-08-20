@@ -153,10 +153,10 @@ internal class TradeInputMarketOrderCalculator(
                 "size.leverage" -> {
                     val leverage = tradeSize.leverage ?: return null
                     createMarketOrderFromLeverage(
-                        leverage,
-                        market,
-                        subaccount,
-                        user,
+                        leverage = leverage,
+                        market = market,
+                        subaccount = subaccount,
+                        user = user,
                     )
                 }
 
