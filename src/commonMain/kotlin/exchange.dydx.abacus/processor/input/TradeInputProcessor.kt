@@ -181,8 +181,8 @@ internal class TradeInputProcessor(
                         )
                     } else {
                         error = ParsingError(
-                            ParsingErrorType.MissingRequiredData,
-                            "$inputData is not a valid string",
+                            type = ParsingErrorType.MissingRequiredData,
+                            message = "$inputData is not a valid string",
                         )
                     }
                 }

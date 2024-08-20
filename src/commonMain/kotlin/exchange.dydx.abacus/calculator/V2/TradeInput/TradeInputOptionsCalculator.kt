@@ -273,7 +273,8 @@ internal class TradeInputOptionsCalculator(
             market = market,
         )
         if (options.executionOptions != null) {
-            if (trade.execution == null) {
+            val types = options.executionOptions?.map { it.type }
+            if (trade.execution == null || types?.contains(trade.execution) == false) {
                 trade.execution = options.executionOptions?.firstOrNull()?.type
             }
         }
@@ -286,7 +287,8 @@ internal class TradeInputOptionsCalculator(
             market = market,
         )
         if (options.marginModeOptions != null) {
-            if (trade.marginMode == null) {
+            val types = options.marginModeOptions?.map { MarginMode.invoke(it.type) }
+            if (trade.marginMode == null || types?.contains(trade.marginMode) == false) {
                 trade.marginMode = MarginMode.invoke(options.marginModeOptions?.firstOrNull()?.type)
             }
         }
