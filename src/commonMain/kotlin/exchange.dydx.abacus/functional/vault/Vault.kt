@@ -216,7 +216,7 @@ fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVault
     val perpCalculated = perpetualPosition?.calculated?.get(CalculationPeriod.current)
     return VaultPosition(
         marketId = position.market,
-        marginUsdc = subaccount?.equity,
+        marginUsdc = calculated?.equity,
         currentLeverageMultiple = perpCalculated?.leverage,
         currentPosition = CurrentPosition(
             asset = perpCalculated?.size,
@@ -248,7 +248,7 @@ fun calculateThirtyDayPnl(vaultHistoricalPnl: IndexerVaultHistoricalPnl?): Thirt
 
     val thirtyDaysAgoEquity = parser.asDouble(thirtyDaysAgoEntry.equity) ?: 0.0
     val percentPnl = if (thirtyDaysAgoEquity != 0.0) {
-        (absolutePnl / thirtyDaysAgoEquity) * 100
+        (absolutePnl / thirtyDaysAgoEquity)
     } else {
         0.0
     }
