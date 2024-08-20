@@ -12,11 +12,13 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * Values: LONG,SHORT
  */
+@JsExport
 @Serializable
 enum class IndexerPositionSide(val value: kotlin.String) {
     LONG("LONG"), // :/

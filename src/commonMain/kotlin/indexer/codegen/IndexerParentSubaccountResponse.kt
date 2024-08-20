@@ -12,6 +12,7 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
@@ -21,6 +22,7 @@ import kotlinx.serialization.Serializable
  * @param freeCollateral
  * @param childSubaccounts
  */
+@JsExport
 @Serializable
 data class IndexerParentSubaccountResponse(
 

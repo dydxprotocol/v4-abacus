@@ -12,12 +12,14 @@
 package indexer.codegen
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
 
 /**
  *
  * @param restricted
  * @param reason
  */
+@JsExport
 @Serializable
 data class IndexerComplianceResponse(
 
