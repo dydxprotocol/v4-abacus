@@ -546,6 +546,7 @@ class V4Environment(
 data object StatsigConfig {
     var useSkip: Boolean = false
     var ff_enable_evm_swaps: Boolean = false
+    var dc_max_safe_bridge_fees: Float = Float.POSITIVE_INFINITY
 }
 
 @JsExport
