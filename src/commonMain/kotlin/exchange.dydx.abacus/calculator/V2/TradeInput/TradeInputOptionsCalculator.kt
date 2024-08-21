@@ -360,7 +360,7 @@ internal class TradeInputOptionsCalculator(
         val maxMarketLeverage = Numeric.double.ONE / initialMarginFraction
         val positionNotionalTotal = position?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
 
-        return if (equity != null && freeCollateral != null) {
+        return if (equity != null && equity > Numeric.double.ZERO && freeCollateral != null) {
             (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / equity
         } else {
             maxMarketLeverage
