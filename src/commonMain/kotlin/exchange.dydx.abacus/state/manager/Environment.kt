@@ -123,7 +123,6 @@ data class EnvironmentLinks(
 data class EnvironmentFeatureFlags(
     val withdrawalSafetyEnabled: Boolean,
     val isSlTpLimitOrdersEnabled: Boolean,
-    val isLimitCloseEnabled: Boolean,
 ) {
     companion object {
         fun parse(
@@ -132,12 +131,10 @@ data class EnvironmentFeatureFlags(
         ): EnvironmentFeatureFlags {
             val withdrawalSafetyEnabled = parser.asBool(data?.get("withdrawalSafetyEnabled")) ?: false
             val isSlTpLimitOrdersEnabled = parser.asBool(data?.get("isSlTpLimitOrdersEnabled")) ?: false
-            val isLimitCloseEnabled = parser.asBool(data?.get("isLimitCloseEnabled")) ?: false
 
             return EnvironmentFeatureFlags(
                 withdrawalSafetyEnabled,
                 isSlTpLimitOrdersEnabled,
-                isLimitCloseEnabled,
             )
         }
     }
@@ -550,6 +547,7 @@ data object StatsigConfig {
     var useSkip: Boolean = false
     var ff_enable_evm_swaps: Boolean = false
     var dc_max_safe_bridge_fees: Float = Float.POSITIVE_INFINITY
+    var ff_enable_limit_close: Boolean = false
 }
 
 @JsExport
