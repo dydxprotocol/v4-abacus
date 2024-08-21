@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.functional.vault
 
+import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultPosition
+import exchange.dydx.abacus.functional.vault.VaultCalculator.calculateVaultSummary
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerAssetPositionResponseObject

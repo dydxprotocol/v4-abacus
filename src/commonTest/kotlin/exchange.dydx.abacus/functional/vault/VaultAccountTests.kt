@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.functional.vault
 
+import exchange.dydx.abacus.functional.vault.VaultAccountCalculator.calculateUserVaultInfo
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.codegen.IndexerTransferType

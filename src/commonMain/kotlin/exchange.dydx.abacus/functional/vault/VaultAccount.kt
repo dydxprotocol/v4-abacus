@@ -25,16 +25,6 @@ data class AccountVaultResponse(
 )
 
 @JsExport
-fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
-    return parser.asTypedObject<AccountVaultResponse>(apiResponse)
-}
-
-@JsExport
-fun getTransfersBetweenResponse(apiResponse: String): IndexerTransferBetweenResponse? {
-    return parser.asTypedObject<IndexerTransferBetweenResponse>(apiResponse)
-}
-
-@JsExport
 @Serializable
 data class VaultAccount(
     val balanceUsdc: Double?,
@@ -61,28 +51,43 @@ enum class VaultTransferType {
 }
 
 @JsExport
-fun calculateUserVaultInfo(vaultInfo: AccountVaultResponse, vaultTransfers: IndexerTransferBetweenResponse): VaultAccount {
-    val presentValue = vaultInfo.equity
-    val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
-    val withdrawable = vaultInfo.withdrawable_amount
-    val allTimeReturn = if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
+object VaultAccountCalculator {
 
-    return VaultAccount(
-        balanceUsdc = presentValue,
-        withdrawableUsdc = withdrawable,
-        allTimeReturnUsdc = allTimeReturn,
-        totalVaultTransfersCount = vaultTransfers.totalResults,
-        vaultTransfers = vaultTransfers.transfersSubset?.map { el ->
-            VaultTransfer(
-                timestampMs = parser.asDouble(el.createdAt),
-                amountUsdc = parser.asDouble(el.size),
-                type = when (el.type) {
-                    TRANSFEROUT -> VaultTransferType.DEPOSIT
-                    TRANSFERIN -> VaultTransferType.WITHDRAWAL
-                    DEPOSIT, WITHDRAWAL, null -> null
-                },
-                id = el.id,
-            )
-        },
-    )
+    fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
+        return parser.asTypedObject<AccountVaultResponse>(apiResponse)
+    }
+
+    fun getTransfersBetweenResponse(apiResponse: String): IndexerTransferBetweenResponse? {
+        return parser.asTypedObject<IndexerTransferBetweenResponse>(apiResponse)
+    }
+
+    fun calculateUserVaultInfo(
+        vaultInfo: AccountVaultResponse,
+        vaultTransfers: IndexerTransferBetweenResponse
+    ): VaultAccount {
+        val presentValue = vaultInfo.equity
+        val netTransfers = parser.asDouble(vaultTransfers.totalNetTransfers)
+        val withdrawable = vaultInfo.withdrawable_amount
+        val allTimeReturn =
+            if (presentValue != null && netTransfers != null) (presentValue - netTransfers) else null
+
+        return VaultAccount(
+            balanceUsdc = presentValue,
+            withdrawableUsdc = withdrawable,
+            allTimeReturnUsdc = allTimeReturn,
+            totalVaultTransfersCount = vaultTransfers.totalResults,
+            vaultTransfers = vaultTransfers.transfersSubset?.map { el ->
+                VaultTransfer(
+                    timestampMs = parser.asDouble(el.createdAt),
+                    amountUsdc = parser.asDouble(el.size),
+                    type = when (el.type) {
+                        TRANSFEROUT -> VaultTransferType.DEPOSIT
+                        TRANSFERIN -> VaultTransferType.WITHDRAWAL
+                        DEPOSIT, WITHDRAWAL, null -> null
+                    },
+                    id = el.id,
+                )
+            },
+        )
+    }
 }
