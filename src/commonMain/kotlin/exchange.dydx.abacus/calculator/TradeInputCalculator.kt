@@ -1688,16 +1688,20 @@ internal class TradeInputCalculator(
                 "openPositions.$marketId",
             ),
         )
-        val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
-        val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current"))
+        val equity = parser.asDouble(parser.value(subaccount, "equity.current")) ?: return null
+        val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: return null
 
         val initialMarginFraction =
             parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
                 ?: return null
-        val maxMarketLeverage = Numeric.double.ONE / initialMarginFraction
+        val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
+            return null
+        } else {
+            Numeric.double.ONE / initialMarginFraction
+        }
         val positionNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: Numeric.double.ZERO
 
-        return if (equity != null && equity > Numeric.double.ZERO && freeCollateral != null) {
+        return if (equity > Numeric.double.ZERO) {
             (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / equity
         } else {
             maxMarketLeverage
