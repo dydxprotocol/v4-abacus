@@ -197,7 +197,6 @@ private fun TradingStateMachine.initiateTrade(
     trade["type"] = "LIMIT"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
-    marketId?.let { trade.safeSet("price.limitPrice", getMidMarketPrice(it)) }
 
     val marginMode = MarginCalculator.findExistingMarginModeDeprecated(parser, account, marketId, subaccountNumber)
         ?: MarginCalculator.findMarketMarginModeDeprecated(parser, parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId")))
@@ -419,18 +418,5 @@ private fun TradingStateMachine.validTradeInput(trade: Map<String, Any>, typeTex
         }
     } else {
         true
-    }
-}
-
-fun TradingStateMachine.getMidMarketPrice(
-    marketId: String
-): Double? {
-    val markets = parser.asNativeMap(marketsSummary?.get("markets"))
-    return parser.asNativeMap(parser.asNativeMap(markets?.get(marketId))?.get("orderbook_consolidated"))?.let { orderbook ->
-        parser.asDouble(parser.value(orderbook, "asks.0.price"))?.let { firstAskPrice ->
-            parser.asDouble(parser.value(orderbook, "bids.0.price"))?.let { firstBidPrice ->
-                (firstAskPrice + firstBidPrice) / 2.0
-            }
-        }
     }
 }
