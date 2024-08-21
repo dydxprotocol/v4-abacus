@@ -28,6 +28,7 @@ class V4StateManagerConfigs(
                          "screen":"/v4/screen",
                          "complianceScreen":"/v4/compliance/screen",
                          "complianceGeoblock":"/v4/compliance/geoblock",
+                         "complianceGeoblockKeplr":"/v4/compliance/geoblock-keplr",
                          "height":"/v4/height"
                       },
                       "private":{
