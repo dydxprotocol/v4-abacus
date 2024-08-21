@@ -66,6 +66,7 @@ data class TradeInputOptions(
     val needsMarginMode: Boolean,
     val needsSize: Boolean,
     val needsLeverage: Boolean,
+    val maxLeverage: Double?,
     val needsLimitPrice: Boolean,
     val needsTargetLeverage: Boolean,
     val needsTriggerPrice: Boolean,
@@ -179,6 +180,7 @@ data class TradeInputOptions(
                 needsMarginMode = state.needsMarginMode,
                 needsSize = state.needsSize,
                 needsLeverage = state.needsLeverage,
+                maxLeverage = state.maxLeverage,
                 needsLimitPrice = state.needsLimitPrice,
                 needsTargetLeverage = state.needsTargetLeverage,
                 needsTriggerPrice = state.needsTriggerPrice,
@@ -209,6 +211,7 @@ data class TradeInputOptions(
                 val needsMarginMode = parser.asBool(data["needsMarginMode"]) ?: true
                 val needsSize = parser.asBool(data["needsSize"]) ?: false
                 val needsLeverage = parser.asBool(data["needsLeverage"]) ?: false
+                val maxLeverage = parser.asDouble(data["maxLeverage"])
                 val needsLimitPrice = parser.asBool(data["needsLimitPrice"]) ?: false
                 val needsTargetLeverage = parser.asBool(data["needsTargetLeverage"]) ?: false
                 val needsTriggerPrice = parser.asBool(data["needsTriggerPrice"]) ?: false
@@ -275,6 +278,7 @@ data class TradeInputOptions(
                     existing?.needsMarginMode != needsMarginMode ||
                     existing.needsSize != needsSize ||
                     existing.needsLeverage != needsLeverage ||
+                    existing.maxLeverage != maxLeverage ||
                     existing.needsLimitPrice != needsLimitPrice ||
                     existing.needsTargetLeverage != needsTargetLeverage ||
                     existing.needsTriggerPrice != needsTriggerPrice ||
@@ -294,6 +298,7 @@ data class TradeInputOptions(
                         needsMarginMode,
                         needsSize,
                         needsLeverage,
+                        maxLeverage,
                         needsLimitPrice,
                         needsTargetLeverage,
                         needsTriggerPrice,
@@ -342,8 +347,7 @@ data class TradeInputSummary(
     val reward: Double?,
     val filled: Boolean,
     val positionMargin: Double?,
-    val positionLeverage: Double?,
-    val positionMaxLeverage: Double?
+    val positionLeverage: Double?
 ) {
     companion object {
         internal fun create(
@@ -361,7 +365,6 @@ data class TradeInputSummary(
                 filled = state?.filled ?: false,
                 positionMargin = state?.positionMargin,
                 positionLeverage = state?.positionLeverage,
-                positionMaxLeverage = state?.positionMaxLeverage,
             )
         }
 
@@ -384,7 +387,6 @@ data class TradeInputSummary(
                 val filled = parser.asBool(data["filled"]) ?: false
                 val positionMargin = parser.asDouble(data["positionMargin"])
                 val positionLeverage = parser.asDouble(data["positionLeverage"])
-                val positionMaxLeverage = parser.asDouble(data["positionMaxLeverage"])
 
                 return if (
                     existing?.price != price ||
@@ -396,7 +398,6 @@ data class TradeInputSummary(
                     existing?.total != total ||
                     existing?.positionMargin != positionMargin ||
                     existing?.positionLeverage != positionLeverage ||
-                    existing?.positionMaxLeverage != positionMaxLeverage ||
                     existing?.filled != filled
                 ) {
                     TradeInputSummary(
@@ -411,7 +412,6 @@ data class TradeInputSummary(
                         filled,
                         positionMargin,
                         positionLeverage,
-                        positionMaxLeverage,
                     )
                 } else {
                     existing
@@ -809,7 +809,6 @@ data class TradeInput(
     val postOnly: Boolean,
     val fee: Double?,
     val marginMode: MarginMode,
-    val maxLeverage: Double,
     val targetLeverage: Double,
     val bracket: TradeInputBracket?,
     val marketOrder: TradeInputMarketOrder?,
@@ -837,7 +836,6 @@ data class TradeInput(
                 postOnly = state.postOnly,
                 fee = state.fee,
                 marginMode = state.marginMode ?: MarginMode.Cross,
-                maxLeverage = state.maxLeverage ?: 1.0,
                 targetLeverage = state.targetLeverage ?: 1.0,
                 bracket = state.bracket,
                 marketOrder = state.marketOrder,
@@ -920,7 +918,6 @@ data class TradeInput(
                     existing.postOnly != postOnly ||
                     existing.fee != fee ||
                     existing.marginMode != marginMode ||
-                    existing.maxLeverage != maxLeverage ||
                     existing.targetLeverage != targetLeverage ||
                     existing.bracket != bracket ||
                     existing.marketOrder != marketOrder ||
@@ -940,7 +937,6 @@ data class TradeInput(
                         postOnly,
                         fee,
                         marginMode,
-                        maxLeverage,
                         targetLeverage,
                         bracket,
                         marketOrder,
