@@ -9,7 +9,6 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
-import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -110,7 +109,7 @@ fun TradingStateMachine.closePosition(
             )
         }
         ClosePositionInputField.useLimit.rawValue -> {
-            val useLimitClose = (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
+            val useLimitClose = (parser.asBool(data) ?: false) && featureFlags.isLimitCloseEnabled
             trade.safeSet(typeText, useLimitClose)
 
             if (useLimitClose) {
