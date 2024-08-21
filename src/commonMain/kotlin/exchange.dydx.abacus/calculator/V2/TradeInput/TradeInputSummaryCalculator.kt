@@ -136,6 +136,7 @@ internal class TradeInputSummaryCalculator {
             filled = marketOrder.filled,
             positionMargin = calculatePositionMargin(trade, subaccount, market),
             positionLeverage = getPositionLeverage(subaccount, market),
+            positionMaxLeverage = getPositionMaxLeverage(subaccount, market),
             feeRate = feeRate,
             indexSlippage = indexSlippage,
         )
@@ -238,6 +239,7 @@ internal class TradeInputSummaryCalculator {
             filled = marketOrder.filled,
             positionMargin = calculatePositionMargin(trade, subaccount, market),
             positionLeverage = getPositionLeverage(subaccount, market),
+            positionMaxLeverage = getPositionMaxLeverage(subaccount, market),
             feeRate = feeRate,
             indexSlippage = null,
         )
@@ -300,6 +302,7 @@ internal class TradeInputSummaryCalculator {
             filled = true,
             positionMargin = calculatePositionMargin(trade, subaccount, market),
             positionLeverage = getPositionLeverage(subaccount, market),
+            positionMaxLeverage = getPositionMaxLeverage(subaccount, market),
             feeRate = feeRate,
             indexSlippage = null,
         )
@@ -472,5 +475,19 @@ internal class TradeInputSummaryCalculator {
         val currentLeverage = position.calculated[CalculationPeriod.current]?.leverage
         val postOrderLeverage = position.calculated[CalculationPeriod.post]?.leverage
         return postOrderLeverage ?: currentLeverage
+    }
+
+    private fun getPositionMaxLeverage(
+        subaccount: InternalSubaccountState?,
+        market: InternalMarketState?,
+    ): Double? {
+        if (subaccount == null || market == null) return null
+
+        val equity = subaccount.calculated[CalculationPeriod.current]?.equity ?: return null
+        val freeCollateral = subaccount.calculated[CalculationPeriod.current]?.freeCollateral ?: return null
+
+        val imf = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: 1.0
+        val maxMarketLeverage = Numeric.double.ONE / imf
+        return freeCollateral * maxMarketLeverage / equity
     }
 }

@@ -66,6 +66,7 @@ internal data class InternalTradeInputState(
     var type: OrderType? = null,
     var side: OrderSide? = null,
     var marginMode: MarginMode? = null,
+    var maxLeverage: Double? = null,
     var targetLeverage: Double? = null,
     var timeInForce: String? = null,
     var goodTil: TradeInputGoodUntil? = null,
@@ -94,6 +95,7 @@ internal data class InternalTradeInputSummary(
     val filled: Boolean,
     val positionMargin: Double?,
     val positionLeverage: Double?,
+    val positionMaxLeverage: Double?,
     val indexSlippage: Double?,
     val feeRate: Double?,
 )
