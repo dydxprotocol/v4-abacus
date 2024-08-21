@@ -83,6 +83,10 @@ fun TradingStateMachine.closePosition(
                 val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
                 trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
 
+                // default full close
+                trade.safeSet("size.percent", 1.0)
+                trade.safeSet("size.input", "size.percent")
+
                 changes = StateChanges(
                     iListOf(Changes.subaccount, Changes.input),
                     null,
@@ -157,6 +161,9 @@ private fun TradingStateMachine.initiateClosePosition(
     trade["type"] = "MARKET"
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
+    // default full close
+    trade.safeSet("size.percent", 1.0)
+    trade.safeSet("size.input", "size.percent")
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
     val params = mutableMapOf<String, Any>()
@@ -167,7 +174,7 @@ private fun TradingStateMachine.initiateClosePosition(
     params.safeSet("rewardsParams", rewardsParams)
     params.safeSet("configs", configs)
 
-    val modified = calculator.calculate(params, subaccountNumber, null)
+    val modified = calculator.calculate(params, subaccountNumber, "size.percent")
 
     return parser.asMap(modified["trade"])?.mutable() ?: trade
 }
