@@ -10,7 +10,6 @@ import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
-
 @JsExport
 @Serializable
 data class AccountVaultResponse(
