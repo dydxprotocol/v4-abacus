@@ -84,7 +84,7 @@ fun TradingStateMachine.closePosition(
                 trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
 
                 // default full close
-                trade.safeSet("size.percent", 1)
+                trade.safeSet("size.percent", 1.0)
                 trade.safeSet("size.input", "size.percent")
 
                 changes = StateChanges(
@@ -162,7 +162,7 @@ private fun TradingStateMachine.initiateClosePosition(
     trade["side"] = "BUY"
     trade["marketId"] = marketId ?: "ETH-USD"
     // default full close
-    trade.safeSet("size.percent", 1)
+    trade.safeSet("size.percent", 1.0)
     trade.safeSet("size.input", "size.percent")
 
     val calculator = TradeInputCalculator(parser, TradeCalculation.closePosition)
