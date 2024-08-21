@@ -751,7 +751,7 @@ internal open class AccountSupervisor(
         complianceAction: ComplianceAction
     ) {
         val chainId = helper.environment.dydxChainId
-        val message = "Compliance verification message"
+        val message = "Verify account ownership"
         val payload =
             helper.jsonEncoder.encode(
                 mapOf(
