@@ -9,6 +9,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -22,7 +23,10 @@ import kotlinx.serialization.Serializable
 enum class ClosePositionInputField(val rawValue: String) {
     market("market"),
     size("size.size"),
-    percent("size.percent");
+    percent("size.percent"),
+
+    useLimit("useLimit"),
+    limitPrice("price.limitPrice");
 
     companion object {
         operator fun invoke(rawValue: String?) =
@@ -105,6 +109,35 @@ fun TradingStateMachine.closePosition(
                 subaccountNumberChanges,
             )
         }
+        ClosePositionInputField.useLimit.rawValue -> {
+            val useLimitClose = (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
+            trade.safeSet(typeText, useLimitClose)
+
+            if (useLimitClose) {
+                trade["type"] = "LIMIT"
+                trade["timeInForce"] = "GTT"
+                parser.asString(trade["marketId"])?.let {
+                    trade.safeSet("price.limitPrice", getMidMarketPrice(it))
+                }
+            } else {
+                trade["type"] = "MARKET"
+                trade["timeInForce"] = "IOC"
+            }
+
+            changes = StateChanges(
+                iListOf(Changes.subaccount, Changes.input),
+                null,
+                subaccountNumberChanges,
+            )
+        }
+        ClosePositionInputField.limitPrice.rawValue -> {
+            trade.safeSet(typeText, parser.asDouble(data))
+            changes = StateChanges(
+                iListOf(Changes.subaccount, Changes.input),
+                null,
+                subaccountNumberChanges,
+            )
+        }
         else -> {}
     }
     if (sizeChanged) {
@@ -177,4 +210,17 @@ private fun TradingStateMachine.initiateClosePosition(
     val modified = calculator.calculate(params, subaccountNumber, "size.percent")
 
     return parser.asMap(modified["trade"])?.mutable() ?: trade
+}
+
+private fun TradingStateMachine.getMidMarketPrice(
+    marketId: String
+): Double? {
+    val markets = parser.asNativeMap(marketsSummary?.get("markets"))
+    return parser.asNativeMap(parser.asNativeMap(markets?.get(marketId))?.get("orderbook_consolidated"))?.let { orderbook ->
+        parser.asDouble(parser.value(orderbook, "asks.0.price"))?.let { firstAskPrice ->
+            parser.asDouble(parser.value(orderbook, "bids.0.price"))?.let { firstBidPrice ->
+                (firstAskPrice + firstBidPrice) / 2.0
+            }
+        }
+    }
 }

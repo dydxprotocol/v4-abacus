@@ -17,6 +17,8 @@ class V4ClosePositionTests : V4BaseTests() {
 
         testCloseShortPositionInput()
         time = perp.log("Close Position", time)
+
+        testLimitClosePositionInput()
     }
 
     override fun setup() {
@@ -279,6 +281,121 @@ class V4ClosePositionTests : V4BaseTests() {
                                 }
                             }
                         }
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testLimitClosePositionInput() {
+        test(
+            {
+                perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
+            },
+            """
+                {
+                }
+            """.trimIndent(),
+        )
+        /*
+        Initial setup
+         */
+        test(
+            {
+                perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "closePosition",
+                    "closePosition": {
+                        "type": "MARKET",
+                        "side": "BUY",
+                        "size": {
+                            "percent": 1,
+                            "input": "size.percent",
+                            "size": 106.179
+                        },
+                        "reduceOnly": true
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.closePosition("true", ClosePositionInputField.useLimit, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "closePosition",
+                    "closePosition": {
+                        "type": "LIMIT",
+                        "side": "BUY",
+                        "size": {
+                            "percent": 1,
+                            "input": "size.percent",
+                            "size": 106.179
+                        },
+                        "price": {
+                            "limitPrice": 2000
+                        },
+                        "reduceOnly": true
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.closePosition("2500", ClosePositionInputField.limitPrice, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "closePosition",
+                    "closePosition": {
+                        "type": "LIMIT",
+                        "side": "BUY",
+                        "size": {
+                            "percent": 1,
+                            "input": "size.percent",
+                            "size": 106.179
+                        },
+                        "price": {
+                            "limitPrice": 2500
+                        },
+                        "reduceOnly": true
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.closePosition("false", ClosePositionInputField.useLimit, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "closePosition",
+                    "closePosition": {
+                        "type": "MARKET",
+                        "side": "BUY",
+                        "size": {
+                            "percent": 1,
+                            "input": "size.percent",
+                            "size": 106.179
+                        },
+                        "price": {
+                            "limitPrice": 2500
+                        },
+                        "reduceOnly": true
                     }
                 }
             }
