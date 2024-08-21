@@ -83,6 +83,10 @@ fun TradingStateMachine.closePosition(
                 val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
                 trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
 
+                // default full close
+                trade.safeSet("size.percent", 1)
+                trade.safeSet("size.input", "size.percent")
+
                 changes = StateChanges(
                     iListOf(Changes.subaccount, Changes.input),
                     null,
