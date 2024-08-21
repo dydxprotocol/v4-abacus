@@ -784,28 +784,27 @@ internal open class AccountSupervisor(
 
                 val isStatusValid = status != ComplianceStatus.UNKNOWN
 
-                val body: Map<String, String> =
-                    if (isKeplr == true) {
-                        iMapOf(
-                            "address" to address.rawAddress,
-                            "message" to message,
-                            "action" to complianceAction.toString(),
-                            "signedMessage" to signedMessage!!,
-                            "pubkey" to publicKey!!,
-                        )
-                    } else {
-                        iMapOf(
-                            "address" to address.rawAddress,
-                            "message" to message,
-                            "currentStatus" to status.toString(),
-                            "action" to complianceAction.toString(),
-                            "signedMessage" to signedMessage!!,
-                            "pubkey" to publicKey!!,
-                            "timestamp" to timestamp!!,
-                        )
-                    }
-
                 if (isUrlAndKeysPresent && isKeplrOrHasTimestamp && isStatusValid) {
+                    val body: Map<String, String> =
+                        if (isKeplr == true) {
+                            iMapOf(
+                                "address" to address.rawAddress,
+                                "message" to message,
+                                "action" to complianceAction.toString(),
+                                "signedMessage" to signedMessage!!,
+                                "pubkey" to publicKey!!,
+                            )
+                        } else {
+                            iMapOf(
+                                "address" to address.rawAddress,
+                                "message" to message,
+                                "currentStatus" to status.toString(),
+                                "action" to complianceAction.toString(),
+                                "signedMessage" to signedMessage!!,
+                                "pubkey" to publicKey!!,
+                                "timestamp" to timestamp!!,
+                            )
+                        }
                     val header =
                         iMapOf(
                             "Content-Type" to "application/json",
