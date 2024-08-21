@@ -10,6 +10,7 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.utils.IMap
+import exchange.dydx.abacus.utils.Parser
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
@@ -66,6 +67,10 @@ data class ThirtyDayPnl(
 
 @JsExport
 object VaultCalculator {
+    private val parser = Parser()
+    private val perpetualPositionProcessor = PerpetualPositionProcessor(parser, null)
+    private val assetPositionProcessor = AssetPositionProcessor(parser)
+    private val subaccountCalculator = SubaccountCalculatorV2(parser)
 
     fun getVaultHistoricalPnlResponse(apiResponse: String): IndexerVaultHistoricalPnlResponse? {
         return parser.asTypedObject<IndexerVaultHistoricalPnlResponse>(apiResponse)
@@ -142,12 +147,11 @@ object VaultCalculator {
         if (position.market == null) {
             return null
         }
-        val perpetualPosition = PerpetualPositionProcessor(parser, null).process(null, position.perpetualPosition)
-        val assetPosition = AssetPositionProcessor(parser).process(position.assetPosition)
-        val calculator = SubaccountCalculatorV2(parser)
+        val perpetualPosition = perpetualPositionProcessor.process(null, position.perpetualPosition)
+        val assetPosition = assetPositionProcessor.process(position.assetPosition)
 
         val assetPositionsMap = assetPosition?.let { mapOf((it.assetId ?: "") to it) }
-        val subaccount = calculator.calculate(
+        val subaccount = subaccountCalculator.calculate(
             subaccount = InternalSubaccountState(
                 equity = parser.asDouble(position.equity) ?: 0.0,
                 assetPositions = assetPositionsMap,
@@ -155,7 +159,7 @@ object VaultCalculator {
                 subaccountNumber = 0,
                 calculated = mutableMapOf(
                     CalculationPeriod.current to
-                        InternalSubaccountCalculated(quoteBalance = calculator.calculateQuoteBalance(assetPositionsMap)),
+                        InternalSubaccountCalculated(quoteBalance = subaccountCalculator.calculateQuoteBalance(assetPositionsMap)),
                 ),
 
             ),

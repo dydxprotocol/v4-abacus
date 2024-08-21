@@ -10,7 +10,6 @@ import indexer.codegen.IndexerTransferType.WITHDRAWAL
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
-val parser = Parser()
 
 @JsExport
 @Serializable
@@ -52,6 +51,7 @@ enum class VaultTransferType {
 
 @JsExport
 object VaultAccountCalculator {
+    private val parser = Parser()
 
     fun getAccountVaultResponse(apiResponse: String): AccountVaultResponse? {
         return parser.asTypedObject<AccountVaultResponse>(apiResponse)
