@@ -778,7 +778,9 @@ internal open class AccountSupervisor(
                 val isUrlAndKeysPresent =
                     url != null &&
                         signedMessage != null &&
-                        publicKey != null && (timestamp != null || isKeplr == true)
+                        publicKey != null
+
+                val isKeplrOrHasTimestamp = (timestamp != null || isKeplr == true)
 
                 val isStatusValid = status != ComplianceStatus.UNKNOWN
 
@@ -803,7 +805,7 @@ internal open class AccountSupervisor(
                         )
                     }
 
-                if (isUrlAndKeysPresent && isStatusValid) {
+                if (isUrlAndKeysPresent && isKeplrOrHasTimestamp && isStatusValid) {
                     val header =
                         iMapOf(
                             "Content-Type" to "application/json",
