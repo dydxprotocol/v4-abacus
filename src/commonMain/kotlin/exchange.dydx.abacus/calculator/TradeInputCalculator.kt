@@ -1698,7 +1698,7 @@ internal class TradeInputCalculator(
         val positionNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: Numeric.double.ZERO
 
         return if (equity != null && freeCollateral != null) {
-            (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / (equity)
+            (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / equity
         } else {
             maxMarketLeverage
         }

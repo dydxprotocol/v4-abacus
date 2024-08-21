@@ -876,7 +876,6 @@ data class TradeInput(
                     MarginMode.invoke(it)
                 } ?: MarginMode.Cross
 
-                val maxLeverage = parser.asDouble(data["maxLeverage"]) ?: 1.0
                 val targetLeverage = parser.asDouble(data["targetLeverage"]) ?: 1.0
 
                 val goodTil = TradeInputGoodUntil.create(
