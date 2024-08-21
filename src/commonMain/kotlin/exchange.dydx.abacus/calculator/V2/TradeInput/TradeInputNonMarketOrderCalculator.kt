@@ -1,18 +1,27 @@
 package exchange.dydx.abacus.calculator.v2.tradeinput
 
+import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 
-internal class TradeInputNonMarketOrderCalculator {
+internal class TradeInputNonMarketOrderCalculator(
+    private val calculation: TradeCalculation,
+    private val closePositionCalculator: TradeInputClosePositionCalculator,
+) {
     fun calculate(
         trade: InternalTradeInputState,
         market: InternalMarketState?,
+        subaccount: InternalSubaccountState?,
         input: String,
     ): InternalTradeInputState {
+        if (calculation == TradeCalculation.closePosition) {
+            closePositionCalculator.calculate(trade, market, subaccount)
+        }
         var tradeSize = trade.size
         if (tradeSize != null) {
             val isBuying = trade.isBuying

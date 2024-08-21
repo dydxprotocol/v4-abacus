@@ -21,8 +21,9 @@ internal class TradeInputCalculatorV2(
     private val parser: ParserProtocol,
     private val calculation: TradeCalculation,
     private val marginModeCalculator: TradeInputMarginModeCalculator = TradeInputMarginModeCalculator(),
-    private val marketOrderCalculator: TradeInputMarketOrderCalculator = TradeInputMarketOrderCalculator(calculation),
-    private val nonMarketOrderCalculator: TradeInputNonMarketOrderCalculator = TradeInputNonMarketOrderCalculator(),
+    private val closePositionCalculator: TradeInputClosePositionCalculator = TradeInputClosePositionCalculator(),
+    private val marketOrderCalculator: TradeInputMarketOrderCalculator = TradeInputMarketOrderCalculator(calculation, closePositionCalculator),
+    private val nonMarketOrderCalculator: TradeInputNonMarketOrderCalculator = TradeInputNonMarketOrderCalculator(calculation, closePositionCalculator),
     private val optionsCalculator: TradeInputOptionsCalculator = TradeInputOptionsCalculator(parser),
     private val summaryCalculator: TradeInputSummaryCalculator = TradeInputSummaryCalculator(),
     private val accountTransformer: AccountTransformerV2 = AccountTransformerV2(parser),
@@ -77,6 +78,7 @@ internal class TradeInputCalculatorV2(
                     nonMarketOrderCalculator.calculate(
                         trade = trade,
                         market = markets[trade.marketId],
+                        subaccount = subaccount,
                         input = input,
                     )
             }
