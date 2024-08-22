@@ -1,9 +1,5 @@
 package exchange.dydx.abacus.functional.vault
 
-import exchange.dydx.abacus.functional.vault.VaultAccountCalculator.calculateUserVaultInfo
-import indexer.codegen.IndexerTransferBetweenResponse
-import indexer.codegen.IndexerTransferResponseObject
-import indexer.codegen.IndexerTransferType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -28,18 +24,18 @@ class VaultFormTests {
                 action = TransactionAction.DEPOSIT,
                 amount = 100.0,
                 acknowledgedSlippage = true,
-                inConfirmationStep = true
+                inConfirmationStep = true,
             ),
             accountData = AccountData(
                 marginUsage = 0.5,
-                freeCollateral = 1000.0
+                freeCollateral = 1000.0,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
                 balanceShares = 250.0,
                 withdrawableUsdc = 500.0,
             ),
-            slippageResponse = null
+            slippageResponse = null,
         )
 
         assertEquals(
@@ -48,9 +44,9 @@ class VaultFormTests {
                 submissionData = SubmissionData(
                     deposit = DepositData(
                         subaccountFrom = "0",
-                        amount = 100.0
+                        amount = 100.0,
                     ),
-                    withdraw = null
+                    withdraw = null,
                 ),
                 summaryData = SummaryData(
                     needSlippageAck = false,
@@ -58,10 +54,10 @@ class VaultFormTests {
                     freeCollateral = 900.0,
                     vaultBalance = 600.0,
                     estimatedSlippage = 0.0,
-                    estimatedAmountReceived = null
-                )
+                    estimatedAmountReceived = null,
+                ),
             ),
-            result
+            result,
         )
     }
 
@@ -72,35 +68,35 @@ class VaultFormTests {
                 action = TransactionAction.WITHDRAW,
                 amount = 100.0,
                 acknowledgedSlippage = true,
-                inConfirmationStep = true
+                inConfirmationStep = true,
             ),
             accountData = AccountData(
                 marginUsage = 0.5,
-                freeCollateral = 1000.0
+                freeCollateral = 1000.0,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
                 withdrawableUsdc = 500.0,
-                balanceShares = 500.0
+                balanceShares = 500.0,
             ),
             slippageResponse = SlippageResponse(
                 shares = 100.0,
-                expectedAmount = 98.0
-            )
+                expectedAmount = 98.0,
+            ),
         )
 
         assertEquals(
             ValidationResult(
                 errors = listOf(
-                    ValidationError(ErrorSeverity.WARNING, ErrorType.SLIPPAGE_TOO_HIGH)
+                    ValidationError(ErrorSeverity.WARNING, ErrorType.SLIPPAGE_TOO_HIGH),
                 ),
                 submissionData = SubmissionData(
                     deposit = null,
                     withdraw = WithdrawData(
                         subaccountTo = "0",
                         shares = 100.0,
-                        minAmount = 98 * .99
-                    )
+                        minAmount = 98 * .99,
+                    ),
                 ),
                 summaryData = SummaryData(
                     needSlippageAck = true,
@@ -108,10 +104,10 @@ class VaultFormTests {
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,
                     estimatedSlippage = 0.02,
-                    estimatedAmountReceived = 98.0
-                )
+                    estimatedAmountReceived = 98.0,
+                ),
             ),
-            result
+            result,
         )
     }
 
@@ -123,21 +119,21 @@ class VaultFormTests {
                 action = TransactionAction.WITHDRAW,
                 amount = 100.0,
                 acknowledgedSlippage = true,
-                inConfirmationStep = true
+                inConfirmationStep = true,
             ),
             accountData = AccountData(
                 marginUsage = 0.5,
-                freeCollateral = 1000.0
+                freeCollateral = 1000.0,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
                 withdrawableUsdc = 500.0,
-                balanceShares = 500.0
+                balanceShares = 500.0,
             ),
             slippageResponse = SlippageResponse(
                 shares = 120.0,
-                expectedAmount = 98.0
-            )
+                expectedAmount = 98.0,
+            ),
         )
 
         assertEquals(
@@ -153,10 +149,10 @@ class VaultFormTests {
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,
                     estimatedSlippage = 0.020000000000000018, // unfortunate precision issues with direct equality checks
-                    estimatedAmountReceived = 98.0
-                )
+                    estimatedAmountReceived = 98.0,
+                ),
             ),
-            result
+            result,
         )
     }
 
@@ -167,11 +163,11 @@ class VaultFormTests {
                 action = TransactionAction.WITHDRAW,
                 amount = 600.0,
                 acknowledgedSlippage = false,
-                inConfirmationStep = true
+                inConfirmationStep = true,
             ),
             accountData = AccountData(
                 marginUsage = 0.5,
-                freeCollateral = 1000.0
+                freeCollateral = 1000.0,
             ),
             vaultAccount = makeVaultAccount(
                 balanceUsdc = 500.0,
@@ -180,8 +176,8 @@ class VaultFormTests {
             ),
             slippageResponse = SlippageResponse(
                 shares = 600.0,
-                expectedAmount = 500.0
-            )
+                expectedAmount = 500.0,
+            ),
         )
 
         assertEquals(
@@ -189,7 +185,7 @@ class VaultFormTests {
                 errors = listOf(
                     ValidationError(ErrorSeverity.ERROR, ErrorType.WITHDRAW_TOO_HIGH),
                     ValidationError(ErrorSeverity.WARNING, ErrorType.SLIPPAGE_TOO_HIGH),
-                    ValidationError(ErrorSeverity.ERROR, ErrorType.MUST_ACK_SLIPPAGE)
+                    ValidationError(ErrorSeverity.ERROR, ErrorType.MUST_ACK_SLIPPAGE),
                 ),
                 submissionData = null,
                 summaryData = SummaryData(
@@ -198,10 +194,10 @@ class VaultFormTests {
                     freeCollateral = 1500.0,
                     vaultBalance = -100.0,
                     estimatedSlippage = 0.16666666666666663,
-                    estimatedAmountReceived = 500.0
-                )
+                    estimatedAmountReceived = 500.0,
+                ),
             ),
-            result
+            result,
         )
     }
 }
