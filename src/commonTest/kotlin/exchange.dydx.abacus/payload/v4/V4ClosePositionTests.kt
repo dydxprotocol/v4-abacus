@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.tests.extensions.log
@@ -289,6 +290,7 @@ class V4ClosePositionTests : V4BaseTests() {
     }
 
     private fun testLimitClosePositionInput() {
+        StatsigConfig.ff_enable_limit_close = true
         test(
             {
                 perp.socket(mock.socketUrl, mock.accountsChannel.v4_subscribed, 0, null)
