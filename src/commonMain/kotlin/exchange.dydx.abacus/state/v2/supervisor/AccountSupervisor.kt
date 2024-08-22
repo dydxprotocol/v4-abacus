@@ -750,13 +750,15 @@ internal open class AccountSupervisor(
         status: ComplianceStatus,
         complianceAction: ComplianceAction
     ) {
-        val message = "Compliance verification message"
+        val chainId = helper.environment.dydxChainId
+        val message = "Verify account ownership"
         val payload =
             helper.jsonEncoder.encode(
                 mapOf(
                     "message" to message,
                     "action" to complianceAction.toString(),
                     "status" to status.toString(),
+                    "chainId" to chainId.toString(),
                 ),
             )
         helper.transaction(
@@ -767,29 +769,42 @@ internal open class AccountSupervisor(
             val result = helper.parser.decodeJsonObject(additionalPayload)
 
             if (error == null && result != null) {
-                val url = complianceGeoblockUrl()
                 val signedMessage = helper.parser.asString(result["signedMessage"])
                 val publicKey = helper.parser.asString(result["publicKey"])
                 val timestamp = helper.parser.asString(result["timestamp"])
+                val isKeplr = helper.parser.asBool(result["isKeplr"])
+                val url = if (isKeplr == true) complianceGeoblockKeplrUrl() else complianceGeoblockUrl()
 
                 val isUrlAndKeysPresent =
                     url != null &&
                         signedMessage != null &&
-                        publicKey != null &&
-                        timestamp != null
+                        publicKey != null
+
+                val isKeplrOrHasTimestamp = (timestamp != null || isKeplr == true)
+
                 val isStatusValid = status != ComplianceStatus.UNKNOWN
 
-                if (isUrlAndKeysPresent && isStatusValid) {
-                    val body: IMap<String, String> =
-                        iMapOf(
-                            "address" to address.rawAddress,
-                            "message" to message,
-                            "currentStatus" to status.toString(),
-                            "action" to complianceAction.toString(),
-                            "signedMessage" to signedMessage!!,
-                            "pubkey" to publicKey!!,
-                            "timestamp" to timestamp!!,
-                        )
+                if (isUrlAndKeysPresent && isKeplrOrHasTimestamp && isStatusValid) {
+                    val body: Map<String, String> =
+                        if (isKeplr == true) {
+                            iMapOf(
+                                "address" to address.rawAddress,
+                                "message" to message,
+                                "action" to complianceAction.toString(),
+                                "signedMessage" to signedMessage!!,
+                                "pubkey" to publicKey!!,
+                            )
+                        } else {
+                            iMapOf(
+                                "address" to address.rawAddress,
+                                "message" to message,
+                                "currentStatus" to status.toString(),
+                                "action" to complianceAction.toString(),
+                                "signedMessage" to signedMessage!!,
+                                "pubkey" to publicKey!!,
+                                "timestamp" to timestamp!!,
+                            )
+                        }
                     val header =
                         iMapOf(
                             "Content-Type" to "application/json",
@@ -851,6 +866,10 @@ internal open class AccountSupervisor(
 
     private fun complianceGeoblockUrl(): String? {
         return helper.configs.publicApiUrl("complianceGeoblock")
+    }
+
+    private fun complianceGeoblockKeplrUrl(): String? {
+        return helper.configs.publicApiUrl("complianceGeoblockKeplr")
     }
 
     open fun screenSourceAddress() {
