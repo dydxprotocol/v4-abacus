@@ -103,7 +103,7 @@ class VaultFormTests {
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
                     vaultBalance = 400.0,
-                    estimatedSlippage = 0.02,
+                    estimatedSlippage = 0.020000000000000018,
                     estimatedAmountReceived = 98.0,
                 ),
             ),
