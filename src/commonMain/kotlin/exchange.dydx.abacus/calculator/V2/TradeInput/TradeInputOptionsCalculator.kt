@@ -425,7 +425,10 @@ internal class TradeInputOptionsCalculator(
     }
 
     private fun trailingPercentField(): Map<String, Any> {
-        return mapOf("field" to "price.trailingPercent", "type" to "double")
+        return mapOf(
+            "field" to "price.trailingPercent",
+            "type" to "double",
+        )
     }
 
     private fun reduceOnlyField(): Map<String, Any>? {

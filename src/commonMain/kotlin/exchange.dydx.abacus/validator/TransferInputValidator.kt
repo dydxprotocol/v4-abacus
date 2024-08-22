@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.validator
 
+import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -24,8 +26,16 @@ internal class TransferInputValidator(
     )
 
     override fun validate(
-        staticTyping: Boolean,
         internalState: InternalState,
+        subaccountNumber: Int?,
+        currentBlockAndHeight: BlockAndTime?,
+        inputType: InputType,
+        environment: V4Environment?,
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateDeprecated(
         wallet: Map<String, Any>?,
         user: Map<String, Any>?,
         subaccount: Map<String, Any>?,
@@ -41,9 +51,7 @@ internal class TransferInputValidator(
             val restricted = parser.asBool(user?.get("restricted")) ?: false
             for (validator in transferValidators) {
                 val validatorErrors =
-                    validator.validateTransfer(
-                        staticTyping = staticTyping,
-                        internalState = internalState,
+                    validator.validateTransferDeprecated(
                         wallet = wallet,
                         subaccount = subaccount,
                         transfer = transaction,
@@ -75,13 +83,13 @@ internal class TransferInputValidator(
             if (restricted) {
                 when (change) {
                     PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING ->
-                        error(
-                            "ERROR",
-                            "RESTRICTED_USER",
-                            listOf("size.size"),
-                            "APP.TRADE.MODIFY_SIZE_FIELD",
-                            "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_POSITION_ONLY",
-                            "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY",
+                        errorDeprecated(
+                            type = "ERROR",
+                            errorCode = "RESTRICTED_USER",
+                            fields = listOf("size.size"),
+                            actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                            titleStringKey = "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_CLOSE_POSITION_ONLY",
+                            textStringKey = "ERRORS.TRADE_BOX.MARKET_ORDER_CLOSE_POSITION_ONLY",
                         )
 
                     else -> null
@@ -92,14 +100,14 @@ internal class TransferInputValidator(
         } else if (canReduce) {
             when (change) {
                 PositionChange.NEW, PositionChange.INCREASING, PositionChange.CROSSING ->
-                    error(
-                        "ERROR",
-                        "CLOSE_ONLY_MARKET",
-                        listOf("size.size"),
-                        "APP.TRADE.MODIFY_SIZE_FIELD",
-                        "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-                        "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                        mapOf(
+                    errorDeprecated(
+                        type = "ERROR",
+                        errorCode = "CLOSE_ONLY_MARKET",
+                        fields = listOf("size.size"),
+                        actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                        titleStringKey = "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
+                        textStringKey = "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
+                        textParams = mapOf(
                             "MARKET" to mapOf(
                                 "value" to marketId,
                                 "format" to "string",
@@ -110,14 +118,14 @@ internal class TransferInputValidator(
                 else -> null
             }
         } else {
-            error(
-                "ERROR",
-                "CLOSED_MARKET",
-                null,
-                null,
-                "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
-                "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
-                mapOf(
+            errorDeprecated(
+                type = "ERROR",
+                errorCode = "CLOSED_MARKET",
+                fields = null,
+                actionStringKey = null,
+                titleStringKey = "WARNINGS.TRADE_BOX_TITLE.MARKET_STATUS_CLOSE_ONLY",
+                textStringKey = "WARNINGS.TRADE_BOX.MARKET_STATUS_CLOSE_ONLY",
+                textParams = mapOf(
                     "MARKET" to mapOf(
                         "value" to marketId,
                         "format" to "string",
