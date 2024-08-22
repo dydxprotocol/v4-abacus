@@ -18,7 +18,6 @@ import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.model.TradingStateMachine
-import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -263,7 +262,7 @@ internal class SubaccountTransactionPayloadProvider(
         val execution = "DEFAULT"
         val reduceOnly = true
         val postOnly = false
-        val limitCloseDuration = GoodTil.duration(TradeInputGoodUntil(LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
+        val limitCloseDuration = TradeInputGoodUntil(LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS, "D").timeInterval ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = if (isLimitClose) (limitCloseDuration / 1.seconds).toInt() else null
         val goodTilBlock = if (isLimitClose) null else currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
