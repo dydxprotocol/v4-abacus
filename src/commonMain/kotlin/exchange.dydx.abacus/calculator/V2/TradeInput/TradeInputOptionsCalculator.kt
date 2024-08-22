@@ -16,6 +16,7 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.safeCreate
+import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 
 internal class TradeInputOptionsCalculator(
@@ -63,6 +64,7 @@ internal class TradeInputOptionsCalculator(
         return calculatedOptionsFromFields(
             fields = fields,
             trade = trade,
+            subaccount = subaccount,
             position = position,
             market = market,
         )
@@ -166,6 +168,7 @@ internal class TradeInputOptionsCalculator(
     private fun calculatedOptionsFromFields(
         fields: List<Any>?,
         trade: InternalTradeInputState,
+        subaccount: InternalSubaccountState?,
         position: InternalPerpetualPosition?,
         market: InternalMarketState?,
     ): InternalTradeInputOptions {
@@ -209,7 +212,7 @@ internal class TradeInputOptionsCalculator(
         }
 
         if (options.needsLeverage) {
-            options.maxLeverage = maxLeverageFromPosition(position, market)
+            options.maxLeverage = maxLeverage(subaccount, market, position)
         } else {
             options.maxLeverage = null
         }
@@ -340,17 +343,32 @@ internal class TradeInputOptionsCalculator(
         }
     }
 
-    private fun maxLeverageFromPosition(
-        position: InternalPerpetualPosition?,
+    private fun maxLeverage(
+        subaccount: InternalSubaccountState?,
         market: InternalMarketState?,
+        position: InternalPerpetualPosition?,
     ): Double? {
-        if (position != null) {
-            return position.calculated[CalculationPeriod.current]?.maxLeverage
+        if (subaccount == null || market == null) {
+            return null
+        }
+
+        val initialMarginFraction =
+            market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: return null
+
+        val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
+            return null
         } else {
-            val initialMarginFraction =
-                market?.perpetualMarket?.configs?.effectiveInitialMarginFraction
-                    ?: return null
-            return 1.0 / initialMarginFraction
+            Numeric.double.ONE / initialMarginFraction
+        }
+
+        val equity = subaccount.calculated[CalculationPeriod.current]?.equity
+        val freeCollateral = subaccount.calculated[CalculationPeriod.current]?.freeCollateral ?: Numeric.double.ZERO
+        val positionNotionalTotal = position?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
+
+        return if (equity != null && equity > Numeric.double.ZERO) {
+            (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / equity
+        } else {
+            maxMarketLeverage
         }
     }
 
