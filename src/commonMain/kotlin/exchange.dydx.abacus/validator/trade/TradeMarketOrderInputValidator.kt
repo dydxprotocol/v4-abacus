@@ -141,7 +141,8 @@ internal class TradeMarketOrderInputValidator(
             )
         }
 
-        val summary = parser.asNativeMap(trade["summary"]) ?: return null
+        // summary can be empty even though there's input e.g. leverage input is set to the same as current position leverage
+        val summary = parser.asNativeMap(trade["summary"])?.takeIf { it.isNotEmpty() } ?: return null
         // if there's liquidity for market order to be filled but is missing orderbook slippage (mid price)
         // it is a one sided liquidity situation and should place limit order instead
         parser.asDouble(summary["slippage"])
