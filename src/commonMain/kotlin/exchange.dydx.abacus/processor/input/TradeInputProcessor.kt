@@ -22,6 +22,7 @@ import exchange.dydx.abacus.state.internalstate.InternalConfigsState
 import exchange.dydx.abacus.state.internalstate.InternalInputState
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
+import exchange.dydx.abacus.state.internalstate.InternalRewardsParamsState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
@@ -35,6 +36,7 @@ internal interface TradeInputProcessorProtocol {
         marketSummaryState: InternalMarketSummaryState,
         walletState: InternalWalletState,
         configs: InternalConfigsState,
+        rewardsParams: InternalRewardsParamsState?,
         marketId: String,
         subaccountNumber: Int,
     ): StateChanges
@@ -44,6 +46,7 @@ internal interface TradeInputProcessorProtocol {
         walletState: InternalWalletState,
         marketSummaryState: InternalMarketSummaryState,
         configs: InternalConfigsState,
+        rewardsParams: InternalRewardsParamsState?,
         inputData: String?,
         inputType: TradeInputField?,
         subaccountNumber: Int,
@@ -64,6 +67,7 @@ internal class TradeInputProcessor(
         marketSummaryState: InternalMarketSummaryState,
         walletState: InternalWalletState,
         configs: InternalConfigsState,
+        rewardsParams: InternalRewardsParamsState?,
         marketId: String,
         subaccountNumber: Int,
     ): StateChanges {
@@ -94,6 +98,7 @@ internal class TradeInputProcessor(
                 walletState = walletState,
                 marketSummaryState = marketSummaryState,
                 configs = configs,
+                rewardsParams = rewardsParams,
             )
         }
 
@@ -127,6 +132,7 @@ internal class TradeInputProcessor(
         walletState: InternalWalletState,
         marketSummaryState: InternalMarketSummaryState,
         configs: InternalConfigsState,
+        rewardsParams: InternalRewardsParamsState?,
         inputData: String?,
         inputType: TradeInputField?,
         subaccountNumber: Int,
@@ -141,6 +147,7 @@ internal class TradeInputProcessor(
                 walletState = walletState,
                 marketSummaryState = marketSummaryState,
                 configs = configs,
+                rewardsParams = rewardsParams,
             )
         }
         if (inputType == null) {
@@ -316,6 +323,7 @@ internal class TradeInputProcessor(
         walletState: InternalWalletState,
         marketSummaryState: InternalMarketSummaryState,
         configs: InternalConfigsState,
+        rewardsParams: InternalRewardsParamsState?,
     ): InternalTradeInputState {
         val market = marketSummaryState.markets[marketId]
         val marginMode = MarginCalculator.findExistingMarginMode(
@@ -337,7 +345,7 @@ internal class TradeInputProcessor(
             ),
             wallet = walletState,
             marketSummary = marketSummaryState,
-            rewardsParams = null,
+            rewardsParams = rewardsParams,
             configs = configs,
             subaccountNumber = subaccountNumber,
             input = null,

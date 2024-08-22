@@ -55,6 +55,7 @@ internal data class InternalState(
 
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
+    var closePosition: InternalTradeInputState = InternalTradeInputState(),
     var receiptLines: List<ReceiptLine>? = null,
     var errors: List<ValidationError>? = null,
     var childSubaccountErrors: List<ValidationError>? = null,
