@@ -53,6 +53,7 @@ enum class ErrorType {
     AMOUNT_EMPTY,
     DEPOSIT_TOO_HIGH,
     WITHDRAW_TOO_HIGH,
+    WITHDRAWING_LOCKED_BALANCE,
     SLIPPAGE_TOO_HIGH,
     MUST_ACK_SLIPPAGE,
     VAULT_ACCOUNT_MISSING,
@@ -209,6 +210,9 @@ object VaultDepositWithdrawFormValidator {
                 if (postOpVaultBalance != null && postOpVaultBalance < 0) {
                     errors.add(ValidationError(ErrorSeverity.ERROR, ErrorType.WITHDRAW_TOO_HIGH))
                 }
+                if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 && vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc) {
+                    errors.add(ValidationError(ErrorSeverity.ERROR, ErrorType.WITHDRAWING_LOCKED_BALANCE))
+                }
                 if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.shares) {
                     errors.add(
                         ValidationError(
@@ -258,7 +262,7 @@ object VaultDepositWithdrawFormValidator {
             freeCollateral = postOpFreeCollateral,
             vaultBalance = postOpVaultBalance,
             estimatedSlippage = slippagePercent,
-            estimatedAmountReceived = slippageResponse?.expectedAmount,
+            estimatedAmountReceived = if (formData.action === TransactionAction.WITHDRAW) slippageResponse?.expectedAmount else null,
         )
 
         return ValidationResult(
