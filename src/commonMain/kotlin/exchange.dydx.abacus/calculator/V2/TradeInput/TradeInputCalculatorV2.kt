@@ -28,7 +28,7 @@ internal class TradeInputCalculatorV2(
     private val parser: ParserProtocol,
     private val calculation: TradeCalculation,
     private val marginModeCalculator: TradeInputMarginModeCalculator = TradeInputMarginModeCalculator(),
-    private val marketOrderCalculator: TradeInputMarketOrderCalculator = TradeInputMarketOrderCalculator(calculation),
+    private val marketOrderCalculator: TradeInputMarketOrderCalculator = TradeInputMarketOrderCalculator(),
     private val nonMarketOrderCalculator: TradeInputNonMarketOrderCalculator = TradeInputNonMarketOrderCalculator(),
     private val optionsCalculator: TradeInputOptionsCalculator = TradeInputOptionsCalculator(parser),
     private val summaryCalculator: TradeInputSummaryCalculator = TradeInputSummaryCalculator(),

@@ -4,7 +4,6 @@ package exchange.dydx.abacus.calculator.v2.tradeinput
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
-import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
@@ -20,9 +19,7 @@ import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import kollections.toIList
 
-internal class TradeInputMarketOrderCalculator(
-    private val calculation: TradeCalculation,
-) {
+internal class TradeInputMarketOrderCalculator() {
     fun calculate(
         trade: InternalTradeInputState,
         market: InternalMarketState?,
