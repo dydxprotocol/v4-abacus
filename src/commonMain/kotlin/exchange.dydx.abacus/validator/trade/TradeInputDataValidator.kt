@@ -2,6 +2,7 @@ package exchange.dydx.abacus.validator.trade
 
 import abs
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ValidationError
@@ -48,7 +49,12 @@ internal class TradeInputDataValidator(
     ): List<ValidationError>? {
         val errors = mutableListOf<ValidationError>()
 
-        val marketId = internalState.input.trade.marketId ?: return null
+        val trade = when (internalState.input.currentType) {
+            InputType.TRADE -> internalState.input.trade
+            InputType.CLOSE_POSITION -> internalState.input.closePosition
+            else -> return null
+        }
+        val marketId = trade.marketId ?: return null
         val market = internalState.marketsSummary.markets[marketId]
 
         validateSize(

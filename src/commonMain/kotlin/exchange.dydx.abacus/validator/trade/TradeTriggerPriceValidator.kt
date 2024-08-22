@@ -2,6 +2,7 @@ package exchange.dydx.abacus.validator.trade
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ValidationError
@@ -38,7 +39,11 @@ internal class TradeTriggerPriceValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
-        val trade = internalState.input.trade
+        val trade = when (internalState.input.currentType) {
+            InputType.TRADE -> internalState.input.trade
+            InputType.CLOSE_POSITION -> internalState.input.closePosition
+            else -> return null
+        }
         val needsTriggerPrice = trade.options.needsTriggerPrice
         if (!needsTriggerPrice) {
             return null

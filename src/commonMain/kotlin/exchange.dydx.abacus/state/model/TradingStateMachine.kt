@@ -758,15 +758,22 @@ open class TradingStateMachine(
     private fun calculateTrade(tag: String, calculation: TradeCalculation, subaccountNumber: Int) {
         if (staticTyping) {
             val calculator = TradeInputCalculatorV2(parser, calculation)
-            calculator.calculate(
-                trade = internalState.input.trade,
-                wallet = internalState.wallet,
-                marketSummary = internalState.marketsSummary,
-                rewardsParams = internalState.rewardsParams,
-                configs = internalState.configs,
-                subaccountNumber = subaccountNumber,
-                input = internalState.input.trade.size?.input,
-            )
+            val inputType =
+                calculator.calculate(
+                    trade = when (calculation) {
+                        TradeCalculation.closePosition -> internalState.input.closePosition
+                        TradeCalculation.trade -> internalState.input.trade
+                    },
+                    wallet = internalState.wallet,
+                    marketSummary = internalState.marketsSummary,
+                    rewardsParams = internalState.rewardsParams,
+                    configs = internalState.configs,
+                    subaccountNumber = subaccountNumber,
+                    input = when (calculation) {
+                        TradeCalculation.closePosition -> internalState.input.closePosition.size?.input
+                        TradeCalculation.trade -> internalState.input.trade.size?.input
+                    },
+                )
         } else {
             val input = this.input?.mutable()
             val trade = parser.asNativeMap(input?.get(tag))
