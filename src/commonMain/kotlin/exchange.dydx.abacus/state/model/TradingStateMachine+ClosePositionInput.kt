@@ -98,17 +98,14 @@ fun TradingStateMachine.closePosition(
                     trade["type"] = "MARKET"
 
                     val positionSize =
-                        parser.asDouble(parser.value(position, "size.current"))
-                            ?: Numeric.double.ZERO
+                        parser.asDouble(parser.value(position, "size.current")) ?: Numeric.double.ZERO
                     trade["side"] = if (positionSize > Numeric.double.ZERO) "SELL" else "BUY"
 
                     trade["timeInForce"] = "IOC"
                     trade["reduceOnly"] = true
 
-                    val currentPositionLeverage =
-                        parser.asDouble(parser.value(position, "leverage.current"))?.abs()
-                    trade["targetLeverage"] =
-                        if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
+                    val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
+                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
 
                     // default full close
                     trade.safeSet("size.percent", 1.0)
@@ -123,7 +120,6 @@ fun TradingStateMachine.closePosition(
                     error = ParsingError.cannotModify(typeText)
                 }
             }
-
             ClosePositionInputField.size.rawValue, ClosePositionInputField.percent.rawValue -> {
                 sizeChanged = (parser.asDouble(data) != parser.asDouble(trade[typeText]))
                 trade.safeSet(typeText, data)
@@ -133,10 +129,8 @@ fun TradingStateMachine.closePosition(
                     subaccountNumberChanges,
                 )
             }
-
             ClosePositionInputField.useLimit.rawValue -> {
-                val useLimitClose =
-                    (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
+                val useLimitClose = (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
                 trade.safeSet(typeText, useLimitClose)
 
                 if (useLimitClose) {
@@ -156,7 +150,6 @@ fun TradingStateMachine.closePosition(
                     subaccountNumberChanges,
                 )
             }
-
             ClosePositionInputField.limitPrice.rawValue -> {
                 trade.safeSet(typeText, parser.asDouble(data))
                 changes = StateChanges(
@@ -165,7 +158,6 @@ fun TradingStateMachine.closePosition(
                     subaccountNumberChanges,
                 )
             }
-
             else -> {}
         }
         if (sizeChanged) {
