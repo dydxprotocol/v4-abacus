@@ -55,7 +55,7 @@ enum class TradeInputField(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            TradeInputField.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 
     internal val tradeDataOption: String?

@@ -18,7 +18,6 @@ import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.model.TradingStateMachine
-import exchange.dydx.abacus.utils.GoodTil
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -97,16 +96,12 @@ internal class SubaccountTransactionPayloadProvider(
         }
 
         val goodTilTimeInSeconds = (
-            (
-                if (trade.options?.goodTilUnitOptions != null) {
-                    val timeInterval =
-                        GoodTil.duration(trade.goodTil)
-                            ?: throw Exception("goodTil is null")
-                    timeInterval / 1.seconds
-                } else {
-                    null
-                }
-                )
+            if (trade.options?.goodTilUnitOptions != null) {
+                val timeInterval = trade.goodTil?.timeInterval ?: throw Exception("goodTil is null")
+                timeInterval / 1.seconds
+            } else {
+                null
+            }
             )?.toInt()
 
         val goodTilBlock =
@@ -380,7 +375,7 @@ internal class SubaccountTransactionPayloadProvider(
             else -> error("invalid triggerOrderType")
         }
 
-        val duration = GoodTil.duration(TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D")) ?: throw Exception("invalid duration")
+        val duration = TradeInputGoodUntil(TRIGGER_ORDER_DEFAULT_DURATION_DAYS, "D").timeInterval ?: throw Exception("invalid duration")
         val goodTilTimeInSeconds = (duration / 1.seconds).toInt()
         val goodTilBlock = null
 

@@ -12,6 +12,10 @@ import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
 import kotlinx.serialization.Serializable
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 @JsExport
 @Serializable
@@ -595,6 +599,20 @@ data class TradeInputGoodUntil(
     val duration: Double?,
     val unit: String?,
 ) {
+    internal val timeInterval: Duration?
+        get() =
+            if (duration != null && unit != null) {
+                when (unit) {
+                    "M" -> duration.minutes
+                    "H" -> duration.hours
+                    "D" -> duration.days
+                    "W" -> (duration * 7).days
+                    else -> null
+                }
+            } else {
+                null
+            }
+
     companion object {
         internal fun create(
             existing: TradeInputGoodUntil?,
@@ -735,7 +753,7 @@ enum class OrderType(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            OrderType.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -837,7 +855,7 @@ data class TradeInput(
                 fee = state.fee,
                 marginMode = state.marginMode ?: MarginMode.Cross,
                 targetLeverage = state.targetLeverage ?: 1.0,
-                bracket = state.bracket,
+                bracket = state.brackets,
                 marketOrder = state.marketOrder,
                 options = TradeInputOptions.create(state.options),
                 summary = TradeInputSummary.create(state.summary),

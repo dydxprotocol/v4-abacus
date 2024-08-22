@@ -636,19 +636,21 @@ open class TradingStateMachine(
                 null
             }
 
-            this.input = inputValidator.validate(
-                staticTyping = staticTyping,
-                internalState = this.internalState,
-                subaccountNumber = subaccountNumber,
-                wallet = this.wallet,
-                user = this.user,
-                subaccount = subaccount,
-                markets = parser.asNativeMap(this.marketsSummary?.get("markets")),
-                input = this.input,
-                configs = this.configs,
-                currentBlockAndHeight = this.currentBlockAndHeight,
-                environment = this.environment,
-            )
+            if (!staticTyping) {
+                // Skip this for static typing.. since the validator will be called in updateState().
+                // No need to call this twice.
+                this.input = inputValidator.validateDeprecated(
+                    subaccountNumber = subaccountNumber,
+                    wallet = this.wallet,
+                    user = this.user,
+                    subaccount = subaccount,
+                    markets = parser.asNativeMap(this.marketsSummary?.get("markets")),
+                    input = this.input,
+                    configs = this.configs,
+                    currentBlockAndHeight = this.currentBlockAndHeight,
+                    environment = this.environment,
+                )
+            }
 
             if (subaccountNumber != null) {
                 if (staticTyping) {
@@ -656,7 +658,7 @@ open class TradingStateMachine(
                         InputType.TRADE -> {
                             calculateTrade(subaccountNumber)
                         }
-                        InputType.TRADE -> {
+                        InputType.TRANSFER -> {
                             calculateTransfer(subaccountNumber)
                         }
                         InputType.TRIGGER_ORDERS -> {
@@ -1524,29 +1526,35 @@ open class TradingStateMachine(
             }
 
             if (changes.changes.contains(Changes.input)) {
-                this.input = inputValidator.validate(
-                    staticTyping = staticTyping,
-                    internalState = internalState,
-                    subaccountNumber = subaccountNumber,
-                    wallet = this.wallet,
-                    user = this.user,
-                    subaccount = subaccount,
-                    markets = parser.asNativeMap(this.marketsSummary?.get("markets")),
-                    input = this.input,
-                    configs = this.configs,
-                    currentBlockAndHeight = this.currentBlockAndHeight,
-                    environment = this.environment,
-                )
-                this.input?.let {
-                    input = Input.create(
-                        existing = input,
-                        parser = parser,
-                        data = it,
-                        environment = environment,
+                if (staticTyping) {
+                    inputValidator.validate(
                         internalState = internalState,
-                        staticTyping = staticTyping,
+                        subaccountNumber = subaccountNumber,
+                        currentBlockAndHeight = currentBlockAndHeight,
+                        environment = environment,
+                    )
+                } else {
+                    this.input = inputValidator.validateDeprecated(
+                        subaccountNumber = subaccountNumber,
+                        wallet = this.wallet,
+                        user = this.user,
+                        subaccount = subaccount,
+                        markets = parser.asNativeMap(this.marketsSummary?.get("markets")),
+                        input = this.input,
+                        configs = this.configs,
+                        currentBlockAndHeight = this.currentBlockAndHeight,
+                        environment = this.environment,
                     )
                 }
+
+                input = Input.create(
+                    existing = input,
+                    parser = parser,
+                    data = this.input,
+                    environment = environment,
+                    internalState = internalState,
+                    staticTyping = staticTyping,
+                )
             }
         }
         if (changes.changes.contains(Changes.transferStatuses)) {
