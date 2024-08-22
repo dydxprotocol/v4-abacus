@@ -61,7 +61,7 @@ internal class TradeInputCalculator(
         val account = parser.asNativeMap(state["account"])
 
         val crossMarginSubaccount = parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
-        val subaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
+        val groupedSubaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
             ?: crossMarginSubaccount
 
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
@@ -75,6 +75,12 @@ internal class TradeInputCalculator(
         )
 
         val marginMode = parser.asString(parser.value(trade, "marginMode"))?.let { MarginMode.invoke(it) }
+        val subaccount = if (marginMode == MarginMode.Cross) {
+            crossMarginSubaccount
+        } else {
+            // TODO: incorrect for isolated trades; fix CT-1092
+            groupedSubaccount
+        }
 
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -90,11 +96,7 @@ internal class TradeInputCalculator(
                         calculateMarketOrderTrade(
                             trade,
                             market,
-                            if (marginMode == MarginMode.Isolated) {
-                                subaccount
-                            } else {
-                                crossMarginSubaccount
-                            }, // TODO: incorrect for isolated trades; fix CT-1092
+                            subaccount,
                             user,
                             isBuying,
                             input,
@@ -854,22 +856,11 @@ internal class TradeInputCalculator(
         feeTiers: List<Any>?,
         type: String,
     ): Map<String, Any> {
-        val marketId = parser.asString(market?.get("id"))
-        val position = if (marketId != null) {
-            parser.asNativeMap(
-                parser.value(
-                    subaccount,
-                    "openPositions.$marketId",
-                ),
-            )
-        } else {
-            null
-        }
         var modified = trade.mutable()
         val fields = requiredFields(account, subaccount, trade, market)
         modified.safeSet("fields", fields)
-        modified.safeSet("options", calculatedOptionsFromFields(fields, trade, position, market))
-        modified = defaultOptions(account, subaccount, modified, position, market)
+        modified.safeSet("options", calculatedOptionsFromFields(fields, trade, market, subaccount))
+        modified = defaultOptions(account, subaccount, modified, market)
         modified.safeSet(
             "summary",
             summaryForType(trade, subaccount, user, market, rewardsParams, feeTiers, type),
@@ -1148,8 +1139,8 @@ internal class TradeInputCalculator(
     private fun calculatedOptionsFromFields(
         fields: List<Any>?,
         trade: Map<String, Any>,
-        position: Map<String, Any>?,
         market: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
     ): Map<String, Any>? {
         fields?.let { fields ->
             val options = mutableMapOf<String, Any>(
@@ -1217,7 +1208,7 @@ internal class TradeInputCalculator(
                 }
             }
             if (parser.asBool(options["needsLeverage"]) == true) {
-                options.safeSet("maxLeverage", maxLeverageFromPosition(position, market))
+                options.safeSet("maxLeverage", maxLeverage(subaccount, market))
             } else {
                 options.safeSet("maxLeverage", null)
             }
@@ -1239,20 +1230,6 @@ internal class TradeInputCalculator(
             return options
         }
         return null
-    }
-
-    private fun maxLeverageFromPosition(
-        position: Map<String, Any>?,
-        market: Map<String, Any>?,
-    ): Double? {
-        if (position != null) {
-            return parser.asDouble(parser.value(position, "maxLeverage.current"))
-        } else {
-            val initialMarginFraction =
-                parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
-                    ?: return null
-            return 1.0 / initialMarginFraction
-        }
     }
 
     private fun reduceOnlyPromptFromTrade(
@@ -1280,18 +1257,16 @@ internal class TradeInputCalculator(
         account: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
-        position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): Map<String, Any>? {
         val fields = requiredFields(account, subaccount, trade, market)
-        return calculatedOptionsFromFields(fields, trade, position, market)
+        return calculatedOptionsFromFields(fields, trade, market, subaccount)
     }
 
     private fun defaultOptions(
         account: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
-        position: Map<String, Any>?,
         market: Map<String, Any>?,
     ): MutableMap<String, Any> {
         val modified = trade.toMutableMap()
@@ -1300,7 +1275,6 @@ internal class TradeInputCalculator(
                 account,
                 subaccount,
                 trade,
-                position,
                 market,
             )?.get("timeInForceOptions"),
         )
@@ -1314,7 +1288,6 @@ internal class TradeInputCalculator(
                 account,
                 subaccount,
                 trade,
-                position,
                 market,
             )?.get("goodTilUnitOptions"),
         )
@@ -1329,7 +1302,6 @@ internal class TradeInputCalculator(
                 account,
                 subaccount,
                 trade,
-                position,
                 market,
             )?.get("executionOptions"),
         )
@@ -1343,7 +1315,6 @@ internal class TradeInputCalculator(
                 account,
                 subaccount,
                 trade,
-                position,
                 market,
             )?.get("marginModeOptions"),
         )
@@ -1357,7 +1328,6 @@ internal class TradeInputCalculator(
                     account,
                     subaccount,
                     trade,
-                    position,
                     market,
                 )?.get("needsGoodUntil"),
             ) == true
@@ -1718,7 +1688,25 @@ internal class TradeInputCalculator(
                 "openPositions.$marketId",
             ),
         )
-        return maxLeverageFromPosition(position, market)
+
+        val initialMarginFraction =
+            parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
+                ?: return null
+        val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
+            return null
+        } else {
+            Numeric.double.ONE / initialMarginFraction
+        }
+
+        val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
+        val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
+        val positionNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: Numeric.double.ZERO
+
+        return if (equity != null && equity > Numeric.double.ZERO) {
+            (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / equity
+        } else {
+            maxMarketLeverage
+        }
     }
 
     private fun slippage(price: Double?, oraclePrice: Double?, side: String?): Double? {

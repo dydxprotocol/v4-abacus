@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.processor.router.skip
 
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.tests.payloads.SkipRouteMock
 import exchange.dydx.abacus.utils.DEFAULT_GAS_LIMIT
 import exchange.dydx.abacus.utils.DEFAULT_GAS_PRICE
@@ -320,5 +321,33 @@ class SkipRouteProcessorTests {
             "errors" to errorJsonArray.toString(),
         )
         assertEquals(expected, result)
+    }
+
+    @Test
+    fun testReceivedBadPriceWarningDynamicConfig() {
+        StatsigConfig.dc_max_safe_bridge_fees = 26.14F
+        val payload = skipRouteMock.payloadDydxToEthNoWarning
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
+        val expectedWarning = JsonEncoder().encode(
+            mapOf(
+                "type" to "BAD_PRICE_WARNING",
+                "message" to "Difference in USD value of route input and output is large (26.15). Input USD Value: 130.13 Output USD value: 103.17",
+            ),
+        )
+
+//        Reset value to default
+        StatsigConfig.dc_max_safe_bridge_fees = Float.POSITIVE_INFINITY
+        assertEquals(expectedWarning, result.get("warning"))
+    }
+
+    @Test
+    fun testReceivedNoBadPriceWarningDynamicConfig() {
+//        Ensure value is set to default
+        StatsigConfig.dc_max_safe_bridge_fees = Float.POSITIVE_INFINITY
+        val payload = skipRouteMock.payloadDydxToEthNoWarning
+        val result = skipRouteProcessor.received(existing = mapOf(), payload = templateToMap(payload), decimals = 6.0)
+        val expectedWarning = null
+
+        assertEquals(expectedWarning, result.get("warning"))
     }
 }

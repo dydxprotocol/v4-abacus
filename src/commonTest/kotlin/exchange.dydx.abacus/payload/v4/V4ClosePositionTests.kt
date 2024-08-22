@@ -43,6 +43,11 @@ class V4ClosePositionTests : V4BaseTests() {
                     "closePosition": {
                         "type": "MARKET",
                         "side": "SELL",
+                         "size": {
+                            "percent": 1,
+                            "input": "size.percent",
+                            "size": 10.771
+                        },
                         "reduceOnly": true
                     }
                 }
@@ -175,6 +180,11 @@ class V4ClosePositionTests : V4BaseTests() {
                     "closePosition": {
                         "type": "MARKET",
                         "side": "BUY",
+                         "size": {
+                            "percent": 1,
+                            "input": "size.percent",
+                            "size": 106.179
+                        },
                         "reduceOnly": true
                     }
                 }
