@@ -1,11 +1,14 @@
 package exchange.dydx.abacus.calculator.v2.tradeinput
 
+import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.calculator.v2.AccountTransformerV2
 import exchange.dydx.abacus.output.FeeTier
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalConfigsState
@@ -16,6 +19,10 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
+import exchange.dydx.abacus.state.internalstate.safeCreate
+import exchange.dydx.abacus.state.model.ClosePositionInputField
+import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.Rounder
 
 internal class TradeInputCalculatorV2(
     private val parser: ParserProtocol,
@@ -52,6 +59,9 @@ internal class TradeInputCalculatorV2(
         )
 
         if (input != null) {
+            if (calculation == TradeCalculation.closePosition) {
+                calculateClosePositionSize(trade, markets[trade.marketId], subaccount)
+            }
             when (trade.type) {
                 OrderType.Market,
                 OrderType.StopMarket,
@@ -100,6 +110,41 @@ internal class TradeInputCalculatorV2(
             CalculationPeriod.post,
         )
 
+        return trade
+    }
+
+    private fun calculateClosePositionSize(
+        trade: InternalTradeInputState,
+        market: InternalMarketState?,
+        subaccount: InternalSubaccountState?,
+    ): InternalTradeInputState {
+        val inputType = ClosePositionInputField.invoke(trade.size?.input)
+        val marketId = trade.marketId ?: return trade
+        val position = subaccount?.openPositions?.get(marketId) ?: return trade
+        val positionSize = position.calculated[CalculationPeriod.current]?.size ?: return trade
+        val positionSizeAbs = positionSize.abs()
+        trade.side = if (positionSize > Numeric.double.ZERO) OrderSide.Sell else OrderSide.Buy
+        when (inputType) {
+            ClosePositionInputField.percent -> {
+                val percent = trade.sizePercent ?: return trade
+                val size =
+                    if (percent > Numeric.double.ONE) positionSizeAbs else positionSizeAbs * percent
+                val stepSize = market?.perpetualMarket?.configs?.stepSize ?: return trade
+                trade.size =
+                    TradeInputSize.safeCreate(trade.size).copy(size = Rounder.round(size, stepSize))
+                return trade
+            }
+
+            ClosePositionInputField.size -> {
+                trade.sizePercent = null
+                val size = trade.size?.size ?: return trade
+                if (size > positionSizeAbs) {
+                    trade.size = TradeInputSize.safeCreate(trade.size).copy(size = positionSizeAbs)
+                }
+            }
+
+            else -> {}
+        }
         return trade
     }
 

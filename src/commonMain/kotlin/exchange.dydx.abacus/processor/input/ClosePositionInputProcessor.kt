@@ -21,6 +21,7 @@ import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalRewardsParamsState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
+import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
@@ -130,6 +131,38 @@ internal class ClosePositionInputProcessor(
                     subaccountNumbers = subaccountNumberChanges,
                 )
             }
+            ClosePositionInputField.useLimit -> {
+                val useLimitClose =
+                    (parser.asBool(data) ?: false) && StatsigConfig.ff_enable_limit_close
+
+                if (useLimitClose) {
+                    trade.type = OrderType.Limit
+                    trade.timeInForce = "GTT"
+
+                    trade.marketId?.let { marketId ->
+                        val limitPrice = getMidMarketPrice(marketSummaryState, marketId)
+                        trade.price = trade.price?.copy(limitPrice = limitPrice)
+                    }
+                } else {
+                    trade.type = OrderType.Market
+                    trade.timeInForce = "IOC"
+                }
+
+                changes = StateChanges(
+                    changes = iListOf(Changes.subaccount, Changes.input),
+                    markets = null,
+                    subaccountNumbers = subaccountNumberChanges,
+                )
+            }
+            ClosePositionInputField.limitPrice -> {
+                val limitPrice = parser.asDouble(data)
+                trade.price = trade.price?.copy(limitPrice = limitPrice)
+                changes = StateChanges(
+                    changes = iListOf(Changes.subaccount, Changes.input),
+                    markets = null,
+                    subaccountNumbers = subaccountNumberChanges,
+                )
+            }
         }
         if (sizeChanged) {
             when (type) {
@@ -194,5 +227,16 @@ internal class ClosePositionInputProcessor(
             subaccountNumber = subaccountNumber,
             input = "size.percent",
         )
+    }
+
+    private fun getMidMarketPrice(
+        marketsSummary: InternalMarketSummaryState?,
+        marketId: String
+    ): Double? {
+        val market = marketsSummary?.markets?.get(marketId) ?: return null
+        val orderbook = market.consolidatedOrderbook ?: return null
+        val firstAskPrice = orderbook.asks?.firstOrNull()?.price ?: return null
+        val firstBidPrice = orderbook.bids?.firstOrNull()?.price ?: return null
+        return (firstAskPrice + firstBidPrice) / 2.0
     }
 }

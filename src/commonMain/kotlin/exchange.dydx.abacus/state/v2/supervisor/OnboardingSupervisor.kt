@@ -56,6 +56,7 @@ import exchange.dydx.abacus.utils.toNobleAddress
 import exchange.dydx.abacus.utils.toOsmosisAddress
 import io.ktor.util.encodeBase64
 import kollections.iListOf
+import kollections.toIMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -357,8 +358,10 @@ internal class OnboardingSupervisor(
             val header = iMapOf(
                 "Content-Type" to "application/json",
             )
+            Logger.ddInfo(body.toIMap(), { "retrieveSkipDepositRouteNonCCTP payload sending" })
             helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
                 if (response != null) {
+                    Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipDepositRouteCCTP payload received" })
                     val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                     val oldFromAmount = oldState?.input?.transfer?.size?.size
                     if (currentFromAmount == oldFromAmount) {
@@ -415,8 +418,10 @@ internal class OnboardingSupervisor(
         val header = iMapOf(
             "Content-Type" to "application/json",
         )
+        Logger.ddInfo(body.toIMap(), { "retrieveSkipDepositRouteCCTP payload sending" })
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
             if (response != null) {
+                Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipDepositRouteCCTP payload received" })
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
@@ -1139,8 +1144,10 @@ internal class OnboardingSupervisor(
             "Content-Type" to "application/json",
         )
         val oldState = stateMachine.state
+        Logger.ddInfo(body.toIMap(), { "retrieveSkipWithdrawalRouteNonCCTP payload sending" })
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
             if (response != null) {
+                Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipWithdrawalRouteNonCCTP payload received" })
                 update(stateMachine.squidRoute(response, subaccountNumber ?: 0, null), oldState)
             } else {
                 Logger.e { "retrieveSkipWithdrawalRouteNonCCTP error, code: $code" }
@@ -1194,8 +1201,10 @@ internal class OnboardingSupervisor(
         val header = iMapOf(
             "Content-Type" to "application/json",
         )
+        Logger.ddInfo(body.toIMap(), { "retrieveSkipWithdrawalRouteCCTP payload sending" })
         helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
             if (response != null) {
+                Logger.ddInfo(helper.parser.decodeJsonObject(response), { "retrieveSkipWithdrawalRouteCCTP payload received" })
                 val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
                 val oldFromAmount = oldState?.input?.transfer?.size?.size
                 if (currentFromAmount == oldFromAmount) {
@@ -1693,9 +1702,11 @@ internal class OnboardingSupervisor(
             val header = iMapOf(
                 "Content-Type" to "application/json",
             )
+            Logger.ddInfo(body.toIMap(), { "cctpToNobleSkip payload sending" })
             helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
                 val json = helper.parser.decodeJsonObject(response)
                 if (json != null) {
+                    Logger.ddInfo(json, { "cctpToNobleSkip payload received" })
                     val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
                     val processedPayload = skipRoutePayloadProcessor.received(existing = mapOf(), payload = json)
                     val ibcPayload = helper.parser.asString(
