@@ -248,17 +248,7 @@ internal class SkipProcessor(
             }
         }
 
-        /*
-            Context: https://dydx-team.slack.com/archives/C0738MMRX9C/p1722978579167729?thread_ts=1722974628.149899&cid=C0738MMRX9C
-            We are hitting ibc rate limits for USDT https://ibc.range.org/ibc/rate-limits
-            As a result, users' funds are getting stuck mid transfers for USDT Axelar swaps into cosmos.
-            To remediate this, skip has limited high value transfers while we are hiding the route from the UI
-         */
-        return tokensWithSkipDenom.filter {
-            val token = parser.asMap(it)
-            val tokenSymbol = parser.asString(token?.get("symbol"))
-            tokenSymbol?.contains("USDT") != true
-        }
+        return tokensWithSkipDenom
     }
 
     override fun defaultTokenAddress(chainId: String?): String? {
