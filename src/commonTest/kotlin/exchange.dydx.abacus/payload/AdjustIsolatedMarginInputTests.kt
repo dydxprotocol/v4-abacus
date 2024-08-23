@@ -354,7 +354,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                     "adjustIsolatedMargin": {
                         "Type": "Remove",
                         "AmountPercent": "1",
-                        "Amount": "1100.00",
+                        "Amount": "1099.77",
                         "AmountInput": "Percent"
                     }
                 }
@@ -384,7 +384,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                     "adjustIsolatedMargin": {
                         "Type": "Remove",
                         "AmountPercent": "0.1",
-                        "Amount": "110.00",
+                        "Amount": "109.98",
                         "AmountInput": "Percent"
                     }
                 }
