@@ -107,6 +107,7 @@ internal class TradeInputCalculator(
                         calculateNonMarketTrade(
                             trade,
                             market,
+                            subaccount,
                             type,
                             isBuying,
                             input,
@@ -147,19 +148,21 @@ internal class TradeInputCalculator(
     private fun calculateNonMarketTrade(
         trade: Map<String, Any>,
         market: Map<String, Any>?,
+        subaccount: Map<String, Any>?,
         type: String,
         isBuying: Boolean,
         input: String,
     ): Map<String, Any> {
         val modifiedTrade = trade.mutable()
-        val tradeSize = parser.asNativeMap(trade["size"])
+        val modified = calculateSize(trade, subaccount, market)
+        val tradeSize = parser.asNativeMap(modified["size"])?.mutable()
         val tradePrices = parser.asNativeMap(trade["price"])
         val stepSize =
             parser.asDouble(parser.value(market, "configs.stepSize") ?: 0.001)!!
         if (tradeSize != null) {
             val modifiedTradeSize = tradeSize.mutable()
             when (input) {
-                "size.size" -> {
+                "size.size", "size.percent" -> {
                     val price = nonMarketOrderPrice(tradePrices, market, type, isBuying)
                     val size = parser.asDouble(tradeSize.get("size"))
                     val usdcSize =
