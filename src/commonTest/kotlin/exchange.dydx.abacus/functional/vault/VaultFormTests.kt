@@ -21,7 +21,7 @@ class VaultFormTests {
     fun testDepositValidation() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
-                action = VaultTransactionAction.DEPOSIT,
+                action = VaultFormAction.DEPOSIT,
                 amount = 100.0,
                 acknowledgedSlippage = true,
                 inConfirmationStep = true,
@@ -48,7 +48,7 @@ class VaultFormTests {
                     ),
                     withdraw = null,
                 ),
-                summaryData = VaultDepositWithdrawFormSummaryData(
+                summaryData = VaultFormSummaryData(
                     needSlippageAck = false,
                     marginUsage = 0.5263157894736843,
                     freeCollateral = 900.0,
@@ -65,7 +65,7 @@ class VaultFormTests {
     fun testWithdrawValidation() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
-                action = VaultTransactionAction.WITHDRAW,
+                action = VaultFormAction.WITHDRAW,
                 amount = 100.0,
                 acknowledgedSlippage = true,
                 inConfirmationStep = true,
@@ -88,7 +88,7 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = listOf(
-                    VaultFormValidationError(VaultValidationErrorSeverity.WARNING, VaultValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                 ),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = null,
@@ -98,7 +98,7 @@ class VaultFormTests {
                         minAmount = 98 * .99,
                     ),
                 ),
-                summaryData = VaultDepositWithdrawFormSummaryData(
+                summaryData = VaultFormSummaryData(
                     needSlippageAck = true,
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
@@ -116,7 +116,7 @@ class VaultFormTests {
         // same as previous but your slippage response is out of date
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
-                action = VaultTransactionAction.WITHDRAW,
+                action = VaultFormAction.WITHDRAW,
                 amount = 100.0,
                 acknowledgedSlippage = true,
                 inConfirmationStep = true,
@@ -139,11 +139,11 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = listOf(
-                    VaultFormValidationError(VaultValidationErrorSeverity.ERROR, VaultValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES),
-                    VaultFormValidationError(VaultValidationErrorSeverity.WARNING, VaultValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES),
+                    VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                 ),
                 submissionData = null,
-                summaryData = VaultDepositWithdrawFormSummaryData(
+                summaryData = VaultFormSummaryData(
                     needSlippageAck = true,
                     marginUsage = 0.4766444232602478,
                     freeCollateral = 1098.0,
@@ -160,7 +160,7 @@ class VaultFormTests {
     fun testInvalidWithdraw() {
         val result = VaultDepositWithdrawFormValidator.validateVaultForm(
             formData = VaultFormData(
-                action = VaultTransactionAction.WITHDRAW,
+                action = VaultFormAction.WITHDRAW,
                 amount = 600.0,
                 acknowledgedSlippage = false,
                 inConfirmationStep = true,
@@ -183,12 +183,12 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = listOf(
-                    VaultFormValidationError(VaultValidationErrorSeverity.ERROR, VaultValidationErrorType.WITHDRAW_TOO_HIGH),
-                    VaultFormValidationError(VaultValidationErrorSeverity.WARNING, VaultValidationErrorType.SLIPPAGE_TOO_HIGH),
-                    VaultFormValidationError(VaultValidationErrorSeverity.ERROR, VaultValidationErrorType.MUST_ACK_SLIPPAGE),
+                    VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH),
+                    VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE),
                 ),
                 submissionData = null,
-                summaryData = VaultDepositWithdrawFormSummaryData(
+                summaryData = VaultFormSummaryData(
                     needSlippageAck = true,
                     marginUsage = 0.4,
                     freeCollateral = 1500.0,
