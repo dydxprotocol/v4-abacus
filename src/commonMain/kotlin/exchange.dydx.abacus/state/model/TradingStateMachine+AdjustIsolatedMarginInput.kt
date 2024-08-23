@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
@@ -20,6 +21,7 @@ import kotlin.math.absoluteValue
 @JsExport
 @Serializable
 enum class AdjustIsolatedMarginInputField {
+    Market,
     Type,
     Amount,
     AmountPercent,
@@ -54,6 +56,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
 
                 parser.asMap(modified["adjustIsolatedMargin"])?.mutable() ?: adjustIsolatedMargin
             }
+    val marketId = parser.asString(adjustIsolatedMargin["Market"])
     val childSubaccountNumber = parser.asInt(adjustIsolatedMargin["ChildSubaccountNumber"])
     val subaccountNumbers = if (childSubaccountNumber != null) {
         iListOf(parentSubaccountNumber, childSubaccountNumber)
@@ -62,7 +65,12 @@ fun TradingStateMachine.adjustIsolatedMargin(
     }
 
     if (type != null) {
-        if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, parentSubaccountNumber, type.name)) {
+        if (type == AdjustIsolatedMarginInputField.Market) {
+            if (marketId != parser.asString(data)) {
+                adjustIsolatedMargin.safeSet("Market", parser.asString(data))
+            }
+        }
+        if (validAdjustIsolatedMarginInput(adjustIsolatedMargin, parentSubaccountNumber, type.name)) { // xcxc this will break mobile
             when (type) {
                 AdjustIsolatedMarginInputField.Type -> {
                     if (adjustIsolatedMargin["Type"] != parser.asString(data)) {
@@ -72,49 +80,16 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     }
                     changes = getStateChanges(subaccountNumbers)
                 }
-                AdjustIsolatedMarginInputField.AmountPercent,
-                AdjustIsolatedMarginInputField.Amount -> {
-                    val isolatedMarginAdjustmentType = adjustIsolatedMargin["Type"] ?: IsolatedMarginAdjustmentType.Add.name
-                    val subaccountNumber = if (isolatedMarginAdjustmentType == IsolatedMarginAdjustmentType.Add.name) {
-                        parentSubaccountNumber
-                    } else {
-                        childSubaccountNumber
-                    }
-                    val subaccount = parser.asNativeMap(
-                        parser.value(this.account, "subaccounts.$subaccountNumber"),
-                    )
-                    val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current"))
-                    val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
-                    val baseAmount = if (isolatedMarginAdjustmentType == IsolatedMarginAdjustmentType.Add.name) {
-                        freeCollateral
-                    } else {
-                        equity
-                    }
+                AdjustIsolatedMarginInputField.AmountPercent -> {
                     val amountValue = parser.asDouble(data)?.absoluteValue
-
-                    if (amountValue == null) {
-                        adjustIsolatedMargin.safeSet("Amount", null)
-                        adjustIsolatedMargin.safeSet("AmountPercent", null)
-                    } else if (type == AdjustIsolatedMarginInputField.Amount) {
-                        adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
-
-                        if (baseAmount != null && baseAmount > 0.0) {
-                            val amountPercent = amountValue / baseAmount
-                            adjustIsolatedMargin.safeSet("AmountPercent", amountPercent.toString())
-                        } else {
-                            adjustIsolatedMargin.safeSet("AmountPercent", null)
-                        }
-                    } else if (type == AdjustIsolatedMarginInputField.AmountPercent) {
-                        adjustIsolatedMargin.safeSet(type.name, amountValue.toString())
-
-                        if (baseAmount != null && baseAmount > 0.0) {
-                            val amount = amountValue * baseAmount
-                            adjustIsolatedMargin.safeSet("Amount", amount.toString())
-                        } else {
-                            adjustIsolatedMargin.safeSet("Amount", null)
-                        }
-                    }
-
+                    adjustIsolatedMargin.safeSet("AmountInput", IsolatedMarginInputType.Percent)
+                    adjustIsolatedMargin.safeSet("AmountPercent", amountValue)
+                    changes = getStateChanges(subaccountNumbers)
+                }
+                AdjustIsolatedMarginInputField.Amount -> {
+                    val amountValue = parser.asDouble(data)?.absoluteValue
+                    adjustIsolatedMargin.safeSet("AmountInput", IsolatedMarginInputType.Amount)
+                    adjustIsolatedMargin.safeSet("Amount", amountValue)
                     changes = getStateChanges(subaccountNumbers)
                 }
                 AdjustIsolatedMarginInputField.ChildSubaccountNumber -> {
@@ -126,6 +101,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                     }
                     changes = getStateChanges(updatedSubaccountNumbers)
                 }
+                else -> {}
             }
         } else {
             error = ParsingError.cannotModify(type.name)
@@ -162,6 +138,10 @@ fun TradingStateMachine.validAdjustIsolatedMarginInput(
     if (typeText == null) return false
 
     when (typeText) {
+        AdjustIsolatedMarginInputField.Market.name -> {
+            val market = parser.asString(adjustIsolatedMargin["Market"])
+            return true
+        }
         AdjustIsolatedMarginInputField.Type.name -> {
             val typeString = parser.asString(adjustIsolatedMargin["Type"]) ?: return true
             val type = IsolatedMarginAdjustmentType.valueOf(typeString)
