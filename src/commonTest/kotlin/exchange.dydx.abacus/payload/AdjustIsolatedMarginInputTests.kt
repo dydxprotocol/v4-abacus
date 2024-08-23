@@ -44,8 +44,9 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
     @Test
     fun testInputs() {
         testChildSubaccountNumberInput()
-        testMarginAddition()
-        testMarginRemoval()
+        testMarketInput()
+        testMarginAmountAddition()
+        testMarginAmountRemoval()
         testZeroAmount()
         testMarginAmountPercent()
     }
@@ -61,6 +62,24 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
                         "ChildSubaccountNumber": "128"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+    }
+
+    private fun testMarketInput() {
+        test(
+            {
+                perp.adjustIsolatedMargin("ETH-USD", AdjustIsolatedMarginInputField.Market, 0)
+            },
+            """
+            {
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Market": "ETH-USD"
                     }
                 }
             }
@@ -104,7 +123,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
         )
     }
 
-    private fun testMarginAddition() {
+    private fun testMarginAmountAddition() {
         test(
             {
                 perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.name, AdjustIsolatedMarginInputField.Type, 0)
@@ -114,7 +133,12 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
             "input": {
                 "current": "adjustIsolatedMargin",
                 "adjustIsolatedMargin": {
-                    "Type": "Add"
+                    "Type": "Add",
+                    "summary": {
+                        "crossFreeCollateral": {
+                            "current": 70675.46098618512
+                        }
+                    }
                 }
             }
         }
@@ -130,7 +154,9 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "Amount": "92.49"
+                        "Amount": "92.49",
+                        "AmountInput": "Amount",
+                        "AmountPercent": "0.0013"
                     }
                 }
             }
@@ -146,7 +172,9 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "Amount": "92.49"
+                        "Amount": "92.49",
+                        "AmountInput": "Amount",
+                        "AmountPercent": "0.0013"
                     }
                 }
             }
@@ -154,7 +182,7 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
         )
     }
 
-    private fun testMarginRemoval() {
+    private fun testMarginAmountRemoval() {
         test(
             {
                 perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Remove.name, AdjustIsolatedMarginInputField.Type, 0)
@@ -164,7 +192,12 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                 "input": {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
-                        "Type": "Remove"
+                        "Type": "Remove",
+                        "summary": {
+                            "crossFreeCollateral": {
+                                "current": 70675.46098618512
+                            }
+                        }
                     }
                 },
                 "wallet": {
@@ -197,7 +230,9 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                     "current": "adjustIsolatedMargin",
                     "adjustIsolatedMargin": {
                         "Type": "Remove",
-                        "Amount": "20"
+                        "Amount": "20",
+                        "AmountInput": "Amount",
+                        "AmountPercent": "0.018"
                     }
                 },
                 "wallet": {
@@ -264,7 +299,8 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                     "adjustIsolatedMargin": {
                         "Type": "Add",
                         "AmountPercent": "0.1",
-                        "Amount": "7067.54609861851"
+                        "Amount": "7067.54609861851",
+                        "AmountInput": "Percent"
                     }
                 }
             }
@@ -295,6 +331,39 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
 
         test(
             {
+                perp.adjustIsolatedMargin("1", AdjustIsolatedMarginInputField.AmountPercent, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "128": {
+                                "equity": {
+                                    "current": 1132.02
+                                },
+                                "notionalTotal": {
+                                    "current": 632.02
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "current": "adjustIsolatedMargin",
+                    "adjustIsolatedMargin": {
+                        "Type": "Remove",
+                        "AmountPercent": "1",
+                        "Amount": "1100.00",
+                        "AmountInput": "Percent"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
                 perp.adjustIsolatedMargin("0.1", AdjustIsolatedMarginInputField.AmountPercent, 0)
             },
             """
@@ -315,7 +384,8 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                     "adjustIsolatedMargin": {
                         "Type": "Remove",
                         "AmountPercent": "0.1",
-                        "Amount": "113.202"
+                        "Amount": "110.00",
+                        "AmountInput": "Percent"
                     }
                 }
             }
