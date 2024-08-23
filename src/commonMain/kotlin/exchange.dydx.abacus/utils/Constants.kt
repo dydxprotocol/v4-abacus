@@ -13,6 +13,7 @@ internal const val SLIPPAGE_PERCENT = "1"
 
 // Isolated Margin Constants
 internal const val MAX_LEVERAGE_BUFFER_PERCENT = 0.98
+internal const val MARGIN_COLLATERALIZATION_CHECK_BUFFER = 0.01;
 
 // Order flags
 internal const val SHORT_TERM_ORDER_FLAGS = 0
