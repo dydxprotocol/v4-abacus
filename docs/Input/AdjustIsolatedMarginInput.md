@@ -1,7 +1,7 @@
 # AdjustIsolatedMarginInput
 
 data class AdjustIsolatedMarginInput(  
-&emsp;val marketId: String?,  
+&emsp;val market: String?,  
 &emsp;val type: IsolatedMarginAdjustmentType, // "ADD" or "REMOVE"
 &emsp;val amount: String?,
 &emsp;val amountPercent: String?,
@@ -11,9 +11,9 @@ data class AdjustIsolatedMarginInput(
 &emsp;val summary: AdjustIsolatedMarginInputSummary?,
 )
 
-## marketId
+## market
 
-MarketId
+Market
 
 ## type
 

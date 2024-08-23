@@ -141,8 +141,7 @@ fun TradingStateMachine.validAdjustIsolatedMarginInput(
 
     when (typeText) {
         AdjustIsolatedMarginInputField.Market.name -> {
-            val market = parser.asString(adjustIsolatedMargin["Market"])
-            return market != null
+            return true
         }
         AdjustIsolatedMarginInputField.Type.name -> {
             val typeString = parser.asString(adjustIsolatedMargin["Type"]) ?: return true

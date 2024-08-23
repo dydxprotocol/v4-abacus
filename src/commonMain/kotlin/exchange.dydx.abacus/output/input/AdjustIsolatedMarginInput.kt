@@ -119,7 +119,7 @@ enum class IsolatedMarginInputType {
 @JsExport
 @Serializable
 data class AdjustIsolatedMarginInput(
-    val marketId: String?,
+    val market: String?,
     val type: IsolatedMarginAdjustmentType,
     val amount: String?,
     val amountPercent: String?,
@@ -137,7 +137,7 @@ data class AdjustIsolatedMarginInput(
             Logger.d { "creating Adjust Isolated Margin Input\n" }
 
             data?.let {
-                val marketId = parser.asString(data["marketId"])
+                val market = parser.asString(data["Market"])
 
                 val type = parser.asString(data["Type"])?.let {
                     IsolatedMarginAdjustmentType.valueOf(it)
@@ -162,7 +162,7 @@ data class AdjustIsolatedMarginInput(
                 )
 
                 return if (
-                    existing?.marketId != marketId ||
+                    existing?.market != market ||
                     existing?.type != type ||
                     existing.amount != amount ||
                     existing.amountPercent != amountPercent ||
@@ -172,7 +172,7 @@ data class AdjustIsolatedMarginInput(
                     existing.summary !== summary
                 ) {
                     AdjustIsolatedMarginInput(
-                        marketId,
+                        market,
                         type,
                         amount,
                         amountPercent,
