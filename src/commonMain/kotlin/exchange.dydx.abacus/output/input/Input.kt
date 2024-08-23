@@ -47,6 +47,9 @@ data class Input(
             staticTyping: Boolean,
         ): Input? {
             Logger.d { "creating Input\n" }
+            if (staticTyping && internalState?.input?.currentType == null) {
+                return null
+            }
 
             if (staticTyping || data != null) {
                 val current = if (staticTyping) {

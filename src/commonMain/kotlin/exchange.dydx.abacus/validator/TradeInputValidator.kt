@@ -14,6 +14,7 @@ import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.validator.trade.TradeAccountStateValidator
 import exchange.dydx.abacus.validator.trade.TradeBracketOrdersValidator
+import exchange.dydx.abacus.validator.trade.TradeFieldsValidator
 import exchange.dydx.abacus.validator.trade.TradeInputDataValidator
 import exchange.dydx.abacus.validator.trade.TradeMarketOrderInputValidator
 import exchange.dydx.abacus.validator.trade.TradePositionStateValidator
@@ -26,6 +27,7 @@ internal class TradeInputValidator(
     parser: ParserProtocol
 ) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     private val tradeValidators = listOf<TradeValidatorProtocol>(
+        TradeFieldsValidator(localizer, formatter, parser),
         TradeResctrictedValidator(localizer, formatter, parser),
         TradeInputDataValidator(localizer, formatter, parser),
         TradeMarketOrderInputValidator(localizer, formatter, parser),

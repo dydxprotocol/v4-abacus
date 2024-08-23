@@ -57,12 +57,13 @@ data class Subaccount(
                 Logger.d { "Internal state is null" }
                 return null
             }
-            data?.let {
-                val positionId = if (staticTyping) null else parser.asString(data["positionId"])
-                val pnlTotal = if (staticTyping) null else parser.asDouble(data["pnlTotal"])
-                val pnl24h = if (staticTyping) null else parser.asDouble(data["pnl24h"])
+
+            if (staticTyping || data != null) {
+                val positionId = if (staticTyping) null else parser.asString(data?.get("positionId"))
+                val pnlTotal = if (staticTyping) null else parser.asDouble(data?.get("pnlTotal"))
+                val pnl24h = if (staticTyping) null else parser.asDouble(data?.get("pnl24h"))
                 val pnl24hPercent =
-                    if (staticTyping) null else parser.asDouble(data["pnl24hPercent"])
+                    if (staticTyping) null else parser.asDouble(data?.get("pnl24hPercent"))
                 /*
                 val historicalPnl = (data["historicalPnl"] as? List<*>)?.let {
                     val historicalPnl = iMutableListOf<AccountHistoricalPNL>()
@@ -82,7 +83,7 @@ data class Subaccount(
                 val subaccountNumber = if (staticTyping) {
                     internalState?.subaccountNumber ?: 0
                 } else {
-                    parser.asInt(data["subaccountNumber"]) ?: 0
+                    parser.asInt(data?.get("subaccountNumber")) ?: 0
                 }
 
                 val quoteBalance = if (staticTyping) {
@@ -95,7 +96,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.quoteBalance,
                         parser,
-                        parser.asMap(data["quoteBalance"]),
+                        parser.asMap(data?.get("quoteBalance")),
                     )
                 }
 
@@ -109,7 +110,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.notionalTotal,
                         parser,
-                        parser.asMap(data["notionalTotal"]),
+                        parser.asMap(data?.get("notionalTotal")),
                     )
                 }
 
@@ -123,7 +124,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.valueTotal,
                         parser,
-                        parser.asMap(data["valueTotal"]),
+                        parser.asMap(data?.get("valueTotal")),
                     )
                 }
 
@@ -137,7 +138,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.initialRiskTotal,
                         parser,
-                        parser.asMap(data["initialRiskTotal"]),
+                        parser.asMap(data?.get("initialRiskTotal")),
                     )
                 }
 
@@ -152,7 +153,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.adjustedImf,
                         parser,
-                        parser.asMap(data["adjustedImf"]),
+                        parser.asMap(data?.get("adjustedImf")),
                     )
                 }
 
@@ -166,7 +167,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.equity,
                         parser,
-                        parser.asMap(data["equity"]),
+                        parser.asMap(data?.get("equity")),
                     )
                 }
 
@@ -180,7 +181,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.freeCollateral,
                         parser,
-                        parser.asMap(data["freeCollateral"]),
+                        parser.asMap(data?.get("freeCollateral")),
                     )
                 }
 
@@ -194,7 +195,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.leverage,
                         parser,
-                        parser.asMap(data["leverage"]),
+                        parser.asMap(data?.get("leverage")),
                     )
                 }
 
@@ -208,7 +209,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.marginUsage,
                         parser,
-                        parser.asMap(data["marginUsage"]),
+                        parser.asMap(data?.get("marginUsage")),
                     )
                 }
 
@@ -222,7 +223,7 @@ data class Subaccount(
                     TradeStatesWithDoubleValues.create(
                         existing?.buyingPower,
                         parser,
-                        parser.asMap(data["buyingPower"]),
+                        parser.asMap(data?.get("buyingPower")),
                     )
                 }
 
@@ -237,20 +238,20 @@ data class Subaccount(
                     openPositionsDeprecated(
                         existing = existing?.openPositions,
                         parser = parser,
-                        data = parser.asMap(data["openPositions"]),
+                        data = parser.asMap(data?.get("openPositions")),
                     )
                 }
 
                 val pendingPositions = pendingPositions(
                     existing?.pendingPositions,
                     parser,
-                    parser.asList(data["pendingPositions"]),
+                    parser.asList(data?.get("pendingPositions")),
                 )
                 val orders =
                     if (staticTyping) {
                         internalState?.orders?.toIList()
                     } else {
-                        orders(parser, existing?.orders, parser.asMap(data["orders"]), localizer)
+                        orders(parser, existing?.orders, parser.asMap(data?.get("orders")), localizer)
                     }
 
                 /*
@@ -268,7 +269,7 @@ data class Subaccount(
                 val marginEnabled = if (staticTyping) {
                     internalState?.marginEnabled ?: true
                 } else {
-                    parser.asBool(data["marginEnabled"]) ?: true
+                    parser.asBool(data?.get("marginEnabled")) ?: true
                 }
 
                 return if (existing?.subaccountNumber != subaccountNumber ||
@@ -324,7 +325,7 @@ data class Subaccount(
             parser: ParserProtocol,
             openPositions: Map<String, InternalPerpetualPosition>?,
             subaccount: InternalSubaccountState?,
-        ): IList<SubaccountPosition> {
+        ): IList<SubaccountPosition>? {
             val newEntries: MutableList<SubaccountPosition> = mutableListOf()
             for ((key, value) in openPositions?.entries ?: emptySet()) {
                 val position = SubaccountPosition.create(
@@ -340,6 +341,9 @@ data class Subaccount(
                 }
             }
             newEntries.sortByDescending { it.createdAtMilliseconds }
+            if (newEntries.isEmpty()) {
+                return null
+            }
             return if (newEntries != existing) {
                 newEntries.toIList()
             } else {

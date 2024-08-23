@@ -162,46 +162,76 @@ data class Account(
             val subaccounts: IMutableMap<String, Subaccount> =
                 iMutableMapOf()
 
-            val subaccountsData = parser.asMap(data["subaccounts"])
-            if (subaccountsData != null) {
-                for ((key, value) in subaccountsData) {
-                    val subaccountData = parser.asMap(value) ?: iMapOf()
-
-                    val subaccountNumber = parser.asInt(key) ?: 0
+            if (staticTyping) {
+                internalState.subaccounts.forEach { (key, value) ->
                     Subaccount.create(
-                        existing = existing?.subaccounts?.get(key),
+                        existing = existing?.subaccounts?.get(key.toString()),
                         parser = parser,
-                        data = subaccountData,
+                        data = null,
                         localizer = localizer,
                         staticTyping = staticTyping,
-                        internalState = internalState.subaccounts[subaccountNumber],
-                    )
-                        ?.let { subaccount ->
-                            subaccounts[key] = subaccount
-                        }
+                        internalState = value,
+                    )?.let { subaccount ->
+                        subaccounts[key.toString()] = subaccount
+                    }
+                }
+            } else {
+                val subaccountsData = parser.asMap(data["subaccounts"])
+                if (subaccountsData != null) {
+                    for ((key, value) in subaccountsData) {
+                        val subaccountData = parser.asMap(value) ?: iMapOf()
+
+                        val subaccountNumber = parser.asInt(key) ?: 0
+                        Subaccount.create(
+                            existing = existing?.subaccounts?.get(key),
+                            parser = parser,
+                            data = subaccountData,
+                            localizer = localizer,
+                            staticTyping = staticTyping,
+                            internalState = internalState.subaccounts[subaccountNumber],
+                        )
+                            ?.let { subaccount ->
+                                subaccounts[key] = subaccount
+                            }
+                    }
                 }
             }
 
             val groupedSubaccounts: IMutableMap<String, Subaccount> =
                 iMutableMapOf()
 
-            val groupedSubaccountsData = parser.asMap(data["groupedSubaccounts"])
-            if (groupedSubaccountsData != null) {
-                for ((key, value) in groupedSubaccountsData) {
-                    val subaccountData = parser.asMap(value) ?: iMapOf()
-
-                    val subaccountNumber = parser.asInt(key) ?: 0
+            if (staticTyping) {
+                internalState.groupedSubaccounts.forEach { (key, value) ->
                     Subaccount.create(
-                        existing = existing?.subaccounts?.get(key),
+                        existing = existing?.groupedSubaccounts?.get(key.toString()),
                         parser = parser,
-                        data = subaccountData,
+                        data = null,
                         localizer = localizer,
                         staticTyping = staticTyping,
-                        internalState = internalState.subaccounts[subaccountNumber],
-                    )
-                        ?.let { subaccount ->
-                            groupedSubaccounts[key] = subaccount
-                        }
+                        internalState = value,
+                    )?.let { subaccount ->
+                        groupedSubaccounts[key.toString()] = subaccount
+                    }
+                }
+            } else {
+                val groupedSubaccountsData = parser.asMap(data["groupedSubaccounts"])
+                if (groupedSubaccountsData != null) {
+                    for ((key, value) in groupedSubaccountsData) {
+                        val subaccountData = parser.asMap(value) ?: iMapOf()
+
+                        val subaccountNumber = parser.asInt(key) ?: 0
+                        Subaccount.create(
+                            existing = existing?.subaccounts?.get(key),
+                            parser = parser,
+                            data = subaccountData,
+                            localizer = localizer,
+                            staticTyping = staticTyping,
+                            internalState = internalState.subaccounts[subaccountNumber],
+                        )
+                            ?.let { subaccount ->
+                                groupedSubaccounts[key] = subaccount
+                            }
+                    }
                 }
             }
 

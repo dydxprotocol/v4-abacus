@@ -183,7 +183,13 @@ internal data class InternalWalletState(
     var account: InternalAccountState = InternalAccountState(),
     var user: InternalUserState? = null,
     var walletAddress: String? = null,
-)
+) {
+    val isWalletConnected: Boolean
+        get() = walletAddress != null
+
+    val isAccountConnected: Boolean
+        get() = account.subaccounts != null
+}
 
 internal data class InternalUserState(
     var feeTierId: String? = null,
