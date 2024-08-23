@@ -26,12 +26,13 @@ Amount of USDC to remove or add
 
 ## amountPercent
 
-Percentage of available USDC to remove or add; max percentage is calculated from market's max leverage
+Percentage of available USDC to remove or add; percent of max possible position (capped by current position leverage relative to market's max leverage)
 
 ## amountInput
 
-AMOUNT - USDC amount
-PERCENT - percent of max possible position (capped by current position leverage relative to market's max leverage)
+Which one of the fields are entered by the user:
+- AMOUNT 
+- PERCENT  
 
 ## childSubaccountNumber
 

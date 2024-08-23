@@ -2,7 +2,6 @@ package exchange.dydx.abacus.calculator
 
 import abs
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
@@ -293,7 +292,6 @@ internal class SubaccountCalculator(val parser: ParserProtocol) {
 
                 if (equityDouble > Numeric.double.ZERO) {
                     val leverage = notionalTotalDouble / equityDouble
-                    Logger.e { "$period: freeCollateral $freeCollateralDouble equity $equityDouble" }
                     val marginUsage = Numeric.double.ONE - freeCollateralDouble / equityDouble
 
                     set(parser.asDouble(leverage), subaccount, "leverage", period)

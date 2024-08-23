@@ -12,7 +12,6 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -82,10 +81,6 @@ internal class TradeInputCalculator(
             // TODO: incorrect for isolated trades; fix CT-1092
             groupedSubaccount
         }
-
-        val crossFreeCollateral = parser.asDouble(parser.value(crossMarginSubaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
-        val isolatedFreeCollateral = parser.asDouble(parser.value(groupedSubaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
-        Logger.e { "Xcxc $crossFreeCollateral $isolatedFreeCollateral" }
 
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -882,13 +877,24 @@ internal class TradeInputCalculator(
     ): List<Any>? {
         val type = parser.asString(trade["type"])
         return when (type) {
-            "MARKET" -> listOf(
-                sizeField(),
-                leverageField(),
-                bracketsField(),
-                marginModeField(market, account, subaccount),
-                reduceOnlyField(),
-            ).filterNotNull()
+            "MARKET" -> {
+                val marginMode = parser.asString(trade["marginMode"])
+                return when (MarginMode.invoke(marginMode)) {
+                    MarginMode.Isolated -> listOf(
+                        sizeField(),
+                        bracketsField(),
+                        marginModeField(market, account, subaccount),
+                        reduceOnlyField(),
+                    ).filterNotNull()
+                    else -> listOf(
+                        sizeField(),
+                        leverageField(),
+                        bracketsField(),
+                        marginModeField(market, account, subaccount),
+                        reduceOnlyField(),
+                    ).filterNotNull()
+                }
+            }
 
             "LIMIT" -> {
                 val timeInForce = parser.asString(trade["timeInForce"])
@@ -1217,7 +1223,7 @@ internal class TradeInputCalculator(
                 options.safeSet("postOnlyPromptStringKey", postOnlyPromptFromTrade(trade))
             }
             if (parser.asString(parser.value(trade, "marginMode")) == "ISOLATED") {
-                options.safeSet("needsTargetLeverage", false)
+                options.safeSet("needsTargetLeverage", true)
             } else {
                 options.safeSet("needsTargetLeverage", false)
             }
