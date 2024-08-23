@@ -3,10 +3,13 @@ package exchange.dydx.abacus.calculator
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.MARGIN_COLLATERALIZATION_CHECK_BUFFER
 import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import kotlin.math.max
+import kotlin.math.min
 
 @Suppress("UNCHECKED_CAST")
 internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
@@ -125,7 +128,9 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
                             IsolatedMarginAdjustmentType.Add -> {
                                 // The amount to add is a percentage of all add-able margin (your parent subaccount's free collateral)
                                 val amount = baseAmount * amountPercent
-                                modified.safeSet("Amount", amount.toString())
+                                // We leave behind MARGIN_COLLATERALIZATION_CHECK_BUFFER to pass collateralization checks
+                                val cappedAmount = min(max(baseAmount - MARGIN_COLLATERALIZATION_CHECK_BUFFER, 0.0), amount)
+                                modified.safeSet("Amount", cappedAmount.toString())
                             }
                             IsolatedMarginAdjustmentType.Remove -> {
                                 // The amount to remove is a percentage of all remov-able margin (100% puts you at the market's max leveage)
