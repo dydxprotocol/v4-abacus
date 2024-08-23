@@ -33,6 +33,8 @@ import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
+import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
+import exchange.dydx.abacus.output.input.TriggerPrice
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
@@ -56,6 +58,7 @@ internal data class InternalState(
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
     var closePosition: InternalTradeInputState = InternalTradeInputState(),
+    var triggerOrders: InternalTriggerOrdersInputState = InternalTriggerOrdersInputState(),
     var receiptLines: List<ReceiptLine>? = null,
     var errors: List<ValidationError>? = null,
     var childSubaccountErrors: List<ValidationError>? = null,
@@ -70,6 +73,22 @@ internal data class InternalInputState(
             }
         }
 }
+
+internal data class InternalTriggerOrdersInputState(
+    var marketId: String? = null,
+    var size: Double? = null,
+    var stopLossOrder: InternalTriggerOrderState? = null,
+    var takeProfitOrder: InternalTriggerOrderState? = null,
+)
+
+internal data class InternalTriggerOrderState(
+    var orderId: String? = null,
+    var size: Double? = null,
+    var type: OrderType? = null,
+    var side: OrderSide? = null,
+    var price: TriggerPrice? = null,
+    var summary: TriggerOrderInputSummary? = null,
+)
 
 internal data class InternalTradeInputState(
     var marketId: String? = null,
@@ -336,6 +355,7 @@ internal data class InternalPerpetualPosition(
 
     // Calculated:
     val calculated: MutableMap<CalculationPeriod, InternalPositionCalculated> = mutableMapOf(),
+    var childSubaccountNumber: Int? = null,
 ) {
     val marginMode: MarginMode?
         get() {
@@ -431,5 +451,15 @@ internal fun TradeInputGoodUntil.Companion.safeCreate(existing: TradeInputGoodUn
     return existing ?: TradeInputGoodUntil(
         duration = null,
         unit = null,
+    )
+}
+
+internal fun TriggerPrice.Companion.safeCreate(existing: TriggerPrice?): TriggerPrice {
+    return existing ?: TriggerPrice(
+        limitPrice = null,
+        triggerPrice = null,
+        percentDiff = null,
+        usdcDiff = null,
+        input = null,
     )
 }

@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
+import exchange.dydx.abacus.processor.input.TriggerOrdersInputProcessor
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
@@ -37,7 +38,7 @@ enum class TriggerOrdersInputField(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String) =
-            TriggerOrdersInputField.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 }
 
@@ -46,6 +47,22 @@ fun TradingStateMachine.triggerOrders(
     type: TriggerOrdersInputField?,
     subaccountNumber: Int,
 ): StateResponse {
+    if (staticTyping) {
+        val triggerOrdersInputProcessor = TriggerOrdersInputProcessor(parser)
+        val changes = triggerOrdersInputProcessor.triggerOrderInput(
+            inputState = internalState.input,
+            account = internalState.wallet.account,
+            data = data,
+            type = type,
+            subaccountNumber = subaccountNumber,
+        )
+        return StateResponse(
+            state = state,
+            changes = changes,
+            errors = null,
+        )
+    }
+
     var changes: StateChanges? = null
     var error: ParsingError? = null
     val typeText = type?.rawValue
