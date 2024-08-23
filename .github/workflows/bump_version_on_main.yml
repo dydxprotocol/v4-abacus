@@ -2,7 +2,7 @@ name: Bump version
 on:
   push:
     branches:
-      - prashan-testing
+      - main
   
 jobs:
   update_version:
