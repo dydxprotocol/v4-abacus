@@ -37,6 +37,7 @@ import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
+import exchange.dydx.abacus.processor.input.ClosePositionInputProcessor
 import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
@@ -127,6 +128,7 @@ open class TradingStateMachine(
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
     internal val tradeInputProcessor = TradeInputProcessor(parser)
+    internal val closePositionInputProcessor = ClosePositionInputProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
@@ -756,15 +758,22 @@ open class TradingStateMachine(
     private fun calculateTrade(tag: String, calculation: TradeCalculation, subaccountNumber: Int) {
         if (staticTyping) {
             val calculator = TradeInputCalculatorV2(parser, calculation)
-            calculator.calculate(
-                trade = internalState.input.trade,
-                wallet = internalState.wallet,
-                marketSummary = internalState.marketsSummary,
-                rewardsParams = internalState.rewardsParams,
-                configs = internalState.configs,
-                subaccountNumber = subaccountNumber,
-                input = internalState.input.trade.size?.input,
-            )
+            val inputType =
+                calculator.calculate(
+                    trade = when (calculation) {
+                        TradeCalculation.closePosition -> internalState.input.closePosition
+                        TradeCalculation.trade -> internalState.input.trade
+                    },
+                    wallet = internalState.wallet,
+                    marketSummary = internalState.marketsSummary,
+                    rewardsParams = internalState.rewardsParams,
+                    configs = internalState.configs,
+                    subaccountNumber = subaccountNumber,
+                    input = when (calculation) {
+                        TradeCalculation.closePosition -> internalState.input.closePosition.size?.input
+                        TradeCalculation.trade -> internalState.input.trade.size?.input
+                    },
+                )
         } else {
             val input = this.input?.mutable()
             val trade = parser.asNativeMap(input?.get(tag))

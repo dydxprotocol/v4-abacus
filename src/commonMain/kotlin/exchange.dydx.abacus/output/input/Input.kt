@@ -63,8 +63,12 @@ data class Input(
                 } else {
                     TradeInput.create(existing?.trade, parser, parser.asMap(data?.get("trade")))
                 }
-                val closePosition =
+
+                val closePosition = if (staticTyping) {
+                    ClosePositionInput.create(state = internalState?.input?.closePosition)
+                } else {
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data?.get("closePosition")))
+                }
 
                 val transfer =
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data?.get("transfer")), environment, internalState?.transfer)
