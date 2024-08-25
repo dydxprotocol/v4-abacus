@@ -50,13 +50,8 @@ internal interface TradeInputProcessorProtocol {
         inputData: String?,
         inputType: TradeInputField?,
         subaccountNumber: Int,
-    ): TradeInputResult
+    ): InputProcessorResult
 }
-
-internal class TradeInputResult(
-    val changes: StateChanges? = null,
-    val error: ParsingError? = null,
-)
 
 internal class TradeInputProcessor(
     private val parser: ParserProtocol,
@@ -136,7 +131,7 @@ internal class TradeInputProcessor(
         inputData: String?,
         inputType: TradeInputField?,
         subaccountNumber: Int,
-    ): TradeInputResult {
+    ): InputProcessorResult {
         inputState.currentType = InputType.TRADE
 
         if (inputState.trade.marketId == null) {
@@ -151,7 +146,7 @@ internal class TradeInputProcessor(
             )
         }
         if (inputType == null) {
-            return TradeInputResult(
+            return InputProcessorResult(
                 changes = StateChanges(
                     changes = iListOf(Changes.wallet, Changes.subaccount, Changes.input),
                     markets = null,
@@ -270,7 +265,7 @@ internal class TradeInputProcessor(
             }
         }
 
-        return TradeInputResult(
+        return InputProcessorResult(
             changes = changes,
             error = error,
         )

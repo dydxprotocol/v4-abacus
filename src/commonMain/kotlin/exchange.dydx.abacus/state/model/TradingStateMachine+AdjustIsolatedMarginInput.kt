@@ -3,7 +3,6 @@ package exchange.dydx.abacus.state.model
 import exchange.dydx.abacus.calculator.AdjustIsolatedMarginInputCalculator
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.processor.input.AdjustIsolatedMarginInputProcessor
-import exchange.dydx.abacus.processor.input.TriggerOrdersInputProcessor
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
@@ -34,15 +33,22 @@ fun TradingStateMachine.adjustIsolatedMargin(
     parentSubaccountNumber: Int,
 ): StateResponse {
     if (staticTyping) {
-        val adjustIsolatedMarginInputProcessor = AdjustIsolatedMarginInputProcessor()
-        val changes = adjustIsolatedMarginInputProcessor.adjustIsolatedMarginInput(
+        val adjustIsolatedMarginInputProcessor = AdjustIsolatedMarginInputProcessor(parser)
+        val result = adjustIsolatedMarginInputProcessor.adjustIsolatedMargin(
             inputState = internalState.input,
-            account = internalState.wallet.account,
+            walletState = internalState.wallet,
             data = data,
             type = type,
             parentSubaccountNumber = parentSubaccountNumber,
         )
 
+        result.changes?.let { updateStateChanges(it) }
+
+        return StateResponse(
+            state = state,
+            changes = result.changes,
+            errors = if (result.error != null) iListOf(result.error) else null,
+        )
     } else {
         var changes: StateChanges? = null
         var error: ParsingError? = null
@@ -79,7 +85,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
             if (validAdjustIsolatedMarginInput(
                     adjustIsolatedMargin,
                     parentSubaccountNumber,
-                    type.name
+                    type.name,
                 )
             ) {
                 when (type) {
@@ -126,7 +132,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
                                 val amountPercent = amountValue / baseAmount
                                 adjustIsolatedMargin.safeSet(
                                     "AmountPercent",
-                                    amountPercent.toString()
+                                    amountPercent.toString(),
                                 )
                             } else {
                                 adjustIsolatedMargin.safeSet("AmountPercent", null)
@@ -174,7 +180,7 @@ fun TradingStateMachine.adjustIsolatedMargin(
     }
 }
 
-fun getStateChanges(
+private fun getStateChanges(
     subaccountNumbers: IList<Int>,
 ): StateChanges {
     return StateChanges(
@@ -184,7 +190,7 @@ fun getStateChanges(
     )
 }
 
-fun TradingStateMachine.validAdjustIsolatedMarginInput(
+private fun TradingStateMachine.validAdjustIsolatedMarginInput(
     adjustIsolatedMargin: Map<String, Any>,
     parentSubaccountNumber: Int?,
     typeText: String?,
