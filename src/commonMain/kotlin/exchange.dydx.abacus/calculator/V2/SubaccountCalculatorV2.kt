@@ -297,7 +297,7 @@ internal class SubaccountCalculatorV2(
         market: InternalMarketState?,
         period: CalculationPeriod,
     ): Double {
-        val maintenanceMarginFraction = position?.calculated?.get(period)?.adjustedImf
+        val maintenanceMarginFraction = position?.calculated?.get(period)?.adjustedMmf
         val oraclePrice = market?.perpetualMarket?.oraclePrice
         val size = position?.calculated?.get(period)?.size
 

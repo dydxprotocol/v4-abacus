@@ -1195,7 +1195,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1203,7 +1202,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1211,7 +1209,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1219,7 +1216,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1227,7 +1223,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1235,7 +1230,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1243,7 +1237,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1251,7 +1244,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1259,7 +1251,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}]
         }
@@ -2037,7 +2028,7 @@ internal class AccountsChannelMock {
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
-                    "denom":"USDC",
+                    "symbol":"USDC",
                     "side":"LONG",
                     "size":"7250.506704"
                  }
@@ -2076,7 +2067,7 @@ internal class AccountsChannelMock {
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
-                    "denom":"USDC",
+                    "symbol":"USDC",
                     "side":"LONG",
                     "size":"8772.436277"
                  }
