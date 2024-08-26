@@ -479,6 +479,8 @@ open class V4TradeInputTests : V4BaseTests() {
                             "fields": [
                                 "size.size"
                             ],
+                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
+                            "link": "https://help.dydx.trade/en/articles/171918-equity-tiers-and-rate-limits",
                             "resources": {
                                 "title": {
                                     "stringKey": "ERRORS.TRADE_BOX_TITLE.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM"

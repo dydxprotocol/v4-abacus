@@ -54,7 +54,7 @@ internal class TradeOrderInputValidator(
             }
             OrderType.Limit, OrderType.StopLimit, OrderType.TakeProfitLimit -> {
                 val errors = mutableListOf<ValidationError>()
-                validateIsolatedMarginMinSize(subaccount, trade)?.let {
+                validateIsolatedMarginMinSize(subaccount, trade, environment)?.let {
                     errors.add(it)
                 }
                 errors
@@ -81,7 +81,7 @@ internal class TradeOrderInputValidator(
                 trade,
                 restricted,
             )
-            OrderType.Limit, OrderType.StopLimit, OrderType.TakeProfitLimit -> validateLimitOrder(subaccount, trade, restricted)
+            OrderType.Limit, OrderType.StopLimit, OrderType.TakeProfitLimit -> validateLimitOrder(subaccount, trade, restricted, environment)
 
             else -> null
         }
@@ -112,17 +112,18 @@ internal class TradeOrderInputValidator(
     private fun validateLimitOrder(
         subaccount: Map<String, Any>?,
         trade: Map<String, Any>,
-        restricted: Boolean
+        restricted: Boolean,
+        environment: V4Environment?
     ): List<Any>? {
         val errors = mutableListOf<Any>()
-        var error = isolatedMarginMinSize(subaccount, trade, restricted)
+        var error = isolatedMarginMinSize(subaccount, trade, restricted, environment)
         if (error != null) {
             errors.add(error)
         }
         return if (errors.size > 0) errors else null
     }
 
-    private fun isolatedMarginMinSize(subaccount: Map<String, Any>?, trade: Map<String, Any>, restricted: Boolean): Map<String, Any>? {
+    private fun isolatedMarginMinSize(subaccount: Map<String, Any>?, trade: Map<String, Any>, restricted: Boolean, environment: V4Environment?): Map<String, Any>? {
         val marginMode = parser.asString(trade.get("marginMode"))?.let {
             MarginMode.invoke(it)
         }
@@ -145,6 +146,7 @@ internal class TradeOrderInputValidator(
                                 "format" to "price",
                             ),
                         ),
+                        learnMoreLink = environment?.links?.equityTiersLearnMore,
                     )
                 } else {
                     return null
@@ -154,7 +156,7 @@ internal class TradeOrderInputValidator(
         }
     }
 
-    private fun validateIsolatedMarginMinSize(subaccount: InternalSubaccountState, trade: InternalTradeInputState): ValidationError? {
+    private fun validateIsolatedMarginMinSize(subaccount: InternalSubaccountState, trade: InternalTradeInputState, environment: V4Environment?): ValidationError? {
         return when (trade.marginMode) {
             MarginMode.Isolated -> {
                 val currentFreeCollateral = subaccount.calculated.get(CalculationPeriod.current)?.freeCollateral ?: return null
@@ -173,6 +175,7 @@ internal class TradeOrderInputValidator(
                                 "format" to "price",
                             ),
                         ),
+                        learnMoreLink = environment?.links?.equityTiersLearnMore,
                     )
                 }
                 return null
@@ -353,7 +356,8 @@ internal class TradeOrderInputValidator(
         errorCode: String,
         fields: List<String>? = null,
         actionStringKey: String? = null,
-        textParams: Map<String, Any>? = null
+        textParams: Map<String, Any>? = null,
+        learnMoreLink: String? = null,
     ): Map<String, Any> {
         return errorDeprecated(
             type = errorLevel,
@@ -363,6 +367,12 @@ internal class TradeOrderInputValidator(
             titleStringKey = "ERRORS.TRADE_BOX_TITLE.$errorCode",
             textStringKey = "ERRORS.TRADE_BOX.$errorCode",
             textParams = textParams,
+            link = learnMoreLink,
+            linkText = if (learnMoreLink != null) {
+                "APP.GENERAL.LEARN_MORE_ARROW"
+            } else {
+                null
+            },
         )
     }
 
@@ -371,7 +381,8 @@ internal class TradeOrderInputValidator(
         errorCode: String,
         fields: List<String>? = null,
         actionStringKey: String? = null,
-        textParams: Map<String, Any>? = null
+        textParams: Map<String, Any>? = null,
+        learnMoreLink: String? = null,
     ): ValidationError {
         return error(
             type = errorLevel,
@@ -381,6 +392,12 @@ internal class TradeOrderInputValidator(
             titleStringKey = "ERRORS.TRADE_BOX_TITLE.$errorCode",
             textStringKey = "ERRORS.TRADE_BOX.$errorCode",
             textParams = textParams,
+            link = learnMoreLink,
+            linkText = if (learnMoreLink != null) {
+                "APP.GENERAL.LEARN_MORE_ARROW"
+            } else {
+                null
+            },
         )
     }
 }
