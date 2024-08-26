@@ -87,10 +87,6 @@ internal class TradeOrderInputValidator(
         }
     }
 
-    private fun accountRestricted(): Boolean {
-        return false
-    }
-
     private fun validateMarketOrder(
         trade: Map<String, Any>,
         restricted: Boolean
@@ -165,7 +161,7 @@ internal class TradeOrderInputValidator(
 
                 if (orderEquity < isolatedLimitOrderMinimumEquity) {
                     return createTradeBoxWarningOrError(
-                        errorLevel = if (accountRestricted()) ErrorType.warning else ErrorType.error,
+                        errorLevel = ErrorType.error,
                         errorCode = "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
                         fields = listOf("size.size"),
                         actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
@@ -194,7 +190,7 @@ internal class TradeOrderInputValidator(
 
         if (filled == false) {
             return createTradeBoxWarningOrError(
-                errorLevel = if (accountRestricted()) ErrorType.warning else ErrorType.error,
+                errorLevel = ErrorType.error,
                 errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
                 fields = listOf("size.size"),
                 actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
@@ -206,7 +202,7 @@ internal class TradeOrderInputValidator(
         // it is a one sided liquidity situation and should place limit order instead
         if (summary != null && summary.slippage == null) {
             return createTradeBoxWarningOrError(
-                errorLevel = if (accountRestricted()) ErrorType.warning else ErrorType.error,
+                errorLevel = ErrorType.error,
                 errorCode = "MARKET_ORDER_ONE_SIDED_LIQUIDITY",
                 fields = listOf("size.size"),
                 actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
