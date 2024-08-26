@@ -24,6 +24,7 @@ import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputOptions
 import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputSummary
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -79,9 +80,11 @@ internal data class InternalInputState(
 }
 
 internal data class InternalAdjustIsolatedMarginInputState(
+    var market: String? = null,
     var type: IsolatedMarginAdjustmentType? = null,
     var amount: Double? = null,
     var amountPercent: Double? = null,
+    var amountInput: IsolatedMarginInputType? = null,
     var childSubaccountNumber: Int? = null,
     var parentSubaccountNumber: Int? = null,
     var options: AdjustIsolatedMarginInputOptions? = null,

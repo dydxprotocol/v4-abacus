@@ -1,9 +1,9 @@
 package exchange.dydx.abacus.processor.input
 
-import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.cannotModify
@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.internalstate.InternalAdjustIsolatedMarginInputState
 import exchange.dydx.abacus.state.internalstate.InternalInputState
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.utils.IList
@@ -24,6 +25,7 @@ internal class AdjustIsolatedMarginInputProcessor(
     fun adjustIsolatedMargin(
         inputState: InternalInputState,
         walletState: InternalWalletState,
+        markets: Map<String, InternalMarketState>?,
         data: String?,
         type: AdjustIsolatedMarginInputField?,
         parentSubaccountNumber: Int,
@@ -41,6 +43,7 @@ internal class AdjustIsolatedMarginInputProcessor(
             inputState.adjustIsolatedMargin = calculator.calculate(
                 adjustIsolatedMargin = inputState.adjustIsolatedMargin,
                 walletState = walletState,
+                markets = markets,
                 parentSubaccountNumber = parentSubaccountNumber,
             )
         }
@@ -62,6 +65,11 @@ internal class AdjustIsolatedMarginInputProcessor(
                 )
             ) {
                 when (type) {
+                    AdjustIsolatedMarginInputField.Market -> {
+                        adjustIsolatedMargin.market = parser.asString(data)
+                        changes = getStateChanges(subaccountNumbers)
+                    }
+
                     AdjustIsolatedMarginInputField.Type -> {
                         val typeValue = parser.asString(data)
                         if (adjustIsolatedMargin.type?.name != typeValue) {
@@ -77,49 +85,21 @@ internal class AdjustIsolatedMarginInputProcessor(
                         changes = getStateChanges(subaccountNumbers)
                     }
 
-                    AdjustIsolatedMarginInputField.AmountPercent,
-                    AdjustIsolatedMarginInputField.Amount -> {
-                        val isolatedMarginAdjustmentType = adjustIsolatedMargin.type ?: IsolatedMarginAdjustmentType.Add
-                        val subaccountNumber =
-                            if (isolatedMarginAdjustmentType == IsolatedMarginAdjustmentType.Add) {
-                                parentSubaccountNumber
-                            } else {
-                                childSubaccountNumber
-                            }
-                        val subaccount = walletState.account.subaccounts[subaccountNumber]
-                        val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
-                        val freeCollateral = calculated?.freeCollateral
-                        val equity = calculated?.equity
-                        val baseAmount =
-                            if (isolatedMarginAdjustmentType == IsolatedMarginAdjustmentType.Add) {
-                                freeCollateral
-                            } else {
-                                equity
-                            }
+                    AdjustIsolatedMarginInputField.AmountPercent -> {
                         val amountValue = parser.asDouble(data)?.absoluteValue
-
-                        if (amountValue == null) {
-                            adjustIsolatedMargin.amount = null
-                            adjustIsolatedMargin.amountPercent = null
-                        } else if (type == AdjustIsolatedMarginInputField.Amount) {
-                            adjustIsolatedMargin.amount = amountValue
-
-                            if (baseAmount != null && baseAmount > 0.0) {
-                                adjustIsolatedMargin.amountPercent = amountValue / baseAmount
-                            } else {
-                                adjustIsolatedMargin.amountPercent = null
-                            }
-                        } else if (type == AdjustIsolatedMarginInputField.AmountPercent) {
+                        if (adjustIsolatedMargin.amountPercent != amountValue) {
                             adjustIsolatedMargin.amountPercent = amountValue
-
-                            if (baseAmount != null && baseAmount > 0.0) {
-                                val amount = amountValue * baseAmount
-                                adjustIsolatedMargin.amount = amount
-                            } else {
-                                adjustIsolatedMargin.amount = null
-                            }
+                            adjustIsolatedMargin.amountInput = IsolatedMarginInputType.Percent
                         }
+                        changes = getStateChanges(subaccountNumbers)
+                    }
 
+                    AdjustIsolatedMarginInputField.Amount -> {
+                        val amountValue = parser.asDouble(data)?.absoluteValue
+                        if (adjustIsolatedMargin.amount != amountValue) {
+                            adjustIsolatedMargin.amount = amountValue
+                            adjustIsolatedMargin.amountInput = IsolatedMarginInputType.Amount
+                        }
                         changes = getStateChanges(subaccountNumbers)
                     }
 
@@ -157,6 +137,10 @@ internal class AdjustIsolatedMarginInputProcessor(
         type: AdjustIsolatedMarginInputField,
     ): Boolean {
         when (type) {
+            AdjustIsolatedMarginInputField.Market -> {
+                return true
+            }
+
             AdjustIsolatedMarginInputField.Type -> {
                 val inputType = adjustIsolatedMargin.type ?: return true
                 return inputType == IsolatedMarginAdjustmentType.Add || inputType == IsolatedMarginAdjustmentType.Remove
