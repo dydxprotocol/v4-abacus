@@ -1,11 +1,15 @@
 package exchange.dydx.abacus.validation
 
+import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.payload.v4.V4BaseTests
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TradeRequiredInputTests : V4BaseTests() {
     @Test
@@ -15,6 +19,12 @@ class TradeRequiredInputTests : V4BaseTests() {
         print("--------First round----------\n")
 
         testTradeInputOnce()
+    }
+
+    override fun setup() {
+        super.setup()
+
+        perp.internalState.wallet.walletAddress = "0x1234567890"
     }
 
     private fun testTradeInputOnce() {
@@ -54,11 +64,22 @@ class TradeRequiredInputTests : V4BaseTests() {
     }
 
     private fun testTradeInputMarketType() {
-        test(
-            {
-                perp.trade("MARKET", TradeInputField.type, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("MARKET", TradeInputField.type, 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.Market)
+            val error = perp.internalState.input.errors?.firstOrNull()
+            assertEquals(error?.type, ErrorType.required)
+            assertEquals(error?.code, "REQUIRED_SIZE")
+            assertEquals(error?.fields?.firstOrNull(), "size.size")
+            assertEquals(error?.resources?.action?.stringKey, "APP.TRADE.ENTER_AMOUNT")
+        } else {
+            test(
+                {
+                    perp.trade("MARKET", TradeInputField.type, 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -82,13 +103,23 @@ class TradeRequiredInputTests : V4BaseTests() {
                     }
                 }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.trade("1.0", TradeInputField.size, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("1.0", TradeInputField.size, 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.Market)
+            val error = perp.internalState.input.errors?.firstOrNull()
+            assertEquals(error?.type, ErrorType.error)
+            assertEquals(error?.code, "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY")
+        } else {
+            test(
+                {
+                    perp.trade("1.0", TradeInputField.size, 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -104,15 +135,32 @@ class TradeRequiredInputTests : V4BaseTests() {
                     }
                 }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testTradeInputStopMarketType() {
-        test(
-            {
-                perp.trade("STOP_MARKET", TradeInputField.type, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("STOP_MARKET", TradeInputField.type, 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.StopMarket)
+            val error = perp.internalState.input.errors?.firstOrNull()
+            assertEquals(error?.type, ErrorType.required)
+            assertEquals(error?.code, "REQUIRED_SIZE")
+            assertEquals(error?.fields?.firstOrNull(), "size.size")
+            assertEquals(error?.resources?.action?.stringKey, "APP.TRADE.ENTER_AMOUNT")
+            val error2 = perp.internalState.input.errors?.get(1)
+            assertEquals(error2?.type, ErrorType.required)
+            assertEquals(error2?.code, "REQUIRED_TRIGGER_PRICE")
+            assertEquals(error2?.fields?.firstOrNull(), "price.triggerPrice")
+            assertEquals(error2?.resources?.action?.stringKey, "APP.TRADE.ENTER_TRIGGER_PRICE")
+        } else {
+            test(
+                {
+                    perp.trade("STOP_MARKET", TradeInputField.type, 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -148,13 +196,25 @@ class TradeRequiredInputTests : V4BaseTests() {
                     }
                 }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.trade("1.0", TradeInputField.size, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("1.0", TradeInputField.size, 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.StopMarket)
+            val error = perp.internalState.input.errors?.firstOrNull()
+            assertEquals(error?.type, ErrorType.required)
+            assertEquals(error?.code, "REQUIRED_TRIGGER_PRICE")
+            assertEquals(error?.fields?.firstOrNull(), "price.triggerPrice")
+            assertEquals(error?.resources?.action?.stringKey, "APP.TRADE.ENTER_TRIGGER_PRICE")
+        } else {
+            test(
+                {
+                    perp.trade("1.0", TradeInputField.size, 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -178,13 +238,23 @@ class TradeRequiredInputTests : V4BaseTests() {
                     }
                 }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.trade("1223", TradeInputField.triggerPrice, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("1223", TradeInputField.triggerPrice, 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.StopMarket)
+            val error = perp.internalState.input.errors?.firstOrNull()
+            assertEquals(error?.type, ErrorType.error)
+            assertEquals(error?.code, "TRIGGER_MUST_ABOVE_INDEX_PRICE")
+        } else {
+            test(
+                {
+                    perp.trade("1223", TradeInputField.triggerPrice, 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -200,13 +270,22 @@ class TradeRequiredInputTests : V4BaseTests() {
                     }
                 }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.trade("3000", TradeInputField.triggerPrice, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("3000", TradeInputField.triggerPrice, 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.StopMarket)
+            val errors = perp.internalState.input.errors
+            assertTrue { errors.isNullOrEmpty() }
+        } else {
+            test(
+                {
+                    perp.trade("3000", TradeInputField.triggerPrice, 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -217,7 +296,8 @@ class TradeRequiredInputTests : V4BaseTests() {
                     }
                 }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testTradeInputTakeProfitMarketType() {

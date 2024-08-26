@@ -9,6 +9,8 @@ open class ValidationsTests : V4BaseTests() {
     override fun setup() {
         super.setup()
 
+        perp.internalState.wallet.walletAddress = "0x1234567890"
+
         test({
             loadValidationsMarkets()
         }, null)
