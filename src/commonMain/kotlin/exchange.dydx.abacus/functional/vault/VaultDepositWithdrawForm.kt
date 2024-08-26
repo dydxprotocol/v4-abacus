@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.functional.vault
 
+import exchange.dydx.abacus.output.input.ErrorType
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
@@ -36,16 +37,9 @@ data class VaultDepositWithdrawSlippageResponse(
 @JsExport
 @Serializable
 data class VaultFormValidationError(
-    val severity: VaultFormValidationErrorSeverity,
+    val severity: ErrorType,
     val type: VaultFormValidationErrorType
 )
-
-@JsExport
-@Serializable
-enum class VaultFormValidationErrorSeverity {
-    WARNING,
-    ERROR
-}
 
 @JsExport
 @Serializable
@@ -177,61 +171,61 @@ object VaultDepositWithdrawFormValidator {
 
         // Perform validation checks and populate errors list
         if (accountData == null) {
-            errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.ACCOUNT_DATA_MISSING))
+            errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.ACCOUNT_DATA_MISSING))
         }
 
         if (amount == 0.0) {
-            errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.AMOUNT_EMPTY))
+            errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.AMOUNT_EMPTY))
         }
 
         // can't actually submit if we are missing key validation information
         if (formData.inConfirmationStep && formData.action === VaultFormAction.WITHDRAW) {
             if (vaultAccount == null) {
-                errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.VAULT_ACCOUNT_MISSING))
+                errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.VAULT_ACCOUNT_MISSING))
             }
             if (slippageResponse == null || sharesToAttemptWithdraw == null) {
-                errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_MISSING))
+                errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_MISSING))
             }
         }
 
         if (formData.inConfirmationStep && formData.action === VaultFormAction.DEPOSIT) {
             if (accountData?.marginUsage == null || accountData.freeCollateral == null) {
-                errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.ACCOUNT_DATA_MISSING))
+                errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.ACCOUNT_DATA_MISSING))
             }
         }
 
         when (formData.action) {
             VaultFormAction.DEPOSIT -> {
                 if (postOpFreeCollateral != null && postOpFreeCollateral < 0) {
-                    errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.DEPOSIT_TOO_HIGH))
+                    errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.DEPOSIT_TOO_HIGH))
                 }
             }
             VaultFormAction.WITHDRAW -> {
                 if (postOpVaultBalance != null && postOpVaultBalance < 0) {
-                    errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH))
+                    errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH))
                 }
                 if (postOpVaultBalance != null && postOpVaultBalance >= 0 && amount > 0 && vaultAccount?.withdrawableUsdc != null && amount > vaultAccount.withdrawableUsdc) {
-                    errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.WITHDRAWING_LOCKED_BALANCE))
+                    errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.WITHDRAWING_LOCKED_BALANCE))
                 }
                 if (sharesToAttemptWithdraw != null && slippageResponse != null && sharesToAttemptWithdraw != slippageResponse.shares) {
                     errors.add(
                         VaultFormValidationError(
-                            VaultFormValidationErrorSeverity.ERROR,
+                            ErrorType.error,
                             VaultFormValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES,
                         ),
                     )
                 }
                 if (needSlippageAck) {
-                    errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH))
+                    errors.add(VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH))
                     if (slippagePercent >= SLIPPAGE_PERCENT_ACK && !formData.acknowledgedSlippage && formData.inConfirmationStep) {
-                        errors.add(VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE))
+                        errors.add(VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE))
                     }
                 }
             }
         }
 
         // Prepare submission data if no errors
-        if (errors.none { it.severity === VaultFormValidationErrorSeverity.ERROR }) {
+        if (errors.none { it.severity === ErrorType.error }) {
             submissionData = when (formData.action) {
                 VaultFormAction.DEPOSIT -> VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(

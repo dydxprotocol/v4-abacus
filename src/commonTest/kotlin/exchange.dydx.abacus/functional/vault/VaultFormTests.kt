@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.functional.vault
 
+import exchange.dydx.abacus.output.input.ErrorType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -88,7 +89,7 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = listOf(
-                    VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                 ),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = null,
@@ -139,8 +140,8 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = listOf(
-                    VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES),
-                    VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES),
+                    VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                 ),
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
@@ -183,9 +184,9 @@ class VaultFormTests {
         assertEquals(
             VaultFormValidationResult(
                 errors = listOf(
-                    VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH),
-                    VaultFormValidationError(VaultFormValidationErrorSeverity.WARNING, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
-                    VaultFormValidationError(VaultFormValidationErrorSeverity.ERROR, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE),
+                    VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH),
+                    VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
+                    VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE),
                 ),
                 submissionData = null,
                 summaryData = VaultFormSummaryData(
