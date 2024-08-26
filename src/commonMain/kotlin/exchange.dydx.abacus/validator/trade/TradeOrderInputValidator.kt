@@ -123,9 +123,6 @@ internal class TradeOrderInputValidator(
     }
 
     private fun isolatedMarginMinSize(subaccount: Map<String, Any>?, trade: Map<String, Any>, restricted: Boolean): Map<String, Any>? {
-        /*
-        TODO: make a new error type
-         */
         val marginMode = parser.asString(trade.get("marginMode"))?.let {
             MarginMode.invoke(it)
         }
@@ -139,7 +136,7 @@ internal class TradeOrderInputValidator(
                 if (orderEquity < isolatedLimitOrderMinimumEquity) {
                     return createTradeBoxWarningOrErrorDeprecated(
                         errorLevel = if (restricted) "WARNING" else "ERROR",
-                        errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY", // TODO: make a new error type
+                        errorCode = "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
                         fields = listOf("size.size"),
                         actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
                     )
@@ -152,9 +149,6 @@ internal class TradeOrderInputValidator(
     }
 
     private fun validateIsolatedMarginMinSize(subaccount: InternalSubaccountState, trade: InternalTradeInputState): ValidationError? {
-        /*
-        TODO: make a new error type
-         */
         return when (trade.marginMode) {
             MarginMode.Isolated -> {
                 val currentFreeCollateral = subaccount.calculated.get(CalculationPeriod.current)?.freeCollateral ?: return null
@@ -164,7 +158,7 @@ internal class TradeOrderInputValidator(
                 if (orderEquity < isolatedLimitOrderMinimumEquity) {
                     return createTradeBoxWarningOrError(
                         errorLevel = if (accountRestricted()) ErrorType.warning else ErrorType.error,
-                        errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY", // TODO: make a new error type
+                        errorCode = "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
                         fields = listOf("size.size"),
                         actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
                     )

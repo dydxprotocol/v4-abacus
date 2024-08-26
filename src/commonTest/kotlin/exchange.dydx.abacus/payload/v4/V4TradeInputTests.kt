@@ -453,7 +453,6 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("0.01", TradeInputField.size, 0)
         }, null)
 
-        // TODO update with new error
         test(
             {
                 perp.trade("1500", TradeInputField.limitPrice, 0)
@@ -476,16 +475,16 @@ open class V4TradeInputTests : V4BaseTests() {
                     "errors": [
                         {
                             "type": "ERROR",
-                            "code": "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+                            "code": "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
                             "fields": [
                                 "size.size"
                             ],
                             "resources": {
                                 "title": {
-                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM"
                                 },
                                 "text": {
-                                    "stringKey": "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                                    "stringKey": "ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM"
                                 },
                                 "action": {
                                     "stringKey": "APP.TRADE.MODIFY_SIZE_FIELD"
