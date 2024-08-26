@@ -850,6 +850,7 @@ open class TradingStateMachine(
             internalState.input.adjustIsolatedMargin = calculator.calculate(
                 adjustIsolatedMargin = internalState.input.adjustIsolatedMargin,
                 walletState = internalState.wallet,
+                markets = internalState.marketsSummary.markets,
                 parentSubaccountNumber = subaccountNumber,
             )
         } else {

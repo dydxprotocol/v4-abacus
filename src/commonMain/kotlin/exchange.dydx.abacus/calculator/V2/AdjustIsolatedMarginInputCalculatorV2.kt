@@ -4,11 +4,17 @@ import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputOptions
 import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputSummary
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalAdjustIsolatedMarginInputState
+import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
+import exchange.dydx.abacus.utils.MARGIN_COLLATERALIZATION_CHECK_BUFFER
+import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
+import kotlin.math.max
+import kotlin.math.min
 
 internal class AdjustIsolatedMarginInputCalculatorV2(
     private val parser: ParserProtocol,
@@ -17,9 +23,14 @@ internal class AdjustIsolatedMarginInputCalculatorV2(
     fun calculate(
         adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState,
         walletState: InternalWalletState,
+        markets: Map<String, InternalMarketState>?,
         parentSubaccountNumber: Int?,
     ): InternalAdjustIsolatedMarginInputState {
-        if (walletState.isAccountConnected && adjustIsolatedMargin.amount != null) {
+        val market = markets?.get(adjustIsolatedMargin.market) ?: return adjustIsolatedMargin
+
+        if (walletState.isAccountConnected &&
+            (adjustIsolatedMargin.amount != null || adjustIsolatedMargin.amountPercent != null)
+        ) {
             val type = adjustIsolatedMargin.type ?: IsolatedMarginAdjustmentType.Add
             val childSubaccountNumber = adjustIsolatedMargin.childSubaccountNumber
 
@@ -46,6 +57,14 @@ internal class AdjustIsolatedMarginInputCalculatorV2(
                 period = CalculationPeriod.post,
             )
 
+            calculateAmounts(
+                adjustIsolatedMargin = adjustIsolatedMargin,
+                parentSubaccount = walletState.account.subaccounts[parentSubaccountNumber],
+                childSubaccount = walletState.account.subaccounts[childSubaccountNumber],
+                market = market,
+                type = type,
+            )
+
             adjustIsolatedMargin.options = AdjustIsolatedMarginInputOptions(
                 needsSize = true,
             )
@@ -55,6 +74,87 @@ internal class AdjustIsolatedMarginInputCalculatorV2(
             )
         }
         return adjustIsolatedMargin
+    }
+
+    private fun calculateAmounts(
+        adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState,
+        parentSubaccount: InternalSubaccountState?,
+        childSubaccount: InternalSubaccountState?,
+        market: InternalMarketState,
+        type: IsolatedMarginAdjustmentType,
+    ): InternalAdjustIsolatedMarginInputState {
+        val modified = adjustIsolatedMargin
+        val inputType = modified.amountInput
+
+        if (inputType != null) {
+            val notionalTotal = childSubaccount?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: return modified
+            val equity = childSubaccount.calculated[CalculationPeriod.current]?.equity
+            val availableCollateralToTransfer = parentSubaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
+
+            val baseAmount = when (type) {
+                IsolatedMarginAdjustmentType.Add -> availableCollateralToTransfer
+                IsolatedMarginAdjustmentType.Remove -> equity
+            }
+
+            val amountPercent = modified.amountPercent
+            val amountValue = modified.amount
+
+            val initialMarginFraction = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: return modified
+            val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
+                return modified
+            } else {
+                Numeric.double.ONE / initialMarginFraction
+            }
+
+            when (inputType) {
+                IsolatedMarginInputType.Amount -> {
+                    if (baseAmount != null && baseAmount > Numeric.double.ZERO && amountValue != null) {
+                        when (type) {
+                            IsolatedMarginAdjustmentType.Add -> {
+                                modified.amountPercent = amountValue / baseAmount
+                            }
+                            IsolatedMarginAdjustmentType.Remove -> {
+                                val maxRemovableAmount = baseAmount - notionalTotal / (maxMarketLeverage * MAX_LEVERAGE_BUFFER_PERCENT)
+                                if (maxRemovableAmount > Numeric.double.ZERO) {
+                                    modified.amountPercent = amountValue / maxRemovableAmount
+                                } else {
+                                    modified.amountPercent = null
+                                }
+                            }
+                        }
+                    } else {
+                        modified.amountPercent = null
+                    }
+                }
+                IsolatedMarginInputType.Percent -> {
+                    if (baseAmount != null && baseAmount >= Numeric.double.ZERO && amountPercent != null) {
+                        when (type) {
+                            IsolatedMarginAdjustmentType.Add -> {
+                                // The amount to add is a percentage of all add-able margin (your parent subaccount's free collateral)
+                                val amount = baseAmount * amountPercent
+                                // We leave behind MARGIN_COLLATERALIZATION_CHECK_BUFFER to pass collateralization checks
+                                modified.amount = min(max(baseAmount - MARGIN_COLLATERALIZATION_CHECK_BUFFER, 0.0), amount)
+                            }
+                            IsolatedMarginAdjustmentType.Remove -> {
+                                // The amount to remove is a percentage of all remov-able margin (100% puts you at the market's max leveage)
+                                // leverage = notional total / equity
+                                // marketMaxLeverage = notional total / (currentEquity - amount)
+                                // amount = currentEquity - notionalTotal / marketMaxLeverage
+                                val amountToRemove = baseAmount - notionalTotal / (maxMarketLeverage * MAX_LEVERAGE_BUFFER_PERCENT)
+                                if (amountToRemove >= Numeric.double.ZERO) {
+                                    modified.amount = amountToRemove * amountPercent
+                                } else {
+                                    modified.amount = null
+                                }
+                            }
+                        }
+                    } else {
+                        modified.amount = null
+                    }
+                }
+            }
+        }
+        return modified
     }
 
     private fun getModifiedTransferDelta(
