@@ -25,7 +25,7 @@ internal class TradeOrderInputValidator(
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     private val marketOrderErrorSlippage = 0.1
     private val marketOrderWarningSlippage = 0.05
-    private val isolatedLimitOrderMinimumEquity = 20
+    private val isolatedLimitOrderMinimumEquity = 20.0
 
     override fun validateTrade(
         internalState: InternalState,
@@ -139,6 +139,12 @@ internal class TradeOrderInputValidator(
                         errorCode = "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
                         fields = listOf("size.size"),
                         actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                        textParams = mapOf(
+                            "MIN_VALUE" to mapOf(
+                                "value" to isolatedLimitOrderMinimumEquity,
+                                "format" to "price",
+                            ),
+                        ),
                     )
                 } else {
                     return null
@@ -161,6 +167,12 @@ internal class TradeOrderInputValidator(
                         errorCode = "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
                         fields = listOf("size.size"),
                         actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                        textParams = mapOf(
+                            "MIN_VALUE" to mapOf(
+                                "value" to isolatedLimitOrderMinimumEquity,
+                                "format" to "price",
+                            ),
+                        ),
                     )
                 }
                 return null
@@ -259,18 +271,25 @@ internal class TradeOrderInputValidator(
             minSlippageValue = indexSlippage
         }
 
+        val textParams = mapOf(
+            "SLIPPAGE" to mapOf(
+                "value" to minSlippageValue,
+                "format" to "percent",
+            ),
+        )
+
         return when {
             minSlippageValue >= marketOrderErrorSlippage -> createTradeBoxWarningOrError(
                 errorLevel = if (restricted) ErrorType.warning else ErrorType.error,
                 errorCode = "MARKET_ORDER_ERROR_${slippageType}_SLIPPAGE",
                 actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
-                slippagePercentValue = minSlippageValue,
+                textParams = textParams,
             )
             minSlippageValue >= marketOrderWarningSlippage -> createTradeBoxWarningOrError(
                 errorLevel = ErrorType.warning,
                 errorCode = "MARKET_ORDER_WARNING_${slippageType}_SLIPPAGE",
                 actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
-                slippagePercentValue = minSlippageValue,
+                textParams = textParams,
             )
             else -> null
         }
@@ -307,13 +326,23 @@ internal class TradeOrderInputValidator(
                 errorLevel = if (restricted) "WARNING" else "ERROR",
                 errorCode = "MARKET_ORDER_ERROR_${slippageType}_SLIPPAGE",
                 actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
-                slippagePercentValue = minSlippageValue,
+                textParams = mapOf(
+                    "SLIPPAGE" to mapOf(
+                        "value" to minSlippageValue,
+                        "format" to "percent",
+                    ),
+                ),
             )
             minSlippageValue >= marketOrderWarningSlippage -> createTradeBoxWarningOrErrorDeprecated(
                 errorLevel = "WARNING",
                 errorCode = "MARKET_ORDER_WARNING_${slippageType}_SLIPPAGE",
                 actionStringKey = "APP.TRADE.PLACE_LIMIT_ORDER",
-                slippagePercentValue = minSlippageValue,
+                textParams = mapOf(
+                    "SLIPPAGE" to mapOf(
+                        "value" to minSlippageValue,
+                        "format" to "percent",
+                    ),
+                ),
             )
             else -> null
         }
@@ -324,7 +353,7 @@ internal class TradeOrderInputValidator(
         errorCode: String,
         fields: List<String>? = null,
         actionStringKey: String? = null,
-        slippagePercentValue: Double? = null
+        textParams: Map<String, Any>? = null
     ): Map<String, Any> {
         return errorDeprecated(
             type = errorLevel,
@@ -333,14 +362,7 @@ internal class TradeOrderInputValidator(
             actionStringKey = actionStringKey,
             titleStringKey = "ERRORS.TRADE_BOX_TITLE.$errorCode",
             textStringKey = "ERRORS.TRADE_BOX.$errorCode",
-            textParams = slippagePercentValue?.let {
-                mapOf(
-                    "SLIPPAGE" to mapOf(
-                        "value" to it,
-                        "format" to "percent",
-                    ),
-                )
-            },
+            textParams = textParams,
         )
     }
 
@@ -349,7 +371,7 @@ internal class TradeOrderInputValidator(
         errorCode: String,
         fields: List<String>? = null,
         actionStringKey: String? = null,
-        slippagePercentValue: Double? = null
+        textParams: Map<String, Any>? = null
     ): ValidationError {
         return error(
             type = errorLevel,
@@ -358,14 +380,7 @@ internal class TradeOrderInputValidator(
             actionStringKey = actionStringKey,
             titleStringKey = "ERRORS.TRADE_BOX_TITLE.$errorCode",
             textStringKey = "ERRORS.TRADE_BOX.$errorCode",
-            textParams = slippagePercentValue?.let {
-                mapOf(
-                    "SLIPPAGE" to mapOf(
-                        "value" to it,
-                        "format" to "percent",
-                    ),
-                )
-            },
+            textParams = textParams,
         )
     }
 }

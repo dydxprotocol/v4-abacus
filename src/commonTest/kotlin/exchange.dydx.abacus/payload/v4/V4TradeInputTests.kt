@@ -484,7 +484,14 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "stringKey": "ERRORS.TRADE_BOX_TITLE.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM"
                                 },
                                 "text": {
-                                    "stringKey": "ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM"
+                                    "stringKey": "ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
+                                    "params": [
+                                        {
+                                            "value": 20.0,
+                                            "format": "price",
+                                            "key": "MIN_VALUE"
+                                        }
+                                    ]
                                 },
                                 "action": {
                                     "stringKey": "APP.TRADE.MODIFY_SIZE_FIELD"
