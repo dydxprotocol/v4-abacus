@@ -88,7 +88,7 @@ internal class AdjustIsolatedMarginInputCalculatorV2(
 
         if (inputType != null) {
             val notionalTotal = childSubaccount?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: return modified
-            val equity = childSubaccount.calculated?.get(CalculationPeriod.current)?.equity
+            val equity = childSubaccount.calculated[CalculationPeriod.current]?.equity
             val availableCollateralToTransfer = parentSubaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
 
             val baseAmount = when (type) {
