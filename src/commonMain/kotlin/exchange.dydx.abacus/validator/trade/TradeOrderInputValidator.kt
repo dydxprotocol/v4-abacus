@@ -1,27 +1,31 @@
 package exchange.dydx.abacus.validator.trade
 
 import abs
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
 import exchange.dydx.abacus.state.internalstate.InternalState
+import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.validator.BaseInputValidator
 import exchange.dydx.abacus.validator.PositionChange
 import exchange.dydx.abacus.validator.TradeValidatorProtocol
 
-internal class TradeMarketOrderInputValidator(
+internal class TradeOrderInputValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TradeValidatorProtocol {
     private val marketOrderErrorSlippage = 0.1
     private val marketOrderWarningSlippage = 0.05
+    private val isolatedLimitOrderMinimumEquity = 20
 
     override fun validateTrade(
         internalState: InternalState,
@@ -30,23 +34,33 @@ internal class TradeMarketOrderInputValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
+        val subaccount = internalState.wallet.account.subaccounts[subaccountNumber] ?: return null
         val trade = when (internalState.input.currentType) {
             InputType.TRADE -> internalState.input.trade
             InputType.CLOSE_POSITION -> internalState.input.closePosition
             else -> return null
         }
-        if (trade.type != OrderType.Market) {
-            return null
-        }
 
-        val errors = mutableListOf<ValidationError>()
-        validateLiquidity(trade)?.let {
-            errors.add(it)
+        return when (trade.type) {
+            OrderType.Market -> {
+                val errors = mutableListOf<ValidationError>()
+                validateLiquidity(trade)?.let {
+                    errors.add(it)
+                }
+                validateOrderbookOrIndexSlippage(trade, restricted)?.let {
+                    errors.add(it)
+                }
+                errors
+            }
+            OrderType.Limit, OrderType.StopLimit, OrderType.TakeProfitLimit -> {
+                val errors = mutableListOf<ValidationError>()
+                validateIsolatedMarginMinSize(subaccount, trade)?.let {
+                    errors.add(it)
+                }
+                errors
+            }
+            else -> null
         }
-        validateOrderbookOrIndexSlippage(trade, restricted)?.let {
-            errors.add(it)
-        }
-        return errors
     }
 
     override fun validateTradeDeprecated(
@@ -58,14 +72,18 @@ internal class TradeMarketOrderInputValidator(
         restricted: Boolean,
         environment: V4Environment?,
     ): List<Any>? {
-        return if (parser.asString(trade["type"]) == "MARKET") {
-            validateMarketOrder(
+        val tradeType = parser.asString(trade["type"])?.let {
+            OrderType.invoke(it)
+        }
+
+        return when (tradeType) {
+            OrderType.Market -> validateMarketOrder(
                 trade,
-                market,
                 restricted,
             )
-        } else {
-            null
+            OrderType.Limit, OrderType.StopLimit, OrderType.TakeProfitLimit -> validateLimitOrder(subaccount, trade, restricted)
+
+            else -> null
         }
     }
 
@@ -75,24 +93,85 @@ internal class TradeMarketOrderInputValidator(
 
     private fun validateMarketOrder(
         trade: Map<String, Any>,
-        markets: Map<String, Any>?,
         restricted: Boolean
     ): List<Any>? {
-        return if (parser.asString(trade["type"]) == "MARKET") {
-            val errors = mutableListOf<Any>()
+        val errors = mutableListOf<Any>()
 
-            var error = liquidity(trade, restricted)
-            if (error != null) {
-                errors.add(error)
-            }
-            error = orderbookOrIndexSlippage(trade, restricted)
-            if (error != null) {
-                errors.add(error)
-            }
+        var error = liquidity(trade, restricted)
+        if (error != null) {
+            errors.add(error)
+        }
+        error = orderbookOrIndexSlippage(trade, restricted)
+        if (error != null) {
+            errors.add(error)
+        }
 
-            if (errors.size > 0) errors else null
-        } else {
-            null
+        return if (errors.size > 0) errors else null
+    }
+
+    private fun validateLimitOrder(
+        subaccount: Map<String, Any>?,
+        trade: Map<String, Any>,
+        restricted: Boolean
+    ): List<Any>? {
+        val errors = mutableListOf<Any>()
+        var error = isolatedMarginMinSize(subaccount, trade, restricted)
+        if (error != null) {
+            errors.add(error)
+        }
+        return if (errors.size > 0) errors else null
+    }
+
+    private fun isolatedMarginMinSize(subaccount: Map<String, Any>?, trade: Map<String, Any>, restricted: Boolean): Map<String, Any>? {
+        /*
+        TODO: make a new error type
+         */
+        val marginMode = parser.asString(trade.get("marginMode"))?.let {
+            MarginMode.invoke(it)
+        }
+
+        return when (marginMode) {
+            MarginMode.Isolated -> {
+                val currentFreeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: return null
+                val postFreeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.postOrder")) ?: return null
+                val orderEquity = postFreeCollateral - currentFreeCollateral
+
+                if (orderEquity < isolatedLimitOrderMinimumEquity) {
+                    return createTradeBoxWarningOrErrorDeprecated(
+                        errorLevel = if (restricted) "WARNING" else "ERROR",
+                        errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY", // TODO: make a new error type
+                        fields = listOf("size.size"),
+                        actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                    )
+                } else {
+                    return null
+                }
+            }
+            else -> null
+        }
+    }
+
+    private fun validateIsolatedMarginMinSize(subaccount: InternalSubaccountState, trade: InternalTradeInputState): ValidationError? {
+        /*
+        TODO: make a new error type
+         */
+        return when (trade.marginMode) {
+            MarginMode.Isolated -> {
+                val currentFreeCollateral = subaccount.calculated.get(CalculationPeriod.current)?.freeCollateral ?: return null
+                val postFreeCollateral = subaccount.calculated.get(CalculationPeriod.post)?.freeCollateral ?: return null
+                val orderEquity = postFreeCollateral - currentFreeCollateral
+
+                if (orderEquity < isolatedLimitOrderMinimumEquity) {
+                    return createTradeBoxWarningOrError(
+                        errorLevel = if (accountRestricted()) ErrorType.warning else ErrorType.error,
+                        errorCode = "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY", // TODO: make a new error type
+                        fields = listOf("size.size"),
+                        actionStringKey = "APP.TRADE.MODIFY_SIZE_FIELD",
+                    )
+                }
+                return null
+            }
+            else -> null
         }
     }
 

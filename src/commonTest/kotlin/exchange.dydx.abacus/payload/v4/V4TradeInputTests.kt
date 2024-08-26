@@ -49,12 +49,18 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testOnce() {
+        testIsolatedLimitTradeInputOnce()
+
         testMarketTradeInputOnce()
         testLimitTradeInputOnce()
         testUpdates()
     }
 
     private fun testLimitTradeInputOnce() {
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
+        }, null)
+
         test(
             {
                 perp.tradeInMarket("ETH-USD", 0)
@@ -225,10 +231,6 @@ open class V4TradeInputTests : V4BaseTests() {
             """.trimIndent(),
         )
 
-//        test({
-//            perp.trade(null, TradeInputField.limitPrice)
-//        }, null)
-
         test({
             perp.trade("1500", TradeInputField.limitPrice, 0)
         }, null)
@@ -293,6 +295,10 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testMarketTradeInputOnce() {
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
+        }, null)
+
         test({
             perp.trade("MARKET", TradeInputField.type, 0)
         }, null)
@@ -412,7 +418,116 @@ open class V4TradeInputTests : V4BaseTests() {
         )
     }
 
+    private fun testIsolatedLimitTradeInputOnce() {
+        test(
+            {
+                perp.tradeInMarket("BTC-USD", 0)
+            },
+            """
+            {
+                "input": {
+                    "trade": {
+                        "marketId": "BTC-USD"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+        test({
+            perp.trade("ISOLATED", TradeInputField.marginMode, 0)
+        }, null)
+
+        test({
+            perp.trade("LIMIT", TradeInputField.type, 0)
+        }, null)
+
+        test({
+            perp.trade("BUY", TradeInputField.side, 0)
+        }, null)
+
+        test({
+            perp.trade("12", TradeInputField.goodTilDuration, 0)
+        }, null)
+
+        test({
+            perp.trade("0.01", TradeInputField.size, 0)
+        }, null)
+
+        // TODO update with new error
+        test(
+            {
+                perp.trade("1500", TradeInputField.limitPrice, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "0": {
+                                "freeCollateral": {
+                                    "current": 100000.0,
+                                    "postOrder": 99985.0
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "MARKET_ORDER_NOT_ENOUGH_LIQUIDITY",
+                            "fields": [
+                                "size.size"
+                            ],
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRADE_BOX.MARKET_ORDER_NOT_ENOUGH_LIQUIDITY"
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_SIZE_FIELD"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("0", TradeInputField.size, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "0": {
+                                "equity": {
+                                    "current": 100000.0,
+                                    "postOrder": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "errors": []
+                }
+            }
+            """.trimIndent(),
+        )
+    }
+
     private fun testUpdates() {
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
+        }, null)
         test(
             {
                 perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_1, 0, null)
@@ -677,6 +792,10 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testAdjustedMarginFraction() {
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
+        }, null)
+
         test(
             {
                 perp.socket(
@@ -733,6 +852,10 @@ open class V4TradeInputTests : V4BaseTests() {
     fun testConditional() {
         test({
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        }, null)
+
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
         }, null)
 
         test({
@@ -848,6 +971,10 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     fun testReduceOnly() {
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
+        }, null)
+
         test(
             {
                 perp.trade("MARKET", TradeInputField.type, 0)

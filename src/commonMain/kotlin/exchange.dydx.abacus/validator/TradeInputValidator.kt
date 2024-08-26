@@ -16,7 +16,7 @@ import exchange.dydx.abacus.validator.trade.TradeAccountStateValidator
 import exchange.dydx.abacus.validator.trade.TradeBracketOrdersValidator
 import exchange.dydx.abacus.validator.trade.TradeFieldsValidator
 import exchange.dydx.abacus.validator.trade.TradeInputDataValidator
-import exchange.dydx.abacus.validator.trade.TradeMarketOrderInputValidator
+import exchange.dydx.abacus.validator.trade.TradeOrderInputValidator
 import exchange.dydx.abacus.validator.trade.TradePositionStateValidator
 import exchange.dydx.abacus.validator.trade.TradeResctrictedValidator
 import exchange.dydx.abacus.validator.trade.TradeTriggerPriceValidator
@@ -30,7 +30,7 @@ internal class TradeInputValidator(
         TradeFieldsValidator(localizer, formatter, parser),
         TradeResctrictedValidator(localizer, formatter, parser),
         TradeInputDataValidator(localizer, formatter, parser),
-        TradeMarketOrderInputValidator(localizer, formatter, parser),
+        TradeOrderInputValidator(localizer, formatter, parser),
         TradeBracketOrdersValidator(localizer, formatter, parser),
         TradeTriggerPriceValidator(localizer, formatter, parser),
         TradePositionStateValidator(localizer, formatter, parser),
