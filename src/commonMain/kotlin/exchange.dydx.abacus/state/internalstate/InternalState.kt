@@ -55,6 +55,7 @@ internal data class InternalState(
 
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
+    var closePosition: InternalTradeInputState = InternalTradeInputState(),
     var receiptLines: List<ReceiptLine>? = null,
     var errors: List<ValidationError>? = null,
     var childSubaccountErrors: List<ValidationError>? = null,
@@ -183,7 +184,13 @@ internal data class InternalWalletState(
     var account: InternalAccountState = InternalAccountState(),
     var user: InternalUserState? = null,
     var walletAddress: String? = null,
-)
+) {
+    val isWalletConnected: Boolean
+        get() = walletAddress != null
+
+    val isAccountConnected: Boolean
+        get() = account.subaccounts != null
+}
 
 internal data class InternalUserState(
     var feeTierId: String? = null,

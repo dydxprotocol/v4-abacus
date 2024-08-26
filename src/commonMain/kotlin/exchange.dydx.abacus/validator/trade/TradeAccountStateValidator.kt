@@ -3,6 +3,7 @@ package exchange.dydx.abacus.validator.trade
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
@@ -33,7 +34,11 @@ internal class TradeAccountStateValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
-        val trade = internalState.input.trade
+        val trade = when (internalState.input.currentType) {
+            InputType.TRADE -> internalState.input.trade
+            InputType.CLOSE_POSITION -> internalState.input.closePosition
+            else -> return null
+        }
         val subaccountNumber = subaccountNumber ?: return null
         val subaccount = internalState.wallet.account.subaccounts[subaccountNumber] ?: return null
         val isIsolatedMarginTrade = subaccountNumber >= NUM_PARENT_SUBACCOUNTS

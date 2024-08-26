@@ -20,7 +20,7 @@ internal class TradeInputNonMarketOrderCalculator {
             val stepSize = market?.perpetualMarket?.configs?.stepSize ?: 0.001
             val price = getNonMarketOrderPrice(tradePrices, market, trade.type, isBuying)
             when (input) {
-                "size.size" -> {
+                "size.size", "size.percent" -> {
                     val size = tradeSize.size
                     val usdcSize =
                         if (price != null && size != null) (price * size) else null

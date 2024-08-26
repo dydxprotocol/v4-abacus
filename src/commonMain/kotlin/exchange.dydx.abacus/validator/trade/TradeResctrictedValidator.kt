@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator.trade
 
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -24,7 +25,12 @@ internal class TradeResctrictedValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
-        val marketId = internalState.input.trade.marketId ?: return null
+        val trade = when (internalState.input.currentType) {
+            InputType.TRADE -> internalState.input.trade
+            InputType.CLOSE_POSITION -> internalState.input.closePosition
+            else -> return null
+        }
+        val marketId = trade.marketId ?: return null
         val market = internalState.marketsSummary.markets[marketId]
         val closeOnlyError =
             validateClosingOnly(
