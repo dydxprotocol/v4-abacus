@@ -1,10 +1,15 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.MARGIN_COLLATERALIZATION_CHECK_BUFFER
+import exchange.dydx.abacus.utils.MAX_LEVERAGE_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import kotlin.math.max
+import kotlin.math.min
 
 @Suppress("UNCHECKED_CAST")
 internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
@@ -21,8 +26,13 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
             IsolatedMarginAdjustmentType.valueOf(it)
         } ?: IsolatedMarginAdjustmentType.Add
 
-        return if (wallet != null && isolatedMarginAdjustment != null) {
+        val markets = parser.asNativeMap(state["markets"])
+        val marketId = isolatedMarginAdjustment?.get("Market")
+        val market = if (marketId != null) parser.asNativeMap(markets?.get(marketId)) else null
+
+        return if (wallet != null && isolatedMarginAdjustment != null && market != null) {
             val modified = state.mutable()
+
             val parentTransferDelta = getModifiedTransferDelta(isolatedMarginAdjustment, true)
             val childTransferDelta = getModifiedTransferDelta(isolatedMarginAdjustment, false)
 
@@ -46,14 +56,103 @@ internal class AdjustIsolatedMarginInputCalculator(val parser: ParserProtocol) {
 
             val modifiedParentSubaccount = parser.asNativeMap(parser.value(walletPostChildSubaccountTransfer, "account.subaccounts.$parentSubaccountNumber"))
             val modifiedChildSubaccount = parser.asNativeMap(parser.value(walletPostChildSubaccountTransfer, "account.subaccounts.$childSubaccountNumber"))
-            val modifiedIsolatedMarginAdjustment = finalize(isolatedMarginAdjustment, modifiedParentSubaccount, modifiedChildSubaccount, type)
+            val updatedIsolatedMarginAdjustment = calculateAmounts(isolatedMarginAdjustment, modifiedParentSubaccount, modifiedChildSubaccount, market, type)
 
-            modified["adjustIsolatedMargin"] = modifiedIsolatedMarginAdjustment
+            modified["adjustIsolatedMargin"] = finalize(updatedIsolatedMarginAdjustment, modifiedParentSubaccount, modifiedChildSubaccount, type)
             modified["wallet"] = walletPostChildSubaccountTransfer
             modified
         } else {
             state
         }
+    }
+
+    private fun calculateAmounts(
+        adjustIsolatedMargin: Map<String, Any>,
+        parentSubaccount: Map<String, Any>?,
+        childSubaccount: Map<String, Any>?,
+        market: Map<String, Any>,
+        type: IsolatedMarginAdjustmentType,
+    ): MutableMap<String, Any> {
+        val modified = adjustIsolatedMargin.mutable()
+        val inputType = parser.asString(modified["AmountInput"])?.let {
+            IsolatedMarginInputType.valueOf(it)
+        }
+
+        if (inputType != null) {
+            val notionalTotal = parser.asDouble(parser.value(childSubaccount, "notionalTotal.current")) ?: return modified
+            val equity = parser.asDouble(parser.value(childSubaccount, "equity.current"))
+            val availableCollateralToTransfer = parser.asDouble(parser.value(parentSubaccount, "freeCollateral.current"))
+
+            val baseAmount = when (type) {
+                IsolatedMarginAdjustmentType.Add -> availableCollateralToTransfer
+                IsolatedMarginAdjustmentType.Remove -> equity
+            }
+
+            val amountPercent = parser.asDouble(modified["AmountPercent"])
+            val amountValue = parser.asDouble(modified["Amount"])
+
+            val initialMarginFraction =
+                parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
+                    ?: return modified
+            val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
+                return modified
+            } else {
+                Numeric.double.ONE / initialMarginFraction
+            }
+
+            when (inputType) {
+                IsolatedMarginInputType.Amount -> {
+                    if (baseAmount != null && baseAmount > Numeric.double.ZERO && amountValue != null) {
+                        when (type) {
+                            IsolatedMarginAdjustmentType.Add -> {
+                                val percent = amountValue / baseAmount
+                                modified.safeSet("AmountPercent", percent.toString())
+                            }
+                            IsolatedMarginAdjustmentType.Remove -> {
+                                val maxRemovableAmount = baseAmount - notionalTotal / (maxMarketLeverage * MAX_LEVERAGE_BUFFER_PERCENT)
+                                if (maxRemovableAmount > Numeric.double.ZERO) {
+                                    val percent = amountValue / maxRemovableAmount
+                                    modified.safeSet("AmountPercent", percent.toString())
+                                } else {
+                                    modified.safeSet("AmountPercent", null)
+                                }
+                            }
+                        }
+                    } else {
+                        modified.safeSet("AmountPercent", null)
+                    }
+                }
+                IsolatedMarginInputType.Percent -> {
+                    if (baseAmount != null && baseAmount >= Numeric.double.ZERO && amountPercent != null) {
+                        when (type) {
+                            IsolatedMarginAdjustmentType.Add -> {
+                                // The amount to add is a percentage of all add-able margin (your parent subaccount's free collateral)
+                                val amount = baseAmount * amountPercent
+                                // We leave behind MARGIN_COLLATERALIZATION_CHECK_BUFFER to pass collateralization checks
+                                val cappedAmount = min(max(baseAmount - MARGIN_COLLATERALIZATION_CHECK_BUFFER, 0.0), amount)
+                                modified.safeSet("Amount", cappedAmount.toString())
+                            }
+                            IsolatedMarginAdjustmentType.Remove -> {
+                                // The amount to remove is a percentage of all remov-able margin (100% puts you at the market's max leveage)
+                                // leverage = notional total / equity
+                                // marketMaxLeverage = notional total / (currentEquity - amount)
+                                // amount = currentEquity - notionalTotal / marketMaxLeverage
+                                val amountToRemove = baseAmount - notionalTotal / (maxMarketLeverage * MAX_LEVERAGE_BUFFER_PERCENT)
+                                if (amountToRemove >= Numeric.double.ZERO) {
+                                    val amount = amountToRemove * amountPercent
+                                    modified.safeSet("Amount", amount.toString())
+                                } else {
+                                    modified.safeSet("Amount", null)
+                                }
+                            }
+                        }
+                    } else {
+                        modified.safeSet("Amount", null)
+                    }
+                }
+            }
+        }
+        return modified
     }
 
     private fun getModifiedTransferDelta(

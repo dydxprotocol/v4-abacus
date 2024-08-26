@@ -7,6 +7,8 @@ data class Input(
 &emsp;val trade: [TradeInput](Input/TradeInput.md)?,
 &emsp;val closePosition: [ClosePositionInput](Input/ClosePosition.md)?,
 &emsp;val transfer: [TransferInput](Input/TransferInput.md)?,
+&emsp;val triggerOrders: [TriggerOrdersInput](Input/TriggerOrdersInput.md)?,
+&emsp;val adjustIsolatedMargin: [AdjustIsolatedMarginInput](Input/AdjustIsolatedMarginInput.md)?,
 &emsp;val receiptLines: ReceiptLines?,
 &emsp;val errors: Array<ValidationError>?
 )
@@ -17,6 +19,8 @@ Indicating the current input:
 trade
 transfer
 closePosition
+triggerOrders
+adjustIsolatedMargin
 
 ## trade
 
@@ -30,6 +34,14 @@ Close Position input object
 
 Transfer state
 
+## triggerOrders
+
+Trigger Order Dialog input object
+
+## adjustIsolatedMargin
+
+Adjust Isolated Margin Dialog input object
+
 ## receiptLines
 
 A list of receipt lines to be displayed in the receipt area
@@ -37,6 +49,4 @@ A list of receipt lines to be displayed in the receipt area
 ## errors
 
 A list of errors or warning for the current input
-
-# TradeInput
 
