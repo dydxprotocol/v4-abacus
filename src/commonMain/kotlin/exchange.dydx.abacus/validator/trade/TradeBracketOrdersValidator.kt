@@ -183,7 +183,7 @@ internal class TradeBracketOrdersValidator(
         tickSize: String,
     ): ValidationError? {
         when (trade.side) {
-            OrderSide.Buy -> {
+            OrderSide.Sell -> {
                 if (triggerPrice >= price) {
                     return triggerPriceError(
                         errorCode = "BRACKET_ORDER_TAKE_PROFIT_BELOW_EXPECTED_PRICE",
@@ -202,7 +202,7 @@ internal class TradeBracketOrdersValidator(
                     return null
                 }
             }
-            OrderSide.Sell -> {
+            OrderSide.Buy -> {
                 if (triggerPrice <= price) {
                     return triggerPriceError(
                         errorCode = "BRACKET_ORDER_TAKE_PROFIT_ABOVE_EXPECTED_PRICE",
