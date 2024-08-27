@@ -26,13 +26,24 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 
-internal interface ClosePositionInputProcessorProtocol
+internal interface ClosePositionInputProcessorProtocol {
+    fun closePosition(
+        inputState: InternalInputState,
+        walletState: InternalWalletState,
+        marketSummaryState: InternalMarketSummaryState,
+        configs: InternalConfigsState,
+        rewardsParams: InternalRewardsParamsState?,
+        data: String?,
+        type: ClosePositionInputField,
+        subaccountNumber: Int,
+    ): TradeInputResult
+}
 
 internal class ClosePositionInputProcessor(
     private val parser: ParserProtocol,
 ) : ClosePositionInputProcessorProtocol {
 
-    fun closePosition(
+    override fun closePosition(
         inputState: InternalInputState,
         walletState: InternalWalletState,
         marketSummaryState: InternalMarketSummaryState,

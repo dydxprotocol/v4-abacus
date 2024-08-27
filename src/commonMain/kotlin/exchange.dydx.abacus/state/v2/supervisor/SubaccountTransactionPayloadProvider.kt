@@ -266,7 +266,17 @@ internal class SubaccountTransactionPayloadProvider(
         val goodTilTimeInSeconds = if (isLimitClose) (limitCloseDuration / 1.seconds).toInt() else null
         val goodTilBlock = if (isLimitClose) null else currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
-        val subaccountNumberForPosition = helper.parser.asInt(helper.parser.value(stateMachine.data, "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber")) ?: subaccountNumber
+        val subaccountNumberForPosition =
+            if (stateMachine.staticTyping) {
+                stateMachine.internalState.wallet.account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)?.childSubaccountNumber ?: subaccountNumber
+            } else {
+                helper.parser.asInt(
+                    helper.parser.value(
+                        stateMachine.data,
+                        "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber",
+                    ),
+                ) ?: subaccountNumber
+            }
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber = subaccountNumberForPosition,
