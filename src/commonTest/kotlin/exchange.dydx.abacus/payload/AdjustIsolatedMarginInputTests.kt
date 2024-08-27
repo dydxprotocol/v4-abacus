@@ -11,13 +11,13 @@ import kotlin.test.Test
 
 class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
 
-    internal override fun loadMarkets(): StateResponse {
+    override fun loadMarkets(): StateResponse {
         return test({
             perp.socket(testWsUrl, mock.marketsChannel.subscribed_2, 0, null)
         }, null)
     }
 
-    fun loadSubaccountsWithChildren(): StateResponse {
+    private fun loadSubaccountsWithChildren(): StateResponse {
         return perp.socket(testWsUrl, mock.parentSubaccountsChannel.subscribed, 0, null)
     }
 

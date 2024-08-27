@@ -1,8 +1,10 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V4CalculationTests : V4BaseTests() {
     @Test
@@ -48,16 +50,56 @@ class V4CalculationTests : V4BaseTests() {
     }
 
     fun testAccountsOnce() {
-        test(
-            {
-                perp.rest(
-                    AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
-                    mock.accountsChannel.v4_accounts_received_for_calculation,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.rest(
+                url = AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                payload = mock.accountsChannel.v4_accounts_received_for_calculation,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val account = perp.internalState.wallet.account
+
+            val tradingRewards = account.tradingRewards
+            assertEquals(2800.8, tradingRewards.total)
+            val blockRewards = tradingRewards.blockRewards
+            assertEquals("0.02", blockRewards[0].tradingReward)
+            assertEquals("2422", blockRewards[0].createdAtHeight)
+            assertEquals("0.01", blockRewards[1].tradingReward)
+            assertEquals("2500", blockRewards[1].createdAtHeight)
+
+            val subaccount = account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
+            assertEquals(100.0, calculated?.equity)
+            assertEquals(50.0, calculated?.freeCollateral)
+            assertEquals(-900.0, calculated?.quoteBalance)
+            assertEquals(1000.0, calculated?.notionalTotal)
+            assertEquals(1000.0, calculated?.valueTotal)
+            assertEquals(50.0, calculated?.initialRiskTotal)
+            assertEquals(10.0, calculated?.leverage)
+            assertEquals(0.5, calculated?.marginUsage)
+            assertEquals(1000.0, calculated?.buyingPower)
+
+            val ethPosition = subaccount?.openPositions?.get("ETH-USD")
+            val positionCalculated = ethPosition?.calculated?.get(CalculationPeriod.current)
+            assertEquals(1000.0, positionCalculated?.notionalTotal)
+            assertEquals(1000.0, positionCalculated?.valueTotal)
+            assertEquals(0.05, positionCalculated?.adjustedImf)
+            assertEquals(50.0, positionCalculated?.initialRiskTotal)
+            assertEquals(10.0, positionCalculated?.leverage)
+            assertEquals(1000.0, positionCalculated?.buyingPower)
+            assertEquals(927.8350515463918, positionCalculated?.liquidationPrice)
+        } else {
+            test(
+                {
+                    perp.rest(
+                        AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                        mock.accountsChannel.v4_accounts_received_for_calculation,
+                        0,
+                        null,
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -133,18 +175,50 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
-        test(
-            {
-                perp.socket(
-                    mock.socketUrl,
-                    mock.accountsChannel.v4_subscribed_for_calculation,
-                    0,
-                    null,
-                )
-            },
-            """
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.socket(
+                url = mock.socketUrl,
+                jsonString = mock.accountsChannel.v4_subscribed_for_calculation,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)!!
+            assertEquals(100.0, calculated.equity)
+            assertEquals(50.0, calculated.freeCollateral)
+            assertEquals(1100.0, calculated.quoteBalance)
+            assertEquals(1000.0, calculated.notionalTotal)
+            assertEquals(-1000.0, calculated.valueTotal)
+            assertEquals(50.0, calculated.initialRiskTotal)
+            assertEquals(10.0, calculated.leverage)
+            assertEquals(0.5, calculated.marginUsage)
+            assertEquals(1000.0, calculated.buyingPower)
+
+            val ethPosition = subaccount.openPositions?.get("ETH-USD")!!
+            val positionCalculated = ethPosition.calculated[CalculationPeriod.current]!!
+            assertEquals(1000.0, positionCalculated.notionalTotal)
+            assertEquals(-1000.0, positionCalculated.valueTotal)
+            assertEquals(0.05, positionCalculated.adjustedImf)
+            assertEquals(50.0, positionCalculated.initialRiskTotal)
+            assertEquals(-10.0, positionCalculated.leverage)
+            assertEquals(1000.0, positionCalculated.buyingPower)
+            assertEquals(1067.9611650485438, positionCalculated.liquidationPrice)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        mock.socketUrl,
+                        mock.accountsChannel.v4_subscribed_for_calculation,
+                        0,
+                        null,
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -207,8 +281,9 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testNextFundingRate(): StateResponse {

@@ -72,15 +72,15 @@ class BlockRewardNotificationProvider(
 
         val notificationId = "blockReward:$blockHeight"
         return Notification(
-            notificationId,
-            NotificationType.INFO,
-            NotificationPriority.NORMAL,
-            null,
-            title,
-            text,
-            null,
-            paramsAsJson,
-            blockReward.createdAtMilliseconds,
+            id = notificationId,
+            type = NotificationType.INFO,
+            priority = NotificationPriority.NORMAL,
+            image = null,
+            title = title,
+            text = text,
+            link = null,
+            data = paramsAsJson,
+            updateTimeInMilliseconds = blockReward.createdAtMilliseconds,
         )
     }
 }

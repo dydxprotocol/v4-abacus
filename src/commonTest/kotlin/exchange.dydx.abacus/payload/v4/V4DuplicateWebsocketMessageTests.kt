@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.tests.extensions.loadv4TradesChanged
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,16 +12,37 @@ class V4DuplicateWebsocketMessageTests : V4BaseTests() {
         setup()
 
         repeat(2) {
-            test(
-                {
-                    perp.socket(
-                        testWsUrl,
-                        mock.batchedSubaccountsChannel.channel_batch_data_order_filled_1,
-                        0,
-                        null,
-                    )
-                },
-                """
+            if (perp.staticTyping) {
+                perp.socket(
+                    url = testWsUrl,
+                    jsonString = mock.batchedSubaccountsChannel.channel_batch_data_order_filled_1,
+                    subaccountNumber = 0,
+                    height = null,
+                )
+
+                val account = perp.internalState.wallet.account
+                assertEquals(2800.8, account.tradingRewards.total)
+
+                val subaccount = account.subaccounts[0]
+                val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
+
+                assertEquals(1599696.370275, calculated?.quoteBalance)
+                val fills = subaccount?.fills
+
+                assertEquals(2, fills?.size)
+                assertEquals("a74830f8-d506-54b3-bf3b-1de791b8fe4e", fills?.get(0)?.id)
+                assertEquals("0d473eec-93b0-5c49-94ca-b8017454d769", fills?.get(1)?.id)
+            } else {
+                test(
+                    {
+                        perp.socket(
+                            testWsUrl,
+                            mock.batchedSubaccountsChannel.channel_batch_data_order_filled_1,
+                            0,
+                            null,
+                        )
+                    },
+                    """
                 {
                     "wallet": {
                         "account": {
@@ -71,8 +93,9 @@ class V4DuplicateWebsocketMessageTests : V4BaseTests() {
                         }
                     }
                 }
-                """.trimIndent(),
-            )
+                    """.trimIndent(),
+                )
+            }
         }
     }
 
