@@ -3,6 +3,7 @@ package exchange.dydx.abacus.payload.v4
 import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.responses.StateResponse
@@ -587,11 +588,22 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_2, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_2, 0, null)
+
+            val account = perp.internalState.wallet.account
+            val subaccount = account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)
+            assertEquals(calculated?.equity, 4272.436277000001)
+            assertEquals(calculated?.quoteBalance, 8772.436277)
+            val position = subaccount?.openPositions?.get("ETH-USD")
+            assertEquals(position?.calculated?.get(CalculationPeriod.current)?.size, -3.0)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_2, 0, null)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -615,16 +627,25 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_3, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_3, 0, null)
+
+            val account = perp.internalState.wallet.account
+            val subaccount = account.subaccounts[0]
+            val order = subaccount?.orders?.firstOrNull()
+            assertEquals(order?.status, OrderStatus.PartiallyFilled)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_3, 0, null)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -664,16 +685,25 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_4, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_4, 0, null)
+
+            val account = perp.internalState.wallet.account
+            val subaccount = account.subaccounts[0]
+            val order = subaccount?.orders?.firstOrNull()
+            assertEquals(order?.status, OrderStatus.Filled)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_4, 0, null)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -713,16 +743,25 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_5, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_5, 0, null)
+
+            val account = perp.internalState.wallet.account
+            val subaccount = account.subaccounts[0]
+            val order = subaccount?.orders?.firstOrNull()
+            assertEquals(order?.status, OrderStatus.Filled)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_5, 0, null)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -762,16 +801,25 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_6, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_6, 0, null)
+
+            val account = perp.internalState.wallet.account
+            val subaccount = account.subaccounts[0]
+            val order = subaccount?.orders?.firstOrNull()
+            assertEquals(order?.status, OrderStatus.Filled)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.accountsChannel.v4_subaccounts_update_6, 0, null)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -811,10 +859,11 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-            {
-            },
-        )
+                """.trimIndent(),
+                {
+                },
+            )
+        }
     }
 
     private fun testAdjustedMarginFraction() {

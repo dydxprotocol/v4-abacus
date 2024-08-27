@@ -51,7 +51,6 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
             subaccountNumber = subaccountNumber,
             tradeInput = internalState.input.trade,
         )
-
     } else {
         MarginCalculator.getChangedSubaccountNumbersDeprecated(
             parser = parser,

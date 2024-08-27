@@ -73,7 +73,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -94,11 +94,11 @@ class V4ClosePositionTests : V4BaseTests() {
             val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
             assertEquals(
                 subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
-                99872.368956
+                99872.368956,
             )
             assertEquals(
                 subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
-                104592.23425040001
+                104592.23425040001,
             )
 
             val position = subaccount.openPositions?.get("ETH-USD")!!
@@ -152,7 +152,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -173,11 +173,11 @@ class V4ClosePositionTests : V4BaseTests() {
             val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
             assertEquals(
                 subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
-                99872.368956
+                99872.368956,
             )
             assertEquals(
                 subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
-                115652.007756
+                115652.007756,
             )
 
             val position = subaccount.openPositions?.get("ETH-USD")!!
@@ -231,7 +231,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
     }
@@ -283,7 +283,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -298,11 +298,11 @@ class V4ClosePositionTests : V4BaseTests() {
             val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
             assertEquals(
                 subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
-                68257.215192
+                68257.215192,
             )
             assertEquals(
                 subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
-                24308.314392
+                24308.314392,
             )
 
             val position = subaccount.openPositions?.get("ETH-USD")!!
@@ -349,7 +349,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -371,17 +371,16 @@ class V4ClosePositionTests : V4BaseTests() {
             val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
             assertEquals(
                 subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
-                68257.215192
+                68257.215192,
             )
             assertEquals(
                 subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
-                43421.715192
+                43421.715192,
             )
 
             val position = subaccount.openPositions?.get("ETH-USD")!!
             assertEquals(position.calculated[CalculationPeriod.current]?.size, -106.17985)
             assertEquals(position.calculated[CalculationPeriod.post]?.size, -91.17985)
-
         } else {
             test(
                 {
@@ -430,7 +429,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
     }
@@ -462,7 +461,6 @@ class V4ClosePositionTests : V4BaseTests() {
             assertEquals(closePosition.size?.size, 106.179)
             assertEquals(closePosition.size?.input, "size.percent")
             assertEquals(closePosition.reduceOnly, true)
-
         } else {
             test(
                 {
@@ -484,7 +482,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -523,7 +521,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -556,7 +554,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
 
@@ -595,7 +593,7 @@ class V4ClosePositionTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
+                """.trimIndent(),
             )
         }
     }

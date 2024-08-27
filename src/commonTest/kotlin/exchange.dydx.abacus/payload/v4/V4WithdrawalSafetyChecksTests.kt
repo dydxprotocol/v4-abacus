@@ -31,7 +31,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
             perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
             assertEquals(
                 perp.internalState.configs.withdrawalGating?.withdrawalsAndTransfersUnblockedAtBlock,
-                16750
+                16750,
             )
         } else {
             test(
@@ -209,7 +209,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
 
         perp.transfer("WITHDRAWAL", TransferInputField.type)
         perp.transfer("1235.0", TransferInputField.usdcSize)
-        
+
         if (perp.staticTyping) {
             perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
             val errors = perp.internalState.input.errors
@@ -221,11 +221,11 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
             val resources = error?.resources
             assertEquals(
                 resources?.title?.stringKey,
-                "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE"
+                "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
             )
             assertEquals(
                 resources?.text?.stringKey,
-                "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION"
+                "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
             )
             assertEquals(resources?.text?.params?.size, 1)
             val param = resources?.text?.params?.get(0)
@@ -235,7 +235,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
 
             assertEquals(
                 parser.asDouble(perp.internalState.configs.withdrawalCapacity?.maxWithdrawalCapacity),
-                1234.567891
+                1234.567891,
             )
             assertEquals(perp.internalState.configs.withdrawalCapacity?.capacity, "1234567891")
         } else {
