@@ -46,6 +46,8 @@ class VaultAccountTests {
             withdrawableUsdc = 5000.0,
             allTimeReturnUsdc = 6000.0,
             totalVaultTransfersCount = 2,
+            balanceShares = 100.0,
+            lockedShares = 50.0,
             vaultTransfers = listOf(
                 VaultTransfer(
                     timestampMs = 1659465600000.0,

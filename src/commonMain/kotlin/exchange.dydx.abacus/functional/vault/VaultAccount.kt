@@ -26,6 +26,8 @@ data class AccountVaultResponse(
 @Serializable
 data class VaultAccount(
     val balanceUsdc: Double?,
+    val balanceShares: Double?,
+    val lockedShares: Double?,
     val withdrawableUsdc: Double?,
     val allTimeReturnUsdc: Double?,
     val vaultTransfers: List<VaultTransfer>?,
@@ -72,6 +74,8 @@ object VaultAccountCalculator {
 
         return VaultAccount(
             balanceUsdc = presentValue,
+            balanceShares = vaultInfo.shares,
+            lockedShares = vaultInfo.locked_shares,
             withdrawableUsdc = withdrawable,
             allTimeReturnUsdc = allTimeReturn,
             totalVaultTransfersCount = vaultTransfers.totalResults,
