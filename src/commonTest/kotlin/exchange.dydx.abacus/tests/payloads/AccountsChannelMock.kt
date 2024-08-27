@@ -1740,7 +1740,14 @@ internal class AccountsChannelMock {
                        "netFunding":"0"
                     }
                  },
-                 "quoteBalance":"68257.215192",
+                 "assetPositions": {
+                    "USDC": {
+                       "symbol": "USDC",
+                       "side": "LONG",
+                       "size": "68257.215192",
+                       "assetId": "0"
+                    }
+                 },
                  "marginEnabled":true
               },
               "orders":[

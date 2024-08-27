@@ -1,11 +1,16 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.closePosition
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V4ClosePositionTests : V4BaseTests() {
     @Test
@@ -23,6 +28,7 @@ class V4ClosePositionTests : V4BaseTests() {
     }
 
     override fun setup() {
+        perp.internalState.wallet.walletAddress = "0x1234567890"
         loadMarkets()
         loadMarketsConfigurations()
         // do not load account
@@ -35,11 +41,23 @@ class V4ClosePositionTests : V4BaseTests() {
         /*
         Initial setup
          */
-        test(
-            {
-                perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+
+            assertEquals(perp.internalState.input.currentType, InputType.CLOSE_POSITION)
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.type, OrderType.Market)
+            assertEquals(closePosition.side, OrderSide.Sell)
+            assertEquals(closePosition.sizePercent, 1.0)
+            assertEquals(closePosition.size?.size, 10.771)
+            assertEquals(closePosition.size?.input, "size.percent")
+            assertEquals(closePosition.reduceOnly, true)
+        } else {
+            test(
+                {
+                    perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -56,13 +74,42 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("0.25", ClosePositionInputField.percent, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("0.25", ClosePositionInputField.percent, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.sizePercent, 0.25)
+            assertEquals(closePosition.size?.size, 2.692)
+            assertEquals(closePosition.size?.input, "size.percent")
+            assertEquals(closePosition.size?.usdcSize, 4453.3756)
+            val summary = closePosition.summary!!
+            assertEquals(summary.price, 1654.3)
+            assertEquals(summary.size, 2.692)
+            assertEquals(summary.usdcSize, 4453.3756)
+            assertEquals(summary.total, 4453.3756)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
+                99872.368956
+            )
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
+                104592.23425040001
+            )
+
+            val position = subaccount.openPositions?.get("ETH-USD")!!
+            assertEquals(position.calculated[CalculationPeriod.current]?.size, 10.771577)
+            assertEquals(position.calculated[CalculationPeriod.post]?.size, 8.079577)
+        } else {
+            test(
+                {
+                    perp.closePosition("0.25", ClosePositionInputField.percent, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -106,13 +153,42 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("9", ClosePositionInputField.size, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("9", ClosePositionInputField.size, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.sizePercent, null)
+            assertEquals(closePosition.size?.size, 9.0)
+            assertEquals(closePosition.size?.input, "size.size")
+            assertEquals(closePosition.size?.usdcSize, 14888.699999999999)
+            val summary = closePosition.summary!!
+            assertEquals(summary.price, 1654.3)
+            assertEquals(summary.size, 9.0)
+            assertEquals(summary.usdcSize, 14888.699999999999)
+            assertEquals(summary.total, 14888.699999999999)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
+                99872.368956
+            )
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
+                115652.007756
+            )
+
+            val position = subaccount.openPositions?.get("ETH-USD")!!
+            assertEquals(position.calculated[CalculationPeriod.current]?.size, 10.771577)
+            assertEquals(position.calculated[CalculationPeriod.post]?.size, 1.7715770000000006)
+        } else {
+            test(
+                {
+                    perp.closePosition("9", ClosePositionInputField.size, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -156,7 +232,8 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testCloseShortPositionInput() {
@@ -169,14 +246,28 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             """.trimIndent(),
         )
+
         /*
         Initial setup
          */
-        test(
-            {
-                perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
-            },
-            """
+
+        if (perp.staticTyping) {
+            perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+
+            assertEquals(perp.internalState.input.currentType, InputType.CLOSE_POSITION)
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.type, OrderType.Market)
+            assertEquals(closePosition.side, OrderSide.Buy)
+            assertEquals(closePosition.sizePercent, 1.0)
+            assertEquals(closePosition.size?.size, 106.179)
+            assertEquals(closePosition.size?.input, "size.percent")
+            assertEquals(closePosition.reduceOnly, true)
+        } else {
+            test(
+                {
+                    perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -193,13 +284,36 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("0.25", ClosePositionInputField.percent, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("0.25", ClosePositionInputField.percent, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.sizePercent, 0.25)
+            assertEquals(closePosition.size?.size, 2.6544E+1)
+            assertEquals(closePosition.size?.input, "size.percent")
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
+                68257.215192
+            )
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
+                24308.314392
+            )
+
+            val position = subaccount.openPositions?.get("ETH-USD")!!
+            assertEquals(position.calculated[CalculationPeriod.current]?.size, -106.17985)
+            assertEquals(position.calculated[CalculationPeriod.post]?.size, -79.63585)
+        } else {
+            test(
+                {
+                    perp.closePosition("0.25", ClosePositionInputField.percent, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -236,13 +350,44 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("15", ClosePositionInputField.size, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("15", ClosePositionInputField.size, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.sizePercent, null)
+            assertEquals(closePosition.size?.size, 15.0)
+            assertEquals(closePosition.size?.input, "size.size")
+            assertEquals(closePosition.size?.usdcSize, 24835.5)
+
+            val summary = closePosition.summary!!
+            assertEquals(summary.price, 1655.7)
+            assertEquals(summary.size, 15.0)
+            assertEquals(summary.usdcSize, 24835.5)
+            assertEquals(summary.total, -24835.5)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.current]?.quoteBalance,
+                68257.215192
+            )
+            assertEquals(
+                subaccount.calculated[CalculationPeriod.post]?.quoteBalance,
+                43421.715192
+            )
+
+            val position = subaccount.openPositions?.get("ETH-USD")!!
+            assertEquals(position.calculated[CalculationPeriod.current]?.size, -106.17985)
+            assertEquals(position.calculated[CalculationPeriod.post]?.size, -91.17985)
+
+        } else {
+            test(
+                {
+                    perp.closePosition("15", ClosePositionInputField.size, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -286,7 +431,8 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testLimitClosePositionInput() {
@@ -300,14 +446,29 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             """.trimIndent(),
         )
+
         /*
         Initial setup
          */
-        test(
-            {
-                perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
-            },
-            """
+
+        if (perp.staticTyping) {
+            perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+
+            assertEquals(perp.internalState.input.currentType, InputType.CLOSE_POSITION)
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.type, OrderType.Market)
+            assertEquals(closePosition.side, OrderSide.Buy)
+            assertEquals(closePosition.sizePercent, 1.0)
+            assertEquals(closePosition.size?.size, 106.179)
+            assertEquals(closePosition.size?.input, "size.percent")
+            assertEquals(closePosition.reduceOnly, true)
+
+        } else {
+            test(
+                {
+                    perp.closePosition("ETH-USD", ClosePositionInputField.market, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -324,13 +485,26 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("true", ClosePositionInputField.useLimit, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("true", ClosePositionInputField.useLimit, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.type, OrderType.Limit)
+            assertEquals(closePosition.side, OrderSide.Buy)
+            assertEquals(closePosition.sizePercent, 1.0)
+            assertEquals(closePosition.size?.size, 106.179)
+            assertEquals(closePosition.size?.input, "size.percent")
+            assertEquals(closePosition.price?.limitPrice, 1655.0)
+            assertEquals(closePosition.reduceOnly, true)
+        } else {
+            test(
+                {
+                    perp.closePosition("true", ClosePositionInputField.useLimit, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -343,20 +517,27 @@ class V4ClosePositionTests : V4BaseTests() {
                             "size": 106.179
                         },
                         "price": {
-                            "limitPrice": 2000
+                            "limitPrice": 1655
                         },
                         "reduceOnly": true
                     }
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("2500", ClosePositionInputField.limitPrice, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("2500", ClosePositionInputField.limitPrice, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.price?.limitPrice, 2500.0)
+        } else {
+            test(
+                {
+                    perp.closePosition("2500", ClosePositionInputField.limitPrice, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -376,13 +557,26 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
 
-        test(
-            {
-                perp.closePosition("false", ClosePositionInputField.useLimit, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.closePosition("false", ClosePositionInputField.useLimit, 0)
+
+            val closePosition = perp.internalState.input.closePosition
+            assertEquals(closePosition.type, OrderType.Market)
+            assertEquals(closePosition.side, OrderSide.Buy)
+            assertEquals(closePosition.sizePercent, 1.0)
+            assertEquals(closePosition.size?.size, 106.179)
+            assertEquals(closePosition.size?.input, "size.percent")
+            assertEquals(closePosition.price?.limitPrice, 2500.0)
+            assertEquals(closePosition.reduceOnly, true)
+        } else {
+            test(
+                {
+                    perp.closePosition("false", ClosePositionInputField.useLimit, 0)
+                },
+                """
             {
                 "input": {
                     "current": "closePosition",
@@ -402,6 +596,7 @@ class V4ClosePositionTests : V4BaseTests() {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
     }
 }

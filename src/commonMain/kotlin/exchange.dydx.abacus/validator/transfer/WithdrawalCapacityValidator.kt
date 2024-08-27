@@ -24,6 +24,9 @@ internal class WithdrawalCapacityValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
+        val configs = internalState.configs
+        val withdrawalCapacity = configs.withdrawalCapacity
+        val maxWithdrawalCapacity = withdrawalCapacity?.maxWithdrawalCapacity ?: BigDecimal.fromLong(Long.MAX_VALUE)
         return null
     }
 

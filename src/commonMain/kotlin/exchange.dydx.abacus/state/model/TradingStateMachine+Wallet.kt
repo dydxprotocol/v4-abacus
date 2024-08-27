@@ -27,9 +27,10 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     payload: Map<String, Any>,
     height: BlockAndTime?,
 ): StateChanges {
-    this.wallet = walletProcessor.subscribedDeprecated(wallet, payload, height)
     if (staticTyping) {
         walletProcessor.processSubscribed(internalState.wallet, payload, height)
+    } else {
+        this.wallet = walletProcessor.subscribedDeprecated(wallet, payload, height)
     }
 
     val changes = iMutableListOf<Changes>()
@@ -43,17 +44,27 @@ internal fun TradingStateMachine.receivedSubaccountSubscribed(
     changes.add(Changes.historicalPnl)
     changes.add(Changes.tradingRewards)
     val subaccountNumber = parser.asInt(payload["subaccountNumber"]) ?: 0
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
-        parser,
-        account,
-        subaccountNumber ?: 0,
-        parser.asMap(input?.get("trade")),
-    )
+    val subaccountNumbers = if (staticTyping) {
+        MarginCalculator.getChangedSubaccountNumbers(
+            parser = parser,
+            subaccounts = internalState.wallet.account.subaccounts,
+            subaccountNumber = subaccountNumber,
+            tradeInput = internalState.input.trade,
+        )
+
+    } else {
+        MarginCalculator.getChangedSubaccountNumbersDeprecated(
+            parser = parser,
+            account = account,
+            subaccountNumber = subaccountNumber ?: 0,
+            tradeInput = parser.asMap(input?.get("trade")),
+        )
+    }
 
     return StateChanges(
-        changes,
-        null,
-        subaccountNumbers,
+        changes = changes,
+        markets = null,
+        subaccountNumbers = subaccountNumbers,
     )
 }
 
@@ -62,9 +73,10 @@ internal fun TradingStateMachine.receivedSubaccountsChanges(
     info: SocketInfo,
     height: BlockAndTime?,
 ): StateChanges {
-    this.wallet = walletProcessor.channel_dataDeprecated(wallet, payload, info, height)
     if (staticTyping) {
         walletProcessor.processChannelData(internalState.wallet, payload, info, height)
+    } else {
+        this.wallet = walletProcessor.channel_dataDeprecated(wallet, payload, info, height)
     }
 
     val changes = iMutableListOf<Changes>()

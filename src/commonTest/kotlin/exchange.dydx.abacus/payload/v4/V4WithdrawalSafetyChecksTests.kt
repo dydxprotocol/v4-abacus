@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingException
@@ -28,7 +29,10 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
         setup()
         if (perp.staticTyping) {
             perp.parseOnChainWithdrawalGating(mock.v4WithdrawalSafetyChecksMock.withdrawal_and_transfer_gating_status_data)
-            assertEquals(perp.internalState.configs.withdrawalGating?.withdrawalsAndTransfersUnblockedAtBlock, 16750)
+            assertEquals(
+                perp.internalState.configs.withdrawalGating?.withdrawalsAndTransfersUnblockedAtBlock,
+                16750
+            )
         } else {
             test(
                 {
@@ -202,46 +206,37 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
     @Test
     fun testCapacity() {
         setup()
+
         perp.transfer("WITHDRAWAL", TransferInputField.type)
         perp.transfer("1235.0", TransferInputField.usdcSize)
+        
         if (perp.staticTyping) {
-            test(
-                {
-                    perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
-                },
-                """
-            {
-                "input": {
-                    "errors": [
-                        {
-                            "type": "ERROR",
-                            "code": "",
-                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
-                            "resources": {
-                                "title": {
-                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE"
-                                },
-                                "text": {
-                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
-                                    "params": [
-                                        {
-                                            "value": 1234.567891,
-                                            "format": "price",
-                                            "key": "USDC_LIMIT"
-                                        }
-                                    ]
-                                },
-                                "action": {
-                                    "stringKey": "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION"
-                                }
-                            }
-                        }
-                    ]
-                }
-            }
-                """.trimIndent(),
+            perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 1)
+            val error = errors?.get(0)
+            assertEquals(error?.type, ErrorType.error)
+            assertEquals(error?.code, "")
+            assertEquals(error?.linkText, "APP.GENERAL.LEARN_MORE_ARROW")
+            val resources = error?.resources
+            assertEquals(
+                resources?.title?.stringKey,
+                "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE"
             )
-            assertEquals(parser.asDouble(perp.internalState.configs.withdrawalCapacity?.maxWithdrawalCapacity), 1234.567891)
+            assertEquals(
+                resources?.text?.stringKey,
+                "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION"
+            )
+            assertEquals(resources?.text?.params?.size, 1)
+            val param = resources?.text?.params?.get(0)
+            assertEquals(param?.value, "1234.567891")
+            assertEquals(param?.format, "price")
+            assertEquals(param?.key, "USDC_LIMIT")
+
+            assertEquals(
+                parser.asDouble(perp.internalState.configs.withdrawalCapacity?.maxWithdrawalCapacity),
+                1234.567891
+            )
             assertEquals(perp.internalState.configs.withdrawalCapacity?.capacity, "1234567891")
         } else {
             test(
