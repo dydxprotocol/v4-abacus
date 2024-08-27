@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
 import exchange.dydx.abacus.state.model.TradingStateMachine
+import exchange.dydx.abacus.utils.LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
@@ -248,27 +249,40 @@ internal class SubaccountTransactionPayloadProvider(
     @Throws(Exception::class)
     override fun closePositionPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {
         val closePosition = stateMachine.state?.input?.closePosition
+        val isLimitClose = closePosition?.type == OrderType.Limit
         val marketId = closePosition?.marketId ?: throw Exception("marketId is null")
         val summary = closePosition.summary ?: throw Exception("summary is null")
         val clientId = Random.nextInt(0, Int.MAX_VALUE)
+        val type = closePosition.type?.rawValue ?: "MARKET"
         val side = closePosition.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
         val size = summary.size ?: throw Exception("size is null")
         val sizeInput = null
-        val timeInForce = "IOC"
+        val timeInForce = if (isLimitClose) "GTT" else "IOC"
         val execution = "DEFAULT"
         val reduceOnly = true
         val postOnly = false
-        val goodTilTimeInSeconds = null
-        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
+        val limitCloseDuration = TradeInputGoodUntil(LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS, "D").timeInterval ?: throw Exception("invalid duration")
+        val goodTilTimeInSeconds = if (isLimitClose) (limitCloseDuration / 1.seconds).toInt() else null
+        val goodTilBlock = if (isLimitClose) null else currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
-        val subaccountNumberForPosition = helper.parser.asInt(helper.parser.value(stateMachine.data, "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber")) ?: subaccountNumber
+        val subaccountNumberForPosition =
+            if (stateMachine.staticTyping) {
+                stateMachine.internalState.wallet.account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)?.childSubaccountNumber ?: subaccountNumber
+            } else {
+                helper.parser.asInt(
+                    helper.parser.value(
+                        stateMachine.data,
+                        "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber",
+                    ),
+                ) ?: subaccountNumber
+            }
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber = subaccountNumberForPosition,
             marketId = marketId,
             clientId = clientId,
-            type = "MARKET",
+            type = type,
             side = side,
             price = price,
             triggerPrice = null,

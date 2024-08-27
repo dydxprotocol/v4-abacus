@@ -2,6 +2,7 @@ package exchange.dydx.abacus.validator.trade
 
 import abs
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
@@ -29,7 +30,11 @@ internal class TradeMarketOrderInputValidator(
         restricted: Boolean,
         environment: V4Environment?
     ): List<ValidationError>? {
-        val trade = internalState.input.trade
+        val trade = when (internalState.input.currentType) {
+            InputType.TRADE -> internalState.input.trade
+            InputType.CLOSE_POSITION -> internalState.input.closePosition
+            else -> return null
+        }
         if (trade.type != OrderType.Market) {
             return null
         }

@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.payload.v3
 
+import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.trade
 import exchange.dydx.abacus.state.model.tradeInMarket
@@ -7,6 +9,7 @@ import exchange.dydx.abacus.tests.extensions.loadAccounts
 import exchange.dydx.abacus.tests.extensions.log
 import exchange.dydx.abacus.utils.ServerTime
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class V3TradeInputWithoutAccountTests : V3BaseTests() {
     @Test
@@ -44,11 +47,18 @@ class V3TradeInputWithoutAccountTests : V3BaseTests() {
             perp.trade("MARKET", TradeInputField.type, 0)
         }, null)
 
-        test(
-            {
-                perp.trade("1.", TradeInputField.size, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("1.", TradeInputField.size, 0)
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.type, OrderType.Market)
+            assertEquals(trade.side, OrderSide.Buy)
+            assertEquals(trade.marketId, "ETH-USD")
+        } else {
+            test(
+                {
+                    perp.trade("1.", TradeInputField.size, 0)
+                },
+                """
                 {
                     "input": {
                         "trade": {
@@ -74,16 +84,22 @@ class V3TradeInputWithoutAccountTests : V3BaseTests() {
                         "current": "trade"
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testLoadAccounts() {
-        test(
-            {
-                perp.loadAccounts(mock)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadAccounts(mock)
+            val account = perp.internalState.wallet.account
+            assertEquals(account.subaccounts.size, 1)
+        } else {
+            test(
+                {
+                    perp.loadAccounts(mock)
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -117,7 +133,8 @@ class V3TradeInputWithoutAccountTests : V3BaseTests() {
                         "current": "trade"
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 }

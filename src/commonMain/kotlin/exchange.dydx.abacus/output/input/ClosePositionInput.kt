@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
@@ -55,6 +56,30 @@ data class ClosePositionInput(
     val summary: TradeInputSummary?
 ) {
     companion object {
+        internal fun create(
+            state: InternalTradeInputState?
+        ): ClosePositionInput? {
+            if (state == null) {
+                return null
+            }
+
+            return ClosePositionInput(
+                type = state.type,
+                side = state.side,
+                marketId = state.marketId,
+                size = ClosePositionInputSize(
+                    size = state.size?.size,
+                    usdcSize = state.size?.usdcSize,
+                    percent = state.sizePercent,
+                    input = state.size?.input,
+                ),
+                price = state.price,
+                fee = state.fee,
+                marketOrder = state.marketOrder,
+                summary = TradeInputSummary.create(state.summary),
+            )
+        }
+
         internal fun create(
             existing: ClosePositionInput?,
             parser: ParserProtocol,

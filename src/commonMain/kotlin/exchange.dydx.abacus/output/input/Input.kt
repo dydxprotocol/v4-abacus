@@ -47,6 +47,9 @@ data class Input(
             staticTyping: Boolean,
         ): Input? {
             Logger.d { "creating Input\n" }
+            if (staticTyping && internalState?.input?.currentType == null) {
+                return null
+            }
 
             if (staticTyping || data != null) {
                 val current = if (staticTyping) {
@@ -60,14 +63,25 @@ data class Input(
                 } else {
                     TradeInput.create(existing?.trade, parser, parser.asMap(data?.get("trade")))
                 }
-                val closePosition =
+
+                val closePosition = if (staticTyping) {
+                    ClosePositionInput.create(state = internalState?.input?.closePosition)
+                } else {
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data?.get("closePosition")))
+                }
 
                 val transfer =
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data?.get("transfer")), environment, internalState?.transfer)
 
-                val triggerOrders =
-                    TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data?.get("triggerOrders")))
+                val triggerOrders = if (staticTyping) {
+                    TriggerOrdersInput.create(state = internalState?.input?.triggerOrders)
+                } else {
+                    TriggerOrdersInput.create(
+                        existing?.triggerOrders,
+                        parser,
+                        parser.asMap(data?.get("triggerOrders")),
+                    )
+                }
 
                 val adjustIsolatedMargin =
                     AdjustIsolatedMarginInput.create(

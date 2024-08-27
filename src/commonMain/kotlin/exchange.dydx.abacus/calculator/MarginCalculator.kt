@@ -26,11 +26,11 @@ import kotlin.math.min
 
 internal object MarginCalculator {
     fun findExistingPosition(
-        account: InternalAccountState,
+        account: InternalAccountState?,
         marketId: String?,
         subaccountNumber: Int,
     ): InternalPerpetualPosition? {
-        val position = account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)
+        val position = account?.groupedSubaccounts?.get(subaccountNumber)?.openPositions?.get(marketId)
         return if (
             (position?.size ?: 0.0) != 0.0
         ) {
@@ -420,6 +420,16 @@ internal object MarginCalculator {
     }
 
     fun getChildSubaccountNumberForIsolatedMarginClosePosition(
+        account: InternalAccountState?,
+        subaccountNumber: Int,
+        tradeInput: InternalTradeInputState?
+    ): Int {
+        val marketId = tradeInput?.marketId ?: return subaccountNumber
+        val position = findExistingPosition(account, marketId, subaccountNumber)
+        return position?.subaccountNumber ?: subaccountNumber
+    }
+
+    fun getChildSubaccountNumberForIsolatedMarginClosePositionDeprecated(
         parser: ParserProtocol,
         account: Map<String, Any>?,
         subaccountNumber: Int,

@@ -10,6 +10,7 @@ import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
+import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
@@ -37,6 +38,7 @@ import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.processor.assets.AssetsProcessor
 import exchange.dydx.abacus.processor.configs.ConfigsProcessor
 import exchange.dydx.abacus.processor.configs.RewardsParamsProcessor
+import exchange.dydx.abacus.processor.input.ClosePositionInputProcessor
 import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
@@ -127,6 +129,7 @@ open class TradingStateMachine(
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
     internal val tradeInputProcessor = TradeInputProcessor(parser)
+    internal val closePositionInputProcessor = ClosePositionInputProcessor(parser)
 
     internal val marketsCalculator = MarketCalculator(parser)
     internal val accountCalculator = AccountCalculator(parser, useParentSubaccount)
@@ -757,13 +760,19 @@ open class TradingStateMachine(
         if (staticTyping) {
             val calculator = TradeInputCalculatorV2(parser, calculation)
             calculator.calculate(
-                trade = internalState.input.trade,
+                trade = when (calculation) {
+                    TradeCalculation.closePosition -> internalState.input.closePosition
+                    TradeCalculation.trade -> internalState.input.trade
+                },
                 wallet = internalState.wallet,
                 marketSummary = internalState.marketsSummary,
                 rewardsParams = internalState.rewardsParams,
                 configs = internalState.configs,
                 subaccountNumber = subaccountNumber,
-                input = internalState.input.trade.size?.input,
+                input = when (calculation) {
+                    TradeCalculation.closePosition -> internalState.input.closePosition.size?.input
+                    TradeCalculation.trade -> internalState.input.trade.size?.input
+                },
             )
         } else {
             val input = this.input?.mutable()
@@ -809,20 +818,29 @@ open class TradingStateMachine(
         this.input = input
     }
 
-    private fun calculateTriggerOrders(subaccountNumber: Int?) {
-        val input = this.input?.mutable()
-        val triggerOrders = parser.asNativeMap(input?.get("triggerOrders"))
-        val calculator = TriggerOrdersInputCalculator(parser)
-        val params = mutableMapOf<String, Any>()
-        params.safeSet("account", account)
-        params.safeSet("user", user)
-        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
-        params.safeSet("triggerOrders", triggerOrders)
+    private fun calculateTriggerOrders(subaccountNumber: Int) {
+        if (staticTyping) {
+            val calculator = TriggerOrdersInputCalculatorV2()
+            calculator.calculate(
+                triggerOrders = internalState.input.triggerOrders,
+                account = internalState.wallet.account,
+                subaccountNumber = subaccountNumber,
+            )
+        } else {
+            val input = this.input?.mutable()
+            val triggerOrders = parser.asNativeMap(input?.get("triggerOrders"))
+            val calculator = TriggerOrdersInputCalculator(parser)
+            val params = mutableMapOf<String, Any>()
+            params.safeSet("account", account)
+            params.safeSet("user", user)
+            params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+            params.safeSet("triggerOrders", triggerOrders)
 
-        val modified = calculator.calculate(params, subaccountNumber)
-        input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
+            val modified = calculator.calculate(params, subaccountNumber)
+            input?.safeSet("triggerOrders", parser.asNativeMap(modified["triggerOrders"]))
 
-        this.input = input
+            this.input = input
+        }
     }
 
     private fun calculateAdjustIsolatedMargin(subaccountNumber: Int?) {
