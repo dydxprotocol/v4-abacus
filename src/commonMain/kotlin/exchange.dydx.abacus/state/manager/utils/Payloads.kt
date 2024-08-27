@@ -85,6 +85,28 @@ data class HumanReadableCancelOrderPayload(
 
 @JsExport
 @Serializable
+data class HumanReadableCancelMultipleOrdersPayload(
+    val shortTermCancelPayloads: IList<HumanReadableBatchCancelPayload>,
+    val statefulCancelPayloads: IList<HumanReadableCancelOrderPayload>,
+)
+
+@JsExport
+@Serializable
+data class HumanReadableOrderBatchPayload(
+    val clobPairId: Int,
+    val clientIds: IList<Int>,
+)
+
+@JsExport
+@Serializable
+data class HumanReadableBatchCancelPayload(
+    val subaccountNumber: Int,
+    val shortTermOrders: IList<HumanReadableOrderBatchPayload>,
+    val goodTilBlock: Int,
+)
+
+@JsExport
+@Serializable
 data class HumanReadableTriggerOrdersPayload(
     val marketId: String,
     val positionSize: Double?,

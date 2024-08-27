@@ -14,6 +14,8 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.state.manager.CancelOrderRecord
 import exchange.dydx.abacus.state.manager.FaucetRecord
+import exchange.dydx.abacus.state.manager.HumanReadableBatchCancelPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -36,6 +38,7 @@ import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
 import kollections.iListOf
 import kollections.iMutableListOf
+import kollections.toIList
 import kollections.toIMap
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
@@ -145,6 +148,24 @@ internal class SubaccountTransactionSupervisor(
         val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
+    }
+
+    private fun batchCancelShortTermOrders(orders: List<SubaccountOrder>, currentHeight: Int?, callback: TransactionCallback): List<HumanReadableBatchCancelPayload> {
+        val payloads = payloadProvider.batchCancelPayloads(orders, currentHeight)
+        return payloads.map { submitBatchCancel(payload = it, callback = callback) }
+    }
+
+    internal fun cancelOrders(orderIds: List<String>, currentHeight: Int?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload? {
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return null
+        val orders = subaccount.orders?.filter { orderIds.contains(it.id) && it.status.isOpen }?.groupBy { it.orderFlags == SHORT_TERM_ORDER_FLAGS } ?: return null
+        val shortTermOrders = orders[true] ?: emptyList()
+        val statefulOrders = orders[false] ?: emptyList()
+        if (shortTermOrders.isEmpty() && statefulOrders.isEmpty()) return null
+
+        return HumanReadableCancelMultipleOrdersPayload(
+            shortTermCancelPayloads = batchCancelShortTermOrders(shortTermOrders, currentHeight, callback).toIList(),
+            statefulCancelPayloads = statefulOrders.map { cancelOrder(it.id, false, callback) }.toIList(),
+        )
     }
 
     internal fun commitTriggerOrders(
@@ -705,6 +726,36 @@ internal class SubaccountTransactionSupervisor(
             useTransactionQueue = !isShortTermOrder,
         )
 
+        return payload
+    }
+
+    private fun submitBatchCancel(
+        callback: TransactionCallback,
+        payload: HumanReadableBatchCancelPayload,
+    ): HumanReadableBatchCancelPayload {
+        val string = Json.encodeToString(payload)
+        stopWatchingLastOrder()
+        submitTransaction(
+            transactionType = TransactionType.BatchCancel,
+            transactionPayloadString = string,
+            onSubmitTransaction = {
+                // TODO(@aforaleka): add tracking / new cancel records
+            },
+            transactionCallback = { response: String? ->
+                val error = parseTransactionResponse(response)
+                // TODO(@aforaleka): maybe call this.orderCanceled, but not an atomic protcol msg
+                // i.e. if an order fails, other cancels can still succeed
+//                if (error == null) {
+//                    orderIds.forEach { this.orderCanceled(it) }
+//                }
+                helper.send(
+                    error,
+                    callback,
+                    payload,
+                )
+            },
+            useTransactionQueue = false,
+        )
         return payload
     }
 

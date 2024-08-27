@@ -147,6 +147,7 @@ enum class QueryType(val rawValue: String) {
 enum class TransactionType(val rawValue: String) {
     PlaceOrder("placeOrder"),
     CancelOrder("cancelOrder"),
+    BatchCancel("batchCancel"),
     Deposit("deposit"),
     Withdraw("withdraw"),
     SubaccountTransfer("subaccountTransfer"),

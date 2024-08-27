@@ -1231,6 +1231,10 @@ internal fun AccountSupervisor.cancelOrder(orderId: String, callback: Transactio
     subaccount?.cancelOrder(orderId = orderId, callback = callback)
 }
 
+internal fun AccountSupervisor.cancelOrders(orderIds: List<String>, currentHeight: Int?, callback: TransactionCallback) {
+    subaccount?.cancelOrders(orderIds, currentHeight, callback)
+}
+
 internal fun AccountSupervisor.orderCanceled(orderId: String) {
     subaccount?.orderCanceled(orderId)
 }

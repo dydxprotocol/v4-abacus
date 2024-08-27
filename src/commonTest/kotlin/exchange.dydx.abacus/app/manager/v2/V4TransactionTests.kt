@@ -209,6 +209,37 @@ class V4TransactionTests : NetworkTests() {
     }
 
     @Test
+    fun testCancelAllOrders() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_channel_data_with_orders)
+
+        var statefulCancelCalledCount = 0
+        val callback: TransactionCallback = { _, _, data -> statefulCancelCalledCount++ }
+        val batchCancelPayloads = testChain!!.batchCancelPayloads
+
+        val shortTermOrderId1 = "770933a5-0293-5aca-8a01-d9c4030d776d"
+        val shortTermOrderId2 = "734617f4-29ba-50fe-878d-391ad4e4fbae"
+        val statefulOrderId1 = "31d7d484-8685-570c-aa62-c2589cb6c8d8"
+        val statefulOrderId2 = "0ae98da9-4fdc-5f08-b880-2449464b6b45"
+
+        val orderIds = listOf(shortTermOrderId1, shortTermOrderId2, statefulOrderId1, statefulOrderId2)
+
+        subaccountSupervisor?.cancelOrders(orderIds, 0, callback)
+        // there are 2 short term orders and 2 stateful orders
+        // hence 1 stateful orders should be queued
+        assertEquals(1, subaccountSupervisor?.transactionQueue?.size)
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        assertTransactionQueueEmpty()
+        assertEquals(2, statefulCancelCalledCount)
+
+        // verifying batch cancel contents
+        assertEquals(1, batchCancelPayloads.size) // 1 batch because 1 subaccount
+        val batchCancelPayload = parser.asNativeMap(Json.parseToJsonElement(batchCancelPayloads.first()))
+        assertEquals(2, parser.asList(batchCancelPayload?.get("shortTermOrders"))?.size) // 2 short term orders from different markets
+    }
+
+    @Test
     fun testCancelTriggerOrdersWithClosedOrFlippedPositions() {
         setStateMachineConnected(stateManager)
         val canceldOrderPayloads = testChain!!.canceldOrderPayloads

@@ -10,8 +10,10 @@ import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
+import exchange.dydx.abacus.state.manager.HumanReadableBatchCancelPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
+import exchange.dydx.abacus.state.manager.HumanReadableOrderBatchPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
@@ -22,8 +24,10 @@ import exchange.dydx.abacus.utils.LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
+import exchange.dydx.abacus.utils.filterNotNull
 import kollections.iListOf
 import kollections.iMutableListOf
+import kollections.toIList
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -34,6 +38,9 @@ internal interface SubaccountTransactionPayloadProviderProtocol {
 
     @Throws(Exception::class)
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload
+
+    @Throws(Exception::class)
+    fun batchCancelPayloads(orders: List<SubaccountOrder>, currentHeight: Int?): List<HumanReadableBatchCancelPayload>
 
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload
 
@@ -167,6 +174,27 @@ internal class SubaccountTransactionPayloadProvider(
             goodTilBlock = goodTilBlock,
             goodTilBlockTime = goodTilBlockTime,
         )
+    }
+
+    @Throws(Exception::class)
+    override fun batchCancelPayloads(
+        orders: List<SubaccountOrder>,
+        currentHeight: Int?
+    ): List<HumanReadableBatchCancelPayload> {
+        val ordersGroupedBySubaccount = orders.groupBy { it.subaccountNumber ?: 0 }
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION) ?: throw Exception("no block height info")
+        return ordersGroupedBySubaccount.map { subaccountOrders ->
+            HumanReadableBatchCancelPayload(
+                subaccountNumber = subaccountOrders.key,
+                shortTermOrders = subaccountOrders.value.groupBy { order -> order.clobPairId }.filterNotNull().map { order ->
+                    HumanReadableOrderBatchPayload(
+                        clobPairId = order.key,
+                        clientIds = order.value.mapNotNull { o -> o.clientId }.toIList(),
+                    )
+                }.toIList(),
+                goodTilBlock = goodTilBlock,
+            )
+        }
     }
 
     override fun transferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): HumanReadableSubaccountTransferPayload? {

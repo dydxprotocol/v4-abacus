@@ -58,6 +58,7 @@ import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
 import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMarginPayload
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
+import exchange.dydx.abacus.state.v2.supervisor.cancelOrders
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.v2.supervisor.commitAdjustIsolatedMargin
@@ -593,6 +594,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun cancelOrder(orderId: String, callback: TransactionCallback) {
         accounts.cancelOrder(orderId, callback)
+    }
+
+    internal fun cancelOrders(orderIds: List<String>, callback: TransactionCallback) {
+        accounts.cancelOrders(orderIds, currentHeight = currentHeight, callback)
     }
 
     internal fun orderCanceled(orderId: String) {

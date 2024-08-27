@@ -603,6 +603,15 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
+    override fun cancelOrders(orderIds: IList<String>, callback: TransactionCallback) {
+        try {
+            adaptor?.cancelOrders(orderIds, callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
     override fun triggerCompliance(action: ComplianceAction, callback: TransactionCallback) {
         try {
             adaptor?.triggerCompliance(action, callback)

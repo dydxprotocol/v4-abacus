@@ -311,6 +311,7 @@ class TestChain : DYDXChainTransactionsProtocol {
     var heightResponse: String? = null
     var placeOrderResponse: String? = null
     var cancelOrderResponse: String? = null
+    var batchCancelResponse: String? = null
     var transferResponse: String? = null
     var depositResponse: String? = null
     var withdrawResponse: String? = null
@@ -320,6 +321,7 @@ class TestChain : DYDXChainTransactionsProtocol {
 
     var placeOrderPayloads = mutableListOf<String>()
     var canceldOrderPayloads = mutableListOf<String>()
+    var batchCancelPayloads = mutableListOf<String>()
     var transferPayloads = mutableListOf<String>()
 
     var requests = mutableListOf<QueryType>()
@@ -375,6 +377,10 @@ class TestChain : DYDXChainTransactionsProtocol {
                 cancelOrder(paramsInJson!!, callback)
             }
 
+            TransactionType.BatchCancel -> {
+                batchCancel(paramsInJson!!, callback)
+            }
+
             TransactionType.SubaccountTransfer -> {
                 transfer(paramsInJson!!, callback)
             }
@@ -424,6 +430,15 @@ class TestChain : DYDXChainTransactionsProtocol {
         canceldOrderPayloads.add(json)
         if (cancelOrderResponse != null) {
             callback(cancelOrderResponse)
+        } else {
+            this.transactionCallback = callback
+        }
+    }
+
+    fun batchCancel(json: String, callback: (response: String?) -> Unit) {
+        batchCancelPayloads.add(json)
+        if (batchCancelResponse != null) {
+            callback(batchCancelResponse)
         } else {
             this.transactionCallback = callback
         }
