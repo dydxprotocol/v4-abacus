@@ -508,6 +508,31 @@ open class V4TradeInputTests : V4BaseTests() {
 
         test(
             {
+                perp.trade("0.1", TradeInputField.size, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "0": {
+                                "equity": {
+                                    "current": 100000.0,
+                                    "postOrder": 99850.0
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "errors": null
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
                 perp.trade("0", TradeInputField.size, 0)
             },
             """
@@ -525,7 +550,20 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 },
                 "input": {
-                    "errors": []
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_SIZE",
+                            "fields": [
+                                "size.size"
+                            ],
+                            "resources": {
+                                "action": {
+                                    "stringKey": "APP.TRADE.ENTER_AMOUNT"
+                                }
+                            }
+                        }
+                    ]
                 }
             }
             """.trimIndent(),

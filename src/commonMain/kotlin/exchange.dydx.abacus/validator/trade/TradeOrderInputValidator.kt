@@ -129,7 +129,7 @@ internal class TradeOrderInputValidator(
             MarginMode.Isolated -> {
                 val currentFreeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: return null
                 val postFreeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.postOrder")) ?: return null
-                val orderEquity = postFreeCollateral - currentFreeCollateral
+                val orderEquity = currentFreeCollateral - postFreeCollateral
 
                 if (postFreeCollateral >= Numeric.double.ZERO && orderEquity < isolatedLimitOrderMinimumEquity) {
                     return createTradeBoxWarningOrErrorDeprecated(
@@ -158,7 +158,7 @@ internal class TradeOrderInputValidator(
             MarginMode.Isolated -> {
                 val currentFreeCollateral = subaccount.calculated.get(CalculationPeriod.current)?.freeCollateral ?: return null
                 val postFreeCollateral = subaccount.calculated.get(CalculationPeriod.post)?.freeCollateral ?: return null
-                val orderEquity = postFreeCollateral - currentFreeCollateral
+                val orderEquity = currentFreeCollateral - postFreeCollateral
 
                 if (postFreeCollateral >= Numeric.double.ZERO && orderEquity < isolatedLimitOrderMinimumEquity) {
                     return createTradeBoxWarningOrError(
