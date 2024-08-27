@@ -201,10 +201,11 @@ internal fun TradingStateMachine.receivedFills(
     val fills = parser.asList(payload["fills"])
     val size = fills?.size ?: 0
     return if (size > 0) {
-        wallet = walletProcessor.receivedFillsDeprecated(wallet, payload, subaccountNumber)
         if (staticTyping) {
             val payload = parser.asTypedObject<IndexerFillResponse>(payload)
             walletProcessor.processFills(internalState.wallet, payload?.fills?.toList(), subaccountNumber)
+        } else {
+            wallet = walletProcessor.receivedFillsDeprecated(wallet, payload, subaccountNumber)
         }
         StateChanges(iListOf(Changes.fills), null, iListOf(subaccountNumber))
     } else {
@@ -227,10 +228,11 @@ internal fun TradingStateMachine.receivedTransfers(
 ): StateChanges {
     val size = parser.asList(payload["transfers"])?.size ?: 0
     return if (size > 0) {
-        wallet = walletProcessor.receivedTransfersDeprecated(wallet, payload, subaccountNumber)
         if (staticTyping) {
             val payload = parser.asTypedObject<IndexerTransferResponse>(payload)
             walletProcessor.processTransfers(internalState.wallet, payload?.transfers?.toList(), subaccountNumber)
+        } else {
+            wallet = walletProcessor.receivedTransfersDeprecated(wallet, payload, subaccountNumber)
         }
         StateChanges(iListOf(Changes.transfers), null, iListOf(subaccountNumber))
     } else {
