@@ -1,5 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
+import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
@@ -8,6 +10,7 @@ import exchange.dydx.abacus.state.model.adjustIsolatedMargin
 import exchange.dydx.abacus.tests.extensions.parseOnChainEquityTiers
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
 
@@ -52,11 +55,25 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
     }
 
     private fun testChildSubaccountNumberInput() {
-        test(
-            {
-                perp.adjustIsolatedMargin("128", AdjustIsolatedMarginInputField.ChildSubaccountNumber, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.adjustIsolatedMargin(
+                data = "128",
+                type = AdjustIsolatedMarginInputField.ChildSubaccountNumber,
+                parentSubaccountNumber = 0
+            )
+
+            assertEquals(InputType.ADJUST_ISOLATED_MARGIN, perp.internalState.input.currentType)
+            assertEquals(128, perp.internalState.input.adjustIsolatedMargin.childSubaccountNumber)
+        } else {
+            test(
+                {
+                    perp.adjustIsolatedMargin(
+                        "128",
+                        AdjustIsolatedMarginInputField.ChildSubaccountNumber,
+                        0
+                    )
+                },
+                """
             {
                 "input": {
                     "current": "adjustIsolatedMargin",
@@ -66,15 +83,26 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testMarketInput() {
-        test(
-            {
-                perp.adjustIsolatedMargin("ETH-USD", AdjustIsolatedMarginInputField.Market, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.adjustIsolatedMargin(
+                data = "ETH-USD",
+                type = AdjustIsolatedMarginInputField.Market,
+                parentSubaccountNumber = 0
+            )
+
+            assertEquals(InputType.ADJUST_ISOLATED_MARGIN, perp.internalState.input.currentType)
+            assertEquals("ETH-USD", perp.internalState.input.adjustIsolatedMargin.market)
+        } else {
+            test(
+                {
+                    perp.adjustIsolatedMargin("ETH-USD", AdjustIsolatedMarginInputField.Market, 0)
+                },
+                """
             {
                 "input": {
                     "current": "adjustIsolatedMargin",
@@ -84,15 +112,31 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testZeroAmount() {
-        test(
-            {
-                perp.adjustIsolatedMargin("0", AdjustIsolatedMarginInputField.Amount, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.adjustIsolatedMargin(
+                data = "0",
+                type = AdjustIsolatedMarginInputField.Amount,
+                parentSubaccountNumber = 0
+            )
+
+            assertEquals(InputType.ADJUST_ISOLATED_MARGIN, perp.internalState.input.currentType)
+            assertEquals(0.0, perp.internalState.input.adjustIsolatedMargin.amount)
+
+            val subaccount = perp.internalState.wallet.account.groupedSubaccounts[0]
+            assertEquals(100000.0, subaccount?.calculated?.get(CalculationPeriod.current)?.quoteBalance)
+            val subaccount1 = perp.internalState.wallet.account.groupedSubaccounts[128]
+            assertEquals(500.0, subaccount1?.calculated?.get(CalculationPeriod.current)?.quoteBalance)
+        } else {
+            test(
+                {
+                    perp.adjustIsolatedMargin("0", AdjustIsolatedMarginInputField.Amount, 0)
+                },
+                """
             {
                 "input": {
                     "current": "adjustIsolatedMargin",
@@ -120,15 +164,31 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
                 }
             }
             """.trimIndent(),
-        )
+            )
+        }
     }
 
     private fun testMarginAmountAddition() {
-        test(
-            {
-                perp.adjustIsolatedMargin(IsolatedMarginAdjustmentType.Add.name, AdjustIsolatedMarginInputField.Type, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.adjustIsolatedMargin(
+                data = IsolatedMarginAdjustmentType.Add.name,
+                type = AdjustIsolatedMarginInputField.Type,
+                parentSubaccountNumber = 0
+            )
+
+            assertEquals(InputType.ADJUST_ISOLATED_MARGIN, perp.internalState.input.currentType)
+            assertEquals(IsolatedMarginAdjustmentType.Add, perp.internalState.input.adjustIsolatedMargin.type)
+            assertEquals(70675.46098618512, perp.internalState.input.adjustIsolatedMargin.summary?.crossFreeCollateral)
+        } else {
+            test(
+                {
+                    perp.adjustIsolatedMargin(
+                        IsolatedMarginAdjustmentType.Add.name,
+                        AdjustIsolatedMarginInputField.Type,
+                        0
+                    )
+                },
+                """
         {
             "input": {
                 "current": "adjustIsolatedMargin",
@@ -143,7 +203,8 @@ class AdjustIsolatedMarginInputTests : V4BaseTests(useParentSubaccount = true) {
             }
         }
             """.trimIndent(),
-        )
+            )
+        }
 
         test(
             {
