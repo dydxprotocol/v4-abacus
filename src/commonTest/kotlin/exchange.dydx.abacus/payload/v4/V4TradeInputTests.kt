@@ -61,6 +61,8 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testOnce() {
+        testIsolatedLimitTradeInputOnce()
+
         testMarketTradeInputOnce()
         testLimitTradeInputOnce()
         testUpdates()
@@ -302,10 +304,6 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-//        test({
-//            perp.trade(null, TradeInputField.limitPrice)
-//        }, null)
-
         test({
             perp.trade("1500", TradeInputField.limitPrice, 0)
         }, null)
@@ -390,6 +388,10 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testMarketTradeInputOnce() {
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
+        }, null)
+
         test({
             perp.trade("MARKET", TradeInputField.type, 0)
         }, null)
@@ -541,6 +543,158 @@ open class V4TradeInputTests : V4BaseTests() {
                 """.trimIndent(),
             )
         }
+    }
+
+    private fun testIsolatedLimitTradeInputOnce() {
+        test(
+            {
+                perp.tradeInMarket("BTC-USD", 0)
+            },
+            """
+            {
+                "input": {
+                    "trade": {
+                        "marketId": "BTC-USD"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+        test({
+            perp.trade("ISOLATED", TradeInputField.marginMode, 0)
+        }, null)
+
+        test({
+            perp.trade("LIMIT", TradeInputField.type, 0)
+        }, null)
+
+        test({
+            perp.trade("BUY", TradeInputField.side, 0)
+        }, null)
+
+        test({
+            perp.trade("12", TradeInputField.goodTilDuration, 0)
+        }, null)
+
+        test({
+            perp.trade("0.01", TradeInputField.size, 0)
+        }, null)
+
+        test(
+            {
+                perp.trade("1500", TradeInputField.limitPrice, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "0": {
+                                "freeCollateral": {
+                                    "current": 100000.0,
+                                    "postOrder": 99985.0
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "errors": [
+                        {
+                            "type": "ERROR",
+                            "code": "ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
+                            "fields": [
+                                "size.size"
+                            ],
+                            "linkText": "APP.GENERAL.LEARN_MORE_ARROW",
+                            "link": "https://help.dydx.trade/en/articles/171918-equity-tiers-and-rate-limits",
+                            "resources": {
+                                "title": {
+                                    "stringKey": "ERRORS.TRADE_BOX_TITLE.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM"
+                                },
+                                "text": {
+                                    "stringKey": "ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM",
+                                    "params": [
+                                        {
+                                            "value": 20.0,
+                                            "format": "price",
+                                            "key": "MIN_VALUE"
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "stringKey": "APP.TRADE.MODIFY_SIZE_FIELD"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("0.1", TradeInputField.size, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "0": {
+                                "equity": {
+                                    "current": 100000.0,
+                                    "postOrder": 99850.0
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "errors": null
+                }
+            }
+            """.trimIndent(),
+        )
+
+        test(
+            {
+                perp.trade("0", TradeInputField.size, 0)
+            },
+            """
+            {
+                "wallet": {
+                    "account": {
+                        "subaccounts": {
+                            "0": {
+                                "equity": {
+                                    "current": 100000.0,
+                                    "postOrder": null
+                                }
+                            }
+                        }
+                    }
+                },
+                "input": {
+                    "errors": [
+                        {
+                            "type": "REQUIRED",
+                            "code": "REQUIRED_SIZE",
+                            "fields": [
+                                "size.size"
+                            ],
+                            "resources": {
+                                "action": {
+                                    "stringKey": "APP.TRADE.ENTER_AMOUNT"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            """.trimIndent(),
+        )
     }
 
     private fun testUpdates() {
@@ -944,6 +1098,10 @@ open class V4TradeInputTests : V4BaseTests() {
     fun testConditional() {
         test({
             perp.trade("STOP_LIMIT", TradeInputField.type, 0)
+        }, null)
+
+        test({
+            perp.trade("CROSS", TradeInputField.marginMode, 0)
         }, null)
 
         test({

@@ -3,6 +3,7 @@ package exchange.dydx.abacus.tests.payloads
 import exchange.dydx.abacus.state.app.adaptors.AbUrl
 import exchange.dydx.abacus.state.manager.EnvironmentEndpoints
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
+import exchange.dydx.abacus.state.manager.EnvironmentLinks
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.state.manager.WalletConnect
@@ -69,7 +70,22 @@ class AbacusMockData {
             nobleValidator = null,
             geo = null,
         ),
-        null,
+        EnvironmentLinks(
+            tos = "https://dydx.exchange/v4-terms",
+            privacy = "https://dydx.exchange/privacy",
+            mintscan = "https://testnet.mintscan.io/dydx-testnet/txs/{tx_hash}",
+            mintscanBase = "https://testnet.mintscan.io/dydx-testnet",
+            documentation = "https://v4-teacher.vercel.app/",
+            community = "https://discord.com/invite/dydx",
+            feedback = "https://docs.google.com/forms/d/e/1FAIpQLSezLsWCKvAYDEb7L-2O4wOON1T56xxro9A2Azvl6IxXHP_15Q/viewform",
+            blogs = "https://www.dydx.foundation/blog",
+            help = "https://help.dydx.exchange/",
+            launchIncentive = "https://dydx.exchange/v4-launch-incentive",
+            statusPage = "https://status.v4testnet.dydx.exchange/",
+            withdrawalGateLearnMore = "https://help.dydx.exchange/en/articles/8981384-withdrawals-on-dydx-chain#h_23e97bc665",
+            complianceSupportEmail = "someemail@gmail.com",
+            equityTiersLearnMore = "https://help.dydx.trade/en/articles/171918-equity-tiers-and-rate-limits",
+        ),
         WalletConnection(
             WalletConnect(
                 WalletConnectClient(
