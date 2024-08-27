@@ -73,8 +73,15 @@ data class Input(
                 val transfer =
                     TransferInput.create(existing?.transfer, parser, parser.asMap(data?.get("transfer")), environment, internalState?.transfer)
 
-                val triggerOrders =
-                    TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data?.get("triggerOrders")))
+                val triggerOrders = if (staticTyping) {
+                    TriggerOrdersInput.create(state = internalState?.input?.triggerOrders)
+                } else {
+                    TriggerOrdersInput.create(
+                        existing?.triggerOrders,
+                        parser,
+                        parser.asMap(data?.get("triggerOrders")),
+                    )
+                }
 
                 val adjustIsolatedMargin =
                     AdjustIsolatedMarginInput.create(
