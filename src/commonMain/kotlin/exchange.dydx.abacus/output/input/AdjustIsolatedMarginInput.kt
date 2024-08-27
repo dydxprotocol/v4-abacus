@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAdjustIsolatedMarginInputState
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
@@ -129,6 +130,26 @@ data class AdjustIsolatedMarginInput(
     val summary: AdjustIsolatedMarginInputSummary?
 ) {
     companion object {
+        internal fun create(
+            parser: ParserProtocol,
+            data: InternalAdjustIsolatedMarginInputState?
+        ): AdjustIsolatedMarginInput? {
+            return if (data != null) {
+                AdjustIsolatedMarginInput(
+                    market = data.market,
+                    type = data.type ?: IsolatedMarginAdjustmentType.Add,
+                    amount = parser.asString(data.amount),
+                    amountPercent = parser.asString(data.amountPercent),
+                    amountInput = data.amountInput,
+                    childSubaccountNumber = data.childSubaccountNumber,
+                    adjustIsolatedMarginInputOptions = data.options,
+                    summary = data.summary,
+                )
+            } else {
+                null
+            }
+        }
+
         internal fun create(
             existing: AdjustIsolatedMarginInput?,
             parser: ParserProtocol,

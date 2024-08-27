@@ -10,6 +10,7 @@ import exchange.dydx.abacus.calculator.TradeInputCalculator
 import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
+import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.Asset
@@ -844,22 +845,35 @@ open class TradingStateMachine(
     }
 
     private fun calculateAdjustIsolatedMargin(subaccountNumber: Int?) {
-        val input = this.input?.mutable()
-        val adjustIsolatedMargin = parser.asNativeMap(input?.get("adjustIsolatedMargin"))
-        val calculator = AdjustIsolatedMarginInputCalculator(parser)
-        val params = mutableMapOf<String, Any>()
-        params.safeSet("wallet", wallet)
-        params.safeSet("account", account)
-        params.safeSet("user", user)
-        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
-        params.safeSet("adjustIsolatedMargin", adjustIsolatedMargin)
+        if (staticTyping) {
+            val calculator = AdjustIsolatedMarginInputCalculatorV2(parser)
+            internalState.input.adjustIsolatedMargin = calculator.calculate(
+                adjustIsolatedMargin = internalState.input.adjustIsolatedMargin,
+                walletState = internalState.wallet,
+                markets = internalState.marketsSummary.markets,
+                parentSubaccountNumber = subaccountNumber,
+            )
+        } else {
+            val input = this.input?.mutable()
+            val adjustIsolatedMargin = parser.asNativeMap(input?.get("adjustIsolatedMargin"))
+            val calculator = AdjustIsolatedMarginInputCalculator(parser)
+            val params = mutableMapOf<String, Any>()
+            params.safeSet("wallet", wallet)
+            params.safeSet("account", account)
+            params.safeSet("user", user)
+            params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+            params.safeSet("adjustIsolatedMargin", adjustIsolatedMargin)
 
-        val modified = calculator.calculate(params, subaccountNumber)
-        this.setMarkets(parser.asNativeMap(modified["markets"]))
-        this.wallet = parser.asNativeMap(modified["wallet"])
-        input?.safeSet("adjustIsolatedMargin", parser.asNativeMap(modified["adjustIsolatedMargin"]))
+            val modified = calculator.calculate(params, subaccountNumber)
+            this.setMarkets(parser.asNativeMap(modified["markets"]))
+            this.wallet = parser.asNativeMap(modified["wallet"])
+            input?.safeSet(
+                "adjustIsolatedMargin",
+                parser.asNativeMap(modified["adjustIsolatedMargin"]),
+            )
 
-        this.input = input
+            this.input = input
+        }
     }
 
     private fun subaccount(subaccountNumber: Int): Map<String, Any>? {

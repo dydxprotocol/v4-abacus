@@ -36,7 +36,7 @@ internal interface ClosePositionInputProcessorProtocol {
         data: String?,
         type: ClosePositionInputField,
         subaccountNumber: Int,
-    ): TradeInputResult
+    ): InputProcessorResult
 }
 
 internal class ClosePositionInputProcessor(
@@ -52,7 +52,7 @@ internal class ClosePositionInputProcessor(
         data: String?,
         type: ClosePositionInputField,
         subaccountNumber: Int,
-    ): TradeInputResult {
+    ): InputProcessorResult {
         var changes: StateChanges? = null
         var error: ParsingError? = null
 
@@ -185,7 +185,7 @@ internal class ClosePositionInputProcessor(
             }
         }
 
-        return TradeInputResult(
+        return InputProcessorResult(
             changes = changes,
             error = error,
         )

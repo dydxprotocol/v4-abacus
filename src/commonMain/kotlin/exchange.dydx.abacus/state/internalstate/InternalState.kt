@@ -20,7 +20,11 @@ import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
+import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputOptions
+import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputSummary
 import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -59,6 +63,7 @@ internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
     var closePosition: InternalTradeInputState = InternalTradeInputState(),
     var triggerOrders: InternalTriggerOrdersInputState = InternalTriggerOrdersInputState(),
+    var adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState = InternalAdjustIsolatedMarginInputState(),
     var receiptLines: List<ReceiptLine>? = null,
     var errors: List<ValidationError>? = null,
     var childSubaccountErrors: List<ValidationError>? = null,
@@ -73,6 +78,18 @@ internal data class InternalInputState(
             }
         }
 }
+
+internal data class InternalAdjustIsolatedMarginInputState(
+    var market: String? = null,
+    var type: IsolatedMarginAdjustmentType? = null,
+    var amount: Double? = null,
+    var amountPercent: Double? = null,
+    var amountInput: IsolatedMarginInputType? = null,
+    var childSubaccountNumber: Int? = null,
+    var parentSubaccountNumber: Int? = null,
+    var options: AdjustIsolatedMarginInputOptions? = null,
+    var summary: AdjustIsolatedMarginInputSummary? = null,
+)
 
 internal data class InternalTriggerOrdersInputState(
     var marketId: String? = null,

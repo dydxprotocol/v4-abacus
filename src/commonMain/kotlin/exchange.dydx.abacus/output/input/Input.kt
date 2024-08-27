@@ -83,7 +83,12 @@ data class Input(
                     )
                 }
 
-                val adjustIsolatedMargin =
+                val adjustIsolatedMargin = if (staticTyping) {
+                    AdjustIsolatedMarginInput.create(
+                        parser = parser,
+                        data = internalState?.input?.adjustIsolatedMargin,
+                    )
+                } else {
                     AdjustIsolatedMarginInput.create(
                         existing?.adjustIsolatedMargin,
                         parser,
@@ -91,6 +96,7 @@ data class Input(
                             data?.get("adjustIsolatedMargin"),
                         ),
                     )
+                }
 
                 val errors = if (staticTyping) {
                     internalState?.input?.errors?.toIList()
