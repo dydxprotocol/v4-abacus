@@ -36,7 +36,7 @@ internal class AssetPositionsProcessor(
         payload: List<IndexerAssetPositionResponseObject>?
     ): Map<String, InternalAssetPositionState>? {
         return if (payload != null) {
-            var modified = existing?.mutable() ?: mutableMapOf()
+            val modified = existing?.mutable() ?: mutableMapOf()
             for (item in payload) {
                 val assetPosition = itemProcessor.process(item)
                 if (assetPosition?.symbol != null) {

@@ -5355,7 +5355,7 @@ internal class SubaccountsChannelMock {
                   "clientMetadata": "0",
                   "createdAtHeight": "14972962",
                   "transactionHash": "E06299AA699592C0F60ACBDA3C241AAED74A7D6986B07A1707F425072453DD4B",
-                  "ticker": "APT-USD"
+                  "market": "APT-USD"
                 },
                 {
                   "id": "0d473eec-93b0-5c49-94ca-b8017454d769",
@@ -5374,7 +5374,7 @@ internal class SubaccountsChannelMock {
                   "clientMetadata": "0",
                   "createdAtHeight": "14972962",
                   "transactionHash": "E06299AA699592C0F60ACBDA3C241AAED74A7D6986B07A1707F425072453DD4B",
-                  "ticker": "APT-USD"
+                  "market": "APT-USD"
                 }
               ],
               "perpetualPositions": [

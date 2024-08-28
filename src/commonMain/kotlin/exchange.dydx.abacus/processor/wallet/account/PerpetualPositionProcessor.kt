@@ -13,6 +13,7 @@ import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerPerpetualPositionResponseObject
+import indexer.codegen.IndexerPositionSide
 
 /*
     "ETH-USD": {
@@ -136,11 +137,19 @@ internal class PerpetualPositionProcessor(
             } else {
                 sideStringKey
             }
+            val size = parser.asDouble(payload.size)
+            val signedSize =
+                if (size != null) {
+                    if (payload.side == IndexerPositionSide.SHORT) (size.abs() * -1.0) else size
+                } else {
+                    null
+                }
+
             InternalPerpetualPosition(
                 market = payload.market,
                 status = payload.status,
                 side = payload.side,
-                size = parser.asDouble(payload.size),
+                size = signedSize,
                 maxSize = parser.asDouble(payload.maxSize),
                 entryPrice = parser.asDouble(payload.entryPrice),
                 realizedPnl = parser.asDouble(payload.realizedPnl),

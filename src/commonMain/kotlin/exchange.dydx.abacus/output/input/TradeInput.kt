@@ -356,7 +356,7 @@ data class TradeInputSummary(
     companion object {
         internal fun create(
             state: InternalTradeInputSummary?,
-        ): TradeInputSummary? {
+        ): TradeInputSummary {
             return TradeInputSummary(
                 price = state?.price,
                 payloadPrice = state?.payloadPrice,

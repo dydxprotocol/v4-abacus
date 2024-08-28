@@ -8,6 +8,7 @@ import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
+import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.responses.ParsingError
@@ -21,6 +22,7 @@ import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalRewardsParamsState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
+import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.utils.Numeric
@@ -152,7 +154,7 @@ internal class ClosePositionInputProcessor(
 
                     trade.marketId?.let { marketId ->
                         val limitPrice = getMidMarketPrice(marketSummaryState, marketId)
-                        trade.price = trade.price?.copy(limitPrice = limitPrice)
+                        trade.price = TradeInputPrice.safeCreate(trade.price).copy(limitPrice = limitPrice)
                     }
                 } else {
                     trade.type = OrderType.Market

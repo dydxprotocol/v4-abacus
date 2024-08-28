@@ -46,19 +46,6 @@ internal class TradeFieldsValidator(
             }
         }
 
-        if (trade.options.needsTriggerPrice) {
-            val triggerPrice = trade.price?.triggerPrice ?: 0.0
-            if (triggerPrice == 0.0) {
-                errors.add(
-                    required(
-                        errorCode = "REQUIRED_TRIGGER_PRICE",
-                        field = TradeInputField.triggerPrice.rawValue,
-                        actionStringKey = "APP.TRADE.ENTER_TRIGGER_PRICE",
-                    ),
-                )
-            }
-        }
-
         if (trade.options.needsLimitPrice) {
             val limitPrice = trade.price?.limitPrice ?: 0.0
             if (limitPrice == 0.0) {
@@ -67,6 +54,19 @@ internal class TradeFieldsValidator(
                         errorCode = "REQUIRED_LIMIT_PRICE",
                         field = TradeInputField.limitPrice.rawValue,
                         actionStringKey = "APP.TRADE.ENTER_LIMIT_PRICE",
+                    ),
+                )
+            }
+        }
+
+        if (trade.options.needsTriggerPrice) {
+            val triggerPrice = trade.price?.triggerPrice ?: 0.0
+            if (triggerPrice == 0.0) {
+                errors.add(
+                    required(
+                        errorCode = "REQUIRED_TRIGGER_PRICE",
+                        field = TradeInputField.triggerPrice.rawValue,
+                        actionStringKey = "APP.TRADE.ENTER_TRIGGER_PRICE",
                     ),
                 )
             }

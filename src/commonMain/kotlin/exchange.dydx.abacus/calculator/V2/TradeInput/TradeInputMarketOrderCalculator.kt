@@ -423,7 +423,7 @@ internal class TradeInputMarketOrderCalculator() {
         worstPrice: Double?,
         filled: Boolean,
     ): TradeInputMarketOrder? {
-        return if (size != null && usdcSize != null && size != Numeric.double.ZERO) {
+        return if (size != null && usdcSize != null) {
             TradeInputMarketOrder(
                 orderbook = orderbook.map {
                     OrderbookUsage(
@@ -431,7 +431,7 @@ internal class TradeInputMarketOrderCalculator() {
                         size = it.size,
                     )
                 }.toIList(),
-                price = (usdcSize / size),
+                price = if (size != Numeric.double.ZERO) usdcSize / size else null,
                 size = size,
                 usdcSize = usdcSize,
                 worstPrice = worstPrice,

@@ -137,7 +137,7 @@ internal open class SubaccountProcessor(
             height = height,
         )
 
-        val perpetualPositions = content["perpetualPositions"] ?: content["openPerpetualPositions"]
+        val perpetualPositions = content["perpetualPositions"] ?: content["openPerpetualPositions"] ?: content["positions"]
         val positions = parser.asTypedList<IndexerPerpetualPositionResponseObject>(perpetualPositions)
         state = processPerpetualPositions(
             existing = state,

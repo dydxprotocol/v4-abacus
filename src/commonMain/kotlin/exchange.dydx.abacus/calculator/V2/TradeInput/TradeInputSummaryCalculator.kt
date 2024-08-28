@@ -339,7 +339,7 @@ internal class TradeInputSummaryCalculator {
     }
 
     private fun getMultiplier(trade: InternalTradeInputState): Double {
-        return if (trade.side == OrderSide.Buy) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
+        return if (trade.side == OrderSide.Sell) Numeric.double.POSITIVE else Numeric.double.NEGATIVE
     }
 
     private fun calculateTakerReward(
