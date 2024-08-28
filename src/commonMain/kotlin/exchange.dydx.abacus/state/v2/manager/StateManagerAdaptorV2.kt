@@ -26,6 +26,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -58,6 +59,8 @@ import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMargin
 import exchange.dydx.abacus.state.v2.supervisor.adjustIsolatedMarginPayload
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
+import exchange.dydx.abacus.state.v2.supervisor.cancelOrders
+import exchange.dydx.abacus.state.v2.supervisor.cancelOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.v2.supervisor.commitAdjustIsolatedMargin
@@ -538,6 +541,10 @@ internal class StateManagerAdaptorV2(
         return accounts.cancelOrderPayload(orderId)
     }
 
+    internal fun cancelOrdersPayload(marketId: String?): HumanReadableCancelMultipleOrdersPayload? {
+        return accounts.cancelOrdersPayload(marketId)
+    }
+
     internal fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
         return accounts.triggerOrdersPayload(currentHeight)
     }
@@ -594,6 +601,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun cancelOrder(orderId: String, callback: TransactionCallback) {
         accounts.cancelOrder(orderId, callback)
+    }
+
+    internal fun cancelOrders(marketId: String?, callback: TransactionCallback) {
+        accounts.cancelOrders(marketId, callback)
     }
 
     internal fun orderCanceled(orderId: String) {

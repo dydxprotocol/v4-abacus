@@ -85,6 +85,13 @@ data class HumanReadableCancelOrderPayload(
 
 @JsExport
 @Serializable
+data class HumanReadableCancelMultipleOrdersPayload(
+    val marketId: String?,
+    val payloads: IList<HumanReadableCancelOrderPayload>,
+)
+
+@JsExport
+@Serializable
 data class HumanReadableTriggerOrdersPayload(
     val marketId: String,
     val positionSize: Double?,

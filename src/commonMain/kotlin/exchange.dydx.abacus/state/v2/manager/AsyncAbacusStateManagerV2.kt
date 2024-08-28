@@ -23,6 +23,7 @@ import exchange.dydx.abacus.state.manager.ConfigFile
 import exchange.dydx.abacus.state.manager.GasToken
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -503,6 +504,10 @@ class AsyncAbacusStateManagerV2(
         return adaptor?.cancelOrderPayload(orderId)
     }
 
+    override fun cancelOrdersPayload(marketId: String?): HumanReadableCancelMultipleOrdersPayload? {
+        return adaptor?.cancelOrdersPayload(marketId)
+    }
+
     override fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
         return adaptor?.triggerOrdersPayload()
     }
@@ -597,6 +602,15 @@ class AsyncAbacusStateManagerV2(
     override fun cancelOrder(orderId: String, callback: TransactionCallback) {
         try {
             adaptor?.cancelOrder(orderId, callback)
+        } catch (e: Exception) {
+            val error = V4TransactionErrors.error(null, e.toString())
+            callback(false, error, null)
+        }
+    }
+
+    override fun cancelOrders(marketId: String?, callback: TransactionCallback) {
+        try {
+            adaptor?.cancelOrders(marketId, callback)
         } catch (e: Exception) {
             val error = V4TransactionErrors.error(null, e.toString())
             callback(false, error, null)

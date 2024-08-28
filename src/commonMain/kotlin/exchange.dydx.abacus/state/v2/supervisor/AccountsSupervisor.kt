@@ -15,6 +15,7 @@ import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
+import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -275,6 +276,10 @@ internal fun AccountsSupervisor.cancelOrderPayload(orderId: String): HumanReadab
     return account?.cancelOrderPayload(orderId)
 }
 
+internal fun AccountsSupervisor.cancelOrdersPayload(marketId: String?): HumanReadableCancelMultipleOrdersPayload? {
+    return account?.cancelOrdersPayload(marketId)
+}
+
 internal fun AccountsSupervisor.depositPayload(): HumanReadableDepositPayload? {
     return account?.depositPayload()
 }
@@ -335,6 +340,10 @@ internal fun AccountsSupervisor.faucet(amount: Double, callback: TransactionCall
 
 internal fun AccountsSupervisor.cancelOrder(orderId: String, callback: TransactionCallback) {
     account?.cancelOrder(orderId, callback)
+}
+
+internal fun AccountsSupervisor.cancelOrders(marketId: String?, callback: TransactionCallback) {
+    account?.cancelOrders(marketId, callback)
 }
 
 internal fun AccountsSupervisor.orderCanceled(orderId: String) {

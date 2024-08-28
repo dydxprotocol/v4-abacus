@@ -14,6 +14,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.state.manager.CancelOrderRecord
 import exchange.dydx.abacus.state.manager.FaucetRecord
+import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -31,6 +32,7 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
@@ -145,6 +147,33 @@ internal class SubaccountTransactionSupervisor(
         val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
+    }
+
+    internal fun cancelOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload {
+        val payload = payloadProvider.cancelOrdersPayload(marketId)
+
+        payload.payloads.forEach { cancelPayload ->
+            val subaccount = stateMachine.state?.subaccount(subaccountNumber)
+            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+                ?: throw ParsingException(
+                    ParsingErrorType.MissingRequiredData,
+                    "no existing order to be cancelled for $cancelPayload.orderId",
+                )
+            val marketId = existingOrder.marketId
+            val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
+                cancelPayload,
+                existingOrder
+            )
+            submitCancelOrder(
+                orderId = cancelPayload.orderId,
+                marketId = marketId,
+                callback = callback,
+                payload = cancelPayload,
+                analyticsPayload = cancelOrderAnalyticsPayload,
+                uiClickTimeMs = Numeric.double.ZERO, // TODO(@aforaleka) add back tracking
+            )
+        }
+        return payload
     }
 
     internal fun commitTriggerOrders(
