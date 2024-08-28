@@ -29,7 +29,7 @@ data class CancelOrderRecord(
     val subaccountNumber: Int,
     val clientId: Int,
     val timestampInMilliseconds: Double,
-    val fromSlTpDialog: Boolean,
+    val fromSlTpDialog: Boolean = false,
 )
 
 data class IsolatedPlaceOrderRecord(
@@ -86,6 +86,7 @@ data class HumanReadableCancelOrderPayload(
 @JsExport
 @Serializable
 data class HumanReadableCancelMultipleOrdersPayload(
+    val orderIds: IList<String>,
     val shortTermCancelPayloads: IList<HumanReadableBatchCancelPayload>,
     val statefulCancelPayloads: IList<HumanReadableCancelOrderPayload>,
 )

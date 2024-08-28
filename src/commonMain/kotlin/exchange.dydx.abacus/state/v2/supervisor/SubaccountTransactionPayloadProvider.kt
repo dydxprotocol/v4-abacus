@@ -11,6 +11,7 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.state.manager.HumanReadableBatchCancelPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadableOrderBatchPayload
@@ -24,6 +25,7 @@ import exchange.dydx.abacus.utils.LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.filterNotNull
 import kollections.iListOf
 import kollections.iMutableListOf
@@ -40,7 +42,7 @@ internal interface SubaccountTransactionPayloadProviderProtocol {
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload
 
     @Throws(Exception::class)
-    fun batchCancelPayloads(orders: List<SubaccountOrder>, currentHeight: Int?): List<HumanReadableBatchCancelPayload>
+    fun cancelOrdersPayload(marketId: String?, currentHeight: Int?): HumanReadableCancelMultipleOrdersPayload?
 
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload
 
@@ -177,7 +179,31 @@ internal class SubaccountTransactionPayloadProvider(
     }
 
     @Throws(Exception::class)
-    override fun batchCancelPayloads(
+    override fun cancelOrdersPayload(
+        marketId: String?,
+        currentHeight: Int?
+    ): HumanReadableCancelMultipleOrdersPayload? {
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return null
+        val openOrders = subaccount.orders?.let { orders ->
+            orders.filter { ( marketId == null || it.marketId == marketId ) && it.status.isOpen }
+        } ?: return null
+        if (openOrders.isEmpty()) return null
+
+        val groupedOrders = openOrders.groupBy { it.orderFlags == SHORT_TERM_ORDER_FLAGS }
+        val shortTermOrders = groupedOrders[true] ?: emptyList()
+        val statefulOrders = groupedOrders[false] ?: emptyList()
+
+        val shortTermCancelPayloads = batchCancelPayloads(shortTermOrders, currentHeight).toIList()
+        val statefulCancelPayloads = statefulOrders.map { cancelOrderPayload(it.id) }.toIList()
+
+        return HumanReadableCancelMultipleOrdersPayload(
+            orderIds = openOrders.map { it.id }.toIList(),
+            shortTermCancelPayloads = shortTermCancelPayloads,
+            statefulCancelPayloads = statefulCancelPayloads,
+        )
+    }
+
+    private fun batchCancelPayloads(
         orders: List<SubaccountOrder>,
         currentHeight: Int?
     ): List<HumanReadableBatchCancelPayload> {

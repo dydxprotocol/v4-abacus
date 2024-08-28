@@ -329,6 +329,10 @@ internal class SubaccountSupervisor(
         return payloadProvider.cancelOrderPayload(orderId)
     }
 
+    internal fun cancelOrdersPayload(marketId: String?, currentHeight: Int?): HumanReadableCancelMultipleOrdersPayload? {
+        return payloadProvider.cancelOrdersPayload(marketId, currentHeight)
+    }
+
     fun trade(
         data: String?,
         type: TradeInputField?,
@@ -426,8 +430,8 @@ internal class SubaccountSupervisor(
         return transactionSupervisor.cancelOrder(orderId, isOrphanedTriggerOrder, callback)
     }
 
-    internal fun cancelOrders(orderIds: List<String>, currentHeight: Int?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload? {
-        return transactionSupervisor.cancelOrders(orderIds, currentHeight, callback)
+    internal fun cancelOrders(marketId: String?, currentHeight: Int?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload? {
+        return transactionSupervisor.cancelOrders(marketId, currentHeight, callback)
     }
 
     internal fun commitTriggerOrders(

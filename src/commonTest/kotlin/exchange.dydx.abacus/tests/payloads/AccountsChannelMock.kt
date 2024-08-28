@@ -1852,7 +1852,7 @@ internal class AccountsChannelMock {
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
                     "market": "ETH-USD",
-                             "ticker":"ETH-USD",
+                    "ticker":"ETH-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "clientId":"2194126268",
                     "clobPairId":"1",
@@ -1936,7 +1936,7 @@ internal class AccountsChannelMock {
                 },
                 {
                     "id": "770933a5-0293-5aca-8a01-d9c4030d776d",
-                             "ticker":"ETH-USD",
+                    "ticker":"ETH-USD",
                     "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
                     "clientId": "852785216",
                     "clobPairId": "1",

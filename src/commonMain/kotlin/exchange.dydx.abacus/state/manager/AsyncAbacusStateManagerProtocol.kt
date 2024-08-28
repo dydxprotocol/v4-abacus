@@ -63,6 +63,7 @@ interface AsyncAbacusStateManagerProtocol {
     fun closePositionPayload(): HumanReadablePlaceOrderPayload?
     fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload?
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload?
+    fun cancelOrdersPayload(marketId: String?): HumanReadableCancelMultipleOrdersPayload?
     fun depositPayload(): HumanReadableDepositPayload?
     fun withdrawPayload(): HumanReadableWithdrawPayload?
     fun subaccountTransferPayload(): HumanReadableSubaccountTransferPayload?
@@ -80,7 +81,7 @@ interface AsyncAbacusStateManagerProtocol {
     // Commit changes with params
     fun faucet(amount: Double, callback: TransactionCallback)
     fun cancelOrder(orderId: String, callback: TransactionCallback)
-    fun cancelOrders(orderIds: IList<String>, callback: TransactionCallback)
+    fun cancelOrders(marketId: String?, callback: TransactionCallback)
 
     // Bridge functions.
     // If client is not using cancelOrder function, it should call orderCanceled function with

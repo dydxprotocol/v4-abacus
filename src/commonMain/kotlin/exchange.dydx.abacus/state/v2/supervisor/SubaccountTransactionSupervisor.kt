@@ -150,22 +150,9 @@ internal class SubaccountTransactionSupervisor(
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
-    private fun batchCancelShortTermOrders(orders: List<SubaccountOrder>, currentHeight: Int?, callback: TransactionCallback): List<HumanReadableBatchCancelPayload> {
-        val payloads = payloadProvider.batchCancelPayloads(orders, currentHeight)
-        return payloads.map { submitBatchCancel(payload = it, callback = callback) }
-    }
-
-    internal fun cancelOrders(orderIds: List<String>, currentHeight: Int?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload? {
-        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: return null
-        val orders = subaccount.orders?.filter { orderIds.contains(it.id) && it.status.isOpen }?.groupBy { it.orderFlags == SHORT_TERM_ORDER_FLAGS } ?: return null
-        val shortTermOrders = orders[true] ?: emptyList()
-        val statefulOrders = orders[false] ?: emptyList()
-        if (shortTermOrders.isEmpty() && statefulOrders.isEmpty()) return null
-
-        return HumanReadableCancelMultipleOrdersPayload(
-            shortTermCancelPayloads = batchCancelShortTermOrders(shortTermOrders, currentHeight, callback).toIList(),
-            statefulCancelPayloads = statefulOrders.map { cancelOrder(it.id, false, callback) }.toIList(),
-        )
+    internal fun cancelOrders(marketId: String?, currentHeight: Int?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload? {
+        val payload = payloadProvider.cancelOrdersPayload(marketId, currentHeight) ?: return null
+        return submitCancelOrders(payload, callback)
     }
 
     internal fun commitTriggerOrders(
@@ -729,6 +716,45 @@ internal class SubaccountTransactionSupervisor(
         return payload
     }
 
+    private fun submitCancelOrders(
+        payload: HumanReadableCancelMultipleOrdersPayload,
+        callback: TransactionCallback
+    ): HumanReadableCancelMultipleOrdersPayload {
+        return HumanReadableCancelMultipleOrdersPayload(
+            orderIds = payload.orderIds,
+            shortTermCancelPayloads = payload.shortTermCancelPayloads.map { submitBatchCancel(payload = it, callback = callback) },
+            statefulCancelPayloads = payload.statefulCancelPayloads.map { submitStatefulCancelOrder(payload = it, callback) },
+        )
+    }
+
+    private fun submitStatefulCancelOrder(
+        payload: HumanReadableCancelOrderPayload,
+        callback: TransactionCallback,
+    ): HumanReadableCancelOrderPayload {
+        val string = Json.encodeToString(payload)
+
+        stopWatchingLastOrder()
+        submitTransaction(
+            transactionType = TransactionType.CancelOrder,
+            transactionPayloadString = string,
+            onSubmitTransaction = {
+                // todo(@aforaleka): add back tracking
+            },
+            transactionCallback = { response: String? ->
+                val error = parseTransactionResponse(response)
+                if (error == null) this.orderCanceled(payload.orderId)
+
+                helper.send(
+                    error,
+                    callback,
+                    payload,
+                )
+            },
+            useTransactionQueue = true,
+        )
+        return payload
+    }
+
     private fun submitBatchCancel(
         callback: TransactionCallback,
         payload: HumanReadableBatchCancelPayload,
@@ -739,22 +765,18 @@ internal class SubaccountTransactionSupervisor(
             transactionType = TransactionType.BatchCancel,
             transactionPayloadString = string,
             onSubmitTransaction = {
-                // TODO(@aforaleka): add tracking / new cancel records
+                // TODO(@aforaleka): add back tracking
             },
             transactionCallback = { response: String? ->
                 val error = parseTransactionResponse(response)
-                // TODO(@aforaleka): maybe call this.orderCanceled, but not an atomic protcol msg
-                // i.e. if an order fails, other cancels can still succeed
-//                if (error == null) {
-//                    orderIds.forEach { this.orderCanceled(it) }
-//                }
+                // TODO(@aforaleka): parse transaction response and call this.orderCanceled on succeeded orders
                 helper.send(
                     error,
                     callback,
                     payload,
                 )
             },
-            useTransactionQueue = false,
+            useTransactionQueue = true,
         )
         return payload
     }
