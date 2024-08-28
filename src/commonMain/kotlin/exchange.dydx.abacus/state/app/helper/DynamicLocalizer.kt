@@ -183,6 +183,7 @@ class DynamicLocalizer(
             ioImplementations.rest?.get(url, null) { response, code, _ ->
                 ioImplementations.threading?.async(ThreadingType.main) {
                     if (code in 200..299 && response != null) {
+                        ioImplementations.fileSystem?.writeTextFile("$path/$file", response)
                         val data = parser.decodeJsonObject(response)
                         if (data != null && data.size != 0) {
                             mergeLanguageData(data, file, language)
