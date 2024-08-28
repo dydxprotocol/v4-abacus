@@ -9,12 +9,14 @@ import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.TradeValidationTracker
 import exchange.dydx.abacus.utils.modify
 
 internal class InputValidator(
-    val localizer: LocalizerProtocol?,
-    val formatter: Formatter?,
-    val parser: ParserProtocol,
+    localizer: LocalizerProtocol?,
+    formatter: Formatter?,
+    private val parser: ParserProtocol,
+    tradeValidationTracker: TradeValidationTracker,
 ) {
     private val errorTypeLookup = mapOf<String, Int>(
         "REQUIRED" to 0,
@@ -70,13 +72,13 @@ internal class InputValidator(
     private val tradeValidators = listOf<ValidatorProtocol>(
         AccountInputValidator(localizer, formatter, parser),
         FieldsInputValidator(localizer, formatter, parser),
-        TradeInputValidator(localizer, formatter, parser),
+        TradeInputValidator(localizer, formatter, parser, tradeValidationTracker),
     )
 
     private val closePositionValidators = listOf<ValidatorProtocol>(
         AccountInputValidator(localizer, formatter, parser),
         FieldsInputValidator(localizer, formatter, parser),
-        TradeInputValidator(localizer, formatter, parser),
+        TradeInputValidator(localizer, formatter, parser, tradeValidationTracker),
     )
 
     private val transferValidators = listOf<ValidatorProtocol>(
