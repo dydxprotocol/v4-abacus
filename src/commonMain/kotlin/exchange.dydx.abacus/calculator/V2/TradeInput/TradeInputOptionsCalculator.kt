@@ -229,7 +229,7 @@ internal class TradeInputOptionsCalculator(
             options.postOnlyTooltip = buildToolTip(postOnlyPromptFromTrade(trade.type))
         }
 
-        options.needsTargetLeverage = trade.marginMode == MarginMode.Isolated
+        options.needsTargetLeverage = false
 
         return options
     }

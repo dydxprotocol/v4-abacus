@@ -60,9 +60,7 @@ internal class TradeInputCalculator(
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
 
-        val crossMarginSubaccount = parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
-        val groupedSubaccount = parser.asMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
-            ?: crossMarginSubaccount
+        val subaccount = parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
 
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
@@ -73,14 +71,6 @@ internal class TradeInputCalculator(
             parser.asNativeMap(state["trade"]),
             subaccountNumber,
         )
-
-        val marginMode = parser.asString(parser.value(trade, "marginMode"))?.let { MarginMode.invoke(it) }
-        val subaccount = if (marginMode == MarginMode.Cross) {
-            crossMarginSubaccount
-        } else {
-            // TODO: incorrect for isolated trades; fix CT-1092
-            groupedSubaccount
-        }
 
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -885,6 +875,7 @@ internal class TradeInputCalculator(
                 return when (MarginMode.invoke(marginMode)) {
                     MarginMode.Isolated -> listOf(
                         sizeField(),
+                        leverageField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
@@ -1224,11 +1215,6 @@ internal class TradeInputCalculator(
                 options.safeSet("postOnlyPromptStringKey", null)
             } else {
                 options.safeSet("postOnlyPromptStringKey", postOnlyPromptFromTrade(trade))
-            }
-            if (parser.asString(parser.value(trade, "marginMode")) == "ISOLATED") {
-                options.safeSet("needsTargetLeverage", true)
-            } else {
-                options.safeSet("needsTargetLeverage", false)
             }
             return options
         }

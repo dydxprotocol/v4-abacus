@@ -104,6 +104,7 @@ internal fun TradingStateMachine.tradeInMarket(
     }
 
     val input = this.input?.mutable() ?: mutableMapOf()
+
     if (parser.asString(parser.value(input, "trade.marketId")) == marketId) {
         if (parser.asString(parser.value(input, "current")) == "trade") {
             return StateResponse(state, StateChanges(iListOf()), null)
@@ -271,7 +272,7 @@ fun TradingStateMachine.trade(
                         changes = StateChanges(
                             iListOf(Changes.subaccount, Changes.input),
                             null,
-                            subaccountNumbers,
+                            iListOf(subaccountNumber),
                         )
                     } else {
                         error = ParsingError(
@@ -385,7 +386,7 @@ fun TradingStateMachine.trade(
         changes = StateChanges(
             iListOf(Changes.wallet, Changes.subaccount, Changes.input),
             null,
-            iListOf(subaccountNumber),
+            subaccountNumbers,
         )
     }
     if (sizeChanged) {

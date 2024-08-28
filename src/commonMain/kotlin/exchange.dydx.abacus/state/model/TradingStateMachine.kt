@@ -628,6 +628,7 @@ open class TradingStateMachine(
     internal fun updateStateChanges(changes: StateChanges): StateChanges {
         if (changes.changes.contains(Changes.input)) {
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
+            val childSubaccountNumber = changes.subaccountNumbers?.lastOrNull()
 
             val subaccount = if (subaccountNumber != null) {
                 parser.asNativeMap(
@@ -656,11 +657,11 @@ open class TradingStateMachine(
                 )
             }
 
-            if (subaccountNumber != null) {
+            if (subaccountNumber != null && childSubaccountNumber != null) {
                 if (staticTyping) {
                     when (internalState.input.currentType) {
                         InputType.TRADE -> {
-                            calculateTrade(subaccountNumber)
+                            calculateTrade(childSubaccountNumber)
                         }
                         InputType.TRANSFER -> {
                             calculateTransfer(subaccountNumber)
@@ -679,7 +680,7 @@ open class TradingStateMachine(
                 } else {
                     when (this.input?.get("current")) {
                         "trade" -> {
-                            calculateTrade(subaccountNumber)
+                            calculateTrade(childSubaccountNumber)
                         }
 
                         "closePosition" -> {
