@@ -55,7 +55,7 @@ enum class TradeInputField(val rawValue: String) {
 
     companion object {
         operator fun invoke(rawValue: String?) =
-            TradeInputField.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.rawValue == rawValue }
     }
 
     internal val tradeDataOption: String?
@@ -95,6 +95,7 @@ internal fun TradingStateMachine.tradeInMarket(
             marketSummaryState = internalState.marketsSummary,
             walletState = internalState.wallet,
             configs = internalState.configs,
+            rewardsParams = internalState.rewardsParams,
             marketId = marketId,
             subaccountNumber = subaccountNumber,
         )
@@ -228,6 +229,7 @@ fun TradingStateMachine.trade(
             walletState = internalState.wallet,
             marketSummaryState = internalState.marketsSummary,
             configs = internalState.configs,
+            rewardsParams = internalState.rewardsParams,
             inputType = type,
             inputData = data,
             subaccountNumber = subaccountNumber,

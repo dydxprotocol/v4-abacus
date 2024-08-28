@@ -4,7 +4,6 @@ package exchange.dydx.abacus.calculator.v2.tradeinput
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
-import exchange.dydx.abacus.calculator.TradeCalculation
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
@@ -16,14 +15,11 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
 import exchange.dydx.abacus.state.internalstate.safeCreate
-import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import kollections.toIList
 
-internal class TradeInputMarketOrderCalculator(
-    private val calculation: TradeCalculation,
-) {
+internal class TradeInputMarketOrderCalculator() {
     fun calculate(
         trade: InternalTradeInputState,
         market: InternalMarketState?,
@@ -31,9 +27,6 @@ internal class TradeInputMarketOrderCalculator(
         user: InternalUserState?,
         input: String?,
     ): InternalTradeInputState {
-        if (calculation == TradeCalculation.closePosition) {
-            calculateClosePositionSize(trade, market, subaccount)
-        }
         val marketOrder = createMarketOrder(
             trade = trade,
             market = market,
@@ -85,41 +78,6 @@ internal class TradeInputMarketOrderCalculator(
         } else {
             null
         }
-    }
-
-    private fun calculateClosePositionSize(
-        trade: InternalTradeInputState,
-        market: InternalMarketState?,
-        subaccount: InternalSubaccountState?,
-    ): InternalTradeInputState {
-        val inputType = ClosePositionInputField.invoke(trade.size?.input)
-        val marketId = trade.marketId ?: return trade
-        val position = subaccount?.openPositions?.get(marketId) ?: return trade
-        val positionSize = position.calculated[CalculationPeriod.current]?.size ?: return trade
-        val positionSizeAbs = positionSize.abs()
-        trade.side = if (positionSize > Numeric.double.ZERO) OrderSide.Sell else OrderSide.Buy
-        when (inputType) {
-            ClosePositionInputField.percent -> {
-                val percent = trade.sizePercent ?: return trade
-                val size =
-                    if (percent > Numeric.double.ONE) positionSizeAbs else positionSizeAbs * percent
-                val stepSize = market?.perpetualMarket?.configs?.stepSize ?: return trade
-                trade.size =
-                    TradeInputSize.safeCreate(trade.size).copy(size = Rounder.round(size, stepSize))
-                return trade
-            }
-
-            ClosePositionInputField.size -> {
-                trade.sizePercent = null
-                val size = trade.size?.size ?: return trade
-                if (size > positionSizeAbs) {
-                    trade.size = TradeInputSize.safeCreate(trade.size).copy(size = positionSizeAbs)
-                }
-            }
-
-            else -> {}
-        }
-        return trade
     }
 
     private fun createMarketOrder(
@@ -465,7 +423,7 @@ internal class TradeInputMarketOrderCalculator(
         worstPrice: Double?,
         filled: Boolean,
     ): TradeInputMarketOrder? {
-        return if (size != null && usdcSize != null && size != Numeric.double.ZERO) {
+        return if (size != null && usdcSize != null) {
             TradeInputMarketOrder(
                 orderbook = orderbook.map {
                     OrderbookUsage(
@@ -473,7 +431,7 @@ internal class TradeInputMarketOrderCalculator(
                         size = it.size,
                     )
                 }.toIList(),
-                price = (usdcSize / size),
+                price = if (size != Numeric.double.ZERO) usdcSize / size else null,
                 size = size,
                 usdcSize = usdcSize,
                 worstPrice = worstPrice,

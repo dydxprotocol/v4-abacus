@@ -6,6 +6,7 @@ import exchange.dydx.abacus.app.manager.TestRest
 import exchange.dydx.abacus.app.manager.TestThreading
 import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
@@ -40,6 +41,7 @@ import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.input.ClosePositionInput
 import exchange.dydx.abacus.output.input.ClosePositionInputSize
 import exchange.dydx.abacus.output.input.Input
+import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.ReceiptLine
@@ -53,13 +55,18 @@ import exchange.dydx.abacus.output.input.TradeInputOptions
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
 import exchange.dydx.abacus.output.input.TradeInputSummary
+import exchange.dydx.abacus.processor.utils.MarketId
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.app.helper.DynamicLocalizer
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalConfigsState
+import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputOptions
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.internalstate.InternalTradeInputSummary
 import exchange.dydx.abacus.state.model.PerpTradingStateMachine
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.tests.payloads.AbacusMockData
@@ -317,16 +324,58 @@ open class BaseTests(
                 "orderbooks",
             )
         }
-        verifyInputState(perp.input, state?.input, "input")
+        if (staticTyping) {
+            perp.internalState.input
+        } else {
+            verifyInputStateDeprecated(perp.input, state?.input, "input")
+        }
     }
 
-    private fun verifyInputState(data: Map<String, Any>?, obj: Input?, trace: String) {
+    private fun verifyInputState(
+        data: InternalState?,
+        obj: Input?,
+        trace: String
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(data.input.currentType, obj.current, "$trace.current")
+            when (obj.current) {
+                InputType.TRADE -> {
+                    verifyInputTradeState(
+                        data = data.input.trade,
+                        obj = obj.trade,
+                        trace = "$trace.trade",
+                    )
+                }
+
+                // TODO: Close position
+                InputType.CLOSE_POSITION -> {
+//                    verifyInputClosePositionState(
+//                        data.input.closePosition,
+//                        obj.closePosition,
+//                        "$trace.closePosition",
+//                    )
+                }
+
+                InputType.TRANSFER -> {}
+                InputType.TRIGGER_ORDERS -> {}
+                InputType.ADJUST_ISOLATED_MARGIN -> {}
+                null -> {}
+            }
+
+            assertEquals(data.input.receiptLines, obj.receiptLines, "$trace.receiptLines")
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyInputStateDeprecated(data: Map<String, Any>?, obj: Input?, trace: String) {
         if (data != null) {
             assertNotNull(obj)
             assertEquals(parser.asString(data["current"]), obj.current?.rawValue, "$trace.current")
             when (obj.current?.rawValue) {
                 "trade" -> {
-                    verifyInputTradeState(
+                    verifyInputTradeStateDeprecated(
                         parser.asNativeMap(data["trade"]),
                         obj.trade,
                         "$trace.trade",
@@ -352,7 +401,41 @@ open class BaseTests(
         }
     }
 
-    private fun verifyInputTradeState(data: Map<String, Any>?, obj: TradeInput?, trace: String) {
+    private fun verifyInputTradeState(
+        data: InternalTradeInputState?,
+        obj: TradeInput?,
+        trace: String
+    ) {
+        if (data != null) {
+            assertNotNull(obj, "$trace should not be null")
+            assertEquals(data.type, obj.type, "$trace.type $doesntMatchText")
+            assertEquals(data.side, obj.side, "$trace.side $doesntMatchText")
+            assertEquals(data.marketId, obj.marketId, "$trace.marketId $doesntMatchText")
+            assertEquals(data.execution, obj.execution, "$trace.execution $doesntMatchText")
+            assertEquals(data.timeInForce, obj.timeInForce, "$trace.timeInForce $doesntMatchText")
+            assertEquals(data.postOnly, obj.postOnly, "$trace.postOnly $doesntMatchText")
+            assertEquals(data.reduceOnly, obj.reduceOnly, "$trace.reduceOnly $doesntMatchText")
+            assertEquals(data.marginMode, obj.marginMode, "$trace.marginMode $doesntMatchText")
+            assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
+            assertEquals(data.goodTil, obj.goodTil, "$trace.goodTil $doesntMatchText")
+            assertEquals(data.marketOrder, obj.marketOrder, "$trace.marketOrder $doesntMatchText")
+            verifyInputTradeInputOptionsState(
+                data = data.options,
+                obj = obj.options,
+                trace = "$trace.options",
+            )
+            verifyInputTradeInputSummaryState(
+                data = data.summary,
+                obj = obj.summary,
+                trace = "$trace.summary",
+            )
+            assertEquals(data.brackets, obj.bracket, "$trace.bracket $doesntMatchText")
+        } else {
+            assertNull(obj, "$trace should be null")
+        }
+    }
+
+    private fun verifyInputTradeStateDeprecated(data: Map<String, Any>?, obj: TradeInput?, trace: String) {
         if (data != null) {
             assertNotNull(obj, "$trace should not be null")
             assertEquals(
@@ -410,12 +493,12 @@ open class BaseTests(
                 obj.marketOrder,
                 "$trace.marketOrder",
             )
-            verifyInputTradeInputOptionsState(
+            verifyInputTradeInputOptionsStateDeprecated(
                 parser.asNativeMap(data["options"]),
                 obj.options,
                 "$trace.options",
             )
-            verifyInputTradeInputSummaryState(
+            verifyInputTradeInputSummaryStateDeprecated(
                 parser.asNativeMap(data["summary"]),
                 obj.summary,
                 "$trace.summary",
@@ -452,7 +535,7 @@ open class BaseTests(
                 obj.marketOrder,
                 "$trace.marketOrder",
             )
-            verifyInputTradeInputSummaryState(
+            verifyInputTradeInputSummaryStateDeprecated(
                 parser.asNativeMap(data["summary"]),
                 obj.summary,
                 "$trace.summary",
@@ -638,6 +721,32 @@ open class BaseTests(
     }
 
     private fun verifyInputTradeInputOptionsState(
+        data: InternalTradeInputOptions?,
+        obj: TradeInputOptions?,
+        trace: String,
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(data.needsMarginMode, obj.needsMarginMode, "$trace.needsMarginMode $doesntMatchText")
+            assertEquals(data.needsSize, obj.needsSize, "$trace.needsSize $doesntMatchText")
+            assertEquals(data.needsLeverage, obj.needsLeverage, "$trace.needsLeverage $doesntMatchText")
+            assertEquals(data.needsBrackets, obj.needsBrackets, "$trace.needsBrackets $doesntMatchText")
+            assertEquals(data.needsGoodUntil, obj.needsGoodUntil, "$trace.needsGoodUntil $doesntMatchText")
+            assertEquals(data.needsLimitPrice, obj.needsLimitPrice, "$trace.needsLimitPrice $doesntMatchText")
+            assertEquals(data.needsPostOnly, obj.needsPostOnly, "$trace.needsPostOnly $doesntMatchText")
+            assertEquals(data.needsReduceOnly, obj.needsReduceOnly, "$trace.needsReduceOnly $doesntMatchText")
+            assertEquals(data.needsTrailingPercent, obj.needsTrailingPercent, "$trace.needsTrailingPercent $doesntMatchText")
+            assertEquals(data.needsTriggerPrice, obj.needsTriggerPrice, "$trace.needsTriggerPrice $doesntMatchText")
+            assertEquals(data.executionOptions, obj.executionOptions, "$trace.executionOptions $doesntMatchText")
+            assertEquals(data.timeInForceOptions, obj.timeInForceOptions, "$trace.timeInForceOptions $doesntMatchText")
+            assertEquals(data.reduceOnlyTooltip, obj.reduceOnlyTooltip, "$trace.timeInForceOptions $doesntMatchText")
+            assertEquals(data.postOnlyTooltip, obj.postOnlyTooltip, "$trace.timeInForceOptions $doesntMatchText")
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyInputTradeInputOptionsStateDeprecated(
         data: Map<String, Any>?,
         obj: TradeInputOptions?,
         trace: String,
@@ -774,6 +883,25 @@ open class BaseTests(
     }
 
     private fun verifyInputTradeInputSummaryState(
+        data: InternalTradeInputSummary?,
+        obj: TradeInputSummary?,
+        trace: String,
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(data.filled, obj.filled, "$trace.filled $doesntMatchText")
+            assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
+            assertEquals(data.price, obj.price, "$trace.price $doesntMatchText")
+            assertEquals(data.fee, obj.fee, "$trace.fee $doesntMatchText")
+            assertEquals(data.slippage, obj.slippage, "$trace.slippage $doesntMatchText")
+            assertEquals(data.usdcSize, obj.usdcSize, "$trace.usdcSize $doesntMatchText")
+            assertEquals(data.total, obj.total, "$trace.total $doesntMatchText")
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyInputTradeInputSummaryStateDeprecated(
         data: Map<String, Any>?,
         obj: TradeInputSummary?,
         trace: String,
@@ -1001,7 +1129,7 @@ open class BaseTests(
         if (internalState != null) {
             assertNotNull(obj)
             assertEquals(internalState.subaccountNumber, obj.subaccountNumber, "$trace.subaccountNumber")
-            assertEquals(internalState.marginEnabled, obj.marginEnabled, "$trace.marginEnabled")
+            assertEquals(internalState.marginEnabled ?: true, obj.marginEnabled ?: true, "$trace.marginEnabled")
             // TODO: Calculated fields
 //            assertEquals(parser.asDouble(data["pnl24h"]), obj.pnl24h, "$trace.pnl24h")
 //            assertEquals(
@@ -1011,6 +1139,57 @@ open class BaseTests(
 //            )
 //            assertEquals(parser.asDouble(data["pnlTotal"]), obj.pnlTotal, "$trace.pnlTotal")
 //            assertEquals(parser.asString(data["positionId"]), obj.positionId, "$trace.positionId
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.equity, obj.equity?.current, "$trace.equity")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.equity, obj.equity?.postOrder, "$trace.equity")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.equity, obj.equity?.postAllOrders, "$trace.equity")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.leverage, obj.leverage?.current, "$trace.leverage")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.leverage, obj.leverage?.postOrder, "$trace.leverage")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.leverage, obj.leverage?.postAllOrders, "$trace.leverage")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.quoteBalance, obj.quoteBalance?.current, "$trace.quoteBalance")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.quoteBalance, obj.quoteBalance?.postOrder, "$trace.quoteBalance")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.quoteBalance, obj.quoteBalance?.postAllOrders, "$trace.quoteBalance")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.initialRiskTotal, obj.initialRiskTotal?.current, "$trace.initialRiskTotal")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.initialRiskTotal, obj.initialRiskTotal?.postOrder, "$trace.initialRiskTotal")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.initialRiskTotal, obj.initialRiskTotal?.postAllOrders, "$trace.initialRiskTotal")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.quoteBalance, obj.quoteBalance?.current, "$trace.quoteBalance")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.quoteBalance, obj.quoteBalance?.postOrder, "$trace.quoteBalance")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.quoteBalance, obj.quoteBalance?.postAllOrders, "$trace.quoteBalance")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.valueTotal, obj.valueTotal?.current, "$trace.valueTotal")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.valueTotal, obj.valueTotal?.postOrder, "$trace.valueTotal")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.valueTotal, obj.valueTotal?.postAllOrders, "$trace.valueTotal")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.buyingPower, obj.buyingPower?.current, "$trace.buyingPower")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.buyingPower, obj.buyingPower?.postOrder, "$trace.buyingPower")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.buyingPower, obj.buyingPower?.postAllOrders, "$trace.buyingPower")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.freeCollateral, obj.freeCollateral?.current, "$trace.freeCollateral")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.freeCollateral, obj.freeCollateral?.postOrder, "$trace.freeCollateral")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.freeCollateral, obj.freeCollateral?.postAllOrders, "$trace.freeCollateral")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.marginUsage, obj.marginUsage?.current, "$trace.marginUsage")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.marginUsage, obj.marginUsage?.postOrder, "$trace.marginUsage")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.marginUsage, obj.marginUsage?.postAllOrders, "$trace.marginUsage")
+
+            assertEquals(internalState.calculated[CalculationPeriod.current]?.notionalTotal, obj.notionalTotal?.current, "$trace.notionalTotal")
+            assertEquals(internalState.calculated[CalculationPeriod.post]?.notionalTotal, obj.notionalTotal?.postOrder, "$trace.notionalTotal")
+            assertEquals(internalState.calculated[CalculationPeriod.settled]?.notionalTotal, obj.notionalTotal?.postAllOrders, "$trace.notionalTotal")
+
+            verifyAccountSubaccountOpenPositions(
+                data = internalState.openPositions,
+                obj = obj.openPositions,
+                trace = "$trace.openPositions",
+            )
+//            verifyAccountSubaccountPendingPositions(
+//                parser.asNativeList(data["pendingPositions"]),
+//                obj.pendingPositions,
+//                "$trace.pendingPositions",
+//            )
         } else {
             assertNull(obj)
         }
@@ -1087,7 +1266,7 @@ open class BaseTests(
                 obj.quoteBalance,
                 "$trace.quoteBalance",
             )
-            verifyAccountSubaccountOpenPositions(
+            verifyAccountSubaccountOpenPositionsDeprecated(
                 parser.asNativeMap(data["openPositions"]),
                 obj.openPositions,
                 "$trace.openPositions",
@@ -1117,6 +1296,28 @@ open class BaseTests(
     }
 
     private fun verifyAccountSubaccountOpenPositions(
+        data: Map<String, InternalPerpetualPosition>?,
+        obj: List<SubaccountPosition>?,
+        trace: String,
+    ) {
+        if (data != null) {
+            val obj = obj ?: emptyList()
+            assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
+            for (position in obj) {
+                val positionId = position.id
+                verifyAccountSubaccountOpenPosition(
+                    data = data[positionId],
+                    key = positionId,
+                    obj = position,
+                    trace = "$trace.$positionId",
+                )
+            }
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyAccountSubaccountOpenPositionsDeprecated(
         data: Map<String, Any>?,
         obj: List<SubaccountPosition>?,
         trace: String,
@@ -1126,7 +1327,7 @@ open class BaseTests(
             assertEquals(data.size, obj.size, "$trace.size $doesntMatchText")
             for (position in obj) {
                 val positionId = position.id
-                verifyAccountSubaccountOpenPosition(
+                verifyAccountSubaccountOpenPositionDeprecated(
                     parser.asNativeMap(data[positionId]),
                     position,
                     "$trace.$positionId",
@@ -1138,6 +1339,25 @@ open class BaseTests(
     }
 
     private fun verifyAccountSubaccountOpenPosition(
+        data: InternalPerpetualPosition?,
+        key: String,
+        obj: SubaccountPosition?,
+        trace: String,
+    ) {
+        if (data != null) {
+            assertNotNull(obj)
+            assertEquals(key, obj.id, "$trace.id")
+            assertEquals(MarketId.getAssetId(key), obj.assetId, "$trace.assetId")
+            assertEquals(MarketId.getDisplayId(key), obj.displayId, "$trace.displayId")
+            assertEquals(data.exitPrice, obj.exitPrice, "$trace.exitPrice")
+            assertEquals(data.netFunding, obj.netFunding, "$trace.netFunding")
+            assertEquals(data.closedAt?.toEpochMilliseconds()?.toDouble(), obj.closedAtMilliseconds, "$trace.closedAt")
+        } else {
+            assertNull(obj)
+        }
+    }
+
+    private fun verifyAccountSubaccountOpenPositionDeprecated(
         data: Map<String, Any>?,
         obj: SubaccountPosition?,
         trace: String,

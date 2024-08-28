@@ -47,41 +47,79 @@ data class Input(
             staticTyping: Boolean,
         ): Input? {
             Logger.d { "creating Input\n" }
+            if (staticTyping && internalState?.input?.currentType == null) {
+                return null
+            }
 
-            data?.let {
+            if (staticTyping || data != null) {
                 val current = if (staticTyping) {
                     internalState?.input?.currentType
                 } else {
-                    InputType.invoke(parser.asString(data["current"]))
+                    InputType.invoke(parser.asString(data?.get("current")))
                 }
 
                 val trade = if (staticTyping) {
                     TradeInput.create(state = internalState?.input?.trade)
                 } else {
-                    TradeInput.create(existing?.trade, parser, parser.asMap(data["trade"]))
+                    TradeInput.create(existing?.trade, parser, parser.asMap(data?.get("trade")))
                 }
-                val closePosition =
-                    ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data["closePosition"]))
+
+                val closePosition = if (staticTyping) {
+                    ClosePositionInput.create(state = internalState?.input?.closePosition)
+                } else {
+                    ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data?.get("closePosition")))
+                }
 
                 val transfer =
-                    TransferInput.create(existing?.transfer, parser, parser.asMap(data["transfer"]), environment, internalState?.transfer)
+                    TransferInput.create(existing?.transfer, parser, parser.asMap(data?.get("transfer")), environment, internalState?.transfer)
 
-                val triggerOrders =
-                    TriggerOrdersInput.create(existing?.triggerOrders, parser, parser.asMap(data["triggerOrders"]))
+                val triggerOrders = if (staticTyping) {
+                    TriggerOrdersInput.create(state = internalState?.input?.triggerOrders)
+                } else {
+                    TriggerOrdersInput.create(
+                        existing?.triggerOrders,
+                        parser,
+                        parser.asMap(data?.get("triggerOrders")),
+                    )
+                }
 
-                val adjustIsolatedMargin =
-                    AdjustIsolatedMarginInput.create(existing?.adjustIsolatedMargin, parser, parser.asMap(data["adjustIsolatedMargin"]))
+                val adjustIsolatedMargin = if (staticTyping) {
+                    AdjustIsolatedMarginInput.create(
+                        parser = parser,
+                        data = internalState?.input?.adjustIsolatedMargin,
+                    )
+                } else {
+                    AdjustIsolatedMarginInput.create(
+                        existing?.adjustIsolatedMargin,
+                        parser,
+                        parser.asMap(
+                            data?.get("adjustIsolatedMargin"),
+                        ),
+                    )
+                }
 
-                val errors =
-                    ValidationError.create(existing?.errors, parser, parser.asList(data["errors"]))
+                val errors = if (staticTyping) {
+                    internalState?.input?.errors?.toIList()
+                } else {
+                    ValidationError.create(existing?.errors, parser, parser.asList(data?.get("errors")))
+                }
 
-                val childSubaccountErrors =
-                    ValidationError.create(existing?.childSubaccountErrors, parser, parser.asList(data["childSubaccountErrors"]))
+                val childSubaccountErrors = if (staticTyping) {
+                    internalState?.input?.childSubaccountErrors?.toIList()
+                } else {
+                    ValidationError.create(
+                        existing?.childSubaccountErrors,
+                        parser,
+                        parser.asList(
+                            data?.get("childSubaccountErrors"),
+                        ),
+                    )
+                }
 
                 val receiptLines = if (staticTyping) {
                     internalState?.input?.receiptLines?.toIList()
                 } else {
-                    ReceiptLine.create(parser, parser.asList(data["receiptLines"]))
+                    ReceiptLine.create(parser, parser.asList(data?.get("receiptLines")))
                 }
 
                 return if (existing?.current !== current ||

@@ -12,13 +12,14 @@ import exchange.dydx.abacus.state.internalstate.InternalPositionCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import indexer.codegen.IndexerPerpetualPositionStatus
 import kotlin.math.max
 import kotlin.math.min
 
-private data class Delta(
+data class Delta(
     val marketId: String? = null,
     val size: Double? = null,
     val price: Double? = null,
@@ -66,6 +67,20 @@ internal class SubaccountTransformerV2(
             delta = Delta(usdcSize = transfer),
             period = period,
         )
+    }
+
+    fun applyIsolatedMarginAdjustmentToWallet(
+        wallet: InternalWalletState,
+        subaccountNumber: Int?,
+        delta: Delta,
+        period: CalculationPeriod,
+    ): InternalWalletState {
+        val subaccountNumber = subaccountNumber ?: return wallet
+        val subaccount = wallet.account.subaccounts[subaccountNumber]
+        if (subaccount != null) {
+            applyDeltaToSubaccount(subaccount, delta, period)
+        }
+        return wallet
     }
 
     private fun deltaFromTrade(

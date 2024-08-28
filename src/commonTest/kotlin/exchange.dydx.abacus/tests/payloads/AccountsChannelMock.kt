@@ -1195,7 +1195,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1203,7 +1202,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1211,7 +1209,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1219,7 +1216,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1227,7 +1223,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1235,7 +1230,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1243,7 +1237,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1251,7 +1244,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}, {
         		"address": "cosmos1fq8q55896ljfjj7v3x0qd0z3sr78wmes940uhm",
@@ -1259,7 +1251,6 @@ internal class AccountsChannelMock {
         		"equity": "100000.000000",
         		"freeCollateral": "100000.000000",
         		"openPerpetualPositions": {},
-        		"quoteBalance": "100000.000000",
         		"marginEnabled": true
         	}]
         }
@@ -1749,7 +1740,14 @@ internal class AccountsChannelMock {
                        "netFunding":"0"
                     }
                  },
-                 "quoteBalance":"68257.215192",
+                 "assetPositions": {
+                    "USDC": {
+                       "symbol": "USDC",
+                       "side": "LONG",
+                       "size": "68257.215192",
+                       "assetId": "0"
+                    }
+                 },
                  "marginEnabled":true
               },
               "orders":[
@@ -1852,7 +1850,7 @@ internal class AccountsChannelMock {
                  {
                     "id":"b812bea8-29d3-5841-9549-caa072f6f8a8",
                     "market": "ETH-USD",
-                             "ticker":"ETH-USD",
+                    "ticker":"ETH-USD",
                     "subaccountId":"660efb4c-5472-5119-8c17-65cf702ccaea",
                     "clientId":"2194126268",
                     "clobPairId":"1",
@@ -1936,7 +1934,6 @@ internal class AccountsChannelMock {
                 },
                 {
                     "id": "770933a5-0293-5aca-8a01-d9c4030d776d",
-                             "ticker":"ETH-USD",
                     "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
                     "clientId": "852785216",
                     "clobPairId": "1",
@@ -2037,7 +2034,7 @@ internal class AccountsChannelMock {
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
-                    "denom":"USDC",
+                    "symbol":"USDC",
                     "side":"LONG",
                     "size":"7250.506704"
                  }
@@ -2076,7 +2073,7 @@ internal class AccountsChannelMock {
                     "subaccountNumber":0,
                     "positionId":"24a26508-9d45-5b4c-a13b-31f6e9780ecc",
                     "assetId":"0",
-                    "denom":"USDC",
+                    "symbol":"USDC",
                     "side":"LONG",
                     "size":"8772.436277"
                  }

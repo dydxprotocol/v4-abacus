@@ -20,7 +20,11 @@ import exchange.dydx.abacus.output.account.SubaccountOrder
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.account.SubaccountTransfer
 import exchange.dydx.abacus.output.account.UnbondingDelegation
+import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputOptions
+import exchange.dydx.abacus.output.input.AdjustIsolatedMarginInputSummary
 import exchange.dydx.abacus.output.input.InputType
+import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
+import exchange.dydx.abacus.output.input.IsolatedMarginInputType
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderType
@@ -33,6 +37,9 @@ import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
 import exchange.dydx.abacus.output.input.TradeInputPrice
 import exchange.dydx.abacus.output.input.TradeInputSize
+import exchange.dydx.abacus.output.input.TriggerOrderInputSummary
+import exchange.dydx.abacus.output.input.TriggerPrice
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import indexer.codegen.IndexerHistoricalBlockTradingReward
@@ -54,8 +61,50 @@ internal data class InternalState(
 
 internal data class InternalInputState(
     var trade: InternalTradeInputState = InternalTradeInputState(),
-    var currentType: InputType? = null,
+    var closePosition: InternalTradeInputState = InternalTradeInputState(),
+    var triggerOrders: InternalTriggerOrdersInputState = InternalTriggerOrdersInputState(),
+    var adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState = InternalAdjustIsolatedMarginInputState(),
     var receiptLines: List<ReceiptLine>? = null,
+    var errors: List<ValidationError>? = null,
+    var childSubaccountErrors: List<ValidationError>? = null,
+) {
+    var currentType: InputType? = null
+        set(value) {
+            if (field != value) {
+                receiptLines = null
+                errors = null
+                childSubaccountErrors = null
+                field = value
+            }
+        }
+}
+
+internal data class InternalAdjustIsolatedMarginInputState(
+    var market: String? = null,
+    var type: IsolatedMarginAdjustmentType? = null,
+    var amount: Double? = null,
+    var amountPercent: Double? = null,
+    var amountInput: IsolatedMarginInputType? = null,
+    var childSubaccountNumber: Int? = null,
+    var parentSubaccountNumber: Int? = null,
+    var options: AdjustIsolatedMarginInputOptions? = null,
+    var summary: AdjustIsolatedMarginInputSummary? = null,
+)
+
+internal data class InternalTriggerOrdersInputState(
+    var marketId: String? = null,
+    var size: Double? = null,
+    var stopLossOrder: InternalTriggerOrderState? = null,
+    var takeProfitOrder: InternalTriggerOrderState? = null,
+)
+
+internal data class InternalTriggerOrderState(
+    var orderId: String? = null,
+    var size: Double? = null,
+    var type: OrderType? = null,
+    var side: OrderSide? = null,
+    var price: TriggerPrice? = null,
+    var summary: TriggerOrderInputSummary? = null,
 )
 
 internal data class InternalTradeInputState(
@@ -73,7 +122,7 @@ internal data class InternalTradeInputState(
     var reduceOnly: Boolean = false,
     var postOnly: Boolean = false,
     var fee: Double? = null,
-    var bracket: TradeInputBracket? = null,
+    var brackets: TradeInputBracket? = null,
     var options: InternalTradeInputOptions = InternalTradeInputOptions(),
     var marketOrder: TradeInputMarketOrder? = null,
     var summary: InternalTradeInputSummary? = null,
@@ -171,7 +220,13 @@ internal data class InternalWalletState(
     var account: InternalAccountState = InternalAccountState(),
     var user: InternalUserState? = null,
     var walletAddress: String? = null,
-)
+) {
+    val isWalletConnected: Boolean
+        get() = walletAddress != null
+
+    val isAccountConnected: Boolean
+        get() = account.subaccounts != null
+}
 
 internal data class InternalUserState(
     var feeTierId: String? = null,
@@ -179,6 +234,8 @@ internal data class InternalUserState(
     var takerFeeRate: Double? = null,
     var makerVolume30D: Double? = null,
     var takerVolume30D: Double? = null,
+
+    var restricted: Boolean = false, // TODO: Not being used
 )
 
 internal data class InternalAccountState(
@@ -315,6 +372,7 @@ internal data class InternalPerpetualPosition(
 
     // Calculated:
     val calculated: MutableMap<CalculationPeriod, InternalPositionCalculated> = mutableMapOf(),
+    var childSubaccountNumber: Int? = null,
 ) {
     val marginMode: MarginMode?
         get() {
@@ -410,5 +468,15 @@ internal fun TradeInputGoodUntil.Companion.safeCreate(existing: TradeInputGoodUn
     return existing ?: TradeInputGoodUntil(
         duration = null,
         unit = null,
+    )
+}
+
+internal fun TriggerPrice.Companion.safeCreate(existing: TriggerPrice?): TriggerPrice {
+    return existing ?: TriggerPrice(
+        limitPrice = null,
+        triggerPrice = null,
+        percentDiff = null,
+        usdcDiff = null,
+        input = null,
     )
 }

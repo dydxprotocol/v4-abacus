@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.output.input
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalAdjustIsolatedMarginInputState
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
@@ -111,15 +112,44 @@ enum class IsolatedMarginAdjustmentType {
 
 @JsExport
 @Serializable
+enum class IsolatedMarginInputType {
+    Amount,
+    Percent
+}
+
+@JsExport
+@Serializable
 data class AdjustIsolatedMarginInput(
+    val market: String?,
     val type: IsolatedMarginAdjustmentType,
     val amount: String?,
     val amountPercent: String?,
+    val amountInput: IsolatedMarginInputType?,
     val childSubaccountNumber: Int?,
     val adjustIsolatedMarginInputOptions: AdjustIsolatedMarginInputOptions?,
     val summary: AdjustIsolatedMarginInputSummary?
 ) {
     companion object {
+        internal fun create(
+            parser: ParserProtocol,
+            data: InternalAdjustIsolatedMarginInputState?
+        ): AdjustIsolatedMarginInput? {
+            return if (data != null) {
+                AdjustIsolatedMarginInput(
+                    market = data.market,
+                    type = data.type ?: IsolatedMarginAdjustmentType.Add,
+                    amount = parser.asString(data.amount),
+                    amountPercent = parser.asString(data.amountPercent),
+                    amountInput = data.amountInput,
+                    childSubaccountNumber = data.childSubaccountNumber,
+                    adjustIsolatedMarginInputOptions = data.options,
+                    summary = data.summary,
+                )
+            } else {
+                null
+            }
+        }
+
         internal fun create(
             existing: AdjustIsolatedMarginInput?,
             parser: ParserProtocol,
@@ -128,6 +158,8 @@ data class AdjustIsolatedMarginInput(
             Logger.d { "creating Adjust Isolated Margin Input\n" }
 
             data?.let {
+                val market = parser.asString(data["Market"])
+
                 val type = parser.asString(data["Type"])?.let {
                     IsolatedMarginAdjustmentType.valueOf(it)
                 } ?: IsolatedMarginAdjustmentType.Add
@@ -135,6 +167,9 @@ data class AdjustIsolatedMarginInput(
                 val childSubaccountNumber = parser.asInt(data["ChildSubaccountNumber"])
                 val amount = parser.asString(data["Amount"])
                 val amountPercent = parser.asString(data["AmountPercent"])
+                val amountInput = parser.asString(data["AmountInput"])?.let {
+                    IsolatedMarginInputType.valueOf(it)
+                }
 
                 val adjustIsolatedMarginInputOptions = AdjustIsolatedMarginInputOptions.create(
                     existing?.adjustIsolatedMarginInputOptions,
@@ -148,17 +183,21 @@ data class AdjustIsolatedMarginInput(
                 )
 
                 return if (
+                    existing?.market != market ||
                     existing?.type != type ||
                     existing.amount != amount ||
                     existing.amountPercent != amountPercent ||
+                    existing.amountInput != amountInput ||
                     existing.childSubaccountNumber != childSubaccountNumber ||
                     existing.adjustIsolatedMarginInputOptions != adjustIsolatedMarginInputOptions ||
                     existing.summary !== summary
                 ) {
                     AdjustIsolatedMarginInput(
+                        market,
                         type,
                         amount,
                         amountPercent,
+                        amountInput,
                         childSubaccountNumber,
                         adjustIsolatedMarginInputOptions,
                         summary,

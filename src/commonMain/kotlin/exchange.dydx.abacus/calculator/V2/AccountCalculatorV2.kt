@@ -113,10 +113,8 @@ internal class AccountCalculatorV2(
         val modifiedOpenPositions = parentOpenPositions?.toMutableMap() ?: mutableMapOf()
         val childOpenPositions = childSubaccount.openPositions
         for ((market, childOpenPosition) in childOpenPositions ?: emptyMap()) {
-//            modifiedChildOpenPosition?.safeSet(
-//                "childSubaccountNumber",
-//                childSubaccountNumber,
-//            )
+            childOpenPosition.childSubaccountNumber = childSubaccountNumber
+
             modifiedOpenPositions[market] = childOpenPosition
         }
         parentSubaccount.openPositions = modifiedOpenPositions

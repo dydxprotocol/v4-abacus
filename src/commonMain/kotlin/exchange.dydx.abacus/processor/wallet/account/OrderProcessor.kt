@@ -301,9 +301,12 @@ internal class OrderProcessor(
         existing: SubaccountOrder?,
         payload: IndexerCompositeOrderObject,
     ): Boolean {
-        val updatedAt = existing?.updatedAtMilliseconds?.let {
+        if (existing == null) {
+            return true
+        }
+        val updatedAt = existing.updatedAtMilliseconds?.let {
             Instant.fromEpochMilliseconds(it.toLong())
-        } ?: existing?.createdAtMilliseconds?.let {
+        } ?: existing.createdAtMilliseconds?.let {
             Instant.fromEpochMilliseconds(it.toLong())
         }
         val incomingUpdatedAt = parser.asDatetime(payload.updatedAt)

@@ -2,6 +2,7 @@ package exchange.dydx.abacus.validator.transfer
 
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.TransferType
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -17,8 +18,15 @@ internal class WithdrawalGatingValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TransferValidatorProtocol {
     override fun validateTransfer(
-        staticTyping: Boolean,
         internalState: InternalState,
+        currentBlockAndHeight: BlockAndTime?,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTransferDeprecated(
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
@@ -29,11 +37,12 @@ internal class WithdrawalGatingValidator(
     ): List<Any>? {
         val currentBlock = currentBlockAndHeight?.block ?: Int.MAX_VALUE // parser.asInt(parser.value(environment, "currentBlock"))
         val withdrawalGating = parser.asMap(parser.value(configs, "withdrawalGating"))
-        val withdrawalsAndTransfersUnblockedAtBlock = if (staticTyping) {
-            internalState.configs.withdrawalGating?.withdrawalsAndTransfersUnblockedAtBlock ?: 0
-        } else {
-            parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock")) ?: 0
-        }
+//        val withdrawalsAndTransfersUnblockedAtBlock = if (staticTyping) {
+//            internalState.configs.withdrawalGating?.withdrawalsAndTransfersUnblockedAtBlock ?: 0
+//        } else {
+//            parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock")) ?: 0
+//        }
+        val withdrawalsAndTransfersUnblockedAtBlock = parser.asInt(withdrawalGating?.get("withdrawalsAndTransfersUnblockedAtBlock")) ?: 0
         val blockDurationSeconds = if (environment?.isMainNet == true) 1.1 else 1.5
         val secondsUntilUnblock = ((withdrawalsAndTransfersUnblockedAtBlock - currentBlock) * blockDurationSeconds).toInt()
 
@@ -43,7 +52,7 @@ internal class WithdrawalGatingValidator(
             secondsUntilUnblock > 0
         ) {
             return listOf(
-                error(
+                errorDeprecated(
                     type = ErrorType.error.rawValue,
                     errorCode = "",
                     fields = null,

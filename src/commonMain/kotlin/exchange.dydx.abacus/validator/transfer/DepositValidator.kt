@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.validator.transfer
 
+import exchange.dydx.abacus.output.input.ValidationError
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.app.helper.Formatter
@@ -15,8 +16,15 @@ internal class DepositValidator(
     parser: ParserProtocol,
 ) : BaseInputValidator(localizer, formatter, parser), TransferValidatorProtocol {
     override fun validateTransfer(
-        staticTyping: Boolean,
         internalState: InternalState,
+        currentBlockAndHeight: BlockAndTime?,
+        restricted: Boolean,
+        environment: V4Environment?
+    ): List<ValidationError>? {
+        return null
+    }
+
+    override fun validateTransferDeprecated(
         wallet: Map<String, Any>?,
         subaccount: Map<String, Any>?,
         transfer: Map<String, Any>,
