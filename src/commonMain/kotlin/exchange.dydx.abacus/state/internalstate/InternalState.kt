@@ -64,6 +64,7 @@ internal data class InternalInputState(
     var closePosition: InternalTradeInputState = InternalTradeInputState(),
     var triggerOrders: InternalTriggerOrdersInputState = InternalTriggerOrdersInputState(),
     var adjustIsolatedMargin: InternalAdjustIsolatedMarginInputState = InternalAdjustIsolatedMarginInputState(),
+    var transfer: InternalTransferInputState = InternalTransferInputState(),
     var receiptLines: List<ReceiptLine>? = null,
     var errors: List<ValidationError>? = null,
     var childSubaccountErrors: List<ValidationError>? = null,
