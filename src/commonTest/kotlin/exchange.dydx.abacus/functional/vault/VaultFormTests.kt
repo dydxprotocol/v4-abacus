@@ -2,6 +2,7 @@ package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.output.input.ErrorType
 import kollections.iListOf
+import kollections.toIList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -42,7 +43,7 @@ class VaultFormTests {
 
         assertEquals(
             VaultFormValidationResult(
-                errors = iListOf(),
+                errors = listOf<VaultFormValidationError>().toIList(),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(
                         subaccountFrom = "0",
