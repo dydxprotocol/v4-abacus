@@ -28,7 +28,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, useParentSubaccount) {
+open class V4BaseTests(
+    useParentSubaccount: Boolean = false
+) : BaseTests(127, useParentSubaccount) {
     internal val testWsUrl =
         AbUrl.fromString("wss://indexer.v4staging.dydx.exchange/v4/ws")
     internal val testRestUrl =

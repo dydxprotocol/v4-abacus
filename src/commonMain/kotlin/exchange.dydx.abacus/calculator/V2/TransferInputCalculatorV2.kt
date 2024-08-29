@@ -16,7 +16,7 @@ internal class TransferInputCalculatorV2(
         wallet: InternalWalletState,
         subaccountNumber: Int?,
     ): InternalTransferInputState {
-        if (wallet.isWalletConnected && transfer.type != null) {
+        if (wallet.isAccountConnected && transfer.type != null) {
             finalize(transfer)
 
             subaccountTransformer.applyTransferToWallet(
@@ -27,7 +27,6 @@ internal class TransferInputCalculatorV2(
                 period = CalculationPeriod.post,
             )
         }
-
         return transfer
     }
 
