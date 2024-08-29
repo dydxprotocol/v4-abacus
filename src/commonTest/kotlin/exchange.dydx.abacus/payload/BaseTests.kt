@@ -7,6 +7,7 @@ import exchange.dydx.abacus.app.manager.TestThreading
 import exchange.dydx.abacus.app.manager.TestTimer
 import exchange.dydx.abacus.app.manager.TestWebSocket
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.fakes.FakeTrackingProtocol
 import exchange.dydx.abacus.output.Asset
 import exchange.dydx.abacus.output.Configs
 import exchange.dydx.abacus.output.FeeDiscount
@@ -101,6 +102,7 @@ open class BaseTests(
     internal val doesntMatchText = "doesn't match"
     internal val parser = Parser()
     internal val mock = AbacusMockData()
+    internal val trackingProtocol = FakeTrackingProtocol()
     internal var perp = createState(
         useParentSubaccount = useParentSubaccount,
         staticTyping = staticTyping,
@@ -146,6 +148,7 @@ open class BaseTests(
             maxSubaccountNumber = maxSubaccountNumber,
             useParentSubaccount = useParentSubaccount,
             staticTyping = staticTyping,
+            trackingProtocol = trackingProtocol,
         )
     }
 

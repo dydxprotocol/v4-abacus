@@ -195,41 +195,44 @@ interface DYDXChainTransactionsProtocol {
 }
 
 @JsExport
-enum class AnalyticsEvent(val rawValue: String) {
+enum class AnalyticsEvent {
     // App
-    NetworkStatus("NetworkStatus"),
+    NetworkStatus,
 
     // Trade
-    TradePlaceOrderClick("TradePlaceOrderClick"),
-    TradeCancelOrderClick("TradeCancelOrderClick"),
-    TradePlaceOrder("TradePlaceOrder"),
-    TradeCancelOrder("TradeCancelOrder"),
-    TradePlaceOrderSubmissionConfirmed("TradePlaceOrderSubmissionConfirmed"),
-    TradeCancelOrderSubmissionConfirmed("TradeCancelOrderSubmissionConfirmed"),
-    TradePlaceOrderSubmissionFailed("TradePlaceOrderSubmissionFailed"),
-    TradeCancelOrderSubmissionFailed("TradeCancelOrderSubmissionFailed"),
-    TradeCancelOrderConfirmed("TradeCancelOrderConfirmed"),
-    TradePlaceOrderConfirmed("TradePlaceOrderConfirmed"),
+    TradePlaceOrderClick,
+    TradeCancelOrderClick,
+    TradePlaceOrder,
+    TradeCancelOrder,
+    TradePlaceOrderSubmissionConfirmed,
+    TradeCancelOrderSubmissionConfirmed,
+    TradePlaceOrderSubmissionFailed,
+    TradeCancelOrderSubmissionFailed,
+    TradeCancelOrderConfirmed,
+    TradePlaceOrderConfirmed,
 
     // Order status change
-    TradePlaceOrderStatusCanceled("TradePlaceOrderStatusCanceled"),
-    TradePlaceOrderStatusCanceling("TradePlaceOrderStatusCanceling"),
-    TradePlaceOrderStatusFilled("TradePlaceOrderStatusFilled"),
-    TradePlaceOrderStatusOpen("TradePlaceOrderStatusOpen"),
-    TradePlaceOrderStatusPending("TradePlaceOrderStatusPending"),
-    TradePlaceOrderStatusUntriggered("TradePlaceOrderStatusUntriggered"),
-    TradePlaceOrderStatusPartiallyFilled("TradePlaceOrderStatusPartiallyFilled"),
-    TradePlaceOrderStatusPartiallyCanceled("TradePlaceOrderStatusPartiallyCanceled"),
+    TradePlaceOrderStatusCanceled,
+    TradePlaceOrderStatusCanceling,
+    TradePlaceOrderStatusFilled,
+    TradePlaceOrderStatusOpen,
+    TradePlaceOrderStatusPending,
+    TradePlaceOrderStatusUntriggered,
+    TradePlaceOrderStatusPartiallyFilled,
+    TradePlaceOrderStatusPartiallyCanceled,
 
     // Trigger Order
-    TriggerOrderClick("TriggerOrderClick"),
+    TriggerOrderClick,
+
+    // Validation Error
+    TradeValidation,
 
     // Transfers
-    TransferFaucetConfirmed("TransferFaucetConfirmed");
+    TransferFaucetConfirmed;
 
     companion object {
         operator fun invoke(rawValue: String) =
-            AnalyticsEvent.values().firstOrNull { it.rawValue == rawValue }
+            entries.firstOrNull { it.name == rawValue }
     }
 }
 

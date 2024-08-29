@@ -41,6 +41,7 @@ open class V4BaseTests(useParentSubaccount: Boolean = false) : BaseTests(127, us
             maxSubaccountNumber = 127,
             useParentSubaccount = useParentSubaccount,
             staticTyping = staticTyping,
+            trackingProtocol = trackingProtocol,
         )
     }
 
