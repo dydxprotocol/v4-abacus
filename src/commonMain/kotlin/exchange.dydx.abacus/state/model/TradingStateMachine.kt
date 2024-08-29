@@ -637,21 +637,28 @@ open class TradingStateMachine(
     internal fun updateStateChanges(changes: StateChanges): StateChanges {
         if (changes.changes.contains(Changes.input)) {
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
-
-            val subaccount = if (subaccountNumber != null) {
-                parser.asNativeMap(
-                    parser.value(
-                        this.account,
-                        "subaccounts.$subaccountNumber",
-                    ),
-                )
+            if (staticTyping) {
+                val subaccount = internalState.wallet.account.subaccounts[subaccountNumber]
+                // Only run validation if the subaccount is null since updateState will run validation for each subaccount
+                if (subaccount == null) {
+                    inputValidator.validate(
+                        internalState = internalState,
+                        subaccountNumber = subaccountNumber,
+                        currentBlockAndHeight = currentBlockAndHeight,
+                        environment = environment,
+                    )
+                }
             } else {
-                null
-            }
-
-            if (!staticTyping) {
-                // Skip this for static typing.. since the validator will be called in updateState().
-                // No need to call this twice.
+                val subaccount = if (subaccountNumber != null) {
+                    parser.asNativeMap(
+                        parser.value(
+                            this.account,
+                            "subaccounts.$subaccountNumber",
+                        ),
+                    )
+                } else {
+                    null
+                }
                 this.input = inputValidator.validateDeprecated(
                     subaccountNumber = subaccountNumber,
                     wallet = this.wallet,

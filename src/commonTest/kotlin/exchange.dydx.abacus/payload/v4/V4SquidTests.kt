@@ -88,21 +88,39 @@ class V4SquidTests : V4BaseTests() {
         test({
             perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
-            val summary = it.state?.input?.transfer?.summary!!
+            val summary =
+                if (perp.staticTyping) {
+                    perp.internalState.input.transfer.summary
+                } else {
+                    it.state?.input?.transfer?.summary!!
+                }
             assertNotNull(summary)
             assertTrue { summary.slippage!!.toInt() == 0 }
             assertTrue { summary.exchangeRate!! > 0 }
             assertTrue { summary.estimatedRouteDuration!! > 0 }
             assertTrue { summary.gasFee!! > 0 }
             // assertTrue { summary.bridgeFee!! > 0 }
-            assertNotNull(it.state?.input?.transfer?.requestPayload)
-            assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
+            if (perp.staticTyping) {
+                val route = perp.internalState.input.transfer.route
+                val requestPayload = parser.asNativeMap(parser.value(route, "requestPayload"))
+                assertNotNull(requestPayload)
+                assertNotNull(perp.internalState.input.transfer.size?.usdcSize)
+            } else {
+                assertNotNull(it.state?.input?.transfer?.requestPayload)
+                assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
+            }
         })
 
         test({
             perp.transfer("0", TransferInputField.size, 0, environment = mock.v4Environment)
         }, null, {
-            assertNull(it.state?.input?.transfer?.requestPayload)
+            if (perp.staticTyping) {
+                val route = perp.internalState.input.transfer.route
+                val requestPayload = parser.asNativeMap(parser.value(route, "requestPayload"))
+                assertNull(requestPayload)
+            } else {
+                assertNull(it.state?.input?.transfer?.requestPayload)
+            }
         })
     }
 

@@ -62,6 +62,12 @@ internal class TransferInputProcessor(
             inputState.transfer.route = null
 
             inputState.transfer.type = TransferType.deposit
+            val chainType = routerProcessor.defaultChainId()
+            if (chainType != null) {
+                updateTransferToChainType(inputState.transfer, chainType)
+            }
+            inputState.transfer.token = routerProcessor.defaultTokenAddress(chainType)
+
             calculator.calculate(
                 transfer = inputState.transfer,
                 wallet = walletState,
@@ -75,20 +81,23 @@ internal class TransferInputProcessor(
         when (inputField) {
             TransferInputField.type -> {
                 val type = TransferType.invoke(data)
-                transfer.type = type
-                transfer.size =
-                    TransferInputSize.safeCreate(transfer.size).copy(size = null, usdcSize = null)
-                transfer.route = null
-                transfer.memo = null
-                if (type == TransferType.transferOut) {
-                    transfer.chain = "chain"
-                    transfer.token = "usdc"
-                } else {
-                    val chainType = routerProcessor.defaultChainId()
-                    if (chainType != null) {
-                        updateTransferToChainType(transfer, chainType)
+                if (transfer.type != type) {
+                    transfer.type = type
+                    transfer.size =
+                        TransferInputSize.safeCreate(transfer.size)
+                            .copy(size = null, usdcSize = null)
+                    transfer.route = null
+                    transfer.memo = null
+                    if (type == TransferType.transferOut) {
+                        transfer.chain = "chain"
+                        transfer.token = "usdc"
+                    } else {
+                        val chainType = routerProcessor.defaultChainId()
+                        if (chainType != null) {
+                            updateTransferToChainType(transfer, chainType)
+                        }
+                        transfer.token = routerProcessor.defaultTokenAddress(chainType)
                     }
-                    transfer.token = routerProcessor.defaultTokenAddress(chainType)
                 }
                 updated = true
             }
@@ -188,6 +197,12 @@ internal class TransferInputProcessor(
                     updateTransferOutOptions(transfer)
                 }
             }
+
+            transfer.resources = TransferInputResources.safeCreate(transfer.resources)
+                .copy(
+                    chainResources = transfer.chainResources?.toIMap(),
+                    tokenResources = transfer.tokenResources?.toIMap(),
+                )
         }
 
         return InputProcessorResult(
@@ -306,11 +321,6 @@ internal class TransferInputProcessor(
             .copy(assets = tokenOptions.toIList())
         transfer.withdrawalOptions = WithdrawalInputOptions.safeCreate(transfer.withdrawalOptions)
             .copy(assets = tokenOptions.toIList())
-        transfer.resources = TransferInputResources.safeCreate(transfer.resources)
-            .copy(
-                chainResources = routerProcessor.chainResources(chainType)?.toIMap(),
-                tokenResources = routerProcessor.tokenResources(chainType)?.toIMap(),
-            )
     }
 
     private fun updateTransferToTokenType(
@@ -351,10 +361,6 @@ internal class TransferInputProcessor(
                 .copy(assets = tokenOptions.toIList())
             transfer.withdrawalOptions = WithdrawalInputOptions.safeCreate(transfer.withdrawalOptions)
                 .copy(assets = tokenOptions.toIList())
-            transfer.resources = TransferInputResources.safeCreate(transfer.resources)
-                .copy(
-                    tokenResources = routerProcessor.tokenResources(exchangeDestinationChainId)?.toIMap(),
-                )
         }
 
         transfer.exchange = exchange
