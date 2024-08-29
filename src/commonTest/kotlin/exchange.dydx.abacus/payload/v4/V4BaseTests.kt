@@ -43,6 +43,7 @@ open class V4BaseTests(
             maxSubaccountNumber = 127,
             useParentSubaccount = useParentSubaccount,
             staticTyping = staticTyping,
+            trackingProtocol = trackingProtocol,
         )
     }
 

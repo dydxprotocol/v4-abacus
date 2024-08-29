@@ -101,6 +101,23 @@ class TradeMarketOrderTests : ValidationsTests() {
             assertEquals(orderbook[1].price, 1000.5)
             assertEquals(orderbook[2].size, 0.4)
             assertEquals(orderbook[2].price, 1060.0)
+
+            assertEquals(trackingProtocol.lastEvent, "TradeValidation")
+            assertEquals(
+                trackingProtocol.lastData,
+                """
+                    {
+                        "errors": [
+                            "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE"
+                        ],
+                        "marketId": "ETH-USD",
+                        "size": 1.0,
+                        "notionalSize": 1024.26,
+                        "indexSlippage": 0.06,
+                        "orderbookSlippage": 0.06
+                    }
+                """.trimIndent(),
+            )
         } else {
             test(
                 {
@@ -147,6 +164,23 @@ class TradeMarketOrderTests : ValidationsTests() {
                         }
                     }
                 }
+                """.trimIndent(),
+            )
+
+            assertEquals(trackingProtocol.lastEvent, "TradeValidation")
+            assertEquals(
+                trackingProtocol.lastData,
+                """
+                    {
+                        "errors": [
+                            "MARKET_ORDER_WARNING_ORDERBOOK_SLIPPAGE"
+                        ],
+                        "marketId": "ETH-USD",
+                        "size": 1.0,
+                        "notionalSize": 1024.26,
+                        "indexSlippage": 0.06,
+                        "orderbookSlippage": 0.06
+                    }
                 """.trimIndent(),
             )
         }

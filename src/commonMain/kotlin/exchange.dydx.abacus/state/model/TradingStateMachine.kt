@@ -50,6 +50,7 @@ import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.protocols.TrackingProtocol
 import exchange.dydx.abacus.protocols.asTypedStringMap
 import exchange.dydx.abacus.responses.ParsingError
 import exchange.dydx.abacus.responses.ParsingErrorType
@@ -72,6 +73,7 @@ import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.ServerTime
+import exchange.dydx.abacus.utils.TradeValidationTracker
 import exchange.dydx.abacus.utils.iMapOf
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
@@ -102,6 +104,7 @@ open class TradingStateMachine(
     private val maxSubaccountNumber: Int,
     private val useParentSubaccount: Boolean,
     val staticTyping: Boolean = false,
+    private val trackingProtocol: TrackingProtocol?,
 ) {
     internal var internalState: InternalState = InternalState()
 
@@ -147,7 +150,9 @@ open class TradingStateMachine(
 
     private val receiptCalculator = ReceiptCalculator()
 
-    internal val inputValidator = InputValidator(localizer, formatter, parser)
+    private val tradeValidationTracker = TradeValidationTracker(trackingProtocol)
+
+    internal val inputValidator = InputValidator(localizer, formatter, parser, tradeValidationTracker)
 
     internal var data: Map<String, Any>? = null
 

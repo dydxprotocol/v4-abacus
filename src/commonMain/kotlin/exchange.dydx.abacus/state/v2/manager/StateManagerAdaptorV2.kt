@@ -113,6 +113,7 @@ internal class StateManagerAdaptorV2(
         maxSubaccountNumber = 127,
         useParentSubaccount = appConfigs.accountConfigs.subaccountConfigs.useParentSubaccount,
         staticTyping = appConfigs.staticTyping,
+        trackingProtocol = ioImplementations.tracking,
     )
 
     internal val jsonEncoder = JsonEncoder()

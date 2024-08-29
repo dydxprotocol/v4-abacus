@@ -15,6 +15,7 @@ class TradingStateMachineTests {
             formatter = null,
             maxSubaccountNumber = 1,
             useParentSubaccount = false,
+            trackingProtocol = null,
         )
         StatsigConfig.useSkip = true
         assertTrue(tradingStateMachine.routerProcessor is SkipProcessor)
@@ -28,6 +29,7 @@ class TradingStateMachineTests {
             formatter = null,
             maxSubaccountNumber = 1,
             useParentSubaccount = false,
+            trackingProtocol = null,
         )
         StatsigConfig.useSkip = false
         assertTrue(tradingStateMachine.routerProcessor is SquidProcessor)
