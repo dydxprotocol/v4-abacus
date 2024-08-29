@@ -1008,28 +1008,29 @@ open class TradingStateMachine(
                     price = null, // priceOverwrite(markets),
                     configs = null, // This is used to get the IMF.. with "null" the default value 0.05 will be used
                 )
-            }
-            this.marketsSummary?.let { marketsSummary ->
-                val periods = if (this.input != null) {
-                    setOf(
-                        CalculationPeriod.current,
-                        CalculationPeriod.post,
-                        CalculationPeriod.settled,
-                    )
-                } else {
-                    setOf(CalculationPeriod.current)
-                }
+            } else {
+                this.marketsSummary?.let { marketsSummary ->
+                    val periods = if (this.input != null) {
+                        setOf(
+                            CalculationPeriod.current,
+                            CalculationPeriod.post,
+                            CalculationPeriod.settled,
+                        )
+                    } else {
+                        setOf(CalculationPeriod.current)
+                    }
 
-                parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
-                    val modifiedAccount = accountCalculator.calculate(
-                        account = account,
-                        subaccountNumbers = subaccountNumbers,
-                        configs = null,
-                        markets = markets,
-                        price = priceOverwrite(markets),
-                        periods = periods,
-                    )
-                    this.account = modifiedAccount
+                    parser.asNativeMap(marketsSummary["markets"])?.let { markets ->
+                        val modifiedAccount = accountCalculator.calculate(
+                            account = account,
+                            subaccountNumbers = subaccountNumbers,
+                            configs = null,
+                            markets = markets,
+                            price = priceOverwrite(markets),
+                            periods = periods,
+                        )
+                        this.account = modifiedAccount
+                    }
                 }
             }
         }

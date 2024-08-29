@@ -26,7 +26,19 @@ internal class TransferFieldsValidator(
         val transfer = internalState.input.transfer
         val type = transfer.type ?: return null
         when (type) {
-            TransferType.deposit, TransferType.withdrawal -> {
+            TransferType.deposit -> {
+                val usdcSize = parser.asDouble(transfer.size?.usdcSize) ?: 0.0
+                if (usdcSize <= 0.0) {
+                    errors.add(
+                        required(
+                            errorCode = "REQUIRED_SIZE",
+                            field = "size.usdcSize",
+                            actionStringKey = "APP.TRADE.ENTER_AMOUNT",
+                        ),
+                    )
+                }
+            }
+            TransferType.withdrawal -> {
                 val usdcSize = parser.asDouble(transfer.size?.usdcSize) ?: 0.0
                 if (usdcSize <= 0.0) {
                     errors.add(
