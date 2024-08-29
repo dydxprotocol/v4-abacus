@@ -35,14 +35,14 @@ class TransferRequiredInputTests : V4BaseTests() {
     override fun reset() {
         super.reset()
         test({
-            perp.transfer(null, null)
+            perp.transfer(null, null, environment = mock.v4Environment)
         }, null)
     }
 
     private fun testTransferInputDeposit() {
         test(
             {
-                perp.transfer("DEPOSIT", TransferInputField.type)
+                perp.transfer("DEPOSIT", TransferInputField.type, environment = mock.v4Environment)
             },
             """
                 {
@@ -72,7 +72,7 @@ class TransferRequiredInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("1.0", TransferInputField.usdcSize)
+                perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -91,7 +91,7 @@ class TransferRequiredInputTests : V4BaseTests() {
     private fun testTransferInputWithdraw() {
         test(
             {
-                perp.transfer("WITHDRAWAL", TransferInputField.type)
+                perp.transfer("WITHDRAWAL", TransferInputField.type, environment = mock.v4Environment)
             },
             """
                 {
@@ -121,7 +121,7 @@ class TransferRequiredInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("1.0", TransferInputField.usdcSize)
+                perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -140,7 +140,7 @@ class TransferRequiredInputTests : V4BaseTests() {
     private fun testTransferInputTransferOut() {
         test(
             {
-                perp.transfer("TRANSFER_OUT", TransferInputField.type)
+                perp.transfer("TRANSFER_OUT", TransferInputField.type, environment = mock.v4Environment)
             },
             """
                 {
@@ -170,7 +170,7 @@ class TransferRequiredInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("1.0", TransferInputField.usdcSize)
+                perp.transfer("1.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -200,7 +200,7 @@ class TransferRequiredInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("dydx1111111", TransferInputField.address)
+                perp.transfer("dydx1111111", TransferInputField.address, environment = mock.v4Environment)
             },
             """
                 {
@@ -229,7 +229,7 @@ class TransferRequiredInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9", TransferInputField.address)
+                perp.transfer("dydx16zfx8g4jg9vels3rsvcym490tkn5la304c57e9", TransferInputField.address, environment = mock.v4Environment)
             },
             """
                 {

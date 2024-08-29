@@ -11,6 +11,7 @@ import exchange.dydx.abacus.calculator.TransferInputCalculator
 import exchange.dydx.abacus.calculator.TriggerOrdersInputCalculator
 import exchange.dydx.abacus.calculator.v2.AccountCalculatorV2
 import exchange.dydx.abacus.calculator.v2.AdjustIsolatedMarginInputCalculatorV2
+import exchange.dydx.abacus.calculator.v2.TransferInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.TriggerOrdersInputCalculatorV2
 import exchange.dydx.abacus.calculator.v2.tradeinput.TradeInputCalculatorV2
 import exchange.dydx.abacus.output.Asset
@@ -120,8 +121,16 @@ open class TradingStateMachine(
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
     internal val configsProcessor = ConfigsProcessor(parser, localizer)
-    private val skipProcessor = SkipProcessor(parser = parser, internalState = internalState.transfer)
-    private val squidProcessor = SquidProcessor(parser = parser, internalState = internalState.transfer)
+    private val skipProcessor = SkipProcessor(
+        parser = parser,
+        internalState = internalState.input.transfer,
+        staticTyping = staticTyping,
+    )
+    private val squidProcessor = SquidProcessor(
+        parser = parser,
+        internalState = internalState.input.transfer,
+        staticTyping = staticTyping,
+    )
     internal val routerProcessor: IRouterProcessor
         get() {
             if (StatsigConfig.useSkip) return skipProcessor
@@ -802,21 +811,30 @@ open class TradingStateMachine(
     }
 
     private fun calculateTransfer(subaccountNumber: Int?) {
-        val input = this.input?.mutable()
-        val transfer = parser.asNativeMap(input?.get("transfer"))
-        val calculator = TransferInputCalculator(parser)
-        val params = mutableMapOf<String, Any>()
-        params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
-        params.safeSet("user", user)
-        params.safeSet("transfer", transfer)
-        params.safeSet("wallet", wallet)
+        if (staticTyping) {
+            val calculator = TransferInputCalculatorV2(parser = parser)
+            calculator.calculate(
+                transfer = internalState.input.transfer,
+                wallet = internalState.wallet,
+                subaccountNumber = subaccountNumber,
+            )
+        } else {
+            val input = this.input?.mutable()
+            val transfer = parser.asNativeMap(input?.get("transfer"))
+            val calculator = TransferInputCalculator(parser)
+            val params = mutableMapOf<String, Any>()
+            params.safeSet("markets", parser.asNativeMap(marketsSummary?.get("markets")))
+            params.safeSet("user", user)
+            params.safeSet("transfer", transfer)
+            params.safeSet("wallet", wallet)
 
-        val modified = calculator.calculate(params, subaccountNumber)
-        this.setMarkets(parser.asNativeMap(modified["markets"]))
-        this.wallet = parser.asNativeMap(modified["wallet"])
-        input?.safeSet("transfer", parser.asNativeMap(modified["transfer"]))
+            val modified = calculator.calculate(params, subaccountNumber)
+            this.setMarkets(parser.asNativeMap(modified["markets"]))
+            this.wallet = parser.asNativeMap(modified["wallet"])
+            input?.safeSet("transfer", parser.asNativeMap(modified["transfer"]))
 
-        this.input = input
+            this.input = input
+        }
     }
 
     private fun calculateTriggerOrders(subaccountNumber: Int) {

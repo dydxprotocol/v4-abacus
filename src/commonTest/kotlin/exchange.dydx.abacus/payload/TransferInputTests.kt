@@ -50,7 +50,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("DEPOSIT", TransferInputField.type)
+                perp.transfer("DEPOSIT", TransferInputField.type, environment = mock.v4Environment)
             },
             """
                 {
@@ -66,7 +66,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("1", TransferInputField.usdcSize)
+                perp.transfer("1", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -117,7 +117,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("5000.0", TransferInputField.usdcSize)
+                perp.transfer("5000.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -178,7 +178,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("1000.0", TransferInputField.usdcSize)
+                perp.transfer("1000.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -235,7 +235,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("10.0", TransferInputField.usdcFee)
+                perp.transfer("10.0", TransferInputField.usdcFee, environment = mock.v4Environment)
             },
             """
                 {
@@ -296,27 +296,27 @@ class TransferInputTests : V4BaseTests() {
 
     private fun testSlowWithdrawalTransferInput() {
         test({
-            perp.transfer("WITHDRAWAL", TransferInputField.type)
+            perp.transfer("WITHDRAWAL", TransferInputField.type, environment = mock.v4Environment)
         }, null)
 
         test({
-            perp.transfer("false", TransferInputField.fastSpeed)
+            perp.transfer("false", TransferInputField.fastSpeed, environment = mock.v4Environment)
         }, null)
 
         test({
-            perp.transfer("0", TransferInputField.usdcFee)
+            perp.transfer("0", TransferInputField.usdcFee, environment = mock.v4Environment)
         }, null)
 
         /*
         size = 1000.0
          */
         test({
-            perp.transfer("5000.0", TransferInputField.usdcSize)
+            perp.transfer("5000.0", TransferInputField.usdcSize, environment = mock.v4Environment)
         }, null)
 
         test(
             {
-                perp.transfer("1000.0", TransferInputField.usdcSize)
+                perp.transfer("1000.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -374,7 +374,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("10.0", TransferInputField.usdcFee)
+                perp.transfer("10.0", TransferInputField.usdcFee, environment = mock.v4Environment)
             },
             """
                 {
@@ -433,27 +433,27 @@ class TransferInputTests : V4BaseTests() {
 
     private fun testTransferOutTransferInput() {
         test({
-            perp.transfer("TRANSFER_OUT", TransferInputField.type)
+            perp.transfer("TRANSFER_OUT", TransferInputField.type, environment = mock.v4Environment)
         }, null)
 
         test({
-            perp.transfer("0.0", TransferInputField.usdcFee)
+            perp.transfer("0.0", TransferInputField.usdcFee, environment = mock.v4Environment)
         }, null)
 
         /*
         size = 1000.0
          */
         test({
-            perp.transfer("5000.0", TransferInputField.usdcSize)
+            perp.transfer("5000.0", TransferInputField.usdcSize, environment = mock.v4Environment)
         }, null)
 
         test({
-            perp.transfer("test memo", TransferInputField.MEMO)
+            perp.transfer("test memo", TransferInputField.MEMO, environment = mock.v4Environment)
         }, null)
 
         test(
             {
-                perp.transfer("1000.0", TransferInputField.usdcSize)
+                perp.transfer("1000.0", TransferInputField.usdcSize, environment = mock.v4Environment)
             },
             """
                 {
@@ -517,7 +517,7 @@ class TransferInputTests : V4BaseTests() {
     private fun testTransferInputTypeChange() {
         test(
             {
-                perp.transfer("DEPOSIT", TransferInputField.type)
+                perp.transfer("DEPOSIT", TransferInputField.type, environment = mock.v4Environment)
             },
             """
         {
@@ -533,7 +533,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("TRANSFER_OUT", TransferInputField.type)
+                perp.transfer("TRANSFER_OUT", TransferInputField.type, environment = mock.v4Environment)
             },
             """
     {
@@ -549,7 +549,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("test memo", TransferInputField.MEMO)
+                perp.transfer("test memo", TransferInputField.MEMO, environment = mock.v4Environment)
             },
             """
         {
@@ -565,7 +565,7 @@ class TransferInputTests : V4BaseTests() {
 
         test(
             {
-                perp.transfer("WITHDRAWAL", TransferInputField.type)
+                perp.transfer("WITHDRAWAL", TransferInputField.type, environment = mock.v4Environment)
             },
             """
     {

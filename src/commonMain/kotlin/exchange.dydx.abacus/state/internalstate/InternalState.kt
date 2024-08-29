@@ -50,7 +50,6 @@ import kotlinx.datetime.Instant
 
 internal data class InternalState(
     var assets: MutableMap<String, Asset> = mutableMapOf(),
-    val transfer: InternalTransferInputState = InternalTransferInputState(),
     val wallet: InternalWalletState = InternalWalletState(),
     var rewardsParams: InternalRewardsParamsState? = null,
     val launchIncentive: InternalLaunchIncentiveState = InternalLaunchIncentiveState(),

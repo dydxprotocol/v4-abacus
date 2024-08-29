@@ -21,7 +21,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
     override fun setup() {
         perp.loadAccounts(mock)
         perp.currentBlockAndHeight = mock.heightMock.currentBlockAndHeight
-        perp.transfer(TransferType.deposit.rawValue, TransferInputField.type)
+        perp.transfer(TransferType.deposit.rawValue, TransferInputField.type, environment = mock.v4Environment)
     }
 
     @Test
@@ -53,12 +53,12 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
         }
 
         perp.currentBlockAndHeight = mock.heightMock.beforeCurrentBlockAndHeight
-        perp.transfer(TransferType.withdrawal.rawValue, TransferInputField.type)
+        perp.transfer(TransferType.withdrawal.rawValue, TransferInputField.type, environment = mock.v4Environment)
 
         if (perp.staticTyping) {
             test(
                 {
-                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                    perp.transfer("1235.0", TransferInputField.usdcSize, environment = mock.v4Environment)
                 },
                 """
             {
@@ -95,7 +95,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
         } else {
             test(
                 {
-                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                    perp.transfer("1235.0", TransferInputField.usdcSize, environment = mock.v4Environment)
                 },
                 """
             {
@@ -139,12 +139,12 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
         }
 
         perp.currentBlockAndHeight = mock.heightMock.afterCurrentBlockAndHeight
-        perp.transfer(TransferType.transferOut.rawValue, TransferInputField.type)
+        perp.transfer(TransferType.transferOut.rawValue, TransferInputField.type, environment = mock.v4Environment)
 
         if (perp.staticTyping) {
             test(
                 {
-                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                    perp.transfer("1235.0", TransferInputField.usdcSize, environment = mock.v4Environment)
                 },
                 """
             {
@@ -170,7 +170,7 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
         } else {
             test(
                 {
-                    perp.transfer("1235.0", TransferInputField.usdcSize)
+                    perp.transfer("1235.0", TransferInputField.usdcSize, environment = mock.v4Environment)
                 },
                 """
             {
@@ -207,8 +207,8 @@ class V4WithdrawalSafetyChecksTests : V4BaseTests() {
     fun testCapacity() {
         setup()
 
-        perp.transfer("WITHDRAWAL", TransferInputField.type)
-        perp.transfer("1235.0", TransferInputField.usdcSize)
+        perp.transfer("WITHDRAWAL", TransferInputField.type, environment = mock.v4Environment)
+        perp.transfer("1235.0", TransferInputField.usdcSize, environment = mock.v4Environment)
 
         if (perp.staticTyping) {
             perp.parseOnChainWithdrawalCapacity(mock.v4WithdrawalSafetyChecksMock.withdrawal_capacity_by_denom_data_daily_less_than_weekly)
