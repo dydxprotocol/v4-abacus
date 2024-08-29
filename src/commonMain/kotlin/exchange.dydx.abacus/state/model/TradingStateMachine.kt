@@ -91,6 +91,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration.Companion.days
+import exchange.dydx.abacus.output.input.MarginMode
 
 @Suppress("UNCHECKED_CAST")
 @JsExport
@@ -628,7 +629,6 @@ open class TradingStateMachine(
     internal fun updateStateChanges(changes: StateChanges): StateChanges {
         if (changes.changes.contains(Changes.input)) {
             val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
-            val childSubaccountNumber = changes.subaccountNumbers?.lastOrNull()
 
             val subaccount = if (subaccountNumber != null) {
                 parser.asNativeMap(
@@ -657,11 +657,11 @@ open class TradingStateMachine(
                 )
             }
 
-            if (subaccountNumber != null && childSubaccountNumber != null) {
+            if (subaccountNumber != null) {
                 if (staticTyping) {
                     when (internalState.input.currentType) {
                         InputType.TRADE -> {
-                            calculateTrade(childSubaccountNumber)
+                            calculateTrade(subaccountNumber)
                         }
                         InputType.TRANSFER -> {
                             calculateTransfer(subaccountNumber)
@@ -680,7 +680,7 @@ open class TradingStateMachine(
                 } else {
                     when (this.input?.get("current")) {
                         "trade" -> {
-                            calculateTrade(childSubaccountNumber)
+                            calculateTrade(subaccountNumber)
                         }
 
                         "closePosition" -> {
@@ -1071,13 +1071,20 @@ open class TradingStateMachine(
                                 val marketId =
                                     parser.asString(parser.value(modified, "trade.marketId"))
                                 if (subaccountNumber != null && marketId != null) {
+                                    val marginMode = parser.asString(parser.value(modified, "marginMode"))?.let { MarginMode.invoke(it) }
+                                    val subaccount = if (marginMode == MarginMode.Cross) {
+                                        parser.asNativeMap(parser.value(this.account, "subaccounts.$subaccountNumber"))
+                                    } else {
+                                        parser.asNativeMap(parser.value(this.account, "groupedSubaccounts.$subaccountNumber"))
+                                    }
                                     val leverage =
                                         parser.asDouble(
                                             parser.value(
-                                                this.account,
-                                                "subaccounts.$subaccountNumber.openPositions.$marketId.leverage.postOrder",
+                                                subaccount,
+                                                "openPositions.$marketId.leverage.postOrder",
                                             ),
                                         )
+                                        Logger.e { "xcxc $marketId on $subaccountNumber has leverage $leverage"}
                                     modified.safeSet("trade.size.leverage", leverage)
                                 } else {
                                     modified.safeSet("trade.size.leverage", null)

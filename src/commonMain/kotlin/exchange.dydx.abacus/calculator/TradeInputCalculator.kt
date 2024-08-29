@@ -60,8 +60,6 @@ internal class TradeInputCalculator(
     ): Map<String, Any> {
         val account = parser.asNativeMap(state["account"])
 
-        val subaccount = parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
-
         val user = parser.asNativeMap(state["user"]) ?: mapOf()
         val markets = parser.asNativeMap(state["markets"])
         val rewardsParams = parser.asNativeMap(state["rewardsParams"])
@@ -71,6 +69,14 @@ internal class TradeInputCalculator(
             parser.asNativeMap(state["trade"]),
             subaccountNumber,
         )
+
+        val marginMode = parser.asString(parser.value(trade, "marginMode"))?.let { MarginMode.invoke(it) }
+        val subaccount = if (marginMode == MarginMode.Cross) {
+            parser.asNativeMap(parser.value(account, "subaccounts.$subaccountNumber"))
+        } else {
+            // TODO: incorrect for isolated trades; fix CT-1092
+            parser.asNativeMap(parser.value(account, "groupedSubaccounts.$subaccountNumber"))
+        }
 
         val marketId = parser.asString(trade?.get("marketId"))
         val type = parser.asString(trade?.get("type"))
@@ -1690,6 +1696,8 @@ internal class TradeInputCalculator(
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
         val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
         val positionNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: Numeric.double.ZERO
+
+        // xcxc update
 
         return if (equity != null && equity > Numeric.double.ZERO) {
             (freeCollateral + positionNotionalTotal / maxMarketLeverage) * maxMarketLeverage / equity

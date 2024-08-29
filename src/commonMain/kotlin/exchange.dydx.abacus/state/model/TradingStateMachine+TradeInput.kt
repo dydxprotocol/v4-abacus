@@ -272,7 +272,7 @@ fun TradingStateMachine.trade(
                         changes = StateChanges(
                             iListOf(Changes.subaccount, Changes.input),
                             null,
-                            iListOf(subaccountNumber),
+                            subaccountNumbers,
                         )
                     } else {
                         error = ParsingError(
@@ -386,7 +386,7 @@ fun TradingStateMachine.trade(
         changes = StateChanges(
             iListOf(Changes.wallet, Changes.subaccount, Changes.input),
             null,
-            subaccountNumbers,
+            iListOf(subaccountNumber),
         )
     }
     if (sizeChanged) {

@@ -22,6 +22,7 @@ import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 import kotlin.math.max
+import kotlin.math.min
 
 internal object MarginCalculator {
     fun findExistingPosition(
@@ -775,8 +776,7 @@ internal object MarginCalculator {
 
         // Cap targetLeverage to 98% of max leverage
         val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
-            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
-            cappedLeverage
+            maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
         } else {
             null
         }
