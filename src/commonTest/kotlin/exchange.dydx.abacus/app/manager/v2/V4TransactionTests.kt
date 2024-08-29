@@ -217,7 +217,7 @@ class V4TransactionTests : NetworkTests() {
         val callback: TransactionCallback = { _, _, _ -> statefulCancelCalledCount++ }
         val cancelPayloads = testChain!!.canceldOrderPayloads
 
-        subaccountSupervisor?.cancelOrders(null, callback)
+        subaccountSupervisor?.cancelAllOrders(null, callback)
         // there are 2 short term orders and 4 stateful orders
         // hence 2 stateful orders should be queued
         assertEquals(3, cancelPayloads.size)
@@ -239,7 +239,7 @@ class V4TransactionTests : NetworkTests() {
         val callback: TransactionCallback = { _, _, _ -> statefulCancelCalledCount++ }
         val cancelPayloads = testChain!!.canceldOrderPayloads
 
-        subaccountSupervisor?.cancelOrders("ETH-USD", callback)
+        subaccountSupervisor?.cancelAllOrders("ETH-USD", callback)
         // there are 1 short term order and 3 stateful orders in "ETH"
         // hence 2 stateful orders should be queued
         assertEquals(2, cancelPayloads.size)

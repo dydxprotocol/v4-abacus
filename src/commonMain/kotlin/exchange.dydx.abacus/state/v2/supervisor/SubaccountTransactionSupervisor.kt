@@ -14,7 +14,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.state.manager.CancelOrderRecord
 import exchange.dydx.abacus.state.manager.FaucetRecord
-import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -32,7 +32,6 @@ import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.IMutableList
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
-import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_FLAGS
 import exchange.dydx.abacus.utils.iMapOf
@@ -149,8 +148,8 @@ internal class SubaccountTransactionSupervisor(
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
     }
 
-    internal fun cancelOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload {
-        val payload = payloadProvider.cancelOrdersPayload(marketId)
+    internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelAllOrdersPayload {
+        val payload = payloadProvider.cancelAllOrdersPayload(marketId)
 
         payload.payloads.forEach { cancelPayload ->
             val subaccount = stateMachine.state?.subaccount(subaccountNumber)
@@ -159,18 +158,21 @@ internal class SubaccountTransactionSupervisor(
                     ParsingErrorType.MissingRequiredData,
                     "no existing order to be cancelled for $cancelPayload.orderId",
                 )
-            val marketId = existingOrder.marketId
-            val cancelOrderAnalyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
+            val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
-                existingOrder
+                existingOrder,
+                false,
+                false,
+                true,
             )
+            val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelAllOrdersClick)
             submitCancelOrder(
                 orderId = cancelPayload.orderId,
-                marketId = marketId,
+                marketId = existingOrder.marketId,
                 callback = callback,
                 payload = cancelPayload,
-                analyticsPayload = cancelOrderAnalyticsPayload,
-                uiClickTimeMs = Numeric.double.ZERO, // TODO(@aforaleka) add back tracking
+                analyticsPayload = analyticsPayload,
+                uiClickTimeMs = uiClickTimeMs,
             )
         }
         return payload

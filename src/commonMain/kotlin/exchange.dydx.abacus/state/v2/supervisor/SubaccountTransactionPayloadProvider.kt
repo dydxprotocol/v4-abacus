@@ -10,7 +10,7 @@ import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
-import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -39,7 +39,7 @@ internal interface SubaccountTransactionPayloadProviderProtocol {
     fun cancelOrderPayload(orderId: String): HumanReadableCancelOrderPayload
 
     @Throws(Exception::class)
-    fun cancelOrdersPayload(marketId: String?): HumanReadableCancelMultipleOrdersPayload
+    fun cancelAllOrdersPayload(marketId: String?): HumanReadableCancelAllOrdersPayload
 
     fun triggerOrdersPayload(currentHeight: Int?): HumanReadableTriggerOrdersPayload
 
@@ -176,18 +176,18 @@ internal class SubaccountTransactionPayloadProvider(
     }
 
     @Throws(Exception::class)
-    override fun cancelOrdersPayload(
+    override fun cancelAllOrdersPayload(
         marketId: String?,
-    ): HumanReadableCancelMultipleOrdersPayload {
+    ): HumanReadableCancelAllOrdersPayload {
         val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
         val openOrders = subaccount.orders?.let { orders ->
-            orders.filter { ( marketId == null || it.marketId == marketId ) && it.status.isOpen }
+            orders.filter { (marketId == null || it.marketId == marketId) && it.status.isOpen }
         } ?: iEmptyList()
         val cancelPayloads = openOrders.map { cancelOrderPayload(it.id) }.sortedBy { payload -> payload.orderFlags }.toIList()
 
-        return HumanReadableCancelMultipleOrdersPayload(
+        return HumanReadableCancelAllOrdersPayload(
             marketId = marketId,
-            payloads = cancelPayloads
+            payloads = cancelPayloads,
         )
     }
 

@@ -14,7 +14,7 @@ import exchange.dydx.abacus.state.changes.StateChanges
 import exchange.dydx.abacus.state.manager.ApiData
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.FaucetRecord
-import exchange.dydx.abacus.state.manager.HumanReadableCancelMultipleOrdersPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
@@ -329,8 +329,8 @@ internal class SubaccountSupervisor(
         return payloadProvider.cancelOrderPayload(orderId)
     }
 
-    internal fun cancelOrdersPayload(marketId: String?): HumanReadableCancelMultipleOrdersPayload {
-        return payloadProvider.cancelOrdersPayload(marketId)
+    internal fun cancelAllOrdersPayload(marketId: String?): HumanReadableCancelAllOrdersPayload {
+        return payloadProvider.cancelAllOrdersPayload(marketId)
     }
 
     fun trade(
@@ -430,8 +430,8 @@ internal class SubaccountSupervisor(
         return transactionSupervisor.cancelOrder(orderId, isOrphanedTriggerOrder, callback)
     }
 
-    internal fun cancelOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelMultipleOrdersPayload {
-        return transactionSupervisor.cancelOrders(marketId, callback)
+    internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelAllOrdersPayload {
+        return transactionSupervisor.cancelAllOrders(marketId, callback)
     }
 
     internal fun commitTriggerOrders(
