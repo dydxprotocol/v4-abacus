@@ -5,7 +5,6 @@ import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.codegen.IndexerTransferType
 import kollections.iListOf
-import kollections.toIList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
