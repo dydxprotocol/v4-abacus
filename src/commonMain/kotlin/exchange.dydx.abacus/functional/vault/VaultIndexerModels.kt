@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.functional.vault
 
+import exchange.dydx.abacus.utils.IList
 import indexer.codegen.IndexerAssetPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPnlTicksResponseObject
@@ -9,20 +10,20 @@ import kotlin.js.JsExport
 @JsExport
 @Serializable
 data class IndexerVaultHistoricalPnlResponse(
-    val vaultOfVaultsPnl: List<IndexerPnlTicksResponseObject>? = null
+    val vaultOfVaultsPnl: IList<IndexerPnlTicksResponseObject>? = null
 )
 
 @JsExport
 @Serializable
 data class IndexerVaultHistoricalPnl(
     val marketId: String? = null,
-    val historicalPnl: List<IndexerPnlTicksResponseObject>? = null
+    val historicalPnl: IList<IndexerPnlTicksResponseObject>? = null
 )
 
 @JsExport
 @Serializable
 data class IndexerSubvaultHistoricalPnlResponse(
-    val vaultsPnl: List<IndexerVaultHistoricalPnl>? = null
+    val vaultsPnl: IList<IndexerVaultHistoricalPnl>? = null
 )
 
 @JsExport
@@ -37,5 +38,5 @@ data class IndexerVaultPosition(
 @JsExport
 @Serializable
 data class IndexerVaultPositionResponse(
-    val positions: List<IndexerVaultPosition>? = null
+    val positions: IList<IndexerVaultPosition>? = null
 )

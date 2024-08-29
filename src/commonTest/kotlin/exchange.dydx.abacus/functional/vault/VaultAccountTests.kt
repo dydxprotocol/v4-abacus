@@ -4,6 +4,8 @@ import exchange.dydx.abacus.functional.vault.VaultAccountCalculator.calculateUse
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferResponseObject
 import indexer.codegen.IndexerTransferType
+import kollections.iListOf
+import kollections.toIList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -48,7 +50,7 @@ class VaultAccountTests {
             totalVaultTransfersCount = 2,
             balanceShares = 100.0,
             lockedShares = 50.0,
-            vaultTransfers = listOf(
+            vaultTransfers = iListOf(
                 VaultTransfer(
                     timestampMs = 1659465600000.0,
                     amountUsdc = 6000.0,
