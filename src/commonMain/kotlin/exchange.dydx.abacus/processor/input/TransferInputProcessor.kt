@@ -327,8 +327,8 @@ internal class TransferInputProcessor(
         transfer: InternalTransferInputState,
         tokenAddress: String
     ) {
-        val selectedChainId = transfer.chain
         // Code not used
+//        val selectedChainId = transfer.chain
 //        if (transfer.type == TransferType.transferOut) {
 //            transfer.size = TransferInputSize.safeCreate(transfer.size).copy(
 //                size = null, usdcSize = null
