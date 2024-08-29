@@ -63,7 +63,7 @@ internal class SubaccountTransactionTracker(
     ): Double {
         val uiClickTimeMs = Clock.System.now().toEpochMilliseconds().toDouble()
         tracking(
-            analyticsEvent.rawValue,
+            analyticsEvent.name,
             analyticsPayload,
         )
         return uiClickTimeMs
@@ -78,7 +78,7 @@ internal class SubaccountTransactionTracker(
         val uiDelayTimeMs = submitTimeMs - uiClickTimeMs
 
         tracking(
-            if (isCancel) AnalyticsEvent.TradeCancelOrder.rawValue else AnalyticsEvent.TradePlaceOrder.rawValue,
+            if (isCancel) AnalyticsEvent.TradeCancelOrder.name else AnalyticsEvent.TradePlaceOrder.name,
             ParsingHelper.merge(uiTrackingParams(uiDelayTimeMs), analyticsPayload)?.toIMap(),
         )
 
@@ -92,12 +92,12 @@ internal class SubaccountTransactionTracker(
     ) {
         if (error != null) {
             tracking(
-                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionFailed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionFailed.rawValue,
+                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionFailed.name else AnalyticsEvent.TradePlaceOrderSubmissionFailed.name,
                 ParsingHelper.merge(errorTrackingParams(error), analyticsPayload)?.toIMap(),
             )
         } else {
             tracking(
-                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.rawValue else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.rawValue,
+                if (isCancel) AnalyticsEvent.TradeCancelOrderSubmissionConfirmed.name else AnalyticsEvent.TradePlaceOrderSubmissionConfirmed.name,
                 analyticsPayload,
             )
         }

@@ -262,7 +262,7 @@ internal class ConnectionStats(
 
     private fun trackApiStateIfNeeded(apiState: ApiState?, oldValue: ApiState?) {
         if (apiState?.abnormalState() == true || oldValue?.abnormalState() == true) {
-            tracking(AnalyticsEvent.NetworkStatus.rawValue)
+            tracking(AnalyticsEvent.NetworkStatus.name)
         }
     }
 

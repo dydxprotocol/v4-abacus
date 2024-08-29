@@ -9,8 +9,10 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Parser
+import kollections.toIList
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
@@ -22,13 +24,13 @@ import kotlin.time.Duration.Companion.milliseconds
 data class VaultDetails(
     val totalValue: Double? = null,
     val thirtyDayReturnPercent: Double? = null,
-    val history: List<VaultHistoryEntry>? = null
+    val history: IList<VaultHistoryEntry>? = null
 )
 
 @JsExport
 @Serializable
 data class VaultPositions(
-    val positions: List<VaultPosition>? = null,
+    val positions: IList<VaultPosition>? = null,
 )
 
 @JsExport
@@ -62,7 +64,7 @@ data class CurrentPosition(
 data class ThirtyDayPnl(
     val percent: Double? = null,
     val absolute: Double? = null,
-    val sparklinePoints: List<Double>? = null
+    val sparklinePoints: IList<Double>? = null
 )
 
 @JsExport
@@ -125,7 +127,7 @@ object VaultCalculator {
         return VaultDetails(
             totalValue = totalValue,
             thirtyDayReturnPercent = thirtyDayReturnPercent,
-            history = history,
+            history = history.toIList(),
         )
     }
 
@@ -140,7 +142,7 @@ object VaultCalculator {
 
         val historiesMap = histories?.vaultsPnl?.associateBy { it.marketId }
 
-        return VaultPositions(positions = positions.positions.mapNotNull { calculateVaultPosition(it, historiesMap?.get(it.market), markets?.get(it.market)) })
+        return VaultPositions(positions = positions.positions.mapNotNull { calculateVaultPosition(it, historiesMap?.get(it.market), markets?.get(it.market)) }.toIList())
     }
 
     fun calculateVaultPosition(position: IndexerVaultPosition, history: IndexerVaultHistoricalPnl?, perpetualMarket: PerpetualMarket?): VaultPosition? {
@@ -225,7 +227,7 @@ object VaultCalculator {
         return ThirtyDayPnl(
             percent = percentPnl,
             absolute = absolutePnl,
-            sparklinePoints = sparklinePoints,
+            sparklinePoints = sparklinePoints.toIList(),
         )
     }
 }

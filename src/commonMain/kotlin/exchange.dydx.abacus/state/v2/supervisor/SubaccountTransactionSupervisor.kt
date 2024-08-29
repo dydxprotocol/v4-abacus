@@ -286,7 +286,7 @@ internal class SubaccountTransactionSupervisor(
                         // when order is first indexed
                         if (placeOrderRecord.lastOrderStatus == null) {
                             transactionTracker.tracking(
-                                AnalyticsEvent.TradePlaceOrderConfirmed.rawValue,
+                                AnalyticsEvent.TradePlaceOrderConfirmed.name,
                                 analyticsPayload,
                             )
                         }
@@ -302,7 +302,7 @@ internal class SubaccountTransactionSupervisor(
                             OrderStatus.PartiallyCanceled -> AnalyticsEvent.TradePlaceOrderStatusPartiallyCanceled
                         }
 
-                        transactionTracker.tracking(orderStatusChangeEvent.rawValue, analyticsPayload)
+                        transactionTracker.tracking(orderStatusChangeEvent.name, analyticsPayload)
 
                         when (order.status) {
                             // order reaches final state, can remove / skip further tracking
@@ -326,7 +326,7 @@ internal class SubaccountTransactionSupervisor(
                         fromSlTpDialogParams(cancelOrderRecord.fromSlTpDialog),
                     )
                     transactionTracker.tracking(
-                        AnalyticsEvent.TradeCancelOrderConfirmed.rawValue,
+                        AnalyticsEvent.TradeCancelOrderConfirmed.name,
                         ParsingHelper.merge(
                             extraParams,
                             orderAnalyticsPayload,
@@ -451,7 +451,7 @@ internal class SubaccountTransactionSupervisor(
                                 val interval = Clock.System.now().toEpochMilliseconds()
                                     .toDouble() - faucet.timestampInMilliseconds
                                 transactionTracker.tracking(
-                                    AnalyticsEvent.TransferFaucetConfirmed.rawValue,
+                                    AnalyticsEvent.TransferFaucetConfirmed.name,
                                     transactionTracker.trackingParams(interval),
                                 )
                                 faucetRecords.remove(faucet)

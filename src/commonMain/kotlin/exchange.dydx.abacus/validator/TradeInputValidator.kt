@@ -12,6 +12,8 @@ import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.Numeric
+import exchange.dydx.abacus.utils.TradeValidationPayload
+import exchange.dydx.abacus.utils.TradeValidationTracker
 import exchange.dydx.abacus.validator.trade.TradeAccountStateValidator
 import exchange.dydx.abacus.validator.trade.TradeBracketOrdersValidator
 import exchange.dydx.abacus.validator.trade.TradeFieldsValidator
@@ -24,7 +26,8 @@ import exchange.dydx.abacus.validator.trade.TradeTriggerPriceValidator
 internal class TradeInputValidator(
     localizer: LocalizerProtocol?,
     formatter: Formatter?,
-    parser: ParserProtocol
+    parser: ParserProtocol,
+    private val tradeValidationTracker: TradeValidationTracker,
 ) : BaseInputValidator(localizer, formatter, parser), ValidatorProtocol {
     private val tradeValidators = listOf<TradeValidatorProtocol>(
         TradeFieldsValidator(localizer, formatter, parser),
@@ -69,6 +72,20 @@ internal class TradeInputValidator(
             }
         }
 
+        val marketId = internalState.input.trade.marketId ?: return errors
+
+        tradeValidationTracker.logValidationResult(
+            TradeValidationPayload(
+                errors = errors.map { it.code },
+                marketId = marketId,
+                size = internalState.input.trade.size?.size,
+                notionalSize = internalState.input.trade.size?.usdcSize,
+            ).apply {
+                indexSlippage = internalState.input.trade.summary?.indexSlippage
+                orderbookSlippage = internalState.input.trade.summary?.slippage
+            },
+        )
+
         return errors
     }
 
@@ -105,6 +122,21 @@ internal class TradeInputValidator(
                     errors.addAll(validatorErrors)
                 }
             }
+
+            val sizeParent = parser.asNativeMap(transaction["size"])
+
+            tradeValidationTracker.logValidationResult(
+                TradeValidationPayload(
+                    errors = errors.mapNotNull { (it as? Map<*, *>)?.get("code") as? String },
+                    marketId = marketId,
+                    size = parser.asDouble(sizeParent?.get("size")),
+                    notionalSize = parser.asDouble(sizeParent?.get("usdcSize")),
+                ).apply {
+                    indexSlippage = parser.asDouble(parser.asNativeMap(transaction.get("summary"))?.get("indexSlippage"))
+                    orderbookSlippage = parser.asDouble(parser.asNativeMap(transaction.get("summary"))?.get("slippage"))
+                },
+            )
+
             return errors
         }
         return null
