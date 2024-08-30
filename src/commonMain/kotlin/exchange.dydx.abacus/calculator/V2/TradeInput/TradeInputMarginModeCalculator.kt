@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.utils.Numeric
 
 internal class TradeInputMarginModeCalculator {
     fun updateTradeInputMarginMode(
@@ -19,6 +20,16 @@ internal class TradeInputMarginModeCalculator {
             marketId = tradeInput.marketId,
             subaccountNumber = subaccountNumber,
         )
+        val market = markets?.get(tradeInput.marketId)
+        val imf = market?.perpetualMarket?.configs?.initialMarginFraction ?: Numeric.double.ZERO
+        val effectiveImf = market?.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: Numeric.double.ZERO
+        val maxMarketLeverage = if (effectiveImf > Numeric.double.ZERO) {
+            Numeric.double.ONE / effectiveImf
+        } else if (imf > Numeric.double.ZERO) {
+            Numeric.double.ONE / imf
+        } else {
+            Numeric.double.ONE 
+        }
 
         // If there is an existing position or order, we have to use the same margin mode
         if (existingMarginMode != null) {
@@ -30,16 +41,16 @@ internal class TradeInputMarginModeCalculator {
                     subaccountNumber = subaccountNumber,
                 )
                 val existingPositionLeverage = existingPosition?.calculated?.get(CalculationPeriod.current)?.leverage
-                tradeInput.targetLeverage = existingPositionLeverage ?: 1.0
+                tradeInput.targetLeverage = existingPositionLeverage ?: maxMarketLeverage
             }
         } else {
             val marketMarginMode = MarginCalculator.findMarketMarginMode(
-                market = markets?.get(tradeInput.marketId)?.perpetualMarket,
+                market = market?.perpetualMarket,
             )
             when (marketMarginMode) {
                 MarginMode.Isolated -> {
                     tradeInput.marginMode = marketMarginMode
-                    tradeInput.targetLeverage = tradeInput.targetLeverage ?: 1.0
+                    tradeInput.targetLeverage = tradeInput.targetLeverage ?: maxMarketLeverage
                 }
 
                 MarginMode.Cross -> {

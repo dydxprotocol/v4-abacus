@@ -140,6 +140,7 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
 
     @Test
     fun testMarginMode() {
+        testDefaultTargetLeverage()
         testMarginModeOnMarketChange()
         testMarginAmountForSubaccountTransfer()
     }
@@ -148,6 +149,29 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     fun testMarginModeWithExistingPosition() {
         testMarginAmountForSubaccountTransferWithExistingPosition()
         testMarginAmountForSubaccountTransferWithExistingPositionAndOpenOrders()
+    }
+
+    private fun testDefaultTargetLeverage() {
+        test(
+            {
+                perp.tradeInMarket("NEAR-USD", 0)
+            },
+            """
+                {
+                    "input": {
+                        "current": "trade",
+                        "trade": {
+                            "marketId": "NEAR-USD",
+                            "marginMode": "CROSS",
+                            "targetLeverage": 10.0,
+                            "options": {
+                                "needsMarginMode": true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent(),
+        )
     }
 
     // MarginMode should automatically to match the current market based on a variety of factors

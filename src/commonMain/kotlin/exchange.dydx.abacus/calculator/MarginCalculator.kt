@@ -676,6 +676,19 @@ internal object MarginCalculator {
         } ?: return null
     }
 
+    private fun getMaxMarketLeverage(
+        effectiveImf: Double,
+        imf: Double,
+    ): Double {
+        return if (effectiveImf > Numeric.double.ZERO) {
+            Numeric.double.ONE / effectiveImf
+        } else if (imf > Numeric.double.ZERO) {
+            Numeric.double.ONE / imf
+        } else {
+            Numeric.double.ONE 
+        }
+    }
+
     /**
      * @description Calculate the amount of collateral to transfer for an isolated margin trade.
      * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
@@ -685,12 +698,13 @@ internal object MarginCalculator {
         market: InternalMarketState?,
         subaccount: InternalSubaccountState?
     ): Double? {
-        val targetLeverage = trade.targetLeverage ?: 1.0
         val side = trade.side ?: return null
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val initialMarginFraction = market.perpetualMarket?.configs?.initialMarginFraction ?: 0.0
-        val effectiveImf = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: 0.0
+        val initialMarginFraction = market.perpetualMarket?.configs?.initialMarginFraction ?: Numeric.double.ZERO
+        val effectiveImf = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: Numeric.double.ZERO
+        val maxMarketLeverage = getMaxMarketLeverage(effectiveImf=effectiveImf, imf = initialMarginFraction)
+        val targetLeverage = trade.targetLeverage ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -714,12 +728,13 @@ internal object MarginCalculator {
         market: Map<String, Any>?,
         subaccount: Map<String, Any>?
     ): Double? {
-        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
         val side = parser.asString(parser.value(trade, "side")) ?: return null
         val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
         val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
-        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
-        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
+        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
+        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
+        val maxMarketLeverage = getMaxMarketLeverage(effectiveImf=effectiveImf, imf = initialMarginFraction)
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifferenceDeprecated(parser, subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -766,23 +781,11 @@ internal object MarginCalculator {
         effectiveImf: Double,
         positionSizeDifference: Double,
     ): Double? {
-        val maxLeverageForMarket = if (effectiveImf != 0.0) {
-            1.0 / effectiveImf
-        } else if (initialMarginFraction != 0.0) {
-            1.0 / initialMarginFraction
-        } else {
-            null
-        }
-
+        val maxLeverageForMarket = getMaxMarketLeverage(effectiveImf=effectiveImf, imf = initialMarginFraction)
         // Cap targetLeverage to 98% of max leverage
-        val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
-            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
-            min(targetLeverage, cappedLeverage)
-        } else {
-            null
-        }
+        val adjustedTargetLeverage = min(targetLeverage, maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT)
 
-        return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
+        return if (adjustedTargetLeverage == 0.0) {
             null
         } else {
             getTransferAmountFromTargetLeverage(
