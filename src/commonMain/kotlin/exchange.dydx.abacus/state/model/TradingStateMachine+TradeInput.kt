@@ -11,13 +11,13 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kollections.iListOf
 import kotlinx.serialization.Serializable
-import exchange.dydx.abacus.utils.Numeric
 
 @JsExport
 @Serializable
@@ -159,8 +159,8 @@ internal fun TradingStateMachine.tradeInMarket(
             } else if (imf > Numeric.double.ZERO) {
                 Numeric.double.ONE / imf
             } else {
-                Numeric.double.ONE 
-            }            
+                Numeric.double.ONE
+            }
             if (existingPosition != null) {
                 it.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
                 val currentPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs()

@@ -1,8 +1,8 @@
 package exchange.dydx.abacus.calculator
 
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Parser
 import exchange.dydx.abacus.utils.mutable
-import exchange.dydx.abacus.utils.Numeric
 
 object MarginModeCalculator {
 
@@ -25,7 +25,7 @@ object MarginModeCalculator {
         } else if (imf > Numeric.double.ZERO) {
             Numeric.double.ONE / imf
         } else {
-            Numeric.double.ONE 
+            Numeric.double.ONE
         }
 
         val existingMarginMode =

@@ -28,7 +28,7 @@ internal class TradeInputMarginModeCalculator {
         } else if (imf > Numeric.double.ZERO) {
             Numeric.double.ONE / imf
         } else {
-            Numeric.double.ONE 
+            Numeric.double.ONE
         }
 
         // If there is an existing position or order, we have to use the same margin mode

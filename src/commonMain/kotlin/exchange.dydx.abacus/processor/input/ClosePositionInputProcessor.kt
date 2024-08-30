@@ -111,9 +111,9 @@ internal class ClosePositionInputProcessor(
                     } else if (imf > Numeric.double.ZERO) {
                         Numeric.double.ONE / imf
                     } else {
-                        Numeric.double.ONE 
+                        Numeric.double.ONE
                     }
-            
+
                     val currentPositionLeverage = position.calculated[CalculationPeriod.current]?.leverage?.abs()
                     trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else maxMarketLeverage
 

@@ -28,8 +28,8 @@ import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
-import kollections.iListOf
 import exchange.dydx.abacus.utils.Numeric
+import kollections.iListOf
 
 internal interface TradeInputProcessorProtocol {
     fun tradeInMarket(
@@ -300,7 +300,7 @@ internal class TradeInputProcessor(
         } else if (imf > Numeric.double.ZERO) {
             Numeric.double.ONE / imf
         } else {
-            Numeric.double.ONE 
+            Numeric.double.ONE
         }
         if (existingPosition != null) {
             trade.marginMode =
@@ -310,7 +310,7 @@ internal class TradeInputProcessor(
             val positionLeverage =
                 if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
             trade.targetLeverage = positionLeverage
-        } else if (existingOrder != null) {    
+        } else if (existingOrder != null) {
             trade.marginMode =
                 if (existingOrder.subaccountNumber == subaccountNumber) MarginMode.Cross else MarginMode.Isolated
             trade.targetLeverage = maxMarketLeverage
