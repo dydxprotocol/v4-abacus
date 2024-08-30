@@ -1084,7 +1084,6 @@ open class TradingStateMachine(
                                                 "openPositions.$marketId.leverage.postOrder",
                                             ),
                                         )
-                                        Logger.e { "xcxc $marketId on $subaccountNumber has leverage $leverage"}
                                     modified.safeSet("trade.size.leverage", leverage)
                                 } else {
                                     modified.safeSet("trade.size.leverage", null)
