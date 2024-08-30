@@ -180,9 +180,10 @@ class AnalyticsUtils {
         existingOrder: SubaccountOrder?,
         fromSlTpDialog: Boolean? = false,
         isOrphanedTriggerOrder: Boolean = false,
+        isCancelAll: Boolean = false,
     ): IMap<String, Any>? {
         return ParsingHelper.merge(
-            formatCancelOrderPayload(payload, fromSlTpDialog, isOrphanedTriggerOrder),
+            formatCancelOrderPayload(payload, fromSlTpDialog, isOrphanedTriggerOrder, isCancelAll),
             if (existingOrder != null) formatOrder(existingOrder) else mapOf(),
         )?.toIMap()
     }
@@ -196,10 +197,12 @@ class AnalyticsUtils {
         payload: HumanReadableCancelOrderPayload,
         fromSlTpDialog: Boolean? = false,
         isOrphanedTriggerOrder: Boolean = false,
+        isCancelAll: Boolean = false,
     ): IMap<String, Any>? {
         return iMapOf(
             "fromSlTpDialog" to fromSlTpDialog,
             "isAutomaticallyCanceledByFrontend" to isOrphanedTriggerOrder,
+            "isCancelAll" to isCancelAll,
             "subaccountNumber" to payload.subaccountNumber,
             "clientId" to payload.clientId,
             "orderId" to payload.orderId,
