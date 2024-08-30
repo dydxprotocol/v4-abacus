@@ -139,11 +139,11 @@ class V4StateManagerConfigs(
 
     private val includeSvmChains: String
         get() {
-            return if (environment.isMainNet) "" else "&include_svm=true"
+            return "&include_svm=true"
         }
     private val includeSvmAssets: String
         get() {
-            return if (environment.isMainNet) "" else "&include_svm_assets=true"
+            return "&include_svm_assets=true"
         }
 
     private val onlyTestnets: String
