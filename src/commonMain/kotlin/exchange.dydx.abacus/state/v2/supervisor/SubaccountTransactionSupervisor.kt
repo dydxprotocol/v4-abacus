@@ -150,20 +150,23 @@ internal class SubaccountTransactionSupervisor(
 
     internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelAllOrdersPayload {
         val payload = payloadProvider.cancelAllOrdersPayload(marketId)
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw ParsingException(
+            ParsingErrorType.MissingRequiredData,
+            "no subaccount found",
+        )
 
         payload.payloads.forEach { cancelPayload ->
-            val subaccount = stateMachine.state?.subaccount(subaccountNumber)
-            val existingOrder = subaccount?.orders?.firstOrNull { it.id == cancelPayload.orderId }
+            val existingOrder = subaccount.orders?.firstOrNull { it.id == cancelPayload.orderId }
                 ?: throw ParsingException(
                     ParsingErrorType.MissingRequiredData,
-                    "no existing order to be cancelled for $cancelPayload.orderId",
+                    "no existing order to be cancelled for ${cancelPayload.orderId}",
                 )
             val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
                 cancelPayload,
                 existingOrder,
-                false,
-                false,
-                true,
+                fromSlTpDialog = false,
+                isOrphanedTriggerOrder = false,
+                isCancelAll = true,
             )
             val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelAllOrdersClick)
             submitCancelOrder(
