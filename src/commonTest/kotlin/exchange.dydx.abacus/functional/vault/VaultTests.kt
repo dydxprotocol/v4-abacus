@@ -9,6 +9,7 @@ import indexer.codegen.IndexerPerpetualPositionResponseObject
 import indexer.codegen.IndexerPerpetualPositionStatus
 import indexer.codegen.IndexerPnlTicksResponseObject
 import indexer.codegen.IndexerPositionSide
+import kollections.iListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -19,7 +20,7 @@ class VaultTests {
     @Test
     fun calculateVaultSummary_basic() {
         val historicalPnl = IndexerVaultHistoricalPnlResponse(
-            vaultOfVaultsPnl = listOf(
+            vaultOfVaultsPnl = iListOf(
                 IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
@@ -40,7 +41,7 @@ class VaultTests {
         val expectedVaultDetails = VaultDetails(
             totalValue = 10000.0,
             thirtyDayReturnPercent = 0.1,
-            history = listOf(
+            history = iListOf(
                 VaultHistoryEntry(
                     date = 1659465600000.0,
                     equity = 10000.0,
@@ -60,7 +61,7 @@ class VaultTests {
     @Test
     fun shouldReturnNullForNullOrEmptyHistoricalPnl() {
         val nullHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = null)
-        val emptyHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = emptyList())
+        val emptyHistoricalPnl = IndexerVaultHistoricalPnlResponse(vaultOfVaultsPnl = iListOf())
 
         val nullVaultDetails = calculateVaultSummary(nullHistoricalPnl)
         val emptyVaultDetails = calculateVaultSummary(emptyHistoricalPnl)
@@ -77,7 +78,7 @@ class VaultTests {
         val twentyNineDaysAgoTimestamp = latestTimestamp - 29.days.inWholeMilliseconds
 
         val historicalPnl = IndexerVaultHistoricalPnlResponse(
-            vaultOfVaultsPnl = listOf(
+            vaultOfVaultsPnl = iListOf(
                 IndexerPnlTicksResponseObject(
                     equity = "10000.0",
                     totalPnl = "1000.0",
@@ -151,7 +152,7 @@ class VaultTests {
 
         val history = IndexerVaultHistoricalPnl(
             marketId = "BTC-USD",
-            historicalPnl = listOf(
+            historicalPnl = iListOf(
                 IndexerPnlTicksResponseObject(
                     id = "1",
                     equity = "10500.0",
@@ -196,7 +197,7 @@ class VaultTests {
             thirtyDayPnl = ThirtyDayPnl(
                 percent = 0.05,
                 absolute = 500.0,
-                sparklinePoints = listOf(0.0, 500.0),
+                sparklinePoints = iListOf(0.0, 500.0),
             ),
         )
 

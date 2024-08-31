@@ -209,6 +209,50 @@ class V4TransactionTests : NetworkTests() {
     }
 
     @Test
+    fun testCancelAllOrders() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_channel_data_with_orders)
+
+        var statefulCancelCalledCount = 0
+        val callback: TransactionCallback = { _, _, _ -> statefulCancelCalledCount++ }
+        val cancelPayloads = testChain!!.canceldOrderPayloads
+
+        subaccountSupervisor?.cancelAllOrders(null, callback)
+        // there are 2 short term orders and 4 stateful orders
+        // hence 2 stateful orders should be queued
+        assertEquals(3, cancelPayloads.size)
+        assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
+        repeat(4) {
+            testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        }
+
+        assertEquals(4, statefulCancelCalledCount)
+        assertEquals(5, cancelPayloads.size)
+    }
+
+    @Test
+    fun testCancelAllOrdersUnderMarket() {
+        setStateMachineConnected(stateManager)
+        testWebSocket?.simulateReceived(mock.accountsChannel.v4_channel_data_with_orders)
+
+        var statefulCancelCalledCount = 0
+        val callback: TransactionCallback = { _, _, _ -> statefulCancelCalledCount++ }
+        val cancelPayloads = testChain!!.canceldOrderPayloads
+
+        subaccountSupervisor?.cancelAllOrders("ETH-USD", callback)
+        // there are 1 short term order and 3 stateful orders in "ETH"
+        // hence 2 stateful orders should be queued
+        assertEquals(2, cancelPayloads.size)
+        assertEquals(2, subaccountSupervisor?.transactionQueue?.size)
+        repeat(3) {
+            testChain?.simulateTransactionResponse(testChain!!.dummySuccess)
+        }
+        assertTransactionQueueEmpty()
+        assertEquals(3, statefulCancelCalledCount)
+        assertEquals(4, cancelPayloads.size)
+    }
+
+    @Test
     fun testCancelTriggerOrdersWithClosedOrFlippedPositions() {
         setStateMachineConnected(stateManager)
         val canceldOrderPayloads = testChain!!.canceldOrderPayloads

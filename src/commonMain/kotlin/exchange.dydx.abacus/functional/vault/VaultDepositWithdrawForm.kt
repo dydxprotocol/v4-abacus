@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.output.input.ErrorType
+import exchange.dydx.abacus.utils.IList
+import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
@@ -92,7 +94,7 @@ data class VaultFormSummaryData(
 @JsExport
 @Serializable
 data class VaultFormValidationResult(
-    val errors: List<VaultFormValidationError>,
+    val errors: IList<VaultFormValidationError>,
     val submissionData: VaultDepositWithdrawSubmissionData?,
     val summaryData: VaultFormSummaryData
 )
@@ -260,7 +262,7 @@ object VaultDepositWithdrawFormValidator {
         )
 
         return VaultFormValidationResult(
-            errors = errors,
+            errors = errors.toIList(),
             submissionData = submissionData,
             summaryData = summaryData,
         )
