@@ -68,6 +68,21 @@ class Rounder {
             }
         }
 
+        fun quickRound2(number: Double, stepSize: Double, roundingMode: RoundingMode = RoundingMode.TOWARDS_ZERO): Double {
+            if (stepSize > 0) {
+                val factor = stepSize
+                when (roundingMode) {
+                    RoundingMode.TOWARDS_ZERO -> {
+                        val sign = if (number < 0) -1 else 1
+                        return kotlin.math.floor(number.abs() / factor) * factor * sign
+                    }
+                    RoundingMode.NEAREST -> return kotlin.math.round(number / factor) * factor
+                }
+            } else {
+                return number
+            }
+        }
+
         fun round(number: Double, stepSize: Double, roundingMode: RoundingMode = RoundingMode.TOWARDS_ZERO): Double {
             val roundedDecimal = roundDecimal(
                 number.toBigDecimal(null, Numeric.decimal.mode),
