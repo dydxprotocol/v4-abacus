@@ -22,6 +22,8 @@ jobs:
       - name: Bump version if needed
         id: bump-version
         run: |
+          echo "prashan's forked workflow"
+        
           set +e
           vercomp () {
               if [[ $1 == $2 ]]
