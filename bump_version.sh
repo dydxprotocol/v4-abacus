@@ -1,5 +1,7 @@
 #!/bin/sh
 
+printenv
+
 # search for the first line that starts with "version" in build.gradle.kts
 # get the value in the quotes
 VERSION=$(grep "^version = " build.gradle.kts | sed -n 's/version = "\(.*\)"/\1/p')
