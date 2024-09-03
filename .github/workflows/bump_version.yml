@@ -1,4 +1,4 @@
-name: Bump version on PR
+name: Bump version on PR Prashan edit
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
@@ -10,6 +10,12 @@ jobs:
   update_version:
     runs-on: macos-latest
     steps:
+      - name: testing
+        id: testing-bump-version
+        run: |
+           set +e
+           ./bump_version_gh_action.sh
+
       - name: checkout
         uses: actions/checkout@v4
         with:
