@@ -1,5 +1,7 @@
 #!/bin/sh
 
+printenv
+
 vercomp () {
     if [[ $1 == $2 ]]
     then
