@@ -1,6 +1,6 @@
 #!/bin/sh
 
-printenv
+echo 
 
 vercomp () {
     if [[ $1 == $2 ]]
