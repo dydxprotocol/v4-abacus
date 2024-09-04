@@ -222,13 +222,11 @@ npmPublish {
 publishing {
     repositories {
         maven {
-            val github_username = System.getenv("github_username")
-            val github_token = System.getenv("github_token")
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/dydxprotocol/v4-abacus")
             credentials {
-                username = github_username
-                password = github_token
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
