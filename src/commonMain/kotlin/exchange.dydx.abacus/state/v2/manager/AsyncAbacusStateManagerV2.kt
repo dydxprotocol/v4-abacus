@@ -5,6 +5,7 @@ import exchange.dydx.abacus.di.Deployment
 import exchange.dydx.abacus.di.DeploymentUri
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
+import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.DataNotificationProtocol
@@ -76,8 +77,8 @@ class AsyncAbacusStateManagerV2(
         }
     }
 
-    private val environmentsFile = ConfigFile.ENV
-    private val documentationFile = ConfigFile.DOCUMENTATION
+    override val state: PerpetualState?
+        get() = adaptor?.stateMachine?.state
 
     private var _appSettings: AppSettings? = null
 
