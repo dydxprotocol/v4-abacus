@@ -83,7 +83,6 @@ class AbacusMockData {
             launchIncentive = "https://dydx.exchange/v4-launch-incentive",
             statusPage = "https://status.v4testnet.dydx.exchange/",
             withdrawalGateLearnMore = "https://help.dydx.exchange/en/articles/8981384-withdrawals-on-dydx-chain#h_23e97bc665",
-            complianceSupportEmail = "someemail@gmail.com",
             equityTiersLearnMore = "https://help.dydx.trade/en/articles/171918-equity-tiers-and-rate-limits",
         ),
         WalletConnection(
