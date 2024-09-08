@@ -930,13 +930,17 @@ open class TradingStateMachine(
     }
 
     private fun allSubaccountNumbers(): IList<Int> {
-        val subaccountsData = parser.asNativeMap(account?.get("subaccounts"))
-        return if (subaccountsData != null) {
-            parser.asNativeMap(subaccountsData)?.keys?.mapNotNull { key ->
-                parser.asInt(key)
-            }?.toIList() ?: iListOf<Int>()
+        if (staticTyping) {
+            return internalState.wallet.account.subaccounts.keys.toIList()
         } else {
-            iListOf<Int>()
+            val subaccountsData = parser.asNativeMap(account?.get("subaccounts"))
+            return if (subaccountsData != null) {
+                parser.asNativeMap(subaccountsData)?.keys?.mapNotNull { key ->
+                    parser.asInt(key)
+                }?.toIList() ?: iListOf<Int>()
+            } else {
+                iListOf<Int>()
+            }
         }
     }
 

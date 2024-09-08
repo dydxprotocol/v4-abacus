@@ -34,8 +34,7 @@ internal class AdjustIsolatedMarginInputProcessor(
         var error: ParsingError? = null
 
         inputState.currentType = InputType.ADJUST_ISOLATED_MARGIN
-        if (inputState.adjustIsolatedMargin.parentSubaccountNumber != parentSubaccountNumber
-        ) {
+        if (inputState.adjustIsolatedMargin.parentSubaccountNumber != parentSubaccountNumber) {
             inputState.adjustIsolatedMargin = InternalAdjustIsolatedMarginInputState()
             inputState.adjustIsolatedMargin.parentSubaccountNumber = parentSubaccountNumber
 
