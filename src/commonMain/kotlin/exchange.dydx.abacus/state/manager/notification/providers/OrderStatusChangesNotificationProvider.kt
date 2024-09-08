@@ -129,15 +129,15 @@ class OrderStatusChangesNotificationProvider(
             val orderId = order.id
             val notificationId = "orderstatus:$orderId"
             return Notification(
-                notificationId,
-                NotificationType.INFO,
-                NotificationPriority.NORMAL,
-                marketImageUrl,
-                title,
-                text,
-                "/orders/$orderId",
-                paramsAsJson,
-                timestamp,
+                id = notificationId,
+                type = NotificationType.INFO,
+                priority = NotificationPriority.NORMAL,
+                image = marketImageUrl,
+                title = title,
+                text = text,
+                link = "/orders/$orderId",
+                data = paramsAsJson,
+                updateTimeInMilliseconds = timestamp,
             )
         } else {
             null

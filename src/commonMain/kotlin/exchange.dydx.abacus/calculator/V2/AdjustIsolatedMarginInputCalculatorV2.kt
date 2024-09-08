@@ -29,7 +29,7 @@ internal class AdjustIsolatedMarginInputCalculatorV2(
         val market = markets?.get(adjustIsolatedMargin.market) ?: return adjustIsolatedMargin
 
         if (walletState.isAccountConnected &&
-            (adjustIsolatedMargin.amount != null || adjustIsolatedMargin.amountPercent != null)
+            (adjustIsolatedMargin.amount != null || adjustIsolatedMargin.amountPercent != null || adjustIsolatedMargin.market != null)
         ) {
             val type = adjustIsolatedMargin.type ?: IsolatedMarginAdjustmentType.Add
             val childSubaccountNumber = adjustIsolatedMargin.childSubaccountNumber

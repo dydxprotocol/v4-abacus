@@ -175,6 +175,7 @@ internal class AccountCalculatorV2(
         for ((marketId, pending) in pendingByMarketId) {
             val market = markets?.get(marketId) ?: continue
             val assetId = market.perpetualMarket?.assetId ?: continue
+            val displayId = market.perpetualMarket?.displayId ?: continue
 
             val calculated =
                 mutableMapOf<CalculationPeriod, InternalPendingPositionCalculated>()
@@ -189,13 +190,15 @@ internal class AccountCalculatorV2(
             val pendingPosition = InternalPerpetualPendingPosition(
                 assetId = assetId,
                 marketId = marketId,
+                displayId = displayId,
                 firstOrderId = pending.firstOrderId,
                 orderCount = pending.orderCount,
                 calculated = calculated,
             )
             modifiedPendingPositions.add(pendingPosition)
         }
-        val allPendingPositions = parentSubaccount.pendingPositions ?: emptyList()
+        var allPendingPositions = parentSubaccount.pendingPositions ?: emptyList()
+        allPendingPositions = allPendingPositions + modifiedPendingPositions
         parentSubaccount.pendingPositions = allPendingPositions.sortedWith { a, b ->
             val aMarketId = a.assetId ?: ""
             val bMarketId = b.assetId ?: ""

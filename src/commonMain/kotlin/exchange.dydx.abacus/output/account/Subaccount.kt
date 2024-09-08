@@ -412,42 +412,50 @@ data class Subaccount(
             data: Map<*, *>?,
             localizer: LocalizerProtocol?,
         ): IList<SubaccountOrder>? {
-            val orders = ParsingHelper.transform(parser, existing, data, {
-                (it as SubaccountOrder).id
-            }, { _, _ ->
-                // not worth the optimization
-                true
-            }, { obj1, obj2 ->
-                val block1 = block(obj1 as SubaccountOrder)
-                val block2 = block(obj2 as SubaccountOrder)
-                if (block1 != null || block2 != null) {
-                    var result = ParsingHelper.compare(block1 ?: 0, block2 ?: 0, false)
-                    if (result == ComparisonOrder.same) {
-                        result = ParsingHelper.compare(obj1.id, obj2.id, true)
-                    }
-                    result
-                } else {
-                    val time1 = (obj1 as SubaccountOrder).createdAtMilliseconds
-                    val time2 = (obj2 as SubaccountOrder).createdAtMilliseconds
-                    if (time1 != null) {
-                        if (time2 != null) {
-                            ParsingHelper.compare(time1, time2, false)
-                        } else {
-                            ComparisonOrder.ascending
+            val orders = ParsingHelper.transform(
+                parser = parser,
+                existing = existing,
+                data = data,
+                key = {
+                    (it as SubaccountOrder).id
+                },
+                changed = { _, _ ->
+                    // not worth the optimization
+                    true
+                },
+                comparison = { obj1, obj2 ->
+                    val block1 = block(obj1 as SubaccountOrder)
+                    val block2 = block(obj2 as SubaccountOrder)
+                    if (block1 != null || block2 != null) {
+                        var result = ParsingHelper.compare(block1 ?: 0, block2 ?: 0, false)
+                        if (result == ComparisonOrder.same) {
+                            result = ParsingHelper.compare(obj1.id, obj2.id, true)
                         }
+                        result
                     } else {
-                        if (time2 != null) {
-                            ComparisonOrder.descending
+                        val time1 = (obj1 as SubaccountOrder).createdAtMilliseconds
+                        val time2 = (obj2 as SubaccountOrder).createdAtMilliseconds
+                        if (time1 != null) {
+                            if (time2 != null) {
+                                ParsingHelper.compare(time1, time2, false)
+                            } else {
+                                ComparisonOrder.ascending
+                            }
                         } else {
-                            ParsingHelper.compare(obj1.id, obj2.id, true)
+                            if (time2 != null) {
+                                ComparisonOrder.descending
+                            } else {
+                                ParsingHelper.compare(obj1.id, obj2.id, true)
+                            }
                         }
                     }
-                }
-            }, { _, obj, itemData ->
-                parser.asMap(itemData)?.let {
-                    SubaccountOrder.create(obj as? SubaccountOrder, parser, it, localizer)
-                }
-            })?.toIList()
+                },
+                createObject = { _, obj, itemData ->
+                    parser.asMap(itemData)?.let {
+                        SubaccountOrder.create(obj as? SubaccountOrder, parser, it, localizer)
+                    }
+                },
+            )?.toIList()
             return orders
         }
 
