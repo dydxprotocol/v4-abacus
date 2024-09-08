@@ -1,6 +1,8 @@
 package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.output.input.ErrorType
+import kollections.iListOf
+import kollections.toIList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -41,7 +43,7 @@ class VaultFormTests {
 
         assertEquals(
             VaultFormValidationResult(
-                errors = emptyList(),
+                errors = listOf<VaultFormValidationError>().toIList(),
                 submissionData = VaultDepositWithdrawSubmissionData(
                     deposit = VaultDepositData(
                         subaccountFrom = "0",
@@ -88,7 +90,7 @@ class VaultFormTests {
 
         assertEquals(
             VaultFormValidationResult(
-                errors = listOf(
+                errors = iListOf(
                     VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                 ),
                 submissionData = VaultDepositWithdrawSubmissionData(
@@ -139,7 +141,7 @@ class VaultFormTests {
 
         assertEquals(
             VaultFormValidationResult(
-                errors = listOf(
+                errors = iListOf(
                     VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.SLIPPAGE_RESPONSE_WRONG_SHARES),
                     VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                 ),
@@ -183,7 +185,7 @@ class VaultFormTests {
 
         assertEquals(
             VaultFormValidationResult(
-                errors = listOf(
+                errors = iListOf(
                     VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.WITHDRAW_TOO_HIGH),
                     VaultFormValidationError(ErrorType.warning, VaultFormValidationErrorType.SLIPPAGE_TOO_HIGH),
                     VaultFormValidationError(ErrorType.error, VaultFormValidationErrorType.MUST_ACK_SLIPPAGE),

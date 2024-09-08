@@ -14,6 +14,7 @@ import exchange.dydx.abacus.responses.ParsingErrorType
 import exchange.dydx.abacus.responses.ParsingException
 import exchange.dydx.abacus.state.manager.CancelOrderRecord
 import exchange.dydx.abacus.state.manager.FaucetRecord
+import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -145,6 +146,39 @@ internal class SubaccountTransactionSupervisor(
         val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelOrderClick)
 
         return submitCancelOrder(orderId, marketId, callback, payload, analyticsPayload, uiClickTimeMs)
+    }
+
+    internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelAllOrdersPayload {
+        val payload = payloadProvider.cancelAllOrdersPayload(marketId)
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw ParsingException(
+            ParsingErrorType.MissingRequiredData,
+            "no subaccount found",
+        )
+
+        payload.payloads.forEach { cancelPayload ->
+            val existingOrder = subaccount.orders?.firstOrNull { it.id == cancelPayload.orderId }
+                ?: throw ParsingException(
+                    ParsingErrorType.MissingRequiredData,
+                    "no existing order to be cancelled for ${cancelPayload.orderId}",
+                )
+            val analyticsPayload = analyticsUtils.cancelOrderAnalyticsPayload(
+                cancelPayload,
+                existingOrder,
+                fromSlTpDialog = false,
+                isOrphanedTriggerOrder = false,
+                isCancelAll = true,
+            )
+            val uiClickTimeMs = transactionTracker.trackOrderClick(analyticsPayload, AnalyticsEvent.TradeCancelAllOrdersClick)
+            submitCancelOrder(
+                orderId = cancelPayload.orderId,
+                marketId = existingOrder.marketId,
+                callback = callback,
+                payload = cancelPayload,
+                analyticsPayload = analyticsPayload,
+                uiClickTimeMs = uiClickTimeMs,
+            )
+        }
+        return payload
     }
 
     internal fun commitTriggerOrders(

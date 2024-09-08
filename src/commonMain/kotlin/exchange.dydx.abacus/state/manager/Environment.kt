@@ -80,7 +80,6 @@ data class EnvironmentLinks(
     val launchIncentive: String?,
     val statusPage: String?,
     val withdrawalGateLearnMore: String?,
-    val complianceSupportEmail: String?,
     val equityTiersLearnMore: String?,
 ) {
     companion object {
@@ -100,7 +99,6 @@ data class EnvironmentLinks(
             val launchIncentive = parser.asString(data["launchIncentive"])
             val statusPage = parser.asString(data["statusPage"])
             val withdrawalGateLearnMore = parser.asString(data["withdrawalGateLearnMore"])
-            val complianceSupportEmail = parser.asString(data["complianceSupportEmail"])
             val equityTiersLearnMore = parser.asString(data["equityTiersLearnMore"])
             return EnvironmentLinks(
                 tos,
@@ -115,7 +113,6 @@ data class EnvironmentLinks(
                 launchIncentive,
                 statusPage,
                 withdrawalGateLearnMore,
-                complianceSupportEmail,
                 equityTiersLearnMore,
             )
         }

@@ -1949,6 +1949,28 @@ internal class AccountsChannelMock {
                     "goodTilBlock": "8864635",
                     "ticker": "ETH-USD",
                     "clientMetadata": "1"
+                },
+                {
+                    "id": "734617f4-29ba-50fe-878d-391ad4e4fbae",
+                    "subaccountId": "e470a747-3aa0-543e-aafa-0bd27d568901",
+                    "clientId": "1597910999",
+                    "clobPairId": "0",
+                    "side": "BUY",
+                    "size": "0.1",
+                    "totalFilled": "0",
+                    "price": "42000",
+                    "type": "LIMIT",
+                    "status": "OPEN",
+                    "timeInForce": "IOC",
+                    "reduceOnly": true,
+                    "orderFlags": "0",
+                    "goodTilBlockTime": "2024-04-02T15:57:16.000Z",
+                    "createdAtHeight": "8489771",
+                    "clientMetadata": "0",
+                    "updatedAt": "2024-03-15T06:37:01.731Z",
+                    "updatedAtHeight": "8489771",
+                    "postOnly": false,
+                    "ticker": "BTC-USD"
                 }
               ],
               "fills":[
