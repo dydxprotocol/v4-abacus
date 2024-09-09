@@ -3,7 +3,9 @@ package exchange.dydx.abacus.calculator
 import exchange.dydx.abacus.output.input.InputType
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ReceiptLine
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.state.internalstate.InternalInputState
+import exchange.dydx.abacus.state.manager.StatsigConfig
 
 internal class ReceiptCalculator {
     fun calculate(
@@ -48,51 +50,46 @@ internal class ReceiptCalculator {
                 }
 
                 InputType.TRANSFER -> {
-                    null // TODO when working with transfer
-                    /*
-                val transfer = parser.asNativeMap(input["transfer"]) ?: return null
-                val type = parser.asString(transfer["type"]) ?: return null
-                return when (type) {
-                    "DEPOSIT", "WITHDRAWAL" -> {
-                        if (StatsigConfig.useSkip) {
+                    when (input.transfer.type) {
+                        TransferType.deposit, TransferType.withdrawal -> {
+                            if (StatsigConfig.useSkip) {
+                                listOf(
+                                    ReceiptLine.Equity,
+                                    ReceiptLine.BuyingPower,
+                                    ReceiptLine.BridgeFee,
+                                    // add these back when supported by Skip
+//                            ReceiptLine.ExchangeRate,
+//                            ReceiptLine.ExchangeReceived,
+//                            ReceiptLine.Fee,
+                                    ReceiptLine.Slippage,
+                                    ReceiptLine.TransferRouteEstimatedDuration,
+                                )
+                            } else {
+                                listOf(
+                                    ReceiptLine.Equity,
+                                    ReceiptLine.BuyingPower,
+                                    ReceiptLine.ExchangeRate,
+                                    ReceiptLine.ExchangeReceived,
+                                    ReceiptLine.Fee,
+//                                ReceiptLine.BridgeFee,
+                                    ReceiptLine.Slippage,
+                                    ReceiptLine.TransferRouteEstimatedDuration,
+                                )
+                            }
+                        }
+
+                        TransferType.transferOut -> {
                             listOf(
-                                ReceiptLine.Equity.rawValue,
-                                ReceiptLine.BuyingPower.rawValue,
-                                ReceiptLine.BridgeFee.rawValue,
-                                // add these back when supported by Skip
-//                            ReceiptLine.ExchangeRate.rawValue,
-//                            ReceiptLine.ExchangeReceived.rawValue,
-//                            ReceiptLine.Fee.rawValue,
-                                ReceiptLine.Slippage.rawValue,
-                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
-                            )
-                        } else {
-                            listOf(
-                                ReceiptLine.Equity.rawValue,
-                                ReceiptLine.BuyingPower.rawValue,
-                                ReceiptLine.ExchangeRate.rawValue,
-                                ReceiptLine.ExchangeReceived.rawValue,
-                                ReceiptLine.Fee.rawValue,
-//                                ReceiptLine.BridgeFee.rawValue,
-                                ReceiptLine.Slippage.rawValue,
-                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
+                                ReceiptLine.Equity,
+                                ReceiptLine.MarginUsage,
+                                ReceiptLine.Fee,
                             )
                         }
-                    }
 
-                    "TRANSFER_OUT" -> {
-                        listOf(
-                            ReceiptLine.Equity.rawValue,
-                            ReceiptLine.MarginUsage.rawValue,
-                            ReceiptLine.Fee.rawValue,
-                        )
+                        else -> {
+                            listOf()
+                        }
                     }
-
-                    else -> {
-                        listOf()
-                    }
-                }
-                     */
                 }
 
                 InputType.ADJUST_ISOLATED_MARGIN -> {

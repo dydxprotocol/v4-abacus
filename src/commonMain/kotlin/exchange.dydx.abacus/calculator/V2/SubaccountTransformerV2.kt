@@ -5,6 +5,7 @@ import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.output.TradeStatesWithStringValues
 import exchange.dydx.abacus.output.account.SubaccountPositionResources
 import exchange.dydx.abacus.output.input.OrderSide
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalMarketState
 import exchange.dydx.abacus.state.internalstate.InternalPerpetualPosition
@@ -12,6 +13,7 @@ import exchange.dydx.abacus.state.internalstate.InternalPositionCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountCalculated
 import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
+import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
@@ -81,6 +83,40 @@ internal class SubaccountTransformerV2(
             applyDeltaToSubaccount(subaccount, delta, period)
         }
         return wallet
+    }
+
+    fun applyTransferToWallet(
+        wallet: InternalWalletState,
+        subaccountNumber: Int?,
+        transfer: InternalTransferInputState,
+        parser: ParserProtocol,
+        period: CalculationPeriod,
+    ): InternalWalletState {
+        val delta = deltaFromTransfer(transfer) ?: return wallet
+        val subaccount = wallet.account.subaccounts[subaccountNumber] ?: return wallet
+
+        applyDeltaToSubaccount(
+            subaccount = subaccount,
+            delta = delta,
+            period = period,
+        )
+        return wallet
+    }
+
+    private fun deltaFromTransfer(
+        transfer: InternalTransferInputState,
+    ): Delta? {
+        val type = transfer.type ?: return null
+        val summary = transfer.summary ?: return null
+        val multiplier =
+            (if (type == TransferType.deposit) Numeric.double.POSITIVE else Numeric.double.NEGATIVE)
+        val usdcSize =
+            (summary.usdcSize ?: Numeric.double.ZERO) * multiplier
+        val fee = (summary.fee ?: Numeric.double.ZERO) * Numeric.double.NEGATIVE
+        return Delta(
+            usdcSize = usdcSize,
+            fee = fee,
+        )
     }
 
     private fun deltaFromTrade(

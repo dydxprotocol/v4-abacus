@@ -27,7 +27,34 @@ internal class WithdrawalCapacityValidator(
         val configs = internalState.configs
         val withdrawalCapacity = configs.withdrawalCapacity
         val maxWithdrawalCapacity = withdrawalCapacity?.maxWithdrawalCapacity ?: BigDecimal.fromLong(Long.MAX_VALUE)
-        return null
+        val type = internalState.input.transfer.type ?: return null
+        val size = internalState.input.transfer.size
+        val usdcSize = parser.asDecimal(size?.usdcSize) ?: BigDecimal.ZERO
+        val usdcSizeInputIsGreaterThanCapacity = usdcSize > maxWithdrawalCapacity
+
+        if (type == TransferType.withdrawal && usdcSizeInputIsGreaterThanCapacity) {
+            return listOf(
+                error(
+                    type = ErrorType.error,
+                    errorCode = "",
+                    fields = null,
+                    actionStringKey = "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_ACTION",
+                    titleStringKey = "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_TITLE",
+                    textStringKey = "WARNINGS.ACCOUNT_FUND_MANAGEMENT.WITHDRAWAL_LIMIT_OVER_DESCRIPTION",
+                    textParams = mapOf(
+                        "USDC_LIMIT" to mapOf(
+                            "value" to maxWithdrawalCapacity.doubleValue(false),
+                            "format" to "price",
+                        ),
+                    ),
+                    action = null,
+                    link = environment?.links?.withdrawalGateLearnMore,
+                    linkText = "APP.GENERAL.LEARN_MORE_ARROW",
+                ),
+            )
+        } else {
+            return null
+        }
     }
 
     override fun validateTransferDeprecated(
@@ -40,11 +67,6 @@ internal class WithdrawalCapacityValidator(
         environment: V4Environment?
     ): List<Any>? {
         val withdrawalCapacity = parser.asMap(parser.value(configs, "withdrawalCapacity"))
-//        val maxWithdrawalCapacity = if (staticTyping) {
-//            internalState.configs.withdrawalCapacity?.maxWithdrawalCapacity ?: BigDecimal.fromLong(Long.MAX_VALUE)
-//        } else {
-//            parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
-//        }
         val maxWithdrawalCapacity = parser.asDecimal(parser.value(withdrawalCapacity, "maxWithdrawalCapacity")) ?: BigDecimal.fromLong(Long.MAX_VALUE)
         val type = parser.asString(parser.value(transfer, "type"))
         val size = parser.asMap(parser.value(transfer, "size"))
