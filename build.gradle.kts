@@ -52,7 +52,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.9.13"
+version = "1.9.14"
 
 repositories {
     google()
@@ -222,14 +222,38 @@ npmPublish {
 publishing {
     repositories {
         maven {
-            val github_username = System.getenv("github_username")
-            val github_token = System.getenv("github_token")
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/dydxprotocol/v4-abacus")
             credentials {
-                username = github_username
-                password = github_token
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
+}
+
+/**
+ * These tasks are meant for continuous development with from the v4-web repo.
+ * Instead of going through packJsPackage and npm installation, we shortcut by just
+ * copying our JS files directly into v4-web/node_modules.
+ *
+ * This reduces iteration time quite a bit, while being a bit riskier since manipulating
+ * node_modules directly is not recommended.
+ *
+ * Run via ./gradlew v4WebHotSwapTrigger --continuous
+ */
+tasks.register<Copy>("v4WebHotSwapCopy") {
+    dependsOn("jsBrowserDevelopmentLibraryDistribution")
+
+    from("build/dist/js/developmentLibrary")
+    into("../v4-web/node_modules/@dydxprotocol/v4-abacus/")
+
+    include("**/*.js", "**/*.map", "**/*.ts")
+}
+
+tasks.register<Exec>("v4WebHotSwapTrigger") {
+    group = "abacus"
+    dependsOn("v4WebHotSwapCopy")
+
+    commandLine = listOf("./trigger_v4web_reload.sh")
 }
