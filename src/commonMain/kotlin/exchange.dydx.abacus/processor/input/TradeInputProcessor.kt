@@ -301,7 +301,7 @@ internal class TradeInputProcessor(
             val currentPositionLeverage =
                 existingPosition.calculated[CalculationPeriod.current]?.leverage?.abs()
             val positionLeverage =
-                if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
+                if (currentPositionLeverage != null && currentPositionLeverage > Numeric.double.ZERO) currentPositionLeverage else Numeric.double.ONE
             trade.targetLeverage = positionLeverage
         } else if (existingOrder != null) {
             trade.marginMode =

@@ -701,7 +701,7 @@ internal object MarginCalculator {
         val side = trade.side ?: return null
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
+        val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: return null
         val targetLeverage = trade.targetLeverage ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
@@ -754,7 +754,7 @@ internal object MarginCalculator {
         val side = trade.side?.rawValue ?: return null
         val oraclePrice = market.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val maxMarketLeverage = market.configs?.maxMarketLeverage ?: Numeric.double.ONE
+        val maxMarketLeverage = market.configs?.maxMarketLeverage ?: return null
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(

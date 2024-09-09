@@ -107,7 +107,7 @@ internal class ClosePositionInputProcessor(
                     val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
                     val currentPositionLeverage = position.calculated[CalculationPeriod.current]?.leverage?.abs()
-                    trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else maxMarketLeverage
+                    trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > Numeric.double.ZERO) currentPositionLeverage else maxMarketLeverage
 
                     // default full close
                     trade.sizePercent = 1.0

@@ -33,7 +33,7 @@ internal class TradeInputMarginModeCalculator {
                     subaccountNumber = subaccountNumber,
                 )
                 val existingPositionLeverage = existingPosition?.calculated?.get(CalculationPeriod.current)?.leverage
-                tradeInput.targetLeverage = existingPositionLeverage ?: maxMarketLeverage
+                tradeInput.targetLeverage = if (existingPositionLeverage != null && existingPositionLeverage > Numeric.double.ZERO) existingPositionLeverage else maxMarketLeverage
             }
         } else {
             val marketMarginMode = MarginCalculator.findMarketMarginMode(
