@@ -7,19 +7,19 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
     }
 }
 
 plugins {
-    kotlin("multiplatform") version "2.0.20"
-    kotlin("native.cocoapods") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.20"
+    kotlin("multiplatform") version "1.9.24"
+    kotlin("native.cocoapods") version "1.9.24"
+    kotlin("plugin.serialization") version "1.9.24"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.4.2"
     id("com.diffplug.spotless") version "6.25.0"
     id("io.gitlab.arturbosch.detekt") version("1.23.3")
-    id("com.google.devtools.ksp") version "2.0.20-1.0.24" // needs to be in-sync with Kotlin version. Version before the dash is the compatible Kotlin version.
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20" // needs to be in-sync with Kotlin version. Version before the dash is the compatible Kotlin version.
 }
 
 allprojects {
@@ -52,7 +52,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.9.12"
+version = "1.9.14"
 
 repositories {
     google()
@@ -118,7 +118,7 @@ kotlin {
                 implementation("io.ktor:ktor-http:$ktorVersion")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
                 implementation("tz.co.asoft:kollections-interoperable:2.0.16")
-                implementation("me.tatarka.inject:kotlin-inject-runtime:0.7.1")
+                implementation("me.tatarka.inject:kotlin-inject-runtime:0.6.3")
             }
         }
         val commonTest by getting {
@@ -146,10 +146,10 @@ kotlin {
         // KSP will eventually have better multiplatform support and we'll be able to simply have
         // `ksp libs.kotlinInject.compiler` in the dependencies block of each source set
         // https://github.com/google/ksp/pull/1021
-        add("kspJvm", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.7.1")
-        add("kspJs", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.7.1")
-        add("kspIosArm64", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.7.1")
-        add("kspIosSimulatorArm64", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.7.1")
+        add("kspJvm", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.6.3")
+        add("kspJs", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.6.3")
+        add("kspIosArm64", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.6.3")
+        add("kspIosSimulatorArm64", "me.tatarka.inject:kotlin-inject-compiler-ksp:0.6.3")
     }
 
     tasks.wrapper {
@@ -222,14 +222,38 @@ npmPublish {
 publishing {
     repositories {
         maven {
-            val github_username = System.getenv("github_username")
-            val github_token = System.getenv("github_token")
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/dydxprotocol/v4-abacus")
             credentials {
-                username = github_username
-                password = github_token
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
+}
+
+/**
+ * These tasks are meant for continuous development with from the v4-web repo.
+ * Instead of going through packJsPackage and npm installation, we shortcut by just
+ * copying our JS files directly into v4-web/node_modules.
+ *
+ * This reduces iteration time quite a bit, while being a bit riskier since manipulating
+ * node_modules directly is not recommended.
+ *
+ * Run via ./gradlew v4WebHotSwapTrigger --continuous
+ */
+tasks.register<Copy>("v4WebHotSwapCopy") {
+    dependsOn("jsBrowserDevelopmentLibraryDistribution")
+
+    from("build/dist/js/developmentLibrary")
+    into("../v4-web/node_modules/@dydxprotocol/v4-abacus/")
+
+    include("**/*.js", "**/*.map", "**/*.ts")
+}
+
+tasks.register<Exec>("v4WebHotSwapTrigger") {
+    group = "abacus"
+    dependsOn("v4WebHotSwapCopy")
+
+    commandLine = listOf("./trigger_v4web_reload.sh")
 }
