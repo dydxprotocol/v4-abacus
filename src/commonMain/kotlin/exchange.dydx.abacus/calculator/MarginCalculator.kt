@@ -676,7 +676,7 @@ internal object MarginCalculator {
         } ?: return null
     }
 
-    private fun getMaxMarketLeverage(
+    private fun getMaxMarketLeverageDeprecated(
         effectiveImf: Double,
         imf: Double,
     ): Double {
@@ -701,9 +701,7 @@ internal object MarginCalculator {
         val side = trade.side ?: return null
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val initialMarginFraction = market.perpetualMarket?.configs?.initialMarginFraction ?: Numeric.double.ZERO
-        val effectiveImf = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: Numeric.double.ZERO
-        val maxMarketLeverage = getMaxMarketLeverage(effectiveImf = effectiveImf, imf = initialMarginFraction)
+        val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
         val targetLeverage = trade.targetLeverage ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
@@ -712,8 +710,7 @@ internal object MarginCalculator {
             side = side.rawValue,
             oraclePrice = oraclePrice,
             price = price,
-            initialMarginFraction = initialMarginFraction,
-            effectiveImf = effectiveImf,
+            maxMarketLeverage = maxMarketLeverage,
             positionSizeDifference = positionSizeDifference,
         )
     }
@@ -733,7 +730,8 @@ internal object MarginCalculator {
         val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
         val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
         val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
-        val maxMarketLeverage = getMaxMarketLeverage(effectiveImf = effectiveImf, imf = initialMarginFraction)
+        val maxMarketLeverage = getMaxMarketLeverageDeprecated(effectiveImf = effectiveImf, imf = initialMarginFraction)
+
         val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifferenceDeprecated(parser, subaccount, trade) ?: return null
 
@@ -742,8 +740,7 @@ internal object MarginCalculator {
             side = side,
             oraclePrice = oraclePrice,
             price = price,
-            initialMarginFraction = initialMarginFraction,
-            effectiveImf = effectiveImf,
+            maxMarketLeverage = maxMarketLeverage,
             positionSizeDifference = positionSizeDifference,
         )
     }
@@ -757,8 +754,7 @@ internal object MarginCalculator {
         val side = trade.side?.rawValue ?: return null
         val oraclePrice = market.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val initialMarginFraction = market.configs?.initialMarginFraction ?: 0.0
-        val effectiveImf = market.configs?.effectiveInitialMarginFraction ?: 0.0
+        val maxMarketLeverage = market.configs?.maxMarketLeverage ?: Numeric.double.ONE
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -766,8 +762,7 @@ internal object MarginCalculator {
             side,
             oraclePrice,
             price,
-            initialMarginFraction,
-            effectiveImf,
+            maxMarketLeverage,
             positionSizeDifference,
         )
     }
@@ -777,11 +772,10 @@ internal object MarginCalculator {
         side: String,
         oraclePrice: Double,
         price: Double,
-        initialMarginFraction: Double,
-        effectiveImf: Double,
+        maxMarketLeverage: Double?,
         positionSizeDifference: Double,
     ): Double? {
-        val maxLeverageForMarket = getMaxMarketLeverage(effectiveImf = effectiveImf, imf = initialMarginFraction)
+        val maxLeverageForMarket = maxMarketLeverage ?: Numeric.double.ONE
         // Cap targetLeverage to 98% of max leverage
         val adjustedTargetLeverage = min(targetLeverage, maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT)
 

@@ -104,15 +104,7 @@ internal class ClosePositionInputProcessor(
                     trade.reduceOnly = true
 
                     val market = marketSummaryState.markets.get(trade.marketId)
-                    val imf = market?.perpetualMarket?.configs?.initialMarginFraction ?: Numeric.double.ZERO
-                    val effectiveImf = market?.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: Numeric.double.ZERO
-                    val maxMarketLeverage = if (effectiveImf > Numeric.double.ZERO) {
-                        Numeric.double.ONE / effectiveImf
-                    } else if (imf > Numeric.double.ZERO) {
-                        Numeric.double.ONE / imf
-                    } else {
-                        Numeric.double.ONE
-                    }
+                    val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
                     val currentPositionLeverage = position.calculated[CalculationPeriod.current]?.leverage?.abs()
                     trade.targetLeverage = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else maxMarketLeverage

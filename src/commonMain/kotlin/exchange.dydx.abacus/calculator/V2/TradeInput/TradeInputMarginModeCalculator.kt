@@ -21,15 +21,7 @@ internal class TradeInputMarginModeCalculator {
             subaccountNumber = subaccountNumber,
         )
         val market = markets?.get(tradeInput.marketId)
-        val imf = market?.perpetualMarket?.configs?.initialMarginFraction ?: Numeric.double.ZERO
-        val effectiveImf = market?.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: Numeric.double.ZERO
-        val maxMarketLeverage = if (effectiveImf > Numeric.double.ZERO) {
-            Numeric.double.ONE / effectiveImf
-        } else if (imf > Numeric.double.ZERO) {
-            Numeric.double.ONE / imf
-        } else {
-            Numeric.double.ONE
-        }
+        val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
         // If there is an existing position or order, we have to use the same margin mode
         if (existingMarginMode != null) {
