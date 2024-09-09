@@ -14,13 +14,12 @@ internal fun TradingStateMachine.sparklines(
     if (staticTyping) {
         val sparklines = parser.asTypedStringMapOfList<String>(json)
         return if (sparklines != null) {
+            marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
             when (period) {
                 IndexerSparklineTimePeriod.ONEDAY -> {
-                    marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
                     StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
                 }
                 IndexerSparklineTimePeriod.SEVENDAYS -> {
-                    marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
                     StateChanges(iListOf(Changes.markets), null)
                 }
             }
