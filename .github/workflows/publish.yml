@@ -15,6 +15,8 @@ jobs:
       new_version: ${{ steps.check.outputs.new_version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # need current commit and previous commit
       - id: check
         run: |
           currentVersion=$(grep '^version = ' build.gradle.kts | sed 's/version = //g' | tr -d '"')
@@ -62,6 +64,8 @@ jobs:
 
       - name: Publish to Github Packages
         run: ./gradlew publishJvmPublicationToGitHubPackagesRepository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-js:
     name: Publish JS Package
