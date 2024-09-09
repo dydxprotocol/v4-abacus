@@ -592,7 +592,7 @@ open class V4TradeInputTests : V4BaseTests() {
 
             val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
             assertEquals(100000.0, subaccount.calculated[CalculationPeriod.current]?.equity)
-            assertEquals(99985.0, subaccount.calculated[CalculationPeriod.post]?.equity)
+            assertEquals(99980.61224492347, subaccount.calculated[CalculationPeriod.post]?.equity)
 
             val error = perp.internalState.input.errors?.first()
             assertEquals(ErrorType.error, error?.type)
@@ -663,15 +663,15 @@ open class V4TradeInputTests : V4BaseTests() {
         }
 
         if (perp.staticTyping) {
-            perp.trade("400", TradeInputField.usdcSize, 0)
+            perp.trade("1", TradeInputField.size, 0)
 
             val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
             assertEquals(100000.0, subaccount.calculated[CalculationPeriod.current]?.equity)
-            assertEquals(99850.0, subaccount.calculated[CalculationPeriod.post]?.equity)
+            assertEquals(99923.4693877551, subaccount.calculated[CalculationPeriod.post]?.equity)
         } else {
             test(
                 {
-                    perp.trade("400", TradeInputField.usdcSize, 0)
+                    perp.trade("1", TradeInputField.size, 0)
                 },
                 """
             {
@@ -681,7 +681,7 @@ open class V4TradeInputTests : V4BaseTests() {
                             "0": {
                                 "equity": {
                                     "current": 100000.0,
-                                    "postOrder": 99980.0
+                                    "postOrder": 99923.4693877551
                                 }
                             }
                         }

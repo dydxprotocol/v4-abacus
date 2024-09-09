@@ -9,11 +9,17 @@ import kotlin.test.assertTrue
 class V3MarketsDelayedTests : V3BaseTests() {
     @Test
     fun testOrderbookFirst() {
-        test(
-            {
-                loadOrderbook()
-            },
-            """
+        if (perp.staticTyping) {
+            loadOrderbook()
+
+            val market = perp.internalState.marketsSummary.markets.get("ETH-USD")
+            assertTrue { market?.groupedOrderbook != null }
+        } else {
+            test(
+                {
+                    loadOrderbook()
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -24,11 +30,12 @@ class V3MarketsDelayedTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                assertNull(perp.state?.marketsSummary)
-            },
-        )
+                """.trimIndent(),
+                {
+                    assertNull(perp.state?.marketsSummary)
+                },
+            )
+        }
 
         if (perp.staticTyping) {
             perp.loadTrades(mock)
@@ -58,11 +65,16 @@ class V3MarketsDelayedTests : V3BaseTests() {
             )
         }
 
-        test(
-            {
-                loadMarkets()
-            },
-            """
+        if (perp.staticTyping) {
+            loadMarkets()
+            val market = perp.internalState.marketsSummary.markets.get("ETH-USD")
+            assertTrue { market?.groupedOrderbook != null }
+        } else {
+            test(
+                {
+                    loadMarkets()
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -73,11 +85,12 @@ class V3MarketsDelayedTests : V3BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                assertNotNull(perp.state?.marketsSummary)
-            },
-        )
+                """.trimIndent(),
+                {
+                    assertNotNull(perp.state?.marketsSummary)
+                },
+            )
+        }
     }
 
     @Test

@@ -202,11 +202,22 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
     }
 
     private fun testDefaultTargetLeverage() {
-        test(
-            {
-                perp.tradeInMarket("NEAR-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("NEAR-USD", 0)
+
+            val input = perp.internalState.input
+            assertEquals(InputType.TRADE, input.currentType)
+            val trade = input.trade
+            assertEquals("NEAR-USD", trade.marketId)
+            assertEquals(MarginMode.Cross, trade.marginMode)
+            assertEquals(true, trade.options.needsMarginMode)
+            assertEquals(10.0, trade.targetLeverage)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("NEAR-USD", 0)
+                },
+                """
                 {
                     "input": {
                         "current": "trade",
@@ -220,8 +231,9 @@ class IsolatedMarginModeTests : V4BaseTests(true) {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     // MarginMode should automatically to match the current market based on a variety of factors

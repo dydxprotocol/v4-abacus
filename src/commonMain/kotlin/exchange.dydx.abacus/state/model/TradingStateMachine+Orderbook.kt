@@ -26,11 +26,10 @@ internal fun TradingStateMachine.receivedOrderbook(
             tickSize = market?.perpetualMarket?.configs?.tickSize,
             content = orderbookPayload,
         )
+    } else {
+        this.marketsSummary =
+            marketsProcessor.receivedOrderbookDeprecated(marketsSummary, marketId, payload)
     }
-
-    // TODO: Remove after TradeCalculator is converted to static typing
-    this.marketsSummary =
-        marketsProcessor.receivedOrderbookDeprecated(marketsSummary, marketId, payload)
 
     return StateChanges(
         iListOf(Changes.orderbook, Changes.input),
@@ -69,13 +68,14 @@ internal fun TradingStateMachine.receivedBatchOrderbookChanges(
             marketId = marketId,
             content = orderbookUpdatePayload,
         )
+    } else {
+        this.marketsSummary = marketsProcessor.receivedBatchOrderbookChangesDeprecated(
+            marketsSummary,
+            marketId,
+            payload,
+        )
     }
-    // TODO: Remove after TradeCalculator is converted to static typing
-    this.marketsSummary = marketsProcessor.receivedBatchOrderbookChangesDeprecated(
-        marketsSummary,
-        marketId,
-        payload,
-    )
+
     return StateChanges(
         iListOf(Changes.orderbook, Changes.input),
         iListOf(marketId),
@@ -96,11 +96,11 @@ internal fun TradingStateMachine.setOrderbookGrouping(
                 marketId = marketId,
                 groupingMultiplier = groupingMultiplier,
             )
+        } else {
+            this.groupingMultiplier = groupingMultiplier
+            this.marketsSummary =
+                marketsProcessor.groupOrderbookDeprecated(marketsSummary, marketId)
         }
-
-        // TODO: Remove after TradeCalculator is converted to static typing
-        this.groupingMultiplier = groupingMultiplier
-        this.marketsSummary = marketsProcessor.groupOrderbookDeprecated(marketsSummary, marketId)
 
         val changes =
             StateChanges(
