@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 data class SubaccountOrder(
     val subaccountNumber: Int?,
     val id: String,
-    val clientId: Int?,
+    val clientId: UInt?,
     val type: OrderType,
     val side: OrderSide,
     val status: OrderStatus,
@@ -56,7 +56,7 @@ data class SubaccountOrder(
                 // TODO: Remove default to 0 for subaccountNumber once new indexer response is consumed. Prevents breaking change
                 val subaccountNumber = parser.asInt(data["subaccountNumber"]) ?: 0
                 val id = parser.asString(data["id"])
-                val clientId = parser.asInt(data["clientId"])
+                val clientId = parser.asUInt(data["clientId"])
                 val marketId = parser.asString(data["marketId"])
                 val displayId = parser.asString(data["displayId"])
                 val clobPairId = parser.asInt(data["clobPairId"])

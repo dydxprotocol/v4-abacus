@@ -91,7 +91,7 @@ internal fun TradingStateMachine.findOrder(
 }
 
 internal fun TradingStateMachine.findOrder(
-    clientId: Int,
+    clientId: UInt,
     subaccountNumber: Int,
 ): SubaccountOrder? {
     val subaccount = state?.subaccount(subaccountNumber) ?: return null

@@ -18,6 +18,7 @@ import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
 import exchange.dydx.abacus.state.manager.PlaceOrderMarketInfo
+import exchange.dydx.abacus.state.manager.utils.ClientId
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
@@ -27,7 +28,6 @@ import kollections.iEmptyList
 import kollections.iListOf
 import kollections.iMutableListOf
 import kollections.toIList
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 @Suppress("TooGenericExceptionThrown")
@@ -74,7 +74,7 @@ internal class SubaccountTransactionPayloadProvider(
         val trade = stateMachine.state?.input?.trade
         val marketId = trade?.marketId ?: error("marketId is null")
         val summary = trade.summary ?: error("summary is null")
-        val clientId = Random.nextInt(0, Int.MAX_VALUE)
+        val clientId = ClientId.generate()
         val marginMode = trade.marginMode.rawValue
         val type = trade.type?.rawValue ?: error("type is null")
         val side = trade.side?.rawValue ?: error("side is null")
@@ -274,7 +274,7 @@ internal class SubaccountTransactionPayloadProvider(
         val isLimitClose = closePosition?.type == OrderType.Limit
         val marketId = closePosition?.marketId ?: throw Exception("marketId is null")
         val summary = closePosition.summary ?: throw Exception("summary is null")
-        val clientId = Random.nextInt(0, Int.MAX_VALUE)
+        val clientId = ClientId.generate()
         val type = closePosition.type?.rawValue ?: "MARKET"
         val side = closePosition.side?.rawValue ?: throw Exception("side is null")
         val price = summary.payloadPrice ?: throw Exception("price is null")
@@ -385,7 +385,7 @@ internal class SubaccountTransactionPayloadProvider(
     }
 
     private fun triggerOrderPayload(triggerOrder: TriggerOrder, marketId: String, currentHeight: Int?): HumanReadablePlaceOrderPayload {
-        val clientId = Random.nextInt(0, Int.MAX_VALUE)
+        val clientId = ClientId.generate()
         val type = triggerOrder.type?.rawValue ?: error("type is null")
         val side = triggerOrder.side?.rawValue ?: error("side is null")
         val size = triggerOrder.summary?.size ?: error("size is null")
