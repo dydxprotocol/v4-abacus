@@ -81,11 +81,23 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testSubaccountsReceived() {
-        test(
-            {
-                perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+
+            val account = perp.internalState.wallet.account
+            assertEquals(2800.8, account.tradingRewards.total)
+
+            val subaccount = account.subaccounts[0]
+            val calculated = subaccount?.calculated?.get(CalculationPeriod.current)!!
+            assertEquals(108116.7318528828, calculated.equity)
+            assertEquals(106640.3767269893, calculated.freeCollateral)
+            assertEquals(99872.368956, calculated.quoteBalance)
+        } else {
+            test(
+                {
+                    perp.loadv4SubaccountsWithPositions(mock, "$testRestUrl/v4/addresses/cosmo")
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -108,8 +120,9 @@ class V4AccountTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testSubaccountSubscribed() {
@@ -1186,16 +1199,54 @@ class V4AccountTests : V4BaseTests() {
     }
 
     private fun testPartiallyFilledAndCanceledOrders() {
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
-                    0,
-                    BlockAndTime(14689438, Clock.System.now()),
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
+                subaccountNumber = 0,
+                height = BlockAndTime(14689438, Clock.System.now()),
+            )
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            val orders = subaccount.orders
+            val order1 = orders?.firstOrNull { it.id == "3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c" }
+            assertEquals(OrderStatus.PartiallyCanceled, order1?.status)
+            val order2 = orders?.firstOrNull { it.id == "a4586c75-c3f5-5bf5-877a-b3f2c8ff32a7" }
+            assertEquals(OrderStatus.PartiallyFilled, order2?.status)
+
+            val ioImplementations = testIOImplementations()
+            val localizer = testLocalizer(ioImplementations)
+            val uiImplementations = testUIImplementations(localizer)
+            val notificationsProvider =
+                NotificationsProvider(
+                    stateMachine = perp,
+                    uiImplementations = uiImplementations,
+                    environment = mock.v4Environment,
+                    parser = Parser(),
+                    jsonEncoder = JsonEncoder(),
                 )
-            },
-            """
+            val notifications = notificationsProvider.buildNotifications(0)
+            assertEquals(
+                8,
+                notifications.size,
+            )
+            val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
+            assertNotNull(order)
+            assertEquals(
+                "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                order.title,
+            )
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.accountsChannel.v4_parent_subaccounts_partially_filled_and_canceled_orders,
+                        0,
+                        BlockAndTime(14689438, Clock.System.now()),
+                    )
+                },
+                """
                 {
                     "wallet": {
                         "account": {
@@ -1214,32 +1265,33 @@ class V4AccountTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-            {
-                val ioImplementations = testIOImplementations()
-                val localizer = testLocalizer(ioImplementations)
-                val uiImplementations = testUIImplementations(localizer)
-                val notificationsProvider =
-                    NotificationsProvider(
-                        perp,
-                        uiImplementations,
-                        environment = mock.v4Environment,
-                        Parser(),
-                        JsonEncoder(),
+                """.trimIndent(),
+                {
+                    val ioImplementations = testIOImplementations()
+                    val localizer = testLocalizer(ioImplementations)
+                    val uiImplementations = testUIImplementations(localizer)
+                    val notificationsProvider =
+                        NotificationsProvider(
+                            perp,
+                            uiImplementations,
+                            environment = mock.v4Environment,
+                            Parser(),
+                            JsonEncoder(),
+                        )
+                    val notifications = notificationsProvider.buildNotifications(0)
+                    assertEquals(
+                        8,
+                        notifications.size,
                     )
-                val notifications = notificationsProvider.buildNotifications(0)
-                assertEquals(
-                    8,
-                    notifications.size,
-                )
-                val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
-                assertNotNull(order)
-                assertEquals(
-                    "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
-                    order.title,
-                )
-            },
-        )
+                    val order = notifications["order:3a8c6f8f-d8dd-54b5-a3a1-d318f586a80c"]
+                    assertNotNull(order)
+                    assertEquals(
+                        "NOTIFICATIONS.ORDER_PARTIAL_FILL.TITLE",
+                        order.title,
+                    )
+                },
+            )
+        }
     }
 
     private fun testEquityTiers() {

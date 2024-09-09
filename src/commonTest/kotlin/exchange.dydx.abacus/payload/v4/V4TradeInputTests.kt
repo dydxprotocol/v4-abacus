@@ -546,11 +546,17 @@ open class V4TradeInputTests : V4BaseTests() {
     }
 
     private fun testIsolatedLimitTradeInputOnce() {
-        test(
-            {
-                perp.tradeInMarket("BTC-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("BTC-USD", 0)
+
+            val trade = perp.internalState.input.trade
+            assertEquals(trade.marketId, "BTC-USD")
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("BTC-USD", 0)
+                },
+                """
             {
                 "input": {
                     "trade": {
@@ -558,8 +564,9 @@ open class V4TradeInputTests : V4BaseTests() {
                     }
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
         test({
             perp.trade("ISOLATED", TradeInputField.marginMode, 0)
         }, null)
@@ -580,11 +587,32 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("380", TradeInputField.usdcSize, 0)
         }, null)
 
-        test(
-            {
-                perp.trade("1500", TradeInputField.limitPrice, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("1500", TradeInputField.limitPrice, 0)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(100000.0, subaccount.calculated[CalculationPeriod.current]?.equity)
+            assertEquals(99985.0, subaccount.calculated[CalculationPeriod.post]?.equity)
+
+            val error = perp.internalState.input.errors?.first()
+            assertEquals(ErrorType.error, error?.type)
+            assertEquals("ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM", error?.code)
+            assertEquals(iListOf("size.size"), error?.fields)
+            assertEquals("APP.GENERAL.LEARN_MORE_ARROW", error?.linkText)
+            assertEquals("https://help.dydx.trade/en/articles/171918-equity-tiers-and-rate-limits", error?.link)
+            assertEquals("ERRORS.TRADE_BOX_TITLE.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM", error?.resources?.title?.stringKey)
+            assertEquals("ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM", error?.resources?.text?.stringKey)
+            val param = error?.resources?.text?.params?.first()!!
+            assertEquals("20.0", param.value)
+            assertEquals("price", param.format)
+            assertEquals("MIN_VALUE", param.key)
+            assertEquals("APP.TRADE.MODIFY_SIZE_FIELD", error?.resources?.action?.stringKey)
+        } else {
+            test(
+                {
+                    perp.trade("1500", TradeInputField.limitPrice, 0)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -630,14 +658,22 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
-        test(
-            {
-                perp.trade("400", TradeInputField.usdcSize, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("400", TradeInputField.usdcSize, 0)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(100000.0, subaccount.calculated[CalculationPeriod.current]?.equity)
+            assertEquals(99850.0, subaccount.calculated[CalculationPeriod.post]?.equity)
+        } else {
+            test(
+                {
+                    perp.trade("400", TradeInputField.usdcSize, 0)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -655,14 +691,28 @@ open class V4TradeInputTests : V4BaseTests() {
                     "errors": null
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
-        test(
-            {
-                perp.trade("0", TradeInputField.size, 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.trade("0", TradeInputField.size, 0)
+
+            val subaccount = perp.internalState.wallet.account.subaccounts[0]!!
+            assertEquals(100000.0, subaccount.calculated[CalculationPeriod.current]?.equity)
+            assertEquals(null, subaccount.calculated[CalculationPeriod.post]?.equity)
+
+            val error = perp.internalState.input.errors?.first()
+            assertEquals(ErrorType.required, error?.type)
+            assertEquals("REQUIRED_SIZE", error?.code)
+            assertEquals(iListOf("size.size"), error?.fields)
+            assertEquals("APP.TRADE.ENTER_AMOUNT", error?.resources?.action?.stringKey)
+        } else {
+            test(
+                {
+                    perp.trade("0", TradeInputField.size, 0)
+                },
+                """
             {
                 "wallet": {
                     "account": {
@@ -693,8 +743,9 @@ open class V4TradeInputTests : V4BaseTests() {
                     ]
                 }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testUpdates() {

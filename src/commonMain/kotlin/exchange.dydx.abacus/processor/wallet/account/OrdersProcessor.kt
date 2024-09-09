@@ -6,6 +6,7 @@ import exchange.dydx.abacus.processor.base.mergeWithIds
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.manager.BlockAndTime
+import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
@@ -34,10 +35,19 @@ internal class OrdersProcessor(
                 height = height,
             )
         }
-        existing?.let {
-            return mergeWithIds(new, existing) { item -> item.id }
+        val merged = existing?.let {
+            mergeWithIds(new, existing) { item -> item.id }
+        } ?: new
+
+        return merged.sortedBy { block(it) }.reversed()
+    }
+
+    private fun block(order: SubaccountOrder): Int? {
+        return order.createdAtHeight ?: if (order.goodTilBlock != null) {
+            order.goodTilBlock - SHORT_TERM_ORDER_DURATION
+        } else {
+            null
         }
-        return new
     }
 
     internal fun received(

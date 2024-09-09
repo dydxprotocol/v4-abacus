@@ -37,8 +37,9 @@ private fun TradingStateMachine.receivedAccount(
             internalState = internalState.wallet,
             payload = payload,
         )
+    } else {
+        this.wallet = walletProcessor.receivedAccount(wallet, payload)
     }
-    this.wallet = walletProcessor.receivedAccount(wallet, payload)
     return StateChanges(iListOf(Changes.subaccount, Changes.tradingRewards))
 }
 
@@ -99,19 +100,4 @@ internal fun TradingStateMachine.findOrder(
         it.clientId == clientId
     } ?: return null
     return order
-}
-
-internal fun TradingStateMachine.findOrderInData(
-    orderId: String,
-    subaccountNumber: Int,
-): SubaccountOrder? {
-    val subaccount = state?.subaccount(subaccountNumber) ?: return null
-    val orders = subaccount.orders ?: return null
-    val order = orders.firstOrNull {
-        it.id == orderId
-    } ?: return null
-    return when (order.status) {
-        OrderStatus.Open, OrderStatus.Pending, OrderStatus.Untriggered -> order
-        else -> null
-    }
 }

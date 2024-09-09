@@ -338,6 +338,7 @@ internal data class InternalAssetPositionState(
 internal data class InternalPerpetualPendingPosition(
     val assetId: String? = null,
     val marketId: String? = null,
+    var displayId: String? = null,
     val firstOrderId: String? = null,
     val orderCount: Int? = null,
 

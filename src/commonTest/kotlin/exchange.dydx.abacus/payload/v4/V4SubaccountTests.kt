@@ -35,16 +35,32 @@ class V4SubaccountTests : V4BaseTests() {
     }
 
     private fun testSubaccountsReceived() {
-        test(
-            {
-                perp.rest(
-                    AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
-                    mock.batchedSubaccountsChannel.rest_response,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.rest(
+                url = AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                payload = mock.batchedSubaccountsChannel.rest_response,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val account = perp.internalState.wallet.account
+            assertEquals(account.tradingRewards.total, 36059.40741180069)
+            val subaccount = account.subaccounts[0]!!
+            val calculated = subaccount.calculated[CalculationPeriod.current]
+            assertEquals(calculated?.equity, 623694.7306634021)
+            assertEquals(calculated?.freeCollateral, 485562.68948613136)
+            assertEquals(calculated?.quoteBalance, 1625586.093553)
+        } else {
+            test(
+                {
+                    perp.rest(
+                        AbUrl.fromString("$testRestUrl/v4/addresses/cosmo"),
+                        mock.batchedSubaccountsChannel.rest_response,
+                        0,
+                        null,
+                    )
+                },
+                """
                 {
                    "wallet":{
                       "account":{
@@ -67,8 +83,9 @@ class V4SubaccountTests : V4BaseTests() {
                       }
                    }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testSubaccountSubscribed() {

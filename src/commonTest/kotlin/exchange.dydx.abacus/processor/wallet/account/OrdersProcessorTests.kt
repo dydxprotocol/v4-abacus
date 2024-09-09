@@ -48,7 +48,7 @@ class OrdersProcessorTests {
     @Test
     fun testProcess_withMerge() {
         orderProcessor.processAction = { _, input, _, _ ->
-            createSubaccountOrder(input.id!!)
+            createSubaccountOrder(input.id!!, input.createdAtHeight?.toInt())
         }
 
         val output = ordersProcessor.process(
@@ -58,20 +58,22 @@ class OrdersProcessorTests {
             payload = listOf(
                 IndexerCompositeOrderObject(
                     id = "1",
+                    createdAtHeight = "1",
                 ),
                 IndexerCompositeOrderObject(
                     id = "2",
+                    createdAtHeight = "2",
                 ),
             ),
             subaccountNumber = 0,
             height = null,
         )
         assertEquals(2, output.size)
-        assertEquals(output[0].id, "1")
-        assertEquals(output[1].id, "2")
+        assertEquals(output[0].id, "2")
+        assertEquals(output[1].id, "1")
     }
 
-    private fun createSubaccountOrder(id: String): SubaccountOrder {
-        return OrderProcessorTests.orderMock.copy(id = id)
+    private fun createSubaccountOrder(id: String, createdAtHeight: Int? = null): SubaccountOrder {
+        return OrderProcessorTests.orderMock.copy(id = id, createdAtHeight = createdAtHeight)
     }
 }
