@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.manager.OrderbookGrouping
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.Logger
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.ParsingHelper
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.typedSafeSet
@@ -232,6 +233,19 @@ data class MarketConfigs(
             }
         }
     }
+
+    internal val maxMarketLeverage: Double
+        get() {
+            val imf = initialMarginFraction ?: Numeric.double.ZERO
+            val effectiveImf = effectiveInitialMarginFraction ?: Numeric.double.ZERO
+            return if (effectiveImf > Numeric.double.ZERO) {
+                Numeric.double.ONE / effectiveImf
+            } else if (imf > Numeric.double.ZERO) {
+                Numeric.double.ONE / imf
+            } else {
+                Numeric.double.ONE
+            }
+        }
 }
 
 @JsExport
