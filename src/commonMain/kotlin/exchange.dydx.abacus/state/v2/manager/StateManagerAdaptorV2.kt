@@ -165,10 +165,10 @@ internal class StateManagerAdaptorV2(
     )
 
     private val markets = MarketsSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.marketConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.marketConfigs,
     )
 
     private val triggerOrderToastGenerator = TriggerOrderToastGenerator(

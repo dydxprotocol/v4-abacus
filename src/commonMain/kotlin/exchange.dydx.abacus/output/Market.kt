@@ -313,6 +313,7 @@ data class MarketPerpetual(
     val openInterestLowerCap: Double? = null,
     val openInterestUpperCap: Double? = null,
     val line: IList<Double>?,
+    val isNew: Boolean = false,
 ) {
     companion object {
         internal fun create(

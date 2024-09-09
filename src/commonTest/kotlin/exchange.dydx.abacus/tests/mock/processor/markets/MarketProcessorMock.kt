@@ -3,6 +3,7 @@ package exchange.dydx.abacus.tests.mock.processor.markets
 import exchange.dydx.abacus.output.PerpetualMarket
 import exchange.dydx.abacus.processor.markets.MarketProcessorProtocol
 import exchange.dydx.abacus.state.manager.V4Environment
+import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketOraclePriceObject
 
@@ -32,7 +33,7 @@ class MarketProcessorMock : MarketProcessorProtocol {
         return processOraclePriceAction?.invoke(marketId, payload)
     }
 
-    override fun processSparklines(marketId: String, payload: List<String>): PerpetualMarket? {
+    override fun processSparklines(marketId: String, payload: List<String>, period: IndexerSparklineTimePeriod): PerpetualMarket? {
         processSparklinesCallCount++
         return processSparklinesAction?.invoke(marketId, payload)
     }

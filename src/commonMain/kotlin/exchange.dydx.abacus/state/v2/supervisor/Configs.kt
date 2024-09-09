@@ -43,6 +43,7 @@ data class MarketsConfigs(
     val subscribeToOrderbook: Boolean,
     val subscribeToTrades: Boolean,
     val subscribeToCandles: Boolean,
+    val retrieveSevenDaySparkline: Boolean,
 ) {
     companion object {
         val forApp = MarketsConfigs(
@@ -53,6 +54,7 @@ data class MarketsConfigs(
             subscribeToOrderbook = true,
             subscribeToTrades = true,
             subscribeToCandles = true,
+            retrieveSevenDaySparkline = true,
         )
         val forWeb = MarketsConfigs(
             retrieveSparklines = true,
@@ -62,6 +64,7 @@ data class MarketsConfigs(
             subscribeToOrderbook = true,
             subscribeToTrades = true,
             subscribeToCandles = false,
+            retrieveSevenDaySparkline = false,
         )
         val forProgrammaticTraders = MarketsConfigs(
             retrieveSparklines = false,
@@ -71,6 +74,7 @@ data class MarketsConfigs(
             subscribeToOrderbook = true,
             subscribeToTrades = false,
             subscribeToCandles = false,
+            retrieveSevenDaySparkline = false,
         )
     }
 }

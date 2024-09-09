@@ -9,6 +9,7 @@ import exchange.dydx.abacus.output.PerpetualMarketType
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerPerpetualMarketStatus
 import indexer.codegen.IndexerPerpetualMarketType
+import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketOraclePriceObject
 import kollections.toIList
@@ -149,7 +150,25 @@ class MarketProcessorTests {
     @Test
     fun testProcessSparklines() {
         processor.process("BTC-USD", marketPayloadMock)
-        val output = processor.processSparklines("BTC-USD", listOf("1", "2", "3"))
+        val output = processor.processSparklines(
+            marketId = "BTC-USD",
+            payload = listOf("1", "2", "3"),
+            period = IndexerSparklineTimePeriod.ONEDAY,
+        )
         assertEquals(output?.perpetual?.line, listOf(3.0, 2.0, 1.0).toIList())
+
+        val output2 = processor.processSparklines(
+            marketId = "BTC-USD",
+            payload = listOf("1", "2", "3"),
+            period = IndexerSparklineTimePeriod.SEVENDAYS,
+        )
+        assertEquals(output2?.perpetual?.isNew, true)
+
+        val output3 = processor.processSparklines(
+            marketId = "BTC-USD",
+            payload = MutableList(42) { "1" }, // 42 elements
+            period = IndexerSparklineTimePeriod.SEVENDAYS,
+        )
+        assertEquals(output3?.perpetual?.isNew, false)
     }
 }

@@ -3,15 +3,27 @@ package exchange.dydx.abacus.state.model
 import exchange.dydx.abacus.protocols.asTypedStringMapOfList
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import indexer.codegen.IndexerSparklineTimePeriod
 import kollections.iListOf
 
-internal fun TradingStateMachine.sparklines(payload: String): StateChanges? {
+internal fun TradingStateMachine.sparklines(
+    payload: String,
+    period: IndexerSparklineTimePeriod
+): StateChanges? {
     val json = parser.decodeJsonObject(payload) as? Map<String, List<String>>
     if (staticTyping) {
         val sparklines = parser.asTypedStringMapOfList<String>(json)
         return if (sparklines != null) {
-            marketsProcessor.processSparklines(internalState.marketsSummary, sparklines)
-            StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
+            when (period) {
+                IndexerSparklineTimePeriod.ONEDAY -> {
+                    marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
+                    StateChanges(iListOf(Changes.sparklines, Changes.markets), null)
+                }
+                IndexerSparklineTimePeriod.SEVENDAYS -> {
+                    marketsProcessor.processSparklines(internalState.marketsSummary, sparklines, period)
+                    StateChanges(iListOf(Changes.markets), null)
+                }
+            }
         } else {
             StateChanges.noChange
         }

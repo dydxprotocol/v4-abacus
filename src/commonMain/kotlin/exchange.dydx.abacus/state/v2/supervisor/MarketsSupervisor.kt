@@ -17,6 +17,7 @@ import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
+import indexer.codegen.IndexerSparklineTimePeriod
 
 internal class MarketsSupervisor(
     stateMachine: TradingStateMachine,
@@ -27,7 +28,7 @@ internal class MarketsSupervisor(
     internal val markets = mutableMapOf<String, MarketSupervisor>()
 
     private var sparklinesTimer: LocalTimerProtocol? = null
-    private val sparklinesPollingDuration = 60.0
+    private val sparklinesPollingDuration = 60.0 * 60.0 // 1 hour
 
     internal var candlesResolution: String = "1DAY"
         internal set(value) {
@@ -148,21 +149,29 @@ internal class MarketsSupervisor(
     private fun getSparklines() {
         val url = helper.configs.publicApiUrl("sparklines")
         if (url != null) {
-            helper.get(url, sparklinesParams(), null) { _, response, httpCode, _ ->
+            // Get 1 day sparkline for market display
+            val period = IndexerSparklineTimePeriod.ONEDAY
+            helper.get(url, iMapOf("timePeriod" to period.value), null) { _, response, httpCode, _ ->
                 if (helper.success(httpCode) && response != null) {
-                    parseSparklinesResponse(response)
+                    parseSparklinesResponse(response, period)
+                }
+            }
+
+            if (configs.retrieveSevenDaySparkline) {
+                // Get 7 day sparkline to determine if market is new
+                val period = IndexerSparklineTimePeriod.SEVENDAYS
+                helper.get(url, iMapOf("timePeriod" to period.value), null) { _, response, httpCode, _ ->
+                    if (helper.success(httpCode) && response != null) {
+                        parseSparklinesResponse(response, period)
+                    }
                 }
             }
         }
     }
 
-    private fun parseSparklinesResponse(response: String) {
+    private fun parseSparklinesResponse(response: String, period: IndexerSparklineTimePeriod) {
         val oldState = stateMachine.state
-        update(stateMachine.sparklines(response), oldState)
-    }
-
-    private fun sparklinesParams(): IMap<String, String> {
-        return iMapOf("timePeriod" to "ONE_DAY")
+        update(stateMachine.sparklines(response, period), oldState)
     }
 
     internal fun receiveMarketsChannelSocketData(
