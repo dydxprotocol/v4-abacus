@@ -1,5 +1,6 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
+import exchange.dydx.abacus.protocols.AnalyticsEvent
 import exchange.dydx.abacus.protocols.LocalTimerProtocol
 import exchange.dydx.abacus.protocols.QueryType
 import exchange.dydx.abacus.protocols.ThreadingType
@@ -183,6 +184,10 @@ internal class ConnectionsSupervisor(
     }
 
     private fun bestEffortConnectChain() {
+        if (validatorUrl == null) {
+            val endpointUrls = helper.configs.validatorUrls()
+            validatorUrl = endpointUrls?.firstOrNull()
+        }
         findOptimalNode { url ->
             this.validatorUrl = url
         }
@@ -263,13 +268,34 @@ internal class ConnectionsSupervisor(
                         val json = helper.parser.decodeJsonObject(response)
                         helper.ioImplementations.threading?.async(ThreadingType.main) {
                             if (json != null) {
-                                callback(json["error"] == null)
+                                val error = json["error"]
+                                if (error != null) {
+                                    tracking(
+                                        eventName = "ConnectionNetworkFailed",
+                                        params = iMapOf(
+                                            "errorMessage" to helper.parser.asString(error),
+                                        ),
+                                    )
+                                }
+                                callback(error == null)
                             } else {
+                                tracking(
+                                    eventName = "ConnectionNetworkFailed",
+                                    params = iMapOf(
+                                        "errorMessage" to "Invalid response: $response",
+                                    ),
+                                )
                                 callback(false)
                             }
                         }
                     } else {
                         helper.ioImplementations.threading?.async(ThreadingType.main) {
+                            tracking(
+                                eventName = "ConnectionNetworkFailed",
+                                params = iMapOf(
+                                    "errorMessage" to "null response",
+                                ),
+                            )
                             callback(false)
                         }
                     }
