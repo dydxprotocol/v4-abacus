@@ -1,12 +1,14 @@
 package exchange.dydx.abacus.functional.vault
 
 import exchange.dydx.abacus.protocols.asTypedObject
+import exchange.dydx.abacus.utils.IList
 import exchange.dydx.abacus.utils.Parser
 import indexer.codegen.IndexerTransferBetweenResponse
 import indexer.codegen.IndexerTransferType.DEPOSIT
 import indexer.codegen.IndexerTransferType.TRANSFERIN
 import indexer.codegen.IndexerTransferType.TRANSFEROUT
 import indexer.codegen.IndexerTransferType.WITHDRAWAL
+import kollections.toIList
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
@@ -30,7 +32,7 @@ data class VaultAccount(
     val lockedShares: Double?,
     val withdrawableUsdc: Double?,
     val allTimeReturnUsdc: Double?,
-    val vaultTransfers: List<VaultTransfer>?,
+    val vaultTransfers: IList<VaultTransfer>?,
     val totalVaultTransfersCount: Int?,
 )
 
@@ -90,7 +92,7 @@ object VaultAccountCalculator {
                     },
                     id = el.id,
                 )
-            },
+            }?.toIList(),
         )
     }
 }

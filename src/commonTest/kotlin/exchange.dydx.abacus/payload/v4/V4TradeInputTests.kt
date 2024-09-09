@@ -584,7 +584,7 @@ open class V4TradeInputTests : V4BaseTests() {
         }, null)
 
         test({
-            perp.trade("0.01", TradeInputField.size, 0)
+            perp.trade("380", TradeInputField.usdcSize, 0)
         }, null)
 
         if (perp.staticTyping) {
@@ -620,7 +620,7 @@ open class V4TradeInputTests : V4BaseTests() {
                             "0": {
                                 "freeCollateral": {
                                     "current": 100000.0,
-                                    "postOrder": 99985.0
+                                    "postOrder": 99981.0
                                 }
                             }
                         }
@@ -681,7 +681,7 @@ open class V4TradeInputTests : V4BaseTests() {
                             "0": {
                                 "equity": {
                                     "current": 100000.0,
-                                    "postOrder": 99850.0
+                                    "postOrder": 99980.0
                                 }
                             }
                         }
