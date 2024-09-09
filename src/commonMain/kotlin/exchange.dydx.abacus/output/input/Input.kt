@@ -70,8 +70,14 @@ data class Input(
                     ClosePositionInput.create(existing?.closePosition, parser, parser.asMap(data?.get("closePosition")))
                 }
 
-                val transfer =
-                    TransferInput.create(existing?.transfer, parser, parser.asMap(data?.get("transfer")), environment, internalState?.transfer)
+                val transfer = TransferInput.create(
+                    existing = existing?.transfer,
+                    parser = parser,
+                    data = parser.asMap(data?.get("transfer")),
+                    environment = environment,
+                    internalState = internalState?.input?.transfer,
+                    staticTyping = staticTyping,
+                )
 
                 val triggerOrders = if (staticTyping) {
                     TriggerOrdersInput.create(state = internalState?.input?.triggerOrders)
