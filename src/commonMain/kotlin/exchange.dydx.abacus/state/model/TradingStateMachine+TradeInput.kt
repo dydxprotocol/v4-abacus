@@ -11,6 +11,7 @@ import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.responses.cannotModify
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
@@ -150,6 +151,16 @@ internal fun TradingStateMachine.tradeInMarket(
                 marketId,
                 subaccountNumber,
             )
+            val market = parser.asNativeMap(parser.value(marketsSummary, "markets.$marketId"))
+            val imf = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
+            val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
+            val maxMarketLeverage = if (effectiveImf > Numeric.double.ZERO) {
+                Numeric.double.ONE / effectiveImf
+            } else if (imf > Numeric.double.ZERO) {
+                Numeric.double.ONE / imf
+            } else {
+                Numeric.double.ONE
+            }
             if (existingPosition != null) {
                 it.safeSet("marginMode", if (existingPosition["equity"] != null) MarginMode.Isolated.rawValue else MarginMode.Cross.rawValue)
                 val currentPositionLeverage = parser.asDouble(parser.value(existingPosition, "leverage.current"))?.abs()
@@ -158,11 +169,11 @@ internal fun TradingStateMachine.tradeInMarket(
             } else if (existingOrder != null) {
                 val orderMarginMode = if ((parser.asInt(parser.value(existingOrder, "subaccountNumber")) ?: subaccountNumber) == subaccountNumber) MarginMode.Cross.rawValue else MarginMode.Isolated.rawValue
                 it.safeSet("marginMode", orderMarginMode)
-                it.safeSet("targetLeverage", 1.0)
+                it.safeSet("targetLeverage", maxMarketLeverage)
             } else {
                 val marketType = parser.asString(parser.value(marketsSummary, "markets.$marketId.configs.perpetualMarketType"))
                 it.safeSet("marginMode", MarginMode.invoke(marketType)?.rawValue)
-                it.safeSet("targetLeverage", 1.0)
+                it.safeSet("targetLeverage", maxMarketLeverage)
             }
         }
 

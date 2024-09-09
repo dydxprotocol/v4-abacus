@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalWalletState
 import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.model.TradeInputField
+import exchange.dydx.abacus.utils.Numeric
 import kollections.iListOf
 
 internal interface TradeInputProcessorProtocol {
@@ -101,6 +102,7 @@ internal class TradeInputProcessor(
         initiateMarginModeLeverage(
             trade = inputState.trade,
             marketState = market,
+            marketSummaryState = marketSummaryState,
             accountState = walletState.account,
             marketId = marketId,
             subaccountNumber = subaccountNumber,
@@ -274,6 +276,7 @@ internal class TradeInputProcessor(
     private fun initiateMarginModeLeverage(
         trade: InternalTradeInputState,
         marketState: InternalMarketState?,
+        marketSummaryState: InternalMarketSummaryState,
         accountState: InternalAccountState,
         marketId: String,
         subaccountNumber: Int,
@@ -289,18 +292,21 @@ internal class TradeInputProcessor(
             marketId = marketId,
             subaccountNumber = subaccountNumber,
         )
+        val market = marketSummaryState.markets[marketId]
+        val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
+
         if (existingPosition != null) {
             trade.marginMode =
                 if (subaccount?.equity != null) MarginMode.Isolated else MarginMode.Cross
             val currentPositionLeverage =
                 existingPosition.calculated[CalculationPeriod.current]?.leverage?.abs()
             val positionLeverage =
-                if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
+                if (currentPositionLeverage != null && currentPositionLeverage > Numeric.double.ZERO) currentPositionLeverage else Numeric.double.ONE
             trade.targetLeverage = positionLeverage
         } else if (existingOrder != null) {
             trade.marginMode =
                 if (existingOrder.subaccountNumber == subaccountNumber) MarginMode.Cross else MarginMode.Isolated
-            trade.targetLeverage = 1.0
+            trade.targetLeverage = maxMarketLeverage
         } else {
             val marketType = marketState?.perpetualMarket?.configs?.perpetualMarketType
             trade.marginMode = when (marketType) {
@@ -308,7 +314,7 @@ internal class TradeInputProcessor(
                 PerpetualMarketType.ISOLATED -> MarginMode.Isolated
                 else -> null
             }
-            trade.targetLeverage = 1.0
+            trade.targetLeverage = maxMarketLeverage
         }
     }
 

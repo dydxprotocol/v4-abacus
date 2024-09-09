@@ -676,6 +676,19 @@ internal object MarginCalculator {
         } ?: return null
     }
 
+    private fun getMaxMarketLeverageDeprecated(
+        effectiveImf: Double,
+        imf: Double,
+    ): Double {
+        return if (effectiveImf > Numeric.double.ZERO) {
+            Numeric.double.ONE / effectiveImf
+        } else if (imf > Numeric.double.ZERO) {
+            Numeric.double.ONE / imf
+        } else {
+            Numeric.double.ONE
+        }
+    }
+
     /**
      * @description Calculate the amount of collateral to transfer for an isolated margin trade.
      * Max leverage is capped at 98% of the the market's max leverage and takes the oraclePrice into account in order to pass collateral checks.
@@ -685,12 +698,11 @@ internal object MarginCalculator {
         market: InternalMarketState?,
         subaccount: InternalSubaccountState?
     ): Double? {
-        val targetLeverage = trade.targetLeverage ?: 1.0
         val side = trade.side ?: return null
         val oraclePrice = market?.perpetualMarket?.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val initialMarginFraction = market.perpetualMarket?.configs?.initialMarginFraction ?: 0.0
-        val effectiveImf = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: 0.0
+        val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: return null
+        val targetLeverage = trade.targetLeverage ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -698,8 +710,7 @@ internal object MarginCalculator {
             side = side.rawValue,
             oraclePrice = oraclePrice,
             price = price,
-            initialMarginFraction = initialMarginFraction,
-            effectiveImf = effectiveImf,
+            maxMarketLeverage = maxMarketLeverage,
             positionSizeDifference = positionSizeDifference,
         )
     }
@@ -714,12 +725,14 @@ internal object MarginCalculator {
         market: Map<String, Any>?,
         subaccount: Map<String, Any>?
     ): Double? {
-        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: 1.0
         val side = parser.asString(parser.value(trade, "side")) ?: return null
         val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: return null
         val price = parser.asDouble(parser.value(trade, "summary.price")) ?: return null
-        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: 0.0
-        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: 0.0
+        val initialMarginFraction = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
+        val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
+        val maxMarketLeverage = getMaxMarketLeverageDeprecated(effectiveImf = effectiveImf, imf = initialMarginFraction)
+
+        val targetLeverage = parser.asDouble(trade["targetLeverage"]) ?: maxMarketLeverage
         val positionSizeDifference = getPositionSizeDifferenceDeprecated(parser, subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -727,8 +740,7 @@ internal object MarginCalculator {
             side = side,
             oraclePrice = oraclePrice,
             price = price,
-            initialMarginFraction = initialMarginFraction,
-            effectiveImf = effectiveImf,
+            maxMarketLeverage = maxMarketLeverage,
             positionSizeDifference = positionSizeDifference,
         )
     }
@@ -742,8 +754,7 @@ internal object MarginCalculator {
         val side = trade.side?.rawValue ?: return null
         val oraclePrice = market.oraclePrice ?: return null
         val price = trade.summary?.price ?: return null
-        val initialMarginFraction = market.configs?.initialMarginFraction ?: 0.0
-        val effectiveImf = market.configs?.effectiveInitialMarginFraction ?: 0.0
+        val maxMarketLeverage = market.configs?.maxMarketLeverage ?: return null
         val positionSizeDifference = getPositionSizeDifference(subaccount, trade) ?: return null
 
         return calculateIsolatedMarginTransferAmountFromValues(
@@ -751,8 +762,7 @@ internal object MarginCalculator {
             side,
             oraclePrice,
             price,
-            initialMarginFraction,
-            effectiveImf,
+            maxMarketLeverage,
             positionSizeDifference,
         )
     }
@@ -762,27 +772,14 @@ internal object MarginCalculator {
         side: String,
         oraclePrice: Double,
         price: Double,
-        initialMarginFraction: Double,
-        effectiveImf: Double,
+        maxMarketLeverage: Double?,
         positionSizeDifference: Double,
     ): Double? {
-        val maxLeverageForMarket = if (effectiveImf != 0.0) {
-            1.0 / effectiveImf
-        } else if (initialMarginFraction != 0.0) {
-            1.0 / initialMarginFraction
-        } else {
-            null
-        }
-
+        val maxLeverageForMarket = maxMarketLeverage ?: Numeric.double.ONE
         // Cap targetLeverage to 98% of max leverage
-        val adjustedTargetLeverage = if (maxLeverageForMarket != null) {
-            val cappedLeverage = maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT
-            min(targetLeverage, cappedLeverage)
-        } else {
-            null
-        }
+        val adjustedTargetLeverage = min(targetLeverage, maxLeverageForMarket * MAX_LEVERAGE_BUFFER_PERCENT)
 
-        return if (adjustedTargetLeverage == 0.0 || adjustedTargetLeverage == null) {
+        return if (adjustedTargetLeverage == 0.0) {
             null
         } else {
             getTransferAmountFromTargetLeverage(
