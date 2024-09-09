@@ -21,7 +21,7 @@ internal fun TradingStateMachine.receivedMarkets(
         val marketsPayload = parser.asTypedStringMap<IndexerCompositeMarketObject>(markets)
         marketsProcessor.processSubscribed(internalState.marketsSummary, marketsPayload)
     }
-    // TODO remove deprecated
+
     marketsSummary = marketsProcessor.subscribedDeprecated(marketsSummary, payload)
     marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
     val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(

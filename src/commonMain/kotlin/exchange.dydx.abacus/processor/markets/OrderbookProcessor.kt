@@ -52,7 +52,7 @@ internal class OrderbookProcessor(
             rawOrderbook = existing.rawOrderbook,
         )
         existing.groupedOrderbook = calculator.calculate(
-            rawOrderbook = existing.rawOrderbook,
+            rawOrderbook = existing.consolidatedOrderbook,
             tickSize = tickSize ?: defaultTickSize,
             groupingMultiplier = groupingMultiplier,
         )
