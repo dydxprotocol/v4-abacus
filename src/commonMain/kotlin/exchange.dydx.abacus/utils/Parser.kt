@@ -216,6 +216,49 @@ class Parser : ParserProtocol {
         return null
     }
 
+    override fun asUInt(data: Any?): UInt? {
+        val jsonLiteral = data as? JsonPrimitive
+        if (jsonLiteral != null) {
+            return jsonLiteral.longOrNull?.toUInt()
+        }
+
+        val long = data as? Long
+        if (long != null) {
+            return long.toUInt()
+        }
+
+        val int = data as? Int
+        if (int != null) {
+            return int.toUInt()
+        }
+
+        val float = data as? Float
+        if (float != null) {
+            return float.toUInt()
+        }
+
+        val double = data as? Double
+        if (double != null) {
+            return double.toUInt()
+        }
+
+        val decimal = data as? BigDecimal
+        if (decimal != null) {
+            return decimal.doubleValue(false).toUInt()
+        }
+
+        val string = data as? String
+        if (string != null) {
+            return try {
+                string.toUInt()
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        return null
+    }
+
     override fun asLong(data: Any?): Long? {
         val jsonLiteral = data as? JsonPrimitive
         if (jsonLiteral != null) {
