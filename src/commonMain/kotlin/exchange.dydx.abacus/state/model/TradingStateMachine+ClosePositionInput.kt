@@ -104,8 +104,18 @@ fun TradingStateMachine.closePosition(
                     trade["timeInForce"] = "IOC"
                     trade["reduceOnly"] = true
 
+                    val market = parser.asNativeMap(parser.value(marketsSummary, "markets.${trade["marketId"]}"))
+                    val imf = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
+                    val effectiveImf = parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
+                    val maxMarketLeverage = if (effectiveImf > Numeric.double.ZERO) {
+                        Numeric.double.ONE / effectiveImf
+                    } else if (imf > Numeric.double.ZERO) {
+                        Numeric.double.ONE / imf
+                    } else {
+                        Numeric.double.ONE
+                    }
                     val currentPositionLeverage = parser.asDouble(parser.value(position, "leverage.current"))?.abs()
-                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else 1.0
+                    trade["targetLeverage"] = if (currentPositionLeverage != null && currentPositionLeverage > 0) currentPositionLeverage else maxMarketLeverage
 
                     // default full close
                     trade.safeSet("size.percent", 1.0)

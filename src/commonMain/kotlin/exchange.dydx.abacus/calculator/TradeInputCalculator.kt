@@ -78,7 +78,6 @@ internal class TradeInputCalculator(
         val subaccount = if (marginMode == MarginMode.Cross) {
             crossMarginSubaccount
         } else {
-            // TODO: incorrect for isolated trades; fix CT-1092
             groupedSubaccount
         }
 
