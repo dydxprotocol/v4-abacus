@@ -80,6 +80,7 @@ import exchange.dydx.abacus.utils.mutableMapOf
 import exchange.dydx.abacus.utils.safeSet
 import exchange.dydx.abacus.utils.typedSafeSet
 import exchange.dydx.abacus.validator.InputValidator
+import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.models.configs.ConfigsMarketAsset
 import kollections.JsExport
 import kollections.iListOf
@@ -536,7 +537,7 @@ open class TradingStateMachine(
             }
 
             "/v4/sparklines" -> {
-                changes = sparklines(payload)
+                changes = sparklines(payload, IndexerSparklineTimePeriod.ONEDAY)
             }
 
             "/v4/fills" -> {

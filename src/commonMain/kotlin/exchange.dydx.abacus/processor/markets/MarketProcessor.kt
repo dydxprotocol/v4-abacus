@@ -19,6 +19,7 @@ import exchange.dydx.abacus.utils.parseException
 import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerPerpetualMarketStatus
 import indexer.codegen.IndexerPerpetualMarketType
+import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketOraclePriceObject
 import kollections.toIList
@@ -30,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 internal interface MarketProcessorProtocol : BaseProcessorProtocol {
     fun process(marketId: String, payload: IndexerCompositeMarketObject): PerpetualMarket?
     fun processOraclePrice(marketId: String, payload: IndexerWsMarketOraclePriceObject): PerpetualMarket?
-    fun processSparklines(marketId: String, payload: List<String>): PerpetualMarket?
+    fun processSparklines(marketId: String, payload: List<String>, period: IndexerSparklineTimePeriod): PerpetualMarket?
     fun clearCachedOraclePrice(marketId: String)
 }
 
@@ -153,6 +154,7 @@ internal class MarketProcessor(
     private var cachedIndexerMarketResponses: MutableMap<String, IndexerCompositeMarketObject> = mutableMapOf()
     private var cachedIndexerOraclePrices: MutableMap<String, IndexerWsMarketOraclePriceObject> = mutableMapOf()
     private var cachedIndexerSparklines: MutableMap<String, List<Double>> = mutableMapOf()
+    private var cachedIsNew: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun process(
         marketId: String,
@@ -178,9 +180,19 @@ internal class MarketProcessor(
     override fun processSparklines(
         marketId: String,
         payload: List<String>,
+        period: IndexerSparklineTimePeriod,
     ): PerpetualMarket? {
-        cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
-        return createPerpetualMarket(marketId)
+        when (period) {
+            IndexerSparklineTimePeriod.ONEDAY -> {
+                cachedIndexerSparklines[marketId] = payload.mapNotNull { parser.asDouble(it) }.reversed()
+                return createPerpetualMarket(marketId)
+            }
+            IndexerSparklineTimePeriod.SEVENDAYS -> {
+                val sevenDaySparklineEntries = 42
+                cachedIsNew[marketId] = payload.size < sevenDaySparklineEntries
+                return createPerpetualMarket(marketId)
+            }
+        }
     }
 
     override fun clearCachedOraclePrice(
@@ -211,12 +223,17 @@ internal class MarketProcessor(
                 marketCaps = null,
                 priceChange24H = parser.asDouble(payload.priceChange24H),
                 priceChange24HPercent = calculatePriceChange24HPercent(
-                    parser.asDouble(payload.priceChange24H),
-                    oraclePrice,
+                    priceChange24H = parser.asDouble(payload.priceChange24H),
+                    oraclePrice = oraclePrice,
                 ),
                 status = status,
                 configs = createConfigs(payload),
-                perpetual = createMarketPerpetual(payload, oraclePrice, cachedIndexerSparklines[marketId]),
+                perpetual = createMarketPerpetual(
+                    payload = payload,
+                    oraclePrice = oraclePrice,
+                    line = cachedIndexerSparklines[marketId],
+                    isNew = cachedIsNew[marketId] ?: false,
+                ),
             )
             return newValue
         } catch (e: IndexerResponseParsingException) {
@@ -311,6 +328,7 @@ internal class MarketProcessor(
         payload: IndexerCompositeMarketObject,
         oraclePrice: Double?,
         line: List<Double>?,
+        isNew: Boolean,
     ): MarketPerpetual? {
         val nextFundingRate = parser.asDouble(payload.nextFundingRate)
         val openInterest = parser.asDouble(payload.openInterest)
@@ -326,6 +344,7 @@ internal class MarketProcessor(
                 openInterestLowerCap = parser.asDouble(payload.openInterestLowerCap),
                 openInterestUpperCap = parser.asDouble(payload.openInterestUpperCap),
                 line = line?.toIList(),
+                isNew = isNew,
             )
         } else {
             null
