@@ -77,6 +77,7 @@ data class EnvironmentLinks(
     val feedback: String?,
     val blogs: String?,
     val help: String?,
+    val vaultLearnMore: String?,
     val launchIncentive: String?,
     val statusPage: String?,
     val withdrawalGateLearnMore: String?,
@@ -96,6 +97,7 @@ data class EnvironmentLinks(
             val feedback = parser.asString(data["feedback"])
             val blogs = parser.asString(data["blogs"])
             val help = parser.asString(data["help"])
+            val vaultLearnMore = parser.asString(data["vaultLearnMore"])
             val launchIncentive = parser.asString(data["launchIncentive"])
             val statusPage = parser.asString(data["statusPage"])
             val withdrawalGateLearnMore = parser.asString(data["withdrawalGateLearnMore"])
@@ -110,6 +112,7 @@ data class EnvironmentLinks(
                 feedback,
                 blogs,
                 help,
+                vaultLearnMore,
                 launchIncentive,
                 statusPage,
                 withdrawalGateLearnMore,
