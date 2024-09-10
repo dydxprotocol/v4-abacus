@@ -477,13 +477,7 @@ internal class TradeInputCalculator(
         val tradeSize = parser.asNativeMap(trade["size"])
         if (tradeSize != null) {
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
-            val initialMarginFraction =
-                parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
-            val maxMarketLeverage = if (initialMarginFraction == null || initialMarginFraction <= Numeric.double.ZERO) {
-                Numeric.double.ONE
-            } else {
-                Numeric.double.ONE / initialMarginFraction
-            }
+            val maxMarketLeverage = maxMarketLeverage(market)
 
             return when (input) {
                 "size.size", "size.percent" -> {
@@ -1309,6 +1303,22 @@ internal class TradeInputCalculator(
         }
     }
 
+    private fun maxMarketLeverage(
+        market: Map<String, Any>?,
+    ): Double {
+        val imf = parser.asDouble(parser.value(market, "configs.initialMarginFraction")) ?: Numeric.double.ZERO
+        val effectiveImf =
+            parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction")) ?: Numeric.double.ZERO
+
+        return if (effectiveImf > Numeric.double.ZERO) {
+            Numeric.double.ONE / effectiveImf
+        } else if (imf > Numeric.double.ZERO) {
+            Numeric.double.ONE / imf
+        } else {
+            Numeric.double.ONE
+        }
+    }
+
     private fun calculatedOptionsFromFields(
         fields: List<Any>?,
         trade: Map<String, Any>,
@@ -1862,15 +1872,7 @@ internal class TradeInputCalculator(
             ),
         )
 
-        val initialMarginFraction =
-            parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
-                ?: return null
-        val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
-            return null
-        } else {
-            Numeric.double.ONE / initialMarginFraction
-        }
-
+        val maxMarketLeverage = maxMarketLeverage(market)
         val equity = parser.asDouble(parser.value(subaccount, "equity.current"))
         val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
         val positionNotionalTotal = parser.asDouble(parser.value(position, "notionalTotal.current")) ?: Numeric.double.ZERO

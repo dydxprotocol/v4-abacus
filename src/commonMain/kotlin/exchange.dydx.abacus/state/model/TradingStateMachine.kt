@@ -1053,7 +1053,8 @@ open class TradingStateMachine(
                 if (internalState.input.currentType == InputType.TRADE) {
                     val trade = internalState.input.trade
                     val account = internalState.wallet.account
-                    if (trade.size?.input == "size.size" || trade.size?.input == "size.usdcSize" || trade.size?.input == "size.balancePercent") {
+                    val sizeInput = TradeInputField.invoke(trade.size?.input)
+                    if (sizeInput == TradeInputField.size || sizeInput == TradeInputField.usdcSize || sizeInput == TradeInputField.balancePercent) {
                         val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
                         val marketId = trade.marketId
                         if (subaccountNumber != null && marketId != null) {

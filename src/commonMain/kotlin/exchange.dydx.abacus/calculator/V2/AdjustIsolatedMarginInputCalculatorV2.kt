@@ -99,12 +99,7 @@ internal class AdjustIsolatedMarginInputCalculatorV2(
             val amountPercent = modified.amountPercent
             val amountValue = modified.amount
 
-            val initialMarginFraction = market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: return modified
-            val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
-                return modified
-            } else {
-                Numeric.double.ONE / initialMarginFraction
-            }
+            val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
             when (inputType) {
                 IsolatedMarginInputType.Amount -> {

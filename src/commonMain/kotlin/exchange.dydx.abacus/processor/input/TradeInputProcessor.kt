@@ -174,7 +174,8 @@ internal class TradeInputProcessor(
             when (inputType) {
                 TradeInputField.type, TradeInputField.side -> {
                     if (inputData != null) {
-                        if (trade.size?.input == "size.leverage" || trade.size?.input == "size.balancePercent") {
+                        val sizeInput = TradeInputField.invoke(trade.size?.input)
+                        if (sizeInput == TradeInputField.leverage || sizeInput == TradeInputField.balancePercent) {
                             trade.size = TradeInputSize.safeCreate(trade.size).copy(input = "size.size")
                         }
                         inputType.updateValueAction?.invoke(trade, inputData, parser)
