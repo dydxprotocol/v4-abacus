@@ -1263,19 +1263,32 @@ open class TradingStateMachine(
         val geo = state?.compliance
 
         if (changes.changes.contains(Changes.markets)) {
-            parser.asNativeMap(data?.get("markets"))?.let {
+            if (staticTyping) {
                 marketsSummary =
                     PerpetualMarketSummary.apply(
                         existing = marketsSummary,
                         parser = parser,
-                        data = it,
-                        assets = this.assets,
+                        data = emptyMap(),
+                        assets = null,
                         staticTyping = staticTyping,
                         marketSummaryState = internalState.marketsSummary,
                         changes = changes,
                     )
-            } ?: run {
-                marketsSummary = null
+            } else {
+                parser.asNativeMap(data?.get("markets"))?.let {
+                    marketsSummary =
+                        PerpetualMarketSummary.apply(
+                            existing = marketsSummary,
+                            parser = parser,
+                            data = it,
+                            assets = this.assets,
+                            staticTyping = staticTyping,
+                            marketSummaryState = internalState.marketsSummary,
+                            changes = changes,
+                        )
+                } ?: run {
+                    marketsSummary = null
+                }
             }
         }
         if (changes.changes.contains(Changes.orderbook)) {
