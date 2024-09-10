@@ -1080,7 +1080,8 @@ open class TradingStateMachine(
                 if (internalState.input.currentType == InputType.TRADE) {
                     val trade = internalState.input.trade
                     val account = internalState.wallet.account
-                    if (trade.size?.input == "size.size" || trade.size?.input == "size.usdcSize") {
+                    val sizeInput = TradeInputField.invoke(trade.size?.input)
+                    if (sizeInput == TradeInputField.size || sizeInput == TradeInputField.usdcSize || sizeInput == TradeInputField.balancePercent) {
                         val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
                         val marketId = trade.marketId
                         if (subaccountNumber != null && marketId != null) {
@@ -1101,7 +1102,7 @@ open class TradingStateMachine(
                 when (parser.asString(modified["current"])) {
                     "trade" -> {
                         when (parser.asString(parser.value(modified, "trade.size.input"))) {
-                            "size.size", "size.usdcSize" -> {
+                            "size.size", "size.usdcSize", "size.balancePercent" -> {
                                 val subaccountNumber = changes.subaccountNumbers?.firstOrNull()
                                 val marketId =
                                     parser.asString(parser.value(modified, "trade.marketId"))

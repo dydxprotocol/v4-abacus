@@ -90,9 +90,29 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test({
+        if (perp.staticTyping) {
             perp.trade("LIMIT", TradeInputField.type, 0)
-        }, null)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.input, "size.size")
+        } else {
+            test(
+                {
+                    perp.trade("LIMIT", TradeInputField.type, 0)
+                },
+                """
+                {
+                    "input": {
+                        "trade": {
+                            "size": {
+                                "input": "size.size"
+                            }
+                        }
+                    }
+                }
+                """.trimIndent(),
+            )
+        }
 
         test({
             perp.trade("BUY", TradeInputField.side, 0)
@@ -538,6 +558,105 @@ open class V4TradeInputTests : V4BaseTests() {
                             "code": "REQUIRED_SIZE"
                         }
                     ]
+                }
+            }
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.trade("10", TradeInputField.usdcSize, 0)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.usdcSize, 10.0)
+            assertEquals(size.size, 0.006)
+            assertEquals(size.balancePercent, 0.0000049629) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.input, "size.usdcSize")
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 0)
+        } else {
+            test(
+                {
+                    perp.trade("10", TradeInputField.usdcSize, 0)
+                },
+                """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 10.0,
+                            "size": 0.006,
+                            "balancePercent": 0.000005,
+                            "input": "size.usdcSize"
+                        }
+                    },
+                    "errors": null
+                }
+            }
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.trade("10", TradeInputField.size, 0)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.usdcSize, 16543.0)
+            assertEquals(size.size, 10.0)
+            assertEquals(size.balancePercent, 0.0082715) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.input, "size.size")
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 0)
+        } else {
+            test(
+                {
+                    perp.trade("10", TradeInputField.size, 0)
+                },
+                """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 16540.0,
+                            "size": 10.0,
+                            "balancePercent": 0.00827,
+                            "input": "size.size"
+                        }
+                    },
+                    "errors": null
+                }
+            }
+                """.trimIndent(),
+            )
+        }
+
+        if (perp.staticTyping) {
+            perp.trade("0.5", TradeInputField.balancePercent, 0)
+            val size = perp.internalState.input.trade.size
+            assertNotNull(size)
+            assertEquals(size.usdcSize, 979999.8321)
+            assertEquals(size.size, 593.5779999999999)
+            assertEquals(size.balancePercent, 0.5) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.input, "size.balancePercent")
+            val errors = perp.internalState.input.errors
+            assertEquals(errors?.size, 0)
+        } else {
+            test(
+                {
+                    perp.trade("0.5", TradeInputField.balancePercent, 0)
+                },
+                """
+            {
+                "input": {
+                    "trade": {
+                        "size": {
+                            "usdcSize": 1000000.0,
+                            "size": 593.6,
+                            "balancePercent": 0.5,
+                            "input": "size.balancePercent"
+                        }
+                    },
+                    "errors": null
                 }
             }
                 """.trimIndent(),

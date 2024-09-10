@@ -464,6 +464,7 @@ data class OrderbookUsage(
 data class TradeInputMarketOrder(
     val size: Double?,
     val usdcSize: Double?,
+    val balancePercent: Double?,
     val price: Double?,
     val worstPrice: Double?,
     val filled: Boolean,
@@ -480,6 +481,7 @@ data class TradeInputMarketOrder(
             data?.let {
                 val size = parser.asDouble(data["size"])
                 val usdcSize = parser.asDouble(data["usdcSize"])
+                val balancePercent = parser.asDouble(data["balancePercent"])
                 val price = parser.asDouble(data["price"])
                 val worstPrice = parser.asDouble(data["worstPrice"])
                 val filled = parser.asBool(data["filled"]) ?: false
@@ -499,6 +501,7 @@ data class TradeInputMarketOrder(
                 }
                 return if (existing?.size != size ||
                     existing?.usdcSize != usdcSize ||
+                    existing?.balancePercent != balancePercent ||
                     existing?.price != price ||
                     existing?.worstPrice != worstPrice ||
                     existing?.filled != filled ||
@@ -507,6 +510,7 @@ data class TradeInputMarketOrder(
                     TradeInputMarketOrder(
                         size,
                         usdcSize,
+                        balancePercent,
                         price,
                         worstPrice,
                         filled,
@@ -528,6 +532,7 @@ data class TradeInputSize(
     val size: Double?,
     val usdcSize: Double?,
     val leverage: Double?,
+    val balancePercent: Double?,
     val input: String?,
 ) {
     companion object {
@@ -542,13 +547,15 @@ data class TradeInputSize(
                 val size = parser.asDouble(data["size"])
                 val usdcSize = parser.asDouble(data["usdcSize"])
                 val leverage = parser.asDouble(data["leverage"])
+                val balancePercent = parser.asDouble(data["balancePercent"])
                 val input = parser.asString(data["input"])
                 return if (existing?.size != size ||
                     existing?.usdcSize != usdcSize ||
                     existing?.leverage != leverage ||
+                    existing?.balancePercent != balancePercent ||
                     existing?.input != input
                 ) {
-                    TradeInputSize(size, usdcSize, leverage, input)
+                    TradeInputSize(size, usdcSize, leverage, balancePercent, input)
                 } else {
                     existing
                 }

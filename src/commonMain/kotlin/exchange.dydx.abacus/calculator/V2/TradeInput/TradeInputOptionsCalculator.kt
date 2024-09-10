@@ -354,17 +354,9 @@ internal class TradeInputOptionsCalculator(
             return null
         }
 
-        val initialMarginFraction =
-            market.perpetualMarket?.configs?.effectiveInitialMarginFraction ?: return null
-
-        val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
-            return null
-        } else {
-            Numeric.double.ONE / initialMarginFraction
-        }
-
         val equity = subaccount.calculated[CalculationPeriod.current]?.equity
         val freeCollateral = subaccount.calculated[CalculationPeriod.current]?.freeCollateral ?: Numeric.double.ZERO
+        val maxMarketLeverage = market.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
         val positionNotionalTotal = position?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
 
         return if (equity != null && equity > Numeric.double.ZERO) {

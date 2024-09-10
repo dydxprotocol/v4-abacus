@@ -115,6 +115,7 @@ internal class ClosePositionInputProcessor(
                         size = null,
                         usdcSize = null,
                         leverage = null,
+                        balancePercent = null,
                         input = "size.percent",
                     )
 
@@ -230,6 +231,7 @@ internal class ClosePositionInputProcessor(
             size = null,
             usdcSize = null,
             leverage = null,
+            balancePercent = null,
             input = "size.percent",
         )
 

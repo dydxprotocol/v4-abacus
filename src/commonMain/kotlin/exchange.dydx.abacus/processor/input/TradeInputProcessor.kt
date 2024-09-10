@@ -174,7 +174,8 @@ internal class TradeInputProcessor(
             when (inputType) {
                 TradeInputField.type, TradeInputField.side -> {
                     if (inputData != null) {
-                        if (trade.size?.input == "size.leverage") {
+                        val sizeInput = TradeInputField.invoke(trade.size?.input)
+                        if (sizeInput == TradeInputField.leverage || sizeInput == TradeInputField.balancePercent) {
                             trade.size = TradeInputSize.safeCreate(trade.size).copy(input = "size.size")
                         }
                         inputType.updateValueAction?.invoke(trade, inputData, parser)
@@ -194,6 +195,7 @@ internal class TradeInputProcessor(
                 TradeInputField.size,
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
+                TradeInputField.balancePercent,
                 TradeInputField.targetLeverage,
                 -> {
                     sizeChanged =
@@ -260,6 +262,7 @@ internal class TradeInputProcessor(
                 TradeInputField.size,
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
+                TradeInputField.balancePercent,
                 -> {
                     trade.size = TradeInputSize.safeCreate(trade.size).copy(input = inputType.rawValue)
                 }
