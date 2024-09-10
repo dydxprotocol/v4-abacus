@@ -103,14 +103,19 @@ Size of the trade in USDC
 
 Leverage of the order
 
+## percent
+
+Percentage (of existing position) to use for the order. Only used for the close position input.
+
 ## balancePercent
 
-Percent (of available balance / free collateral) to use for the order. Currently only on market orders.
+Percentage (of available balance / free collateral) to use for the order. Currently only on market orders.
 
 ## input
 
 Which one of the fields are entered by the user:
-size, usdcSize, leverage, balancePercent
+- TradeInput: size, usdcSize, leverage, percent, balancePercent
+- ClosePositionInput: size, percent
 
 # TradeInputPrice
 
@@ -177,6 +182,7 @@ Execution settings for the bracket orders
 data class TradeInputMarketOrder(  
 &emsp;val size: Double?,  
 &emsp;val usdcSize: Double?,  
+&emsp;val balancePercent: Double?,  
 &emsp;val price: Double?,  
 &emsp;val worstPrice: Double?,  
 &emsp;val filled: Boolean,  
@@ -190,6 +196,11 @@ size of the market order
 ## usdcSize
 
 USDC amount of the market order
+
+## balancePercent
+
+Percentage (of available balance / free collateral) of the market order
+
 
 ## price
 

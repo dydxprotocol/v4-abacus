@@ -276,7 +276,7 @@ fun TradingStateMachine.trade(
                 TradeInputField.type, TradeInputField.side -> {
                     val text = parser.asString(data)
                     if (text != null) {
-                        if (parser.asString(parser.value(trade, "size.input")) == "size.leverage") {
+                        if (parser.asString(parser.value(trade, "size.input")) == "size.leverage" || parser.asString(parser.value(trade, "size.input")) == "size.balancePercent") {
                             trade.safeSet("size.input", "size.size")
                         }
                         trade[typeText] = text
