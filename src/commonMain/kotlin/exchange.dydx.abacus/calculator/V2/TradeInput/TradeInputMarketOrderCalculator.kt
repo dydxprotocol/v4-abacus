@@ -104,8 +104,9 @@ internal class TradeInputMarketOrderCalculator() {
         input: String?,
     ): TradeInputMarketOrder? {
         val tradeSize = trade.size
-        if (tradeSize != null) {
-            val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral ?: return null
+        val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
+
+        if (tradeSize != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
             val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
 
             return when (input) {
@@ -358,7 +359,7 @@ internal class TradeInputMarketOrderCalculator() {
                         }
                     }
                 }
-                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateralq
+                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
                 createMarketOrderWith(
                     orderbook = marketOrderOrderBook,
                     size = sizeTotal,

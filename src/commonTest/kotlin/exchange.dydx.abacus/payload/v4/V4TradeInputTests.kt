@@ -15,7 +15,6 @@ import kollections.iListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 open class V4TradeInputTests : V4BaseTests() {
     @Test

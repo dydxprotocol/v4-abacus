@@ -475,9 +475,10 @@ internal class TradeInputCalculator(
         input: String,
     ): Map<String, Any>? {
         val tradeSize = parser.asNativeMap(trade["size"])
+
         if (tradeSize != null) {
-            val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
             val maxMarketLeverage = maxMarketLeverage(market)
+            val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 
             return when (input) {
                 "size.size", "size.percent" -> {
@@ -603,7 +604,11 @@ internal class TradeInputCalculator(
                         }
                     }
                 }
-                val balancePercentTotal = balanceTotal / freeCollateral
+                val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
+                    balanceTotal / freeCollateral
+                } else {
+                    Numeric.double.ZERO
+                }
                 marketOrder(
                     marketOrderOrderBook,
                     sizeTotal,
@@ -728,7 +733,11 @@ internal class TradeInputCalculator(
                         }
                     }
                 }
-                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
+                    (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                } else {
+                    Numeric.double.ZERO
+                }
                 marketOrder(
                     marketOrderOrderBook,
                     sizeTotal,
@@ -830,7 +839,11 @@ internal class TradeInputCalculator(
                         }
                     }
                 }
-                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
+                    (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                } else {
+                    Numeric.double.ZERO
+                }
                 marketOrder(
                     marketOrderOrderBook,
                     sizeTotal,
@@ -986,7 +999,11 @@ internal class TradeInputCalculator(
                 break@orderbookLoop
             }
         }
-        val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+        val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
+            (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+        } else {
+            Numeric.double.ZERO
+        }
         return marketOrder(
             marketOrderOrderBook,
             sizeTotal,
