@@ -70,6 +70,7 @@ data class TradeInputOptions(
     val needsMarginMode: Boolean,
     val needsSize: Boolean,
     val needsLeverage: Boolean,
+    val needsBalancePercent: Boolean,
     val maxLeverage: Double?,
     val needsLimitPrice: Boolean,
     val needsTargetLeverage: Boolean,
@@ -184,6 +185,7 @@ data class TradeInputOptions(
                 needsMarginMode = state.needsMarginMode,
                 needsSize = state.needsSize,
                 needsLeverage = state.needsLeverage,
+                needsBalancePercent = state.needsBalancePercent,
                 maxLeverage = state.maxLeverage,
                 needsLimitPrice = state.needsLimitPrice,
                 needsTargetLeverage = state.needsTargetLeverage,
@@ -215,6 +217,7 @@ data class TradeInputOptions(
                 val needsMarginMode = parser.asBool(data["needsMarginMode"]) ?: true
                 val needsSize = parser.asBool(data["needsSize"]) ?: false
                 val needsLeverage = parser.asBool(data["needsLeverage"]) ?: false
+                val needsBalancePercent = parser.asBool(data["needsBalancePercent"]) ?: false
                 val maxLeverage = parser.asDouble(data["maxLeverage"])
                 val needsLimitPrice = parser.asBool(data["needsLimitPrice"]) ?: false
                 val needsTargetLeverage = parser.asBool(data["needsTargetLeverage"]) ?: false
@@ -282,6 +285,7 @@ data class TradeInputOptions(
                     existing?.needsMarginMode != needsMarginMode ||
                     existing.needsSize != needsSize ||
                     existing.needsLeverage != needsLeverage ||
+                    existing.needsBalancePercent != needsBalancePercent ||
                     existing.maxLeverage != maxLeverage ||
                     existing.needsLimitPrice != needsLimitPrice ||
                     existing.needsTargetLeverage != needsTargetLeverage ||
@@ -302,6 +306,7 @@ data class TradeInputOptions(
                         needsMarginMode,
                         needsSize,
                         needsLeverage,
+                        needsBalancePercent,
                         maxLeverage,
                         needsLimitPrice,
                         needsTargetLeverage,

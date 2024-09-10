@@ -81,6 +81,7 @@ internal class TradeInputOptionsCalculator(
                 return when (trade.marginMode) {
                     MarginMode.Isolated -> listOf(
                         sizeField(),
+                        // balancePercentField(), TODO: enable in CT-1180
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
@@ -89,6 +90,7 @@ internal class TradeInputOptionsCalculator(
                     else -> listOf(
                         sizeField(),
                         leverageField(),
+                        balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
@@ -181,6 +183,7 @@ internal class TradeInputOptionsCalculator(
                 when (parser.asString(field["field"])) {
                     "size.size" -> options.needsSize = true
                     "size.leverage" -> options.needsLeverage = true
+                    "size.balancePercent" -> options.needsBalancePercent = true
                     "price.triggerPrice" -> options.needsTriggerPrice = true
                     "price.limitPrice" -> options.needsLimitPrice = true
                     "price.trailingPercent" -> options.needsTrailingPercent = true
@@ -400,6 +403,13 @@ internal class TradeInputOptionsCalculator(
     private fun leverageField(): Map<String, Any> {
         return mapOf(
             "field" to "size.leverage",
+            "type" to "double",
+        )
+    }
+
+    private fun balancePercentField(): Map<String, Any> {
+        return mapOf(
+            "field" to "size.balancePercent",
             "type" to "double",
         )
     }

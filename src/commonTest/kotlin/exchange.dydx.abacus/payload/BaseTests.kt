@@ -733,6 +733,7 @@ open class BaseTests(
             assertEquals(data.needsMarginMode, obj.needsMarginMode, "$trace.needsMarginMode $doesntMatchText")
             assertEquals(data.needsSize, obj.needsSize, "$trace.needsSize $doesntMatchText")
             assertEquals(data.needsLeverage, obj.needsLeverage, "$trace.needsLeverage $doesntMatchText")
+            assertEquals(data.needsBalancePercent, obj.needsBalancePercent, "$trace.needsBalancePercent $doesntMatchText")
             assertEquals(data.needsBrackets, obj.needsBrackets, "$trace.needsBrackets $doesntMatchText")
             assertEquals(data.needsGoodUntil, obj.needsGoodUntil, "$trace.needsGoodUntil $doesntMatchText")
             assertEquals(data.needsLimitPrice, obj.needsLimitPrice, "$trace.needsLimitPrice $doesntMatchText")
@@ -770,6 +771,11 @@ open class BaseTests(
                 parser.asBool(data["needsLeverage"]) ?: false,
                 obj.needsLeverage,
                 "$trace.needsLeverage $doesntMatchText",
+            )
+            assertEquals(
+                parser.asBool(data["needsBalancePercent"]) ?: false,
+                obj.needsBalancePercent,
+                "$trace.needsBalancePercent $doesntMatchText",
             )
             assertEquals(
                 parser.asBool(data["needsBrackets"]) ?: false,
