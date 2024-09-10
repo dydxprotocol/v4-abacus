@@ -486,22 +486,22 @@ class V4Environment(
             val featureFlags = EnvironmentFeatureFlags.parse(parser.asMap(data["featureFlags"]), parser)
 
             return V4Environment(
-                id,
-                name,
-                ethereumChainId,
-                dydxChainId,
-                squidIntegratorId,
-                chainName,
-                "$deploymentUri$chainLogo",
-                rewardsHistoryStartDateMs,
-                isMainNet,
-                endpoints,
-                links,
-                walletConnection,
-                apps,
-                tokens,
-                governance,
-                featureFlags,
+                id = id,
+                name = name,
+                ethereumChainId = ethereumChainId,
+                dydxChainId = dydxChainId,
+                squidIntegratorId = squidIntegratorId,
+                chainName = chainName,
+                chainLogo = "$deploymentUri$chainLogo",
+                rewardsHistoryStartDateMs = rewardsHistoryStartDateMs,
+                isMainNet = isMainNet,
+                endpoints = endpoints,
+                links = links,
+                walletConnection = walletConnection,
+                apps = apps,
+                tokens = tokens,
+                governance = governance,
+                featureFlags = featureFlags,
             )
         }
 
@@ -526,11 +526,11 @@ class V4Environment(
                             "$deploymentUri$it"
                         }
                         tokens[key] = TokenInfo(
-                            name,
-                            denom,
-                            decimals,
-                            gasDenom,
-                            imageUrl,
+                            name = name,
+                            denom = denom,
+                            decimals = decimals,
+                            gasDenom = gasDenom,
+                            imageUrl = imageUrl,
                         )
                     }
                 }

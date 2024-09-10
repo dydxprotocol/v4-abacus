@@ -8,6 +8,7 @@ import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
+import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
 
@@ -29,7 +30,8 @@ internal interface MarketsProcessorProtocol : BaseProcessorProtocol {
 
     fun processSparklines(
         existing: InternalMarketSummaryState,
-        content: Map<String, List<String>>?
+        content: Map<String, List<String>>?,
+        period: IndexerSparklineTimePeriod,
     ): InternalMarketSummaryState
 }
 
@@ -110,13 +112,15 @@ internal class MarketsProcessor(
 
     override fun processSparklines(
         existing: InternalMarketSummaryState,
-        content: Map<String, List<String>>?
+        content: Map<String, List<String>>?,
+        period: IndexerSparklineTimePeriod,
     ): InternalMarketSummaryState {
         for ((marketId, sparklines) in content ?: mapOf()) {
             val marketState = existing.markets[marketId] ?: InternalMarketState()
             val receivedMarket = marketProcessor.processSparklines(
                 marketId = marketId,
                 payload = sparklines,
+                period = period,
             )
             if (receivedMarket != marketState.perpetualMarket) {
                 marketState.perpetualMarket = receivedMarket

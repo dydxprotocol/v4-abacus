@@ -2,6 +2,7 @@ package exchange.dydx.abacus.state.manager
 
 import exchange.dydx.abacus.output.ComplianceAction
 import exchange.dydx.abacus.output.Documentation
+import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.TransactionCallback
@@ -15,6 +16,9 @@ import kotlin.js.JsExport
 
 @JsExport
 interface AsyncAbacusStateManagerProtocol {
+
+    val state: PerpetualState?
+
     // Connection environments
     val availableEnvironments: IList<SelectionOption>
     var environmentId: String?

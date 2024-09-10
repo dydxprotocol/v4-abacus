@@ -318,7 +318,7 @@ internal class OnboardingSupervisor(
             OSMOSIS_SWAP_VENUE,
             NEUTRON_SWAP_VENUE,
         )
-        val evmSwapVenues = stateMachine.internalState.transfer.evmSwapVenues
+        val evmSwapVenues = stateMachine.internalState.input.transfer.evmSwapVenues
         val swapVenues = evmSwapVenues + nonEvmSwapVenues
         val evmSwapEnabledOptions = mapOf(
             "bridges" to listOf(
@@ -575,7 +575,12 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         helper.ioImplementations.threading?.async(ThreadingType.abacus) {
-            val stateResponse = stateMachine.transfer(data, type, subaccountNumber ?: 0)
+            val stateResponse = stateMachine.transfer(
+                data = data,
+                type = type,
+                subaccountNumber = subaccountNumber ?: 0,
+                environment = helper.environment,
+            )
             didUpdateStateForTransfer(data, type, accountAddress, sourceAddress, subaccountNumber)
             helper.ioImplementations.threading?.async(ThreadingType.main) {
                 helper.stateNotification?.stateChanged(

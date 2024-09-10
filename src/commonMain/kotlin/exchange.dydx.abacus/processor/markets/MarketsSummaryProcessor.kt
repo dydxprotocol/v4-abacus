@@ -10,6 +10,7 @@ import exchange.dydx.abacus.utils.safeSet
 import indexer.codegen.IndexerCandleResponse
 import indexer.codegen.IndexerCandleResponseObject
 import indexer.codegen.IndexerOrderbookResponseObject
+import indexer.codegen.IndexerSparklineTimePeriod
 import indexer.codegen.IndexerTradeResponse
 import indexer.models.IndexerCompositeMarketObject
 import indexer.models.IndexerWsMarketUpdateResponse
@@ -60,8 +61,9 @@ internal class MarketsSummaryProcessor(
     fun processSparklines(
         existing: InternalMarketSummaryState,
         content: Map<String, List<String>>?,
+        period: IndexerSparklineTimePeriod,
     ): InternalMarketSummaryState {
-        marketsProcessor.processSparklines(existing, content)
+        marketsProcessor.processSparklines(existing, content, period)
         return existing
     }
 

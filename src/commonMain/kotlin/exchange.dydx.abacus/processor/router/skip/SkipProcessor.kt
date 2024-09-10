@@ -2,12 +2,15 @@ package exchange.dydx.abacus.processor.router.skip
 
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.output.input.TransferInputChainResource
+import exchange.dydx.abacus.output.input.TransferInputSize
 import exchange.dydx.abacus.output.input.TransferInputTokenResource
+import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.processor.base.BaseProcessor
 import exchange.dydx.abacus.processor.router.ChainType
 import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.state.internalstate.InternalTransferInputState
+import exchange.dydx.abacus.state.internalstate.safeCreate
 import exchange.dydx.abacus.state.manager.CctpConfig.cctpChainIds
 import exchange.dydx.abacus.utils.ETHEREUM_CHAIN_ID
 import exchange.dydx.abacus.utils.NATIVE_TOKEN_DEFAULT_ADDRESS
@@ -19,7 +22,8 @@ private const val UNISWAP_SUFFIX = "uniswap"
 
 internal class SkipProcessor(
     parser: ParserProtocol,
-    private val internalState: InternalTransferInputState
+    private val internalState: InternalTransferInputState,
+    private val staticTyping: Boolean,
 ) : BaseProcessor(parser), IRouterProcessor {
     override var chains: List<Any>? = null
 
@@ -63,6 +67,7 @@ internal class SkipProcessor(
         modified.safeSet("transfer.depositOptions.chains", chainOptions)
         modified.safeSet("transfer.withdrawalOptions.chains", chainOptions)
         modified.safeSet("transfer.chain", selectedChainId)
+        internalState.chain = selectedChainId
         selectedChainId?.let {
             internalState.chainResources = chainResources(chainId = selectedChainId)
         }
@@ -126,16 +131,23 @@ internal class SkipProcessor(
         val decimals = parser.asDouble(selectedTokenDecimals(tokenAddress = tokenAddress, selectedChainId = selectedChainId))
         val processor = SkipRouteProcessor(parser)
 
-        modified.safeSet(
-            "transfer.route",
-            processor.received(null, payload, decimals = decimals) as MutableMap<String, Any>,
-        )
+        val route = processor.received(null, payload, decimals = decimals) as MutableMap<String, Any>
         if (requestId != null) {
-            modified.safeSet("transfer.route.requestPayload.requestId", requestId)
+            route.safeSet("requestPayload.requestId", requestId)
         }
-        if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
-            val value = usdcAmount(modified)
-            modified.safeSet("transfer.size.usdcSize", value)
+        modified.safeSet("transfer.route", route)
+        internalState.route = route
+
+        if (staticTyping) {
+            if (internalState.type == TransferType.deposit) {
+                val value = usdcAmount(modified)
+                internalState.size = TransferInputSize.safeCreate(internalState.size).copy(usdcSize = parser.asString(value))
+            }
+        } else {
+            if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
+                val value = usdcAmount(modified)
+                modified.safeSet("transfer.size.usdcSize", value)
+            }
         }
         return modified
     }
@@ -149,11 +161,18 @@ internal class SkipProcessor(
     }
 
     override fun usdcAmount(data: Map<String, Any>): Double? {
-        var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
-        toAmountUSD = toAmountUSD?.replace(",", "")
-        var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
-        toAmount = toAmount?.replace(",", "")
-        return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
+        if (staticTyping) {
+            val route = internalState.route
+            val toAmountUSD = parser.asString(parser.value(route, "toAmountUSD"))
+            val toAmount = parser.asString(parser.value(route, "toAmount"))
+            return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
+        } else {
+            var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
+            toAmountUSD = toAmountUSD?.replace(",", "")
+            var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
+            toAmount = toAmount?.replace(",", "")
+            return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
+        }
     }
 
     override fun receivedStatus(
@@ -176,9 +195,13 @@ internal class SkipProcessor(
     override fun updateTokensDefaults(modified: MutableMap<String, Any>, selectedChainId: String?) {
         val tokenOptions = tokenOptions(selectedChainId)
         internalState.tokens = tokenOptions
-        modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
-        modified.safeSet("transfer.depositOptions.tokens", tokenOptions)
-        modified.safeSet("transfer.withdrawalOptions.tokens", tokenOptions)
+        if (staticTyping) {
+            internalState.token = defaultTokenAddress(selectedChainId)
+        } else {
+            modified.safeSet("transfer.token", defaultTokenAddress(selectedChainId))
+            modified.safeSet("transfer.depositOptions.tokens", tokenOptions)
+            modified.safeSet("transfer.withdrawalOptions.tokens", tokenOptions)
+        }
         internalState.tokenResources = tokenResources(selectedChainId)
     }
 

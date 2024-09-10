@@ -24,7 +24,7 @@ class V4SquidTests : V4BaseTests() {
         assertNotNull(stateChange)
 
         test({
-            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+            perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             val chains = it.state?.input?.transfer?.depositOptions?.chains!!
             assertTrue(chains.size > 0)
@@ -36,7 +36,7 @@ class V4SquidTests : V4BaseTests() {
         })
 
         test({
-            perp.transfer(null, TransferInputField.type, 0)
+            perp.transfer(null, TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             assertTrue(it.state?.input?.transfer?.depositOptions == null)
         })
@@ -54,7 +54,7 @@ class V4SquidTests : V4BaseTests() {
         assertNotNull(stateChange)
 
         test({
-            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+            perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             val assets = it.state?.input?.transfer?.depositOptions?.assets!!
             assertTrue(assets.size > 0)
@@ -67,7 +67,7 @@ class V4SquidTests : V4BaseTests() {
         })
 
         test({
-            perp.transfer(null, TransferInputField.type, 0)
+            perp.transfer(null, TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             assertTrue(it.state?.input?.transfer?.depositOptions == null)
         })
@@ -77,7 +77,7 @@ class V4SquidTests : V4BaseTests() {
     fun testSquidRouteV2() {
         setup()
 
-        perp.transfer("DEPOSIT", TransferInputField.type, 0)
+        perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
 
         var stateChange = perp.squidV2SdkInfo(mock.squidV2AssetsMock.payload)
         assertNotNull(stateChange)
@@ -86,23 +86,41 @@ class V4SquidTests : V4BaseTests() {
         assertNotNull(stateChange)
 
         test({
-            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+            perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
-            val summary = it.state?.input?.transfer?.summary!!
+            val summary =
+                if (perp.staticTyping) {
+                    perp.internalState.input.transfer.summary
+                } else {
+                    it.state?.input?.transfer?.summary!!
+                }
             assertNotNull(summary)
             assertTrue { summary.slippage!!.toInt() == 0 }
             assertTrue { summary.exchangeRate!! > 0 }
             assertTrue { summary.estimatedRouteDuration!! > 0 }
             assertTrue { summary.gasFee!! > 0 }
             // assertTrue { summary.bridgeFee!! > 0 }
-            assertNotNull(it.state?.input?.transfer?.requestPayload)
-            assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
+            if (perp.staticTyping) {
+                val route = perp.internalState.input.transfer.route
+                val requestPayload = parser.asNativeMap(parser.value(route, "requestPayload"))
+                assertNotNull(requestPayload)
+                assertNotNull(perp.internalState.input.transfer.size?.usdcSize)
+            } else {
+                assertNotNull(it.state?.input?.transfer?.requestPayload)
+                assertNotNull(it.state?.input?.transfer?.size?.usdcSize)
+            }
         })
 
         test({
-            perp.transfer("0", TransferInputField.size, 0)
+            perp.transfer("0", TransferInputField.size, 0, environment = mock.v4Environment)
         }, null, {
-            assertNull(it.state?.input?.transfer?.requestPayload)
+            if (perp.staticTyping) {
+                val route = perp.internalState.input.transfer.route
+                val requestPayload = parser.asNativeMap(parser.value(route, "requestPayload"))
+                assertNull(requestPayload)
+            } else {
+                assertNull(it.state?.input?.transfer?.requestPayload)
+            }
         })
     }
 
@@ -110,7 +128,7 @@ class V4SquidTests : V4BaseTests() {
     fun testSquidRoute() {
         setup()
 
-        perp.transfer("DEPOSIT", TransferInputField.type, 0)
+        perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
 
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
@@ -122,7 +140,7 @@ class V4SquidTests : V4BaseTests() {
         assertNotNull(stateChange)
 
         test({
-            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+            perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             val summary = it.state?.input?.transfer?.summary!!
             assertNotNull(summary)
@@ -136,7 +154,7 @@ class V4SquidTests : V4BaseTests() {
         })
 
         test({
-            perp.transfer("0", TransferInputField.size, 0)
+            perp.transfer("0", TransferInputField.size, 0, environment = mock.v4Environment)
         }, null, {
             assertNull(it.state?.input?.transfer?.requestPayload)
         })
@@ -146,7 +164,7 @@ class V4SquidTests : V4BaseTests() {
     fun testSquidRoute_error() {
         setup()
 
-        perp.transfer("DEPOSIT", TransferInputField.type, 0)
+        perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
 
         var stateChange = perp.routerChains(mock.squidChainsMock.payload)
         assertNotNull(stateChange)
@@ -158,7 +176,7 @@ class V4SquidTests : V4BaseTests() {
         assertNotNull(stateChange)
 
         test({
-            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+            perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             val errors = it.state?.input?.transfer?.errors!!
             assertNotNull(errors)
@@ -181,7 +199,7 @@ class V4SquidTests : V4BaseTests() {
         perp.updateStateChanges(stateChange)
 
         test({
-            perp.transfer("DEPOSIT", TransferInputField.type, 0)
+            perp.transfer("DEPOSIT", TransferInputField.type, 0, environment = mock.v4Environment)
         }, null, {
             val transferStatuses = it.state?.transferStatuses
             assertNotNull(transferStatuses)

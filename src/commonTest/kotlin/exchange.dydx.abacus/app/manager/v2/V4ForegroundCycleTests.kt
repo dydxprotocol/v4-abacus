@@ -48,17 +48,17 @@ class V4ForegroundCycleTests : NetworkTests() {
         val localizer = BaseTests.testLocalizer(ioImplementations)
         val uiImplementations = BaseTests.testUIImplementations(localizer)
         stateManager = AsyncAbacusStateManagerV2(
-            "https://api.examples.com",
-            "DEV",
-            if (forIsolatedMargins) {
+            deploymentUri = "https://api.examples.com",
+            deployment = "DEV",
+            appConfigs = if (forIsolatedMargins) {
                 AppConfigsV2.forAppWithIsolatedMargins
             } else {
                 AppConfigsV2.forApp
             },
-            ioImplementations,
-            uiImplementations,
-            TestState(),
-            null,
+            ioImplementations = ioImplementations,
+            uiImplementations = uiImplementations,
+            stateNotification = TestState(),
+            dataNotification = null,
         )
         stateManager.environmentId = "dydxprotocol-staging"
         return stateManager
@@ -205,6 +205,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]
@@ -264,7 +265,6 @@ class V4ForegroundCycleTests : NetworkTests() {
 //            """.trimIndent(),
             """
                 [
-                    
                     "https://api.examples.com/configs/documentation.json",
                     "https://indexer.v4staging.dydx.exchange/v4/time",
                     "https://indexer.v4staging.dydx.exchange/v4/height",
@@ -275,6 +275,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY",
@@ -330,6 +331,7 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
                     "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
+                    "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=SEVEN_DAYS",
                     "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
                     "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD"
                 ]

@@ -43,8 +43,42 @@ internal class OrderbookCalculator(
 
         buildGroupingLookup(tickSize)
         val groupingTickSize = getGroupingTickSizeDecimals(tickSize, groupingMultiplier)
-        val asks = createGroup(rawOrderbook.asks, groupingTickSize)
-        val bids = createGroup(rawOrderbook.bids, groupingTickSize)
+        val asks = if (groupingMultiplier != 1) {
+            createGroup(rawOrderbook.asks, groupingTickSize)
+        } else {
+            var asksDepth = 0.0
+            var depthSizeCost = 0.0
+            rawOrderbook.asks?.map {
+                asksDepth += it.size
+                val sizeCost = it.size * it.price
+                depthSizeCost += sizeCost
+                OrderbookLine(
+                    size = it.size,
+                    price = it.price,
+                    depth = asksDepth,
+                    sizeCost = sizeCost,
+                    depthCost = depthSizeCost,
+                )
+            }
+        }
+        val bids = if (groupingMultiplier != 1) {
+            createGroup(rawOrderbook.bids, groupingTickSize)
+        } else {
+            var bidsDepth = 0.0
+            var depthSizeCost = 0.0
+            rawOrderbook.bids?.map {
+                bidsDepth += it.size
+                val sizeCost = it.size * it.price
+                depthSizeCost += sizeCost
+                OrderbookLine(
+                    size = it.size,
+                    price = it.price,
+                    depth = bidsDepth,
+                    sizeCost = sizeCost,
+                    depthCost = depthSizeCost,
+                )
+            }
+        }
 
         val firstAskPrice = asks?.firstOrNull()?.price
         val firstBidPrice = bids?.firstOrNull()?.price
@@ -131,7 +165,7 @@ internal class OrderbookCalculator(
             val result = mutableListOf<OrderbookLine>()
 
             // properties of the current group
-            var curFloored = Rounder.round(firstPrice, grouping);
+            var curFloored = Rounder.quickRound2(firstPrice, grouping);
             var groupMin = if (curFloored != firstPrice) curFloored else (if (shouldFloor) curFloored else curFloored - grouping)
             var groupMax = groupMin + grouping
             var size = Numeric.double.ZERO
@@ -161,7 +195,7 @@ internal class OrderbookCalculator(
                             depthCost = depthCost,
                         ),
                     )
-                    curFloored = Rounder.round(linePrice, grouping);
+                    curFloored = Rounder.quickRound2(linePrice, grouping);
                     groupMin = if (curFloored != linePrice) curFloored else (if (shouldFloor) curFloored else curFloored - grouping)
                     groupMax = groupMin + grouping
 
