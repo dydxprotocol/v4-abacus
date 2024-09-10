@@ -30,6 +30,7 @@ enum class TradeInputField(val rawValue: String) {
     size("size.size"),
     usdcSize("size.usdcSize"),
     leverage("size.leverage"),
+    balancePercent("size.balancePercent"),
     lastInput("size.input"),
 
     limitPrice("price.limitPrice"),
@@ -304,6 +305,7 @@ fun TradingStateMachine.trade(
                 TradeInputField.size,
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
+                TradeInputField.balancePercent,
                 TradeInputField.targetLeverage,
                 -> {
                     sizeChanged =
@@ -403,6 +405,7 @@ fun TradingStateMachine.trade(
         when (type) {
             TradeInputField.size,
             TradeInputField.usdcSize,
+            TradeInputField.balancePercent,
             TradeInputField.leverage,
             -> {
                 trade.safeSet("size.input", typeText)

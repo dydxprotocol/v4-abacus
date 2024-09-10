@@ -86,6 +86,8 @@ data class TradeInputSize(
 &emsp;val size: Double?,  
 &emsp;val usdcSize: Double?,  
 &emsp;val leverage: Double?,  
+&emsp;val percent: Double?,  
+&emsp;val balancePercent: Double?,  
 &emsp;val input: String?  
 )
 
@@ -101,10 +103,14 @@ Size of the trade in USDC
 
 Leverage of the order
 
+## balancePercent
+
+Percent (of available balance / free collateral) to use for the order. Currently only on market orders.
+
 ## input
 
 Which one of the fields are entered by the user:
-size, usdcSize, leverage
+size, usdcSize, leverage, balancePercent
 
 # TradeInputPrice
 

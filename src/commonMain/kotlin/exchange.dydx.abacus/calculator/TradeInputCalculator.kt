@@ -12,6 +12,7 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -22,6 +23,7 @@ import exchange.dydx.abacus.utils.safeSet
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
+import kotlin.math.min
 import kotlin.math.pow
 
 @JsExport
@@ -300,6 +302,17 @@ internal class TradeInputCalculator(
                     }
                 }
             }
+
+            "size.balancePercent" -> {
+                tradeSize?.safeSet(
+                    "size",
+                    if (filled) parser.asDouble(marketOrder?.get("size")) else null,
+                )
+                tradeSize?.safeSet(
+                    "usdcSize",
+                    if (filled) parser.asDouble(marketOrder?.get("usdcSize")) else null,
+                )
+            }
         }
         modified.safeSet("marketOrder", marketOrder)
         modified.safeSet("size", tradeSize)
@@ -478,10 +491,118 @@ internal class TradeInputCalculator(
                     )
                 }
 
+                "size.balancePercent" -> {
+                    val stepSize =
+                        parser.asDouble(parser.value(market, "configs.stepSize"))
+                            ?: 0.001
+                    val orderbook = orderbook(market, isBuying)
+                    val balancePercent =
+                        parser.asDouble(parser.value(trade, "size.balancePercent")) ?: return null
+                    val initialMarginFraction =
+                        parser.asDouble(parser.value(market, "configs.effectiveInitialMarginFraction"))
+                            ?: return null
+                    val maxMarketLeverage = if (initialMarginFraction <= Numeric.double.ZERO) {
+                        return null
+                    } else {
+                        Numeric.double.ONE / initialMarginFraction
+                    }
+
+                    calculateMarketOrderFromBalancePercent(
+                        balancePercent,
+                        maxMarketLeverage,
+                        subaccount,
+                        orderbook,
+                        stepSize,
+                    )
+                }
+
                 else -> null
             }
         }
         return null
+    }
+
+    private fun calculateMarketOrderFromBalancePercent(
+        balancePercent: Double,
+        maxMarketLeverage: Double,
+        subaccount: Map<String, Any>?,
+        orderbook: List<Map<String, Any>>?,
+        stepSize: Double,
+    ): Map<String, Any>? {
+        val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
+        val cappedPercent = min(balancePercent, MAX_FREE_COLLATERAL_BUFFER_PERCENT * balancePercent)
+        val desiredBalance = cappedPercent * freeCollateral
+        val usdcSize = desiredBalance * maxMarketLeverage
+
+        return if (usdcSize != Numeric.double.ZERO) {
+            if (orderbook != null) {
+                var sizeTotal = Numeric.double.ZERO
+                var usdcSizeTotal = Numeric.double.ZERO
+                var balanceTotal = Numeric.double.ZERO
+                var worstPrice: Double? = null
+                var filled = false
+                val marketOrderOrderBook = mutableListOf<Map<String, Any>>()
+
+                orderbookLoop@ for (i in 0 until orderbook.size) {
+                    val entry = orderbook[i]
+                    val entryPrice = parser.asDouble(entry["price"])
+                    val entrySize = parser.asDouble(entry["size"])
+
+                    if (entryPrice != null && entryPrice > Numeric.double.ZERO && entrySize != null) {
+                        val entryUsdcSize = entrySize * entryPrice
+                        val entryBalanceSize = entryUsdcSize / maxMarketLeverage
+                        filled = (balanceTotal + entryBalanceSize >= desiredBalance)
+
+                        var matchedSize = entrySize
+                        var matchedUsdcSize = entryUsdcSize
+                        var matchedBalance = matchedUsdcSize / maxMarketLeverage
+
+                        if (filled) {
+                            matchedBalance = desiredBalance - balanceTotal
+                            matchedUsdcSize = matchedBalance * maxMarketLeverage
+                            matchedSize = matchedUsdcSize / entryPrice
+                            matchedSize =
+                                Rounder.quickRound(
+                                    matchedSize,
+                                    stepSize,
+                                )
+                            matchedUsdcSize = matchedSize * entryPrice
+                        }
+                        sizeTotal += matchedSize
+                        usdcSizeTotal += matchedUsdcSize
+                        balanceTotal += matchedBalance
+
+                        worstPrice = entryPrice
+                        marketOrderOrderBook.add(
+                            matchingOrderbookEntry(
+                                entry,
+                                matchedSize,
+                            ),
+                        )
+                        if (filled) {
+                            break@orderbookLoop
+                        }
+                    }
+                }
+                marketOrder(
+                    marketOrderOrderBook,
+                    sizeTotal,
+                    usdcSizeTotal,
+                    worstPrice,
+                    filled,
+                )
+            } else {
+                marketOrder(
+                    mutableListOf<Map<String, Any>>(),
+                    Numeric.double.ZERO,
+                    usdcSize,
+                    null,
+                    false,
+                )
+            }
+        } else {
+            null
+        }
     }
 
     private fun calculateMarketOrderFromLeverage(

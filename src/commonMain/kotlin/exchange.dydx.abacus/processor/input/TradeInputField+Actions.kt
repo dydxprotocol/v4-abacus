@@ -22,7 +22,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 internal val TradeInputField.validTradeInputAction: ((InternalTradeInputState) -> Boolean)?
     get() = when (this) {
         TradeInputField.type, TradeInputField.side -> null
-        TradeInputField.size, TradeInputField.usdcSize, TradeInputField.leverage -> { state -> state.options.needsSize }
+        TradeInputField.size, TradeInputField.usdcSize, TradeInputField.leverage, TradeInputField.balancePercent -> { state -> state.options.needsSize }
         TradeInputField.limitPrice -> { state -> state.options.needsLimitPrice }
         TradeInputField.triggerPrice -> { state -> state.options.needsTriggerPrice }
         TradeInputField.trailingPercent -> { state -> state.options.needsTrailingPercent }
@@ -57,6 +57,7 @@ internal val TradeInputField.valueAction: ((InternalTradeInputState) -> Any?)?
         TradeInputField.size -> { state -> state.size?.size }
         TradeInputField.usdcSize -> { state -> state.size?.usdcSize }
         TradeInputField.leverage -> { state -> state.size?.leverage }
+        TradeInputField.balancePercent -> { state -> state.size?.balancePercent }
 
         TradeInputField.lastInput -> { state -> state.size?.input }
         TradeInputField.limitPrice -> { state -> state.price?.limitPrice }
@@ -215,5 +216,9 @@ internal val TradeInputField.updateValueAction: ((InternalTradeInputState, Strin
 
         TradeInputField.leverage -> { trade, value, parser ->
             trade.size = TradeInputSize.safeCreate(trade.size).copy(leverage = parser.asDouble(value))
+        }
+
+        TradeInputField.balancePercent -> { trade, value, parser ->
+            trade.size = TradeInputSize.safeCreate(trade.size).copy(balancePercent = parser.asDouble(value))
         }
     }

@@ -436,6 +436,7 @@ internal fun TradeInputSize.Companion.safeCreate(existing: TradeInputSize?): Tra
         size = null,
         usdcSize = null,
         leverage = null,
+        balancePercent = null,
         input = null,
     )
 }

@@ -194,6 +194,7 @@ internal class TradeInputProcessor(
                 TradeInputField.size,
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
+                TradeInputField.balancePercent,
                 TradeInputField.targetLeverage,
                 -> {
                     sizeChanged =
@@ -260,6 +261,7 @@ internal class TradeInputProcessor(
                 TradeInputField.size,
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
+                TradeInputField.balancePercent,
                 -> {
                     trade.size = TradeInputSize.safeCreate(trade.size).copy(input = inputType.rawValue)
                 }

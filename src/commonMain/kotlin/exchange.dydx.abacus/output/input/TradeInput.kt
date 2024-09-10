@@ -528,6 +528,7 @@ data class TradeInputSize(
     val size: Double?,
     val usdcSize: Double?,
     val leverage: Double?,
+    val balancePercent: Double?,
     val input: String?,
 ) {
     companion object {
@@ -542,13 +543,15 @@ data class TradeInputSize(
                 val size = parser.asDouble(data["size"])
                 val usdcSize = parser.asDouble(data["usdcSize"])
                 val leverage = parser.asDouble(data["leverage"])
+                val balancePercent = parser.asDouble(data["balancePercent"])
                 val input = parser.asString(data["input"])
                 return if (existing?.size != size ||
                     existing?.usdcSize != usdcSize ||
                     existing?.leverage != leverage ||
+                    existing?.balancePercent != balancePercent ||
                     existing?.input != input
                 ) {
-                    TradeInputSize(size, usdcSize, leverage, input)
+                    TradeInputSize(size, usdcSize, leverage, balancePercent, input)
                 } else {
                     existing
                 }
