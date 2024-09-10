@@ -358,7 +358,7 @@ internal class TradeInputMarketOrderCalculator() {
                         }
                     }
                 }
-                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateralq
                 createMarketOrderWith(
                     orderbook = marketOrderOrderBook,
                     size = sizeTotal,

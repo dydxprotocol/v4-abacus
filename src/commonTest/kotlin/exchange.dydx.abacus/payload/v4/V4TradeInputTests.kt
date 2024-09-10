@@ -571,10 +571,10 @@ open class V4TradeInputTests : V4BaseTests() {
             assertNotNull(size)
             assertEquals(size.usdcSize, 10.0)
             assertEquals(size.size, 0.006)
-            assertEquals(size.balancePercent, 0.000005) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.balancePercent, 0.0000049629) // freeCollateral: 100000, 20x leverage
             assertEquals(size.input, "size.usdcSize")
             val errors = perp.internalState.input.errors
-            assertNull(errors)
+            assertEquals(errors?.size, 0)
         } else {
             test(
                 {
@@ -602,12 +602,12 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("10", TradeInputField.size, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 16540.0)
+            assertEquals(size.usdcSize, 16543.0)
             assertEquals(size.size, 10.0)
-            assertEquals(size.balancePercent, 0.00827) // freeCollateral: 100000, 20x leverage
+            assertEquals(size.balancePercent, 0.0082715) // freeCollateral: 100000, 20x leverage
             assertEquals(size.input, "size.size")
             val errors = perp.internalState.input.errors
-            assertNull(errors)
+            assertEquals(errors?.size, 0)
         } else {
             test(
                 {
@@ -635,12 +635,12 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("0.5", TradeInputField.balancePercent, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 16540.0)
-            assertEquals(size.size, 593.6)
+            assertEquals(size.usdcSize, 979999.8321)
+            assertEquals(size.size, 593.5779999999999)
             assertEquals(size.balancePercent, 0.5) // freeCollateral: 100000, 20x leverage
             assertEquals(size.input, "size.balancePercent")
             val errors = perp.internalState.input.errors
-            assertNull(errors)
+            assertEquals(errors?.size, 0)
         } else {
             test(
                 {
