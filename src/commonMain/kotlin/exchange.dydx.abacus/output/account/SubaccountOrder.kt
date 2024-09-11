@@ -10,6 +10,7 @@ import exchange.dydx.abacus.protocols.ParserProtocol
 import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 internal expect fun normalizeClientId(clientId: UInt): UInt
 
@@ -47,6 +48,7 @@ data class SubaccountOrder(
     val marginMode: MarginMode?
 ) {
 
+    @Transient
     val clientId = _clientId_DO_NOT_USE?.let { normalizeClientId(it) }
 
     companion object {

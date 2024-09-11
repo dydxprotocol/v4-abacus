@@ -1,6 +1,6 @@
 package exchange.dydx.abacus.output.account
 
-internal actual fun normalizeClientId(clientId: UInt): UInt {
+internal actual fun normalizeClientId(clientId: UInt): dynamic {
     /**
      * https://stackoverflow.com/a/11385688
      *
