@@ -220,7 +220,7 @@ class AnalyticsUtils {
     fun formatOrder(order: SubaccountOrder): IMap<String, Any>? {
         return iMapOf(
             "orderId" to order.id,
-            "clientId" to order.clientId,
+            "clientId" to order._clientId_DO_NOT_USE,
             "type" to order.type.rawValue,
             "side" to order.side.rawValue,
             "status" to order.status.rawValue,

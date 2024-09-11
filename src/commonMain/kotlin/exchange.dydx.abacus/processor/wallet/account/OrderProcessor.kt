@@ -259,7 +259,7 @@ internal class OrderProcessor(
         val order = SubaccountOrder(
             subaccountNumber = orderSubaccountNumber,
             id = id,
-            clientId = parser.asUInt(payload.clientId),
+            _clientId_DO_NOT_USE = parser.asUInt(payload.clientId),
             type = type,
             side = side,
             status = modifiedStatus,

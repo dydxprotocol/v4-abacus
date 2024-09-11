@@ -11,12 +11,14 @@ import exchange.dydx.abacus.utils.Logger
 import kollections.JsExport
 import kotlinx.serialization.Serializable
 
+internal expect fun normalizeClientId(clientId: UInt): UInt
+
 @JsExport
 @Serializable
 data class SubaccountOrder(
     val subaccountNumber: Int?,
     val id: String,
-    val clientId: UInt?,
+    val _clientId_DO_NOT_USE: UInt?,
     val type: OrderType,
     val side: OrderSide,
     val status: OrderStatus,
@@ -44,6 +46,9 @@ data class SubaccountOrder(
     val resources: SubaccountOrderResources,
     val marginMode: MarginMode?
 ) {
+
+    val clientId = _clientId_DO_NOT_USE?.let { normalizeClientId(it) }
+
     companion object {
         internal fun create(
             existing: SubaccountOrder?,
@@ -104,7 +109,7 @@ data class SubaccountOrder(
                     return if (
                         existing?.subaccountNumber != subaccountNumber ||
                         existing.id != id ||
-                        existing.clientId != clientId ||
+                        existing._clientId_DO_NOT_USE != clientId ||
                         existing.type !== type ||
                         existing.side !== side ||
                         existing.status !== status ||
@@ -135,7 +140,7 @@ data class SubaccountOrder(
                         SubaccountOrder(
                             subaccountNumber = subaccountNumber,
                             id = id,
-                            clientId = clientId,
+                            _clientId_DO_NOT_USE = clientId,
                             type = type,
                             side = side,
                             status = status,

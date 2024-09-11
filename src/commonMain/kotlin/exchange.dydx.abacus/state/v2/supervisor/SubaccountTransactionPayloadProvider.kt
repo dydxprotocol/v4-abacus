@@ -156,7 +156,7 @@ internal class SubaccountTransactionPayloadProvider(
         val order = subaccount.orders?.firstOrNull { it.id == orderId }
             ?: throw Exception("order is null")
         val type = order.type.rawValue
-        val clientId = order.clientId ?: error("clientId is null")
+        val clientId = order._clientId_DO_NOT_USE ?: error("clientId is null")
         val orderFlags = order.orderFlags ?: error("orderFlags is null")
         val clobPairId = order.clobPairId ?: error("clobPairId is null")
         val orderSubaccountNumber = order.subaccountNumber ?: error("order subaccountNumber is null")

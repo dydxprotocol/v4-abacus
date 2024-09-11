@@ -305,7 +305,7 @@ internal class SubaccountTransactionSupervisor(
             for (order in orders) {
                 val orderAnalyticsPayload = analyticsUtils.formatOrder(order)
                 val placeOrderRecord = placeOrderRecords.firstOrNull {
-                    it.clientId == order.clientId
+                    it.clientId == order._clientId_DO_NOT_USE
                 }
                 if (placeOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
@@ -350,7 +350,7 @@ internal class SubaccountTransactionSupervisor(
                 }
 
                 val cancelOrderRecord = cancelOrderRecords.firstOrNull {
-                    it.clientId == order.clientId
+                    it.clientId == order._clientId_DO_NOT_USE
                 }
                 if (cancelOrderRecord != null) {
                     val interval = Clock.System.now().toEpochMilliseconds()
