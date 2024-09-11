@@ -18,7 +18,7 @@ data class FaucetRecord(
 
 data class PlaceOrderRecord(
     val subaccountNumber: Int,
-    val clientId: UInt,
+    val clientId: String,
     val timestampInMilliseconds: Double,
     val fromSlTpDialog: Boolean,
     var lastOrderStatus: OrderStatus?,
@@ -27,14 +27,14 @@ data class PlaceOrderRecord(
 
 data class CancelOrderRecord(
     val subaccountNumber: Int,
-    val clientId: UInt,
+    val clientId: String,
     val timestampInMilliseconds: Double,
     val fromSlTpDialog: Boolean,
 )
 
 data class IsolatedPlaceOrderRecord(
     val subaccountNumber: Int,
-    val clientId: UInt,
+    val clientId: String,
     val destinationSubaccountNumber: Int,
 )
 
@@ -53,7 +53,7 @@ data class PlaceOrderMarketInfo(
 data class HumanReadablePlaceOrderPayload(
     val subaccountNumber: Int,
     val marketId: String,
-    val clientId: UInt,
+    val clientId: String,
     val type: String,
     val side: String,
     val price: Double,
@@ -76,7 +76,7 @@ data class HumanReadableCancelOrderPayload(
     val subaccountNumber: Int,
     val type: String,
     val orderId: String,
-    val clientId: UInt,
+    val clientId: String,
     val orderFlags: Int,
     val clobPairId: Int,
     val goodTilBlock: Int?,
