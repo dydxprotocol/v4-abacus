@@ -139,15 +139,11 @@ internal class SkipProcessor(
         internalState.route = route
 
         if (staticTyping) {
-            if (internalState.type == TransferType.deposit) {
                 val value = usdcAmount(modified)
                 internalState.size = TransferInputSize.safeCreate(internalState.size).copy(usdcSize = parser.asString(value))
-            }
         } else {
-            if (parser.asNativeMap(existing?.get("transfer"))?.get("type") == "DEPOSIT") {
                 val value = usdcAmount(modified)
                 modified.safeSet("transfer.size.usdcSize", value)
-            }
         }
         return modified
     }
@@ -164,14 +160,11 @@ internal class SkipProcessor(
         if (staticTyping) {
             val route = internalState.route
             val toAmountUSD = parser.asString(parser.value(route, "toAmountUSD"))
-            val toAmount = parser.asString(parser.value(route, "toAmount"))
-            return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
+            return parser.asDouble(toAmountUSD)
         } else {
             var toAmountUSD = parser.asString(parser.value(data, "transfer.route.toAmountUSD"))
             toAmountUSD = toAmountUSD?.replace(",", "")
-            var toAmount = parser.asString(parser.value(data, "transfer.route.toAmount"))
-            toAmount = toAmount?.replace(",", "")
-            return parser.asDouble(toAmountUSD) ?: parser.asDouble(toAmount)
+            return parser.asDouble(toAmountUSD)
         }
     }
 

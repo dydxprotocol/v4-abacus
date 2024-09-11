@@ -377,6 +377,9 @@ class SkipProcessorTests {
                         "gasLimit" to DEFAULT_GAS_LIMIT,
                     ),
                 ),
+                "size" to mapOf(
+                    "usdcSize" to 11.64
+                )
             ),
         )
         assertEquals(expected, result)
