@@ -12,9 +12,10 @@ internal const val QUANTUM_MULTIPLIER = 1_000_000
 internal const val SLIPPAGE_PERCENT = "1"
 
 // Trade Constants
-internal const val MAX_FREE_COLLATERAL_BUFFER_PERCENT = 0.98
+internal const val MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT = 0.98
 
 // Isolated Margin Constants
+internal const val MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT = 0.89
 internal const val MAX_LEVERAGE_BUFFER_PERCENT = 0.98
 internal const val MARGIN_COLLATERALIZATION_CHECK_BUFFER = 0.01;
 
