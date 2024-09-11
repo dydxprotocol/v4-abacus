@@ -126,6 +126,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, true)
+            assertEquals(options.needsBalancePercent, true)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, false)
             assertEquals(options.needsTrailingPercent, false)
@@ -145,6 +146,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": true,
+                            "needsBalancePercent": true,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": false,
                             "needsTrailingPercent": false,
@@ -168,6 +170,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, true)
             assertEquals(options.needsTrailingPercent, false)
@@ -187,6 +190,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": false,
+                            "needsBalancePercent": false,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,
@@ -210,6 +214,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, true)
             assertEquals(options.needsTrailingPercent, false)
@@ -229,6 +234,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": false,
+                            "needsBalancePercent": false,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,
@@ -252,6 +258,7 @@ class TradeInputOptionsTests : V4BaseTests() {
             val options = trade.options
             assertEquals(options.needsSize, true)
             assertEquals(options.needsLeverage, false)
+            assertEquals(options.needsBalancePercent, false)
             assertEquals(options.needsTriggerPrice, false)
             assertEquals(options.needsLimitPrice, true)
             assertEquals(options.needsTrailingPercent, false)
@@ -290,6 +297,7 @@ class TradeInputOptionsTests : V4BaseTests() {
                         "options": {
                             "needsSize": true,
                             "needsLeverage": false,
+                            "needsBalancePercent": false,
                             "needsTriggerPrice": false,
                             "needsLimitPrice": true,
                             "needsTrailingPercent": false,

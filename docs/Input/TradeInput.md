@@ -223,6 +223,7 @@ The orderbook entries taken by the market order
 data class TradeInputOptions(  
 &emsp;val needsSize: Boolean,  
 &emsp;val needsLeverage: Boolean,  
+&emsp;val needsBalancePercent: Boolean,
 &emsp;val maxLeverage: Double?,  
 &emsp;val needsLimitPrice: Boolean,
 &emsp;val needsTargetLeverage: Boolean,
@@ -247,6 +248,10 @@ UX should ask user for size
 ## needsLeverage
 
 UX should ask user for leverage input
+
+## needsBalancePercent
+
+UX should ask user for balance percent input
 
 ## maxLeverage
 

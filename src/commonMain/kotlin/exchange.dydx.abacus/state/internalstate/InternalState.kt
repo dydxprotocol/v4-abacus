@@ -151,6 +151,7 @@ internal data class InternalTradeInputOptions(
     var needsMarginMode: Boolean = false,
     var needsSize: Boolean = false,
     var needsLeverage: Boolean = false,
+    var needsBalancePercent: Boolean = false,
     var maxLeverage: Double? = null,
     var needsLimitPrice: Boolean = false,
     var needsTargetLeverage: Boolean = false,
