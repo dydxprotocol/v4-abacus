@@ -634,8 +634,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("0.5", TradeInputField.balancePercent, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 979999.8321)
-            assertEquals(size.size, 593.5779999999999)
+            assertEquals(size.usdcSize, 1000000.1169)
+            assertEquals(size.size, 605.7059999999999)
             assertEquals(size.balancePercent, 0.5) // freeCollateral: 100000, 20x leverage
             assertEquals(size.input, "size.balancePercent")
             val errors = perp.internalState.input.errors

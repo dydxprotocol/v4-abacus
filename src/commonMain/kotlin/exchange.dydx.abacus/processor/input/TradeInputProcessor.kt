@@ -196,7 +196,6 @@ internal class TradeInputProcessor(
                 TradeInputField.usdcSize,
                 TradeInputField.leverage,
                 TradeInputField.balancePercent,
-                TradeInputField.targetLeverage,
                 -> {
                     sizeChanged =
                         (parser.asDouble(inputData) != parser.asDouble(inputType.valueAction?.invoke(trade)))
@@ -205,6 +204,24 @@ internal class TradeInputProcessor(
                         changes = iListOf(Changes.subaccount, Changes.input),
                         markets = null,
                         subaccountNumbers = subaccountNumbers,
+                    )
+                }
+
+                TradeInputField.targetLeverage -> {
+                    sizeChanged =
+                        (parser.asDouble(inputData) != parser.asDouble(inputType.valueAction?.invoke(trade)))
+                    inputType.updateValueAction?.invoke(trade, inputData, parser)
+                    val changedSubaccountNumbers =
+                        MarginCalculator.getChangedSubaccountNumbers(
+                            parser = parser,
+                            subaccounts = walletState.account.subaccounts,
+                            subaccountNumber = subaccountNumber,
+                            tradeInput = trade,
+                        )
+                    changes = StateChanges(
+                        changes = iListOf(Changes.subaccount, Changes.input),
+                        markets = null,
+                        subaccountNumbers = changedSubaccountNumbers,
                     )
                 }
 

@@ -12,7 +12,8 @@ import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDE
 import exchange.dydx.abacus.calculator.SlippageConstants.TAKE_PROFIT_MARKET_ORDER_SLIPPAGE_BUFFER_MAJOR_MARKET
 import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.protocols.ParserProtocol
-import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.QUANTUM_MULTIPLIER
@@ -478,6 +479,14 @@ internal class TradeInputCalculator(
 
         if (tradeSize != null) {
             val maxMarketLeverage = maxMarketLeverage(market)
+            val targetLeverage = parser.asDouble(trade["targetLeverage"])
+            val marginMode = MarginMode.invoke(parser.asString(trade["marginMode"])) ?: MarginMode.Cross
+            val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
+                targetLeverage
+            } else {
+                maxMarketLeverage
+            }
+
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 
             return when (input) {
@@ -486,7 +495,7 @@ internal class TradeInputCalculator(
                     calculateMarketOrderFromSize(
                         parser.asDouble(tradeSize["size"]),
                         freeCollateral,
-                        maxMarketLeverage,
+                        tradeLeverage,
                         orderbook,
                     )
                 }
@@ -499,7 +508,7 @@ internal class TradeInputCalculator(
                     calculateMarketOrderFromUsdcSize(
                         parser.asDouble(tradeSize["usdcSize"]),
                         freeCollateral,
-                        maxMarketLeverage,
+                        tradeLeverage,
                         orderbook,
                         stepSize,
                     )
@@ -512,7 +521,7 @@ internal class TradeInputCalculator(
                         leverage,
                         market,
                         freeCollateral,
-                        maxMarketLeverage,
+                        tradeLeverage,
                         subaccount,
                         user,
                     )
@@ -528,9 +537,9 @@ internal class TradeInputCalculator(
 
                     calculateMarketOrderFromBalancePercent(
                         balancePercent,
+                        marginMode,
                         freeCollateral,
-                        maxMarketLeverage,
-                        subaccount,
+                        tradeLeverage,
                         orderbook,
                         stepSize,
                     )
@@ -544,15 +553,19 @@ internal class TradeInputCalculator(
 
     private fun calculateMarketOrderFromBalancePercent(
         balancePercent: Double,
+        marginMode: MarginMode,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
-        subaccount: Map<String, Any>?,
+        tradeLeverage: Double,
         orderbook: List<Map<String, Any>>?,
         stepSize: Double,
     ): Map<String, Any>? {
-        val cappedPercent = min(balancePercent, MAX_FREE_COLLATERAL_BUFFER_PERCENT * balancePercent)
+        val buffer = when (marginMode) {
+            MarginMode.Cross -> MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
+            MarginMode.Isolated -> MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
+        }
+        val cappedPercent = min(balancePercent, buffer)
         val desiredBalance = cappedPercent * freeCollateral
-        val usdcSize = desiredBalance * maxMarketLeverage
+        val usdcSize = desiredBalance * tradeLeverage
 
         return if (usdcSize != Numeric.double.ZERO) {
             if (orderbook != null) {
@@ -570,16 +583,16 @@ internal class TradeInputCalculator(
 
                     if (entryPrice != null && entryPrice > Numeric.double.ZERO && entrySize != null) {
                         val entryUsdcSize = entrySize * entryPrice
-                        val entryBalanceSize = entryUsdcSize / maxMarketLeverage
+                        val entryBalanceSize = entryUsdcSize / tradeLeverage
                         filled = (balanceTotal + entryBalanceSize >= desiredBalance)
 
                         var matchedSize = entrySize
                         var matchedUsdcSize = entryUsdcSize
-                        var matchedBalance = matchedUsdcSize / maxMarketLeverage
+                        var matchedBalance = matchedUsdcSize / tradeLeverage
 
                         if (filled) {
                             matchedBalance = desiredBalance - balanceTotal
-                            matchedUsdcSize = matchedBalance * maxMarketLeverage
+                            matchedUsdcSize = matchedBalance * tradeLeverage
                             matchedSize = matchedUsdcSize / entryPrice
                             matchedSize =
                                 Rounder.quickRound(
@@ -636,7 +649,7 @@ internal class TradeInputCalculator(
         leverage: Double,
         market: Map<String, Any>?,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         subaccount: Map<String, Any>?,
         user: Map<String, Any>,
     ): Map<String, Any>? {
@@ -683,7 +696,7 @@ internal class TradeInputCalculator(
                         leverage,
                         stepSize,
                         freeCollateral,
-                        maxMarketLeverage,
+                        tradeLeverage,
                         orderbook,
                     )
                 } else {
@@ -700,7 +713,7 @@ internal class TradeInputCalculator(
     private fun calculateMarketOrderFromSize(
         size: Double?,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         orderbook: List<Map<String, Any>>?,
     ): Map<String, Any>? {
         return if (size != null && size != Numeric.double.ZERO) {
@@ -734,7 +747,7 @@ internal class TradeInputCalculator(
                     }
                 }
                 val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
-                    (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                    (usdcSizeTotal / tradeLeverage) / freeCollateral
                 } else {
                     Numeric.double.ZERO
                 }
@@ -789,7 +802,7 @@ internal class TradeInputCalculator(
     private fun calculateMarketOrderFromUsdcSize(
         usdcSize: Double?,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         orderbook: List<Map<String, Any>>?,
         stepSize: Double,
     ): Map<String, Any>? {
@@ -840,7 +853,7 @@ internal class TradeInputCalculator(
                     }
                 }
                 val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
-                    (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                    (usdcSizeTotal / tradeLeverage) / freeCollateral
                 } else {
                     Numeric.double.ZERO
                 }
@@ -895,7 +908,7 @@ internal class TradeInputCalculator(
         leverage: Double,
         stepSize: Double,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         orderbook: List<Map<String, Any>>,
     ): Map<String, Any>? {
         /*
@@ -1000,7 +1013,7 @@ internal class TradeInputCalculator(
             }
         }
         val balancePercentTotal = if (freeCollateral > Numeric.double.ZERO) {
-            (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+            (usdcSizeTotal / tradeLeverage) / freeCollateral
         } else {
             Numeric.double.ZERO
         }
@@ -1066,7 +1079,7 @@ internal class TradeInputCalculator(
                 return when (MarginMode.invoke(marginMode)) {
                     MarginMode.Isolated -> listOf(
                         sizeField(),
-                        // balancePercentField(), TODO: enable in CT-1180
+                        balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
