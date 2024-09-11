@@ -81,7 +81,7 @@ internal class TradeInputOptionsCalculator(
                 return when (trade.marginMode) {
                     MarginMode.Isolated -> listOf(
                         sizeField(),
-                        // balancePercentField(), TODO: enable in CT-1180
+                        balancePercentField(),
                         bracketsField(),
                         marginModeField(market, account, subaccount),
                         reduceOnlyField(),
