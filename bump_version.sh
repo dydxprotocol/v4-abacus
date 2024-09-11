@@ -18,12 +18,5 @@ fi
 #
 ./gradlew podspec
 
-# Remove the warning step about ./gradlew :generateDummyFramework, since on iOS we use CocoaPods to 
-# download the source code and build locally.
-PODSPEC_FILE="v4_abacus.podspec"
-
-# replace the line "if !Dir.exist?('build/cocoapods/framework/Abacus.framework') || Dir.empty?('build/cocoapods/framework/Abacus.framework')" with "if false"
-sed -i '' "s/if !Dir.exist?('build\/cocoapods\/framework\/Abacus.framework') || Dir.empty?('build\/cocoapods\/framework\/Abacus.framework')/if false/" $PODSPEC_FILE
-
 cd integration/iOS
 pod install
