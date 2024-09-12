@@ -72,7 +72,7 @@ internal class SubaccountTransactionSupervisor(
 
     private val pendingIsolatedOrderRecords: IMutableList<IsolatedPlaceOrderRecord> = iMutableListOf()
 
-    private var lastOrderClientId: UInt? = null
+    private var lastOrderClientId: String? = null
         set(value) {
             if (field != value) {
                 field = value
