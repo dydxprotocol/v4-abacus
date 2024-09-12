@@ -44,9 +44,7 @@ import exchange.dydx.abacus.processor.input.ClosePositionInputProcessor
 import exchange.dydx.abacus.processor.input.TradeInputProcessor
 import exchange.dydx.abacus.processor.launchIncentive.LaunchIncentiveProcessor
 import exchange.dydx.abacus.processor.markets.MarketsSummaryProcessor
-import exchange.dydx.abacus.processor.router.IRouterProcessor
 import exchange.dydx.abacus.processor.router.skip.SkipProcessor
-import exchange.dydx.abacus.processor.router.squid.SquidProcessor
 import exchange.dydx.abacus.processor.wallet.WalletProcessor
 import exchange.dydx.abacus.protocols.LocalizerProtocol
 import exchange.dydx.abacus.protocols.ParserProtocol
@@ -65,7 +63,6 @@ import exchange.dydx.abacus.state.internalstate.InternalAccountState
 import exchange.dydx.abacus.state.internalstate.InternalState
 import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.EnvironmentFeatureFlags
-import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.TokenInfo
 import exchange.dydx.abacus.state.manager.V4Environment
 import exchange.dydx.abacus.utils.IList
@@ -125,21 +122,11 @@ open class TradingStateMachine(
     }
     internal val walletProcessor = WalletProcessor(parser, localizer)
     internal val configsProcessor = ConfigsProcessor(parser, localizer)
-    private val skipProcessor = SkipProcessor(
+    internal val routerProcessor = SkipProcessor(
         parser = parser,
         internalState = internalState.input.transfer,
         staticTyping = staticTyping,
     )
-    private val squidProcessor = SquidProcessor(
-        parser = parser,
-        internalState = internalState.input.transfer,
-        staticTyping = staticTyping,
-    )
-    internal val routerProcessor: IRouterProcessor
-        get() {
-            if (StatsigConfig.useSkip) return skipProcessor
-            return squidProcessor
-        }
     internal val rewardsProcessor = RewardsParamsProcessor(parser)
     internal val launchIncentiveProcessor = LaunchIncentiveProcessor(parser)
     internal val tradeInputProcessor = TradeInputProcessor(parser)
@@ -1182,30 +1169,17 @@ open class TradingStateMachine(
                 val type = parser.asString(transfer["type"]) ?: return null
                 return when (type) {
                     "DEPOSIT", "WITHDRAWAL" -> {
-                        if (StatsigConfig.useSkip) {
-                            listOf(
-                                ReceiptLine.Equity.rawValue,
-                                ReceiptLine.BuyingPower.rawValue,
-                                ReceiptLine.BridgeFee.rawValue,
-                                // add these back when supported by Skip
+                        listOf(
+                            ReceiptLine.Equity.rawValue,
+                            ReceiptLine.BuyingPower.rawValue,
+                            ReceiptLine.BridgeFee.rawValue,
+                            // add these back when supported by Skip
 //                            ReceiptLine.ExchangeRate.rawValue,
 //                            ReceiptLine.ExchangeReceived.rawValue,
 //                            ReceiptLine.Fee.rawValue,
-                                ReceiptLine.Slippage.rawValue,
-                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
-                            )
-                        } else {
-                            listOf(
-                                ReceiptLine.Equity.rawValue,
-                                ReceiptLine.BuyingPower.rawValue,
-                                ReceiptLine.ExchangeRate.rawValue,
-                                ReceiptLine.ExchangeReceived.rawValue,
-                                ReceiptLine.Fee.rawValue,
-//                                ReceiptLine.BridgeFee.rawValue,
-                                ReceiptLine.Slippage.rawValue,
-                                ReceiptLine.TransferRouteEstimatedDuration.rawValue,
-                            )
-                        }
+                            ReceiptLine.Slippage.rawValue,
+                            ReceiptLine.TransferRouteEstimatedDuration.rawValue,
+                        )
                     }
 
                     "TRANSFER_OUT" -> {

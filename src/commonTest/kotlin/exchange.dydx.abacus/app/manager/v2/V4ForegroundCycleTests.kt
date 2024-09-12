@@ -98,18 +98,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         )
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
-//                   "https://api.examples.com/configs/cctp.json",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals"
-//                ]
-//            """.trimIndent(),
             """
                 [
                    "https://api.examples.com/configs/documentation.json",
@@ -117,7 +105,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                    "https://indexer.v4staging.dydx.exchange/v4/height",
                    "https://api.examples.com/configs/markets.json",
                    "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                   "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                    "https://api.examples.com/configs/cctp.json",
                    "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo"
@@ -200,7 +191,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+                    "https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -246,23 +240,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         )
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
-//                   "https://api.examples.com/configs/cctp.json",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-//                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/BTC-USD",
-//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/BTC-USD?resolution=1DAY"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -270,7 +247,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -304,21 +284,6 @@ class V4ForegroundCycleTests : NetworkTests() {
         /* Only getting historical funding rate once for now */
 
         compareExpectedRequests(
-//            """
-//                [
-//                   "https://api.examples.com/configs/documentation.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/time",
-//                   "https://api.examples.com/configs/markets.json",
-//                   "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
-//                   "https://api.examples.com/configs/cctp.json",
-//                   "https://api.examples.com/configs/exchanges.json",
-//                   "https://indexer.v4staging.dydx.exchange/v4/height",
-//                   "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-//                   "https://indexer.v4staging.dydx.exchange/v4/sparklines?timePeriod=ONE_DAY",
-//                   "https://indexer.v4staging.dydx.exchange/v4/historicalFunding/ETH-USD",
-//                   "https://indexer.v4staging.dydx.exchange/v4/candles/perpetualMarkets/ETH-USD?resolution=1DAY"
-//                ]
-//            """.trimIndent(),
             """
                 [
                     "https://api.examples.com/configs/documentation.json",
@@ -326,7 +291,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -391,7 +359,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -446,7 +417,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -557,7 +531,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -605,7 +582,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
@@ -690,7 +670,10 @@ class V4ForegroundCycleTests : NetworkTests() {
                     "https://indexer.v4staging.dydx.exchange/v4/height",
                     "https://api.examples.com/configs/markets.json",
                     "https://dydx.exchange/v4-launch-incentive/query/ccar-perpetuals",
-                    "https://testnet.v2.api.squidrouter.com/v2/sdk-info",
+"https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true&only_testnets=true",
+                    "https://api.examples.com/configs/rpc.json",
+                    "https://api.skip.money/v2/fungible/assets?include_evm_assets=true&include_svm_assets=true&only_testnets=true",
+                    "https://api.skip.money/v2/fungible/venues",
                     "https://api.examples.com/configs/cctp.json",
                     "https://api.examples.com/configs/exchanges.json",
                     "https://api.dydx.exchange/v4/geo",
