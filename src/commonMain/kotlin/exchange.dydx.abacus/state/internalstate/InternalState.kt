@@ -173,6 +173,10 @@ internal data class InternalTradeInputOptions(
 
 internal data class InternalMarketSummaryState(
     var markets: MutableMap<String, InternalMarketState> = mutableMapOf(),
+
+    var volume24HUSDC: Double? = null,
+    var openInterestUSDC: Double? = null,
+    var trades24H: Double? = null,
 )
 
 internal data class InternalMarketState(
