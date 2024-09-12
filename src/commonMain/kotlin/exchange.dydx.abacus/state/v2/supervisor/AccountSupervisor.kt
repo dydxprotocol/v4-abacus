@@ -28,7 +28,6 @@ import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTriggerOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
-import exchange.dydx.abacus.state.manager.StatsigConfig
 import exchange.dydx.abacus.state.manager.pendingCctpWithdraw
 import exchange.dydx.abacus.state.manager.processingCctpWithdraw
 import exchange.dydx.abacus.state.manager.utils.Address
@@ -600,11 +599,7 @@ internal open class AccountSupervisor(
     }
 
     private fun sweepNobleBalanceToDydx(amount: BigDecimal) {
-        if (StatsigConfig.useSkip) {
-            sweepNobleBalanceToDydxSkip(amount = amount)
-        } else {
-            sweepNobleBalanceToDydxSquid(amount = amount)
-        }
+        sweepNobleBalanceToDydxSkip(amount = amount)
     }
 
     private fun sweepNobleBalanceToDydxSquid(amount: BigDecimal) {

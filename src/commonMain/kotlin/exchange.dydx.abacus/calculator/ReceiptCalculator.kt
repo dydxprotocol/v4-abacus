@@ -5,7 +5,6 @@ import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.ReceiptLine
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.state.internalstate.InternalInputState
-import exchange.dydx.abacus.state.manager.StatsigConfig
 
 internal class ReceiptCalculator {
     fun calculate(
@@ -52,30 +51,17 @@ internal class ReceiptCalculator {
                 InputType.TRANSFER -> {
                     when (input.transfer.type) {
                         TransferType.deposit, TransferType.withdrawal -> {
-                            if (StatsigConfig.useSkip) {
-                                listOf(
-                                    ReceiptLine.Equity,
-                                    ReceiptLine.BuyingPower,
-                                    ReceiptLine.BridgeFee,
-                                    // add these back when supported by Skip
+                            listOf(
+                                ReceiptLine.Equity,
+                                ReceiptLine.BuyingPower,
+                                ReceiptLine.BridgeFee,
+                                // add these back when supported by Skip
 //                            ReceiptLine.ExchangeRate,
 //                            ReceiptLine.ExchangeReceived,
 //                            ReceiptLine.Fee,
-                                    ReceiptLine.Slippage,
-                                    ReceiptLine.TransferRouteEstimatedDuration,
-                                )
-                            } else {
-                                listOf(
-                                    ReceiptLine.Equity,
-                                    ReceiptLine.BuyingPower,
-                                    ReceiptLine.ExchangeRate,
-                                    ReceiptLine.ExchangeReceived,
-                                    ReceiptLine.Fee,
-//                                ReceiptLine.BridgeFee,
-                                    ReceiptLine.Slippage,
-                                    ReceiptLine.TransferRouteEstimatedDuration,
-                                )
-                            }
+                                ReceiptLine.Slippage,
+                                ReceiptLine.TransferRouteEstimatedDuration,
+                            )
                         }
 
                         TransferType.transferOut -> {
