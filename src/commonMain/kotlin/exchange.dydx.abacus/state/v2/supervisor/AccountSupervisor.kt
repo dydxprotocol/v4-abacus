@@ -602,63 +602,6 @@ internal open class AccountSupervisor(
         sweepNobleBalanceToDydxSkip(amount = amount)
     }
 
-    private fun sweepNobleBalanceToDydxSquid(amount: BigDecimal) {
-        val url = helper.configs.squidRoute()
-        val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom
-        val nobleAddress = accountAddress.toNobleAddress()
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val dydxTokenDemon = helper.environment.tokens["usdc"]?.denom
-        if (url != null &&
-            fromChain != null &&
-            fromToken != null &&
-            nobleAddress != null &&
-            chainId != null &&
-            dydxTokenDemon != null &&
-            squidIntegratorId != null
-        ) {
-            val params: Map<String, String> =
-                mapOf(
-                    "fromChain" to fromChain,
-                    "fromToken" to fromToken,
-                    "fromAddress" to nobleAddress,
-                    "fromAmount" to amount.toPlainString(),
-                    "toChain" to chainId,
-                    "toToken" to dydxTokenDemon,
-                    "toAddress" to accountAddress.toString(),
-                    "slippage" to "1",
-                    "enableForecall" to "false",
-                )
-            val header =
-                iMapOf(
-                    "x-integrator-id" to squidIntegratorId,
-                )
-            helper.get(url, params, header) { _, response, code, _ ->
-                if (response != null) {
-                    val json = helper.parser.decodeJsonObject(response)
-                    val ibcPayload =
-                        helper.parser.asString(
-                            helper.parser.value(
-                                json,
-                                "route.transactionRequest.data",
-                            ),
-                        )
-                    if (ibcPayload != null) {
-                        helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
-                            val error = helper.parseTransactionResponse(it)
-                            if (error != null) {
-                                Logger.e { "sweepNobleBalanceToDydxSquid error: $error" }
-                            }
-                        }
-                    }
-                } else {
-                    Logger.e { "sweepNobleBalanceToDydxSquid error, code: $code" }
-                }
-            }
-        }
-    }
-
     private fun sweepNobleBalanceToDydxSkip(amount: BigDecimal) {
         val url = helper.configs.skipV2MsgsDirect()
         val fromChain = helper.configs.nobleChainId()

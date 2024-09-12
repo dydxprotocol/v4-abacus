@@ -20,7 +20,6 @@ import exchange.dydx.abacus.state.manager.CctpWithdrawState
 import exchange.dydx.abacus.state.manager.ExchangeConfig
 import exchange.dydx.abacus.state.manager.ExchangeInfo
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
-import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableTransferPayload
 import exchange.dydx.abacus.state.manager.HumanReadableWithdrawPayload
@@ -37,8 +36,6 @@ import exchange.dydx.abacus.state.model.routerStatus
 import exchange.dydx.abacus.state.model.routerTokens
 import exchange.dydx.abacus.state.model.routerTrack
 import exchange.dydx.abacus.state.model.squidRoute
-import exchange.dydx.abacus.state.model.squidRouteV2
-import exchange.dydx.abacus.state.model.squidV2SdkInfo
 import exchange.dydx.abacus.state.model.transfer
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
@@ -163,20 +160,6 @@ internal class OnboardingSupervisor(
         helper.get(tokensUrl, null, null) { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 update(stateMachine.routerTokens(response), oldState)
-            }
-        }
-    }
-
-    private fun retrieveTransferAssets() {
-        val oldState = stateMachine.state
-        val url = helper.configs.squidV2Assets()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val header = iMapOf("x-integrator-id" to squidIntegratorId)
-            helper.get(url, null, header) { _, response, httpCode, _ ->
-                if (helper.success(httpCode) && response != null) {
-                    update(stateMachine.squidV2SdkInfo(response), oldState)
-                }
             }
         }
     }
@@ -398,140 +381,6 @@ internal class OnboardingSupervisor(
                 }
             } else {
                 Logger.e { "retrieveSkipDepositRouteCCTP error, code: $code" }
-            }
-        }
-    }
-
-    private fun retrieveDepositRouteV1(
-        state: PerpetualState?,
-        accountAddress: String,
-        sourceAddress: String,
-        subaccountNumber: Int?,
-    ) {
-        val fromChain = state?.input?.transfer?.chain
-        val fromToken = state?.input?.transfer?.token
-        val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
-            val decimals =
-                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
-            if (decimals != null) {
-                (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-            } else {
-                null
-            }
-        }
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
-        val url = helper.configs.squidRoute()
-        if (fromChain != null &&
-            fromToken != null &&
-            fromAmount != null && fromAmount > 0 &&
-            fromAmountString != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            url != null &&
-            squidIntegratorId != null
-        ) {
-            val params: IMap<String, String> = iMapOf(
-                "fromChain" to fromChain,
-                "fromToken" to fromToken,
-                "fromAmount" to fromAmountString,
-                "toChain" to chainId,
-                "toToken" to nativeChainUSDCDenom,
-                "toAddress" to accountAddress,
-                "slippage" to "1",
-                "enableForecall" to "false",
-                "fromAddress" to sourceAddress,
-            )
-
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
-            helper.get(url, params, header) { _, response, code, headers ->
-                if (response != null) {
-                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
-                    val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
-                    }
-                } else {
-                    Logger.e { "retrieveDepositRouteV1 error, code: $code" }
-                }
-            }
-        }
-    }
-
-    private fun retrieveDepositRouteV2(
-        state: PerpetualState?,
-        accountAddress: String,
-        sourceAddress: String,
-        subaccountNumber: Int?,
-    ) {
-        val fromChain = state?.input?.transfer?.chain
-        val fromToken = state?.input?.transfer?.token
-        val fromAmount = helper.parser.asDecimal(state?.input?.transfer?.size?.size)?.let {
-            val decimals =
-                helper.parser.asInt(stateMachine.routerProcessor.selectedTokenDecimals(tokenAddress = fromToken, selectedChainId = fromChain))
-            if (decimals != null) {
-                (it * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-            } else {
-                null
-            }
-        }
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
-        val nobleAddress = accountAddress.toNobleAddress()
-        val url = helper.configs.squidV2Route()
-        val toChain = helper.configs.nobleChainId()
-        val toToken = helper.configs.nobleDenom
-        if (fromChain != null &&
-            fromToken != null &&
-            fromAmount != null && fromAmount > 0 &&
-            fromAmountString != null &&
-            nobleAddress != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            url != null &&
-            squidIntegratorId != null &&
-            toChain != null &&
-            toToken != null
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "fromChain" to fromChain,
-                "fromToken" to fromToken,
-                "fromAddress" to sourceAddress,
-                "fromAmount" to fromAmountString,
-                "toChain" to toChain,
-                "toToken" to toToken,
-                "toAddress" to nobleAddress,
-                "quoteOnly" to false,
-                "enableBoost" to false,
-                "slippage" to 1,
-                "slippageConfig" to iMapOf<String, Any>(
-                    "autoMode" to 1,
-                ),
-            )
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-                "Content-Type" to "application/json",
-            )
-            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, headers ->
-                if (response != null) {
-                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
-                    val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRouteV2(response, subaccountNumber ?: 0, requestId), oldState)
-                    }
-                } else {
-                    Logger.e { "retrieveDepositRouteV2 error, code: $code" }
-                }
             }
         }
     }
@@ -764,201 +613,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun retrieveWithdrawalRouteNoble(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        sourceAddress: String,
-        subaccountNumber: Int?,
-    ) {
-        val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom
-        val toAddress = state?.input?.transfer?.address
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            null
-        }
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
-        val url = helper.configs.squidRoute()
-        val fromAddress = accountAddress
-        if (nobleChain != null &&
-            nobleToken != null &&
-            toAddress != null &&
-            fromAmount != null &&
-            fromAmount > 0 &&
-            fromAmountString != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            url != null &&
-            squidIntegratorId != null
-        ) {
-            val params: IMap<String, String> = iMapOf(
-                "fromChain" to chainId,
-                "fromToken" to nativeChainUSDCDenom,
-                "fromAmount" to fromAmountString,
-                "fromAddress" to fromAddress,
-                "toChain" to nobleChain,
-                "toToken" to nobleToken,
-                "toAddress" to toAddress,
-                "slippage" to "1",
-                "enableForecall" to "false",
-            )
-
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
-            helper.get(url, params, header) { _, response, _, headers ->
-                if (response != null) {
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
-                }
-            }
-        }
-    }
-
-    private fun retrieveWithdrawalRouteV1(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        sourceAddress: String,
-        subaccountNumber: Int?,
-    ) {
-        val toChain = state?.input?.transfer?.chain
-        val toToken = state?.input?.transfer?.token
-        val toAddress = state?.input?.transfer?.address
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            null
-        }
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
-        val url = helper.configs.squidRoute()
-        val fromAddress = accountAddress
-        if (toChain != null &&
-            toToken != null &&
-            toAddress != null &&
-            fromAmount != null &&
-            fromAmount > 0 &&
-            fromAmountString != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            url != null &&
-            squidIntegratorId != null
-        ) {
-            val params: IMap<String, String> = iMapOf(
-                "fromChain" to chainId,
-                "fromToken" to nativeChainUSDCDenom,
-                "fromAmount" to fromAmountString,
-                "fromAddress" to fromAddress,
-                "toChain" to toChain,
-                "toToken" to toToken,
-                "toAddress" to toAddress,
-                "slippage" to "1",
-                "enableForecall" to "false",
-                "cosmosSignerAddress" to accountAddress.toString(),
-            )
-
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
-            helper.get(url, params, header) { _, response, _, headers ->
-                if (response != null) {
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    update(stateMachine.squidRoute(response, subaccountNumber ?: 0, requestId), oldState)
-                }
-            }
-        }
-    }
-
-    private fun retrieveWithdrawalRouteV2(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        sourceAddress: String,
-        subaccountNumber: Int?,
-    ) {
-        val toChain = state?.input?.transfer?.chain
-        val toToken = state?.input?.transfer?.token
-        val toAddress = state?.input?.transfer?.address
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            null
-        }
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val fromAmountString = helper.parser.asString(fromAmount)
-        val url = helper.configs.squidV2Route()
-        val fromAddress = accountAddress.toNobleAddress()
-        val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom
-        if (toChain != null &&
-            toToken != null &&
-            toAddress != null &&
-            fromAmount != null &&
-            fromAmount > 0 &&
-            fromAmountString != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            url != null &&
-            fromAddress != null &&
-            squidIntegratorId != null &&
-            fromChain != null &&
-            fromToken != null
-        ) {
-            val body: IMap<String, Any> = iMapOf(
-                "fromChain" to fromChain,
-                "fromToken" to fromToken,
-                "fromAmount" to fromAmountString,
-                "fromAddress" to fromAddress,
-                "toChain" to toChain,
-                "toToken" to toToken,
-                "toAddress" to toAddress,
-                "quoteOnly" to false,
-                "enableBoost" to false,
-                "slippage" to 1,
-                "slippageConfig" to iMapOf<String, Any>(
-                    "autoMode" to 1,
-                ),
-                // "enableForecall" to "false",
-                // "cosmosSignerAddress" to accountAddress.toString(),
-            )
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-                "Content-Type" to "application/json",
-            )
-            helper.post(url, header, body.toJsonPrettyPrint()) { url, response, code, headers ->
-                if (response != null) {
-                    val currentFromAmount = stateMachine.state?.input?.transfer?.size?.size
-                    val oldFromAmount = oldState?.input?.transfer?.size?.size
-                    val requestId = helper.parser.asString(headers?.get("x-request-id"))
-                    if (currentFromAmount == oldFromAmount) {
-                        update(stateMachine.squidRouteV2(response, subaccountNumber ?: 0, requestId), oldState)
-                    }
-                } else {
-                    Logger.e { "retrieveWithdrawalRouteV2 error, code: $code" }
-                }
-            }
-        }
-    }
-
     private fun retrieveSkipWithdrawalRouteExchange(
         state: PerpetualState?,
         decimals: Int,
@@ -1143,35 +797,6 @@ internal class OnboardingSupervisor(
         }
     }
 
-    private fun fetchTransferStatus(
-        hash: String,
-        fromChainId: String?,
-        toChainId: String?,
-        isCctp: Boolean,
-    ) {
-        val params: IMap<String, String> = iMapOf(
-            "transactionId" to hash,
-            "fromChainId" to fromChainId,
-            "toChainId" to toChainId,
-            "bridgeType" to if (isCctp) "cctp" else null,
-        ).filterNotNull()
-        val url = if (isCctp) helper.configs.squidV2Status() else helper.configs.squidStatus()
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        if (url != null && squidIntegratorId != null) {
-            val oldState = stateMachine.state
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
-            helper.get(url, params, header) { _, response, httpCode, _ ->
-                if (response != null) {
-                    update(stateMachine.routerStatus(response, hash), oldState)
-                } else {
-                    Logger.e { "fetchTransferStatus error, code: $httpCode" }
-                }
-            }
-        }
-    }
-
     private fun fetchTransferStatusSkip(
         hash: String,
         fromChainId: String?,
@@ -1222,61 +847,6 @@ internal class OnboardingSupervisor(
             val modified = input?.mutable() ?: iMapOf<String, Any>().mutable()
             modified.safeSet("transfer.fee", gas)
             update(StateChanges(iListOf(Changes.input)), oldState)
-        }
-    }
-
-    private fun transferNobleBalance(accountAddress: String, amount: BigDecimal) {
-        val url = helper.configs.squidRoute()
-        val fromChain = helper.configs.nobleChainId()
-        val fromToken = helper.configs.nobleDenom
-        val nobleAddress = accountAddress.toNobleAddress()
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        if (url != null &&
-            fromChain != null &&
-            fromToken != null &&
-            nobleAddress != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            squidIntegratorId != null
-        ) {
-            val params: Map<String, String> = mapOf(
-                "fromChain" to fromChain,
-                "fromToken" to fromToken,
-                "fromAddress" to nobleAddress,
-                "fromAmount" to amount.toPlainString(),
-                "toChain" to chainId,
-                "toToken" to nativeChainUSDCDenom,
-                "toAddress" to accountAddress.toString(),
-                "slippage" to "1",
-                "enableForecall" to "false",
-            )
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
-            helper.get(url, params, header) { _, response, code, _ ->
-                if (response != null) {
-                    val json = helper.parser.decodeJsonObject(response)
-                    val ibcPayload =
-                        helper.parser.asString(
-                            helper.parser.value(
-                                json,
-                                "route.transactionRequest.data",
-                            ),
-                        )
-                    if (ibcPayload != null) {
-                        helper.transaction(TransactionType.SendNobleIBC, ibcPayload) {
-                            val error = helper.parseTransactionResponse(it)
-                            if (error != null) {
-                                Logger.e { "transferNobleBalance error: $error" }
-                            }
-                        }
-                    }
-                } else {
-                    Logger.e { "transferNobleBalance error, code: $code" }
-                }
-            }
         }
     }
 
@@ -1340,14 +910,6 @@ internal class OnboardingSupervisor(
             destinationAddress,
             destinationSubaccountNumber = 0,
         )
-    }
-
-    fun faucetPayload(subaccountNumber: Int, amount: Double): HumanReadableFaucetPayload {
-        return HumanReadableFaucetPayload(subaccountNumber, amount)
-    }
-
-    fun subaccountTransferPayloadJson(subaccountNumber: Int?): String {
-        return Json.encodeToString(subaccountTransferPayload(subaccountNumber))
     }
 
     internal fun commitTransfer(subaccountNumber: Int?, callback: TransactionCallback) {
@@ -1462,110 +1024,6 @@ internal class OnboardingSupervisor(
             subaccountNumber,
             callback,
         )
-    }
-
-    private fun cctpToNobleSquid(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        subaccountNumber: Int?,
-        callback: TransactionCallback
-    ) {
-        val url = helper.configs.squidRoute()
-        val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom
-        val nobleAddress = accountAddress.toNobleAddress()
-        val chainId = helper.environment.dydxChainId
-        val squidIntegratorId = helper.environment.squidIntegratorId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            null
-        }
-        val fromAmountString = helper.parser.asString(fromAmount)
-
-        if (url != null &&
-            nobleChain != null &&
-            nobleToken != null &&
-            nobleAddress != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            squidIntegratorId != null &&
-            fromAmountString != null && fromAmount != null && fromAmount > 0
-        ) {
-            val params: Map<String, String> = mapOf(
-                "toChain" to nobleChain,
-                "toToken" to nobleToken,
-                "toAddress" to nobleAddress,
-                "fromAmount" to fromAmountString,
-                "fromChain" to chainId,
-                "fromToken" to nativeChainUSDCDenom,
-                "fromAddress" to accountAddress,
-                "slippage" to "1",
-                "enableForecall" to "false",
-            )
-            val header = iMapOf(
-                "x-integrator-id" to squidIntegratorId,
-            )
-            helper.get(url, params, header) { _, response, code, _ ->
-                if (response != null) {
-                    val json = helper.parser.decodeJsonObject(response)
-                    val ibcPayload =
-                        helper.parser.asString(
-                            helper.parser.value(
-                                json,
-                                "route.transactionRequest.data",
-                            ),
-                        )
-                    if (ibcPayload != null) {
-                        val payload = helper.jsonEncoder.encode(
-                            mapOf(
-                                "subaccountNumber" to (subaccountNumber ?: 0),
-                                "amount" to state?.input?.transfer?.size?.usdcSize,
-                                "ibcPayload" to ibcPayload.encodeBase64(),
-                            ),
-                        )
-                        helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                            val error = parseTransactionResponse(it)
-                            if (error != null) {
-                                Logger.e { "withdrawToNobleIBC error: $error" }
-                                helper.send(error, callback)
-                            } else {
-                                pendingCctpWithdraw = CctpWithdrawState(
-//                                    we use skip state with squid route
-                                    singleMessagePayload = state?.input?.transfer?.requestPayload?.data,
-                                    callback = callback,
-                                    multiMessagePayload = null,
-                                )
-                            }
-                        }
-                    } else {
-                        Logger.e { "cctpToNobleSquid error, code: $code" }
-                        val error = ParsingError(
-                            ParsingErrorType.MissingContent,
-                            "Missing squid response",
-                        )
-                        helper.send(error, callback)
-                    }
-                } else {
-                    Logger.e { "cctpToNobleSquid error, code: $code" }
-                    val error = ParsingError(
-                        ParsingErrorType.MissingContent,
-                        "Missing squid response",
-                    )
-                    helper.send(error, callback)
-                }
-            }
-        } else {
-            val error = ParsingError(
-                ParsingErrorType.MissingRequiredData,
-                "Missing required data for cctp withdraw",
-            )
-            helper.send(error, callback)
-        }
     }
 
     private fun cctpToNobleSkip(
