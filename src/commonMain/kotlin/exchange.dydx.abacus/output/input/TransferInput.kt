@@ -360,6 +360,7 @@ data class TransferInputSummary(
     val toAmount: Double?,
     val toAmountMin: Double?,
     val toAmountUSDC: Double?,
+    val toAmountUSD: Double?,
     val aggregatePriceImpact: Double?,
 ) {
     companion object {
@@ -382,6 +383,7 @@ data class TransferInputSummary(
                 val toAmount = parser.asDouble(data["toAmount"])
                 val toAmountMin = parser.asDouble(data["toAmountMin"])
                 val toAmountUSDC = parser.asDouble(data["toAmountUSDC"])
+                val toAmountUSD = parser.asDouble(data["toAmountUSD"])
                 val aggregatePriceImpact = parser.asDouble(data["aggregatePriceImpact"])
 
                 return if (existing?.usdcSize != usdcSize ||
@@ -395,6 +397,7 @@ data class TransferInputSummary(
                     existing.toAmount != toAmount ||
                     existing.toAmountMin != toAmountMin ||
                     existing.toAmountUSDC != toAmountUSDC ||
+                    existing.toAmountUSD != toAmountUSD ||
                     existing.aggregatePriceImpact != aggregatePriceImpact
                 ) {
                     TransferInputSummary(
@@ -409,6 +412,7 @@ data class TransferInputSummary(
                         toAmount,
                         toAmountMin,
                         toAmountUSDC,
+                        toAmountUSD,
                         aggregatePriceImpact,
                     )
                 } else {
