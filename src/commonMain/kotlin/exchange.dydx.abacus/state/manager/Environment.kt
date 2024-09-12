@@ -547,7 +547,6 @@ class V4Environment(
 @JsExport
 @Suppress("PropertyName")
 data object StatsigConfig {
-    var ff_enable_evm_swaps: Boolean = true
     var dc_max_safe_bridge_fees: Float = Float.POSITIVE_INFINITY
     var ff_enable_limit_close: Boolean = false
 }
