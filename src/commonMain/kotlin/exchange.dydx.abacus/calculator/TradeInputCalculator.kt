@@ -491,7 +491,7 @@ internal class TradeInputCalculator(
             val freeCollateral = parser.asDouble(parser.value(subaccount, "freeCollateral.current")) ?: Numeric.double.ZERO
 
             val tradeSide = OrderSide.invoke(parser.asString(trade["side"]))
-            val position = parser.asNativeMap(subaccount?.get("openPositions.$marketId"))
+            val position = parser.asNativeMap(parser.value(subaccount, "openPositions.$marketId"))
             val positionNotionalSize = if (position != null) {
                 parser.asDouble(
                     parser.value(
