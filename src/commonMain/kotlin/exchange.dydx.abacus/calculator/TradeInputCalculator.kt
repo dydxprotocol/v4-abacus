@@ -567,7 +567,7 @@ internal class TradeInputCalculator(
                     val orderbook = orderbook(market, isBuying)
                     val balancePercent =
                         parser.asDouble(parser.value(trade, "size.balancePercent")) ?: return null
-
+                    val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: Numeric.double.ZERO
                     calculateMarketOrderFromBalancePercent(
                         balancePercent,
                         positionNotionalSize,
@@ -578,6 +578,7 @@ internal class TradeInputCalculator(
                         tradeLeverage,
                         orderbook,
                         stepSize,
+                        oraclePrice,
                     )
                 }
 
@@ -585,6 +586,14 @@ internal class TradeInputCalculator(
             }
         }
         return null
+    }
+
+    private fun isolatedPnlImpact(marginMode: MarginMode, size: Double, entryPrice: Double, oraclePrice: Double): Double {
+        // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
+        return when (marginMode) {
+            MarginMode.Cross -> Numeric.double.ZERO
+            MarginMode.Isolated -> (entryPrice - oraclePrice).abs() * size
+        }
     }
 
     private fun calculateMarketOrderFromBalancePercent(
@@ -596,7 +605,8 @@ internal class TradeInputCalculator(
         freeCollateral: Double,
         tradeLeverage: Double,
         orderbook: List<Map<String, Any>>?,
-        stepSize: Double
+        stepSize: Double,
+        oraclePrice: Double,
     ): Map<String, Any>? {
         if (marginMode == MarginMode.Isolated && !isTradeSameSide) {
             // For isolated margin orders where the user is trading on the opposite side of their currentPosition, the balancePercent represents a percentage of their current position rather than freeCollateral
@@ -604,11 +614,11 @@ internal class TradeInputCalculator(
             return calculateMarketOrderFromSize(desiredSize, existingPositionSize, isTradeSameSide, freeCollateral, tradeLeverage, orderbook)
         }
 
-        val buffer = when (marginMode) {
+        val maxPercent = when (marginMode) {
             MarginMode.Cross -> MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
             MarginMode.Isolated -> MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
         }
-        val cappedPercent = min(balancePercent, buffer)
+        val cappedPercent = min(balancePercent, maxPercent)
 
         val existingBalance = existingPositionNotionalSize.abs() / tradeLeverage
         val desiredBalance = when (marginMode) {
@@ -637,14 +647,14 @@ internal class TradeInputCalculator(
                     if (entryPrice != null && entryPrice > Numeric.double.ZERO && entrySize != null) {
                         val entryUsdcSize = entrySize * entryPrice
                         val entryBalanceSize = entryUsdcSize / tradeLeverage
-                        filled = (balanceTotal + entryBalanceSize >= desiredBalance)
+                        filled = (balanceTotal + entryBalanceSize + isolatedPnlImpact(marginMode, entrySize, entryPrice, oraclePrice)) >= desiredBalance
 
                         var matchedSize = entrySize
                         var matchedUsdcSize = entryUsdcSize
-                        var matchedBalance = matchedUsdcSize / tradeLeverage
+                        var matchedBalance = matchedUsdcSize / tradeLeverage + (entryPrice - oraclePrice).abs() * matchedSize
 
                         if (filled) {
-                            matchedBalance = desiredBalance - balanceTotal
+                            matchedBalance = desiredBalance - balanceTotal - isolatedPnlImpact(marginMode, (desiredBalance - balanceTotal) * tradeLeverage / entryPrice, entryPrice, oraclePrice)
                             matchedUsdcSize = matchedBalance * tradeLeverage
                             matchedSize = matchedUsdcSize / entryPrice
                             matchedSize =
@@ -653,6 +663,7 @@ internal class TradeInputCalculator(
                                     stepSize,
                                 )
                             matchedUsdcSize = matchedSize * entryPrice
+                            matchedBalance = matchedUsdcSize / tradeLeverage + isolatedPnlImpact(marginMode, matchedSize, entryPrice, oraclePrice)
                         }
                         sizeTotal += matchedSize
                         usdcSizeTotal += matchedUsdcSize
