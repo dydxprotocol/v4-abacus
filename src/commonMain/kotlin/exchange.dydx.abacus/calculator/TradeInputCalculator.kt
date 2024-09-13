@@ -529,7 +529,7 @@ internal class TradeInputCalculator(
                 }
 
                 "size.usdcSize" -> {
-                    val stepSize =
+                    val stepSize = 
                         parser.asDouble(parser.value(market, "configs.stepSize"))
                             ?: 0.001
                     val orderbook = orderbook(market, isBuying)
@@ -567,7 +567,8 @@ internal class TradeInputCalculator(
                     val orderbook = orderbook(market, isBuying)
                     val balancePercent =
                         parser.asDouble(parser.value(trade, "size.balancePercent")) ?: return null
-                    val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice")) ?: Numeric.double.ZERO
+                    val oraclePrice = parser.asDouble(parser.value(market, "oraclePrice"))
+
                     calculateMarketOrderFromBalancePercent(
                         balancePercent,
                         positionNotionalSize,
@@ -588,11 +589,11 @@ internal class TradeInputCalculator(
         return null
     }
 
-    private fun isolatedPnlImpact(marginMode: MarginMode, size: Double, entryPrice: Double, oraclePrice: Double): Double {
+    private fun isolatedPnlImpact(marginMode: MarginMode, size: Double, entryPrice: Double, oraclePrice: Double?): Double {
         // Calculate the difference between the oracle price and the ask/bid price in order to determine immediate PnL impact that would affect collateral checks
         return when (marginMode) {
             MarginMode.Cross -> Numeric.double.ZERO
-            MarginMode.Isolated -> (entryPrice - oraclePrice).abs() * size
+            MarginMode.Isolated -> (entryPrice - (oraclePrice ?: entryPrice)).abs() * size
         }
     }
 
@@ -606,12 +607,12 @@ internal class TradeInputCalculator(
         tradeLeverage: Double,
         orderbook: List<Map<String, Any>>?,
         stepSize: Double,
-        oraclePrice: Double,
+        oraclePrice: Double?,
     ): Map<String, Any>? {
         if (marginMode == MarginMode.Isolated && !isTradeSameSide) {
             // For isolated margin orders where the user is trading on the opposite side of their currentPosition, the balancePercent represents a percentage of their current position rather than freeCollateral
             val desiredSize = existingPositionSize.abs() * balancePercent
-            return calculateMarketOrderFromSize(desiredSize, existingPositionSize, isTradeSameSide, freeCollateral, tradeLeverage, orderbook)
+            return calculateMarketOrderFromSize(desiredSize, existingPositionNotionalSize, isTradeSameSide, freeCollateral, tradeLeverage, orderbook)
         }
 
         val maxPercent = when (marginMode) {
@@ -651,7 +652,7 @@ internal class TradeInputCalculator(
 
                         var matchedSize = entrySize
                         var matchedUsdcSize = entryUsdcSize
-                        var matchedBalance = matchedUsdcSize / tradeLeverage + (entryPrice - oraclePrice).abs() * matchedSize
+                        var matchedBalance = matchedUsdcSize / tradeLeverage + isolatedPnlImpact(marginMode, matchedSize, entryPrice, oraclePrice)
 
                         if (filled) {
                             matchedBalance = desiredBalance - balanceTotal - isolatedPnlImpact(marginMode, (desiredBalance - balanceTotal) * tradeLeverage / entryPrice, entryPrice, oraclePrice)
