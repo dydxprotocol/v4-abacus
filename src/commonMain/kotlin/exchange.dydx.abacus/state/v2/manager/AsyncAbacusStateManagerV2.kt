@@ -437,15 +437,15 @@ class AsyncAbacusStateManagerV2(
         val environment = environment
         if (environment != null) {
             adaptor = StateManagerAdaptorV2(
-                deploymentUri,
-                environment,
-                ioImplementations,
-                uiImplementations,
-                V4StateManagerConfigs(deploymentUri, environment),
-                appConfigs,
-                stateNotification,
-                dataNotification,
-                presentationProtocol,
+                deploymentUri = deploymentUri,
+                environment = environment,
+                ioImplementations = ioImplementations,
+                uiImplementations = uiImplementations,
+                configs = V4StateManagerConfigs(deploymentUri, environment),
+                appConfigs = appConfigs,
+                stateNotification = stateNotification,
+                dataNotification = dataNotification,
+                presentationProtocol = presentationProtocol,
             )
         }
     }

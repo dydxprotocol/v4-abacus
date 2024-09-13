@@ -1,14 +1,39 @@
 package exchange.dydx.abacus.calculator
 
 import exchange.dydx.abacus.protocols.ParserProtocol
+import exchange.dydx.abacus.state.internalstate.InternalMarketSummaryState
 import exchange.dydx.abacus.utils.Logger
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.mutable
 import exchange.dydx.abacus.utils.safeSet
 
-@Suppress("UNCHECKED_CAST")
 internal class MarketCalculator(val parser: ParserProtocol) {
-    internal fun calculate(
+    fun calculate(
+        marketsSummary: InternalMarketSummaryState,
+    ): InternalMarketSummaryState {
+        val markets = marketsSummary.markets
+
+        var volume24HUSDC = Numeric.double.ZERO
+        var openInterestUSDC = Numeric.double.ZERO
+        var trades24H = Numeric.double.ZERO
+
+        for ((key, market) in markets) {
+            val perpetual = market.perpetualMarket?.perpetual
+            if (perpetual != null) {
+                volume24HUSDC += perpetual.volume24H ?: Numeric.double.ZERO
+                openInterestUSDC += perpetual.openInterestUSDC
+                trades24H += perpetual.trades24H ?: Numeric.double.ZERO
+            }
+        }
+
+        marketsSummary.volume24HUSDC = volume24HUSDC
+        marketsSummary.openInterestUSDC = openInterestUSDC
+        marketsSummary.trades24H = trades24H
+
+        return marketsSummary
+    }
+
+    internal fun calculateDeprecated(
         marketsSummary: Map<String, Any>?,
         assets: Map<String, Any>?,
         keys: Set<String>? = null
@@ -36,7 +61,7 @@ internal class MarketCalculator(val parser: ParserProtocol) {
             if (assets == null) {
                 Logger.d { "Expecting assets" }
             } else {
-                val marketCaps = calculateMarketCaps(market, assets)
+                val marketCaps = calculateMarketCapsDeprecated(market, assets)
                 modifiedMarkets?.safeSet(key, marketCaps)
             }
             val perpetual = parser.asNativeMap(market["perpetual"])
@@ -56,7 +81,7 @@ internal class MarketCalculator(val parser: ParserProtocol) {
         return modified
     }
 
-    private fun calculateMarketCaps(
+    private fun calculateMarketCapsDeprecated(
         market: Map<String, Any>,
         assets: Map<String, Any>
     ): Map<String, Any> {

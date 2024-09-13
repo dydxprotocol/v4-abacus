@@ -52,7 +52,7 @@ allprojects {
 }
 
 group = "exchange.dydx.abacus"
-version = "1.10.3"
+version = "1.11.2"
 
 repositories {
     google()
@@ -257,3 +257,18 @@ tasks.register<Exec>("v4WebHotSwapTrigger") {
 
     commandLine = listOf("./trigger_v4web_reload.sh")
 }
+
+tasks.register<Exec>("updateAbacusPodspec") {
+    group = "abacus"
+
+    // replace the line "if !Dir.exist?('build/cocoapods/framework/Abacus.framework') || Dir.empty?('build/cocoapods/framework/Abacus.framework')" with "if false"
+    commandLine = listOf(
+        "sed",
+        "-i",
+        "",
+        "s/if !Dir.exist?('build\\/cocoapods\\/framework\\/Abacus.framework') || Dir.empty?('build\\/cocoapods\\/framework\\/Abacus.framework')/if false/",
+        "v4_abacus.podspec"
+    )
+}
+
+tasks.get("podspec").finalizedBy("updateAbacusPodspec")

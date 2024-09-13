@@ -24,9 +24,6 @@ interface ParserProtocol {
     // parse  a field to int
     fun asInt(data: Any?): Int?
 
-    // parse  a field to unsigned int
-    fun asUInt(data: Any?): UInt?
-
     // parse  a field to int
     fun asLong(data: Any?): Long?
 
