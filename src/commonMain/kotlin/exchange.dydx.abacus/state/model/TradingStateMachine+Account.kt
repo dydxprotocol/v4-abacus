@@ -1,7 +1,6 @@
 package exchange.dydx.abacus.state.model
 
 import exchange.dydx.abacus.output.account.SubaccountOrder
-import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.responses.StateResponse
 import exchange.dydx.abacus.state.changes.Changes
 import exchange.dydx.abacus.state.changes.StateChanges
@@ -76,22 +75,7 @@ internal fun TradingStateMachine.updateHeight(
 }
 
 internal fun TradingStateMachine.findOrder(
-    orderId: String,
-    subaccountNumber: Int,
-): SubaccountOrder? {
-    val subaccount = state?.subaccount(subaccountNumber) ?: return null
-    val orders = subaccount.orders ?: return null
-    val order = orders.firstOrNull {
-        it.id == orderId
-    } ?: return null
-    return when (order.status) {
-        OrderStatus.Open, OrderStatus.Pending, OrderStatus.Untriggered -> order
-        else -> null
-    }
-}
-
-internal fun TradingStateMachine.findOrder(
-    clientId: UInt,
+    clientId: String,
     subaccountNumber: Int,
 ): SubaccountOrder? {
     val subaccount = state?.subaccount(subaccountNumber) ?: return null

@@ -17,16 +17,24 @@ class V4CalculationTests : V4BaseTests() {
     }
 
     override fun loadMarkets(): StateResponse {
-        return test(
-            {
-                perp.socket(
-                    mock.socketUrl,
-                    mock.marketsChannel.v4_subscribed_for_calculation,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            return perp.socket(
+                url = mock.socketUrl,
+                jsonString = mock.marketsChannel.v4_subscribed_for_calculation,
+                subaccountNumber = 0,
+                height = null,
+            )
+        } else {
+            return test(
+                {
+                    perp.socket(
+                        mock.socketUrl,
+                        mock.marketsChannel.v4_subscribed_for_calculation,
+                        0,
+                        null,
+                    )
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -36,8 +44,9 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     override fun loadSubaccounts(): StateResponse {
@@ -287,16 +296,32 @@ class V4CalculationTests : V4BaseTests() {
     }
 
     private fun testNextFundingRate(): StateResponse {
-        return test(
-            {
-                perp.socket(
-                    mock.socketUrl,
-                    mock.marketsChannel.v4_next_funding_rate_update,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            val response = perp.socket(
+                url = mock.socketUrl,
+                jsonString = mock.marketsChannel.v4_next_funding_rate_update,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val markets = perp.internalState.marketsSummary.markets
+            val btcMarket = markets["BTC-USD"]!!
+            assertEquals(-0.0085756875, btcMarket.perpetualMarket?.perpetual?.nextFundingRate)
+            val ethMarket = markets["ETH-USD"]!!
+            assertEquals(-0.0084455625, ethMarket.perpetualMarket?.perpetual?.nextFundingRate)
+
+            return response
+        } else {
+            return test(
+                {
+                    perp.socket(
+                        mock.socketUrl,
+                        mock.marketsChannel.v4_next_funding_rate_update,
+                        0,
+                        null,
+                    )
+                },
+                """
                 {
                     "markets": {
                         "markets": {
@@ -313,7 +338,8 @@ class V4CalculationTests : V4BaseTests() {
                         }
                     }
                 }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 }

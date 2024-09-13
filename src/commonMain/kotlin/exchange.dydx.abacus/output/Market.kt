@@ -979,7 +979,12 @@ data class PerpetualMarketSummary(
                         markets[marketId] = it
                     }
                 }
-                return createPerpetualMarketSummary(existing, parser, data, markets)
+                return PerpetualMarketSummary(
+                    volume24HUSDC = marketSummaryState.volume24HUSDC,
+                    openInterestUSDC = marketSummaryState.openInterestUSDC,
+                    trades24H = marketSummaryState.trades24H,
+                    markets = markets.toIMap(),
+                )
             } else {
                 val marketsData = parser.asMap(data["markets"]) ?: return null
                 val changedMarkets = changes.markets ?: marketsData.keys

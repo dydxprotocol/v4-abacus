@@ -36,10 +36,10 @@ class AnalyticsUtils {
         val stopLossOrderTypes = listOf(OrderType.StopMarket, OrderType.StopLimit)
         val takeProfitOrderTypes = listOf(OrderType.TakeProfitMarket, OrderType.TakeProfitLimit)
 
-        var stopLossOrderCancelClientId: UInt? = null
-        var stopLossOrderPlaceClientId: UInt? = null
-        var takeProfitOrderCancelClientId: UInt? = null
-        var takeProfitOrderPlaceClientId: UInt? = null
+        var stopLossOrderCancelClientId: String? = null
+        var stopLossOrderPlaceClientId: String? = null
+        var takeProfitOrderCancelClientId: String? = null
+        var takeProfitOrderPlaceClientId: String? = null
 
         var stopLossOrderAction: TriggerOrderAction? = null
         var takeProfitOrderAction: TriggerOrderAction? = null

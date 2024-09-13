@@ -210,9 +210,6 @@ internal class MarketProcessor(
         val name = parser.asString(payload.ticker) ?: return null
         val oraclePrice = parser.asDouble(cachedIndexerOraclePrice?.oraclePrice) ?: parser.asDouble(payload.oraclePrice)
         val status = createStatus(payload.status)
-        if (status == null || !status.canDisplay) {
-            return null
-        }
         try {
             val newValue = PerpetualMarket(
                 id = name,

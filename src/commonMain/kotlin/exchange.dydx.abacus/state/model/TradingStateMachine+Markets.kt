@@ -17,31 +17,48 @@ internal fun TradingStateMachine.receivedMarkets(
     subaccountNumber: Int,
 ): StateChanges {
     if (staticTyping) {
-        val markets = parser.asNativeMap(payload.get("markets"))
+        val markets = parser.asNativeMap(payload["markets"])
         val marketsPayload = parser.asTypedStringMap<IndexerCompositeMarketObject>(markets)
         marketsProcessor.processSubscribed(internalState.marketsSummary, marketsPayload)
+        marketsCalculator.calculate(internalState.marketsSummary)
+        val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+            parser = parser,
+            subaccounts = internalState.wallet.account.subaccounts,
+            subaccountNumber = subaccountNumber,
+            tradeInput = internalState.input.trade,
+        )
+        return StateChanges(
+            changes = iListOf(
+                Changes.assets,
+                Changes.markets,
+                Changes.subaccount,
+                Changes.input,
+                Changes.historicalPnl,
+            ),
+            markets = null,
+            subaccountNumbers = subaccountNumbers,
+        )
+    } else {
+        marketsSummary = marketsProcessor.subscribedDeprecated(marketsSummary, payload)
+        marketsSummary = marketsCalculator.calculateDeprecated(parser.asMap(marketsSummary), assets, null)
+        val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
+            parser = parser,
+            account = account,
+            subaccountNumber = subaccountNumber,
+            tradeInput = parser.asMap(input?.get("trade")),
+        )
+        return StateChanges(
+            changes = iListOf(
+                Changes.assets,
+                Changes.markets,
+                Changes.subaccount,
+                Changes.input,
+                Changes.historicalPnl,
+            ),
+            markets = null,
+            subaccountNumbers = subaccountNumbers,
+        )
     }
-
-    marketsSummary = marketsProcessor.subscribedDeprecated(marketsSummary, payload)
-    marketsSummary = marketsCalculator.calculate(parser.asMap(marketsSummary), assets, null)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
-        parser = parser,
-        account = account,
-        subaccountNumber = subaccountNumber,
-        tradeInput = parser.asMap(input?.get("trade")),
-    )
-
-    return StateChanges(
-        changes = iListOf(
-            Changes.assets,
-            Changes.markets,
-            Changes.subaccount,
-            Changes.input,
-            Changes.historicalPnl,
-        ),
-        markets = null,
-        subaccountNumbers = subaccountNumbers,
-    )
 }
 
 internal fun TradingStateMachine.receivedMarketsChanges(
@@ -51,38 +68,68 @@ internal fun TradingStateMachine.receivedMarketsChanges(
     if (staticTyping) {
         val response = parser.asTypedObject<IndexerWsMarketUpdateResponse>(payload)
         marketsProcessor.processChannelData(internalState.marketsSummary, response)
-    }
-    val markets = parser.asNativeMap(payload.get("trading"))
-    marketsSummary = marketsProcessor.channel_dataDeprecated(marketsSummary, payload)
-    marketsSummary = marketsCalculator.calculate(marketsSummary, assets, markets?.keys)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
-        parser,
-        account,
-        subaccountNumber,
-        parser.asMap(input?.get("trade")),
-    )
+        marketsCalculator.calculate(internalState.marketsSummary)
+        val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+            parser = parser,
+            subaccounts = internalState.wallet.account.subaccounts,
+            subaccountNumber = subaccountNumber,
+            tradeInput = internalState.input.trade,
+        )
+        val blankAssets = internalState.assets.isEmpty()
+        return StateChanges(
+            if (blankAssets) {
+                iListOf(
+                    Changes.markets,
+                    Changes.assets,
+                    Changes.subaccount,
+                    Changes.historicalPnl,
+                )
+            } else {
+                iListOf(
+                    Changes.assets,
+                    Changes.markets,
+                    Changes.subaccount,
+                    Changes.input,
+                    Changes.historicalPnl,
+                )
+            },
+            markets = internalState.marketsSummary.markets.keys.toIList(),
+            subaccountNumbers = subaccountNumbers,
+        )
+    } else {
+        val markets = parser.asNativeMap(payload.get("trading"))
+        marketsSummary = marketsProcessor.channel_dataDeprecated(marketsSummary, payload)
+        marketsSummary =
+            marketsCalculator.calculateDeprecated(marketsSummary, assets, markets?.keys)
+        val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
+            parser,
+            account,
+            subaccountNumber,
+            parser.asMap(input?.get("trade")),
+        )
 
-    val blankAssets = assets == null
-    return StateChanges(
-        if (blankAssets) {
-            iListOf(
-                Changes.markets,
-                Changes.assets,
-                Changes.subaccount,
-                Changes.historicalPnl,
-            )
-        } else {
-            iListOf(
-                Changes.assets,
-                Changes.markets,
-                Changes.subaccount,
-                Changes.input,
-                Changes.historicalPnl,
-            )
-        },
-        markets?.keys?.toIList(),
-        subaccountNumbers,
-    )
+        val blankAssets = assets == null
+        return StateChanges(
+            if (blankAssets) {
+                iListOf(
+                    Changes.markets,
+                    Changes.assets,
+                    Changes.subaccount,
+                    Changes.historicalPnl,
+                )
+            } else {
+                iListOf(
+                    Changes.assets,
+                    Changes.markets,
+                    Changes.subaccount,
+                    Changes.input,
+                    Changes.historicalPnl,
+                )
+            },
+            markets?.keys?.toIList(),
+            subaccountNumbers,
+        )
+    }
 }
 
 internal fun TradingStateMachine.receivedBatchedMarketsChanges(
@@ -92,46 +139,76 @@ internal fun TradingStateMachine.receivedBatchedMarketsChanges(
     if (staticTyping) {
         val response = parser.asTypedList<IndexerWsMarketUpdateResponse>(payload)
         marketsProcessor.processChannelBatchData(internalState.marketsSummary, response)
-    }
-    marketsSummary = marketsProcessor.channel_batch_dataDeprecated(marketsSummary, payload)
-    val keys = mutableSetOf<String>()
-    for (partialPayload in payload) {
-        parser.asMap(partialPayload)?.let { partialPayload ->
-            val narrowedPayload =
-                parser.asMap(partialPayload["trading"]) ?: parser.asMap(partialPayload["oraclePrices"])
-                    ?: parser.asMap(partialPayload["markets"]) ?: partialPayload
-            keys.addAll(narrowedPayload.keys)
+        marketsCalculator.calculate(internalState.marketsSummary)
+        val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
+            parser = parser,
+            subaccounts = internalState.wallet.account.subaccounts,
+            subaccountNumber = subaccountNumber,
+            tradeInput = internalState.input.trade,
+        )
+        val blankAssets = internalState.assets.isEmpty()
+        return StateChanges(
+            if (blankAssets) {
+                iListOf(
+                    Changes.markets,
+                    Changes.assets,
+                    Changes.subaccount,
+                    Changes.historicalPnl,
+                )
+            } else {
+                iListOf(
+                    Changes.assets,
+                    Changes.markets,
+                    Changes.subaccount,
+                    Changes.input,
+                    Changes.historicalPnl,
+                )
+            },
+            markets = internalState.marketsSummary.markets.keys.toIList(),
+            subaccountNumbers = subaccountNumbers,
+        )
+    } else {
+        marketsSummary = marketsProcessor.channel_batch_dataDeprecated(marketsSummary, payload)
+        val keys = mutableSetOf<String>()
+        for (partialPayload in payload) {
+            parser.asMap(partialPayload)?.let { partialPayload ->
+                val narrowedPayload =
+                    parser.asMap(partialPayload["trading"])
+                        ?: parser.asMap(partialPayload["oraclePrices"])
+                        ?: parser.asMap(partialPayload["markets"]) ?: partialPayload
+                keys.addAll(narrowedPayload.keys)
+            }
         }
-    }
-    marketsSummary = marketsCalculator.calculate(marketsSummary, assets, keys)
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
-        parser = parser,
-        account = account,
-        subaccountNumber = subaccountNumber,
-        tradeInput = parser.asMap(input?.get("trade")),
-    )
+        marketsSummary = marketsCalculator.calculateDeprecated(marketsSummary, assets, keys)
+        val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
+            parser = parser,
+            account = account,
+            subaccountNumber = subaccountNumber,
+            tradeInput = parser.asMap(input?.get("trade")),
+        )
 
-    val blankAssets = assets == null
-    return StateChanges(
-        if (blankAssets) {
-            iListOf(
-                Changes.markets,
-                Changes.assets,
-                Changes.subaccount,
-                Changes.historicalPnl,
-            )
-        } else {
-            iListOf(
-                Changes.assets,
-                Changes.markets,
-                Changes.subaccount,
-                Changes.input,
-                Changes.historicalPnl,
-            )
-        },
-        keys.toIList(),
-        subaccountNumbers,
-    )
+        val blankAssets = assets == null
+        return StateChanges(
+            if (blankAssets) {
+                iListOf(
+                    Changes.markets,
+                    Changes.assets,
+                    Changes.subaccount,
+                    Changes.historicalPnl,
+                )
+            } else {
+                iListOf(
+                    Changes.assets,
+                    Changes.markets,
+                    Changes.subaccount,
+                    Changes.input,
+                    Changes.historicalPnl,
+                )
+            },
+            keys.toIList(),
+            subaccountNumbers,
+        )
+    }
 }
 
 internal fun TradingStateMachine.processMarketsConfigurations(
@@ -144,19 +221,13 @@ internal fun TradingStateMachine.processMarketsConfigurations(
         payload = payload,
         deploymentUri = deploymentUri,
     )
-
-    this.marketsSummary = marketsCalculator.calculate(
-        marketsSummary = this.marketsSummary,
-        assets = internalState.assets,
-        keys = null,
-    )
-    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbersDeprecated(
+    marketsCalculator.calculate(internalState.marketsSummary)
+    val subaccountNumbers = MarginCalculator.getChangedSubaccountNumbers(
         parser = parser,
-        account = account,
+        subaccounts = internalState.wallet.account.subaccounts,
         subaccountNumber = subaccountNumber ?: 0,
-        tradeInput = parser.asMap(input?.get("trade")),
+        tradeInput = internalState.input.trade,
     )
-
     return if (subaccountNumber != null) {
         StateChanges(
             changes = iListOf(Changes.markets, Changes.assets, Changes.subaccount, Changes.input),
@@ -186,7 +257,7 @@ internal fun TradingStateMachine.receivedMarketsConfigurationsDeprecated(
         payload = payload,
         deploymentUri = deploymentUri,
     )
-    this.marketsSummary = marketsCalculator.calculate(
+    this.marketsSummary = marketsCalculator.calculateDeprecated(
         marketsSummary = this.marketsSummary,
         assets = assets,
         keys = null,

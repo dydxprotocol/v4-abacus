@@ -93,6 +93,7 @@ internal fun TransferInputSummary.Companion.safeCreate(existing: TransferInputSu
         toAmount = null,
         toAmountMin = null,
         toAmountUSDC = null,
+        toAmountUSD = null,
         aggregatePriceImpact = null,
     )
 }

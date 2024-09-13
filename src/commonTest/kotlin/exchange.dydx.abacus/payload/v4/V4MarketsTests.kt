@@ -79,11 +79,55 @@ class V4MarketsTests : V4BaseTests() {
     }
 
     private fun testMarketsSubscribed() {
-        test(
-            {
-                perp.loadv4MarketsSubscribed(mock, testWsUrl)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4MarketsSubscribed(mock, testWsUrl)
+
+            val markets = perp.internalState.marketsSummary.markets
+
+            val btcMarket = markets["BTC-USD"]
+            assertEquals(btcMarket?.perpetualMarket?.status?.canTrade, true)
+            assertEquals(btcMarket?.perpetualMarket?.status?.canReduce, true)
+            assertEquals(btcMarket?.perpetualMarket?.priceChange24H, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.oraclePrice, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.configs?.clobPairId, "0")
+            assertEquals(btcMarket?.perpetualMarket?.configs?.maintenanceMarginFraction, 0.03)
+            assertEquals(btcMarket?.perpetualMarket?.configs?.incrementalInitialMarginFraction, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.configs?.incrementalPositionSize, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.configs?.initialMarginFraction, 0.05)
+            assertEquals(btcMarket?.perpetualMarket?.configs?.baselinePositionSize, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.volume24H, 4.936082546194518E8)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.openInterest, 3530.502834378)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.trades24H, 922707.0)
+
+            val ethMarket = markets["ETH-USD"]
+            assertEquals(ethMarket?.perpetualMarket?.status?.canTrade, true)
+            assertEquals(ethMarket?.perpetualMarket?.status?.canReduce, true)
+            assertEquals(ethMarket?.perpetualMarket?.priceChange24H, 0.0)
+            assertEquals(ethMarket?.perpetualMarket?.oraclePrice, 1000.0)
+            assertEquals(ethMarket?.perpetualMarket?.configs?.clobPairId, "1")
+            assertEquals(ethMarket?.perpetualMarket?.configs?.maintenanceMarginFraction, 0.03)
+            assertEquals(ethMarket?.perpetualMarket?.configs?.incrementalInitialMarginFraction, 0.0)
+            assertEquals(ethMarket?.perpetualMarket?.configs?.incrementalPositionSize, 0.0)
+            assertEquals(ethMarket?.perpetualMarket?.configs?.initialMarginFraction, 0.05)
+            assertEquals(ethMarket?.perpetualMarket?.configs?.baselinePositionSize, 0.0)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.volume24H, 4.931478367879293E8)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.openInterest, 46115.049878)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.trades24H, 939311.0)
+
+            val marketIds = perp.state?.marketIds()
+            assertNotNull(marketIds)
+            val first = marketIds.firstOrNull()
+            assertNotNull(first)
+            val market = perp.state?.market(first)
+            assertNotNull(first)
+        } else {
+            test(
+                {
+                    perp.loadv4MarketsSubscribed(mock, testWsUrl)
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -140,24 +184,43 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-            {
-                val markets = perp.state?.marketIds()
-                assertNotNull(markets)
-                val first = markets.firstOrNull()
-                assertNotNull(first)
-                val market = perp.state?.market(first)
-                assertNotNull(first)
-            },
-        )
+                """.trimIndent(),
+                {
+                    val markets = perp.state?.marketIds()
+                    assertNotNull(markets)
+                    val first = markets.firstOrNull()
+                    assertNotNull(first)
+                    val market = perp.state?.market(first)
+                    assertNotNull(first)
+                },
+            )
+        }
     }
 
     private fun testMarketsV4r1Subscribed() {
-        test(
-            {
-                perp.socket(testWsUrl, mock.marketsChannel.v4_subscribed_r1, 0, null)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(testWsUrl, mock.marketsChannel.v4_subscribed_r1, 0, null)
+
+            val markets = perp.internalState.marketsSummary.markets
+            val btcMarket = markets["BTC-USD"]
+            assertEquals(btcMarket?.perpetualMarket?.configs?.clobPairId, "0")
+            assertEquals(btcMarket?.perpetualMarket?.configs?.stepSize, 1.0E-9)
+            assertEquals(btcMarket?.perpetualMarket?.configs?.minOrderSize, 1.0E-9)
+            val ethMarket = markets["ETH-USD"]
+            assertEquals(ethMarket?.perpetualMarket?.configs?.clobPairId, "1")
+
+            val marketIds = perp.state?.marketIds()
+            assertNotNull(marketIds)
+            val first = marketIds.firstOrNull()
+            assertNotNull(first)
+            val market = perp.state?.market(first)
+            assertNotNull(first)
+        } else {
+            test(
+                {
+                    perp.socket(testWsUrl, mock.marketsChannel.v4_subscribed_r1, 0, null)
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -184,16 +247,17 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-            {
-                val markets = perp.state?.marketIds()
-                assertNotNull(markets)
-                val first = markets.firstOrNull()
-                assertNotNull(first)
-                val market = perp.state?.market(first)
-                assertNotNull(first)
-            },
-        )
+                """.trimIndent(),
+                {
+                    val markets = perp.state?.marketIds()
+                    assertNotNull(markets)
+                    val first = markets.firstOrNull()
+                    assertNotNull(first)
+                    val market = perp.state?.market(first)
+                    assertNotNull(first)
+                },
+            )
+        }
     }
 
     private fun testMarketsSparklinesChanged() {
@@ -248,14 +312,24 @@ class V4MarketsTests : V4BaseTests() {
     private fun testMarketsChanged() {
         if (perp.staticTyping) {
             perp.loadv4MarketsChanged(mock, testWsUrl)
-            val btcPerpetual = perp.internalState.marketsSummary.markets["BTC-USD"]?.perpetualMarket?.perpetual
-            assertEquals(btcPerpetual?.openInterest, 3531.250439547)
-            assertEquals(btcPerpetual?.volume24H, 493681565.92757831256)
-            assertEquals(btcPerpetual?.trades24H, 922900.0)
-            val ethPerpetual = perp.internalState.marketsSummary.markets["ETH-USD"]?.perpetualMarket?.perpetual
-            assertEquals(ethPerpetual?.openInterest, 46115.767606)
-            assertEquals(ethPerpetual?.volume24H, 493203231.416110155)
-            assertEquals(ethPerpetual?.trades24H, 939491.0)
+            val markets = perp.internalState.marketsSummary.markets
+            val btcMarket = markets["BTC-USD"]
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.openInterest, 3531.250439547)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.volume24H, 493681565.92757831256)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.trades24H, 922900.0)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+            val lines = btcMarket?.perpetualMarket?.perpetual?.line
+            assertEquals(lines?.get(0), 29308.0)
+            assertEquals(lines?.get(1), 29373.0)
+
+            val ethMarket = markets["ETH-USD"]
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.openInterest, 46115.767606)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.volume24H, 493203231.416110155)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.trades24H, 939491.0)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+            val ethLines = ethMarket?.perpetualMarket?.perpetual?.line
+            assertEquals(ethLines?.get(0), 1900.3)
+            assertEquals(ethLines?.get(1), 1902.6)
         } else {
             test(
                 {
@@ -328,11 +402,29 @@ class V4MarketsTests : V4BaseTests() {
     }
 
     private fun testMarketsBatchChanged() {
-        test(
-            {
-                perp.loadv4MarketsBatchChanged(mock, testWsUrl)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.loadv4MarketsBatchChanged(mock, testWsUrl)
+
+            val markets = perp.internalState.marketsSummary.markets
+            val btcMarket = markets["BTC-USD"]
+            assertEquals(btcMarket?.perpetualMarket?.oraclePrice, 0.0)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.openInterest, 5082.297882905)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.volume24H, 626611363.85036835076)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.trades24H, 1205976.0)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+
+            val ethMarket = markets["ETH-USD"]
+            assertEquals(ethMarket?.perpetualMarket?.oraclePrice, 1000.0)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.openInterest, 67603.376057)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.volume24H, 626131271.611287094)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.trades24H, 1214631.0)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.nextFundingRate, 0.0)
+        } else {
+            test(
+                {
+                    perp.loadv4MarketsBatchChanged(mock, testWsUrl)
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -385,19 +477,41 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.marketsChannel.v4_channel_batch_data_oracle_prices,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.marketsChannel.v4_channel_batch_data_oracle_prices,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val markets = perp.internalState.marketsSummary.markets
+            val btcMarket = markets["BTC-USD"]
+            assertEquals(btcMarket?.perpetualMarket?.oraclePrice, 21000.0)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.openInterest, 5082.297882905)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.volume24H, 626611363.85036835076)
+            assertEquals(btcMarket?.perpetualMarket?.perpetual?.trades24H, 1205976.0)
+
+            val ethMarket = markets["ETH-USD"]
+            assertEquals(ethMarket?.perpetualMarket?.oraclePrice, 1000.0)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.openInterest, 67603.376057)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.volume24H, 626131271.611287094)
+            assertEquals(ethMarket?.perpetualMarket?.perpetual?.trades24H, 1214631.0)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.marketsChannel.v4_channel_batch_data_oracle_prices,
+                        0,
+                        null,
+                    )
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -450,8 +564,9 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun testTradesSubscribed() {
@@ -631,16 +746,35 @@ class V4MarketsTests : V4BaseTests() {
         // Due to the JIT compiler nature for JVM (and Kotlin) and JS, Android/web would ran slow the first round. Second round give more accurate result
         setup()
 
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.marketsChannel.v4_subscribed_with_initializing_status,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.marketsChannel.v4_subscribed_with_initializing_status,
+                subaccountNumber = 0,
+                height = null,
+            )
+            val markets = perp.internalState.marketsSummary.markets
+            val market = markets["MATIC-USD"]
+            assertEquals(market?.perpetualMarket?.status?.canTrade, false)
+            assertEquals(market?.perpetualMarket?.status?.canReduce, false)
+
+            val marketIds = perp.state?.marketIds()
+            assertNotNull(marketIds)
+            val first = marketIds.firstOrNull()
+            assertNotNull(first)
+            val marketState = perp.state?.market(first)
+            assertNotNull(marketState)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.marketsChannel.v4_subscribed_with_initializing_status,
+                        0,
+                        null,
+                    )
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -654,27 +788,49 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-            {
-                val markets = perp.state?.marketIds()
-                assertNotNull(markets)
-                val first = markets.firstOrNull()
-                assertNotNull(first)
-                val market = perp.state?.market(first)
-                assertNotNull(first)
-            },
-        )
+                """.trimIndent(),
+                {
+                    val markets = perp.state?.marketIds()
+                    assertNotNull(markets)
+                    val first = markets.firstOrNull()
+                    assertNotNull(first)
+                    val market = perp.state?.market(first)
+                    assertNotNull(first)
+                },
+            )
+        }
 
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.marketsChannel.v4_channel_batch_data_oracle_prices_for_initializing_status,
-                    0,
-                    null,
-                )
-            },
-            """
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.marketsChannel.v4_channel_batch_data_oracle_prices_for_initializing_status,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val markets = perp.internalState.marketsSummary.markets
+            val market = markets["MATIC-USD"]
+            assertEquals(market?.perpetualMarket?.status?.canTrade, false)
+            assertEquals(market?.perpetualMarket?.status?.canReduce, false)
+            assertEquals(market?.perpetualMarket?.oraclePrice, 0.5648517536)
+
+            val marketIds = perp.state?.marketIds()
+            assertNotNull(marketIds)
+            val first = marketIds.firstOrNull()
+            assertNotNull(first)
+            val marketState = perp.state?.market(first)
+            assertNotNull(marketState)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.marketsChannel.v4_channel_batch_data_oracle_prices_for_initializing_status,
+                        0,
+                        null,
+                    )
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -689,29 +845,51 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-            {
-                val markets = perp.state?.marketIds()
-                assertNotNull(markets)
-                val first = markets.firstOrNull()
-                assertNotNull(first)
-                val market = perp.state?.market(first)
-                assertNotNull(first)
-            },
-        )
+                """.trimIndent(),
+                {
+                    val markets = perp.state?.marketIds()
+                    assertNotNull(markets)
+                    val first = markets.firstOrNull()
+                    assertNotNull(first)
+                    val market = perp.state?.market(first)
+                    assertNotNull(first)
+                },
+            )
+        }
     }
 
-    fun testEffectiveIMF() {
-        test(
-            {
-                perp.socket(
-                    testWsUrl,
-                    mock.marketsChannel.v4_subscribed_for_effective_imf_calculation,
-                    0,
-                    null,
-                )
-            },
-            """
+    private fun testEffectiveIMF() {
+        if (perp.staticTyping) {
+            perp.socket(
+                url = testWsUrl,
+                jsonString = mock.marketsChannel.v4_subscribed_for_effective_imf_calculation,
+                subaccountNumber = 0,
+                height = null,
+            )
+
+            val markets = perp.internalState.marketsSummary.markets
+            val btcMarket = markets["BTC-USD"]
+            assertEquals(btcMarket?.perpetualMarket?.configs?.effectiveInitialMarginFraction, 0.0523)
+
+            val ethMarket = markets["ETH-USD"]
+            assertEquals(ethMarket?.perpetualMarket?.configs?.effectiveInitialMarginFraction, 0.6464285714285715)
+
+            val maticMarket = markets["MATIC-USD"]
+            assertEquals(maticMarket?.perpetualMarket?.configs?.effectiveInitialMarginFraction, 1.0)
+
+            val enjMarket = markets["ENJ-USD"]
+            assertEquals(enjMarket?.perpetualMarket?.configs?.effectiveInitialMarginFraction, 0.05)
+        } else {
+            test(
+                {
+                    perp.socket(
+                        testWsUrl,
+                        mock.marketsChannel.v4_subscribed_for_effective_imf_calculation,
+                        0,
+                        null,
+                    )
+                },
+                """
             {
                "markets":{
                   "markets":{
@@ -812,7 +990,8 @@ class V4MarketsTests : V4BaseTests() {
                   }
                }
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
     }
 }

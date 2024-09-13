@@ -4,6 +4,7 @@ package exchange.dydx.abacus.calculator.v2.tradeinput
 
 import abs
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.input.MarginMode
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderbookUsage
 import exchange.dydx.abacus.output.input.TradeInputMarketOrder
@@ -15,7 +16,8 @@ import exchange.dydx.abacus.state.internalstate.InternalSubaccountState
 import exchange.dydx.abacus.state.internalstate.InternalTradeInputState
 import exchange.dydx.abacus.state.internalstate.InternalUserState
 import exchange.dydx.abacus.state.internalstate.safeCreate
-import exchange.dydx.abacus.utils.MAX_FREE_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
+import exchange.dydx.abacus.utils.MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
 import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.Rounder
 import kollections.toIList
@@ -108,6 +110,13 @@ internal class TradeInputMarketOrderCalculator() {
 
         if (tradeSize != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
             val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
+            val targetLeverage = trade.targetLeverage
+            val marginMode = trade.marginMode ?: MarginMode.Cross
+            val tradeLeverage = if (marginMode == MarginMode.Isolated && targetLeverage != null && targetLeverage > Numeric.double.ZERO) {
+                targetLeverage
+            } else {
+                maxMarketLeverage
+            }
 
             return when (input) {
                 "size.size", "size.percent" -> {
@@ -115,7 +124,7 @@ internal class TradeInputMarketOrderCalculator() {
                     createMarketOrderFromSize(
                         size = tradeSize.size,
                         freeCollateral = freeCollateral,
-                        maxMarketLeverage = maxMarketLeverage,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                     )
                 }
@@ -126,7 +135,7 @@ internal class TradeInputMarketOrderCalculator() {
                     createMarketOrderFromUsdcSize(
                         usdcSize = tradeSize.usdcSize,
                         freeCollateral = freeCollateral,
-                        maxMarketLeverage = maxMarketLeverage,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                         stepSize = stepSize,
                     )
@@ -138,7 +147,7 @@ internal class TradeInputMarketOrderCalculator() {
                         leverage = leverage,
                         market = market,
                         freeCollateral = freeCollateral,
-                        maxMarketLeverage = maxMarketLeverage,
+                        tradeLeverage = tradeLeverage,
                         subaccount = subaccount,
                         user = user,
                     )
@@ -151,9 +160,9 @@ internal class TradeInputMarketOrderCalculator() {
 
                     createMarketOrderFromBalancePercent(
                         balancePercent = balancePercent,
+                        marginMode = marginMode,
                         freeCollateral = freeCollateral,
-                        maxMarketLeverage = maxMarketLeverage,
-                        subaccount = subaccount,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                         stepSize = stepSize,
                     )
@@ -178,15 +187,19 @@ internal class TradeInputMarketOrderCalculator() {
 
     private fun createMarketOrderFromBalancePercent(
         balancePercent: Double,
+        marginMode: MarginMode,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
-        subaccount: InternalSubaccountState?,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>?,
         stepSize: Double,
     ): TradeInputMarketOrder? {
-        val cappedPercent = min(balancePercent, MAX_FREE_COLLATERAL_BUFFER_PERCENT * balancePercent)
+        val buffer = when (marginMode) {
+            MarginMode.Cross -> MAX_FREE_CROSS_COLLATERAL_BUFFER_PERCENT
+            MarginMode.Isolated -> MAX_FREE_ISOLATED_COLLATERAL_BUFFER_PERCENT
+        }
+        val cappedPercent = min(balancePercent, buffer)
         val desiredBalance = cappedPercent * freeCollateral
-        val usdcSize = desiredBalance * maxMarketLeverage
+        val usdcSize = desiredBalance * tradeLeverage
 
         return if (usdcSize != Numeric.double.ZERO) {
             if (orderbook != null) {
@@ -203,16 +216,16 @@ internal class TradeInputMarketOrderCalculator() {
 
                     if (entryPrice > Numeric.double.ZERO) {
                         val entryUsdcSize = entrySize * entryPrice
-                        val entryBalanceSize = entryUsdcSize / maxMarketLeverage
+                        val entryBalanceSize = entryUsdcSize / tradeLeverage
                         filled = (balanceTotal + entryBalanceSize >= desiredBalance)
 
                         var matchedSize = entrySize
                         var matchedUsdcSize = entryUsdcSize
-                        var matchedBalance = matchedUsdcSize / maxMarketLeverage
+                        var matchedBalance = matchedUsdcSize / tradeLeverage
 
                         if (filled) {
                             matchedBalance = desiredBalance - balanceTotal
-                            matchedUsdcSize = matchedBalance * maxMarketLeverage
+                            matchedUsdcSize = matchedBalance * tradeLeverage
                             matchedSize = matchedUsdcSize / entryPrice
                             matchedSize =
                                 Rounder.quickRound(
@@ -259,7 +272,7 @@ internal class TradeInputMarketOrderCalculator() {
     private fun createMarketOrderFromSize(
         size: Double?,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>?,
     ): TradeInputMarketOrder? {
         return if (size != null && size != Numeric.double.ZERO) {
@@ -288,7 +301,7 @@ internal class TradeInputMarketOrderCalculator() {
                         break@orderbookLoop
                     }
                 }
-                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                val balancePercentTotal = (usdcSizeTotal / tradeLeverage) / freeCollateral
                 createMarketOrderWith(
                     orderbook = marketOrderOrderBook,
                     size = sizeTotal,
@@ -315,7 +328,7 @@ internal class TradeInputMarketOrderCalculator() {
     private fun createMarketOrderFromUsdcSize(
         usdcSize: Double?,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>?,
         stepSize: Double,
     ): TradeInputMarketOrder? {
@@ -359,7 +372,7 @@ internal class TradeInputMarketOrderCalculator() {
                         }
                     }
                 }
-                val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+                val balancePercentTotal = (usdcSizeTotal / tradeLeverage) / freeCollateral
                 createMarketOrderWith(
                     orderbook = marketOrderOrderBook,
                     size = sizeTotal,
@@ -387,7 +400,7 @@ internal class TradeInputMarketOrderCalculator() {
         leverage: Double,
         market: InternalMarketState?,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         subaccount: InternalSubaccountState?,
         user: InternalUserState?,
     ): TradeInputMarketOrder? {
@@ -425,7 +438,7 @@ internal class TradeInputMarketOrderCalculator() {
                         leverage = leverage,
                         stepSize = stepSize,
                         freeCollateral = freeCollateral,
-                        maxMarketLeverage = maxMarketLeverage,
+                        tradeLeverage = tradeLeverage,
                         orderbook = orderbook,
                     )
                 } else {
@@ -448,7 +461,7 @@ internal class TradeInputMarketOrderCalculator() {
         leverage: Double,
         stepSize: Double,
         freeCollateral: Double,
-        maxMarketLeverage: Double,
+        tradeLeverage: Double,
         orderbook: List<InternalOrderbookTick>,
     ): TradeInputMarketOrder? {
         /*
@@ -545,7 +558,7 @@ internal class TradeInputMarketOrderCalculator() {
                 break@orderbookLoop
             }
         }
-        val balancePercentTotal = (usdcSizeTotal / maxMarketLeverage) / freeCollateral
+        val balancePercentTotal = (usdcSizeTotal / tradeLeverage) / freeCollateral
         return createMarketOrderWith(
             orderbook = marketOrderOrderBook,
             size = sizeTotal,

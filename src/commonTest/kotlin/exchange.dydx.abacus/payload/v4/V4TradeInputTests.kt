@@ -416,15 +416,19 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("MARKET", TradeInputField.type, 0)
         }, null)
 
-        test(
-            {
-                perp.tradeInMarket("LTC-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("LTC-USD", 0)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("LTC-USD", 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         if (perp.staticTyping) {
             perp.trade("1", TradeInputField.size, 0)
@@ -468,35 +472,41 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test(
-            {
-                perp.tradeInMarket("ETH-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("ETH-USD", 0)
+            perp.trade("SELL", TradeInputField.side, 0)
+            perp.trade(null, TradeInputField.usdcSize, 0)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("ETH-USD", 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
 
-        test(
-            {
-                perp.trade("SELL", TradeInputField.side, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade("SELL", TradeInputField.side, 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
 
-        test(
-            {
-                perp.trade(null, TradeInputField.usdcSize, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade(null, TradeInputField.usdcSize, 0)
+                },
+                """
             {
             }
-            """.trimIndent(),
-        )
+                """.trimIndent(),
+            )
+        }
 
         if (perp.staticTyping) {
             perp.trade("0.5", TradeInputField.usdcSize, 0)
@@ -634,8 +644,8 @@ open class V4TradeInputTests : V4BaseTests() {
             perp.trade("0.5", TradeInputField.balancePercent, 0)
             val size = perp.internalState.input.trade.size
             assertNotNull(size)
-            assertEquals(size.usdcSize, 979999.8321)
-            assertEquals(size.size, 593.5779999999999)
+            assertEquals(size.usdcSize, 1000000.1169)
+            assertEquals(size.size, 605.7059999999999)
             assertEquals(size.balancePercent, 0.5) // freeCollateral: 100000, 20x leverage
             assertEquals(size.input, "size.balancePercent")
             val errors = perp.internalState.input.errors
@@ -1312,35 +1322,41 @@ open class V4TradeInputTests : V4BaseTests() {
             )
         }
 
-        test(
-            {
-                perp.tradeInMarket("ETH-USD", 0)
-            },
-            """
+        if (perp.staticTyping) {
+            perp.tradeInMarket("ETH-USD", 0)
+            perp.trade("0.1", TradeInputField.size, 0)
+            perp.trade("1000", TradeInputField.triggerPrice, 0)
+        } else {
+            test(
+                {
+                    perp.tradeInMarket("ETH-USD", 0)
+                },
+                """
             {
             }
-            """.trimMargin(),
-        )
+                """.trimMargin(),
+            )
 
-        test(
-            {
-                perp.trade("0.1", TradeInputField.size, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade("0.1", TradeInputField.size, 0)
+                },
+                """
             {
             }
-            """.trimMargin(),
-        )
+                """.trimMargin(),
+            )
 
-        test(
-            {
-                perp.trade("1000", TradeInputField.triggerPrice, 0)
-            },
-            """
+            test(
+                {
+                    perp.trade("1000", TradeInputField.triggerPrice, 0)
+                },
+                """
             {
             }
-            """.trimMargin(),
-        )
+                """.trimMargin(),
+            )
+        }
 
         if (perp.staticTyping) {
             perp.trade("STOP_MARKET", TradeInputField.type, 0)
