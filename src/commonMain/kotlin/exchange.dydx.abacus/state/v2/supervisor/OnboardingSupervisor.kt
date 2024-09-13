@@ -5,7 +5,6 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.input.TransferType
 import exchange.dydx.abacus.processor.router.ChainType
-import exchange.dydx.abacus.processor.router.skip.SkipRoutePayloadProcessor
 import exchange.dydx.abacus.protocols.ThreadingType
 import exchange.dydx.abacus.protocols.TransactionCallback
 import exchange.dydx.abacus.protocols.TransactionType
@@ -1005,25 +1004,14 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
         callback: TransactionCallback
     ) {
-        if (StatsigConfig.useSkip) {
-            cctpToNobleSkip(
-                state,
-                decimals,
-                gas,
-                accountAddress,
-                subaccountNumber,
-                callback,
-            )
-        } else {
-            cctpToNobleSquid(
-                state,
-                decimals,
-                gas,
-                accountAddress,
-                subaccountNumber,
-                callback,
-            )
-        }
+        cctpToNobleSquid(
+            state,
+            decimals,
+            gas,
+            accountAddress,
+            subaccountNumber,
+            callback,
+        )
     }
 
     private fun cctpToNobleSquid(
@@ -1125,113 +1113,6 @@ internal class OnboardingSupervisor(
             val error = ParsingError(
                 ParsingErrorType.MissingRequiredData,
                 "Missing required data for cctp withdraw",
-            )
-            helper.send(error, callback)
-        }
-    }
-
-    private fun cctpToNobleSkip(
-        state: PerpetualState?,
-        decimals: Int,
-        gas: BigDecimal,
-        accountAddress: String,
-        subaccountNumber: Int?,
-        callback: TransactionCallback
-    ) {
-//      We have a lot of duplicate code for these deposit/withdrawal route calls
-//      It's easier to dedupe now that the url is the same and only the args differ
-//      Consider creating generateArgs fun to reduce code duplication
-//      DO-LATER: https://linear.app/dydx/issue/OTE-350/%5Babacus%5D-cleanup
-        val url = helper.configs.skipV2MsgsDirect()
-        val nobleChain = helper.configs.nobleChainId()
-        val nobleToken = helper.configs.nobleDenom
-        val nobleAddress = accountAddress.toNobleAddress()
-        val chainId = helper.environment.dydxChainId
-        val nativeChainUSDCDenom = helper.environment.tokens["usdc"]?.denom
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize)
-        val fromAmount = if (usdcSize != null && usdcSize > gas) {
-            ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
-        } else {
-            null
-        }
-        val fromAmountString = helper.parser.asString(fromAmount)
-
-        if (
-            nobleAddress != null &&
-            chainId != null &&
-            nativeChainUSDCDenom != null &&
-            fromAmountString != null && fromAmount != null && fromAmount > 0
-        ) {
-            val body: Map<String, Any> = mapOf(
-                "amount_in" to fromAmountString,
-//                from dydx denom and chain
-                "source_asset_denom" to nativeChainUSDCDenom,
-                "source_asset_chain_id" to chainId,
-//                to noble denom and chain
-                "dest_asset_denom" to nobleToken,
-                "dest_asset_chain_id" to nobleChain,
-                "chain_ids_to_addresses" to mapOf(
-                    chainId to accountAddress,
-                    nobleChain to nobleAddress,
-                ),
-                "slippage_tolerance_percent" to SLIPPAGE_PERCENT,
-            )
-
-            val header = iMapOf(
-                "Content-Type" to "application/json",
-            )
-            Logger.ddInfo(body.toIMap(), { "cctpToNobleSkip payload sending" })
-            helper.post(url, header, body.toJsonPrettyPrint()) { _, response, code, _ ->
-                val json = helper.parser.decodeJsonObject(response)
-                if (json != null) {
-                    Logger.ddInfo(json, { "cctpToNobleSkip payload received" })
-                    val skipRoutePayloadProcessor = SkipRoutePayloadProcessor(parser = helper.parser)
-                    val processedPayload = skipRoutePayloadProcessor.received(existing = mapOf(), payload = json)
-                    val ibcPayload = helper.parser.asString(
-                        processedPayload.get("data"),
-                    )
-                    if (ibcPayload != null) {
-                        val payload = helper.jsonEncoder.encode(
-                            mapOf(
-                                "subaccountNumber" to (subaccountNumber ?: 0),
-                                "amount" to state?.input?.transfer?.size?.usdcSize,
-                                "ibcPayload" to ibcPayload.encodeBase64(),
-                            ),
-                        )
-                        helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                            val error = helper.parseTransactionResponse(it)
-                            if (error != null) {
-                                Logger.e { "withdrawToNobleIBC error: $error" }
-                                helper.send(error, callback)
-                            } else {
-                                pendingCctpWithdraw = CctpWithdrawState(
-                                    singleMessagePayload = null,
-                                    multiMessagePayload = state?.input?.transfer?.requestPayload?.allMessages,
-                                    callback = callback,
-                                )
-                            }
-                        }
-                    } else {
-                        Logger.e { "cctpToNobleSkip error, code: $code" }
-                        val error = ParsingError(
-                            ParsingErrorType.MissingContent,
-                            "Missing skip response",
-                        )
-                        helper.send(error, callback)
-                    }
-                } else {
-                    Logger.e { "cctpToNobleSkip error, code: $code" }
-                    val error = ParsingError(
-                        ParsingErrorType.MissingContent,
-                        "Missing skip response",
-                    )
-                    helper.send(error, callback)
-                }
-            }
-        } else {
-            val error = ParsingError(
-                ParsingErrorType.MissingRequiredData,
-                "Missing required data for cctp skip withdraw",
             )
             helper.send(error, callback)
         }
