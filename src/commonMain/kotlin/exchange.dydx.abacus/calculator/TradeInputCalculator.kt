@@ -529,7 +529,7 @@ internal class TradeInputCalculator(
                 }
 
                 "size.usdcSize" -> {
-                    val stepSize = 
+                    val stepSize =
                         parser.asDouble(parser.value(market, "configs.stepSize"))
                             ?: 0.001
                     val orderbook = orderbook(market, isBuying)
@@ -958,7 +958,7 @@ internal class TradeInputCalculator(
     private fun calculateMarketOrderFromLeverage(
         equity: Double,
         oraclePrice: Double,
-        existingPositionSize: Double?,
+        positionSize: Double?,
         isBuying: Boolean,
         feeRate: Double,
         leverage: Double,
@@ -1022,7 +1022,7 @@ internal class TradeInputCalculator(
         var AE = parser.asDouble(equity)!!
 
         @Suppress("LocalVariableName", "PropertyName")
-        var SZ = parser.asDouble(existingPositionSize) ?: Numeric.double.ZERO
+        var SZ = parser.asDouble(positionSize) ?: Numeric.double.ZERO
 
         orderbookLoop@ for (i in 0 until orderbook.size) {
             val entry = orderbook[i]

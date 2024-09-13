@@ -109,7 +109,7 @@ internal class TradeInputMarketOrderCalculator() {
         val tradeSize = trade.size
         val freeCollateral = subaccount?.calculated?.get(CalculationPeriod.current)?.freeCollateral
 
-        if (tradeSize != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO && market != null) {
+        if (tradeSize != null && freeCollateral != null && freeCollateral > Numeric.double.ZERO) {
             val maxMarketLeverage = market?.perpetualMarket?.configs?.maxMarketLeverage ?: Numeric.double.ONE
             val targetLeverage = trade.targetLeverage
             val marginMode = trade.marginMode ?: MarginMode.Cross
@@ -120,7 +120,7 @@ internal class TradeInputMarketOrderCalculator() {
             }
 
             val positions = subaccount.openPositions
-            val marketId = market.perpetualMarket?.id
+            val marketId = market?.perpetualMarket?.id
             val positionNotionalSize = if (positions != null && marketId != null) {
                 positions[marketId]?.calculated?.get(CalculationPeriod.current)?.notionalTotal ?: Numeric.double.ZERO
             } else {
@@ -177,10 +177,10 @@ internal class TradeInputMarketOrderCalculator() {
                 }
 
                 "size.balancePercent" -> {
-                    val stepSize = market.perpetualMarket?.configs?.stepSize ?: 0.001
+                    val stepSize = market?.perpetualMarket?.configs?.stepSize ?: 0.001
                     val orderbook = getOrderbook(market = market, isBuying = trade.isBuying)
                     val balancePercent = tradeSize.balancePercent ?: return null
-                    val oraclePrice = market.perpetualMarket?.oraclePrice
+                    val oraclePrice = market?.perpetualMarket?.oraclePrice
 
                     createMarketOrderFromBalancePercent(
                         balancePercent = balancePercent,
