@@ -13,7 +13,7 @@ internal interface PushNotificationRegistrationHandlerProtocol {
 internal class PushNotificationRegistrationHandler(
     private val helper: NetworkHelper,
     private val accountAddress: String,
-): PushNotificationRegistrationHandlerProtocol {
+) : PushNotificationRegistrationHandlerProtocol {
 
     override fun sendPushNotificationToken(token: String, languageCode: String, isKepler: Boolean) {
         getSignedPayload(token, languageCode, isKepler) { payload ->
@@ -37,7 +37,7 @@ internal class PushNotificationRegistrationHandler(
         helper.post(
             url = registrationUrl,
             headers = header,
-            body = payload.toJsonPrettyPrint()
+            body = payload.toJsonPrettyPrint(),
         ) { _, response, httpCode, _ ->
             if (helper.success(httpCode) && response != null) {
                 Logger.d { "Push notification token registered successfully" }
@@ -71,7 +71,7 @@ internal class PushNotificationRegistrationHandler(
                 val signedMessage = helper.parser.asString(result["signedMessage"])
                 val publicKey = helper.parser.asString(result["publicKey"])
                 val timestamp = helper.parser.asString(result["timestamp"])
-            
+
                 if (signedMessage != null && publicKey != null && timestamp != null) {
                     callback(
                         mapOf(

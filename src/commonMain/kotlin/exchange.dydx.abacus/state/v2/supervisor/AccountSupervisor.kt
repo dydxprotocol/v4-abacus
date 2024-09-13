@@ -1085,7 +1085,7 @@ internal open class AccountSupervisor(
         pushNotificationRegistrationHandler.sendPushNotificationToken(
             token = pushNotificationToken,
             languageCode = pushNotificationLanguageCode,
-            isKepler = cosmosWalletConnected ?: false
+            isKepler = cosmosWalletConnected ?: false,
         )
     }
 }

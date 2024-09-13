@@ -6,7 +6,6 @@ import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.TransactionCallback
-import exchange.dydx.abacus.state.app.helper.Language
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
