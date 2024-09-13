@@ -124,44 +124,44 @@ internal class StateManagerAdaptorV2(
     internal var analyticsUtils: AnalyticsUtils = AnalyticsUtils()
 
     internal val networkHelper = NetworkHelper(
-        deploymentUri,
-        environment,
-        uiImplementations,
-        ioImplementations,
-        configs,
-        stateNotification,
-        dataNotification,
-        parser,
+        deploymentUri = deploymentUri,
+        environment = environment,
+        uiImplementations = uiImplementations,
+        ioImplementations = ioImplementations,
+        configs = configs,
+        stateNotification = stateNotification,
+        dataNotification = dataNotification,
+        parser = parser,
     ) { indexerRestriction ->
         updateRestriction(indexerRestriction)
     }
 
     private val connections = ConnectionsSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        this,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        delegate = this,
     )
 
     private val system = SystemSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.systemConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.systemConfigs,
     )
 
     private val onboarding = OnboardingSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.onboardingConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.onboardingConfigs,
     )
 
     private val accounts = AccountsSupervisor(
-        stateMachine,
-        networkHelper,
-        analyticsUtils,
-        appConfigs.accountConfigs,
+        stateMachine = stateMachine,
+        helper = networkHelper,
+        analyticsUtils = analyticsUtils,
+        configs = appConfigs.accountConfigs,
     )
 
     private val markets = MarketsSupervisor(
@@ -172,14 +172,14 @@ internal class StateManagerAdaptorV2(
     )
 
     private val triggerOrderToastGenerator = TriggerOrderToastGenerator(
-        presentationProtocol,
-        parser,
-        uiImplementations.formatter,
-        uiImplementations.localizer,
-        ioImplementations.threading,
+        presentation = presentationProtocol,
+        parser = parser,
+        formatter = uiImplementations.formatter,
+        localizer = uiImplementations.localizer,
+        threading = ioImplementations.threading,
     )
 
-    internal open var restriction: UsageRestriction = UsageRestriction.noRestriction
+    internal var restriction: UsageRestriction = UsageRestriction.noRestriction
         set(value) {
             if (field != value) {
                 field = value
@@ -187,7 +187,7 @@ internal class StateManagerAdaptorV2(
             }
         }
 
-    internal open var geo: String? = null
+    internal var geo: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -493,9 +493,9 @@ internal class StateManagerAdaptorV2(
         val url = environment.endpoints.geo
         if (url != null) {
             networkHelper.get(
-                url,
-                null,
-                null,
+                url = url,
+                params = null,
+                headers = null,
                 callback = { _, response, httpCode, _ ->
                     geo = if (networkHelper.success(httpCode) && response != null) {
                         val payload = networkHelper.parser.decodeJsonObject(response)?.toIMap()
@@ -661,6 +661,10 @@ internal class StateManagerAdaptorV2(
         accounts.triggerCompliance(action, callback)
     }
 
+    internal fun registerPushNotification(token: String, languageCode: String?) {
+        accounts.registerPushNotification(token, languageCode)
+    }
+
     private fun updateRestriction(indexerRestriction: UsageRestriction?) {
         restriction = indexerRestriction ?: accounts.addressRestriction ?: UsageRestriction.noRestriction
     }
@@ -668,31 +672,31 @@ internal class StateManagerAdaptorV2(
     private fun didSetRestriction(restriction: UsageRestriction?) {
         val state = stateMachine.state
         stateMachine.state = PerpetualState(
-            state?.assets,
-            state?.marketsSummary,
-            state?.orderbooks,
-            state?.candles,
-            state?.trades,
-            state?.historicalFundings,
-            state?.wallet,
-            state?.account,
-            state?.historicalPnl,
-            state?.fills,
-            state?.transfers,
-            state?.fundingPayments,
-            state?.configs,
-            state?.input,
-            state?.availableSubaccountNumbers ?: iListOf(),
-            state?.transferStatuses,
-            state?.trackStatuses,
-            restriction,
-            state?.launchIncentive,
-            state?.compliance,
+            assets = state?.assets,
+            marketsSummary = state?.marketsSummary,
+            orderbooks = state?.orderbooks,
+            candles = state?.candles,
+            trades = state?.trades,
+            historicalFundings = state?.historicalFundings,
+            wallet = state?.wallet,
+            account = state?.account,
+            historicalPnl = state?.historicalPnl,
+            fills = state?.fills,
+            transfers = state?.transfers,
+            fundingPayments = state?.fundingPayments,
+            configs = state?.configs,
+            input = state?.input,
+            availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
+            transferStatuses = state?.transferStatuses,
+            trackStatuses = state?.trackStatuses,
+            restriction = restriction,
+            launchIncentive = state?.launchIncentive,
+            compliance = state?.compliance,
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
-                stateMachine.state,
-                StateChanges(
+                state = stateMachine.state,
+                changes = StateChanges(
                     iListOf(Changes.restriction),
                 ),
             )
@@ -702,36 +706,36 @@ internal class StateManagerAdaptorV2(
     private fun didSetGeo(geo: String?) {
         val state = stateMachine.state
         stateMachine.state = PerpetualState(
-            state?.assets,
-            state?.marketsSummary,
-            state?.orderbooks,
-            state?.candles,
-            state?.trades,
-            state?.historicalFundings,
-            state?.wallet,
-            state?.account,
-            state?.historicalPnl,
-            state?.fills,
-            state?.transfers,
-            state?.fundingPayments,
-            state?.configs,
-            state?.input,
-            state?.availableSubaccountNumbers ?: iListOf(),
-            state?.transferStatuses,
-            state?.trackStatuses,
-            state?.restriction,
-            state?.launchIncentive,
-            Compliance(
-                geo,
-                state?.compliance?.status ?: ComplianceStatus.COMPLIANT,
-                state?.compliance?.updatedAt,
-                state?.compliance?.expiresAt,
+            assets = state?.assets,
+            marketsSummary = state?.marketsSummary,
+            orderbooks = state?.orderbooks,
+            candles = state?.candles,
+            trades = state?.trades,
+            historicalFundings = state?.historicalFundings,
+            wallet = state?.wallet,
+            account = state?.account,
+            historicalPnl = state?.historicalPnl,
+            fills = state?.fills,
+            transfers = state?.transfers,
+            fundingPayments = state?.fundingPayments,
+            configs = state?.configs,
+            input = state?.input,
+            availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
+            transferStatuses = state?.transferStatuses,
+            trackStatuses = state?.trackStatuses,
+            restriction = state?.restriction,
+            launchIncentive = state?.launchIncentive,
+            compliance = Compliance(
+                geo = geo,
+                status = state?.compliance?.status ?: ComplianceStatus.COMPLIANT,
+                updatedAt = state?.compliance?.updatedAt,
+                expiresAt = state?.compliance?.expiresAt,
             ),
         )
         ioImplementations.threading?.async(ThreadingType.main) {
             stateNotification?.stateChanged(
-                stateMachine.state,
-                StateChanges(
+                state = stateMachine.state,
+                changes = StateChanges(
                     iListOf(Changes.compliance),
                 ),
             )

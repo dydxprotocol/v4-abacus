@@ -158,7 +158,8 @@ enum class TransactionType(val rawValue: String) {
     CctpWithdraw("cctpWithdraw"),
     CctpMultiMsgWithdraw("cctpMultiMsgWithdraw"),
     SignCompliancePayload("signCompliancePayload"),
-    SetSelectedGasDenom("setSelectedGasDenom");
+    SetSelectedGasDenom("setSelectedGasDenom"),
+    SignPushNotificationTokenRegistrationPayload("signPushNotificationTokenRegistrationPayload");
 
     companion object {
         operator fun invoke(rawValue: String) =

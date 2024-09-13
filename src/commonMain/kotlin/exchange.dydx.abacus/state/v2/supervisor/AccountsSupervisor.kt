@@ -40,6 +40,9 @@ internal class AccountsSupervisor(
 ) : NetworkSupervisor(stateMachine, helper, analyticsUtils) {
     internal val accounts = mutableMapOf<String, AccountSupervisor>()
 
+    private var pushNotificationToken: String? = null
+    private var pushNotificationLanguageCode: String? = null
+
     internal var historicalPnlPeriod: HistoricalPnlPeriod
         get() {
             return when (stateMachine.historicalPnlDays) {
@@ -88,6 +91,9 @@ internal class AccountsSupervisor(
             newAccountSupervisor.socketConnected = socketConnected
             newAccountSupervisor.validatorConnected = validatorConnected
             accounts[address] = newAccountSupervisor
+            pushNotificationToken?.let {
+                newAccountSupervisor.registerPushNotification(it, pushNotificationLanguageCode)
+            }
         }
     }
 
@@ -152,6 +158,14 @@ internal class AccountsSupervisor(
             payload,
             height,
         )
+    }
+
+    internal fun registerPushNotification(token: String, languageCode: String?) {
+        pushNotificationToken = token
+        pushNotificationLanguageCode = languageCode
+        for (account in accounts.values) {
+            account.registerPushNotification(token, pushNotificationLanguageCode)
+        }
     }
 
     private fun splitAddressAndSubaccountNumber(id: String?): Pair<String, Int> {

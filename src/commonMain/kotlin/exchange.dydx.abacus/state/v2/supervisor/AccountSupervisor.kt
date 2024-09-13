@@ -48,6 +48,8 @@ import exchange.dydx.abacus.state.model.onChainStakingRewards
 import exchange.dydx.abacus.state.model.onChainUnbonding
 import exchange.dydx.abacus.state.model.onChainUserFeeTier
 import exchange.dydx.abacus.state.model.onChainUserStats
+import exchange.dydx.abacus.state.v2.supervisor.account.PushNotificationRegistrationHandler
+import exchange.dydx.abacus.state.v2.supervisor.account.PushNotificationRegistrationHandlerProtocol
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.IMap
@@ -72,6 +74,10 @@ internal open class AccountSupervisor(
     analyticsUtils: AnalyticsUtils,
     internal val configs: AccountConfigs,
     internal val accountAddress: String,
+    private val pushNotificationRegistrationHandler: PushNotificationRegistrationHandlerProtocol = PushNotificationRegistrationHandler(
+        helper = helper,
+        accountAddress = accountAddress,
+    )
 ) : DynamicNetworkSupervisor(stateMachine, helper, analyticsUtils) {
     val subaccounts = mutableMapOf<Int, SubaccountSupervisor>()
 
@@ -127,7 +133,10 @@ internal open class AccountSupervisor(
                 nobleBalancesTimer?.cancel()
                 nobleBalancesTimer = null
             }
+
+            sendPushNotificationToken()
         }
+
     private var sourceAddressRestriction: Restriction? = null
         set(value) {
             if (field != value) {
@@ -215,6 +224,9 @@ internal open class AccountSupervisor(
             }
         }
 
+    private var pushNotificationToken: String? = null
+    private var pushNotificationLanguageCode: String? = null
+
     init {
         screenAccountAddress()
         complianceScreen(DydxAddress(accountAddress), ComplianceAction.CONNECT)
@@ -227,12 +239,12 @@ internal open class AccountSupervisor(
             ?: run {
                 val newSubaccountSupervisor =
                     SubaccountSupervisor(
-                        stateMachine,
-                        helper,
-                        analyticsUtils,
-                        configs.subaccountConfigs,
-                        accountAddress,
-                        subaccountNumber,
+                        stateMachine = stateMachine,
+                        helper = helper,
+                        analyticsUtils = analyticsUtils,
+                        configs = configs.subaccountConfigs,
+                        accountAddress = accountAddress,
+                        subaccountNumber = subaccountNumber,
                     )
                 newSubaccountSupervisor.readyToConnect = readyToConnect
                 newSubaccountSupervisor.indexerConnected = indexerConnected
@@ -288,6 +300,8 @@ internal open class AccountSupervisor(
             if (configs.retrieveHistoricalTradingRewards) {
                 retrieveHistoricalTradingRewards(historicalTradingRewardPeriod)
             }
+
+            sendPushNotificationToken()
         } else {
             subaccountsTimer = null
             screenAccountAddressTimer = null
@@ -766,7 +780,7 @@ internal open class AccountSupervisor(
             TransactionType.SignCompliancePayload,
             payload,
         ) { additionalPayload ->
-            val error = parseTransactionResponse(additionalPayload)
+            val error = helper.parseTransactionResponse(additionalPayload)
             val result = helper.parser.decodeJsonObject(additionalPayload)
 
             if (error == null && result != null) {
@@ -811,9 +825,9 @@ internal open class AccountSupervisor(
                             "Content-Type" to "application/json",
                         )
                     helper.post(
-                        url!!,
-                        header,
-                        body.toJsonPrettyPrint(),
+                        url = url!!,
+                        headers = header,
+                        body = body.toJsonPrettyPrint(),
                         callback = { _, response, httpCode, _ ->
                             handleComplianceResponse(response, httpCode, address)
                             // retrieve the subaccounts if it does not exist yet. It is possible that the initial
@@ -836,9 +850,9 @@ internal open class AccountSupervisor(
         val url = complianceScreenUrl(address.rawAddress)
         if (url != null) {
             helper.get(
-                url,
-                null,
-                null,
+                url = url,
+                params = null,
+                headers = null,
                 callback = { _, response, httpCode, _ ->
                     val complianceStatus = handleComplianceResponse(response, httpCode, address)
                     if (address is DydxAddress && action != null) {
@@ -978,7 +992,7 @@ internal open class AccountSupervisor(
         return helper.configs.publicApiUrl("screen")
     }
 
-    internal fun restrictionReason(response: String?): UsageRestriction {
+    private fun restrictionReason(response: String?): UsageRestriction {
         return if (response != null) {
             val json = helper.parser.decodeJsonObject(response)
             val errors = helper.parser.asList(helper.parser.value(json, "errors"))
@@ -1040,31 +1054,31 @@ internal open class AccountSupervisor(
         val state = stateMachine.state
         stateMachine.state =
             PerpetualState(
-                state?.assets,
-                state?.marketsSummary,
-                state?.orderbooks,
-                state?.candles,
-                state?.trades,
-                state?.historicalFundings,
-                state?.wallet,
-                state?.account,
-                state?.historicalPnl,
-                state?.fills,
-                state?.transfers,
-                state?.fundingPayments,
-                state?.configs,
-                state?.input,
-                state?.availableSubaccountNumbers ?: iListOf(),
-                state?.transferStatuses,
-                state?.trackStatuses,
-                restriction,
-                state?.launchIncentive,
-                state?.compliance,
+                assets = state?.assets,
+                marketsSummary = state?.marketsSummary,
+                orderbooks = state?.orderbooks,
+                candles = state?.candles,
+                trades = state?.trades,
+                historicalFundings = state?.historicalFundings,
+                wallet = state?.wallet,
+                account = state?.account,
+                historicalPnl = state?.historicalPnl,
+                fills = state?.fills,
+                transfers = state?.transfers,
+                fundingPayments = state?.fundingPayments,
+                configs = state?.configs,
+                input = state?.input,
+                availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
+                transferStatuses = state?.transferStatuses,
+                trackStatuses = state?.trackStatuses,
+                restriction = restriction,
+                launchIncentive = state?.launchIncentive,
+                compliance = state?.compliance,
             )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
-                stateMachine.state,
-                StateChanges(
+                state = stateMachine.state,
+                changes = StateChanges(
                     iListOf(Changes.restriction),
                 ),
             )
@@ -1075,36 +1089,36 @@ internal open class AccountSupervisor(
         val state = stateMachine.state
         stateMachine.state =
             PerpetualState(
-                state?.assets,
-                state?.marketsSummary,
-                state?.orderbooks,
-                state?.candles,
-                state?.trades,
-                state?.historicalFundings,
-                state?.wallet,
-                state?.account,
-                state?.historicalPnl,
-                state?.fills,
-                state?.transfers,
-                state?.fundingPayments,
-                state?.configs,
-                state?.input,
-                state?.availableSubaccountNumbers ?: iListOf(),
-                state?.transferStatuses,
-                state?.trackStatuses,
-                state?.restriction,
-                state?.launchIncentive,
-                Compliance(
-                    state?.compliance?.geo,
-                    compliance.status,
-                    compliance.updatedAt,
-                    compliance.expiresAt,
+                assets = state?.assets,
+                marketsSummary = state?.marketsSummary,
+                orderbooks = state?.orderbooks,
+                candles = state?.candles,
+                trades = state?.trades,
+                historicalFundings = state?.historicalFundings,
+                wallet = state?.wallet,
+                account = state?.account,
+                historicalPnl = state?.historicalPnl,
+                fills = state?.fills,
+                transfers = state?.transfers,
+                fundingPayments = state?.fundingPayments,
+                configs = state?.configs,
+                input = state?.input,
+                availableSubaccountNumbers = state?.availableSubaccountNumbers ?: iListOf(),
+                transferStatuses = state?.transferStatuses,
+                trackStatuses = state?.trackStatuses,
+                restriction = state?.restriction,
+                launchIncentive = state?.launchIncentive,
+                compliance = Compliance(
+                    geo = state?.compliance?.geo,
+                    status = compliance.status,
+                    updatedAt = compliance.updatedAt,
+                    expiresAt = compliance.expiresAt,
                 ),
             )
         helper.ioImplementations.threading?.async(ThreadingType.main) {
             helper.stateNotification?.stateChanged(
-                stateMachine.state,
-                StateChanges(
+                state = stateMachine.state,
+                changes = StateChanges(
                     iListOf(Changes.compliance),
                 ),
             )
@@ -1119,6 +1133,22 @@ internal open class AccountSupervisor(
     ) {
         val subaccount = subaccounts[subaccountNumber] ?: return
         subaccount.receiveSubaccountChannelSocketData(info, payload, height)
+    }
+
+    internal fun registerPushNotification(token: String, languageCode: String?) {
+        pushNotificationToken = token
+        pushNotificationLanguageCode = languageCode
+        sendPushNotificationToken()
+    }
+
+    private fun sendPushNotificationToken() {
+        val pushNotificationToken = pushNotificationToken ?: return
+        val pushNotificationLanguageCode = pushNotificationLanguageCode ?: "en"
+        pushNotificationRegistrationHandler.sendPushNotificationToken(
+            token = pushNotificationToken,
+            languageCode = pushNotificationLanguageCode,
+            isKepler = cosmosWalletConnected ?: false
+        )
     }
 }
 

@@ -6,6 +6,7 @@ import exchange.dydx.abacus.output.PerpetualState
 import exchange.dydx.abacus.output.Restriction
 import exchange.dydx.abacus.output.input.SelectionOption
 import exchange.dydx.abacus.protocols.TransactionCallback
+import exchange.dydx.abacus.state.app.helper.Language
 import exchange.dydx.abacus.state.model.AdjustIsolatedMarginInputField
 import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
@@ -100,6 +101,8 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Get chain data from id. Necessary to know chain name based on chain id
     fun getChainById(chainId: String): TransferChainInfo?
+
+    fun registerPushNotification(token: String, languageCode: String?)
 }
 
 @JsExport

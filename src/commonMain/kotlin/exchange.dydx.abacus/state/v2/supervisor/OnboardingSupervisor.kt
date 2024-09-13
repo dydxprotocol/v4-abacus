@@ -1452,7 +1452,7 @@ internal class OnboardingSupervisor(
         val string = Json.encodeToString(payload)
 
         helper.transaction(TransactionType.Deposit, string) { response ->
-            val error = parseTransactionResponse(response)
+            val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
     }
@@ -1462,7 +1462,7 @@ internal class OnboardingSupervisor(
         val string = Json.encodeToString(payload)
 
         helper.transaction(TransactionType.Withdraw, string) { response ->
-            val error = parseTransactionResponse(response)
+            val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
     }
@@ -1472,7 +1472,7 @@ internal class OnboardingSupervisor(
         val string = Json.encodeToString(payload)
 
         helper.transaction(TransactionType.SubaccountTransfer, string) { response ->
-            val error = parseTransactionResponse(response)
+            val error = helper.parseTransactionResponse(response)
             helper.send(error, callback, payload)
         }
     }
@@ -1618,7 +1618,7 @@ internal class OnboardingSupervisor(
                             ),
                         )
                         helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                            val error = parseTransactionResponse(it)
+                            val error = helper.parseTransactionResponse(it)
                             if (error != null) {
                                 Logger.e { "withdrawToNobleIBC error: $error" }
                                 helper.send(error, callback)
@@ -1726,7 +1726,7 @@ internal class OnboardingSupervisor(
                             ),
                         )
                         helper.transaction(TransactionType.WithdrawToNobleIBC, payload) {
-                            val error = parseTransactionResponse(it)
+                            val error = helper.parseTransactionResponse(it)
                             if (error != null) {
                                 Logger.e { "withdrawToNobleIBC error: $error" }
                                 helper.send(error, callback)
