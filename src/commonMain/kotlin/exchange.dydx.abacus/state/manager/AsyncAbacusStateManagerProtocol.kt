@@ -100,6 +100,8 @@ interface AsyncAbacusStateManagerProtocol {
 
     // Get chain data from id. Necessary to know chain name based on chain id
     fun getChainById(chainId: String): TransferChainInfo?
+
+    fun registerPushNotification(token: String, languageCode: String?)
 }
 
 @JsExport

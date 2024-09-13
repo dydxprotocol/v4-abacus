@@ -105,10 +105,6 @@ internal open class NetworkSupervisor(
             helper.dataNotification?.errorsEmitted(iListOf(error))
         }
     }
-
-    internal fun parseTransactionResponse(response: String?): ParsingError? {
-        return helper.parseTransactionResponse(response)
-    }
 }
 
 internal open class DynamicNetworkSupervisor(
