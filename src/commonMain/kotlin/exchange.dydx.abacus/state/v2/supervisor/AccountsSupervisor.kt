@@ -231,6 +231,15 @@ internal var AccountsSupervisor.cosmosWalletConnected: Boolean?
         account?.cosmosWalletConnected = value
     }
 
+
+internal var AccountsSupervisor.solanaWalletConnected: Boolean?
+    get() {
+        return account?.solanaWalletConnected
+    }
+    set(value) {
+        account?.solanaWalletConnected = value
+    }
+
 internal var AccountsSupervisor.sourceAddress: String?
     get() {
         return account?.sourceAddress

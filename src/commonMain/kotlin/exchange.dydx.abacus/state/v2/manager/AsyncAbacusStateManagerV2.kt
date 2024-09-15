@@ -141,6 +141,7 @@ class AsyncAbacusStateManagerV2(
                 value?.candlesResolution = candlesResolution
                 value?.readyToConnect = readyToConnect
                 value?.cosmosWalletConnected = cosmosWalletConnected
+                value?.solanaWalletConnected = solanaWalletConnected
                 field = value
             }
         }
@@ -192,6 +193,14 @@ class AsyncAbacusStateManagerV2(
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
                 adaptor?.cosmosWalletConnected = field
+            }
+        }
+
+    override var solanaWalletConnected: Boolean? = false
+        set(value) {
+            field = value
+            ioImplementations.threading?.async(ThreadingType.abacus) {
+                adaptor?.solanaWalletConnected = field
             }
         }
 

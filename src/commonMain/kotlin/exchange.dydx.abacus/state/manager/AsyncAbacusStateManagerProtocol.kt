@@ -111,6 +111,7 @@ interface AsyncAbacusStateManagerSingletonProtocol {
     var subaccountNumber: Int
     var market: String?
     var cosmosWalletConnected: Boolean?
+    var solanaWalletConnected: Boolean?
 }
 
 @JsExport

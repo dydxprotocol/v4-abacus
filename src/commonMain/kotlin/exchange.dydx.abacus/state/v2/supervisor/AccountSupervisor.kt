@@ -136,6 +136,17 @@ internal open class AccountSupervisor(
             sendPushNotificationToken()
         }
 
+
+    var solanaWalletConnected: Boolean? = false
+        internal set(value) {
+            field = value
+            if (value == true) {
+                nobleBalancesTimer?.cancel()
+                nobleBalancesTimer = null
+            }
+            sendPushNotificationToken()
+        }
+
     private var sourceAddressRestriction: Restriction? = null
         set(value) {
             if (field != value) {
@@ -462,7 +473,7 @@ internal open class AccountSupervisor(
     }
 
     private fun retrieveNobleBalance() {
-        if (cosmosWalletConnected == true) {
+        if (solanaWalletConnected == true) {
             nobleBalancesTimer = null
             return
         }
@@ -1085,7 +1096,7 @@ internal open class AccountSupervisor(
         pushNotificationRegistrationHandler.sendPushNotificationToken(
             token = pushNotificationToken,
             languageCode = pushNotificationLanguageCode,
-            isKepler = cosmosWalletConnected ?: false,
+            isKepler = solanaWalletConnected ?: false,
         )
     }
 }

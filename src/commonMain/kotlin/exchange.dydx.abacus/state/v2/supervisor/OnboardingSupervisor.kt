@@ -97,6 +97,15 @@ internal class OnboardingSupervisor(
             }
         }
 
+    var solanaWalletConnected: Boolean? = false
+        set(value) {
+            if (field != value) {
+                field = value
+                stateMachine.routerProcessor.selectedChainType =
+                    if (value == true) ChainType.SVM else ChainType.EVM
+            }
+        }
+
     override fun didSetReadyToConnect(readyToConnect: Boolean) {
         super.didSetReadyToConnect(readyToConnect)
 

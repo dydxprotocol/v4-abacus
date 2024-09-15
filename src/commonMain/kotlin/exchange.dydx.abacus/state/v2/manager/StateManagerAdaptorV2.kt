@@ -69,6 +69,7 @@ import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
 import exchange.dydx.abacus.state.v2.supervisor.cosmosWalletConnected
+import exchange.dydx.abacus.state.v2.supervisor.solanaWalletConnected
 import exchange.dydx.abacus.state.v2.supervisor.depositPayload
 import exchange.dydx.abacus.state.v2.supervisor.faucet
 import exchange.dydx.abacus.state.v2.supervisor.marketId
@@ -288,6 +289,15 @@ internal class StateManagerAdaptorV2(
         set(value) {
             accounts.cosmosWalletConnected = value
             onboarding.cosmosWalletConnected = value
+        }
+
+    internal var solanaWalletConnected: Boolean?
+        get() {
+            return accounts.solanaWalletConnected
+        }
+        set(value) {
+            accounts.solanaWalletConnected = value
+            onboarding.solanaWalletConnected = value
         }
 
     internal var sourceAddress: String?
