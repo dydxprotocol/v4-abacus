@@ -473,7 +473,7 @@ internal open class AccountSupervisor(
     }
 
     private fun retrieveNobleBalance() {
-        if (solanaWalletConnected == true) {
+        if (cosmosWalletConnected == true) {
             nobleBalancesTimer = null
             return
         }
@@ -1096,7 +1096,7 @@ internal open class AccountSupervisor(
         pushNotificationRegistrationHandler.sendPushNotificationToken(
             token = pushNotificationToken,
             languageCode = pushNotificationLanguageCode,
-            isKepler = solanaWalletConnected ?: false,
+            isKepler = cosmosWalletConnected ?: false,
         )
     }
 }
