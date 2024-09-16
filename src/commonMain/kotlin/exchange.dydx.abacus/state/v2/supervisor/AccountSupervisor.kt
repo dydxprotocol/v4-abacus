@@ -140,10 +140,6 @@ internal open class AccountSupervisor(
     var solanaWalletConnected: Boolean? = false
         internal set(value) {
             field = value
-            if (value == true) {
-                nobleBalancesTimer?.cancel()
-                nobleBalancesTimer = null
-            }
             sendPushNotificationToken()
         }
 
