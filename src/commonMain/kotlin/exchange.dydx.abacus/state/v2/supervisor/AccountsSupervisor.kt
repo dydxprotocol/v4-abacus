@@ -27,6 +27,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.IMap
 import exchange.dydx.abacus.utils.iMapOf
@@ -223,12 +224,12 @@ internal var AccountsSupervisor.accountAddress: String?
         }
     }
 
-internal var AccountsSupervisor.cosmosWalletConnected: Boolean?
+internal var AccountsSupervisor.walletConnectionType: WalletConnectionType?
     get() {
-        return account?.cosmosWalletConnected
+        return account?.walletConnectionType
     }
     set(value) {
-        account?.cosmosWalletConnected = value
+        account?.walletConnectionType = value
     }
 
 internal var AccountsSupervisor.sourceAddress: String?

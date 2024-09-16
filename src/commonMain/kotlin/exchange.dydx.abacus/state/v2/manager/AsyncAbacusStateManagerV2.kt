@@ -41,6 +41,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
 import exchange.dydx.abacus.utils.CoroutineTimer
 import exchange.dydx.abacus.utils.DummyFormatter
@@ -140,7 +141,7 @@ class AsyncAbacusStateManagerV2(
                 value?.historicalPnlPeriod = historicalPnlPeriod
                 value?.candlesResolution = candlesResolution
                 value?.readyToConnect = readyToConnect
-                value?.cosmosWalletConnected = cosmosWalletConnected
+                value?.walletConnectionType = walletConnectionType
                 field = value
             }
         }
@@ -187,11 +188,11 @@ class AsyncAbacusStateManagerV2(
             }
         }
 
-    override var cosmosWalletConnected: Boolean? = false
+    override var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         set(value) {
             field = value
             ioImplementations.threading?.async(ThreadingType.abacus) {
-                adaptor?.cosmosWalletConnected = field
+                adaptor?.walletConnectionType = field
             }
         }
 

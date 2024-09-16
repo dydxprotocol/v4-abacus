@@ -11,6 +11,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.utils.IList
 import kotlin.js.JsExport
 
@@ -110,7 +111,7 @@ interface AsyncAbacusStateManagerSingletonProtocol {
     var sourceAddress: String?
     var subaccountNumber: Int
     var market: String?
-    var cosmosWalletConnected: Boolean?
+    var walletConnectionType: WalletConnectionType?
 }
 
 @JsExport
