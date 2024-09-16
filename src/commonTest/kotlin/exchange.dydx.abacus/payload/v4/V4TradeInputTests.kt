@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.payload.v4
 
 import exchange.dydx.abacus.calculator.CalculationPeriod
+import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorType
 import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
@@ -733,7 +734,7 @@ open class V4TradeInputTests : V4BaseTests() {
             assertEquals("ERRORS.TRADE_BOX.ISOLATED_MARGIN_LIMIT_ORDER_BELOW_MINIMUM", error?.resources?.text?.stringKey)
             val param = error?.resources?.text?.params?.first()!!
             assertEquals("20.0", param.value)
-            assertEquals("price", param.format)
+            assertEquals(ErrorFormat.UsdcPrice, param.format)
             assertEquals("MIN_VALUE", param.key)
             assertEquals("APP.TRADE.MODIFY_SIZE_FIELD", error?.resources?.action?.stringKey)
         } else {
@@ -774,7 +775,7 @@ open class V4TradeInputTests : V4BaseTests() {
                                     "params": [
                                         {
                                             "value": 20.0,
-                                            "format": "price",
+                                            "format": "usdcPrice",
                                             "key": "MIN_VALUE"
                                         }
                                     ]

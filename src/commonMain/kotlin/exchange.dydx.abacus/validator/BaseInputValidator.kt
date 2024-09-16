@@ -1,6 +1,7 @@
 package exchange.dydx.abacus.validator
 
 import exchange.dydx.abacus.output.input.ErrorAction
+import exchange.dydx.abacus.output.input.ErrorFormat
 import exchange.dydx.abacus.output.input.ErrorParam
 import exchange.dydx.abacus.output.input.ErrorResources
 import exchange.dydx.abacus.output.input.ErrorString
@@ -160,27 +161,33 @@ internal open class BaseInputValidator(
     }
 
     private fun formatParam(params: Map<String, Any>): String? {
-        val format = parser.asString(params["format"])
+        val format = ErrorFormat.invoke(parser.asString(params["format"]))
         val value = params["value"]
         val tickSize = parser.asString(params["tickSize"])
         return when (format) {
-            "string" -> {
+            ErrorFormat.StringVal -> {
                 parser.asString(value)
             }
 
-            "price" -> {
+            ErrorFormat.UsdcPrice -> {
+                parser.asDouble(value)?.let { amount ->
+                    formatter?.price(amount, "0.01")
+                } ?: run { null }
+            }
+
+            ErrorFormat.Price -> {
                 parser.asDouble(value)?.let { amount ->
                     formatter?.price(amount, tickSize)
                 } ?: run { null }
             }
 
-            "percent" -> {
+            ErrorFormat.Percent -> {
                 parser.asDouble(value)?.let { amount ->
                     formatter?.percent(amount, 2)
                 } ?: run { null }
             }
 
-            "size" -> {
+            ErrorFormat.Size -> {
                 parser.asDouble(value)?.let { amount ->
                     "$amount"
                 } ?: run { null }
@@ -201,7 +208,7 @@ internal open class BaseInputValidator(
                     val param = ErrorParam(
                         key = key,
                         value = parser.asString(it["value"]),
-                        format = parser.asString(it["format"]),
+                        format = ErrorFormat.invoke(parser.asString(it["format"])),
                     )
                     params.add(param)
                 }

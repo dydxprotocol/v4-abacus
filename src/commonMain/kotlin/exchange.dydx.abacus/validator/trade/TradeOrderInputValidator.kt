@@ -140,7 +140,7 @@ internal class TradeOrderInputValidator(
                         textParams = mapOf(
                             "MIN_VALUE" to mapOf(
                                 "value" to isolatedLimitOrderMinimumEquity,
-                                "format" to "price",
+                                "format" to "usdcPrice",
                             ),
                         ),
                         learnMoreLink = environment?.links?.equityTiersLearnMore,
@@ -169,7 +169,7 @@ internal class TradeOrderInputValidator(
                         textParams = mapOf(
                             "MIN_VALUE" to mapOf(
                                 "value" to isolatedLimitOrderMinimumEquity,
-                                "format" to "price",
+                                "format" to "usdcPrice",
                             ),
                         ),
                         learnMoreLink = environment?.links?.equityTiersLearnMore,
