@@ -476,7 +476,7 @@ internal class TradeInputCalculator(
         isBuying: Boolean,
         input: String,
     ): Map<String, Any>? {
-        val marketId = parser.asString(trade["marketId"])
+        val marketId = parser.asString(market?.get("id"))
         val tradeSize = parser.asNativeMap(trade["size"])
 
         if (tradeSize != null && marketId != null) {
@@ -618,6 +618,10 @@ internal class TradeInputCalculator(
             // For isolated margin orders where the user is trading on the opposite side of their currentPosition, the balancePercent represents a percentage of their current position rather than freeCollateral
             val desiredSize = existingPositionSize.abs() * balancePercent
             return calculateMarketOrderFromSize(desiredSize, existingPositionNotionalSize, isTradeSameSide, freeCollateral, tradeLeverage, orderbook)
+        }
+
+        if (tradeLeverage <= Numeric.double.ZERO) {
+            return null
         }
 
         val maxPercent = when (marginMode) {
@@ -1093,7 +1097,7 @@ internal class TradeInputCalculator(
         tradeLeverage: Double,
         isTradeSameSide: Boolean,
     ): Double {
-        if (freeCollateral <= Numeric.double.ZERO) {
+        if (freeCollateral <= Numeric.double.ZERO || tradeLeverage <= Numeric.double.ZERO) {
             return Numeric.double.ZERO
         }
         return if (isTradeSameSide) {

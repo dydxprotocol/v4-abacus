@@ -640,7 +640,7 @@ internal class TradeInputMarketOrderCalculator() {
         tradeLeverage: Double,
         isTradeSameSide: Boolean,
     ): Double {
-        if (freeCollateral <= Numeric.double.ZERO) {
+        if (freeCollateral <= Numeric.double.ZERO || tradeLeverage <= Numeric.double.ZERO) {
             return Numeric.double.ZERO
         }
         return if (isTradeSameSide) {
