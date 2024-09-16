@@ -44,6 +44,7 @@ import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TransferInputField
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.model.tradeInMarket
 import exchange.dydx.abacus.state.v2.supervisor.AccountsSupervisor
 import exchange.dydx.abacus.state.v2.supervisor.AppConfigsV2
@@ -68,7 +69,6 @@ import exchange.dydx.abacus.state.v2.supervisor.commitClosePosition
 import exchange.dydx.abacus.state.v2.supervisor.commitPlaceOrder
 import exchange.dydx.abacus.state.v2.supervisor.commitTriggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.connectedSubaccountNumber
-import exchange.dydx.abacus.state.v2.supervisor.cosmosWalletConnected
 import exchange.dydx.abacus.state.v2.supervisor.depositPayload
 import exchange.dydx.abacus.state.v2.supervisor.faucet
 import exchange.dydx.abacus.state.v2.supervisor.marketId
@@ -85,6 +85,7 @@ import exchange.dydx.abacus.state.v2.supervisor.trade
 import exchange.dydx.abacus.state.v2.supervisor.triggerCompliance
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrders
 import exchange.dydx.abacus.state.v2.supervisor.triggerOrdersPayload
+import exchange.dydx.abacus.state.v2.supervisor.walletConnectionType
 import exchange.dydx.abacus.state.v2.supervisor.withdrawPayload
 import exchange.dydx.abacus.utils.AnalyticsUtils
 import exchange.dydx.abacus.utils.GEO_POLLING_DURATION_SECONDS
@@ -281,13 +282,13 @@ internal class StateManagerAdaptorV2(
             accounts.accountAddress = value
         }
 
-    internal var cosmosWalletConnected: Boolean?
+    internal var walletConnectionType: WalletConnectionType?
         get() {
-            return accounts.cosmosWalletConnected
+            return accounts.walletConnectionType
         }
         set(value) {
-            accounts.cosmosWalletConnected = value
-            onboarding.cosmosWalletConnected = value
+            accounts.walletConnectionType = value
+            onboarding.walletConnectionType = value
         }
 
     internal var sourceAddress: String?

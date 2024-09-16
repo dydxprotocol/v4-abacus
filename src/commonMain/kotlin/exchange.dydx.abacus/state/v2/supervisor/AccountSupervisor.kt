@@ -38,6 +38,7 @@ import exchange.dydx.abacus.state.model.ClosePositionInputField
 import exchange.dydx.abacus.state.model.TradeInputField
 import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.state.model.TriggerOrdersInputField
+import exchange.dydx.abacus.state.model.WalletConnectionType
 import exchange.dydx.abacus.state.model.account
 import exchange.dydx.abacus.state.model.historicalTradingRewards
 import exchange.dydx.abacus.state.model.launchIncentivePoints
@@ -125,10 +126,10 @@ internal open class AccountSupervisor(
             }
         }
 
-    var cosmosWalletConnected: Boolean? = false
+    var walletConnectionType: WalletConnectionType? = WalletConnectionType.Ethereum
         internal set(value) {
             field = value
-            if (value == true) {
+            if (value == WalletConnectionType.Cosmos) {
                 nobleBalancesTimer?.cancel()
                 nobleBalancesTimer = null
             }
@@ -462,7 +463,7 @@ internal open class AccountSupervisor(
     }
 
     private fun retrieveNobleBalance() {
-        if (cosmosWalletConnected == true) {
+        if (walletConnectionType == WalletConnectionType.Cosmos) {
             nobleBalancesTimer = null
             return
         }
@@ -1085,7 +1086,7 @@ internal open class AccountSupervisor(
         pushNotificationRegistrationHandler.sendPushNotificationToken(
             token = pushNotificationToken,
             languageCode = pushNotificationLanguageCode,
-            isKepler = cosmosWalletConnected ?: false,
+            isKepler = walletConnectionType == WalletConnectionType.Cosmos,
         )
     }
 }
