@@ -91,8 +91,9 @@ data class SubaccountConfigs(
             NotificationProviderType.BlackReward,
             NotificationProviderType.Fills,
             NotificationProviderType.OrderStatusChange,
-            NotificationProviderType.Positions),
-    ) {
+            NotificationProviderType.Positions,
+        ),
+) {
     companion object {
         val forApp = SubaccountConfigs(
             retrieveFills = true,

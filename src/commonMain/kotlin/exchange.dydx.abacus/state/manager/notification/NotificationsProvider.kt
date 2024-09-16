@@ -33,39 +33,51 @@ internal class NotificationsProvider(
         NotificationProviderType.OrderStatusChange,
     ),
     private val providers: List<NotificationsProviderProtocol> = listOfNotNull(
-        if (notifications.contains(NotificationProviderType.BlackReward))
+        if (notifications.contains(NotificationProviderType.BlackReward)) {
             BlockRewardNotificationProvider(
                 stateMachine,
                 uiImplementations,
                 environment,
-                jsonEncoder
-            ) else null,
+                jsonEncoder,
+            )
+        } else {
+            null
+        },
 
-        if (notifications.contains(NotificationProviderType.Fills))
+        if (notifications.contains(NotificationProviderType.Fills)) {
             FillsNotificationProvider(
                 stateMachine,
                 uiImplementations,
                 parser,
                 jsonEncoder,
-            ) else null,
+            )
+        } else {
+            null
+        },
 
-        if (notifications.contains(NotificationProviderType.Positions))
+        if (notifications.contains(NotificationProviderType.Positions)) {
             PositionsNotificationProvider(
                 stateMachine,
                 uiImplementations,
                 parser,
                 jsonEncoder,
                 useParentSubaccount,
-            ) else null,
+            )
+        } else {
+            null
+        },
 
-        if (notifications.contains(NotificationProviderType.OrderStatusChange))
+        if (notifications.contains(NotificationProviderType.OrderStatusChange)) {
             OrderStatusChangesNotificationProvider(
                 stateMachine,
                 uiImplementations,
                 parser,
                 jsonEncoder,
-            ) else null,
-        ),
+            )
+        } else {
+            null
+        },
+    ),
 ) : NotificationsProviderProtocol {
 
     override fun buildNotifications(
