@@ -660,7 +660,8 @@ internal class OnboardingSupervisor(
         subaccountNumber: Int?,
     ) {
         val toChain = state?.input?.transfer?.chain ?: return
-        val toAddress = state?.input?.transfer?.address
+        val toAddress = state.input.transfer.address ?: return
+        if (toAddress.isBlank()) return
         val toTokenDenom = state.input.transfer.token ?: return
         val toTokenSkipDenom = stateMachine.routerProcessor.getTokenByDenomAndChainId(
             tokenDenom = toTokenDenom,
@@ -671,7 +672,7 @@ internal class OnboardingSupervisor(
 //        So we prefer the skimDenom and default to the regular denom for API calls.
         val toTokenDenomForAPIUse = toTokenSkipDenom ?: toTokenDenom
 
-        val usdcSize = helper.parser.asDecimal(state?.input?.transfer?.size?.usdcSize) ?: return
+        val usdcSize = helper.parser.asDecimal(state.input.transfer.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
         } else {
@@ -736,6 +737,7 @@ internal class OnboardingSupervisor(
         val toChain = state?.input?.transfer?.chain ?: return
         val toToken = state.input.transfer.token ?: return
         val toAddress = state.input.transfer.address ?: return
+        if (toAddress.isBlank()) return
         val usdcSize = helper.parser.asDecimal(state.input.transfer.size?.usdcSize) ?: return
         val fromAmount = if (usdcSize > gas) {
             ((usdcSize - gas) * Numeric.decimal.TEN.pow(decimals)).toBigInteger()
