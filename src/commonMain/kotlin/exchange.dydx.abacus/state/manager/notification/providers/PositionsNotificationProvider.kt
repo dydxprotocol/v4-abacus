@@ -117,15 +117,15 @@ class PositionsNotificationProvider(
 
                         val notificationId = "position:$marketId"
                         notifications[notificationId] = Notification(
-                            notificationId,
-                            NotificationType.INFO,
-                            NotificationPriority.NORMAL,
-                            marketImageUrl,
-                            title,
-                            text,
-                            null,
-                            paramsAsJson,
-                            closedAt.toEpochMilliseconds().toDouble(),
+                            id = notificationId,
+                            type = NotificationType.INFO,
+                            priority = NotificationPriority.NORMAL,
+                            image = marketImageUrl,
+                            title = title,
+                            text = text,
+                            link = null,
+                            data = paramsAsJson,
+                            updateTimeInMilliseconds = closedAt.toEpochMilliseconds().toDouble(),
                         )
                     }
                 }

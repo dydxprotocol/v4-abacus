@@ -79,12 +79,6 @@ data class MarketsConfigs(
     }
 }
 
-enum class SubaccountSubscriptionType {
-    SUBACCOUNT,
-    PARENT_SUBACCOUNT,
-    NONE,
-}
-
 @JsExport
 data class SubaccountConfigs(
     val retrieveFills: Boolean,
@@ -92,7 +86,13 @@ data class SubaccountConfigs(
     val retrieveHistoricalPnls: Boolean,
     val subscribeToSubaccount: Boolean,
     val useParentSubaccount: Boolean,
-) {
+    var notifications: List<NotificationProviderType> =
+        listOf(
+            NotificationProviderType.BlackReward,
+            NotificationProviderType.Fills,
+            NotificationProviderType.OrderStatusChange,
+            NotificationProviderType.Positions),
+    ) {
     companion object {
         val forApp = SubaccountConfigs(
             retrieveFills = true,
@@ -173,7 +173,6 @@ data class OnboardingConfigs(
         V2WithdrawalOnly,
     }
 
-    var squidVersion: SquidVersion = SquidVersion.V2
     var alchemyApiKey: String? = null
 
     companion object {
@@ -184,6 +183,14 @@ data class OnboardingConfigs(
             retrieveSquidRoutes = false,
         )
     }
+}
+
+@JsExport
+enum class NotificationProviderType {
+    BlackReward,
+    Fills,
+    OrderStatusChange,
+    Positions
 }
 
 @JsExport
