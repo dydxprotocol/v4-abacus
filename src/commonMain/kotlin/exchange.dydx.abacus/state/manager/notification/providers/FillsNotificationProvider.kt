@@ -134,15 +134,15 @@ class FillsNotificationProvider(
 
         val notificationId = "order:$orderId"
         return Notification(
-            notificationId,
-            NotificationType.INFO,
-            NotificationPriority.NORMAL,
-            marketImageUrl,
-            title,
-            text,
-            "/orders/$orderId",
-            paramsAsJson,
-            fill.createdAtMilliseconds,
+            id = notificationId,
+            type = NotificationType.INFO,
+            priority = NotificationPriority.NORMAL,
+            image = marketImageUrl,
+            title = title,
+            text = text,
+            link = "/orders/$orderId",
+            data = paramsAsJson,
+            updateTimeInMilliseconds = fill.createdAtMilliseconds,
         )
     }
 

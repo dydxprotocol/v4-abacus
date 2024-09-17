@@ -42,7 +42,7 @@ internal class PushNotificationRegistrationHandler(
             if (helper.success(httpCode) && response != null) {
                 Logger.d { "Push notification token registered successfully" }
             } else {
-                Logger.e { "Push notification token registration failed" }
+                Logger.e { "Push notification token registration failed: $response" }
             }
         }
     }
