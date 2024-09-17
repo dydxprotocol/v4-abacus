@@ -1,17 +1,22 @@
 package exchange.dydx.abacus.state.v2.supervisor
 
 import abs
+import exchange.dydx.abacus.calculator.CalculationPeriod
 import exchange.dydx.abacus.calculator.MarginCalculator
+import exchange.dydx.abacus.calculator.SlippageConstants.MARKET_ORDER_MAX_SLIPPAGE
 import exchange.dydx.abacus.calculator.TriggerOrdersConstants.TRIGGER_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.output.account.SubaccountOrder
+import exchange.dydx.abacus.output.account.SubaccountPosition
 import exchange.dydx.abacus.output.input.IsolatedMarginAdjustmentType
 import exchange.dydx.abacus.output.input.MarginMode
+import exchange.dydx.abacus.output.input.OrderSide
 import exchange.dydx.abacus.output.input.OrderStatus
 import exchange.dydx.abacus.output.input.OrderType
 import exchange.dydx.abacus.output.input.TradeInputGoodUntil
 import exchange.dydx.abacus.output.input.TriggerOrder
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -23,6 +28,7 @@ import exchange.dydx.abacus.state.model.TradingStateMachine
 import exchange.dydx.abacus.utils.LIMIT_CLOSE_ORDER_DEFAULT_DURATION_DAYS
 import exchange.dydx.abacus.utils.MAX_SUBACCOUNT_NUMBER
 import exchange.dydx.abacus.utils.NUM_PARENT_SUBACCOUNTS
+import exchange.dydx.abacus.utils.Numeric
 import exchange.dydx.abacus.utils.SHORT_TERM_ORDER_DURATION
 import kollections.iEmptyList
 import kollections.iListOf
@@ -45,6 +51,9 @@ internal interface SubaccountTransactionPayloadProviderProtocol {
 
     @Throws(Exception::class)
     fun closePositionPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload
+
+    @Throws(Exception::class)
+    fun closeAllPositionsPayload(currentHeight: Int?): HumanReadableCloseAllPositionsPayload
 
     @Throws(Exception::class)
     fun adjustIsolatedMarginPayload(): HumanReadableSubaccountTransferPayload
@@ -191,6 +200,16 @@ internal class SubaccountTransactionPayloadProvider(
         )
     }
 
+    @Throws(Exception::class)
+    override fun closeAllPositionsPayload(currentHeight: Int?): HumanReadableCloseAllPositionsPayload {
+        val subaccount = stateMachine.state?.subaccount(subaccountNumber) ?: throw Exception("subaccount is null")
+        val orderPayloads = subaccount.openPositions?.map { marketFullClosePositionPayload(it, currentHeight) }?.toIList() ?: iEmptyList()
+
+        return HumanReadableCloseAllPositionsPayload(
+            payloads = orderPayloads,
+        )
+    }
+
     override fun transferPayloadForIsolatedMarginTrade(orderPayload: HumanReadablePlaceOrderPayload): HumanReadableSubaccountTransferPayload? {
         val trade = stateMachine.state?.input?.trade ?: return null
         val childSubaccountNumber = orderPayload.subaccountNumber
@@ -268,6 +287,19 @@ internal class SubaccountTransactionPayloadProvider(
         return HumanReadableTriggerOrdersPayload(marketId, positionSize, placeOrderPayloads, cancelOrderPayloads)
     }
 
+    private fun subaccountNumberForPosition(marketId: String): Int {
+        return if (stateMachine.staticTyping) {
+            stateMachine.internalState.wallet.account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)?.childSubaccountNumber ?: subaccountNumber
+        } else {
+            helper.parser.asInt(
+                helper.parser.value(
+                    stateMachine.data,
+                    "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber",
+                ),
+            ) ?: subaccountNumber
+        }
+    }
+
     @Throws(Exception::class)
     override fun closePositionPayload(currentHeight: Int?): HumanReadablePlaceOrderPayload {
         val closePosition = stateMachine.state?.input?.closePosition
@@ -288,17 +320,7 @@ internal class SubaccountTransactionPayloadProvider(
         val goodTilTimeInSeconds = if (isLimitClose) (limitCloseDuration / 1.seconds).toInt() else null
         val goodTilBlock = if (isLimitClose) null else currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
         val marketInfo = marketInfo(marketId)
-        val subaccountNumberForPosition =
-            if (stateMachine.staticTyping) {
-                stateMachine.internalState.wallet.account.groupedSubaccounts[subaccountNumber]?.openPositions?.get(marketId)?.childSubaccountNumber ?: subaccountNumber
-            } else {
-                helper.parser.asInt(
-                    helper.parser.value(
-                        stateMachine.data,
-                        "wallet.account.groupedSubaccounts.$subaccountNumber.openPositions.$marketId.childSubaccountNumber",
-                    ),
-                ) ?: subaccountNumber
-            }
+        val subaccountNumberForPosition = subaccountNumberForPosition(marketId)
 
         return HumanReadablePlaceOrderPayload(
             subaccountNumber = subaccountNumberForPosition,
@@ -315,6 +337,48 @@ internal class SubaccountTransactionPayloadProvider(
             timeInForce = timeInForce,
             execution = execution,
             goodTilTimeInSeconds = goodTilTimeInSeconds,
+            goodTilBlock = goodTilBlock,
+            marketInfo = marketInfo,
+            currentHeight = currentHeight,
+        )
+    }
+
+    private fun marketFullClosePositionPayload(position: SubaccountPosition, currentHeight: Int?): HumanReadablePlaceOrderPayload {
+        val marketId = position.id
+        val clientId = ClientId.generate()
+        val subaccountNumberForPosition = subaccountNumberForPosition(marketId)
+        val positionSize = position.size.current ?: throw Exception("size is null")
+        val side = if (positionSize > Numeric.double.ZERO) OrderSide.Sell.rawValue else OrderSide.Buy.rawValue
+        val oraclePrice = stateMachine.state?.market(marketId)?.oraclePrice ?: throw Exception("missing oraclePrice")
+        val price = if (side == OrderSide.Buy.rawValue) {
+            oraclePrice * (Numeric.double.ONE + MARKET_ORDER_MAX_SLIPPAGE)
+        } else {
+            oraclePrice * (Numeric.double.ONE - MARKET_ORDER_MAX_SLIPPAGE)
+        }
+        val size = positionSize.abs()
+        val type = "MARKET"
+        val reduceOnly = true
+        val postOnly = false
+        val timeInForce = "IOC"
+        val execution = "DEFAULT"
+        val goodTilBlock = currentHeight?.plus(SHORT_TERM_ORDER_DURATION)
+        val marketInfo = marketInfo(marketId)
+
+        return HumanReadablePlaceOrderPayload(
+            subaccountNumber = subaccountNumberForPosition,
+            marketId = marketId,
+            clientId = clientId,
+            type = type,
+            side = side,
+            price = price,
+            triggerPrice = null,
+            size = size,
+            sizeInput = null,
+            reduceOnly = reduceOnly,
+            postOnly = postOnly,
+            timeInForce = timeInForce,
+            execution = execution,
+            goodTilTimeInSeconds = null,
             goodTilBlock = goodTilBlock,
             marketInfo = marketInfo,
             currentHeight = currentHeight,

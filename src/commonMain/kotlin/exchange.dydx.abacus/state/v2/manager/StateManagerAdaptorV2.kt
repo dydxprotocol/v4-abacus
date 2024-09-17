@@ -28,6 +28,7 @@ import exchange.dydx.abacus.state.manager.HistoricalPnlPeriod
 import exchange.dydx.abacus.state.manager.HistoricalTradingRewardsPeriod
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
 import exchange.dydx.abacus.state.manager.HumanReadableSubaccountTransferPayload
@@ -62,6 +63,8 @@ import exchange.dydx.abacus.state.v2.supervisor.cancelAllOrders
 import exchange.dydx.abacus.state.v2.supervisor.cancelAllOrdersPayload
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrder
 import exchange.dydx.abacus.state.v2.supervisor.cancelOrderPayload
+import exchange.dydx.abacus.state.v2.supervisor.closeAllPositions
+import exchange.dydx.abacus.state.v2.supervisor.closeAllPositionsPayload
 import exchange.dydx.abacus.state.v2.supervisor.closePosition
 import exchange.dydx.abacus.state.v2.supervisor.closePositionPayload
 import exchange.dydx.abacus.state.v2.supervisor.commitAdjustIsolatedMargin
@@ -546,6 +549,10 @@ internal class StateManagerAdaptorV2(
         return accounts.cancelAllOrdersPayload(marketId)
     }
 
+    internal fun closeAllPositionsPayload(): HumanReadableCloseAllPositionsPayload? {
+        return accounts.closeAllPositionsPayload(currentHeight)
+    }
+
     internal fun triggerOrdersPayload(): HumanReadableTriggerOrdersPayload? {
         return accounts.triggerOrdersPayload(currentHeight)
     }
@@ -606,6 +613,10 @@ internal class StateManagerAdaptorV2(
 
     internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback) {
         accounts.cancelAllOrders(marketId, callback)
+    }
+
+    internal fun closeAllPositions(callback: TransactionCallback) {
+        accounts.closeAllPositions(currentHeight, callback)
     }
 
     internal fun orderCanceled(orderId: String) {

@@ -16,6 +16,7 @@ import exchange.dydx.abacus.state.manager.BlockAndTime
 import exchange.dydx.abacus.state.manager.FaucetRecord
 import exchange.dydx.abacus.state.manager.HumanReadableCancelAllOrdersPayload
 import exchange.dydx.abacus.state.manager.HumanReadableCancelOrderPayload
+import exchange.dydx.abacus.state.manager.HumanReadableCloseAllPositionsPayload
 import exchange.dydx.abacus.state.manager.HumanReadableDepositPayload
 import exchange.dydx.abacus.state.manager.HumanReadableFaucetPayload
 import exchange.dydx.abacus.state.manager.HumanReadablePlaceOrderPayload
@@ -334,6 +335,10 @@ internal class SubaccountSupervisor(
         return payloadProvider.cancelAllOrdersPayload(marketId)
     }
 
+    internal fun closeAllPositionsPayload(currentHeight: Int?): HumanReadableCloseAllPositionsPayload {
+        return payloadProvider.closeAllPositionsPayload(currentHeight)
+    }
+
     fun trade(
         data: String?,
         type: TradeInputField?,
@@ -433,6 +438,10 @@ internal class SubaccountSupervisor(
 
     internal fun cancelAllOrders(marketId: String?, callback: TransactionCallback): HumanReadableCancelAllOrdersPayload {
         return transactionSupervisor.cancelAllOrders(marketId, callback)
+    }
+
+    internal fun closeAllPositions(currentHeight: Int?, callback: TransactionCallback): HumanReadableCloseAllPositionsPayload {
+        return transactionSupervisor.closeAllPositions(currentHeight, callback)
     }
 
     internal fun commitTriggerOrders(
