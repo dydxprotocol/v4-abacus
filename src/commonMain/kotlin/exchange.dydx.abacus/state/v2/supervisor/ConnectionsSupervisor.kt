@@ -103,6 +103,7 @@ internal class ConnectionsSupervisor(
             indexerConfig = null
             validatorConnected = false
             socketConnected = false
+            validatorUrl = null
             disconnectSocket()
         }
     }
@@ -189,7 +190,9 @@ internal class ConnectionsSupervisor(
             validatorUrl = endpointUrls?.firstOrNull()
         }
         findOptimalNode { url ->
-            this.validatorUrl = url
+            if (url != this.validatorUrl) {
+                this.validatorUrl = url
+            }
         }
     }
 
@@ -271,7 +274,7 @@ internal class ConnectionsSupervisor(
                                 val error = json["error"]
                                 if (error != null) {
                                     tracking(
-                                        eventName = "ConnectionNetworkFailed",
+                                        eventName = "ConnectNetworkFailed",
                                         params = iMapOf(
                                             "errorMessage" to helper.parser.asString(error),
                                         ),
@@ -280,7 +283,7 @@ internal class ConnectionsSupervisor(
                                 callback(error == null)
                             } else {
                                 tracking(
-                                    eventName = "ConnectionNetworkFailed",
+                                    eventName = "ConnectNetworkFailed",
                                     params = iMapOf(
                                         "errorMessage" to "Invalid response: $response",
                                     ),
@@ -291,7 +294,7 @@ internal class ConnectionsSupervisor(
                     } else {
                         helper.ioImplementations.threading?.async(ThreadingType.main) {
                             tracking(
-                                eventName = "ConnectionNetworkFailed",
+                                eventName = "ConnectNetworkFailed",
                                 params = iMapOf(
                                     "errorMessage" to "null response",
                                 ),
@@ -398,6 +401,7 @@ internal class ConnectionsSupervisor(
             val timer = helper.ioImplementations.timer ?: CoroutineTimer.instance
             chainTimer = timer.schedule(serverPollingDuration, null) {
                 if (readyToConnect) {
+                    validatorUrl = null
                     bestEffortConnectChain()
                 }
                 false
