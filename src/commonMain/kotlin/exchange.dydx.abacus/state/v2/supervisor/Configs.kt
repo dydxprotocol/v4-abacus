@@ -88,7 +88,7 @@ data class SubaccountConfigs(
     val useParentSubaccount: Boolean,
     var notifications: List<NotificationProviderType> =
         listOf(
-            NotificationProviderType.BlackReward,
+            NotificationProviderType.BlockReward,
             NotificationProviderType.Fills,
             NotificationProviderType.OrderStatusChange,
             NotificationProviderType.Positions,
@@ -188,7 +188,7 @@ data class OnboardingConfigs(
 
 @JsExport
 enum class NotificationProviderType {
-    BlackReward,
+    BlockReward,
     Fills,
     OrderStatusChange,
     Positions

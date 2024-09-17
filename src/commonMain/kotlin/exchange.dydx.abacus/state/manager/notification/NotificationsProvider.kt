@@ -27,13 +27,13 @@ internal class NotificationsProvider(
     private val jsonEncoder: JsonEncoder,
     private val useParentSubaccount: Boolean = false,
     val notifications: List<NotificationProviderType> = listOf(
-        NotificationProviderType.BlackReward,
+        NotificationProviderType.BlockReward,
         NotificationProviderType.Fills,
         NotificationProviderType.Positions,
         NotificationProviderType.OrderStatusChange,
     ),
     private val providers: List<NotificationsProviderProtocol> = listOfNotNull(
-        if (notifications.contains(NotificationProviderType.BlackReward)) {
+        if (notifications.contains(NotificationProviderType.BlockReward)) {
             BlockRewardNotificationProvider(
                 stateMachine,
                 uiImplementations,
